@@ -1,0 +1,203 @@
+/*  Generic styles that set fonts and colors.
+	Some are prefixed with .zenario_skin as doing so makes them only
+	affect the page, and not the admin interface or the pop-up colorboxes. */
+
+
+body {
+	background: #000;
+	font-size:100%;
+}
+
+.zenario_skin { 
+	font-size: 87.5%; 
+}
+
+.zenario_skin,
+.zenario_skin input,
+.zenario_skin textarea,
+.zenario_skin select { 
+	font-family: Tahoma, Geneva, sans-serif;
+}
+
+.zenario_skin h3,
+.zenario_skin h6,
+.zenario_skin strong {
+	font-weight: bold;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h5 { 
+	font-family: Georgia, Serif;
+}
+
+.zenario_skin h5 { 
+	font-style: italic;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4 {
+	color:#E6E6E6;
+}
+
+.zenario_skin h5,
+.zenario_skin h6 {
+	color:#B5B5B5;
+}
+
+.zenario_skin,
+.zenario_skin p,
+.zenario_skin ul,
+.zenario_skin ol,
+.zenario_skin dl {  
+	color:#B5B6B6;
+}
+
+.zenario_skin input,
+.zenario_skin textarea,
+.zenario_skin select {  
+	color:#3c3c3c;
+}
+
+.zenario_skin a { 
+	color:#E6E6E6;
+}
+
+.zenario_skin h1 { 
+	font-size: 1.714em;
+}
+
+.zenario_skin h2 { 
+	font-size: 1.429em; 
+}
+
+.zenario_skin h3 { 
+	font-size: 1.143em; 
+}
+
+.zenario_skin h4 { 
+	font-size: 1em; 
+}
+
+.zenario_skin h5 { 
+	font-size: 1em; 
+}
+
+.zenario_skin h6 { 
+	font-size: 0.857em; 
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6 {
+	margin-bottom: 15px;
+	line-height:1.2;
+}
+
+.zenario_skin p { 
+	line-height:1.643; 
+	margin-bottom: 0.8em; 
+}
+
+.zenario_skin ul, 
+.zenario_skin ol { 
+	margin: 0 1.5em 1.5em 1.5em; 
+}
+
+.zenario_skin ul { 
+	list-style-type: disc; 
+}
+
+.zenario_skin ol { 
+	list-style-type: decimal; 
+}
+
+.zenario_skin dl { 
+	margin: 0 0 1.5em 0; 
+}
+
+.zenario_skin dl dt { 
+	font-weight: bold; 
+}
+
+.zenario_skin dl dd { 
+	margin-left: 1.5em; 
+}
+
+.zenario_skin abbr, 
+.zenario_skin acronym { 
+	border-bottom: 1px dotted #000; 
+}
+
+.zenario_skin address { 
+	margin-top: 1.5em; 
+	font-style: italic; 
+}
+
+.zenario_skin del { 
+	color: #000; 
+}
+
+.zenario_skin a { 
+	text-decoration: none; 
+}
+
+.zenario_skin a:hover { 
+	text-decoration: underline; 
+}
+
+blockquote { 
+	margin: 1.5em; 
+}
+
+strong { 
+	font-weight: bold; 
+}
+
+em, 
+dfn { 
+	font-style: italic; 
+}
+
+dfn { 
+	font-weight: bold; 
+}
+
+pre, 
+code { 
+	margin: 1.5em 0; 
+	white-space: pre; 
+}
+
+pre, 
+code, 
+tt { 
+	font: 1em monospace; 
+	line-height: 1.5; 
+} 
+
+tt { 
+	display: block; 
+	margin: 1.5em 0; 
+	line-height: 1.5; 
+}
+
+.zenario_skin a img {
+	border: 0;
+}
+
+.zenario_skin input,
+.zenario_skin textarea,
+.zenario_skin select { 
+	width:auto;
+	font-size: 1em; 
+	line-height:1em;
+	border:1px solid #3C3C3C;
+	padding:3px 5px;
+}

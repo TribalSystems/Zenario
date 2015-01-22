@@ -1,0 +1,166 @@
+
+/*	760 - 1160 fluid Grid (10 cols)
+	Based on the 960 Grid System from http://960.gs/ (Licensed under MIT)  */
+
+
+/*	Main container  */
+
+body {
+	min-width: 760px;
+}
+
+.container_10 {
+	min-width: 760px;
+	max-width: 1160px;
+	margin: 0 auto;
+	padding: 0;
+}
+
+
+/*	Grid cells and gutters  */
+
+.container_10 .span {
+	display: inline;
+	float: left;
+	margin-left: 2%;
+	margin-right: 2%;
+}
+
+
+/*	Fluid widths and margins for cells (and any nested cells)  */
+
+.container_10 .span {
+	margin-left: 2%;
+	margin-right: 2%;
+}
+
+.container_10 .span1  {
+	width: 6%;
+}
+
+.container_10 .span2  {
+	width: 16%;
+}
+
+.container_10 .span3  {
+	width: 26%;
+}
+
+.container_10 .span4  {
+	width: 36%;
+}
+
+.container_10 .span5  {
+	width: 46%;
+}
+
+.container_10 .span6  {
+	width: 56%;
+}
+
+.container_10 .span7  {
+	width: 66%;
+}
+
+.container_10 .span8  {
+	width: 76%;
+}
+
+.container_10 .span9  {
+	width: 86%;
+}
+
+.container_10 .span10  {
+	width: 96%;
+}
+
+
+/*	Full width cells  */
+
+.container_10 .span1_1 {
+	width: 96%;
+}
+
+.span .span1_1,
+.span .span .span1_1,
+.span .span .span .span1_1,
+.span .span .span .span .span1_1 {
+	width: 100%;
+}
+
+
+/*	The outermost gutters of the page  */
+
+.container_10 .alpha {
+	margin-left: 2%;
+}
+
+.container_10 .omega {
+	margin-right: 2%;
+}
+
+
+/*	Remove the outermost gutters from nested cells  */
+
+.container .span .alpha,
+.container .span .span .alpha,
+.container .span .span .span .alpha,
+.container .span .span .span .span .alpha {
+	margin-left: 0;
+}
+
+.container .span .omega,
+.container .span .span .omega,
+.container .span .span .span .omega,
+.container .span .span .span .span .omega {
+	margin-right: 0;
+}
+
+
+/*	Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width  */
+
+.container .omega {
+	margin-left: -50px;
+	float: right;
+}
+
+
+/*	Make sure the <div>s clear properly, and stop empty slots collapsing the grid.
+	Code used from http://sonspring.com/journal/clearing-floats
+	and http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified  */
+
+.container:before,
+.container:after {
+	content: '.';
+}
+
+.container:before,
+.container:after,
+.pad_slot,
+.clear {
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.pad_slot  {
+	height: 1px;
+}
+
+.container:after,
+.clear {
+	clear: both;
+}
+
+
+/*	Fix a problem in IE 6/7.
+	This code could be moved to an IE-specific stylesheet.  */
+
+body.ie6 .container,
+body.ie7 .container {
+	zoom: 1;
+}

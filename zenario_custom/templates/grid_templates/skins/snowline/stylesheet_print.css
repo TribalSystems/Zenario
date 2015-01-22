@@ -1,0 +1,88 @@
+/*  This file is only included when printing.
+	You can use it to modify your page so that it looks nice when printed.
+	Your Skin css files are normally included alphabetically, but this file is
+	always included last.  */
+
+
+.zenario_slot,
+.zenario_toolbar_header,
+.zenario_fbAdmin {
+	display:none;
+}
+
+.zenario_banner,
+.zenario_breadcrumbs,
+.zenario_html_snippet,
+.zenario_content_list {
+	display:block;
+}
+
+body {
+	color:#000;
+	font-family:arial,verdana,helvetica;
+	font-size:13px;
+}
+    
+h1, h2, h3, h4, h5, h6 {
+    font-weight:bold;
+    page-break-after: avoid;
+}
+
+h1 {
+	font-size:20px;
+}
+
+h2 {
+	font-size:18px;
+}
+
+h3 {
+	font-size:16px;
+}
+
+h4 {
+	font-size:14px;
+}
+
+h5 {
+	font-size:13px;
+}
+
+h6 {
+	font-size:12px;
+}
+
+img {
+   max-width: 100% !important;
+}
+
+ul, img {
+   page-break-inside: avoid;
+}
+
+table {
+	border-collapse:collapse;
+}
+
+table th,
+table td {
+	border:1px solid #ccc;
+	padding:0 8px;
+}
+
+table th,
+thead {
+	font-weight:bold;
+}
+
+table { page-break-after:auto }
+tr    { page-break-inside:avoid; page-break-after:auto }
+td    { page-break-inside:avoid; page-break-after:auto }
+thead { display:table-header-group }
+tfoot { display:table-footer-group }
+
+.powered,
+.zenario_breadcrumbs
+{
+	font-size:10px;
+}

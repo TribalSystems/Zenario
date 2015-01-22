@@ -1,0 +1,115 @@
+
+/*  Cookie Consent form - default styles  */
+
+div.zenario_cookie_consent {
+	width:auto;
+	position: static;
+	padding:10px 0;
+	font-family:Arial,Helvetica,Sans-Serif;
+	font-size:12px;
+	background: #434343;
+	overflow:hidden;
+}
+
+div.zenario_cookie_consent .zenario_cookie_consent_wrap {
+	width:950px;
+	margin:auto;
+	position:relative;
+	overflow:hidden;
+}
+
+div.zenario_cookie_consent .zenario_cc_message {
+	width:700px;
+	margin:auto;
+	float:left;
+	line-height:1.4em;
+	padding:0;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons {
+	width:230px;
+	padding-left:20px;
+	float:right;
+	position:static;
+	right:auto;
+	top:0;
+	margin:auto;
+	font-size:14px;
+}
+
+div.zenario_cookie_consent .zenario_cc_buttons a {
+	text-decoration:none;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept,
+div.zenario_cookie_consent .zenario_cc_reject,
+div.zenario_cookie_consent .zenario_cc_continue {
+	float: none;
+	padding: 0 0 5px;
+	margin: 0 0.3em;
+	background-color: transparent;
+	background-image: none;
+	border: 0;
+	border-radius: 0;
+	-moz-border-radius: 0;
+	text-shadow: none;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept:hover,
+div.zenario_cookie_consent .zenario_cc_reject:hover,
+div.zenario_cookie_consent .zenario_cc_continue:hover {
+	border: 0;
+	background-image: none;
+}
+
+div.zenario_cookie_consent .zenario_cc_close {
+	position:absolute;
+	top:auto;
+	right:0;
+	bottom:5px;
+	display:block;
+	font-size:10px;
+}
+
+div.zenario_cookie_consent .zenario_cc_accept:before,
+div.zenario_cookie_consent .zenario_cc_continue:before {
+	content:'\00A0\2713';
+	color:white;
+}
+
+div.zenario_cookie_consent .zenario_cc_reject:before {
+	content:'\00A0\2717';
+	color:white;
+}
+
+body.ie div.zenario_cookie_consent .zenario_cc_accept:before,
+body.ie div.zenario_cookie_consent .zenario_cc_continue:before {
+	content:'\00A0\00D7';
+}
+
+body.ie div.zenario_cookie_consent .zenario_cc_reject:before {
+	content:'\00A0\221A';
+}
+
+div.zenario_cookie_consent .zenario_cc_message a,
+div.zenario_cookie_consent .zenario_cc_buttons a,
+div.zenario_cookie_consent .zenario_cc_close,
+div.zenario_cookie_consent .zenario_cc_close a,
+div.zenario_cookie_consent .zenario_cc_close:hover,
+div.zenario_cookie_consent .zenario_cc_close:hover a {
+	color:#FFF;
+}
+
+div.zenario_cookie_consent .zenario_cc_message {
+	color:#c8c8c8;
+}
+
+div.zenario_cookie_consent .zenario_cc_message a {
+	text-decoration:none;
+	font-weight:bold;
+}
+
+body.no_js div.zenario_cookie_consent .zenario_cc_close,
+.zenario_dn {
+	display: none;
+}

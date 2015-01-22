@@ -1,0 +1,49 @@
+/*  Styles that are designed to work with grids.  */
+
+
+/*  Add some margin below slots if they are full.  */
+
+.zenario_slot {
+	margin-bottom: 25px;
+}
+
+.zenario_slot .zenario_slot {
+	margin-bottom: 0;
+}
+
+/*  Add a little bit of padding to the main container.
+	I've used .zenario_skin .container as a selector so
+	these rules will overwrite any rules in a grid layout.  */
+
+.zenario_skin .container {
+	padding-top: 10px;
+	padding-bottom:10px;
+}
+
+/*  Add some border and padding to Grouping_Header
+    which holds the Logo and Search slots.
+    Remove the Slots bottom padding set above  */
+
+.zenario_skin .Grouping_Header,
+.zenario_skin .Grouping_Footer {
+	border-top:2px solid #C2C2C2;
+	border-bottom:2px solid #C2C2C2;
+}
+
+.zenario_skin .Grouping_Header {
+	padding:20px 0;
+}
+
+.zenario_skin .Grouping_Header .zenario_slot {
+	margin-bottom: 0;
+}
+
+.zenario_skin .Grouping_Footer {
+	margin:30px 0;
+	padding:10px 0;
+}
+
+.zenario_skin img {
+	max-width: 100% !important;
+	height: auto !important;
+}

@@ -1,0 +1,26 @@
+
+/*  Hide/show different fields for date pickers, depending on whether JavaScript is enabled  */
+
+body.js select.jquery_datepicker {
+	display: none;
+}
+
+body.no_js input.jquery_datepicker {
+	display: none;
+}
+
+
+/*  Default calendar icon for datepickers  */
+
+input.jquery_datepicker {
+	background-image: url('calendar_small.gif');
+	background-repeat: no-repeat;
+	background-position: 98% 50%;
+}
+
+
+/*  Bugfix for jQueryUI Datepicker (all browsers)  */
+
+#ui-datepicker-div {
+	display: none;
+}
