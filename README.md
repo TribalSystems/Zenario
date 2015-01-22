@@ -7,7 +7,7 @@ What is Zenario?
 
 Zenario is a web-based **content management system** or CMS. It can be used for simple sites, with many "wysiwyg" features, but is really designed to run **extranet** sites, such as customer portals. It also has **multilingual** features built in from the core.
 
-* Zenario's [Official website](http://www.zenar.io)
+* Zenario's [Official website](http://zenar.io)
 
 What are the main features?
 ------------------------------
