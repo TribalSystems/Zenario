@@ -1,4 +1,4 @@
-![Zenario](http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@4x.png)
+![Zenario](http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@3x.png)
 
 
 
