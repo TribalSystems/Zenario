@@ -1,0 +1,139 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    nav:
+        email_log:
+            priv: _PRIV_VIEW_USER
+            panel:
+                title: Sent email log
+                view_mode: list
+                disable_grid_view: Yes
+                no_items_message: Email log is empty
+                enable_close_up_view: Yes
+                slidedown_view_microtemplate: zenario_slidedown_view_logged_email
+                refiners:
+                    email_template:
+                        sql: 't.code=[[REFINER_ID]]'
+                        table_join: '[[DB_NAME_PREFIX]]email_templates AS t ON l.email_template_id = t.id'
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log AS l'
+                    id_column: l.id
+                item:
+                    css_class: log
+                default_sort_column: template_name
+                default_sort_column: sent_date
+                default_sort_desc: Yes
+                columns:
+                    sent_date:
+                        title: Date/time sent
+                        db_column: l.sent_datetime
+                        searchable: Yes
+                        format: datetime
+                        show_by_default: Yes
+                        width: medium 
+                    log_id:
+                        title: Log ID
+                        db_column: l.id
+                        searchable: Yes
+                        show_by_default: Yes
+                        align_right: Yes
+                        width: xxsmall
+                    template_name:
+                        title: Template Name
+                        db_column: "IFNULL(l.email_template_name,'n/a')"
+                        searchable: Yes
+                        show_by_default: No
+                        width: large
+                    subject:
+                        title: Subject
+                        db_column: l.email_subject
+                        searchable: Yes
+                        show_by_default: Yes
+                        width: large
+                    email_to:
+                        title: To
+                        db_column: l.email_address_to
+                        searchable: Yes
+                        show_by_default: Yes
+                        width: large
+                    email_address_to_overridden_by:
+                        title: Overridden by
+                        db_column: l.email_address_to_overridden_by
+                        searchable: Yes
+                        show_by_default: No
+                        width: small
+                    email_replyto:
+                        title: Reply to
+                        db_column: l.email_address_replyto
+                        searchable: Yes
+                        show_by_default: No
+                        width: large
+                    name_replyto:
+                        title: Reply to name
+                        db_column: l.email_name_replyto
+                        searchable: Yes
+                        show_by_default: No
+                        width: medium
+                    email_from:
+                        title: From
+                        db_column: l.email_address_from
+                        searchable: Yes
+                        show_by_default: No
+                        width: large
+                    name_from:
+                        title: Name From
+                        db_column: l.email_name_from
+                        searchable: Yes
+                        show_by_default: No
+                        width: medium
+                    status:
+                        title: Status
+                        db_column: l.status
+                        show_by_default: Yes
+                        width: xsmall
+                    sent_from_page:
+                        title: Sent from page
+                        db_column: "CONCAT(l.content_type,'_',l.content_id)"
+                        searchable: Yes
+                        item_link: content_item_or_url
+                        show_by_default: No
+                        width: medium
+                    sent_from_module:
+                        title: Sent from Module
+                        table_join: |
+                            [[DB_NAME_PREFIX]]modules m
+                                                            ON 
+                                                                l.module_id = m.id
+                                                            LEFT JOIN 
+                                                                [[DB_NAME_PREFIX]]plugin_instances pi
+                                                            ON
+                                                                l.instance_id = pi.id
+                        db_column: "IFNULL(m.display_name,'n/a')"
+                        searchable: Yes
+                        show_by_default: No
+                        width: medium
+                    sent_from_plugin_instance:
+                        title: Sent from Plugin
+                        table_join: |
+                            [[DB_NAME_PREFIX]]modules m
+                                                            ON 
+                                                                l.module_id = m.id
+                                                            LEFT JOIN 
+                                                                [[DB_NAME_PREFIX]]plugin_instances pi
+                                                            ON
+                                                                l.instance_id = pi.id
+                        db_column: "IFNULL(pi.name,'n/a')"
+                        searchable: Yes
+                        show_by_default: No
+                        width: medium
+                    attachment_present:
+                        title: Attachment present
+                        db_column: "IF(attachment_present IS NULL,'n/a',IF(attachment_present=0,'No','Yes'))"
+                        searchable: Yes
+                        show_by_default: No
+                        width: xxsmall
+                item_buttons:
+                    view_log_record:
+                        label: View
+                        admin_box:
+                            path: zenario_email_log_view

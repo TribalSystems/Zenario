@@ -1,0 +1,25 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_categories:
+    key:
+        id: ''
+        parent_id: ''
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    note_below: >
+                        Internal name.
+                public:
+                    label: 'Public:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    note_below: >
+                        When a category is public, its name may be visible to visitors. The CMS will create a phrase with this name in all enabled languages; you can then edit that phrase in the visitor phrases system.

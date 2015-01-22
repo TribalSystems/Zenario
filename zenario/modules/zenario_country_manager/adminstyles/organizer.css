@@ -1,0 +1,5 @@
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_country_manager_country,
+#organizer_rightColumn #organizer_panelTitle div.zenario_country_manager_country {
+	background: 1px 2px no-repeat;
+	background-image: url('images/country_manager-list.png');
+}

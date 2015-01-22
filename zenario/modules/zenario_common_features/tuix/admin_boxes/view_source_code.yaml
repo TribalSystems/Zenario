@@ -1,0 +1,17 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_view_source_code:
+    key:
+        id: ""
+        type: ""
+    hide_tab_bar: true
+    tabs:
+        source:
+            edit_mode:
+                enabled: false
+            fields:
+                code:
+                    type: code_editor
+                    language: ''
+                    style: >
+                        height: 35em;

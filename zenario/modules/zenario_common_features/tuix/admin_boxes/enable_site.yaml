@@ -1,0 +1,38 @@
+zenario_enable_site: 
+    priv: _PRIV_EDIT_SITE_SETTING
+    key: 
+        id: ""
+    max_height: 400
+    hide_tab_bar: true
+    title: Enable or Disable your Site
+    tabs: 
+        site: 
+            edit_mode: 
+                enabled: true
+                on: true
+                always_on: true
+            fields: 
+                disable_site: 
+                    full_width: true
+                    type: radio
+                    name: radio
+                    post_field_html: >
+                        <label for="disable_site">
+                            Disable this site to visitors with a 'message':
+                        </label>
+                site_disabled_title: 
+                    label: "Browser Title:"
+                    type: text
+                site_disabled_message: 
+                    label: "Message:"
+                    type: editor
+                    rows: 4
+                    cols: 80
+                enable_site: 
+                    full_width: true
+                    type: radio
+                    name: radio
+                    post_field_html: >
+                        <label for="enable_site">
+                            Enable this site to visitors
+                        </label>

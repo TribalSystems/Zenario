@@ -1,0 +1,80 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin:
+    tabs:
+        permissions:
+            disable_autofocus: Yes
+            
+            # The fillAdminBox(), formatAdminBox() and saveAdminBox() functions in the Community Features
+            # Module automatically add the <row_class> and <onchange> tags as well as the
+            # loading and saving logic to the fields in this tab so that they work as permission selectors.
+            
+            # You may have:
+            #     - A <type>checkbox</type> field on its own to act as a single permission.
+            #     - A <type>checkboxes</type> field to act as a list of permissions.
+            #     - A <type>checkboxes</type> field with the <checking_child_checks_parents> tag set
+            #       to act as a list of permissions with hierarchal dependencies.
+            #     - A <type>checkbox</type> field immediately followed by a <type>checkboxes</type> field
+            #       to act as a list of permissions that can be quickly turned on or off by the first
+            #       checkbox. This will also add a toggle button to allow the longer list to be hidden.
+            
+            fields:
+                perm_author:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Author
+                perm_author_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_editmenu:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Menu Editor
+                perm_editmenu_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_publish:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Publisher
+                perm_publish_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_designer:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Designer
+                perm_designer_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_manage:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Supervisor
+                perm_manage_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_edit_users:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_edit_users_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                _PRIV_BACKUP_SITE:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Create a backup of the site
+                perm_restore:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Reset/Restore site
+                perm_restore_permissions:
+                    placeholder: Yes
+                    hidden: Yes
+                perm_dev_tools:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Use developer tools
+                perm_dev_tools_permissions:
+                    placeholder: Yes
+                    hidden: Yes

@@ -1,0 +1,26 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	tabs:
+		first_tab:
+			label: Content
+			fields:
+				html:
+					plugin_setting:
+						name: html
+						is_searchable_content: Yes
+						translate: Yes
+					label: 'Display this HTML:'
+					type: editor
+					style: 'width: 750px; height: 250px;'
+					insert_image_button:
+						pick_items:
+							path: ""
+							target_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel
+							min_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel
+							max_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel
+							disallow_refiners_looping_on_min_path: Yes
+					insert_link_button:
+						exists: Yes
+					value: ""
+	module_class_name: zenario_wysiwyg_editor

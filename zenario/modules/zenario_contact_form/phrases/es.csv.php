@@ -1,0 +1,40 @@
+﻿"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",es
+
+Plugin
+zenario_contact_form
+
+"Phrase Code",Translation
+_ADDRESS_INCOMPLETE,"Por favor ingrese su dirección."
+_ADDRESS:,"Dirección:"
+_CAPTCHA_INVALID,"Por favor verifique correctamente que usted es una usuario humano."
+_CAPTCHA:,"Lo sentimos, necesitamos confirmar que es un usuario humano:"
+_CITY_INCOMPLETE,"Por favor ingrese su ciudad."
+_CITY:,"Ciudad:"
+_CLEAR_FORM,"Limpiar Formulario"
+_CLICK_HERE, "Haga clic aquí"
+_COMPANY_INCOMPLETE,"Por favor ingrese el nombre de su empresa."
+_COMPANY:,"Nombre de Empresa:"
+_CONTACT_FORM_CONFIRMATION_MSG, "Gracias, su mensaje ha sido enviado."
+_CONTACT_US, "Contáctenos"
+_COUNTRY_INCOMPLETE,"Por favor ingrese su país."
+_COUNTRY:,"País:"
+_EMAIL_INCOMPLETE,"Por favor ingrese su correo electrónico."
+_EMAIL_INVALID,"Por favor ingrese una dirección de correo electrónico valida."
+_EMAIL_MESSAGE_NOT_SENT, "Lo sentimos, hubo un problema en la página. Su mensaje no se puedo enviar."
+_EMAIL_SENDER_IP,"Dirección IP de envío: "
+_EMAIL:, "Correo Electrónico:"
+_HEADING,"Por favor use este formulario para contactarnos"
+_MESSAGE_INCOMPLETE,"Por favor ingrese su mensaje."
+_MESSAGE:,"Mensaje:"
+_NAME_INCOMPLETE,"Por favor ingrese su nombre."
+_NAME:, "Nombre:"
+_PHONE_INCOMPLETE,"Please enter your phone number."
+_PHONE:, "Número de Telófono:"
+_POST_CODE_INCOMPLETE,"Por favor ingrese su código postal."
+_POST_CODE:,"Código Postal:"
+_PROVINCE_INCOMPLETE,"Por favor ingrese su estado o provincia."
+_PROVINCE:,"Estado o Provincia:"
+_SUBMIT,"Enviar"

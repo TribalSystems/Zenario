@@ -1,0 +1,222 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    nav:
+        instances:
+            panel:
+                title: Plugin Library
+                view_mode: list
+                db_items:
+                    table: '[[DB_NAME_PREFIX]]plugin_instances AS pi'
+                    id_column: pi.id
+                    where_statement: WHERE pi.content_id = 0
+                refiners:
+                    plugin:
+                        sql: 'pi.module_id = [[REFINER_ID]]'
+                columns:
+                    name:
+                        title: Name
+                        db_column: pi.name
+                        searchable: Yes
+                        show_by_default: Yes
+                    module_id:
+                        db_column: plg.id
+                    plugin:
+                        title: Module
+                        db_column: plg.display_name
+                        table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                        searchable: Yes
+                    module_class_name:
+                        db_column: plg.class_name
+                        table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
+                    framework:
+                        title: Framework
+                        db_column: pi.framework
+                    usage_template:
+                        title: Usage on layouts
+                        show_by_default: Yes
+                        db_column: |
+                            (
+                                SELECT COUNT(DISTINCT pitl.layout_id)
+                                FROM [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                                WHERE pitl.instance_id = pi.id
+                            )
+                        width: small
+                        align_right: Yes
+                    usage_item:
+                        show_by_default: Yes
+                        title: Usage on items
+                        db_column: |
+                            (
+                                SELECT COUNT(DISTINCT ciil.tag_id)
+                                FROM [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                                INNER JOIN [[DB_NAME_PREFIX]]content AS ciil
+                                   ON ciil.id = piil.content_id
+                                  AND ciil.type = piil.content_type
+                                  AND piil.content_version IN (ciil.visitor_version, ciil.admin_version)
+                                  AND ciil.status IN ('first_draft', 'published_with_draft', 'hidden_with_draft', 'trashed_with_draft', 'published', 'hidden')
+                                  AND (piil.content_version, ciil.status) IN (
+                                    (ciil.admin_version, 'first_draft'),
+                                    (ciil.admin_version, 'hidden_with_draft'),
+                                    (ciil.admin_version, 'trashed_with_draft'),
+                                    (ciil.admin_version, 'published_with_draft'),
+                                    (ciil.visitor_version, 'published_with_draft'),
+                                    (ciil.visitor_version, 'published'),
+                                    (ciil.admin_version - 1, 'hidden_with_draft'),
+                                    (ciil.admin_version, 'hidden')
+                                  )
+                                INNER JOIN [[DB_NAME_PREFIX]]versions AS viil
+                                   ON viil.id = piil.content_id
+                                  AND viil.type = piil.content_type
+                                  AND viil.version = piil.content_version
+                                INNER JOIN [[DB_NAME_PREFIX]]layouts AS liil
+                                   ON liil.layout_id = viil.layout_id
+                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tiil
+                                   ON tiil.family_name = liil.family_name
+                                  AND tiil.file_base_name = liil.file_base_name
+                                  AND tiil.slot_name = piil.slot_name
+                                WHERE piil.instance_id = pi.id
+                            )
+                        table_join: ""
+                        width: small
+                        align_right: Yes
+                    filename:
+                        db_column: img_f.filename
+                        table_join: |
+                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                                                               ON img_ps.instance_id = pi.id
+                                                              AND img_ps.foreign_key_to = 'file'
+                                                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                                                               ON img_f.id = img_ps.foreign_key_id
+                                                              AND img_f.`usage` = 'inline'
+                                                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                    checksum:
+                        db_column: img_f.checksum
+                        table_join: |
+                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                                                               ON img_ps.instance_id = pi.id
+                                                              AND img_ps.foreign_key_to = 'file'
+                                                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                                                               ON img_f.id = img_ps.foreign_key_id
+                                                              AND img_f.`usage` = 'inline'
+                                                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                    mime_type:
+                        server_side_only: Yes
+                        db_column: img_f.mime_type
+                        table_join: |
+                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
+                                                               ON img_ps.instance_id = pi.id
+                                                              AND img_ps.foreign_key_to = 'file'
+                                                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
+                                                               ON img_f.id = img_ps.foreign_key_id
+                                                              AND img_f.`usage` = 'inline'
+                                                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                item:
+                    name: Plugin
+                    names: Plugins
+                    css_class: plugin_album_instance
+                collection_buttons:
+                    create:
+                        priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                        css_class: zenario_create_a_new
+                        label: Create a plugin
+                        only_show_on_refiner: plugin
+                        admin_box:
+                            path: plugin_settings
+                item_buttons:
+                    edit:
+                        priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                        label: Properties
+                        admin_box:
+                            path: plugin_settings
+                    framework_and_css:
+                        priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                        label: 'Framework & CSS'
+                        admin_box:
+                            path: plugin_css_and_framework
+                    view_dropdown:
+                        label: View
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    view:
+                        parent: view_dropdown
+                        label: View image
+                        tooltip: View image
+                        popout:
+                            href: zenario/file.php
+                            options:
+                                type: image
+                        traits:
+                            has_image: Yes
+                    usage_template:
+                        parent: view_dropdown
+                        label: "Layouts using this plugin"
+                        traits:
+                            in_use: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__layouts/nav/layouts/panel
+                            branch: Yes
+                            refiner: plugin_instance_usage
+                        width: xsmall
+                        align_right: Yes
+                    usage_item:
+                        parent: view_dropdown
+                        label: "Items using this plugin"
+                        traits:
+                            in_use: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__content/nav/content/panel
+                            branch: Yes
+                            refiner: plugin_instance_usage
+                        width: xsmall
+                        align_right: Yes
+                    view_content_items:
+                        parent: view_dropdown
+                        label: Effective usage
+                        traits:
+                            in_use: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__content/nav/content/panel
+                            branch: Yes
+                            refiner: plugin_instance_effective_usage
+                    action_dropdown:
+                        label: Actions
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    rename:
+                        parent: action_dropdown
+                        priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                        label: Rename
+                        admin_box:
+                            path: zenario_reusable_plugin
+                    duplicate:
+                        parent: action_dropdown
+                        priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                        label: Duplicate
+                        admin_box:
+                            path: zenario_reusable_plugin
+                            key:
+                                duplicate: "1"
+                    delete:
+                        priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                        ord: "99"
+                        label: Delete
+                        multiple_select: Yes
+                        hide_in_select_mode: Yes
+                        traits:
+                            unused: Yes
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to delete plugin "[[name]]"?
+                                    
+                                    Its settings will be deleted but any attached images will be left in the Media panel.
+                                multiple_select_message: Are you sure you wish to delete these plugins?
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                delete: "1"

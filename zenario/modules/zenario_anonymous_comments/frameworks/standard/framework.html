@@ -1,0 +1,432 @@
+[cms:section name="Slot"]
+	[cms:section name="Rows"]
+		[cms:section name="Show_Title"]
+			<h1>[cms:merge name="Title_With_Content"/]</h1>
+		[/cms:section]
+		<table cellspacing="0"><tr>
+			<td class="tl"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="tr"></td>
+		</tr><tr>
+			<th class="ml"></th><th class="mc first_column">
+				[cms:phrase code="_FORUM"/]
+			</th><th class="xm"></th><th class="mc">
+				[cms:phrase code="_THREADS"/]
+			</th><th class="xm"></th><th class="mc">
+				[cms:phrase code="_POSTS"/]
+			</th><th class="xm"></th><th class="mc">
+				[cms:phrase code="_LAST_POST"/]
+			</th><th class="mr"></th>
+		[cms:section name="Row"]
+			</tr><tr>
+				<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
+			</tr><tr class="[cms:merge name='ODD_OR_EVEN'/]">
+				<td class="ml"></td><td class="mc thread_title first_column">
+					[cms:section name="Show_Sticky_Image"]
+						<div class="sticky_image">
+							<a [cms:merge name='Link'/] class="[cms:merge name='Status_Class'/]">
+								[cms:merge name="Sticky_Image"/]
+							</a>
+						</div>
+					[/cms:section]
+					<h2><a [cms:merge name='Link'/] class="[cms:merge name='Status_Class'/]">[cms:merge name="Title"/]</a></h2>
+					[cms:section name="Show_Excerpt"]
+						<div class="forum_excerpt">[cms:merge name="Excerpt_Text"/]</div>
+					[/cms:section]
+				</td><td class="xm"></td><td class="mc topics">
+					[cms:merge name="Thread_Count"/]
+				</td><td class="xm"></td><td class="mc replies">
+					[cms:merge name="Post_Count"/]
+				</td><td class="xm"></td><td class="mc">
+					[cms:merge name="Updated_By_On"/]
+				</td><td class="mr"></td>
+		[/cms:section]
+		</tr><tr>
+			<td class="bl"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="br"></td>
+		</tr></table>
+	[/cms:section]
+	[cms:section name="No_Rows"]
+	[/cms:section]
+	[cms:section name="Years"]
+	[/cms:section]
+[/cms:section]
+
+
+
+[cms:section name="Threads"]
+	[cms:section name="Subscribed_To_Forum"]
+		<div class="subscribed forum_message">[cms:phrase code='_SUBSCRIBED_TO_FORUM'/]</div>
+	[/cms:section]
+	<table cellspacing="0"><tr>
+		<td class="tl"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="xt"></td><td class="tc"></td><td class="tr"></td>
+	</tr><tr>
+		<th class="ml"></th><th class="mc title_thread_title first_column">
+			[cms:phrase code="_THREAD_TITLE"/]
+		</th><th class="xm"></th><th class="mc title_poster">
+			[cms:phrase code="_THREAD_POSTER"/]
+		</th><th class="xm"></th><th class="mc title_replies">
+			[cms:phrase code="_REPLIES"/]
+		</th><th class="xm"></th><th class="mc title_updated">
+			[cms:phrase code="_LAST_POST"/]
+		</th><th class="mr"></th>
+	[cms:section name="Thread"]
+	</tr><tr>
+		<td class="xl"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="x"></td><td class="xc"></td><td class="xr"></td>
+	</tr><tr class="[cms:merge name='ODD_OR_EVEN'/] [cms:merge name='Employee'/]">
+		<td class="ml"></td><td class="mc thread_title first_column">
+			<h2><a href="[cms:merge name='Hyperlink'/]" class="[cms:merge name='Status_Class'/]">[cms:merge name="Title"/]</a></h2>
+		</td><td class="xm"></td><td class="mc poster">
+			[cms:merge name="Posted_By"/]
+		</td><td class="xm"></td><td class="mc replies">
+			[cms:merge name="Replies_Count"/]
+		</td><td class="xm"></td><td class="mc updated">
+			[cms:merge name="Updated_By_On"/]
+		</td><td class="mr"></td>
+	[/cms:section]
+	</tr><tr>
+		<td class="bl"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="xb"></td><td class="bc"></td><td class="br"></td>
+	</tr></table>
+	
+	[cms:section name="Confirmation_Box"/]
+	
+	[cms:merge name="Pagination"/]
+	
+	[cms:section name="Thread_Controls"]
+		<div class="buttons">
+			[cms:section name="Forum_Login_To_Post"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Login_To_Post_Link'/]>[cms:phrase code='_PLEASE_LOGIN_TO_POST'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Add_New_Thread"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Add_New_Thread_Link'/]>[cms:phrase code='_ADD_THREAD'/]</a></div></div>
+			[/cms:section]
+		</div>
+		
+		<div class="buttons moderators_buttons">
+			[cms:section name="Login_To_Subs_Forum"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Login_To_Post_Link'/]>[cms:phrase code='_PLEASE_LOGIN_TO_SUBS_FORUM'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Subs_To_Forum"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Subs_To_Forum_Link'/]>[cms:phrase code='_SUBS_TO_FORUM'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Unsubs_To_Forum"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Unsubs_To_Forum_Link'/]>[cms:phrase code='_UNSUBS_TO_FORUM'/]</a></div></div>
+			[/cms:section]
+		</div>
+		<div class="buttons users_buttons">
+			[cms:section name="Forum_Locked"]
+				<div class="forum_btn"><div class="r"><a class="i">[cms:phrase code='_FORUM_LOCKED'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Mark_Forum_Read"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Mark_Forum_Read_Link'/]>[cms:phrase code='_MARK_FORUM_READ'/]</a></div></div>
+			[/cms:section]
+		</div>
+	[/cms:section]
+[/cms:section]
+
+
+[cms:section name="Posts"]
+	[cms:section name="Subscribed_To_Thread"]
+		<div class="subscribed forum_message">[cms:phrase code='_SUBSCRIBED_TO_THREAD'/]</div>
+	[/cms:section]
+  <div class="[cms:merge name="Post_Class"/]">
+	[cms:section name="Search"]
+		[cms:merge name="Open_Form"/]
+			[cms:input type="text" name="searchString" class="search_term" /]
+			<input type="submit" value="[cms:phrase code='_SEARCH'/]" class="search_button" />
+		[cms:merge name="Close_Form"/]
+	[/cms:section]
+	
+	[cms:section name="Search_No_Results"]
+		<div class="search_no_results">
+			<p>[cms:phrase code="_SEARCH_RETURNED_NO_RESULTS"/]</p>
+		</div>
+	[/cms:section]
+	
+	<a name="zenario_comments_start_here"></a>
+	[cms:section name="Post"]
+		[cms:section name="Show_Thread_Title_With_Link"]
+			<h1>
+				[cms:section name="Show_Forum_Title_With_Link"]
+					<a href="[cms:merge name='Forum_Link'/]">[cms:merge name="Forum_Title"/]</a>
+					-&gt;
+				[/cms:section]
+				<a href="[cms:merge name='Thread_Link'/]">[cms:merge name="Thread_Title"/]</a>
+			</h1>
+		[/cms:section]
+		<div class="[cms:merge name='ODD_OR_EVEN'/] [cms:merge name='Employee'/]">
+			<div class="comments_box_inner"><div class="comments_box_wrap">
+			<div class="top"><div class="tl"></div><div class="tr"></div></div>
+			<div class="comments_box_center">
+				<div class="user_info">
+					<div class="user_info_avatar">
+						[cms:section name="Show_Avatar"]
+							<img class="avatar" src="[cms:merge name='Src'/]" width="[cms:merge name='Width'/]" height="[cms:merge name='Height'/]" alt="[cms:merge name='Username'/]" />
+						[/cms:section]
+						[cms:section name='No_Avatar']
+							<div class="no_avatar"></div>
+						[/cms:section]
+					</div>
+					<div class="user_info_data">
+						<div class="username">[cms:merge name="Username_Link"/]</div>
+						<div class="username email">[cms:merge name="Email"/]</div>
+						[cms:section name="Show_User_Title"]
+							<div class="title">[cms:merge name="Title"/]</div>
+						[/cms:section]
+						[cms:section name="Show_Online"]
+							<div class="online">[cms:phrase code="_ONLINE"/]</div>
+						[/cms:section]
+						[cms:section name="Show_Offline"]
+							<div class="offline">[cms:phrase code="_OFFLINE"/]</div>
+						[/cms:section]
+						[cms:section name="Show_Post_Count"]
+							<div class="post_count">[cms:merge name="Post_Count"/]</div>
+						[/cms:section]
+						[cms:section name="Show_Join_Date"]
+							<div class="join_date">[cms:merge name="Join_Date"/]</div>
+						[/cms:section]
+					</div>
+				</div>
+				
+				<div class="date_posted">[cms:merge name="Date_Posted"/]
+					[cms:section name="Pending_Post"]
+						<span style="color:red;">[cms:phrase code="_POST_PENDING_INFO"/]</span>
+					[/cms:section]
+				</div>
+				<div class="post_area">[cms:merge name="Post_Text"/]</div>
+				
+				<div class="post_images">
+					[cms:section name="Post_Uploads_Links"]
+					<div class="banner_image" >
+						<a  href='[cms:merge name="File_Link"/]'  
+							[cms:condition field="File_Thumbnail"]rel="colorbox-forum-[cms:merge name="Post_Id"/]" class="enlarge_in_fancy_box cboxElement" data-box-title="[cms:merge name="Caption"/]" [/cms:condition]>
+						[cms:condition field="File_Thumbnail"]
+						<img src='[cms:merge name="File_Thumbnail"/]'>
+						<span class="banner_image_zoom" title="[cms:phrase code='_ENLARGE_THIS_IMAGE'/]">[cms:phrase code='_ENLARGE_THIS_IMAGE'/]</span>
+						[/cms:condition]
+						([cms:merge name="File_Extension"/]) [cms:merge name="Caption"/]</a><br />
+					</div>
+					[/cms:section]
+				</div>
+				
+				
+				[cms:section name="Post_Controls"]
+					<div class="buttons">
+					[cms:section name="Quote_Post"]
+						<div class="quote_button control_btn"><div class="r"><a class="i" [cms:merge name='Quote_Post_Link'/]>[cms:phrase code="_QUOTE_POST"/]</a></div></div>
+					[/cms:section]
+					[cms:section name="Edit_Post"]
+						<div class="edit_button control_btn"><div class="r"><a class="i" [cms:merge name='Edit_Post_Link'/]>[cms:phrase code="_EDIT_POST"/]</a></div></div>
+					[/cms:section]
+					[cms:section name="Delete_Post"]
+						<div class="delete_button control_btn"><div class="r"><a class="i" [cms:merge name='Delete_Post_Link'/]>[cms:phrase code="_DELETE_POST"/]</a></div></div>
+					[/cms:section]
+					[cms:section name="Approve_Post"]
+						<div class="aprove_button control_btn"><div class="r"><a class="i" [cms:merge name='Approve_Post_Link'/]>[cms:phrase code="_APPROVE_POST"/]</a></div></div>
+					[/cms:section]
+					[cms:section name="Report_Post"]
+						<div class="report_button control_btn"><div class="r"><a class="i" [cms:merge name='Report_Post_Link'/]>[cms:phrase code="_REPORT_POST"/]</a></div></div>
+					[/cms:section]
+					</div>
+				[/cms:section]
+			</div>
+			<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+		  </div></div>
+		</div>
+	[/cms:section]
+	[cms:section name="Post_Message"]
+		[cms:section name="Post_Errors"]
+			<div class="confirmation_box post_errors">
+			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="confirmation_box_center">
+		
+					<div class="question_icon post_error_icon"></div>	
+					
+					<div class="post_error_padding">&nbsp;</div>	
+					
+					[cms:section name="Post_Error"]
+						<div class="post_area post_error">
+							[cms:merge name="Error"/]
+						</div>
+					[/cms:section]
+					
+					<div class="post_error_padding">&nbsp;</div>	
+				</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div>
+			<div class="post_error_padding">&nbsp;</div>	
+		[/cms:section]
+			
+		[cms:merge name="Open_Form"/]
+			[cms:section name="Show_Post_Title"]
+				<div class="comments_label">[cms:merge name="Title_Text"/]</div>
+				<div class="comments_post_title">[cms:merge name="Post_Title"/]</div>
+			[/cms:section]
+			[cms:section name="Show_Post_Name"]
+				<div class="comments_label">[cms:phrase code="_NAME:"/]</div>
+				<div class="comments_post_title comments_post_name">[cms:merge name="Post_Name"/]</div>
+			[/cms:section]
+			[cms:section name="Show_Post_Email"]
+				<div class="comments_label">[cms:phrase code="_EMAIL:"/]</div>
+				<div class="comments_post_title comments_post_email">[cms:merge name="Post_Email"/]</div>
+			[/cms:section]
+			
+			<div class="comments_form"><div class="comments_box_inner"><div class="comments_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="comments_box_center">
+					
+					<div class="user_info">
+						[cms:section name="Posting_Show_Avatar"]
+							<img class="avatar" src="[cms:merge name='Src'/]" width="[cms:merge name='Width'/]" height="[cms:merge name='Height'/]" alt="[cms:merge name='Username'/]" />
+						[/cms:section]
+						[cms:section name='Posting_No_Avatar']
+							<div class="no_avatar"></div>
+						[/cms:section]
+						<div class="username">[cms:merge name="Username_Link"/]</div>
+						<div class="username email">[cms:merge name="Email"/]</div>
+						[cms:section name="Posting_Show_Title"]
+							<div class="title">[cms:merge name="Title"/]</div>
+						[/cms:section]
+						[cms:section name="Posting_Show_Online"]
+							<div class="online">[cms:phrase code="_ONLINE"/]</div>
+						[/cms:section]
+						[cms:section name="Posting_Show_Offline"]
+							<div class="offline">[cms:phrase code="_OFFLINE"/]</div>
+						[/cms:section]
+						[cms:section name="Posting_Show_Post_Count"]
+							<div class="post_count">[cms:merge name="Post_Count"/]</div>
+						[/cms:section]
+						[cms:section name="Posting_Show_Join_Date"]
+							<div class="join_date">[cms:merge name="Join_Date"/]</div>
+						[/cms:section]
+					</div>
+					
+					<div class="comments_label">[cms:merge name="Label_Text"/]</div>
+		
+					[cms:merge name="Post_Text"/]
+					
+					
+					[cms:section name='Show_File_Uploads']  
+						<div class="comments_files_upload">
+							[cms:section name="Post_Uploads_Links_To_Edit"]
+								<div class="comments_file_to_upload">
+									<div class="uploaded_image"><a href='[cms:merge name="File_Link"/]'><img src='[cms:merge name="File_Thumbnail"/]'></a> </div>
+									<div class="uploaded_image_options">
+										<div><label>[cms:phrase code="_FILE_CAPTION"/]</label> <input type='text' name='file_caption_[cms:merge name="File_Id"/]' value='[cms:merge name="Caption"/]'></div>
+										<div><label>[cms:phrase code="_DELETE_FILE"/]</label> <input type='checkbox' name='remove_files[]' value='[cms:merge name="File_Id"/]'></div>
+									</div>
+								</div>
+							[/cms:section]
+						</div>
+						
+						<div class="comments_files_upload_form">
+							<label>[cms:phrase code="_UPLOAD_NEW_IMAGE"/]</label><input name="filesToUpload[]" type="file" multiple="multiple" />
+						</div>
+					[/cms:section]
+					
+					[cms:section name="Captcha"]
+						<div class="label">[cms:phrase code="_CAPTCHA:"/]</div>
+						[cms:merge name="Captcha"/]
+					[/cms:section]
+					
+					<div class="buttons">
+						<div class="main_btn"><div class="r"><input class="i" type="submit" value="[cms:merge name='Submit_Button_Text'/]" /></div></div>
+						<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Cancel_Link'/]>[cms:phrase code='_CANCEL'/]</a></div></div>
+					</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div></div>
+			
+			[cms:section name="Show_Post_Screening_Notice"]
+				<div class="comments_label comments_screening_notice">[cms:phrase code="_POST_SCREENING_NOTICE"/]</div>
+			[/cms:section]
+		[cms:merge name="Close_Form"/]
+	[/cms:section]
+	[cms:section name="Confirmation_Box"]
+		[cms:merge name="Open_Form"/]
+			<div class="confirmation_box">
+			<div class="confirmation_box_inner"><div class="confirmation_box_wrap">
+				<div class="top"><div class="tl"></div><div class="tr"></div></div>
+				<div class="confirmation_box_center">
+		
+					<div class="question_icon"></div>	
+						
+					<div class="post_area">
+						[cms:merge name="Confirmation_Message"/]
+					</div>
+					
+					<div class="buttons">
+						<div class="control_btn"><div class="r"><a class="i" [cms:merge name='Cancel_Link'/]>[cms:phrase code='_CANCEL'/]</a></div></div>
+						<div class="control_btn"><div class="r"><input class="i" type="submit" value="[cms:merge name='Submit_Button_Text'/]" /></div></div>
+					</div>
+				
+				</div>
+				</div>
+				<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+			</div></div>
+		[cms:merge name="Close_Form"/]
+	[/cms:section]
+	
+	[cms:merge name="Pagination"/]
+	
+	<div class="buttons">
+		[cms:section name="Add_Reply"]
+			<div class="[cms:merge name='ODD_OR_EVEN'/] comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="top"><div class="tl"></div><div class="tr"></div></div>
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>[cms:phrase code="_ADD_MESSAGE_DESCRIPTION"/]</p>
+							<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Add_Reply_Link'/]">[cms:phrase code='_ADD_REPLY'/]</a></div></div>
+								<br />&nbsp;
+						</div>
+					</div>
+					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+				</div></div>
+			</div>
+		[/cms:section]
+		[cms:section name="Login_To_Post"]
+			<div class="[cms:merge name='ODD_OR_EVEN'/] comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="top"><div class="tl"></div><div class="tr"></div></div>
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>[cms:phrase code="_LOGIN_DESCRIPTION"/]</p>
+							<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Login_To_Post_Link'/]>[cms:phrase code='_PLEASE_LOGIN_TO_POST'/]</a></div></div>
+							<br />&nbsp;
+						</div>
+					</div>
+					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+				</div></div>
+			</div>
+		[/cms:section]
+		<div class="moderators_buttons">
+			[cms:section name="Login_To_Subs_To_Thread"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Login_To_Post_Link'/]">[cms:phrase code='_PLEASE_LOGIN_TO_SUBS'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Subs_To_Thread"]
+				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Subs_To_Thread_Link'/]">[cms:phrase code='_SUBS_TO_THREAD'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Unsubs_To_Thread"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Unsubs_To_Thread_Link'/]">[cms:phrase code='_UNSUBS_TO_THREAD'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Thread_Locked"]
+				<div class="forum_btn"><div class="r"><a class="i">[cms:phrase code='_THREAD_LOCKED'/]</a></div></div>
+			[/cms:section]
+		</div>
+		<div class="users_buttons">
+			[cms:section name="Lock_Thread"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Lock_Thread_Link'/]">[cms:phrase code='_LOCK_THREAD'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Unlock_Thread"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Unlock_Thread_Link'/]">[cms:phrase code='_UNLOCK_THREAD'/]</a></div></div>
+			[/cms:section]
+			[cms:section name="Move_Thread"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Move_Thread_Link'/]>[cms:phrase code='_MOVE_THREAD'/]</a></div></div>
+			[/cms:section]	
+			[cms:section name="Delete_Thread"]
+				<div class="forum_btn"><div class="r"><a class="i" [cms:merge name='Delete_Thread_Link'/]">[cms:phrase code='_DELETE_THREAD'/]</a></div></div>
+			[/cms:section]	
+		</div>
+	</div>
+  </div>
+[/cms:section]

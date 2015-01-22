@@ -1,0 +1,148 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin:
+    title: Creating a local administrator
+    key:
+        id: ""
+        authtype: ""
+        global_id: ""
+        view_profile: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: ""
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: "Use this screen to define a new administrator for this site."
+                username:
+                    label: 'Administrator username:'
+                    type: text
+                    maxlength: "50"
+                    style: 'width: 20em;'
+                    validation:
+                        required: Please enter a username.
+                        username: The username may not contain any special characters.
+                        no_spaces: >
+                            The username may not contain any spaces. Please use
+                            underscores or remove the spaces.
+                first_name:
+                    label: 'First Name:'
+                    type: text
+                    maxlength: "100"
+                    style: 'width: 25em;'
+                last_name:
+                    label: 'Last Name:'
+                    type: text
+                    maxlength: "100"
+                    style: 'width: 25em;'
+                email:
+                    label: 'Email Address:'
+                    type: text
+                    maxlength: "200"
+                    validation:
+                        required: Please enter an Email Address.
+                        email: Please enter a valid Email Address.
+                password:
+                    label: 'Password:'
+                    type: password
+                    style: 'width: 20em;'
+                    visible_if: '!zenarioAB.focus.key.id'
+                suggest_button:
+                    same_row: true
+                    snippet:
+                        html: >
+                            <input type="button" onclick="
+                                var suggestedPassword = zenarioA.generateAutoPasswords(),
+                                    passwordField = zenario.get('password'),
+                                    passwordConfirmField = zenario.get('password_confirm');
+                                passwordField.value = suggestedPassword;
+                                passwordField.type = 'password';
+                                passwordConfirmField.value = suggestedPassword;
+                                passwordConfirmField.type = 'password';
+                            " value="Suggest"/>
+                    visible_if: '!zenarioAB.focus.key.id'
+                password_confirm:
+                    label: 'Re-confirm Password:'
+                    type: password
+                    style: 'width: 20em;'
+                    visible_if: '!zenarioAB.focus.key.id'
+                inform_by_email:
+                    label: 'Inform by email:'
+                    type: checkbox
+                    note_below: >
+                        If checked, the Administrator will receive an email with the update. 
+                
+                password_needs_changing:
+                    label: 'Password needs changing:'
+                    type: checkbox
+                    note_below: >
+                        If checked, the Administrator will be prompted to change
+                        their password when they next log in.
+                    visible_if: '!zenarioAB.focus.key.id'
+        password:
+            priv: _PRIV_CHANGE_ADMIN_PASSWORD
+            visible_if: zenarioAB.focus.key.id
+            label: Password
+            edit_mode:
+                enabled: Yes
+                always_on: No
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: "Use this screen to change this Admin's password."
+                password:
+                    label: 'Password:'
+                    type: password
+                    style: 'width: 20em;'
+                suggest_button:
+                    same_row: true
+                    snippet:
+                        html: >
+                            <input type="button" onclick="
+                                var suggestedPassword = zenarioA.generateAutoPassword(),
+                                    passwordField = zenario.get('password'),
+                                    passwordConfirmField = zenario.get('password_confirm');
+                                passwordField.value = suggestedPassword;
+                                passwordField.type = 'password';
+                                passwordConfirmField.value = suggestedPassword;
+                                passwordConfirmField.type = 'password';
+                            " value="Suggest"/>
+                    visible_if: zenarioAB.editModeOn()
+                password_confirm:
+                    label: 'Re-confirm Password:'
+                    type: password
+                    style: 'width: 20em;'
+                password_needs_changing:
+                    label: 'Password needs changing:'
+                    type: checkbox
+                    note_below: >
+                        If checked, the Administrator will be prompted to change
+                        their password when they next log in.
+        permissions:
+            label: Permissions
+            edit_mode:
+                enabled: ""
+                format_on_revert: Yes
+                format_on_cancel_edit: Yes
+            fields:
+                #desc:
+                #    full_width: Yes
+                #    snippet:
+                #        html: "Use this screen to set this Admin's permissions."
+                everything:
+                    type: radios
+                    values:
+                        everything:
+                            ord: 1
+                            label: "This administrator has every possible permission"
+                        specific: 
+                            ord: 2
+                            label: "This administrator has the following specific permissions:"
+                    value: specific
+                    format_onchange: true
+                
+                

@@ -1,0 +1,113 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content_type_details:
+	priv: _PRIV_EDIT_CONTENT_TYPE
+	key:
+		id: ""
+	title: Content Type Settings
+	hide_tab_bar: Yes
+	tabs:
+		details:
+			edit_mode:
+				enabled: Yes
+			fields:
+				module_id:
+					label: 'Module:'
+					read_only: Yes
+					pick_items:
+						path: zenario__modules/nav/modules/panel
+						target_path: zenario__modules/nav/modules/panel
+						min_path: zenario__modules/nav/modules/panel
+						max_path: zenario__modules/nav/modules/panel
+						disallow_refiners_looping_on_min_path: Yes
+				content_type_id:
+					label: 'Content Type Id:'
+					type: text
+					read_only: Yes
+				content_type_name_en:
+					label: 'Content Description:'
+					type: text
+					maxlength: "255"
+					validation:
+						required: Please enter a name.
+				default_layout_id:
+					label: 'Default Layout:'
+					pick_items:
+						path: ""
+						target_path: zenario__layouts/nav/layouts/panel
+						min_path: zenario__layouts/nav/layouts/panel
+						max_path: zenario__layouts/nav/layouts/panel
+						disallow_refiners_looping_on_min_path: Yes
+						one_to_one_choose_phrase: Choose Layout
+						select_phrase: Select Layout...
+						hide_remove_button: Yes
+				description_field:
+					label: 'Description field:'
+					type: radios
+					values:
+						mandatory:
+							ord: "1"
+							label: Mandatory
+						optional:
+							ord: "2"
+							label: Optional
+						hidden:
+							ord: "3"
+							label: Hidden
+				keywords_field:
+					label: 'Keywords field:'
+					type: radios
+					values:
+						mandatory:
+							ord: "1"
+							label: Mandatory
+						optional:
+							ord: "2"
+							label: Optional
+						hidden:
+							ord: "3"
+							label: Hidden
+				release_date_field:
+					label: 'Release Date field:'
+					type: radios
+					values:
+						mandatory:
+							ord: "1"
+							label: Mandatory
+						optional:
+							ord: "2"
+							label: Optional
+						hidden:
+							ord: "3"
+							label: Hidden
+				writer_field:
+					label: 'Writer field:'
+					type: radios
+					values:
+						mandatory:
+							ord: "1"
+							label: Mandatory
+						optional:
+							ord: "2"
+							label: Optional
+						hidden:
+							ord: "3"
+							label: Hidden
+				summary_field:
+					label: 'Content Summary:'
+					type: radios
+					values:
+						mandatory:
+							ord: "1"
+							label: Mandatory
+						optional:
+							ord: "2"
+							label: Optional
+						hidden:
+							ord: "3"
+							label: Hidden
+					redraw_onchange: Yes
+				enable_summary_auto_update:
+					label: 'Enable auto-update of Summaries:'
+					type: checkbox
+					visible_if: "zenarioAB.value('summary_field') != 'hidden'"

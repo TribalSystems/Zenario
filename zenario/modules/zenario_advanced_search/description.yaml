@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Advanced Search
+description: |
+    <p>This module provides a plugin that's used to search through HTML and News content items. 
+       Search results can be refined by category, language and a text search.</p>
+keywords: find, lookup, search, advanced
+vlp_class_name: zenario_advanced_search
+css_class_name: zenario_advanced_search
+is_pluggable: Yes
+can_be_version_controlled: No
+default_framework: standard
+default_instance_name: Advanced Search

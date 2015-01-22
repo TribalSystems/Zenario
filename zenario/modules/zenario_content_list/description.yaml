@@ -1,0 +1,38 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Content Summary List
+description: |
+	<p>
+				This Module can show a list of Content Items from your website and you can choose from 
+				any of the available content types.
+			</p>
+			<p>
+				Using the Content List Module you can easily view any content in one place with links to
+				full content pages.
+			</p>
+			<p>
+				You can manipulate the output using the many display options such as: restricting the 
+				length of the preview, splitting long listings into many pages, selecting sections of 
+				the content item to be shown in list view, manipulating the displayed date and times, 
+				adding preview images, changing the ordering of the list, adding a feed of your list 
+				using RSS, restricting the visibility of a content item to one or more user groups.
+			</p>
+			<p>
+				You can restrict the displayed list to only some items grouped in specified category, or
+				list all of the content items for a given content type.
+			</p>
+keywords: >
+	list, auto, news, documents, pages, latest, category,
+	taxonomy, summary, summaries, archive, library
+vlp_class_name: zenario_content_list
+css_class_name: zenario_content_list
+is_pluggable: Yes
+can_be_version_controlled: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled Content List

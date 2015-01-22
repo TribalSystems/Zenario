@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_custom_system_field:
+    priv: _PRIV_MANAGE_DATASET
+    
+    key:
+        id: false
+        dataset_id: false
+        tab_name: ''
+        field_name: ''
+    
+    hide_tab_bar: true
+    max_height: 300
+    
+    tabs:
+        details:
+            edit_mode:
+                enabled: Yes
+            fields:
+                label:
+                    label: 'Label:'
+                    type: text
+                    maxlength: 64
+                    required: 'Please enter a label'
+                note_below:
+                    visible_if: "zenarioAB.value('hidden') != 1"
+                    label: 'Help text:'
+                    type: text

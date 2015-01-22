@@ -1,0 +1,35 @@
+#organizer_leftColumn div.organizer_legend a.zenario_email_template_top_level {
+	background: url('../../../admin/images/sprites/org-icons-1.png') no-repeat;
+	background-position: -856px -57px;
+}
+
+#organizer_leftColumn div.legend_on a.zenario_email_template_top_level,
+#organizer_leftColumn div.organizer_legend a.zenario_email_template_top_level:hover {
+	background-position: -906px -57px;
+}
+
+
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_email_template_panel,
+#organizer_rightColumn #organizer_panelTitle div.zenario_email_template_panel {
+	background: center center no-repeat;
+	background-image: url('images/email-template-list.png');
+}
+
+.zenario_email_template_manager_log__failed span {
+	height: 20px !important;
+	padding-left: 30px !important;
+	background-position: 5px 1px !important;
+	background-repeat: no-repeat !important;
+	background-image: url(images/failed_icon.png) !important;
+	display:inline-block;
+}
+
+.zenario_email_template_manager_log__sent span {
+	height: 20px !important;
+	padding-left: 30px !important;
+	background-position: 5px 1px !important;
+	background-repeat: no-repeat !important;
+	background-image: url(images/sent_icon.png) !important;
+	display:inline-block;
+}

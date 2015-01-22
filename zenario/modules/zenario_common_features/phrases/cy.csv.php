@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",cy
+
+Plugin
+zenario_common_features
+
+"Phrase Code",Translation
+_MONTH_LONG_01,"Ionawr"
+_MONTH_LONG_02,"Chwefror"
+_MONTH_LONG_03,"Mawrth"
+_MONTH_LONG_04,"Ebrill"
+_MONTH_LONG_05,"Mai"
+_MONTH_LONG_06,"Mehefin"
+_MONTH_LONG_07,"Gorffennaf"
+_MONTH_LONG_08,"Awst"
+_MONTH_LONG_09,"Medi"
+_MONTH_LONG_10,"Hydref"
+_MONTH_LONG_11,"Tachwedd"
+_MONTH_LONG_12,"Rhagfyr"
+_MONTH_SHORT_01,"Ion"
+_MONTH_SHORT_02,"Chwe"
+_MONTH_SHORT_03,"Maw"
+_MONTH_SHORT_04,"Ebr"
+_MONTH_SHORT_05,"Mai"
+_MONTH_SHORT_06,"Meh"
+_MONTH_SHORT_07,"Gor"
+_MONTH_SHORT_08,"Aws"
+_MONTH_SHORT_09,"Med"
+_MONTH_SHORT_10,"Hyd"
+_MONTH_SHORT_11,"Tach"
+_MONTH_SHORT_12,"Rhag"
+_WEEKDAY_0,"Dydd Sul"
+_WEEKDAY_1,"Dydd Llun"
+_WEEKDAY_2,"Dydd Mawrth"
+_WEEKDAY_3,"Dydd Mercher"
+_WEEKDAY_4,"Dydd Iau"
+_WEEKDAY_5,"Dydd Gwener"
+_WEEKDAY_6,"Dydd Sadwrn"

@@ -1,0 +1,46 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_image:
+	key:
+		id: ""
+	hide_tab_bar: Yes
+	tabs:
+		details:
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_MANAGE_MEDIA
+			fields:
+				image:
+					full_width: Yes
+					snippet:
+						html: ""
+				filename:
+					label: 'Filename:'
+					type: text
+					maxlength: "255"
+				size:
+					label: 'Size:'
+					snippet:
+						html: ""
+				desc:
+					full_width: Yes
+					snippet:
+						html: >
+							You may override the following fields on a per-Plugin basis,
+							e.g. to translate it.
+				alt_tag:
+					label: 'Default alt-tag:'
+					type: text
+				title:
+					label: 'Default title attribute:'
+					type: text
+					note_below: This will be used to add tooltips to the image.
+				floating_box_title:
+					label: 'Default floating box title:'
+					type: editor
+					cols: "70"
+					rows: "4"
+					note_below: >
+						This will be used to add a table under the image when
+						displayed in a floating box.
+			show_errors_after_field: image

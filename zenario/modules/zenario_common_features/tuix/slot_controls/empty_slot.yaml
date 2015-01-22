@@ -1,0 +1,105 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+empty_slot:
+    css_class: zenario_slotOuter zenario_slotWithNoContents
+    info:
+        slot_name:
+            css_class: zenario_slotControl_slotName
+            page_modes:
+                edit: true
+                layout: true
+        grid_width:
+            css_class: zenario_slotControl_width
+            page_modes:
+                edit: true
+                layout: true
+            label: 'Width: <span></span>'
+        grid_css_class:
+            css_class: zenario_slotControl_cssClass
+            page_modes:
+                edit: true
+                layout: true
+            label: 'CSS classes: <span></span>'
+        empty:
+            ord: "11"
+            label: '[Empty slot]'
+            css_class: zenario_slotControl_empty
+            page_modes:
+                edit: true
+                layout: true
+        opaque:
+            label: '[Plugin hidden on this content item]'
+            css_class: zenario_slotControl_empty zenario_slotControl_opaque
+            page_modes:
+                edit: true
+                layout: true
+    actions:
+        replace_reusable_on_item_layer:
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Show a different plugin on this content item...
+            page_modes:
+                edit: true
+                layout: true
+            onclick: |
+                if (zenarioA.draft(this.id)) {
+                    zenarioAT.clickTab('edit');
+                    zenarioA.pickNewPlugin(this, slotName, 1);
+                }
+                return false;
+        insert_reusable_on_item_layer:
+            priv: _PRIV_MANAGE_ITEM_SLOT
+            label: Insert plugin from library...
+            page_modes:
+                edit: true
+            onclick: |
+                if (zenarioA.draft(this.id)) {
+                    zenarioAT.clickTab('edit');
+                    zenarioA.pickNewPlugin(this, slotName, 1);
+                }
+                return false;
+        insert_reusable_on_layout_layer:
+            ord: 999
+            priv: _PRIV_MANAGE_TEMPLATE_SLOT
+            label: Insert plugin from library...
+            page_modes:
+                layout: true
+            onclick: return zenarioA.pickNewPlugin(this, slotName, 2);
+    
+    
+    
+    overridden_info:
+        desc:
+            css_class: zenario_slotControl_slotName
+            label: 'Layout layer (overridden):'
+            page_modes:
+                edit: true
+                layout: true
+        module_name:
+            css_class: '' #zenario_slotControl_wireframe or zenario_slotControl_reusable
+            page_modes:
+                edit: true
+                layout: true
+        reusable_plugin_details:
+            css_class: zenario_slotControl_reusablePluginDetails
+            page_modes:
+                edit: true
+                layout: true
+    overridden_actions:
+        show_plugin:
+            ord: 89
+            page_modes:
+                edit: true
+                layout: true
+            onclick: >
+                if (zenarioA.draft(this.id)) {
+                    zenarioA.showPlugin(this, slotName);
+                }
+                return false;
+            label: Show ~plugin~ on this content item
+        remove_from_layout_layer:
+            ord: 92
+            page_modes:
+                edit: true
+                layout: true
+            onclick: return zenarioA.removePlugin(this, slotName, 2);
+            label: Remove ~plugin~ from layout

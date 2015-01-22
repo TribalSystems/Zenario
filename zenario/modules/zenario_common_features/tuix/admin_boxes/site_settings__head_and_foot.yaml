@@ -1,0 +1,44 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Head and Foot
+    tabs:
+        head:
+            label: Head
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: 'Add HTML to the <code>&lt;head&gt;</code> tag of all pages on your site:'
+                sitewide_head:
+                    site_setting:
+                        name: sitewide_head
+                    full_width: Yes
+                    type: code_editor
+                    language: html
+                    style: >
+                        height: 25em;
+        foot:
+            label: Foot
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: 'Add HTML to the bottom of the <code>&lt;body&gt;</code> tag of all pages on your site:'
+                sitewide_foot:
+                    site_setting:
+                        name: sitewide_foot
+                    full_width: Yes
+                    type: code_editor
+                    language: html
+                    style: >
+                        height: 25em;
+    setting_group: head_and_foot

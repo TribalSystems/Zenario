@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+	title: XML Sitemap
+	hide_tab_bar: Yes
+	tabs:
+		sitemap:
+			label: XML Sitemap
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: |
+							This CMS can generate an XML Sitemap, which you can supply to search engines to help them index your site.
+															The XML Sitemap includes the URLs of all published, non-private content items.
+				sitemap_enabled:
+					site_setting:
+						name: sitemap_enabled
+					label: 'Enable XML Sitemap:'
+					type: checkbox
+					format_onchange: Yes
+				sitemap_url:
+					label: 'Sitemap URL:'
+					type: text
+					readonly: readonly
+					note_below: |
+						The XML Sitemap will have the above URL which is not editable.
+														You can copy and paste this URL into search engine tools
+														(such as <a href="https://www.google.com/webmasters/tools/" target="_blank">Google Webmaster Tools</a>).
+														We recommend that you enable Friendly URLs in the Site Settings so that URLs contain Aliases where set, rather than content item IDs.
+	setting_group: xml_sitemap

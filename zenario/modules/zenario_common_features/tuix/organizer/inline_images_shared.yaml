@@ -1,0 +1,178 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	hidden_nav:
+		media:
+			panel:
+				hidden_nav:
+					inline_images_shared:
+						panel:
+							key:
+								usage: inline
+							enable_close_up_view: Yes
+							title: Shared images
+							no_items_in_search_message: There are no shared images.
+							grid_view_microtemplate: zenario_grid_view_image
+							slidedown_view_microtemplate: zenario_slidedown_view_image
+							db_items:
+								table: '[[DB_NAME_PREFIX]]files AS f'
+								where_statement: |
+									WHERE f.`usage` = 'inline'
+																			  AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+																			  AND f.shared = 1
+								id_column: f.id
+							columns:
+								id:
+									db_column: f.id
+								filename:
+									title: Filename
+									searchable: Yes
+									db_column: f.filename
+									show_by_default: Yes
+								alt_tag:
+									title: Default alt-tag
+									searchable: Yes
+									db_column: f.alt_tag
+								title:
+									db_column: f.title
+								checksum:
+									db_column: f.checksum
+								mime_type:
+									server_side_only: Yes
+									db_column: f.mime_type
+								size:
+									title: Size
+									format: filesize
+									db_column: f.size
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								width:
+									title: Width
+									searchable: Yes
+									db_column: f.width
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								height:
+									title: Height
+									searchable: Yes
+									db_column: f.height
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								usage_content:
+									title: Usage (content items)
+									db_column: |
+										(
+																						SELECT COUNT(DISTINCT foreign_key_to, foreign_key_id, foreign_key_char)
+																						FROM [[DB_NAME_PREFIX]]inline_file_link
+																						WHERE file_id = f.id
+																						  AND foreign_key_to = 'content'
+																					)
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								usage_plugins:
+									title: Usage (plugins)
+									db_column: |
+										(
+																						SELECT COUNT(DISTINCT instance_id)
+																						FROM [[DB_NAME_PREFIX]]plugin_settings
+																						WHERE is_content = 'synchronized_setting'
+																						  AND foreign_key_to = 'file'
+																						  AND foreign_key_id = f.id
+																					)
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+							default_sort_column: filename
+							label_format_for_popouts: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							label_format_for_picked_items: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							item:
+								name: Image
+								names: Images
+								css_class: media_image
+							collection_buttons:
+								upload:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Upload
+									hide_in_select_mode: Yes
+									upload:
+										fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+										fileDesc: Images
+										multi: Yes
+										drag_and_drop: Yes
+										request:
+											upload: Yes
+							inline_buttons:
+								view:
+									css_class: inspect
+									tooltip: View image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+							item_buttons:
+								edit:
+									label: Properties
+									tooltip: Rename image or add a title
+									admin_box:
+										path: zenario_image
+								view_dropdown:
+									label: View
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								view:
+									parent: view_dropdown
+									label: Image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+								action_dropdown:
+									label: Actions
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								unshare:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Unshare
+									multiple_select: Yes
+									traits:
+										used: Yes
+									ajax:
+										confirm:
+											message: |
+												Are you sure you wish to stop sharing the image "[[filename]]"?
+																									
+																									It will no longer be visible in this view, but will not be deleted as it is used elsewhere.
+											multiple_select_message: |
+												Are you sure you wish to stop sharing these images?
+																									
+																									They will no longer be visible in this view, but will not be deleted as they are used elsewhere.
+											button_message: Stop sharing
+											cancel_button_message: Cancel
+											message_type: warning
+										request:
+											unshare: Yes
+								delete:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Delete
+									multiple_select: Yes
+									multiple_select_tooltip: Delete images
+									hide_in_select_mode: Yes
+									without_traits:
+										used: Yes
+									ajax:
+										confirm:
+											message: 'Are you sure you wish to delete the image "[[filename]]"?'
+											multiple_select_message: Are you sure you wish to delete these images?
+											button_message: Delete
+											cancel_button_message: Cancel
+											message_type: warning
+										request:
+											delete: "1"

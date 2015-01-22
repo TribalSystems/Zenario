@@ -1,0 +1,452 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	hidden_nav:
+		language_equivs:
+			panel:
+				key:
+					cType: ""
+					language: ""
+				title: All content items
+				enable_close_up_view: Yes
+				view_mode: list
+				disable_grid_view: Yes
+				disable_summary_view: Yes
+				no_items_message: No content items have been created.
+				db_items:
+					table: >
+						[[DB_NAME_PREFIX]]content AS c
+						INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
+						   ON c.equiv_id = tc.equiv_id
+						  AND c.type = tc.type
+						INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+						   ON c.id = v.id
+						  AND c.type = v.type
+						  AND c.admin_version = v.version
+						LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
+						   ON mi.target_loc = 'int'
+						  AND mi.equiv_id = c.equiv_id
+						  AND mi.content_type = c.type
+						  AND mi.redundancy = 'primary'
+						LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+						   ON mt.menu_id = mi.id
+						  AND mt.language_id = c.language_id
+						LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+						   ON f.id = v.file_id
+					id_column: c.tag_id
+					where_statement: "WHERE c.status NOT IN ('trashed','deleted')"
+				refiners:
+					language_equivs:
+						sql: '(c.language_id = [[REFINER__LANGUAGE]] OR (equiv_in_lang.equiv_id IS NULL AND c.id = c.equiv_id))'
+						table_join: |
+							LEFT JOIN [[DB_NAME_PREFIX]]content AS equiv_in_lang
+													  ON equiv_in_lang.equiv_id = c.equiv_id
+													 AND equiv_in_lang.type = c.type
+													 AND equiv_in_lang.language_id = [[REFINER__LANGUAGE]]
+					content_type_language_equivs:
+						sql: |
+							c.type = [[REFINER__CONTENT_TYPE_LANGUAGE_EQUIVS]]
+													AND (c.language_id = [[FOCUSED_LANGUAGE_ID]] OR (equiv_in_lang.equiv_id IS NULL AND c.id = c.equiv_id))
+						table_join: |
+							LEFT JOIN [[DB_NAME_PREFIX]]content AS equiv_in_lang
+													  ON equiv_in_lang.equiv_id = c.equiv_id
+													 AND equiv_in_lang.type = c.type
+													 AND equiv_in_lang.language_id = [[FOCUSED_LANGUAGE_ID]]
+				item:
+					name: Content Item
+					names: Content Items
+					css_class: content_published
+				columns:
+					tag:
+						title: Tag
+						width: large
+						searchable: Yes
+						db_column: c.tag_id
+						show_by_default: Yes
+						disallow_filtering: Yes
+					equiv_id:
+						db_column: c.equiv_id
+					id:
+						db_column: c.id
+					type:
+						title: Content Type
+						db_column: c.type
+						format: enum
+					language_id:
+						title: Language
+						db_column: c.language_id
+						format: language_english_name_with_id
+					alias:
+						title: Alias
+						searchable: Yes
+						db_column: c.alias
+					title:
+						title: Title
+						db_column: v.title
+						searchable: Yes
+					description:
+						title: Description
+						db_column: v.description
+						searchable: Yes
+					keywords:
+						title: Keywords
+						db_column: v.keywords
+						searchable: Yes
+					file_id:
+						db_column: f.id
+					checksum:
+						db_column: f.checksum
+					mime_type:
+						db_column: f.mime_type
+					filename:
+						title: Filename
+						db_column: v.filename
+						searchable: Yes
+					file_path:
+						db_column: f.path
+					version:
+						title: Version
+						db_column: v.version
+					status:
+						title: Status
+						db_column: c.status
+						format: enum
+						values:
+							first_draft: First Draft
+							published_with_draft: Published with Draft
+							hidden_with_draft: Hidden with Draft
+							trashed_with_draft: Trashed with Draft
+							published: Published
+							hidden: Hidden
+							trashed: Trashed
+					admin_version_status:
+						db_column: c.status
+						format: enum
+						values:
+							first_draft: Draft
+							published_with_draft: Draft
+							hidden_with_draft: Draft
+							trashed_with_draft: Draft
+							published: Published
+							hidden: Hidden
+							trashed: Trashed
+					visitor_version_status:
+						db_column: c.status
+						format: enum
+						values:
+							first_draft: '[Not Published]'
+							published_with_draft: ""
+							hidden_with_draft: '[Hidden]'
+							trashed_with_draft: '[Trashed]'
+							published: ""
+							hidden: '[Hidden]'
+							trashed: '[Trashed]'
+					privacy:
+						title: Privacy
+						db_column: tc.privacy
+						format: enum
+						values:
+							public: Public
+							all_extranet_users: All Extranet Users
+							group_members: Group Members
+							specific_users: Specific Users
+							no_access: No Access
+					first_created_datetime:
+						title: Date/Time First Created
+						db_column: c.first_created_datetime
+						format: datetime
+					created_datetime:
+						title: Date/Time Latest Version Created
+						db_column: v.created_datetime
+						format: datetime
+					creating_author_id:
+						db_column: v.creating_author_id
+					last_modified_datetime:
+						title: Date/Time Last Edited
+						db_column: v.last_modified_datetime
+						format: datetime
+					last_author_id:
+						db_column: v.last_author_id
+					published_datetime:
+						title: Date/Time Published
+						db_column: v.published_datetime
+						format: datetime
+					publisher_id:
+						db_column: v.publisher_id
+					publication_date:
+						title: Release Date
+						db_column: v.publication_date
+						format: date
+					lock_owner_id:
+						db_column: c.lock_owner_id
+					translated:
+						title: Translated
+						db_column: 'c.language_id = [[REFINER__LANGUAGE]]'
+						format: yes_or_no
+					zenario_trans__links:
+						title: Translations
+						align_right: Yes
+						show_by_default: Yes
+					layout:
+						title: Layout
+						db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
+						show_by_default: Yes
+						searchable: Yes
+					menu:
+						title: Menu Node
+						db_column: mt.name
+						show_by_default: Yes
+						item_link: menu_item
+					menu_id:
+						db_column: mi.id
+				default_sort_column: tag
+				label_format_for_grid_view: |
+					[[tag]]
+									Version [[version]]
+				label_format_for_picked_items: '[[tag]] [[visitor_version_status]]'
+				label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
+				default_sort_column: first_created_datetime
+				collection_buttons:
+					create:
+						priv: _PRIV_CREATE_FIRST_DRAFT
+						css_class: zenario_create_a_new
+						label: Create
+						admin_box:
+							path: zenario_quick_create
+				inline_buttons:
+					view_frontend:
+						css_class: view_frontend
+						tooltip: View in Front-end window
+						frontend_link:
+							exists: Yes
+						with_columns_set:
+							frontend_link: Yes
+					inspect:
+						css_class: inspect
+						tooltip: View in floating box
+						popout:
+							iframe: Yes
+						with_columns_set:
+							frontend_link: Yes
+				item_buttons:
+					settings:
+						priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+						label: Properties
+						admin_box:
+							path: zenario_content
+						without_traits:
+							ghost: Yes
+					view_dropdown:
+						label: View
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					view_image:
+						parent: view_dropdown
+						label: View
+						tooltip: View Picture
+						popout:
+							href: 'zenario/file.php?usage=content&popout=1'
+							options:
+								type: image
+						traits:
+							has_picture: Yes
+						without_traits:
+							ghost: Yes
+					zenario_trans__view:
+						parent: view_dropdown
+						php: Yes
+						hide_in_select_mode: Yes
+						label: View translations
+						link:
+							path: zenario__content/hidden_nav/chained/panel
+							branch: Yes
+							refiner: zenario_trans__chained_in_link
+						without_traits:
+							ghost: Yes
+					zenario_trans__view__ghost:
+						parent: view_dropdown
+						php: Yes
+						hide_in_select_mode: Yes
+						label: '>View translations'
+						link:
+							path: zenario__content/hidden_nav/chained/panel
+							branch: Yes
+							refiner: zenario_trans__chained_in_link
+						traits:
+							ghost: Yes
+					export_dropdown:
+						label: Export
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					download:
+						parent: export_dropdown
+						label: Download
+						ajax:
+							confirm:
+								message: 'Download the file "[[filename]]"?'
+								button_message: Download
+								cancel_button_message: Cancel
+								message_type: question
+								download: Yes
+							request:
+								download: "1"
+						traits:
+							has_file: Yes
+						without_traits:
+							ghost: Yes
+					action_dropdown:
+						label: Actions
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					layout:
+						priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+						parent: action_dropdown
+						label: Change Layout
+						multiple_select: true
+						admin_box:
+							path: zenario_content_layout
+						without_traits:
+							ghost: Yes
+					categories:
+						priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+						parent: action_dropdown
+						label: Change categories
+						multiple_select: true
+						admin_box:
+							path: zenario_content_categories
+						without_traits:
+							ghost: Yes
+					alias:
+						parent: action_dropdown
+						priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+						label: Change friendly name
+						admin_box:
+							path: zenario_alias
+						without_traits:
+							ghost: Yes
+					duplicate:
+						parent: action_dropdown
+						priv: _PRIV_CREATE_FIRST_DRAFT
+						label: Duplicate
+						admin_box:
+							path: zenario_content
+							key:
+								duplicate: "1"
+						without_traits:
+							ghost: Yes
+					hide:
+						parent: action_dropdown
+						priv: _PRIV_HIDE_CONTENT_ITEM
+						hide_in_select_mode: Yes
+						label: Hide
+						multiple_select: Yes
+						traits:
+							hideable: Yes
+						without_traits:
+							ghost: Yes
+						ajax:
+							confirm:
+								message: |
+									This action will hide the Content Item "[[tag]]".
+																	
+																	It will become invisible to visitors and any Menu Nodes linking to it will also be hidden. (You can show an Item again by creating a new Draft and then re-Publishing.)
+																	
+																	Are you sure you wish to proceed?
+								multiple_select_message: |
+									This action will hide the selected Content Items.
+																	
+																	They will become invisible to visitors and any Menu Nodes linking to them will also be hidden. (You can show an Item again by creating a new Draft and then re-Publishing.)
+																	
+																	Are you sure you wish to proceed?
+								button_message: Hide
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								hide: "1"
+					hidden:
+						parent: action_dropdown
+						priv: _PRIV_CREATE_REVISION_DRAFT
+						label: Unhide
+						multiple_select: Yes
+						multiple_select_tooltip: Unhide Content Items
+						traits:
+							hidden: Yes
+						without_traits:
+							ghost: Yes
+						ajax:
+							confirm:
+								message: 'Do you wish to unhide the Content Item "[[tag]]"?'
+								multiple_select_message: Do you wish to unhide the selected Content Items?
+								button_message: Unhide
+								cancel_button_message: Cancel
+								message_type: question
+							request:
+								unhide: "1"
+					publish:
+						parent: action_dropdown
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						hide_in_select_mode: Yes
+						label: Publish
+						multiple_select: Yes
+						traits:
+							draft: Yes
+							not_locked: Yes
+						without_traits:
+							ghost: Yes
+						admin_box:
+							path: zenario_publish
+					delete:
+						priv: _PRIV_DELETE_DRAFT
+						hide_in_select_mode: Yes
+						label: Delete draft
+						multiple_select: Yes
+						multiple_select_label: Delete drafts
+						traits:
+							draft: Yes
+							deletable: Yes
+							not_locked: Yes
+						without_traits:
+							ghost: Yes
+						ajax:
+							confirm:
+								message: |
+									You are about to delete the Draft version of "[[tag]]".
+																	
+																	Deleting this Draft will not affect the Published version of this Item, if it exists. However, the deletion cannot be undone.
+																	
+																	Are you sure you wish to proceed?
+								multiple_select_message: |
+									You are about to delete the Draft versions of the selected Content Items.
+																	
+																	Deleting a Draft will not affect any Published versions of these Items, if they exist. However, the deletions cannot be undone.
+																	
+																	Are you sure you wish to proceed?
+								button_message: Delete
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								delete: "1"
+					trash:
+						priv: _PRIV_TRASH_CONTENT_ITEM
+						hide_in_select_mode: Yes
+						label: Trash
+						multiple_select: Yes
+						traits:
+							trashable: Yes
+						without_traits:
+							ghost: Yes
+						ajax:
+							confirm:
+								message: |
+									This action will move the Content Item "[[tag]]" to the Trash. It will no longer be available to site visitors.
+																	
+																	Are you sure you wish to proceed?
+								multiple_select_message: |
+									This action will move the selected Content Items to the Trash. They will no longer be available to site visitors.
+																	
+																	Are you sure you wish to proceed?
+								button_message: Move to the Trash
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								trash: "1"

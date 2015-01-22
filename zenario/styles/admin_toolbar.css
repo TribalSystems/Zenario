@@ -1,0 +1,1431 @@
+/*
+ * Copyright (c) 2014, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/* new toolbar */
+
+#zenario_at_logout_link a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_permissions_closed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
+	background-image:url('../admin/images/sprites/org-icons-1.png');
+}
+
+#zenario_at_wrap {
+	background:#F6F6F6;
+	border-bottom:1px solid #CACACA;
+	font-family:Verdana,Arial,Helvetica,sans-serif;
+}
+
+#zenario_at_wrap a {
+	text-decoration:none;
+}
+
+#zenario_at {
+	-webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3);
+	box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.3); 
+}
+
+#zenario_at_organizer_link a {
+	display:block;
+	width:110px;
+	height:41px;
+	position:absolute;
+	left:15px;
+	text-align:center;
+	text-transform:uppercase;
+	line-height:36px;
+	font-size:13px;
+	font-weight:bold;
+	color:#E2E2E2;
+	text-shadow:0 1px 1px #000;
+	border-left:1px solid #B3B3B3;
+	border-right:1px solid #B3B3B3;
+
+	background-color: #000;
+	background-image: -webkit-linear-gradient(bottom, #3a3a3a, #6d6d6d);
+	background-image: -moz-linear-gradient(bottom, #3a3a3a, #6d6d6d);
+	background-image: -o-linear-gradient(bottom, #3a3a3a, #6d6d6d);
+	background-image: -ms-linear-gradient(bottom, #3a3a3a, #6d6d6d);
+	background-image: linear-gradient(to top, #3a3a3a, #6d6d6d);
+}
+
+#zenario_at_organizer_link a:hover {
+	background-image: -webkit-linear-gradient(bottom, #1c3840, #007fa3);
+	background-image: -moz-linear-gradient(bottom, #1c3840, #007fa3);
+	background-image: -o-linear-gradient(bottom, #1c3840, #007fa3);
+	background-image: -ms-linear-gradient(bottom, #1c3840, #007fa3);
+	background-image: linear-gradient(to top, #1c3840, #007fa3);
+}
+
+#zenario_at_logout_link a {
+	display:block;
+	width:38px;
+	height:41px;
+	background-position: -753px -6px;
+	position:absolute;
+	right:15px;
+	border-left:1px solid #B3B3B3;
+	border-right:1px solid #B3B3B3;
+}
+
+#zenario_at_logout_link a:hover {
+	background-color:#007FA2;
+}
+
+#zenario_at .zenario_at_container:after,
+#zenario_at .zenario_at_toolbar_container_top:after,
+#zenario_at .zenario_at_toolbar_container_bottom:after {
+    clear: both;
+    content: " ";
+    display: block;
+    font-size: 0;
+    height: 0;
+    visibility: hidden;
+}
+
+#zenario_at .zenario_at_container {
+	clear:both;
+}
+
+#zenario_at .zenario_at_content,
+#zenario_at #zenario_at_lower_section,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button {
+	margin: 0 auto;
+    max-width: 960px;
+    min-width: 760px;
+}
+
+#zenario_at .zenario_at_content:before, 
+#zenario_at .zenario_at_content:after,
+#zenario_at #zenario_at_lower_section:before,
+#zenario_at #zenario_at_lower_section:after,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button:before,
+#zenario_at #zenario_at_toolbars .zenario_at_status_button:after {
+    display: block;
+    font-size: 0;
+    height: 0;
+    line-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    width: 0;
+    content: ".";
+}
+
+#zenario_at #zenario_at_toolbars div.zenario_at_status_button {
+	position:relative;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button span a {
+	float:right;
+	margin-top:10px;
+	font-size:12px;
+	font-weight:bold;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_draft a {
+	color:#E55107;
+	background:url('../admin/images/icon-warning.png') no-repeat left 1px;
+	padding:0 0 0 22px;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_published a {
+	color:#01AD03;
+	background:url('../admin/images/published-tick-icon.png') no-repeat left 0;
+	padding:0 0 0 22px;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_hidden a {
+	color:#484848;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_archived a {
+	color:#6C3900;
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_status_button_trashed a {
+	color:#C42754;
+}
+
+@keyframes blink {  
+    0% { 	background:#FE8831;}
+    14% { 	background:#FE9C34;}
+    28% { 	background:#FE9616;}
+    42% {	background:#FEA605;}
+    56% {	background:#FEC152;}
+    70% { 	background:#FEA605;}
+    84% { 	background:#FE9C34;}
+    100% { 	background:#FE8831;}
+}
+@-webkit-keyframes blink {  
+    0% { 	background:#FE8831;}
+    14% { 	background:#FE9C34;}
+    28% { 	background:#FE9616;}
+    42% {	background:#FEA605;}
+    56% {	background:#FEC152;}
+    70% { 	background:#FEA605;}
+    84% { 	background:#FE9C34;}
+    100% { 	background:#FE8831;}
+}
+
+#zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_publish_button a {
+	margin-top:7px;
+	font-size:13px;
+	font-weight:normal;
+	color:#000;
+	background:#FE8831;
+	border:1px solid #E55107;
+	text-shadow:0 1px 1px #fff;
+	line-height:25px;
+	padding:0 15px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	display:inline-block;
+	cursor:pointer;
+	-webkit-animation: blink 2s ease-in-out 2s infinite;
+    -moz-animation: blink 2s ease-in-out 2s infinite;
+    -ms-animation: blink 2s ease-in-out 2s infinite;
+    -o-animation: blink 2s ease-in-out 2s infinite;
+    animation: blink 2s ease-in-out 2s infinite;
+}
+
+#zenario_at .zenario_at_tabs_container {
+	background:#333333;
+	font-size:13px;
+	height:41px;
+	padding-left:130px;
+}
+
+#zenario_at .zenario_at_toolbar_container {
+	background:#F6F6F6;
+	font-size:11px;
+}
+
+#zenario_at .zenario_at_toolbar_container_top {
+	border-bottom:1px solid #DBDBDB;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul:first-child li.zenario_toolbar_toggle {
+	background:none;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li.zenario_toolbar_toggle a {
+	height: 20px;
+	padding:2px 8px 0;
+	text-align:center;
+	color:#7F7F7F;	
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	background-color: rgba(246,246,246,0);
+	-webkit-box-shadow: inset 0 0 1px rgba(0,0,0,.7);
+	-moz-box-shadow: inset 0 0 1px rgba(0,0,0,.7);
+	box-shadow: inset 0 0 1px rgba(0,0,0,.7);
+	background-image: -webkit-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
+	background-image: -moz-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
+	background-image: -o-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
+	background-image: -ms-linear-gradient(bottom, #e5e2e2, #f1f1f1 56%);
+	background-image: linear-gradient(to top, #e5e2e2, #f1f1f1 56%);
+	margin:9px 8px 0 8px;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul:first-child li.zenario_toolbar_toggle a {
+	margin-right:0;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li.zenario_toolbar_toggle a:hover {
+	opacity:0.9;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li.zenario_toolbar_toggle_on a {
+	background:#323232;
+	color:#FFF;
+}
+
+#zenario_at .zenario_at_toolbar_container_bottom {
+	border-top:1px solid #fff;
+	height:33px;
+	padding-top:8px;
+}
+
+#zenario_at .zenario_at_status_icons_container {
+	position:absolute;
+	right:65px;
+	top:0;
+	border-left:1px solid #B3B3B3;
+	height:32px;
+	padding:9px 0 0 5px;
+}
+
+#zenario_at .zenario_at_tabs {
+	height:37px;
+	padding-top:4px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar,
+#zenario_at .zenario_at_tabs .zenario_toolbar a {
+	color:#E2E2E2;
+	text-shadow:0 1px 1px #000;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar:hover,
+#zenario_at .zenario_at_tabs .zenario_toolbar:hover a {
+	color:#43d4f4;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar_on,
+#zenario_at .zenario_at_tabs .zenario_toolbar_on a,
+#zenario_at .zenario_at_tabs .zenario_toolbar_on:hover,
+#zenario_at .zenario_at_tabs .zenario_toolbar_on:hover a {
+	color:#000;
+	text-shadow:none;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar {
+	float:left;
+	margin-right:4px;
+	cursor:pointer;
+	-webkit-border-top-left-radius: 2px;
+	-webkit-border-top-right-radius: 2px;
+	-moz-border-radius-topleft: 2px;
+	-moz-border-radius-topright: 2px;
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+}
+
+body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_at_menu_tab {
+	background:#666666;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar_on,
+body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
+	background:#F6F6F6;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span {
+	font-size:10px;
+	display:inline-block;
+	float:right;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span.zenario_at_icon_version_in_view {
+	height:32px;
+	background:url('../admin/images/icon_version_in_view.gif') no-repeat center bottom;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons span a {
+	margin-left:5px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons a {
+	color:#3c3c3c;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_language a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a {
+	height:22px;
+	background:#E2E2E2;
+	float:right;
+	text-align:center;
+	padding:0 4px;
+	line-height:20px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id_special_page a {	
+	background:#E50707;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_draft a {	
+	background:#ff5600;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_published a {	
+	background:#01ac02;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_archived a {	
+	background:#6C3900;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_trashed a {	
+	background:#C42754;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version_hidden a {	
+	background:#484848;
+	color:#FFF;
+	text-shadow:0 1px 1px #333;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a {
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_permissions_closed a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
+	width:24px;
+	height:22px;
+	display:block;
+	float:right;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
+	background-position:-913px -164px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
+	background-position:-913px -112px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a {
+	background-position:-863px -112px;
+	cursor:pointer;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a {
+	background-position:-863px -164px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a {
+	background-position:-810px -112px;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
+	background-position:-762px -112px;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_left,
+#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle,
+#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_right {
+	height:24px;
+	float:left;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar .zenario_middle {
+	padding:13px 15px 0;
+}
+
+#zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary .zenario_middle {
+	padding:5px 10px 0;
+}
+
+#zenario_at .zenario_at_tabs .zenario_at_menu_tab_secondary {
+	margin-top:8px;
+}
+
+#zenario_at .zenario_at_toolbar,
+#zenario_at .zenario_at_toolbar a {
+	color:#000;
+}
+
+#zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
+	width:15px;
+	height:13px;
+	display:inline-block;
+	margin:0 0 0 5px;
+	background-position:-667px -117px;
+}
+
+#zenario_at .zenario_at_toolbar .zenario_at_history,
+#zenario_at .zenario_at_toolbar .zenario_at_help {
+	float:left;
+}
+
+#zenario_at ul,
+#zenario_at ul li {
+	list-style:none;
+	margin:0;
+	padding:0;
+}
+
+#zenario_at .zenario_at_toolbar ul li:hover a,
+#zenario_at .zenario_at_toolbar ul li li:hover a,
+#zenario_at .zenario_at_toolbar ul li:hover li:hover a {
+	color:#007fa3;
+}
+
+#zenario_at .zenario_at_toolbar ul li li a,
+#zenario_at .zenario_at_toolbar ul li:hover li a {
+	color:#444;
+}
+
+#zenario_at .zenario_at_toolbar .zenario_at_history {
+	z-index:50;
+}
+
+#zenario_at .zenario_at_toolbar .zenario_at_history,
+#zenario_at ul,
+#zenario_at ul li,
+#zenario_at ul li a {
+	position: relative;
+}
+
+#zenario_at ul {
+	z-index:101;
+}
+
+#zenario_at .zenario_at_toolbar .zenario_at_history,
+#zenario_at ul li a {
+	height:41px;
+}
+
+#zenario_at ul li,
+#zenario_at ul li a,
+#zenario_at ul li ul li a {
+	display: block;
+}
+
+#zenario_at ul,
+#zenario_at ul li a {
+	float:left;
+}
+
+#zenario_at ul li ul li a {
+	float:none;
+}
+
+#zenario_at ul li a {
+	display: block;
+	height:21px;
+	padding:10px 15px 10px 15px;
+	text-decoration:none;
+}
+
+#zenario_at ul li ul  {
+	left:0px;
+}
+
+#zenario_at ul li {
+	display:inline-block;
+	padding-right:2px;
+}
+
+#zenario_at ul li ul li {
+	height:auto;
+	background:none;
+	padding-left:0;
+	padding-right:0;
+	display:block;
+}
+
+#zenario_at ul li ul,
+#zenario_at ul li ul li a  {
+	height: auto;
+}
+
+#zenario_at ul li ul {
+	top:41px;
+	z-index:90 !important;
+	position: absolute;
+	margin: 0px auto;
+	padding:0px;
+}
+
+#zenario_at ul li ul {
+	width: 200px;
+}
+
+#zenario_at ul li ul li {
+	padding: 4px 0;
+	border-top:1px solid #DCDCDC;
+	margin:0 5px;
+}
+
+#zenario_at ul li ul li:first-child {
+	border-top:0;
+}
+
+#zenario_at ul li ul li a  {
+	padding: 5px 15px;
+}
+
+#zenario_at ul li ul li ul  {
+	top: 0;
+	left: 100%;
+}
+
+#zenario_at ul ul,
+#zenario_at ul li:hover ul ul {
+	display: none;
+}
+
+#zenario_at ul li:hover ul {
+	display: block;
+}
+
+#zenario_at ul ul {
+	background:#F6F6F6;
+	border:1px solid #333;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: 0px 0px 3px 0px #888;
+	box-shadow: 0px 0px 3px 0px #888;  
+}
+
+#zenario_at ul ul:after {
+    border-color: #F6F6F6 transparent;
+    border-style: solid;
+    border-width: 0 10px 10px;
+    bottom: 100%;
+    content: "";
+    height: 0;
+    position: absolute;
+    left: 15px;
+    width: 0;
+}
+
+#zenario_at ul ul:before {
+    border-color: #333 transparent;
+    border-style: solid;
+    border-width: 0 12px 12px;
+    bottom: 100%;
+    content: "";
+    height: 0;
+    position: absolute;
+    left: 13px;
+    width: 0;
+}
+
+#zenario_at .zenario_at_toolbar ul li li.zenario_at_prev_version_published a,
+#zenario_at .zenario_at_toolbar ul li li.zenario_at_current_version_draft a {
+	padding-left:24px;
+}
+
+#zenario_at ul li.zenario_at_button_with_children {
+	padding-right:8px;
+}
+
+#zenario_at ul li.zenario_at_button_with_children a {
+	background:url('../admin/images/store_keeper/arrow-drodown-grey.png') no-repeat right 15px;
+}
+
+#zenario_at ul li {
+	display:inline-block;
+	background:url('../admin/images/store_keeper/org_toolbar_separator.gif') no-repeat right 10px;
+}
+
+#zenario_at ul li li,
+#zenario_at ul li.zenario_at_button_with_children li a {
+	background:none;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_menu_section {
+	display:inline;
+	float:left;
+	height:22px;
+	line-height:20px;
+	border:1px solid #C5C5C5;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	padding:0 5px;
+	color:#777;
+	margin-right:5px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar {
+	border:1px solid #C5C5C5;
+	background:#FFFFFF;
+	padding:0 5px;
+	height:22px;
+	line-height:20px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	width:44%;
+	color:#000;
+	font-size:11px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	word-wrap: normal;
+	overflow:hidden;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_title {
+	font-family: 'Courier New',Courier,monospace;
+	font-size:12px;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_version {
+	font-family: Verdana,Arial,Helvetica,sans-serif;
+	font-size:8pt;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_title,
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_layout_id_and_name {
+	margin-right:4%;
+	float:left;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_version,
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_layout_usage {
+	margin-left:4%;
+	float:right;
+}
+
+/* end new toolbar */
+
+
+
+/*  Controls for the WYSIWYG Editor in the Admin Toolbar  */
+
+#zenario_at_toolbars .zenario_editor_buttons {
+	text-align: right;
+}
+
+#zenario_at_toolbars .zenario_editor_buttons span {
+	font-size: 11px;
+	margin: 0px;
+	padding: 2px 10px 1px;
+	padding: 2px 10px;
+	border: 1px solid #C5C5C5;
+	color: #FFF;
+	cursor: pointer;
+}
+
+#zenario_at_toolbars .zenario_editor_buttons span.zenario_editor_save_button {
+	background-color: #E51700;
+}
+
+#zenario_at_toolbars .zenario_editor_buttons span.zenario_editor_close_button {
+	background-color: #2E778A;
+}
+
+#zenario_at_toolbars .mceExternalToolbar {
+	top: auto;
+	display: block;
+}
+
+#zenario_at_toolbars .mceExternalToolbar .mceIcon {
+	display: block;
+	width: 20px;
+	height: 20px;
+	
+	/*  Button icons for TinyMCE - we'll probably want to replace this with our own sprite of icons  */
+	background: url(../libraries/lgpl/tinymce_3_5_8/themes/advanced/img/icons.gif) -800px 0;
+}
+
+
+/* Icon positions copied from zenario/libraries/lgpl/tinymce_3_5_8/themes/advanced/skins/o2k7/ui.css */
+
+/* Theme */
+#zenario_at_toolbars .mceExternalToolbar span.mce_bold {background-position:0 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_italic {background-position:-60px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_underline {background-position:-140px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_strikethrough {background-position:-120px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_undo {background-position:-160px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_redo {background-position:-100px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_cleanup {background-position:-40px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_bullist {background-position:-20px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_numlist {background-position:-80px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_justifyleft {background-position:-460px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_justifyright {background-position:-480px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_justifycenter {background-position:-420px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_justifyfull {background-position:-440px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_anchor {background-position:-200px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_indent {background-position:-400px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_outdent {background-position:-540px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_link {background-position:-500px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_unlink {background-position:-640px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_sub {background-position:-600px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_sup {background-position:-620px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_removeformat {background-position:-580px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_newdocument {background-position:-520px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_image {background-position:-380px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_help {background-position:-340px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_code {background-position:-260px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_hr {background-position:-360px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_visualaid {background-position:-660px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_charmap {background-position:-240px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_paste {background-position:-560px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_copy {background-position:-700px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_cut {background-position:-680px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_blockquote {background-position:-220px 0}
+#zenario_at_toolbars .mceExternalToolbar .mce_forecolor span.mceAction {background-position:-720px 0}
+#zenario_at_toolbars .mceExternalToolbar .mce_backcolor span.mceAction {background-position:-760px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_forecolorpicker {background-position:-720px 0}
+#zenario_at_toolbars .mceExternalToolbar span.mce_backcolorpicker {background-position:-760px 0}
+
+/* Plugins */
+#zenario_at_toolbars .mceExternalToolbar span.mce_advhr {background-position:-0px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_ltr {background-position:-20px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_rtl {background-position:-40px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_emotions {background-position:-60px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_fullpage {background-position:-80px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_fullscreen {background-position:-100px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_iespell {background-position:-120px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_insertdate {background-position:-140px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_inserttime {background-position:-160px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_absolute {background-position:-180px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_backward {background-position:-200px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_forward {background-position:-220px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_insert_layer {background-position:-240px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_insertlayer {background-position:-260px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_movebackward {background-position:-280px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_moveforward {background-position:-300px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_media {background-position:-320px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_nonbreaking {background-position:-340px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_pastetext {background-position:-360px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_pasteword {background-position:-380px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_selectall {background-position:-400px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_preview {background-position:-420px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_print {background-position:-440px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_cancel {background-position:-460px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_save {background-position:-480px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_replace {background-position:-500px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_search {background-position:-520px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_styleprops {background-position:-560px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_table {background-position:-580px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_cell_props {background-position:-600px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_delete_table {background-position:-620px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_delete_col {background-position:-640px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_delete_row {background-position:-660px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_col_after {background-position:-680px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_col_before {background-position:-700px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_row_after {background-position:-720px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_row_before {background-position:-740px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_merge_cells {background-position:-760px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_table_props {background-position:-980px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_row_props {background-position:-780px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_split_cells {background-position:-800px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_template {background-position:-820px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_visualchars {background-position:-840px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_abbr {background-position:-860px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_acronym {background-position:-880px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_attribs {background-position:-900px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_cite {background-position:-920px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_del {background-position:-940px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_ins {background-position:-960px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_pagebreak {background-position:0 -40px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_restoredraft {background-position:-20px -40px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_spellchecker {background-position:-540px -20px}
+#zenario_at_toolbars .mceExternalToolbar span.mce_visualblocks {background-position: -40px -40px}
+
+
+
+
+/* admin toolbar style */
+table#toolbar_admintable td {
+	padding: 0px 5px;
+	font-size: 11px;
+	font-family:  'Trebuchet MS', Helvetica, sans-serif;
+	color: #222;
+}
+div#toolbar_admin {
+	background: #ccc;
+	border-top:1px solid #fff;
+	border-bottom:1px solid #999;
+	text-align: left;
+}
+div#toolbar_admin img {
+	vertical-align:middle;
+	margin: 0px 2px 0px 2px;
+	border: none;
+}
+div#toolbar_admin form {
+	padding: 0px;
+	margin: 0px;
+}
+div#toolbar_admin select {
+	font-size: 10px;
+	height: 16px;
+	width: 100px;
+	font-family: 'Trebuchet MS', Helvetica, sans-serif; 
+}
+
+div#toolbar_admin input {
+	vertical-align:middle;
+
+}
+table#toolbar_message_t2 {
+	font-size:12px;
+}
+
+td.toolbar_authoring {
+	height: 38px;
+	width: 166px;
+	vertical-align:middle;
+	background: url("cms/zenario/admin/images/admin_toolbar/authoring.gif") no-repeat 4px 1px;
+}
+td.toolbar_publishing {
+	width: 166px;
+	vertical-align: middle;
+	background: url("cms/zenario/admin/images/admin_toolbar/publishing.gif") no-repeat 4px 1px;
+}
+
+input.toolbar_btn_go {
+	height:19px;
+	width:19px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection {
+	position:relative;
+	z-index:2;
+}
+
+div.zenario_admin_toolbar #zenario_middlesection {
+	position:relative;
+	z-index:1;
+	margin-top:-1px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection {
+	height: 49px;
+	background:#D1D0D0 url(../admin/images/black_grey_1pxl_strip.gif) repeat-x;
+	text-align: center;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content {
+	width: 940px;
+	margin: 0px auto;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content #zenario_toolbar_tabs {
+	float: left;
+	margin-top: 21px;
+	font-family: 'Trebuchet MS', Helvetica, sans-serif;
+	font-size: 14px;
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout {
+	float: right;
+	margin-top: 6px;
+	margin-right: 10px;
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout a,
+div.zenario_admin_toolbar #zenario_organizer_and_logout img {
+	width: 43px;
+	height: 40px;
+	margin-left:10px;
+	float: left;
+	cursor: pointer;
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout img {
+	margin-top: 6px;
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_organizer_button {
+	background-image: url(../admin/images/icons/launch_storekeeper_off.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_organizer_button:hover {
+	background-image: url(../admin/images/icons/launch_storekeeper_over.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_logout_button {
+	background-image: url(../admin/images/icons/logout_btn_off.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_logout_button:hover {
+	background-color:#007FA2;
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_content_button {
+	width: 35px;
+	background-image: url(../admin/images/icons/green_btn_big.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_content_button:hover {
+	width: 35px;
+	background-image: url(../admin/images/icons/green_btn_big.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_menu_button {
+	width: 35px;
+	background-image: url(../admin/images/icons/yellow_btn_big.gif);
+}
+
+div.zenario_admin_toolbar #zenario_organizer_and_logout #zenario_menu_button:hover {
+	width: 35px;
+	background-image: url(../admin/images/icons/yellow_btn_big.gif);
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar {
+	cursor: pointer;
+	float: left;
+	color: #545454;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on {
+	color: #01788E;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__rollback div.zenario_middle {
+	text-decoration: line-through;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_left {
+	float: left;
+	height: 28px;
+	width: 4px;
+	background: url(../admin/images/maintab_left_end_off.gif) no-repeat bottom;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_middle {
+	float: left;
+	height: 28px;
+	background: url(../admin/images/maintab_middle_off.gif) repeat-x bottom;
+	padding: 0px;
+	line-height: 28px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_middle_inner {
+	padding: 0px 20px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__edit div.zenario_middle_inner,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__rollback div.zenario_middle_inner,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__edit_disabled div.zenario_middle_inner {
+	padding: 0px 25px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar div.zenario_right {
+	float: left;
+	height: 28px;
+	width: 4px;
+	background: url(../admin/images/maintab_right_end_off.gif) no-repeat bottom;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_left {
+	background: url(../admin/images/maintab_left_end_on.gif) no-repeat bottom;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_middle {
+	background: url(../admin/images/maintab_middle_on.gif) repeat-x bottom;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar_on div.zenario_right {
+	background: url(../admin/images/maintab_right_end_on.gif) no-repeat bottom;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle {
+	font-size: 80%;
+	line-height: 32px;
+}
+
+.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle,
+.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle,
+.ie6 div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle {
+	line-height:28px;
+}
+
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__item div.zenario_middle  div.zenario_middle_inner,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template div.zenario_middle  div.zenario_middle_inner,
+div.zenario_admin_toolbar #zenario_topsection_content div.zenario_toolbar__template_family div.zenario_middle  div.zenario_middle_inner {
+	padding: 0 5px;
+}
+
+div.zenario_admin_toolbar #zenario_middlesection {
+	height: 40px;
+	background: url(../admin/images/grey_middlebar_1pxl_strip.gif);
+	text-align: center;
+}
+
+div.zenario_admin_toolbar #zenario_middlesection_content {
+	width: 940px;
+	margin: 0px auto;
+	clear:left;
+	overflow:hidden;
+}
+
+div.zenario_admin_toolbar div.zenario_section {
+	clear: none;
+	float: left;
+	margin-top: 7px;
+	margin-right: 20px;
+}
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_left {
+	float: left;
+	height: 28px;
+	width: 7px;
+	min-width: 7px;
+	background: url(../admin/images/tool_panel_left_end.gif);
+	margin: 0px;
+}
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_blue_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_brown div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_brown_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_green div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_green_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_grey div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_grey_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_orange div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_orange_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_pink div.zenario_left_with_title {
+	background: url(../admin/images/tool_panel_pink_left_end.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_title {
+	min-width: 0;
+	width: auto;
+	padding: 0;
+    line-height: 28px;
+    color: #616161;
+    font-family: Trebuchet MS;
+    font-size: 9pt;
+    cursor: default;
+}
+
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_title div {
+	padding: 0 5px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_unlinked_toplevel_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_toplevel_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_unlinked_toplevel_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_toplevel_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_unlinked_child_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_child_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_unlinked_child_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_child_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_toplevel_secondary_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_toplevel_secondary_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_child_secondary_menuitem_without_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_linked_child_secondary_menuitem_with_children div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_no_menuitem div.zenario_title div {
+	padding: 0 5px 0 24px;
+}
+
+
+div.zenario_admin_toolbar div.zenario_section_brown div.zenario_title {
+	background: url(../admin/images/tool_panel_brown_1px_strip.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_green div.zenario_title {
+	background: url(../admin/images/tool_panel_green_1px_strip.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_grey div.zenario_title {
+	background: url(../admin/images/tool_panel_grey_1px_strip.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_orange div.zenario_title {
+	background: url(../admin/images/tool_panel_orange_1px_strip.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_dark_text div.zenario_title {
+	color: #515151;
+}
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_mid_with_title {
+	width: 5px;
+	min-width: 5px;
+}
+
+div.zenario_admin_toolbar div.zenario_section_brown div.zenario_mid_with_title {
+	background: url(../admin/images/tool_panel_brown_middle.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_green div.zenario_mid_with_title {
+	background: url(../admin/images/tool_panel_green_middle.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_grey div.zenario_mid_with_title {
+	background: url(../admin/images/tool_panel_grey_middle.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section_orange div.zenario_mid_with_title {
+	background: url(../admin/images/tool_panel_orange_middle.gif);
+}
+
+div.zenario_admin_toolbar div.zenario_section div.zenario_right {
+	float: left;
+	height: 28px;
+	width: 7px;
+	min-width: 7px;
+	background: url(../admin/images/tool_panel_right_end.gif);
+	margin: 0px;
+}
+
+div.zenario_admin_toolbar div.zenario_toolbar div.zenario_section div.zenario_buttons {
+	background: url(../admin/images/tool_panel_middle_1pxl_strip.gif) repeat-x;
+	/*margin: 1px 0px 0px 0px;*/
+	height: 28px;
+	width: auto;
+	float: left;
+	margin: 0px;
+}
+
+div.zenario_admin_toolbar div.zenario_toolbar div.zenario_messagebar div.zenario_buttons {
+	background: url(../admin/images/message_bar_middle_1pxl.gif) repeat-x;
+}
+
+div.zenario_admin_toolbar .zenario_admin_toolbar_button {
+	margin-top: 2px;
+}
+
+div.zenario_admin_toolbar .zenario_admin_toolbar_button,
+div.zenario_admin_toolbar .zenario_admin_toolbar_button div {
+	float: left;
+	cursor: pointer;
+	display: block;
+	background-repeat: no-repeat;
+	height: 23px;	
+	line-height: 23px;
+}
+
+div.zenario_admin_toolbar .zenario_toolbar_warning .zenario_middle_inner {
+	background:url(../admin/images/img_warning_triangle_small_orange.png) no-repeat 97% 50%;
+}
+
+div.zenario_admin_toolbar #zenario_bottomsection {
+	height: 41px;
+	background: url(../admin/images/grey_bottombar_1pxl_strip.gif);
+	text-align: center;
+}
+
+div.zenario_admin_toolbar #zenario_bottomsection #zenario_bottomsection_content {
+	width: 940px;
+	margin: 0px auto;
+}
+
+div.zenario_admin_toolbar div.zenario_messagebar,
+div.zenario_admin_toolbar div.zenario_linkbar {
+	float: left;
+	margin-top: 5px;
+}
+
+#zenario_toolbar div.zenario_messagebar {
+	margin-top: 9px;
+}
+
+div.zenario_admin_toolbar div.zenario_messagebar div.zenario_left {
+	float: left;
+	height: 26px;
+	width: 5px;
+	min-width: 5px;
+	background: url(../admin/images/message_bar_left_end.gif);	
+}
+
+div.zenario_admin_toolbar div.zenario_messagebar div.zenario_right {
+	float: left;
+	height: 26px;
+	width: 5px;
+	min-width: 5px;
+	background: url(../admin/images/message_bar_right_end.gif);	
+}
+
+div.zenario_admin_toolbar div.zenario_messagebar div.zenario_message {
+	background: url(../admin/images/message_bar_middle_1pxl.gif) repeat-x;
+	height: 22px;
+	padding: 4px 0 3px;
+	width: 575px;
+	float: left;
+	text-align: left;
+	color:#08667e;
+	font-family: Verdana,Arial,Helvetica;
+	font-size: 13px;
+}
+
+
+#zenario_admin_toolbar #zenario_message_content {
+	padding-left: 25px;
+	background-position: 1px 0px;
+	background-repeat: no-repeat;
+	height: 22px;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar div.zenario_left {
+	float: left;
+	height: 26px;
+	padding-left: 10px;
+	width: 5px;
+	background: url(../admin/images/message_bar_left_end.gif) no-repeat right;	
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message {
+	background: url(../admin/images/message_bar_middle_1pxl.gif) repeat-x;
+	height: 22px;
+	padding: 1px 0 3px;
+	border: none;
+	float: left;
+	text-align: left;
+}
+
+
+div.zenario_admin_toolbar .zenario_linkbar,
+.zenario_toolbar_header .zenario_toolbar .zenario_messagebar .zenario_buttons .zenario_admin_toolbar_button div span {
+	color: #08667e;
+	/*font-family: 'Courier new', Courier;*/
+	font-size: 12px;
+}
+
+#zenario_admin_toolbar div.zenario_language_code span {
+	padding: 4px 0 0;
+}
+
+div.zenario_admin_toolbar .zenario_messagebar #zenario_message_content {
+	font-family: Verdana,Arial,Helvetica;
+	font-size:9pt;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message * {
+	display: block;
+	float: left;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message a {
+	cursor: pointer;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message a.zenario_admin_toolbar_link img {
+	width: 25px;
+	height: 24px;
+	padding: 3px 0 0;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message a.zenario_admin_toolbar_rename span {
+	width: 21px;
+	height: 18px;
+	padding: 3px 0 0 4px;
+	background: bottom right no-repeat url(../admin/images/message_bar_rename.png);	
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message a.zenario_admin_toolbar_rename:hover span {
+	background-image: url(../admin/images/message_bar_rename_over.png);	
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar .zenario_message input {
+	background: transparent;
+	height: 22px;
+	padding: 0 0 0 5px;
+	width: 185px;
+	border: 1px solid #bbbbbb;
+	border-top: 1px solid #dddddd;
+	border-left: 1px solid #dddddd;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	text-align: left;
+	color:#08667e;
+	font-family: Verdana,Arial,Helvetica;
+	font-size:9pt;
+}
+
+div.zenario_admin_toolbar div.zenario_linkbar div.zenario_right {
+	float: left;
+	height: 26px;
+	width: 5px;
+	background: url(../admin/images/message_bar_right_end.gif);	
+}
+
+div.zenario_grid_overlay_view {
+	position = 'absolute';
+	height:100%;
+	opacity:0.1;
+	z-index:901;
+	margin-top:0 !important;
+	padding-top:0 !important;
+}
+
+div.zenario_grid_overlay_view .span {
+	height:100%;
+	background-color:#933;
+}
+
+div.zenario_grid_overlay_view .row {
+	height:100%;
+}

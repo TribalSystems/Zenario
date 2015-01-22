@@ -1,0 +1,291 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    nav:
+        hierarchical_files:
+            panel:
+                item:
+                    css_class: zenario_file_item
+                title: Documents
+                db_items:
+                    table: |
+                        [[DB_NAME_PREFIX]]documents AS d
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
+                    hierarchy_column: d.folder_id
+                    id_column: d.id
+                    client_side: true
+                reorder:
+                    column: ordinal
+                    hierarchy_view_mode: parent_ids_and_ordinals
+                    lazy_load: true
+                disable_periodic_refresh: true
+                default_sort_column: name
+                columns:
+                    id:
+                        title: ID
+                        searchable: true
+                        db_column: d.id
+                        show_by_default: false
+                        align_right: true
+                        width: xxsmall
+                    ordinal:
+                        title: Ordinal
+                        db_column: d.ordinal
+                        show_by_default: false
+                        align_right: true
+                        width: xxsmall
+                    type:
+                        title: Type
+                        searchable: true
+                        db_column: d.type
+                        show_by_default: false
+                    folder_id:
+                        title: Folder ID
+                        db_column: d.folder_id
+                        show_by_default: false
+                        align_right: true
+                        width: xxsmall
+                    name:
+                        title: Name
+                        db_column: "concat(ifNull(f.filename, \'\'), ifNull(d.folder_name, \'\'))"
+                        show_by_default: true
+                        width: xxlarge
+                    filesize:
+                        title: File size
+                        width: small
+                        show_by_default: true
+                    folder_file_count:
+                        title: Files and folder count
+                    has_image:
+                        title: Has image
+                        db_column: d.thumbnail_id
+                        width: xxsmall
+                        format: yes_or_no
+                    plaintext_extract_details:
+                        title: Extract text
+                        width: xxlarge
+                    dont_autoset_metadata:
+                        title: Protected from auto-set
+                        db_column: d.dont_autoset_metadata
+                        width: small
+                        format: yes_or_no
+                collection_buttons:
+                    upload:
+                        label: Upload a document
+                        css_class: zenario_create_a_new
+                        tooltip: |
+                            <p>Upload one or multiple files to the Dropbox.</p>
+                            <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
+                        upload:
+                            multi: true
+                            drag_and_drop: true
+                            request:
+                                upload: "1"
+                    add_folder:
+                        label: Create a folder
+                        css_class: zenario_create_a_new
+                        admin_box:
+                            path: zenario_document_folder
+                item_buttons:
+                    upload:
+                        label: Upload to selected folder
+                        css_class: zenario_create_a_new
+                        tooltip: |
+                            <p>Upload one or multiple files to the Dropbox.</p>
+                            <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
+                        upload:
+                            multi: true
+                            drag_and_drop: true
+                            request:
+                                upload: "1"
+                        traits:
+                            is_folder: true
+                    add_folder:
+                        label: Create subfolder
+                        css_class: zenario_create_a_new
+                        admin_box:
+                            path: zenario_document_folder
+                            key:
+                                add_folder: true
+                        traits:
+                            is_folder: true
+                        
+                    folder_details:
+                        hide_in_select_mode: true
+                        label: Rename
+                        admin_box:
+                            path: zenario_document_folder
+                        traits:
+                            is_folder: true
+                    view_tags:
+                        hide_in_select_mode: true
+                        label: Edit document metadata
+                        multiple_select: false
+                        without_traits:
+                            is_folder: true
+                        admin_box:
+                            path: zenario_document_properties
+                    download:
+                        hide_in_select_mode: true
+                        label: Download
+                        multiple_select: false
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            confirm:
+                                download: true
+                                message: 'Are you sure you wish to download the file "[[name]]"?'
+                                #message_type: warning
+                                button_message: Download
+                                cancel_button_message: Cancel
+                    autoset_dropdown:
+                        label: Auto-set
+                        multiple_select: true
+                        hide_when_children_are_not_visible: true
+                    autoset:
+                        parent: autoset_dropdown
+                        hide_in_select_mode: true
+                        label: Auto-set metadata
+                        tooltip: >
+                            Apply the rules to auto-set the metadata for this document from its filename
+                        multiple_select: true
+                        multiple_select_tooltip: >
+                            Apply the rules to auto-set the metadata for these documents from their filenames
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            request: 
+                                autoset: true
+                        disabled_if_for_all_selected_items: >
+                            zenario.engToBoolean(item.dont_autoset_metadata)
+                        disabled_tooltip: >
+                            All of the selected documents are protected from auto-set
+                    dont_autoset_metadata:
+                        parent: autoset_dropdown
+                        hide_in_select_mode: true
+                        label: Protect from auto-set
+                        multiple_select: true
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            request: 
+                                dont_autoset_metadata: true
+                        visible_if_for_any_selected_items: >
+                            !zenario.engToBoolean(item.dont_autoset_metadata)
+                    allow_autoset_metadata:
+                        parent: autoset_dropdown
+                        hide_in_select_mode: true
+                        label: Allow auto-set
+                        multiple_select: true
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            request: 
+                                allow_autoset_metadata: true
+                        visible_if_for_any_selected_items: >
+                            zenario.engToBoolean(item.dont_autoset_metadata)
+                    remove_metadata:
+                        parent: autoset_dropdown
+                        hide_in_select_mode: true
+                        label: Remove all metadata
+                        multiple_select: true
+                        without_traits:
+                            is_folder: true
+                        ajax: 
+                            confirm: 
+                                message: "Are you sure you want to remove all of the metadata from the document \"[[name]]\"?"
+                                multiple_select_message: "Are you sure you want tto remove all of the metadata from the selected documents?"
+                                message_type: warning
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                            request: 
+                                remove_metadata: true
+                    rescan_dropdown:
+                        label: Rescan extract
+                        multiple_select: true
+                        hide_when_children_are_not_visible: true
+                    rescan_extract:
+                        parent: rescan_dropdown
+                        hide_in_select_mode: true
+                        label: Rescan text and image
+                        multiple_select: false
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            confirm: 
+                                message: | 
+                                    Are you sure you want to rescan the image and text? 
+                                    
+                                    If you are using a custom thumbnail image it will be lost.
+                                message_type: warning
+                                button_message: 'Ok'
+                                cancel_button_message: Cancel
+                            request: 
+                                rescan: true
+                    rescan_text:
+                        parent: rescan_dropdown
+                        hide_in_select_mode: true
+                        label: Rescan text
+                        multiple_select: false
+                        without_traits:
+                            is_folder: true
+                        ajax:
+                            request: 
+                                rescanText: true
+                        
+                    move_documents:
+                        hide_in_select_mode: true
+                        label: Move selected documents
+                        multiple_select: true
+                        multiple_select_only: true
+                        pick_items: 
+                            path: zenario__content/nav/hierarchical_files/panel
+                            target_path: zenario__content/nav/hierarchical_files/panel
+                            min_path: zenario__content/nav/hierarchical_files/panel
+                            max_path: zenario__content/nav/hierarchical_files/panel
+                            select_phrase: Select folder...
+                            request:
+                                select_folder: "1"
+                    delete_file:
+                        hide_in_select_mode: true
+                        label: Delete
+                        multiple_select: true
+                        without_traits:
+                            is_folder: true
+                        ajax: 
+                            class_name: zenario_common_features
+                            confirm: 
+                                message: "Are you sure you want to delete the document \"[[name]]\"?"
+                                multiple_select_message: "Are you sure you want to delete the selected documents?"
+                                message_type: warning
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                            request: 
+                                delete: true
+                    generate_public_link:
+                        hide_in_select_mode: true
+                        label: Generate public link
+                        multiple_select: false
+                        without_traits:
+                            is_folder: true
+                        ajax: 
+                            request: 
+                                generate_public_link: true
+                    delete_folder:
+                        hide_in_select_mode: true
+                        label: Delete
+                        multiple_select: false
+                        traits:
+                            is_folder: true
+                        ajax: 
+                            class_name: zenario_common_features
+                            confirm: 
+                                message: |
+                                    Are you sure you want to delete the folder "[[name]]"?
+                                    
+                                    If you DELETE this folder all [[folder_file_count]] files and folders within this folder will be DELETED.
+                                message_type: warning
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                            request: 
+                                delete: true

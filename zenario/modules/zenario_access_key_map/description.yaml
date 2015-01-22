@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Access Key Map
+description: |
+	<p>Using Access Keys a visitor can navigate a site using the keyboard rather than the mouse. This Module generates an Access Key Map of your Zenario website, according to Access Keys set up for each Menu Node.</p>
+			<p>The Access Key Map Module will display all Published pages that are in the Menu hierarchy.</p>
+			<p>Items which are private (i.e. password-protected for Extranet Users only) may only appear in the Access Key Map when a User is logged in, according to the setting on each Menu Node.</p>
+keywords: >
+	accesskey, disability, access, accessibility, accessible,
+	dda
+vlp_class_name: zenario_access_key_map
+css_class_name: zenario_access_key_map
+is_pluggable: Yes
+can_be_version_controlled: No
+nestable: Yes
+default_framework: standard
+default_instance_name: Access Key Map

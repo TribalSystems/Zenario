@@ -1,0 +1,26 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Footer Menu
+description: |
+	<p>An essential Module to add a footer containing single-level navigation to your site.</p>
+			
+			<p>Displays links at a single level within a single Language and Section of your menu hierarchy.</p>
+			
+			<p>We recommend you insert this Module into a Slot near the foot of your Template file, and apply across an entire Template Family.</p>
+			
+			<p>This Module supports multiple Menu Sections if you have Zenario Pro.
+				For example, instead of the "Footer" Section you could have Footer Pro display from a different Section which you create,
+				such as "Corporate".</p>
+keywords: footer, menu, navigation
+css_class_name: zenario_footer
+is_pluggable: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Footer Menu
+dependencies:
+	zenario_menu: Yes

@@ -1,0 +1,9 @@
+<span class="level {{m.orderAsc == 1? 'organizer_firstBackButton' : ''|escape}} {{m.orderDesc == 1? 'organizer_lastBackButton' : ''|escape}}">
+	<span class="sub_level">
+		<a onclick="zenarioO.back({{m.orderDesc|escape}});" title="{{zenarioA.phrase.skBackTo + ' ' + zenario.htmlspecialchars(m.title)|escape}}">
+			{{m.orderDesc == 1? zenarioA.phrase.skBackTo : ''}}
+			{{m.title|escape}}
+			<% if (m.orderDesc == 1) { %><span class="fade_out"></span><% } %>
+		</a>
+	</span>
+</span>

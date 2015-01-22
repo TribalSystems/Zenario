@@ -1,0 +1,77 @@
+email_templates:
+    installed_cms:
+        subject: "Zenario is installed successfully!"
+        from: Zenario Installer
+        body: |
+            Congratulations!
+
+            You have successfully installed Zenario.
+
+            Your site's main URL for visitors is: [[URL]][[SUBDIRECTORY]]
+
+            Your site's URL for administration: [[URL]][[SUBDIRECTORY]]zenario/admin
+
+            Here is a record of your Administrator username and password:
+            
+            Username: [[USERNAME]]
+            Password: [[PASSWORD]]
+
+            You can get support at http://zenar.io
+
+            and also http://tribalsystems.uk where hosting, support, Template Design and other development services are available.
+
+            Thank you for choosing Zenario!
+    reset_password:
+        subject: Your Zenario Admin Password has been reset
+        from: Zenario
+        body: |
+            Dear [[NAME]]
+            
+            It looks like you requested a reminder of your login details for the site at [[URL]][[SUBDIRECTORY]].
+
+            Here are your Administrator details:
+
+            Your Username: [[USERNAME]]
+            Your (newly reset) Password: [[PASSWORD]]
+
+            Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin
+
+            After you have logged into the system, please immediately change this password.
+
+            This is an automated email, please do not try to reply.
+
+            Thank you.
+    new_reset_password:
+        subject: Your Zenario Admin Username and Password
+        from: Zenario
+        body: |
+            Dear [[NAME]],
+            
+            It looks like you requested your Administrator login details at [[URL]][[SUBDIRECTORY]].
+
+            Here are your temporary Administrator login details:
+
+            Your Admin Username:           [[USERNAME]]
+            Your Temporary Admin Password: [[PASSWORD]]
+
+            What to do now:
+
+            1) Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin.
+
+            2) Enter your Admin Username and Temporary Password.
+
+            3) Choose a new Admin Password.
+
+            You can then continue administering your site in the normal way.
+
+            Note that the above password is temporary and will be invalid if you do not log in within 24 hours.
+
+            If you have not requested that the CMS send your Administrator details, please ignore this email and the temporary password, and log into your site in the normal way.
+
+            This request was made from IP address [[IP]].
+
+
+
+            This is an automated email, please do not try to reply.
+
+            Thank you.

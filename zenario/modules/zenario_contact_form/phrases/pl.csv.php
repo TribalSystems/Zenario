@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",pl
+
+Plugin
+zenario_contact_form
+
+"Phrase Code",Translation
+_ADDRESS_INCOMPLETE,"Proszę podać nazwę ulicy i numer domu."
+_ADDRESS:,"Ulica i numer domu:"
+_CAPTCHA_INVALID,"Niestety nie byliśmy w stanie potwierdzić iż formularz został wypełniony przez człowieka. Prosimy o ponowne wpisanie odpowiednich słów w polu weryfikacyjnym."
+_CAPTCHA:,"Przepraszamy za niedogodności, ale chcielibyśmy upewnić się, że wiadomość wysyłana jest przez człowieka:"
+_CITY_INCOMPLETE,"Proszę podać nazwę miejscowości."
+_CITY:,"Miejscowość:"
+_CLEAR_FORM,"Wyczyść formularz"
+_CLICK_HERE, "Kliknij tutaj"
+_COMPANY_INCOMPLETE,"Proszę podać nazwę swojej firmy."
+_COMPANY:,"Firma:"
+_CONTACT_FORM_CONFIRMATION_MSG, "Dziękujemy za Twoją wiadomość. "
+_CONTACT_US, "Kontakt z nami"
+_COUNTRY_INCOMPLETE,"Proszę podać kraj."
+_COUNTRY:,"Kraj:"
+_EMAIL_INCOMPLETE,"Proszę podać adres email."
+_EMAIL_INVALID,"Adres email jest nieprawidłowy."
+_EMAIL_MESSAGE_NOT_SENT, "Błąd. Twoja wiadomość nie mogła zostać wysłana. Przepraszamy."
+_EMAIL_SENDER_IP,"Email został wysłany z komputera o adresie IP: "
+_EMAIL:, "Adres email:"
+_HEADING,"Formularz kontaktowy"
+_MESSAGE_INCOMPLETE,"Proszę wpisać wiadomość."
+_MESSAGE:,"Wiadomość:"
+_NAME_INCOMPLETE,"Proszę podać imię."
+_NAME:, "Imię:"
+_PHONE_INCOMPLETE,"Proszę podać numer telefonu."
+_PHONE:, "Numer telefonu:"
+_POST_CODE_INCOMPLETE,"Proszę podać kod pocztowy."
+_POST_CODE:,"Kod pocztowy:"
+_PROVINCE_INCOMPLETE,"Proszę podać region."
+_PROVINCE:,"Region:"
+_SUBMIT,"Wyślij"

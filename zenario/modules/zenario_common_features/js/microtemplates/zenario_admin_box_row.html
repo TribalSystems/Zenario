@@ -1,0 +1,61 @@
+<% if (zenario.engToBoolean(m.errors)) { %>
+	<div id="errorDisplayRow" class="div_table_row"><div class="div_table_column"><div class="messageDisplay" id="errorDisplay">
+		<% for (var e in m.errors) { %>
+			<div id="errorDisplay_inner">
+				{{zenario.htmlspecialchars(m.errors[e].message, true)}}
+			</div>
+		<% } %>
+	</div></div></div>
+<% } %>	
+<% for (var n in m.notices) { %>
+	<div class="{{m.notices[n].type|escape}}DisplayRow div_table_row">
+		<div class="div_table_column">
+			<div class="messageDisplay">
+				<div>
+					{{zenario.htmlspecialchars(m.notices[n].message, true)}}
+				</div>
+			</div>
+		</div>
+	</div>
+<% } %>
+
+<% if (m.fields) { %>
+	<div id="row__{{m.fields[0]._id|escape}}" class="{{m.fields[0].type=='checkbox'? 'zenario_single_line' : ''}} zenario_ab_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}} div_table_row">
+		<% var f; %>
+		
+		<div class="div_table_column">
+			
+			<% if (!zenario.engToBoolean(m.fields[0].full_width)) { %>
+				<% for (f in m.fields) { %>
+					<% if (m.fields[f].side_note) { %>
+						<div class="zenario_side_note_wrap">
+							<div class="zenario_side_note">
+								<div class="zenario_note_icon"></div>
+								<div class="zenario_note_content">{{m.fields[f].side_note}}</div>
+							</div>
+						</div>
+					<% } %>
+				<% } %>
+				<% if (m.fields[0].label) { %>
+					<div class="title {{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
+					</div>
+				<% } %>
+			<% } %>
+			
+			<div class="{{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}} {{m.fields[0].type=='checkbox'? 'zenario_input_checkbox' : ''}}">
+				<% for (f in m.fields) { %>
+					{{m.fields[f]._html}}
+				<% } %>
+			</div>
+			<% for (f in m.fields) { %>
+				<% if (m.fields[f].note_below) { %>
+					<div class="zenario_note_below">
+						<div class="zenario_note_icon"></div>
+						<div class="zenario_note_content">{{m.fields[f].note_below}}</div>
+					</div>
+				<% } %>
+			<% } %>
+		</div>
+	</div>
+<% } %>

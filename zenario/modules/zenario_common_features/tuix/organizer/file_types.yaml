@@ -1,0 +1,68 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        file_types:
+            title: Uploadable file types
+            view_mode: list
+            disable_grid_view: Yes
+            disable_summary_view: Yes
+            db_items:
+                table: '[[DB_NAME_PREFIX]]document_types AS dt'
+                id_column: dt.type
+                encode_id_column: Yes
+            columns:
+                type:
+                    title: Extension
+                    db_column: dt.type
+                    show_by_default: Yes
+                    searchable: Yes
+                mime_type:
+                    title: MIME type
+                    db_column: dt.mime_type
+                    show_by_default: Yes
+                    searchable: Yes
+                custom:
+                    title: Custom
+                    db_column: dt.custom
+                    format: yes_or_no
+                    show_by_default: Yes
+            default_sort_column: type
+            item:
+                name: File type
+                names: File types
+                css_class: dropbox_file
+            collection_buttons:
+                create:
+                    priv: _PRIV_EDIT_CONTENT_TYPE
+                    tooltip: Define a new file type
+                    css_class: zenario_create_a_new
+                    label: Create
+                    admin_box:
+                        path: zenario_file_type
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            When uploading a file to the server, or when the CMS allows a file to be downloaded, that file must be of a type that is registered here.
+                            
+                            This panel lists all currently registered file types.
+                            
+                            Click the "Create" button to define new file types; you will need to specify the filename extension and its MIME type.
+            item_buttons:
+                delete:
+                    priv: _PRIV_EDIT_CONTENT_TYPE
+                    multiple_select: Yes
+                    multiple_select_tooltip: Delete custom file types
+                    label: Delete
+                    ajax:
+                        request:
+                            delete: "1"
+                        confirm:
+                            message: 'Are you sure you wish to delete the custom type "[[type]]"?'
+                            multiple_select_message: Are you sure you wish to delete the selected custom types?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                    traits:
+                        custom: Yes

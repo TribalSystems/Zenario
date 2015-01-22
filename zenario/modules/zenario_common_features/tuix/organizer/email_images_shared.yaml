@@ -1,0 +1,159 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	hidden_nav:
+		media:
+			panel:
+				hidden_nav:
+					email_images_shared:
+						panel:
+							php: Yes
+							key:
+								usage: email
+							enable_close_up_view: Yes
+							title: Shared Images (Email)
+							no_items_message: No email images have been shared.
+							grid_view_microtemplate: zenario_grid_view_image
+							slidedown_view_microtemplate: zenario_slidedown_view_image
+							db_items:
+								table: '[[DB_NAME_PREFIX]]files AS f'
+								where_statement: |
+									WHERE f.`usage` = 'email'
+																			  AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+																			  AND f.shared = 1
+								id_column: f.id
+							columns:
+								id:
+									db_column: f.id
+								filename:
+									title: Filename
+									searchable: Yes
+									db_column: f.filename
+									show_by_default: Yes
+								alt_tag:
+									title: Default alt-tag
+									searchable: Yes
+									db_column: f.alt_tag
+									length_limit: "64"
+								title:
+									db_column: f.title
+								checksum:
+									db_column: f.checksum
+								mime_type:
+									server_side_only: Yes
+									db_column: f.mime_type
+								size:
+									title: Size
+									format: filesize
+									db_column: f.size
+									show_by_default: Yes
+								width:
+									title: Width
+									searchable: Yes
+									db_column: f.width
+									show_by_default: Yes
+								height:
+									title: Height
+									searchable: Yes
+									db_column: f.height
+									show_by_default: Yes
+								usage_email_templates:
+									title: Usage (Email Templates)
+									db_column: |
+										(
+																						SELECT COUNT(DISTINCT foreign_key_to, foreign_key_id, foreign_key_char)
+																						FROM [[DB_NAME_PREFIX]]inline_file_link AS ifl
+																						WHERE file_id = f.id
+																						  AND foreign_key_to = 'email_template'
+																					)
+									show_by_default: Yes
+							default_sort_column: filename
+							label_format_for_popouts: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							label_format_for_picked_items: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							item:
+								name: Image
+								names: Images
+								css_class: media_image
+							collection_buttons:
+								upload:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Upload
+									upload:
+										fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+										fileDesc: Images
+										multi: Yes
+										drag_and_drop: Yes
+										request:
+											upload: Yes
+							inline_buttons:
+								view:
+									css_class: inspect
+									tooltip: View image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+							item_buttons:
+								edit:
+									label: Properties
+									admin_box:
+										path: zenario_image
+								view_dropdown:
+									label: View
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								view:
+									parent: view_dropdown
+									label: Image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+								action_dropdown:
+									label: Actions
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								unshare:
+									parent: action_dropdown
+									priv: _PRIV_MANAGE_MEDIA
+									label: Unshare
+									multiple_select: Yes
+									multiple_select_tooltip: Stop sharing these images
+									traits:
+										used: Yes
+									ajax:
+										confirm:
+											message: |
+												Are you sure you wish to stop sharing the image "[[filename]]"?
+																									
+																									It will no longer be visible in this view, but will not be deleted as it is used elsewhere.
+											multiple_select_message: |
+												Are you sure you wish to stop sharing these images?
+																									
+																									They will no longer be visible in this view, but will not be deleted as they are used elsewhere.
+											button_message: Stop sharing
+											cancel_button_message: Cancel
+											message_type: warning
+										request:
+											unshare: Yes
+								delete:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Delete
+									multiple_select: Yes
+									multiple_select_tooltip: Delete images
+									hide_in_select_mode: Yes
+									without_traits:
+										used: Yes
+									ajax:
+										confirm:
+											message: 'Are you sure you wish to delete the image "[[filename]]"?'
+											multiple_select_message: Are you sure you wish to delete these images?
+											button_message: Delete
+											cancel_button_message: Cancel
+											message_type: warning
+										request:
+											delete: "1"

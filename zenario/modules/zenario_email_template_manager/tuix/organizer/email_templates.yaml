@@ -1,0 +1,163 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+	nav:
+		email_templates: 
+			panel:
+				title: Email Templates
+				view_mode: list
+				item:
+					css_class: zenario_email_template_panel
+				db_items:
+					table: '[[DB_NAME_PREFIX]]email_templates as T'
+					id_column: T.code
+				default_sort_column: template_name
+				label_format_for_picked_items: '[[template_name]] (ID[[layout_id]])'
+				no_items_message: >
+					There are no email templates. Most modules that send emails will
+					create email templates when they are installed.
+				columns:
+					layout_id:
+						title: ID
+						db_column: T.id
+						searchable: Yes
+						show_by_default: Yes
+						width: xxsmall
+					code:
+						title: Template code
+						db_column: code
+						searchable: Yes
+						show_by_default: No
+						width: large
+					template_name:
+						title: Email template name
+						db_column: template_name
+						searchable: Yes
+						show_by_default: Yes
+						width: large
+					subject:
+						title: Subject
+						db_column: subject
+						searchable: Yes
+						show_by_default: Yes
+						width: large
+					email_name_from:
+						title: Email name from
+						db_column: email_name_from
+						searchable: Yes
+						show_by_default: Yes
+						width: medium
+					email_address_from:
+						title: Email address from
+						db_column: email_address_from
+						searchable: Yes
+						show_by_default: Yes
+						width: medium
+					date_created:
+						title: Created at
+						db_column: date_created
+						searchable: Yes
+						show_by_default: No
+						format: datetime
+						width: small
+					created_by:
+						title: Created by
+						searchable: Yes
+						show_by_default: No
+						width: medium
+					date_modified:
+						title: Last modified at
+						db_column: "IFNULL(date_modified,'---')"
+						searchable: Yes
+						show_by_default: No
+						format: datetime
+						width: small
+					modified_by:
+						title: Last modified by
+						searchable: Yes
+						show_by_default: No
+						width: small
+					last_sent:
+						title: Last sent
+						db_column: last_sent
+						searchable: Yes
+						show_by_default: Yes
+						format: datetime
+						empty_value: Never used
+						width: small
+				collection_buttons:
+					create_template:
+						priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+						css_class: zenario_create_a_new
+						label: Create
+						admin_box:
+							path: zenario_email_template
+					test:
+						priv: _PRIV_EDIT_SITE_SETTING
+						hide_in_select_mode: Yes
+						label: Send Test Email
+						tooltip: Manage Email Settings and send a Test Email
+						admin_box:
+							path: site_settings
+							key:
+								id: email
+							tab: test
+				item_buttons:
+					edit_template:
+						label: Properties
+						multiple_select: No
+						admin_box:
+							path: zenario_email_template
+					view_dropdown:
+						label: View
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					images:
+						parent: view_dropdown
+						label: Images
+						link:
+							path: zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel
+							branch: Yes
+							refiner: email_template
+					view_log:
+						parent: view_dropdown
+						label: Log
+						link:
+							path: zenario__email_template_manager/nav/email_log/panel
+							branch: Yes
+							refiner: email_template
+					action_dropdown:
+						label: Actions
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					duplicate_template:
+						parent: action_dropdown
+						priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+						label: Duplicate
+						multiple_select: No
+						admin_box:
+							path: zenario_email_template
+							key:
+								duplicate: "1"
+					delete_template:
+						priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+						hide_in_select_mode: Yes
+						label: Delete
+						multiple_select: Yes
+						
+						disabled_if_for_any_selected_items: >
+							item.protected
+						disabled_tooltip: >
+							You cannot delete email templates installed by a module that is running.
+						
+						ajax:
+							confirm:
+								message: Are you sure you wish to delete the selected email template?
+								multiple_select_message: >
+									Are you sure you wish to delete the selected email
+									templates?
+								button_message: Delete
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								action: delete_template

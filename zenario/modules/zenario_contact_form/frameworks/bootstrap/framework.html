@@ -1,0 +1,132 @@
+[cms:section name="Message_Display"]
+	<div class="alert alert-success">[cms:merge name="Message"/]</div>
+[/cms:section]
+[cms:section name="Contact_Form"]
+  [cms:merge name="Open_Form"/]
+	[cms:section name="Name_field"]
+		<div class="control-group [cms:section name="Name_field_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Name_field_label"/]</label>
+				[cms:input type="text" name="Name_field" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Name_field_Error_Msg"]<span class="help-inline">[cms:merge name="Name_field_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+	[cms:section name="Email_field"]
+		<div class="control-group [cms:section name="Email_field_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Email_field_label"/]</label>
+				[cms:input type="text" name="Email_field" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Email_field_Error_Msg"]<span class="help-inline">[cms:merge name="Email_field_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+	[cms:section name="Phone_field"]
+		<div class="control-group [cms:section name="Phone_field_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Phone_field_label"/]</label>
+				[cms:input type="text" name="Phone_field" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Phone_field_Error_Msg"]<span class="help-inline">[cms:merge name="Phone_field_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+	[cms:section name="Additional_field_1"]
+		<div class="control-group [cms:section name="Additional_field_1_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_1_label"/]</label>
+				[cms:input type="text" name="Additional_field_1" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_1_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_1_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+	[cms:section name="Additional_field_2"]
+		<div class="control-group [cms:section name="Additional_field_2_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_2_label"/]</label>
+				[cms:input type="text" name="Additional_field_2" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_2_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_2_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Additional_field_3"]
+		<div class="control-group [cms:section name="Additional_field_3_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_3_label"/]</label>
+				[cms:input type="text" name="Additional_field_3" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_3_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_3_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Additional_field_4"]
+		<div class="control-group [cms:section name="Additional_field_4_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_4_label"/]</label>
+				[cms:input type="text" name="Additional_field_4" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_4_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_4_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Additional_field_5"]
+		<div class="control-group [cms:section name="Additional_field_5_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_5_label"/]</label>
+				[cms:input type="text" name="Additional_field_5" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_5_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_5_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Additional_field_6"]
+		<div class="control-group [cms:section name="Additional_field_6_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Additional_field_6_label"/]</label>
+				[cms:input type="text" name="Additional_field_6" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Additional_field_6_Error_Msg"]<span class="help-inline">[cms:merge name="Additional_field_6_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Textarea_field"]
+		<div class="control-group [cms:section name="Textarea_field_Wrapper_Error_CSS_Class"]error[/cms:section]">
+			<div class="controls">
+				<label>[cms:merge name="Textarea_field_label"/]</label>
+				[cms:input id="contact_form_msg" type="textarea" cols="50" rows="10" name="Textarea_field" class="span6" onkeyup="zenario_contact_form.validateContactFormField(this)" /]
+				[cms:section name="Textarea_field_Error_Msg"]<span class="help-inline">[cms:merge name="Textarea_field_Error_Msg"/]</span>[/cms:section]
+			</div>
+		</div>
+	[/cms:section]
+
+
+	[cms:section name="Captcha"]
+		<div class="control-group">
+			<label>[cms:phrase code="_CAPTCHA:"/]</label>
+			[cms:merge name="Captcha"/]
+		</div>
+	[/cms:section]
+	
+	[cms:section name="Contact_Form_Buttons"]
+		<fieldset>
+			<button type="submit" name="contact_form_submit" class="btn btn-primary" value="contact_form_submit">[cms:phrase code='_SUBMIT'/]</button>
+			<button type="button" onclick="[cms:merge name='Clear_JS'/]" class="btn">[cms:phrase code='_CLEAR_FORM'/]</button>
+		</fieldset>
+	[/cms:section]
+  [cms:merge name="Close_Form"/]
+[/cms:section]
+
+[cms:section name="Contact_Form_Sent"]
+	<div class="contact_form_links">
+		<a [cms:merge name='Clear_Link'/]>[cms:phrase code="_BACK"/]</a>
+	</div>
+[/cms:section]

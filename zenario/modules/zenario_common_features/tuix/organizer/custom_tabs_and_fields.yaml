@@ -1,0 +1,159 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        custom_tabs_and_fields:
+            disable_periodic_refresh: Yes
+            items: {}
+            refiners:
+               dataset_id: {}
+            refiner_required: true
+            
+            items: {}
+            __item_hierarchy__: {}
+            default_sort_column: label
+            columns:
+                ordinal:
+                    title: Ordinal
+                    align_right: Yes
+                    width: xxsmall
+                db_column:
+                    title: Database Column
+                    searchable: Yes
+                    width: medium
+                parents:
+                    title: Parent fields
+                    show_by_default: Yes
+                    width: large
+                label:
+                    title: Label
+                    searchable: true
+                    show_by_default: Yes
+                    width: medium
+                type:
+                    title: Type
+                    format: enum
+                    values:
+                        group: 'Group'
+                        checkbox: 'Single checkbox'
+                        checkboxes: 'Multiple checkboxes'
+                        date: 'Date'
+                        editor: 'Editor'
+                        radios: 'Multiple radio-buttons'
+                        select: 'Select list'
+                        text: 'Text'
+                        textarea: 'Textarea'
+                        url: 'URL'
+                        tab: 'Tab'
+                        system_field: 'System field'
+                        system_tab: 'System tab'
+                    show_by_default: Yes
+                    width: medium
+                user_count:
+                    title: Count of records with this field set
+                    show_by_default: Yes
+                    width: xxsmall
+                protected:
+                    title: Protected
+                    width: xxsmall
+                    format: yes_or_no
+   
+            reorder:
+                priv: _PRIV_MANAGE_DATASET
+                column: ordinal
+                hierarchy_view_mode: parent_ids_and_ordinals
+                hierarchy_depth: 2
+            collection_buttons:
+                create_new_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    css_class: zenario_create_a_new
+                    label: Create a tab
+                    admin_box:
+                        path: zenario_custom_tab
+                    hide_in_select_mode: Yes
+            
+            item_buttons:
+                create_new_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_tab
+                    css_class: zenario_create_a_new
+                    label: Create a field on the selected tab
+                    admin_box:
+                        path: zenario_custom_field
+                    hide_in_select_mode: Yes
+                
+                edit_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_field && !item.is_system
+                    label: Properties
+                    admin_box:
+                        path: zenario_custom_field
+                    hide_in_select_mode: Yes
+                
+                edit_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Properties
+                    visible_if_for_all_selected_items: |
+                        item.is_tab && !item.is_system
+                    admin_box:
+                        path: zenario_custom_tab
+                    hide_in_select_mode: Yes
+                
+                edit_system_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Properties
+                    visible_if_for_all_selected_items: |
+                        !item.is_field && item.is_system
+                    admin_box:
+                        path: zenario_custom_system_tab
+                    hide_in_select_mode: Yes
+                
+                edit_system_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Properties
+                    visible_if_for_all_selected_items: |
+                        item.is_field && item.is_system
+                    admin_box:
+                        path: zenario_custom_system_field
+                    hide_in_select_mode: Yes
+                
+                delete_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Delete tab
+                    visible_if_for_all_selected_items: |
+                        item.is_tab && !item.is_system && !zenarioO.itemHierarchyArray[id]
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the tab "[[label]]"?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_tab: 1
+                    hide_in_select_mode: Yes
+                
+                delete_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_field && !item.is_system
+                    label: Delete
+                    disabled_if_for_any_selected_items: |
+                        item.protected
+                    disabled_tooltip: 'Protected fields cannot be deleted'
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the field "[[label]]" (database column "[[db_column]]")?
+                                
+                                There are [[user_count]] records(s) in which this field is populated.
+                                
+                                This action cannot be undone.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_field: 1
+                    hide_in_select_mode: Yes

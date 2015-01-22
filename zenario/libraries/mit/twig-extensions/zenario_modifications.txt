@@ -1,0 +1,42 @@
+Replaced calls to gettext() and ngettext() with calls to the phrase() or nphrase() functions:
+
+lib/Twig/Extensions/Node/Trans.php:
+	Replace:
+        $function = null === $this->getNode('plural') ? 'gettext' : 'ngettext';
+    With:
+        $function = null === $this->getNode('plural') ? 'phrase' : 'nphrase';
+
+
+
+	Replace:
+                ->write('echo strtr('.$function.'(')
+    With:
+                ->write('echo '.$function.'(')
+	
+	Replace:
+            $compiler->raw('), array(');
+    With:
+            $compiler->raw(', array(');
+
+	Replace:
+                        ->string('%count%')
+    With:
+                        ->string('count')
+
+	Replace:
+                        ->string('%'.$var->getAttribute('name').'%')
+    With:
+                        ->string($var->getAttribute('name'))
+
+	Replace:
+                    $msg .= sprintf('%%%s%%', $n->getAttribute('name'));
+    With:
+                    $msg .= '{{'. $n->getAttribute('name'). '}}';
+
+
+
+lib/Twig/Extensions/Extension/I18n.php
+	Replace:
+            'trans' => new Twig_Filter_Function('gettext'),
+    With:
+            'trans' => new Twig_Filter_Function('phrase'),

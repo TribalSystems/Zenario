@@ -1,0 +1,188 @@
+Modifications for jQuery 1.9
+	jquery.cycle.all.js
+		Replaced:
+			$.browser.msie
+		With:
+			zenario.browserIsIE()
+		Replaced:
+			$.browser.mozilla
+		With:
+			zenario.browserIsFF()
+		Replaced:
+			$.browser.opera
+		With:
+			zenario.browserIsOpera()
+
+
+jquery.colorbox.js
+  Modified a phrase
+	Replaced:
+		current: "image {current} of {total}",
+	With
+		current: "{current} / {total}",
+
+  Add a min width/height feature as per groups.google.com/forum/?fromgroups=#!topic/colorbox/BfiS7WiLKvU
+  and also set some senisble min/max widths/heights by default:
+	Replaced:
+		maxWidth: false,
+	With:
+		maxWidth: Math.floor($(window).width() * 0.9),
+	
+	Replaced:
+		maxHeight: false,
+	With:
+		maxHeight: Math.floor($(window).height() * 0.9),
+		
+	Replaced:
+		function getWidth() {
+			settings.w = settings.w || $loaded.width();
+			settings.w = settings.mw && settings.mw < settings.w ? settings.mw : settings.w;
+			return settings.w;
+		}
+		function getHeight() {
+			settings.h = settings.h || $loaded.height();
+			settings.h = settings.mh && settings.mh < settings.h ? settings.mh : settings.h;
+			return settings.h;
+		}
+	With:
+		function getWidth() {
+			settings.w = settings.w || $loaded.width();
+			if (settings.minWidth && settings.w < settings.minWidth){
+				settings.w = setSize(settings.minWidth, 'x');
+			}
+			settings.w = settings.mw && settings.mw < settings.w ? settings.mw : settings.w;
+			return settings.w;
+		}
+		function getHeight() {
+			settings.h = settings.h || $loaded.height();
+			if (settings.minHeight && settings.h < settings.minHeight){
+				settings.h = setSize(settings.minHeight, 'y');
+			}
+			settings.h = settings.mh && settings.mh < settings.h ? settings.mh : settings.h;
+			return settings.h;
+		}
+		
+	Replaced:
+				if (settings.h) {
+					photo.style.marginTop = Math.max(settings.mh - photo.height, 0) / 2 + 'px';
+				}
+	With:
+				if (settings.h || settings.minHeight) {
+					photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
+				}
+
+
+jquery.nestable.js
+	Added a new function just after serialize:
+        serialize_zenario_modified_version: function()
+        {
+            var parentId = 0,
+                list  = this,
+                output = {0: []},
+                step  = function(level, parentId, output)
+                {
+                    var items = level.children(list.options.itemNodeName);
+                    items.each(function()
+                    {
+                        var li   = $(this),
+                            item = $.extend({}, li.data()),
+                            sub  = li.children(list.options.listNodeName);
+                        if (sub.length) {
+                            step(sub, item.id, output);
+                        }
+						if (!output[parentId]) {
+							output[parentId] = [];
+						}
+						output[parentId].push(item.id);
+                    });
+                };
+            step(list.el.find(list.options.listNodeName).first(), parentId, output);
+            return output;
+        },
+	
+	Added events to the expandItem() and collapseItem() functions:
+		this.el.trigger('expandItem');
+		this.el.trigger('collapseItem');	
+	
+	Modification to allow calling the expandItem() and collapseItem() functions:
+		Replace:
+    $.fn.nestable = function(params)
+    	With:
+    $.fn.nestable = function(params, li)
+    	
+    	Replace:
+                    retval = plugin[params]();
+        With:
+                    retval = plugin[params](li);
+
+
+
+jquery.placeholder.js
+  Bugfix
+	Replaced:
+			if (!input.attr('id')) input.attr('id') = 'input_' + rnd;
+	With:
+			if (!input.attr('id')) input.attr('id', 'input_' + rnd);
+
+	Replaced:
+			.live('click',itemIn)
+			.live('focusin',itemIn)
+			.live('focusout',itemOut);
+	With:
+			.on('click',itemIn)
+			.on('focusin',itemIn)
+			.on('focusout',itemOut);
+	
+	Replaced:
+		if (boundEvents) return;
+
+		//prepare live bindings if not already done.
+		$('.' + ph)
+			.on('click',itemIn)
+			.on('focusin',itemIn)
+			.on('focusout',itemOut);
+	With:
+		$('.' + ph)
+			.unbind()
+			.on('click',itemIn)
+			.on('focusin',itemIn)
+			.on('focusout',itemOut);
+
+
+
+jquery-ui.visitor.min.js
+	This is a custom build of jQuery UI, with:
+		All of the Core components
+		The Tooltips Widget
+		All of the jQuery UI effects
+	Also, the following line has been added as a work-around for a problem for Bootstrap users where
+	Bootstrap's tooltip function clashed with jQuery's tooltip function:
+		$.widget.bridge('jQueryTooltip', $.ui.tooltip);
+
+jquery-ui.admin.min.js
+	This contains all of the jQuery UI interactions
+	It also contains the code for the bounce and puff effects that were cut from jquery-ui.visitor.min.js
+
+jquery-ui.autocomplete.min.js
+	This is the Autocomplete Widget from jQuery UI
+	The Menu Widget is also included as this is a dependancy
+
+jquery-ui.datepicker.min.js
+	This is the Datepicker Widget from jQuery UI
+
+jquery-ui.slider.min.js
+	This is the Slider Widget from jQuery UI
+
+
+
+
+css/colorbox/colorbox.css
+	Replace
+		z-index:9999
+	With
+		z-index:9999999
+
+css/jqueryui/jquery-ui.css
+	This is the "Start" theme from http://jqueryui.com/themeroller/ and http://jqueryui.com/download/
+
+	

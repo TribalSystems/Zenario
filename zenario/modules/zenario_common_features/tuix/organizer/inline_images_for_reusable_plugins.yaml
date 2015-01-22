@@ -1,0 +1,192 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	hidden_nav:
+		media:
+			panel:
+				hidden_nav:
+					inline_images_for_reusable_plugins:
+						panel:
+							php: Yes
+							key:
+								usage: inline
+							enable_close_up_view: Yes
+							title: Images used in plugins from the library
+							no_items_message: There are no images used in plugins from the library.
+							grid_view_microtemplate: zenario_grid_view_image
+							slidedown_view_microtemplate: zenario_slidedown_view_image
+							db_items:
+								table: |
+									[[DB_NAME_PREFIX]]files AS f
+																			INNER JOIN [[DB_NAME_PREFIX]]inline_file_link AS ifl
+																			   ON ifl.foreign_key_to = 'reusable_plugin'
+																			  AND ifl.file_id = f.id
+								where_statement: |
+									WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+																			  AND f.`usage` = 'inline'
+								id_column: f.id
+							columns:
+								id:
+									db_column: f.id
+								filename:
+									title: Filename
+									searchable: Yes
+									db_column: f.filename
+									show_by_default: Yes
+								alt_tag:
+									title: Default alt-tag
+									searchable: Yes
+									db_column: f.alt_tag
+									length_limit: "64"
+								title:
+									db_column: f.title
+								checksum:
+									db_column: f.checksum
+								mime_type:
+									server_side_only: Yes
+									db_column: f.mime_type
+								size:
+									title: Size
+									format: filesize
+									db_column: f.size
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								width:
+									title: Width
+									searchable: Yes
+									db_column: f.width
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								height:
+									title: Height
+									searchable: Yes
+									db_column: f.height
+									show_by_default: Yes
+									align_right: Yes
+									width: xsmall
+								shared:
+									title: Shared
+									format: yes_or_no
+									db_column: f.shared
+									show_by_default: Yes
+									width: xsmall
+								usage_plugins:
+									title: Usage
+									db_column: |
+										(
+																						SELECT COUNT(DISTINCT instance_id)
+																						FROM [[DB_NAME_PREFIX]]plugin_settings
+																						WHERE is_content = 'synchronized_setting'
+																						  AND foreign_key_to = 'file'
+																						  AND foreign_key_id = f.id
+																					)
+									align_right: Yes
+									show_by_default: Yes
+									width: xsmall
+							default_sort_column: filename
+							label_format_for_popouts: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							label_format_for_picked_items: |
+								[[filename]]
+								[[[width]] × [[height]]]
+							item:
+								name: Image
+								names: Images
+								css_class: media_image
+							collection_buttons:
+								upload:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Upload images
+									upload:
+										fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+										fileDesc: Images
+										multi: Yes
+										drag_and_drop: Yes
+										request:
+											upload: Yes
+								add:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Add
+									tooltip: Use a shared image here
+									pick_items:
+										path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel
+										target_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel
+										min_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel
+										disallow_refiners_looping_on_min_path: Yes
+										one_to_one_choose_phrase: Use
+										multiple_select: Yes
+										request:
+											add: "1"
+							inline_buttons:
+								view:
+									css_class: inspect
+									tooltip: View image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+							item_buttons:
+								edit:
+									label: Image properties
+									admin_box:
+										path: zenario_image
+								view_dropdown:
+									label: View
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								view:
+									parent: view_dropdown
+									label: Image
+									popout:
+										href: zenario/file.php
+										options:
+											type: image
+								action_dropdown:
+									label: Actions
+									multiple_select: Yes
+									hide_when_children_are_not_visible: Yes
+								share:
+									parent: action_dropdown
+									priv: _PRIV_MANAGE_MEDIA
+									label: Share
+									multiple_select: Yes
+									one_without_traits:
+										shared: Yes
+									ajax:
+										request:
+											share: Yes
+								unshare:
+									parent: action_dropdown
+									priv: _PRIV_MANAGE_MEDIA
+									label: Unshare
+									multiple_select: Yes
+									traits:
+										shared: Yes
+									ajax:
+										request:
+											unshare: Yes
+								remove:
+									priv: _PRIV_MANAGE_MEDIA
+									label: Remove
+									multiple_select: Yes
+									hide_in_select_mode: Yes
+									without_traits:
+										used: Yes
+									ajax:
+										confirm:
+											message: |
+												Are you sure you wish to remove the image "[[filename]]" from use in plugins?
+																							
+																									If it is not shared or used elsewhere it will be deleted from the system.
+											multiple_select_message: |
+												Are you sure you wish to remove these images from use in plugins?
+																									
+																									Any that are not shared or used elsewhere will be deleted from the system.
+											button_message: Remove
+											cancel_button_message: Cancel
+											message_type: warning
+										request:
+											remove: "1"

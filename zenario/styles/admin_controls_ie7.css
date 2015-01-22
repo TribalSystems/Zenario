@@ -1,0 +1,147 @@
+/*
+ * Copyright (c) 2014, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+/*  CSS file for IE7  */
+
+/*  IE6-8 need alpha filters rather than opacity. */
+/*  IE6 and 7 don't support CSS outline, so we must fake them with borders. */
+/*  In IE7 we can set a negative margin, so it's quite a close match to outlines. */
+
+.zenario_slot {
+	margin: -1px;
+	border: 1px dashed red;
+}
+
+.zenario_slotParent .zenario_slot {
+	border: 1px solid red;
+}
+
+.zenario_slot .zenario_slot {
+	border: 1px dashed orange;
+}
+
+body.zenario_pageMode_edit .zenario_reusableShownInEditMode .zenario_slot,
+body.zenario_pageMode_edit_disabled .zenario_reusableShownInEditMode .zenario_slot {
+	border: 1px dashed MediumVioletRed;
+}
+
+body.zenario_pageMode_edit .zenario_reusableShownInEditMode .zenario_slotParent .zenario_slot,
+body.zenario_pageMode_edit_disabled .zenario_reusableShownInEditMode .zenario_slotParent .zenario_slot {
+	border: 1px solid MediumVioletRed;
+}
+
+/*  When editing a slot, I should remove all of the slot borders, except for the one you're currently editing.  */
+
+body.zenario_being_edited .zenario_slotOuter .zenario_slot {
+	border: none;
+}
+
+/*  When editing a slot, put a distinct border around the slot you're currently editing.  */
+
+body.zenario_being_edited .zenario_slot_being_edited .zenario_slot {
+	border: 2px solid red;
+}
+
+
+body.zenario_pageMode_item .zenario_slotWithNoContents > div,
+body.zenario_pageMode_template .zenario_slotWithNoContents > div,
+body.zenario_pageMode_template_family .zenario_slotWithNoContents > div {
+	filter: alpha(opacity=40);
+}
+
+body.zenario_pageMode_rollback .zenario_reusable > div,
+body.zenario_pageMode_menu .zenario_slotOuter > div,
+body.zenario_pageMode_edit .zenario_reusableNotShownInEditMode > div,
+body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode > div,
+body.zenario_pageMode_item .zenario_level2 > div,
+body.zenario_pageMode_item .zenario_level3 > div,
+body.zenario_pageMode_template .zenario_level1 > div,
+body.zenario_pageMode_template .zenario_level3 > div,
+body.zenario_pageMode_template_family .zenario_level1 > div,
+body.zenario_pageMode_template_family .zenario_level2 > div {
+	filter: alpha(opacity=20);
+}
+
+body.zenario_skq_open .zenario_slot,
+body.zenario_pageMode_preview .zenario_slot,
+body.zenario_pageMode_menu .zenario_slot,
+body.zenario_pageMode_rollback .zenario_slotWithNoContents .zenario_slot,
+body.zenario_pageMode_edit .zenario_slotWithNoContents .zenario_slot,
+body.zenario_pageMode_edit_disabled .zenario_slotWithNoContents .zenario_slot,
+body.zenario_pageMode_rollback .zenario_reusable .zenario_slot,
+body.zenario_pageMode_edit .zenario_reusableNotShownInEditMode .zenario_slot,
+body.zenario_pageMode_edit_disabled .zenario_reusableNotShownInEditMode .zenario_slot,
+body.zenario_pageMode_item .zenario_level2 .zenario_slot,
+body.zenario_pageMode_item .zenario_level3 .zenario_slot,
+body.zenario_pageMode_template .zenario_level1 .zenario_slot,
+body.zenario_pageMode_template .zenario_level3 .zenario_slot,
+body.zenario_pageMode_template_family .zenario_level1 .zenario_slot,
+body.zenario_pageMode_template_family .zenario_level2 .zenario_slot {
+	border: none;
+	margin: 0;
+}
+
+
+body.zenario_pageMode_menu .zenario_slotShownInMenuMode > div,
+#zenario_afb_container .zenario_slotOuter > div {
+	filter: none;
+}
+
+
+
+/*  Fixes for the Admin Floating Boxes in ie 6 and 7  */
+#zenario_fbAdminFloatingBox .zenario_jqmHead {
+	width: 918px;
+	clear: both;
+}
+
+#zenario_fbAdminFloatingBox .zenario_jqmMain {
+	width: 944px;
+	max-width: 944px;
+	clear: both;
+}
+
+#zenario_fbAdminFloatingBox .zenario_jqmFoot {
+	width: 918px;
+	height: 12px;
+	clear: both;
+}
+
+#zenario_fbAdminFloatingBox #zenario_fbAdminInner {
+	width: 844px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+
+/* Column Picker fixes for ie 6 and 7 */
+#zenario_fbAdminViewModeOptions div#colsortfields {
+	overflow: scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}

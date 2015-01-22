@@ -1,0 +1,61 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_head_foot_slot:
+    key:
+        id: ""
+        mode: ""
+        level: ""
+        cID: ""
+        cType: ""
+        cVersion: ""
+        layoutId: ""
+    hide_tab_bar: Yes
+    tabs:
+        slot:
+            edit_mode:
+                enabled: Yes
+            fields:
+                html:
+                    label: >
+                        HTML (can include &lt;script&gt; and &lt;style&gt; tags for JavaScript and CSS):
+                    type: code_editor
+                    language: html
+                    rows: 22
+                overwrite:
+                    type: radios
+                    value: additive
+                    values:
+                        1: Overwrite layout HTML
+                        0: >
+                            Show in addition to layout HTML (code will be included
+                            afterwards)
+                cc:
+                    label: 'Cookie Consent:'
+                    type: select
+                    visible_if: >
+                        zenarioA.siteSettings.cookie_require_consent == 'explicit'
+                    value: not_needed
+                    values:
+                        not_needed:
+                            label: HTML does not contain code that sets cookies
+                        needed:
+                            label: >
+                                HTML contains code that sets cookies; hide it when consent
+                                is not given by the visitor
+                        required:
+                            label: >
+                                HTML contains code that sets cookies; hide it and request
+                                consent until consent is given by the visitor
+                output_in_admin_mode:
+                    type: checkbox
+                    label: Output in Admin Mode
+    confirm:
+        show: false
+        message: >
+            <p>You are making changes to a Slot on a Published Content Item.</p>
+            <p>The CMS will make an identical Draft version for you to work on privately.
+             Visitors will only see your changes when you Publish the new version.</p>
+        html: true
+        button_message: Create a Draft
+        cancel_button_message: Cancel
+        message_type: warning

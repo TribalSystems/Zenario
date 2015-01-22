@@ -1,0 +1,118 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	module_class_name: zenario_document_container
+	tabs:
+		first_tab:
+			fields:
+				container_mode:
+					plugin_setting:
+						name: container_mode
+					label: 'Document container mode:'
+					type: radios
+					value: documents
+					values: 
+						documents: 
+							ord: 1
+							label: "Show public document(s)"
+						user_documents: 
+							ord: 2
+							label: "Show private documents for logged in user"
+					format_onchange: Yes
+				document_source:
+					plugin_setting:
+						name: document_source
+					label: 'Select Document or Folder:'
+					pick_items:
+						path: zenario__content/nav/hierarchical_files/panel
+						min_path: zenario__content/nav/hierarchical_files/panel
+						max_path: zenario__content/nav/hierarchical_files/panel
+						target_path: zenario__content/nav/hierarchical_files/panel
+						select_phrase: Select Document or Folder...
+					format_onchange: Yes
+				show_folder_name_as_title:
+					plugin_setting:
+						name: show_folder_name_as_title
+					label: "Show selected folder name as title:"
+					type: checkbox
+				show_files_in_folders:
+					plugin_setting:
+						name: show_files_in_folders
+					label: "Show Documents:"
+					type: radios
+					value: folder
+					values:
+						all:
+							ord: 3
+							label: "In all sub-folders (all levels)"
+						sub-folders:
+							ord: 2
+							label: 'In sub-folders of selected folder (1 level down)'
+						folder:
+							ord: 1
+							label: 'Only in selected folder'
+					format_onchange: Yes
+				show_folders_in_results:
+					plugin_setting:
+						name: show_folders_in_results
+					label: "Show sub-folder names in results"
+					type: checkbox
+				show_thumbnails:
+					plugin_setting:
+						name: show_thumbnails
+					label: "Show document thumbnails (if available)"
+					type: checkbox
+					format_onchange: Yes
+				canvas:
+					plugin_setting:
+						name: canvas
+					label: 'Image canvas:'
+					type: select
+					value: unlimited
+					values:
+						unlimited:
+							ord: "1"
+							label: Unlimited size
+						fixed_width:
+							ord: "2"
+							label: Constrain by width
+						fixed_height:
+							ord: "3"
+							label: Constrain by height
+						fixed_width_and_height:
+							ord: "4"
+							label: Constrain by width and height
+						resize_and_crop:
+							ord: "5"
+							label: Resize and crop
+					format_onchange: Yes
+				width:
+					plugin_setting:
+						name: width
+					label: 'Width:'
+					type: text
+					validation:
+						required_if_not_hidden: Please enter a width.
+						numeric: The width must be a number.
+					value: ""
+					maxlength: "5"
+					style: 'width: 5em;'
+					post_field_html: '&nbsp;pixels'
+				height:
+					plugin_setting:
+						name: height
+					label: 'Height:'
+					type: text
+					validation:
+						required_if_not_hidden: Please enter a height.
+						numeric: The height must be a number.
+					value: ""
+					maxlength: "5"
+					style: 'width: 5em;'
+					post_field_html: '&nbsp;pixels'
+				document_tags:
+					plugin_setting:
+						name: document_tags
+					label: 'Only show documents with one of the tags:'
+					type: checkboxes
+					load_values_from_organizer_path: zenario__content/nav/document_tags/panel

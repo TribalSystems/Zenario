@@ -1,0 +1,13 @@
+<div class="thumbnail">
+	[cms:section name='Image']
+	<a [cms:merge name='Image_Link_Href'/][cms:merge name='Target_Blank'/] class="thumbnail"><img src="[cms:merge name='Image_Src'/]" alt="[cms:merge name='Image_Alt'/]" title="[cms:merge name='Image_Title'/]" [cms:merge name='Image_Style'/]/></a>
+	[/cms:section]
+	<div class="caption">
+		[cms:section name='Title']
+		<h3>[cms:merge name='Title'/]</h3>
+		[/cms:section]
+		[cms:section name='Text']
+		<p>[cms:merge name='Text'/]</p>
+		[/cms:section]
+	</div>
+</div>

@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Anonymous Comments
+description: |
+	<p>This Module allows Anonymous visitors to write comments on Content Items, thereby adding a useful
+				feedback feature to your web pages.</p>
+			<p>The comments editor is equipped with a rich text editor, the features of which can be enabled
+				or disabled in this Module's settings.</p>
+			<p>This Module allows you to optionally display a name and email, which the visitor is asked for when leaving a message.</p>
+			<p>Every time a new comment is created or an existing comment is edited, an email notification can be set to a specified
+				email address (typically the Website administrator). You can create and select your own Email
+				Template and this will be used to send the report. The selected Email Template can contain various
+				Merge Fields that will be replaced by real values when the email is sent. You can use the following
+				fields in the Emails sent by the Comments Module:</p>
+			<ul>
+				<li>[[cms_url]] - The URL to the website.</li>
+				<li>[[link]] - A link to the page.</li>
+				<li>[[message]] - The message that was just created or edited.</li>
+				<li>[[page_title]] - The title of the page.</li>
+				<li>[[poster_screen_name]] or [[poster_username]] - The Name and/or Email
+					(If the option to display either the name and/or the Email was enabled in the Plugin Settings.)</li>
+			</ul>
+keywords: anonymous, comment, forum, post, chat, blog, message
+vlp_class_name: zenario_anonymous_comments
+css_class_name: zenario_comments
+is_pluggable: Yes
+can_be_version_controlled: No
+nestable: Yes
+default_framework: standard
+default_instance_name: Anonymous Comments

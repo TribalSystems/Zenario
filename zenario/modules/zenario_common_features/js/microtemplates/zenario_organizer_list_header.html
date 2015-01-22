@@ -1,0 +1,22 @@
+<div
+	id="{{m.htmlId|escape}}"
+	style="width: {{m.width|escape}}px;"
+	class="organizer_cell organizer_column {{m.css_class|escape}} organizer_resizable organizer_sortable
+	
+		{% if (zenarioO.filterSetOnColumn(m.id)) { %}
+			organizer_filtering
+		{% } %}
+		{% if (zenarioO.canFilterColumn(m.id)) { %}
+			organizer_can_filter
+		{% } %}
+		{% if (zenarioO.canSortColumn(m.id)) { %}
+			{{zenarioO.sortBy == m.id? (zenarioO.sortDesc? 'sortcol_desc' : 'sortcol_asc') : ' '}}
+			organizer_can_sort" onclick="zenarioO.changeSortOrder('{{m.id|escape}}')
+		{% } %}
+	"
+	<% if (m.tooltip) { %>
+		title="{{m.tooltip|escape}}"
+	<% } %>
+>
+	<span class="label">{{m.title|escape}}</span>
+</div>

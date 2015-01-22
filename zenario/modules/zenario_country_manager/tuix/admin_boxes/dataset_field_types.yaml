@@ -1,0 +1,9 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_custom_field:
+    tabs:
+        details:
+            fields:
+                values_source:
+                    values: 
+                        'zenario_country_manager::getActiveCountries': 'Countries (active)'

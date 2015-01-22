@@ -1,0 +1,406 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+        cVersion: ""
+        source_cID: ""
+        source_cVersion: ""
+        translate: ""
+        target_language_id: ""
+        lock_language_id: ""
+        equivId: ""
+        target_template_id: ""
+        target_cType: ""
+        target_categories: ""
+        id_is_menu_node_id: ""
+        id_is_parent_menu_node_id: ""
+        target_menu_parent: ""
+        target_menu_section: ""
+        target_privacy: ""
+        target_menu_title: ""
+        target_title: ""
+        target_alias: ""
+        duplicate: ""
+        duplicate_from_menu: ""
+        source_menu: ""
+        source_menu_parent: ""
+        quick_create_content: ""
+        quick_create_menu: ""
+    title: Creating a Content Item
+    tabs:
+        meta_data:
+            ord: 10
+            label: Meta Data
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                title:
+                    ord: 20
+                    label: 'Browser title:'
+                    type: text
+                    onkeyup: |
+                        zenarioAB.contentTitleChange();
+                                                    cnt = $('#title').val().length;
+                                                    if(cnt<1) {
+                                                        $('#snippet__title_length').attr('class','title_red');
+                                                    } else if (cnt<20) {
+                                                        $('#snippet__title_length').attr('class','title_orange');
+                                                    } else if (cnt<40) {
+                                                        $('#snippet__title_length').attr('class','title_yellow');
+                                                    } else if (cnt<66) {
+                                                        $('#snippet__title_length').attr('class','title_green');
+                                                    } else {
+                                                        $('#snippet__title_length').attr('class','title_yellow');
+                                                    }
+                                                    $('#snippet__title_counter').html(cnt);
+                                                    title = $('#title').val();
+                                                    if (title.length>65) {
+                                                        title = title.substring(0,65).split(' ').slice(0, -1).join(' ') + ' ...';
+                                                    }
+                                                    $('#google_preview_title').html(title);
+                                                    if ($('#alias').val()) {
+                                                        $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                                                    }
+                    post_field_html: |
+                        <div class="snippet__title" >
+                                                        <div id="snippet__title_length" class="[[initial_class_name]]">
+                                                            <span id="snippet__title_counter">[[initial_characters_count]]</span>
+                                                        </div>
+                                                    </div>
+                    format_onchange: true
+                language_id:
+                    ord: 30
+                    label: 'Language:'
+                    type: select
+                publication_date:
+                    ord: 31
+                    label: 'Release date:'
+                    type: date
+                    change_month_and_year: true
+                    same_row: true
+                    pre_field_html: |
+                        <label for="publication_date" style="font-weight:bold;">
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                        Release Date:
+                                                    </label>
+                create_menu:
+                    ord: 39
+                    label: 'Add to menu:'
+                    type: checkbox
+                    format_onchange: true
+                menu_title:
+                    ord: 40
+                    label: 'Menu node text:'
+                    type: text
+                    onchange: zenarioAB.focus.___menu_title_changed = true;
+                    onkeyup: |
+                        get('menu_path').value =
+                                                        !get('menu_title').value?
+                                                            ''
+                                                        :    !get('menu_parent_path').value?
+                                                                get('menu_title').value
+                                                            :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                menu_path:
+                    ord: 41
+                    same_row: true
+                    pre_field_html: |
+                        <br/>
+                                                        Path:
+                    type: text
+                    disabled: disabled
+                    class: zenario_textbox_noborder
+                menu_parent_path:
+                    same_row: true
+                    ord: 42
+                    type: hidden
+                alias:
+                    ord: 50
+                    label: 'Alias:'
+                    type: text
+                    maxlength: "75"
+                    onkeyup: |
+                        if ($('#alias').val()) {
+                                                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                                                        }
+                    onchange: zenarioAB.focus.___alias_changed = true;
+                    note_below: |
+                        A friendly name for this content item, and part of its URL.
+                                                    When combined with the content item's language code, is unique.
+                                                    Lower case only, may not contain spaces or special characters.
+                    post_field_html: '<div id="alias_warning_display"></div>'
+                domain_and_subdir:
+                    same_row: true
+                    type: hidden
+                description:
+                    ord: 70
+                    label: 'Description meta tag:'
+                    type: textarea
+                    style: height:45px
+                    onkeyup: |
+                        cnt = $('#description').val().length;
+                                                    if(cnt<1) {
+                                                        $('#snippet__description_length').attr('class','description_red');
+                                                    } else if (cnt<50) {
+                                                        $('#snippet__description_length').attr('class','description_orange');
+                                                    } else if (cnt<100) {
+                                                        $('#snippet__description_length').attr('class','description_yellow');
+                                                    } else if (cnt<156) {
+                                                        $('#snippet__description_length').attr('class','description_green');
+                                                    } else {
+                                                        $('#snippet__description_length').attr('class','description_yellow');
+                                                    }
+                                                    $('#snippet__description_counter').html(cnt);
+                        
+                                                    desc = $('#description').val();
+                                                    if (desc.length>155) {
+                                                        desc = desc.substring(0,155).split(' ').slice(0, -1).join(' ') + ' ...';
+                                                    }
+                                                    $('#google_preview_description').html(desc);
+                                                    if ($('#alias').val()) {
+                                                        $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                                                    }
+                    post_field_html: |
+                        <div class="snippet__description" >
+                                                        <div id="snippet__description_length" class="[[initial_class_name]]">
+                                                            <span id="snippet__description_counter">[[initial_characters_count]]</span>
+                                                        </div>
+                                                    </div>
+                    format_onchange: true
+                google_preview:
+                    label: 'Search engine results preview:'
+                    ord: 75
+                    snippet:
+                        html: |
+                            <div  class="google_preview_container">
+                                                                    <h3 class="google_preview_title">
+                                                                        <span id="google_preview_title">
+                                                                            [[google_preview_title]]
+                                                                        </span>
+                                                                    </h3>
+                                                                    <div class="google_preview_url">
+                                                                        <div>
+                                                                            <cite id="google_preview_url">[[google_preview_url]]</cite>
+                                                                        </div>
+                                                                        <span id="google_preview_description" class="google_preview_description">
+                                                                            [[google_preview_description]]
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                keywords:
+                    ord: 80
+                    label: 'Keywords meta tag:'
+                    type: textarea
+                    style: height:30px
+                    onkeyup: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
+                    post_field_html: |
+                        <div class="snippet__keywords" >
+                                                        <div id="snippet__keywords_length" class="[[initial_class_name]]">
+                                                            <span id="snippet__keywords_counter">[[initial_characters_count]]</span>
+                                                        </div>
+                                                    </div>
+                writer_id:
+                    ord: 100
+                    label: 'Writer:'
+                    pick_items:
+                        path: zenario__users/nav/admins/panel
+                        target_path: zenario__users/nav/admins/panel
+                        min_path: zenario__users/nav/admins/panel
+                        select_phrase: Select an Administrator...
+                        nothing_selected_phrase: Nobody selected
+                    format_onchange: true
+                writer_name:
+                    ord: 110
+                    label: 'Writer name:'
+                    type: text
+                    hidden: true
+                    note_below: >
+                        You may edit this name to provide an alternative to that
+                        stored against the Administrator.
+                content_summary:
+                    label: 'Summary:'
+                    ord: 130
+                    type: editor
+                    insert_link_button:
+                        exists: true
+                    rows: "4"
+                    cols: "80"
+                lock_summary_view_mode:
+                    label: 'Protected:'
+                    ord: 140
+                    hidden: true
+                    visible_if: '!zenarioAB.editModeOn()'
+                    type: checkbox
+                    note_below: >
+                        Protected Summaries will not be updated when you edit
+                        content using the WYSIWYG Editor Plugin.
+                lock_summary_edit_mode:
+                    label: 'Protect:'
+                    ord: 150
+                    hidden: true
+                    visible_if: zenarioAB.editModeOn()
+                    type: checkbox
+                    note_below: >
+                        By protecting the Summary, changes made using the WYSIWYG
+                        Editor Plugin cannot be synced to the Summary.
+        content1:
+            ord: 25.01
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ""
+        content2:
+            ord: 25.02
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ""
+        content3:
+            ord: 25.03
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ""
+        content4:
+            ord: 25.04
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                content:
+                    full_width: true
+                    type: editor
+                    insert_link_button:
+                        exists: true
+                    style: 'width: 750px; height: 250px;'
+                thumbnail:
+                    full_width: true
+                    snippet:
+                        html: ""
+        template:
+            ord: 30
+            label: 'Layout & CSS'
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                format_on_cancel_edit: true
+                format_on_revert: true
+            notices:
+                archived_template:
+                    show: false
+                    type: warning
+                    message: The chosen Layout is archived.
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: >
+                            Use this screen to select the Layout that is used for this
+                            Content Item.
+                layout_id:
+                    label: 'Layout:'
+                    pick_items:
+                        path: zenario__layouts/nav/layouts/panel
+                        target_path: zenario__layouts/nav/layouts/panel
+                        min_path: zenario__layouts/nav/layouts/panel
+                        max_path: zenario__layouts/nav/layouts/panel
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose this Layout
+                        select_phrase: Select a Layout...
+                        hide_remove_button: true
+                    format_onchange: true
+                skin_id:
+                    label: 'Skin:'
+                    read_only: true
+                    pick_items:
+                        path: zenario__layouts/hidden_nav/skins/panel
+                        target_path: zenario__layouts/hidden_nav/skins/panel
+                        min_path: zenario__layouts/hidden_nav/skins/panel
+                        max_path: zenario__layouts/hidden_nav/skins/panel
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+                    note_below: |
+                        A &lt;div&gt; with these CSS class names will be added to this page.
+        file:
+            ord: 35
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                file:
+                    ord: 20
+                    label: 'File:'
+                    upload:
+                        drag_and_drop: true
+                        accept: ''
+                        extensions: []
+                    #format_onchange: Yes
+        
+        # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
+        privacy:
+            ord: 40
+            hidden: true
+            fields: {}
+        
+        categories:
+            ord: 50
+            label: Categories
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""
+                categories:
+                    label: 'Categories:'
+                    type: checkboxes
+                    values: ""
+                    checking_child_checks_parents: true
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: No Categories have been created.
+    
+    confirm:
+        show: false
+        html: true
+        cancel_button_message: Cancel
+        message_type: warning

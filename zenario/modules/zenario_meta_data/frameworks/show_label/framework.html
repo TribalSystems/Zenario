@@ -1,0 +1,44 @@
+[cms:section name="show_date"]
+	<div class="publication_date">
+		<span >[cms:phrase code="_RELEASE_DATE:"/]</span> [cms:merge name="Date"/]
+	</div>
+[/cms:section]
+
+[cms:section name="show_title"]
+	<div class="page_title">
+		<span>[cms:phrase code="_PAGE_TITLE:"/]</span> [cms:merge name="Title"/]
+	</div>
+[/cms:section]
+
+[cms:section name="show_description"]
+	<div class="page_description">
+		<span>[cms:phrase code="_PAGE_DESCRIPTION:"/]</span> [cms:merge name="Description"/]
+	</div>
+[/cms:section]
+
+[cms:section name="show_categories"]
+	<div class="categories">
+		<span>[cms:phrase code="_CATEGORIES:"/]</span>
+			[cms:section name="categories"]
+				<a [cms:merge name='Category_Link'/]>[cms:merge name="Category"/]</a>[cms:merge name="Comma"/]
+			[/cms:section name="categories"]
+	</div>
+[/cms:section]
+
+[cms:section name="show_keywords"]
+	<div class="keywords">
+		<span>[cms:phrase code="_KEYWORDS:"/]</span> [cms:merge name="Keywords"/]
+	</div>
+[/cms:section]
+
+[cms:section name="show_language"]
+	<div class="language">
+		<span>[cms:phrase code="_LANGUAGE:"/]</span> [cms:merge name="Language"/]
+	</div>
+[/cms:section]
+
+[cms:section name="show_writer_name"]
+	<div class="writer_name">
+		<span>[cms:phrase code="_WRITER_NAME:"/]</span> [cms:merge name="Writer_name"/]
+	</div>
+[/cms:section]

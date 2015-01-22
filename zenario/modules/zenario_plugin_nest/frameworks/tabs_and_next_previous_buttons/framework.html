@@ -1,0 +1,48 @@
+<div class="nest_wrap">
+	[cms:section name="Show_Title"]
+        <div class="nest_title">
+            <h1>[cms:merge name="Title"/]</h1>
+        </div>
+    [/cms:section]
+
+	[cms:section name='Tabs']
+		<div class="nest_tabs">
+			[cms:section name='Tab']
+				<ul>
+					<li class="[cms:merge name='Class'/]">
+						<div class="left_end"></div>
+							<a [cms:merge name='Tab_Link'/]>[cms:merge name='Tab_Name'/]</a>
+						<div class="right_end"></div>
+					</li>
+				</ul>
+			[/cms:section]
+		</div>
+	[/cms:section]
+	
+	<div class="nest_plugins_wrap">
+		[cms:section name='Plugins']
+			<div class="nest_plugins" [cms:merge name='Nest'/]>
+				[cms:section name='Plugin']
+					[cms:section name='Show_Slot'/]
+				[/cms:section]
+			</div>
+		[/cms:section]
+	</div>
+	
+	[cms:section name='Prev']
+		<a [cms:merge name='Prev_Link'/] class="prev[cms:merge name='Prev_Disabled'/]">
+			<div>
+				<span>[cms:phrase code='_PREV'/]</span>
+			</div>
+		</a>
+		<div class="background_prev"></div>
+	[/cms:section]
+	[cms:section name='Next']
+		<a [cms:merge name='Next_Link'/] class="next[cms:merge name='Next_Disabled'/]">
+			<div >
+				<span>[cms:phrase code='_NEXT'/]</span>
+			</div>
+		</a>
+		<div class="background_next"></div>
+	[/cms:section]
+</div>

@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Email Template Manager
+description: |
+	<p>
+				The Email Template Manager enables you to create pre-formatted Email Templates which are sent by a range of other modules.
+			</p>
+			<p> 
+				A site administrator can create an Email Template using a WYSIWYG editor.
+			</p>
+			<p> 
+				The email details (Subject, Email From Name, Email From Address) can be set in the Module's settings.
+			</p>
+			<p> 
+				Templates created in the Email Template Manager can be used by other modules to send newsletters, reports and other information for site visitors.
+			</p> 
+			<p>
+				This Module maintains a log of all emails sent by Zenario.
+			</p>
+keywords: email, inbox, mail, newsletter, outbox, send, template
+is_pluggable: No
+admin_floating_box_tabs:
+	tab:
+		target_class_name: zenario_email_template_manager
+		floating_box_name: View Email Log Record
+		tab_ordinal: "1"
+		tab_label: Email

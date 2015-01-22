@@ -1,0 +1,329 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    nav:
+        modules:
+            panel:
+                title: Modules
+                disable_periodic_refresh: Yes
+                view_mode: list
+                enable_close_up_view: Yes
+                slidedown_view_microtemplate: zenario_slidedown_view_module
+                
+                db_items:
+                    table: >
+                        [[DB_NAME_PREFIX]]modules as m
+                    id_column: m.id
+                    client_side: true
+                    #Don't show missing modules if they were never run
+                    where_statement: >
+                        WHERE (missing = 0 OR status != 'module_not_initialized')
+                
+                default_sort_column: display_name
+                
+                quick_filter_buttons:
+                    all:
+                        ord: 1
+                        label: "All"
+                        column: status
+                        remove_filter: true
+                    module_not_initialized:
+                        ord: 2
+                        label: "Uninitialized"
+                        column: status
+                        value: module_not_initialized
+                    module_running:
+                        ord: 3
+                        label: "Running"
+                        column: status
+                        value: module_running
+                    module_suspended:
+                        ord: 4
+                        label: "Suspended"
+                        column: status
+                        value: module_suspended
+                        
+                refiners:
+                    nestable_only:
+                        sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1'
+                        exists: Yes
+                    phrases_only:
+                        sql: 'is_pluggable = 1 AND vlp_class IS NOT NULL AND vlp_class = class_name'
+                        exists: Yes
+                    slotable_only:
+                        sql: 'status = "module_running" AND is_pluggable = 1'
+                        exists: Yes
+                    wireframe_only:
+                        sql: 'status = "module_running" AND is_pluggable = 1 AND can_be_version_controlled = 1'
+                        exists: Yes
+                    nestable_wireframes_only:
+                        sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1 AND can_be_version_controlled = 1'
+                        exists: Yes
+                
+                columns:
+                    display_name:
+                        title: Name
+                        db_column: display_name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    name:
+                        title: Directory/class name
+                        db_column: class_name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    path:
+                        title: Directory path
+                        show_by_default: No
+                        searchable: No
+                        width: xlarge
+                    status:
+                        title: Status
+                        db_column: m.status
+                        show_by_default: Yes
+                        format: enum
+                        values:
+                            module_not_initialized: Uninitialized
+                            module_running: Running
+                            module_suspended: Suspended
+                        width: small
+                    vlp_class:
+                        db_column: vlp_class
+                    dependencies:
+                        title: Dependencies
+                    dependents:
+                        title: Dependents
+                    revision:
+                        title: Revision
+                        align_right: "1"
+                        width: xxsmall
+                    license_info:
+                        title: License Info
+                    copyright_info:
+                        title: Copyright Info
+                    author_name:
+                        title: Author Name
+                        width: small
+                    keywords:
+                        title: Keywords
+                        searchable: Yes
+                    special_page:
+                        title: Linked Special Page
+                        show_by_default: Yes
+                        item_link: content_item
+                    is_pluggable:
+                        db_column: is_pluggable
+                        title: Pluggable
+                        format: yes_or_no
+                        width: xxsmall
+                    can_be_version_controlled:
+                        db_column: can_be_version_controlled
+                    nestable:
+                        db_column: nestable
+                        title: Nestable
+                        format: yes_or_no
+                        width: xxsmall
+                    listens_for:
+                        title: Signal listeners
+                    prefix:
+                        title: Table prefix
+                    comment:
+                        exists: Yes
+                label_format_for_grid_view: |
+                    [[display_name]]
+                                    [[comment]]
+                item:
+                    name: Module
+                    names: Modules
+                    css_class: plugin
+                    link:
+                        path: zenario__modules/nav/instances/panel
+                        branch: Yes
+                        refiner: plugin
+                    tooltip: |
+                            View this module's plugins
+                hidden_nav:
+                    view_frameworks:
+                        panel:
+                            title: Frameworks
+                            no_items_message: This module has no frameworks
+                            columns:
+                                name:
+                                    title: Directory name
+                                    show_by_default: Yes
+                                filename:
+                                    title: Filename
+                                    show_by_default: Yes
+                                path:
+                                    title: Path
+                                    show_by_default: Yes
+                            refiners:
+                                module:
+                                    exists: Yes
+                            view_mode: list
+                            disable_grid_view: Yes
+                            disable_summary_view: Yes
+                            item:
+                                name: Framework
+                                names: Frameworks
+                                css_class: dropbox_file
+                            item_buttons:
+                                view_dropdown:
+                                    label: View
+                                    multiple_select: Yes
+                                    hide_when_children_are_not_visible: Yes
+                                code:
+                                    parent: view_dropdown
+                                    label: Code
+                                    admin_box:
+                                        path: zenario_view_source_code
+                                        key:
+                                            type: framework
+                                        
+                collection_buttons:
+                    all_instances:
+                        select_mode_only: Yes
+                        label: View all plugins
+                        link:
+                            path: zenario__modules/nav/instances/panel
+                            branch: Yes
+                            refiner: album
+                item_buttons:
+                    view_dropdown:
+                        label: View
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    view_instances:
+                        label: Module's plugins
+                        parent: view_dropdown
+                        traits:
+                            is_pluggable: Yes
+                        link:
+                            path: zenario__modules/nav/instances/panel
+                            branch: Yes
+                            refiner: plugin
+                    usage_template:
+                        parent: view_dropdown
+                        label: "Layouts with module's plugins"
+                        traits:
+                            is_pluggable: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__layouts/nav/layouts/panel
+                            branch: Yes
+                            refiner: module_usage
+                    usage_item:
+                        parent: view_dropdown
+                        label: "Content items using this module's plugins"
+                        traits:
+                            is_pluggable: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__content/nav/content/panel
+                            branch: Yes
+                            refiner: module_usage
+                    phrases:
+                        priv: _PRIV_VIEW_LANGUAGE
+                        parent: view_dropdown
+                        label: "Module's phrases"
+                        traits:
+                            uses_vlps: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__languages/nav/vlp/panel
+                            branch: Yes
+                            refiner: language_and_plugin
+                    show_frameworks:
+                        parent: view_dropdown
+                        label: "Module's frameworks"
+                        hide_in_select_mode: Yes
+                        traits:
+                            is_pluggable: Yes
+                        link:
+                            path: zenario__modules/nav/modules/panel/hidden_nav/view_frameworks/panel
+                            branch: Yes
+                            refiner: module
+                    view_content_items:
+                        parent: view_dropdown
+                        label: Effective usage
+                        traits:
+                            is_pluggable: Yes
+                        hide_in_select_mode: Yes
+                        link:
+                            path: zenario__content/nav/content/panel
+                            branch: Yes
+                            refiner: module_effective_usage
+                    action_dropdown:
+                        label: Actions
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    run:
+                        priv: _PRIV_RUN_MODULE
+                        label: Start module
+                        traits:
+                            code_present: Yes
+                        without_traits:
+                            module_running: Yes
+                        hide_in_select_mode: Yes
+                        admin_box:
+                            path: zenario_setup_module
+                    upgrade:
+                        parent: action_dropdown
+                        priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                        label: "Upgrade compatible modules' plugins"
+                        traits:
+                            is_pluggable: Yes
+                            can_upgrade: Yes
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                html: Yes
+                                button_message: Upgrade
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                upgrade: "1"
+                    suspend:
+                        parent: action_dropdown
+                        priv: _PRIV_SUSPEND_MODULE
+                        label: Suspend module
+                        traits:
+                            module_running: Yes
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                message: 'Are you sure that you wish to suspend the module "[[display_name]]"?'
+                                button_message: Suspend
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                suspend: "1"
+                    uninstall:
+                        parent: action_dropdown
+                        priv: _PRIV_RESET_MODULE
+                        label: Reset module
+                        without_traits:
+                            module_running: Yes
+                            module_not_initialized: Yes
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                button_message: Delete data and Reset
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                uninstall: "1"
+                    remove:
+                        priv: _PRIV_RESET_MODULE
+                        label: Remove
+                        without_traits:
+                            code_present: Yes
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                button_message: Delete data and remove
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove: "1"

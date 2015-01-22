@@ -1,0 +1,76 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	tabs:
+		first_tab:
+			label: Details
+			fields:
+				show_date:
+					plugin_setting:
+						name: show_date
+					label: "Show item's release date:"
+					type: checkbox
+					value: "1"
+					format_onchange: Yes
+				date_format:
+					plugin_setting:
+						name: date_format
+					label: 'Date format:'
+					type: radios
+					value: _MEDIUM
+					values:
+						_SHORT:
+							label: Short
+						_MEDIUM:
+							label: Medium
+						_LONG:
+							label: Long
+				show_title:
+					plugin_setting:
+						name: show_title
+					label: 'Show title:'
+					type: checkbox
+					value: "1"
+				show_description:
+					plugin_setting:
+						name: show_description
+					label: 'Show description:'
+					type: checkbox
+					value: "1"
+				show_summary:
+					plugin_setting:
+						name: show_summary
+					label: 'Show summary:'
+					type: checkbox
+					value: "1"
+				show_categories:
+					plugin_setting:
+						name: show_categories
+					label: 'Show public categories:'
+					type: checkbox
+					value: ""
+				show_keywords:
+					plugin_setting:
+						name: show_keywords
+					label: 'Show keywords:'
+					type: checkbox
+					value: "1"
+				show_language_name:
+					plugin_setting:
+						name: show_language_name
+					label: 'Show language name:'
+					type: checkbox
+					value: "1"
+				show_language:
+					plugin_setting:
+						name: show_language
+					label: 'Show language:'
+					type: checkbox
+					value: "1"
+				show_writer_name:
+					plugin_setting:
+						name: show_writer_name
+					label: 'Show writer name:'
+					type: checkbox
+					value: "1"
+	module_class_name: zenario_meta_data

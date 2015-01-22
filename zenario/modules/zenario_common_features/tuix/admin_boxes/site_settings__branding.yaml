@@ -1,0 +1,88 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: branding
+    title: Editing settings for branding
+    tabs:
+        logo:
+            label: Logo
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Change the logo used on the site disabled and admin login screens.
+                
+                brand_logo:
+                    site_setting:
+                        name: brand_logo
+                    label: 'Logo:'
+                    type: radios
+                    value: zenario
+                    values:
+                        zenario:
+                            label: Use the Zenario logo
+                        custom:
+                            label: 'Use a custom logo:'
+                    redraw_onchange: true
+                
+                logo:
+                    visible_if: |
+                        zenarioAB.value('brand_logo') == 'custom'
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        If your image is larger than 500×250 it will be scaled down to fit.
+        sk:
+            label: Organizer
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Change the favicon used for Organizer.
+                
+                organizer_favicon:
+                    site_setting:
+                        name: organizer_favicon
+                    label: 'Organizer favicon:'
+                    type: radios
+                    value: zenario
+                    values:
+                        site:
+                            label: Use the site favicon
+                        zenario:
+                            label: Use the Zenario favicon
+                        custom:
+                            label: 'Use a custom favicon:'
+                    redraw_onchange: true
+                
+                favicon:
+                    visible_if: |
+                        zenarioAB.value('organizer_favicon') == 'custom'
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .ico
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        You should upload a .ico file for a favicon.
+                        (You can also use a .gif or a .png, however these will not display for visitors
+                         using Internet Explorer 10 or earlier.)
+                        The image should be either 16×16, 32×32, 48×48 or 64×64 pixels in size.

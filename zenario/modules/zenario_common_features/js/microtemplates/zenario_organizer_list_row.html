@@ -1,0 +1,56 @@
+<div
+	id="organizer_item_{{m.id|escape}}"
+	data-id="{{m.id|escape}}"
+	onclick="zenarioO.itemClick('{{m.id|escape}}', event, false, true);"
+	class="
+		organizer_row
+		{{m.css_class|escape}}
+		{{m.selected? ' organizer_selected' : ''|escape}}
+		{{m.canDoubleClick? 'organizer_doubleclickable' : ''|escape}}
+		
+		<% if (zenarioO.chooseButtonActive()) { %>
+			{{zenarioO.checkItemPickable(m.id)? 'organizer_can_choose' : 'organizer_cant_choose'|escape}}
+		<% } %>
+	"
+>
+	
+	<% if (m.slidedown_view_microtemplate) { %>
+		<div
+			id="organizer_slidedown_view_toggle_{{m.id|escape}}"
+			class="organizer_slidedown_view_toggle
+				{{m.slidedown_view_open? 'organizer_slidedown_view_toggle_open' : 'organizer_slidedown_view_toggle_closed'|escape}}
+				organizer_cell"
+			onclick="zenarioO.toggleSlidedownView('{{m.id|escape}}', event);"
+		></div>
+	<% } %>
+	
+	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenarioA.stop(event);">
+		<% if (zenarioO.itemButtonsExist) { %>
+			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
+		<% } %>
+	</div>
+	<div class="organizer_cell firstcol listicon" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;">
+		<div
+			class="image {{m.image_css_class|escape}}"
+			{{m.image? 'style="background-image: url(\'' + htmlspecialchars(m.image) + '\'); background-position: left center;"' : ''}}
+		>
+			{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioA.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}}
+		</div>
+		<% if (m.canDoubleClick) { %>
+			<a class="organizer_doubleclick" onclick="return zenarioO.itemDoubleClick('{{m.id|escape}}', event);" title="{{m.tooltip|escape}}"></a>
+		<% } %>
+	</div>
+
+	{{zenarioA.microTemplate('zenario_organizer_list_cell', m.cells)}}
+
+</div>
+
+<% if (m.slidedown_view_microtemplate) { %>
+	<% if (m.slidedown_view_open) { %>
+		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_open">
+			{{zenarioA.microTemplate(m.slidedown_view_microtemplate, {id: m.id})}}
+		</div>
+	<% } else { %>
+		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_closed"></div>
+	<% } %>
+<% } %>

@@ -1,0 +1,311 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_content_list
+    tabs:
+        first_tab:
+            label: Filter
+            fields:
+                content_type:
+                    ord: "11"
+                    plugin_setting:
+                        name: content_type
+                    label: 'Source Content Type:'
+                    type: select
+                    value: html
+                category:
+                    ord: "30"
+                    plugin_setting:
+                        name: category
+                        foreign_key_to: category
+                    label: 'Category:'
+                    pick_items:
+                        path: zenario__content/nav/categories/panel
+                        min_path: zenario__content/nav/categories/panel
+                        max_path: zenario__content/nav/categories/panel
+                        target_path: zenario__content/nav/categories/panel
+                        select_phrase: Select Category...
+                    value: ""
+        overall_list:
+            label: Overall List
+            fields:
+                use_phrases:
+                    plugin_setting:
+                        name: use_phrases
+                    label: 'Use visitor phrases'
+                    type: checkbox
+                    note_below: >
+                        When enabled, visitor phrases will be merged into the header fields. For example, use [[_MY_PHRASE]]
+                        to merge a phrase called _MY_PHRASE
+                
+                show_headings:
+                    plugin_setting:
+                        name: show_headings
+                    label: 'If results:'
+                    type: select
+                    empty_value: "Don't show a heading"
+                    values:
+                        1:
+                            label: Show a heading
+                    value: ""
+                    format_onchange: Yes
+                    
+                heading_if_items:
+                    plugin_setting:
+                        name: heading_if_items
+                    label: Heading
+                    type: text
+                    value: 'List of Content'
+                    
+                show_headings_if_no_items:
+                    plugin_setting:
+                        name: show_headings_if_no_items
+                    label: 'If no results:'
+                    type: select
+                    empty_value: "Hide the plugin's output from visitors"
+                    values:
+                        1:
+                            label: Show a heading
+                    value: ""
+                    format_onchange: Yes
+                    
+                heading_if_no_items:
+                    plugin_setting:
+                        name: heading_if_no_items
+                    label: No items heading
+                    type: text
+                    value: 'No content to list'
+                    
+                order:
+                    plugin_setting:
+                        name: order
+                    label: 'Order results by:'
+                    type: select
+                    value: Most_Recent_First
+                    values:
+                        Alphabetically: Title (alphabetically)
+                        Most_Recent_First: Release date (most recent first)
+                        Oldest_First: Release date (oldest first)
+                    note_below: |
+                        We recommend that you give your content items a release date.
+                                                    If an item does not have a release date, the item's creation date will be used instead.
+                show_more_link:
+                    plugin_setting:
+                        name: show_more_link
+                    label: 'Show a link to another item:'
+                    type: checkbox
+                    value: "0"
+                    note_below: >
+                        Use this if you wish to show a short list here, and a link
+                        to a further page with a longer list.
+                    format_onchange: Yes
+                more_hyperlink_target:
+                    plugin_setting:
+                        name: more_hyperlink_target
+                        foreign_key_to: content
+                    label: 'Link destination:'
+                    pick_items:
+                        equivalence: Yes
+                        path: zenario__content/hidden_nav/language_equivs/panel
+                        min_path: zenario__content/hidden_nav/language_equivs/panel
+                        max_path: zenario__content/hidden_nav/language_equivs/panel
+                        target_path: zenario__content/hidden_nav/language_equivs/panel
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select Content Item...
+                        hide_remove_button: Yes
+                enable_rss:
+                    plugin_setting:
+                        name: enable_rss
+                    label: 'Generate RSS feed:'
+                    type: checkbox
+                    value: "0"
+        each_item:
+            label: Each Item
+            fields:
+                show_titles:
+                    plugin_setting:
+                        name: show_titles
+                    label: "Show title:"
+                    type: checkbox
+                    value: "1"
+                data_field:
+                    plugin_setting:
+                        name: data_field
+                    label: 'Show text preview from:'
+                    type: select
+                    value: content_summary
+                    values:
+                        none:
+                            ord: "1"
+                            label: "Don't show"
+                        content_summary:
+                            ord: "2"
+                            label: "Item's summary"
+                        description:
+                            ord: "3"
+                            label: "Item's description"
+                show_sticky_images:
+                    plugin_setting:
+                        name: show_sticky_images
+                    label: "Show sticky image:"
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    note_below: |
+                        The sticky image attached to the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no sticky image exists.
+                canvas:
+                    plugin_setting:
+                        name: canvas
+                    label: 'Image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                width:
+                    plugin_setting:
+                        name: width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                height:
+                    plugin_setting:
+                        name: height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                show_dates:
+                    plugin_setting:
+                        name: show_dates
+                    label: "Show item's release date/time:"
+                    type: checkbox
+                    value: "0"
+                    format_onchange: Yes
+                date_format:
+                    plugin_setting:
+                        name: date_format
+                    label: 'Date format:'
+                    type: radios
+                    value: _MEDIUM
+                    values:
+                        _SHORT:
+                            ord: "1"
+                            label: Short
+                        _MEDIUM:
+                            ord: "2"
+                            label: Medium
+                        _LONG:
+                            ord: "3"
+                            label: Long
+                    requires: show_dates
+                show_author:
+                    plugin_setting:
+                        name: show_author
+                    label: "Show author's name"
+                    type: checkbox
+                    value: "0"
+                show_times:
+                    plugin_setting:
+                        name: show_times
+                    label: 'Show Time:'
+                    type: checkbox
+                hide_private_items:
+                    ord: "14"
+                    plugin_setting:
+                        name: hide_private_items
+                    label: 'Links to Private Items:'
+                    type: select
+                    value: "1"
+                    empty_value: "Show to all visitors"
+                    values:
+                        1:
+                            label: Only show to authorized Users
+                use_download_page:
+                    ord: "15"
+                    plugin_setting:
+                        name: use_download_page
+                    label: 'Use a download page:'
+                    type: checkbox
+                    value: ""
+                    note_below: |
+                        Link to the file's download page, rather than a direct link to the file.
+                                                    This option only applies to Document Content Items.
+        pagination:
+            label: Pagination
+            fields:
+                page_size:
+                    plugin_setting:
+                        name: page_size
+                    label: 'Number of results:'
+                    type: select
+                    values:
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        12: "12"
+                        15: "15"
+                        20: "20"
+                        50: "50"
+                        999999:
+                            label: All Possible
+                    value: "5"
+                    note_below: >
+                        If pagination is enabled, this number of summaries will be
+                        shown on each page.
+                show_pagination:
+                    plugin_setting:
+                        name: show_pagination
+                    label: 'Paginate:'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                pagination_style:
+                    plugin_setting:
+                        name: pagination_style
+                    label: 'Pagination style:'
+                    type: select
+                    value: zenario_common_features::pagCloseWithNPIfNeeded
+                page_limit:
+                    plugin_setting:
+                        name: page_limit
+                    label: 'Maximum number of pages:'
+                    type: select
+                    values:
+                        5: "5"
+                        9: "9"
+                        20: "20"
+                        99: "99"
+                    value: "9"

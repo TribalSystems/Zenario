@@ -1,0 +1,177 @@
+/*
+ * Copyright (c) 2014, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+body {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+#toolbar,
+#editor { 
+	left: 0;
+	right: 25%;
+}
+#sidebar {
+	left: 75%;
+	right: 0;
+}
+
+#toolbar {
+	top: 0;
+	position: absolute;
+	background: #e0e0e0;
+	overflow: hidden;
+	height: 40px;
+}
+#editor { 
+	top: 40px;
+	position: absolute;
+	bottom: 0px;
+}
+#sidebar {
+	top: 0;
+	bottom: 0;
+	position: absolute;
+	height: 100%;
+	background: #f0f0f0;
+}
+#sidebar.sidebarEmpty {
+	background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 25px, #d0d0d0 25px, #d0d0d0 50px);
+}
+
+#sidebar .sidepanel_title {
+	font-weight: bold;
+}
+
+.vscroll {
+	height: 100%;
+	width: 100%;
+	overflow-x: auto;
+	overflow-y: scroll;
+}
+
+.ace_gutter-layer {
+	min-width: 65px;
+}
+
+
+
+
+#toolbar select {
+	width: auto;
+}
+
+#toolbar .asterisk_explination {
+	line-height: 0.7em;
+	font-size: 0.7em;
+	font-style: italic;
+	margin-left: 75px;
+}
+
+
+#sidebar .tagPath li.active {
+	color: black;
+}
+
+#sidebar div.description {
+	max-height: 50%;
+	overflow-y: auto;
+}
+
+#sidebar div.type,
+#sidebar div.required {
+	margin: 3px 0;
+}
+
+#sidebar div.value,
+#sidebar div.properties,
+#sidebar div.additionalProperties {
+	margin: 0;
+}
+
+#sidebar .properties_table td.property_meta,
+#sidebar .properties_table td.property_name {
+	text-align: right;
+}
+
+#sidebar .properties_table td {
+	border-top: 1px solid #a0a0a0;
+}
+
+#sidebar .property td.property_meta a,
+#sidebar .property td.property_name a {
+	background: white;
+	border: #c0c0c0 1px solid;
+	border-radius: 3px;
+	padding: 0px 3px;
+}
+
+#sidebar .property td.property_meta a {
+	color: #66aa00;
+}
+
+#sidebar .property td.property_name {
+	min-width: 100px;
+}
+
+#sidebar .property.required td.property_name a:after {
+	content: ' *';
+	color: #e00000;
+}
+
+#sidebar .tag_path td.property_meta a {
+	color: #101010;
+}
+
+#sidebar .undefined_property td.property_meta a,
+#sidebar .undefined_property td.property_name a {
+	background: #e0e0e0;
+}
+
+#sidebar .undefined_property.required td.property_name a {
+	background: #ffd0d0;
+}
+
+#sidebar .property td.property_desc div {
+	width: 100%;
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 22px;
+	max-height: 22px;
+	white-space: nowrap;
+}
+
+.editor_tooltip {
+	border: 1px black solid;
+	border-radius: 3px;
+	background: #eeeeee;
+	color: black;
+	z-index: 10;
+}

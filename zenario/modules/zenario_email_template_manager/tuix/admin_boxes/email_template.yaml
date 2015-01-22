@@ -1,0 +1,62 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_email_template:
+    title: ""
+    key:
+        id: ""
+        numeric_id: ""
+        duplicate: ""
+    tabs:
+        meta_data:
+            label: Meta Data
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                always_on: Yes
+                enabled: Yes
+            fields:
+                template_name:
+                    label: 'Email Template Name:'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter a Name for this Email Template.
+                subject:
+                    label: 'Email Subject Line:'
+                    type: text
+                    maxlength: "1000"
+                    validation:
+                        required: Please enter a Subject Line for this Email Template.
+                email_address_from:
+                    label: 'Email Address From:'
+                    type: text
+                    maxlength: "100"
+                    validation:
+                        required: Please enter an Email Address.
+                        email: Please enter a valid Email Address.
+                email_name_from:
+                    label: 'Email Name From:'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter an Email Name.
+        body:
+            label: Email Body
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                always_on: Yes
+                enabled: Yes
+            fields:
+                body:
+                    full_width: Yes
+                    type: editor
+                    style: 'width: 98%;'
+                    rows: "30"
+                    insert_image_button:
+                        pick_items:
+                            path: ""
+                            target_path: ""
+                            min_path: ""
+                            max_path: ""
+                            disallow_refiners_looping_on_min_path: Yes
+                    insert_link_button:
+                        exists: Yes

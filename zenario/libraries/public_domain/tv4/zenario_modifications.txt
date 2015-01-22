@@ -1,0 +1,148 @@
+Added customised_messages.js
+
+Some tweaks to make the error reporting for "oneOf" more descriptive:
+  Replaced:
+				return this.createError(ErrorCodes.ONE_OF_MULTIPLE, {index1: validIndex, index2: i}, "", "/oneOf");
+  With:
+				if (typeof schema.oneOf[i].required == 'string') i = schema.oneOf[i].required;
+				else if (_.isArray(schema.oneOf[i].required)) i = schema.oneOf[i].required.join(', ');
+				
+				if (typeof schema.oneOf[validIndex].required == 'string') validIndex = schema.oneOf[validIndex].required;
+				else if (_.isArray(schema.oneOf[validIndex].required)) validIndex = schema.oneOf[validIndex].required.join(', ');
+				
+				return this.createError(ErrorCodes.ONE_OF_MULTIPLE, {index1: validIndex, index2: i}, "", "/oneOf");
+
+  Replaced:
+		return this.createError(ErrorCodes.ONE_OF_MISSING, {}, "", "/oneOf", errors);
+  With:
+		var props = '';
+		_.each(schema.oneOf, function(oneOf) {
+			if (typeof oneOf.required == 'string') {
+				props += ', ' + oneOf.required;
+			} else if (_.isArray(oneOf.required)) {
+				props += ', ' + oneOf.required.join(', ');
+			}
+		});
+		
+		if (props) return this.createError(ErrorCodes.ONE_OF_MISSING, {keys: props.substr(2)}, "", "/oneOf", errors);
+		
+		return this.createError(ErrorCodes.ONE_OF_MISSING, {}, "", "/oneOf", errors);
+
+
+
+Added a workaround for a problem where PHP might turn perfectly valid numbers into strings, and where we use 0s and 1s for booleans
+  Replaced:
+	for (var i = 0; i < allowedTypes.length; i++) {
+		var type = allowedTypes[i];
+		if (type == dataType || (type == "integer" && dataType == "number" && (data%1 == 0))) {
+			return null;
+		}
+	}
+	
+  With:
+	var altDataType1 = '',
+		altDataType2 = '';
+	
+	if (dataType == 'string'
+	 && data == 1 * data
+	 && data.replace(/[0-9\.]/g, '') == '') {
+		altDataType1 = dataType;
+		data = 1 * data;
+		dataType = typeof data;
+	}
+	if (data == 1 || data == 0 || data == '') {
+		altDataType2 = 'boolean';
+	}
+	
+	for (var i = 0; i < allowedTypes.length; i++) {
+		var type = allowedTypes[i];
+		if (type == dataType || type == altDataType1 || type == altDataType2 || (type == "integer" && dataType == "number" && (data%1 == 0))) {
+			return null;
+		}
+	}
+	
+
+
+Added validateObjectDependenciesIfTrue() and validateObjectForbiddenIfTrue() as copies of validateObjectDependencies():
+  Replaced:
+ 		|| this.validateObjectDependencies(data, schema)
+  With:
+ 		|| this.validateObjectDependencies(data, schema)
+		|| this.validateObjectDependenciesIfTrue(data, schema)
+		|| this.validateObjectForbiddenIfTrue(data, schema)
+	
+  Replaced:
+ 	OBJECT_DEPENDENCY_KEY: 304,
+  With:
+ 	OBJECT_DEPENDENCY_KEY: 304,
+	OBJECT_DEPENDENCY_IF_TRUE_KEY: 305,
+	OBJECT_FORBIDDEN_IF_TRUE_KEY: 306,
+	
+	Added:
+ValidatorContext.prototype.validateObjectDependenciesIfTrue = function validateObjectDependenciesIfTrue(data, schema) {
+	var error;
+	if (schema.dependencies_if_true != undefined) {
+		for (var depKey in schema.dependencies_if_true) {
+			if (zenario.engToBoolean(data[depKey])) {
+				var dep = schema.dependencies_if_true[depKey];
+				if (typeof dep == "string") {
+					if (data[dep] === undefined) {
+						error = this.createError(ErrorCodes.OBJECT_DEPENDENCY_IF_TRUE_KEY, {key: depKey, missing: dep}).prefixWith(null, depKey).prefixWith(null, "dependencies_if_true");
+						if (this.handleError(error)) {
+							return error;
+						}
+					}
+				} else if (Array.isArray(dep)) {
+					for (var i = 0; i < dep.length; i++) {
+						var requiredKey = dep[i];
+						if (data[requiredKey] === undefined) {
+							error = this.createError(ErrorCodes.OBJECT_DEPENDENCY_IF_TRUE_KEY, {key: depKey, missing: requiredKey}).prefixWith(null, "" + i).prefixWith(null, depKey).prefixWith(null, "dependencies_if_true");
+							if (this.handleError(error)) {
+								return error;
+							}
+						}
+					}
+				} else {
+					if (error = this.validateAll(data, dep, [], ["dependencies_if_true", depKey])) {
+						return error;
+					}
+				}
+			}
+		}
+	}
+	return null;
+}
+
+ValidatorContext.prototype.validateObjectForbiddenIfTrue = function validateObjectForbiddenIfTrue(data, schema) {
+	var error;
+	if (schema.forbidden_if_true != undefined) {
+		for (var depKey in schema.forbidden_if_true) {
+			if (zenario.engToBoolean(data[depKey])) {
+				var dep = schema.forbidden_if_true[depKey];
+				if (typeof dep == "string") {
+					if (data[dep] !== undefined) {
+						error = this.createError(ErrorCodes.OBJECT_FORBIDDEN_IF_TRUE_KEY, {key: depKey, missing: dep}).prefixWith(null, depKey).prefixWith(null, "forbidden_if_true");
+						if (this.handleError(error)) {
+							return error;
+						}
+					}
+				} else if (Array.isArray(dep)) {
+					for (var i = 0; i < dep.length; i++) {
+						var requiredKey = dep[i];
+						if (data[requiredKey] !== undefined) {
+							error = this.createError(ErrorCodes.OBJECT_FORBIDDEN_IF_TRUE_KEY, {key: depKey, missing: requiredKey}).prefixWith(null, "" + i).prefixWith(null, depKey).prefixWith(null, "forbidden_if_true");
+							if (this.handleError(error)) {
+								return error;
+							}
+						}
+					}
+				} else {
+					if (error = this.validateAll(data, dep, [], ["forbidden_if_true", depKey])) {
+						return error;
+					}
+				}
+			}
+		}
+	}
+	return null;
+}

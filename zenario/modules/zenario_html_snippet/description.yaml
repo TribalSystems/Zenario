@@ -1,0 +1,17 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Raw HTML Snippet
+description: |
+	<p>Displays a block of static HTML in the given Slot.</p>
+			<p>For security, PHP code will not be executed.</p>
+css_class_name: zenario_html_snippet
+is_pluggable: Yes
+can_be_version_controlled: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled HTML Snippet

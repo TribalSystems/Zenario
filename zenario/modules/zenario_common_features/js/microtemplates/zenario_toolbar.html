@@ -1,0 +1,23 @@
+<div class="zenario_at_container zenario_at_tabs_container">
+	<div class="zenario_at_content zenario_at_tabs">
+		{{zenarioA.microTemplate('zenario_toolbar_tab', m.tabs)}}
+	</div>
+</div>
+<div class="zenario_at_status_icons_container">
+	<div class="zenario_at_status_icons">
+		{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+	</div>
+</div>
+<div class="zenario_at_container zenario_at_toolbar_container">
+	<div id="zenario_at_toolbars">
+		
+		<% if (zenario.showDevTools) { %>
+			<div class="zenario_debug" onclick="zenarioA.debug('zenarioAT');"><div></div></div>
+		<% } %>
+		
+		<div class="zenario_at_status_button">
+			{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}
+		</div>
+		{{zenarioA.microTemplate(m.toolbar_microtemplate, m)}}
+	</div>
+</div>

@@ -1,0 +1,44 @@
+<%
+	var json_data = zenario.handlePluginAJAX('zenario_common_features', {slidedown_content_item_req: m.id}, undefined, true);
+	/*
+	var value;
+	var getColValue = function(col_name) { return zenarioO.columnValue(m.id, col_name);};
+	var first_created_datetime = getColValue('first_created_datetime');
+	var created_datetime = getColValue('created_datetime');
+	var concealed_datetime = getColValue('concealed_datetime');
+	var last_modified_datetime = getColValue('last_modified_datetime');
+	var published_datetime = getColValue('published_datetime');
+	var publication_date = getColValue('publication_date');
+	var writer_name = getColValue('writer_name');
+        */
+%>
+
+<table class="table-bordered">
+    <tr><th>Version</th><th>Status</th><th>Created</th>
+		<th>Last edited</th><th>Published</th><th>Comments</th></tr>
+    <% 
+        var versions = json_data.versions; 
+        for(var i =0, len=versions.length; i < len; ++i) {
+            var rec = versions[i];
+    %>
+    <tr>
+            <td>{{rec.version}}</td>
+            <td>{{rec.status}}</td>
+            <td>{{rec.created_datetime}} by {{rec.creating_author}}</td>
+            <td>
+            <% if (rec.last_modified_datetime) { %>
+            	{{rec.last_modified_datetime}} by {{rec.last_author}}
+            <% } %>
+            </td>
+            <td>
+            <% if (rec.published_datetime) { %>
+            	{{rec.published_datetime}} by {{rec.publisher}}
+            <% } %>
+            
+            
+            </td>
+            <td>{{rec.comments}}</td>
+    </tr>
+    <% } %>
+</table>
+

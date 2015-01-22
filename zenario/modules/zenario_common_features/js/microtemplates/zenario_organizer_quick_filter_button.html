@@ -1,0 +1,13 @@
+<ul>
+	<li class="
+		{{m.css_class|escape}}
+		{{m.enabled? 'organizer_qfb_enabled' : ''}}
+		{{m.children? 'organizer_qfb_with_child' : 'organizer_qfb_no_child'}}
+		{{m.childEnabled? 'organizer_qfb_with_child_enabled' : ''}}
+	">
+		<a href="{{zenario.ifNull(m.href, '#')|escape}}" title="{{m.tooltip|escape}}" onclick="{{m.onclick}}">
+			<span>{{m.label|escape}}</span>
+		</a>
+		{{m.children? '<ul>' + zenarioA.microTemplate('zenario_organizer_quick_filter_button_children', m.children) + '</ul>'  : ''}}
+	</li>
+</ul>

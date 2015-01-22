@@ -1,0 +1,25 @@
+<% if (zenario.showDevTools) { %>
+	<div class="zenario_debug" onclick="zenarioA.debug('zenarioO', true);"><div></div></div>
+<% } %>
+<div id="organizer_topLevelNav">
+	<div id="organizer_topLevelNavInner">
+		{{zenarioA.microTemplate('zenario_organizer_nav_top_level', m.items)}}
+	</div>
+</div>
+<div class="organizer_sectionTitleTextAnd2ndLevelNav">
+	<div class="organizer_sectionTitleText">
+		<div class="organizer_sectionTitle">
+			{{m.items[m.selected1st].label|escape}}
+		</div>
+		<div class="organizer_sectionText">
+			{{m.items[m.selected1st].tooltip|escape}}
+		</div>
+	</div>
+	<div class="organizer_2ndLevelNav">
+		{{zenarioA.microTemplate('zenario_organizer_nav_second_level', m.items[m.selected1st].items)}}
+	</div>
+</div>
+<div id="organizer_topLevelNavScroll">
+	<div id="organizer_topLevelNavScrollUp">▲</div>
+	<div id="organizer_topLevelNavScrollDown">▼</div>
+</div>

@@ -1,0 +1,204 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+	title: Editing settings for email
+	tabs:
+		email:
+			label: Email
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: |
+							This tab contains default settings for the Emails sent by your site.
+															These are also used as default values for any Email Templates created when installing a Module.
+				email_address_admin:
+					site_setting:
+						name: email_address_admin
+					label: 'Admin Email Address:'
+					type: text
+					note_below: |
+						Email address to which general administrative emails should be sent.
+													This is used during an Extranet User signup and other places.
+					validation:
+						required: Please enter an Email Address.
+						email: Please enter a valid Email Address.
+				email_address_system:
+					label: 'System Email Address:'
+					type: text
+					read_only: Yes
+					note_below: |
+						Any errors that occur on the site will be sent to this address.
+														You can change this address by editing the <code>EMAIL_ADDRESS_GLOBAL_SUPPORT</code> definition
+														in your <code>zenario_siteconfig.php</code> file.
+				email_address_from:
+					site_setting:
+						name: email_address_from
+					label: 'Email Address &quot;From&quot;:'
+					type: text
+					value: myname@example.com
+					note_below: |
+						Email address which all server-generated emails should appear to come from.
+															(Some anti-spam systems can wrongly identify server-generated emails as spam,
+															 so you might want to choose a special address here and tell your anti-spam software about it.
+															 You might also use a real email account if you want to trap undeliverable messages sent to users,
+															 so that you catch any bounces via this account.)
+														<br/>
+															If you enter your own SMTP details on the SMTP tab then the &amp;quot;From&amp;quot; address
+															may be overwritten by your SMTP server.
+					validation:
+						required: 'Please enter an Email Address &quot;From&quot;.'
+						email: 'Please enter a valid Email Address &quot;From&quot;.'
+				email_name_from:
+					site_setting:
+						name: email_name_from
+					label: 'Email Name &quot;From&quot;:'
+					type: text
+					value: Manager
+					note_below: 'A real name associated with the Email Address &quot;From&quot;.'
+					validation:
+						required: Please enter a Name.
+		smtp:
+			label: SMTP
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+				validate_on_revert: Yes
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: |
+							<p>
+																	When the CMS sends an email, it can either use the PHP <code>mail()</code> function,
+																	or it can connect to a SMTP server.
+																	If not correctly set up, any emails sent could be lost without trace.
+																</p>
+				smtp_specify_server:
+					site_setting:
+						name: smtp_specify_server
+					label: 'Specify a mail server:'
+					type: radios
+					value: ""
+					values:
+						- Use PHP mail()
+						- Use SMTP
+					redraw_onchange: Yes
+				smtp_host:
+					site_setting:
+						name: smtp_host
+					label: 'Server Name:'
+					type: text
+					value: ""
+					note_below: e.g. smtp.example.com
+					visible_if: "zenarioAB.value('smtp_specify_server')"
+				smtp_port:
+					site_setting:
+						name: smtp_port
+					label: 'Port Number:'
+					type: text
+					value: "25"
+					style: 'width: 5em;'
+					visible_if: "zenarioAB.value('smtp_specify_server')"
+					validation:
+						numeric: The Port number must be numeric.
+				smtp_security:
+					site_setting:
+						name: smtp_security
+					label: 'Security:'
+					type: select
+					value: ""
+					empty_value: None
+					values:
+						tls: Transport Layer Security (tls)
+						ssl: Secure Sockets Layer (ssl)
+					visible_if: "zenarioAB.value('smtp_specify_server')"
+				smtp_use_auth:
+					site_setting:
+						name: smtp_use_auth
+					label: 'Use Authentication:'
+					type: checkbox
+					value: ""
+					visible_if: "zenarioAB.value('smtp_specify_server')"
+					redraw_onchange: Yes
+				smtp_username:
+					site_setting:
+						name: smtp_username
+					label: 'Username:'
+					type: text
+					value: ""
+					visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"
+				smtp_password:
+					site_setting:
+						name: smtp_password
+					label: 'Password:'
+					type: password
+					visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"
+		test:
+			priv: _PRIV_EDIT_SITE_SETTING
+			label: Test
+			edit_mode:
+				enabled: Yes
+				always_on: Yes
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: |
+							This tab allows you to send a test email.
+															
+															If you do not receive the test email, you may need to change the settings on the SMTP tab.
+				test_send_email_address:
+					type: text
+					maxlength: "100"
+					label: 'Test Send:'
+				test_send_button:
+					same_row: Yes
+					type: submit
+					format_onchange: Yes
+					value: Test Send
+					class: submit_selected
+			notices:
+				test_send_sucesses:
+					show: ""
+					type: success
+					message: ""
+				test_send_error:
+					show: ""
+					type: error
+					message: ""
+			show_errors_after_field: description
+		debug:
+			label: Debug
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: "This tab contains settings for overriding the recipient's address for all emails sent by the CMS."
+				debug_override_enable:
+					label: 'Debug mode:'
+					site_setting:
+						name: debug_override_enable
+					type: checkbox
+					value: ""
+					format_onchange: Yes
+					note_below: "Route all email to the debug email address rather than recipients' email addresses."
+				debug_override_email_address:
+					label: 'Debug email address:'
+					site_setting:
+						name: debug_override_email_address
+					type: text
+					value: ""
+					validation:
+						required_if_not_hidden: Please enter an email address.
+						email: Please enter a valid email address.
+	setting_group: email

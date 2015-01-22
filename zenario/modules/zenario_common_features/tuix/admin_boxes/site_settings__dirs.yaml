@@ -1,0 +1,77 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing settings for CMS directories
+    tabs:
+        backup_dir:
+            label: Backups
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                dir_1_blurb:
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            If you wish to store site backups on your server, you should create a directory on your server in which to keep them.
+                                                            It should start with a slash, but do not add a trailing slash.
+                backup_dir:
+                    site_setting:
+                        name: backup_dir
+                    label: 'Backup directory:'
+                    row_class: sub_field
+                    type: text
+                    onkeyup: zenarioAB.quickValidateWelcomePage(500);
+                backup_dir_status:
+                    snippet:
+                        html: '&nbsp;'
+        docstore_dir:
+            label: Docstore
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                dir_2_blurb:
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            You should create a directory on your server where documents can be stored by the CMS.
+                                                            Please enter the absolute path to the directory.
+                                                            It should start with a slash, but do not add a trailing slash.
+                docstore_dir:
+                    site_setting:
+                        name: docstore_dir
+                    label: 'Source document directory (Docstore):'
+                    row_class: sub_field
+                    type: text
+                    onkeyup: zenarioAB.quickValidateWelcomePage(500);
+                docstore_dir_status:
+                    row_class: sub_field
+                    snippet:
+                        html: '&nbsp;'
+        template_dir:
+            label: Templates
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                dir_4_blurb:
+                    full_width: true
+                    row_class: sub_field
+                    snippet:
+                        html: |
+                            Zenario relies on a system of template files to deliver content to a visitor-facing page.
+                            You should create the following directory in which to store them.
+                template_dir:
+                    label: 'Template directory:'
+                    row_class: sub_field
+                    type: text
+                    readonly: true
+                template_dir_can_be_readonly:
+                    site_setting:
+                        name: template_dir_can_be_readonly
+                    label: 'Allow this to be readonly'
+                    type: checkbox
+    setting_group: dirs

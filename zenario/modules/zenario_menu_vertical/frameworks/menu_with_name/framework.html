@@ -1,0 +1,34 @@
+[cms:section name="Level_1"]
+	[cms:section name="User_Names"]
+		<div class="extranet_user_greeting">[cms:phrase code='_GREETING_MESSAGE'/] [cms:merge name="first_name"/] [cms:merge name="last_name"/]</div>
+	[/cms:section]
+<div class="wrap_menu">
+<div class="wrap_menu_outer">
+<div class="wrap_menu_inner">
+
+	[cms:section name="Level_1_Link"]
+		<ul[cms:merge name='Admin_Button_Class'/]>
+			<li class="[cms:merge name='Class'/]">
+				<div class="left_end"></div>
+					<span class="menu_image">[cms:merge name="Image"/]</span>
+					[cms:merge name="Hyperlink"/]
+					[cms:section name="Level_X"]
+						<ul[cms:merge name='Admin_Button_Class'/]>
+							[cms:section name="Level_X_Link"]
+								<li class="[cms:merge name='Class'/]">
+									<span class="menu_image">[cms:merge name="Image"/]</span>
+									[cms:merge name="Hyperlink"/]
+									[cms:section name="Level_X_Plus_1_Link"][/cms:section]
+								</li>
+							[/cms:section]
+						</ul>
+					[/cms:section]
+				<div class="right_end"></div>
+			</li>
+		</ul>
+	[/cms:section]
+	
+</div>
+</div>
+</div>
+[/cms:section]

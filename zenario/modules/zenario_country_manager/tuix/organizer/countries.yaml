@@ -1,0 +1,271 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__languages:
+	nav:
+		zenario__countries:
+			label: Countries
+			tooltip: "Configure countries and regions which will be available to your site's modules"
+			panel:
+				php: Yes
+				title: Countries
+				view_mode: list
+				multiple_select_mode_title: Select countries
+				select_mode_title: Select a country
+				db_items:
+					table: '[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries AS c'
+					id_column: c.id
+				default_sort_column: country_name
+				columns:
+					country_code:
+						title: ISO code
+						db_column: c.id
+						show_by_default: Yes
+						searchable: Yes
+						width: xsmall
+					country_name:
+						title: Internal name
+						db_column: c.english_name
+						show_by_default: Yes
+						searchable: Yes
+						width: large
+					vlp_phrase:
+						title: Visitor phrase code
+						db_column: "CONCAT('_COUNTRY_NAME_',c.id)"
+						show_by_default: Yes
+						width: large
+					country_status:
+						title: Status
+						db_column: "IF(c.active=1,'active','suspended')"
+						show_by_default: Yes
+						width: xsmall
+				item:
+					css_class: zenario_country_manager_country
+					name: Country
+					names: Countries
+					tooltip_when_link_is_active: "View this country's regions"
+					link:
+						path: zenario__languages/nav/zenario__countries/panel/regions/panel
+						branch: Yes
+						refiner: country_code_filter
+				hidden_nav:
+					country_id_to_phrase_id:
+						panel:
+							db_items:
+								table: '[[DB_NAME_PREFIX]]visitor_phrases AS vp'
+								id_column: vp.id
+							refiners:
+								country_id_to_phrase_id:
+									sql: |
+										vp.module_class_name = 'zenario_country_manager'
+																					AND vp.language_id = [[FOCUSED_LANGUAGE_ID]]
+																					AND vp.code = CONCAT('_COUNTRY_NAME_', [[REFINER_ID]])
+							refiner_required: Yes
+							item:
+								link:
+									path: zenario__languages/nav/vlp/vlp_chained/panel
+									branch: Yes
+									refiner: translations
+							allow_bypass: Yes
+							return_if_empty: Yes
+				collection_buttons:
+					create_country:
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						ord: "1"
+						css_class: zenario_create_a_new
+						label: Create a country
+						admin_box:
+							path: zenario_country_manager__country
+				item_buttons:
+					edit_country:
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						label: Properties
+						hide_in_select_mode: Yes
+						admin_box:
+							path: zenario_country_manager__country
+					view_dropdown:
+						label: View
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					edit_phrases:
+						parent: view_dropdown
+						label: Visitor names (phrases)
+						hide_in_select_mode: Yes
+						traits:
+							show_localizations: Yes
+						link:
+							path: zenario__languages/nav/zenario__countries/hidden_nav/country_id_to_phrase_id/panel
+							branch: Yes
+							refiner: country_id_to_phrase_id
+					action_dropdown:
+						label: Actions
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					activate_country:
+						parent: action_dropdown
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						label: Activate
+						traits:
+							suspended: Yes
+						hide_in_select_mode: Yes
+						multiple_select: Yes
+						multiple_select_tooltip: Activate selected Countries
+						ajax:
+							confirm:
+								message: 'Are you sure you wish to activate the country "[[country_name]]"?'
+								multiple_select_message: Are you sure you wish to activate the selected countries?
+								button_message: Activate
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								action: activate_country
+					suspend_country:
+						parent: action_dropdown
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						label: Suspend
+						traits:
+							active: Yes
+						hide_in_select_mode: Yes
+						multiple_select: Yes
+						multiple_select_tooltip: Suspend selected Countries
+						ajax:
+							confirm:
+								message: 'Are you sure you wish to suspend the country "[[country_name]]"?'
+								multiple_select_message: Are you sure you wish to suspend the selected countries?
+								button_message: Suspend
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								action: suspend_country
+					remove_country:
+						priv: _PRIV_PUBLISH_CONTENT_ITEM
+						label: Delete
+						hide_in_select_mode: Yes
+						multiple_select: Yes
+						multiple_select_tooltip: Delete selected Countries
+						ajax:
+							confirm:
+								message: 'Are you sure you wish to delete the Country "[[country_name]]" and all its visitor names (phrases)?'
+								multiple_select_message: >
+									Are you sure you wish to delete the selected countries and
+									all their visitor names (phrases)?
+								button_message: Delete
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								action: delete_country
+						traits:
+							can_delete_country: Yes
+				regions:
+					panel:
+						title: Regions
+						name: Regions
+						view_mode: list
+						db_items:
+							table: |
+								[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions AS r
+							id_column: r.id
+						default_sort_column: region_name
+						columns:
+							region_name:
+								title: Region Name
+								db_column: name
+								show_by_default: Yes
+								searchable: Yes
+							region_code:
+								title: Region Code
+								db_column: IF(code IS NOT NULL AND code<>'',code,'[Not set]')
+								show_by_default: No
+								searchable: Yes
+							region_phrase:
+								title: VLP Phrase
+								db_column: IF(code IS NOT NULL AND code<>'',CONCAT('_REGION_NAME_',code),'n/a')
+								show_by_default: Yes
+						refiners:
+							parent_id:
+								sql: 'r.parent_id=[[REFINER_ID]]'
+							country_code_filter:
+								sql: 'r.country_id=[[REFINER_ID]]'
+						refiner_required: No
+						item:
+							css_class: zenario_country_manager_region
+							name: Region
+							names: Regions
+							tooltip_when_link_is_active: 'View Sub-Regions of this Region'
+							link:
+								path: zenario__languages/nav/zenario__countries/panel/regions/panel
+								branch: Yes
+								refiner: parent_id
+						collection_buttons:
+							create_region:
+								priv: _PRIV_PUBLISH_CONTENT_ITEM
+								ord: "1"
+								css_class: zenario_create_a_new
+								label: Create
+								admin_box:
+									path: zenario_country_manager__region
+						item_buttons:
+							edit_region:
+								priv: _PRIV_PUBLISH_CONTENT_ITEM
+								label: Properties
+								hide_in_select_mode: Yes
+								admin_box:
+									path: zenario_country_manager__region
+							view_dropdown:
+								label: View
+								multiple_select: Yes
+								hide_when_children_are_not_visible: Yes
+							edit_phrases:
+								parent: view_dropdown
+								label: Phrases
+								hide_in_select_mode: Yes
+								traits:
+									show_localizations: Yes
+								link:
+									path: >
+										zenario__languages/zenario__countries/regions/region_id_to_phrase_id
+									branch: Yes
+									refiner: region_id_to_phrase_id
+							remove_region:
+								priv: _PRIV_PUBLISH_CONTENT_ITEM
+								label: Delete
+								hide_in_select_mode: Yes
+								multiple_select: Yes
+								multiple_select_tooltip: Delete selected Regions
+								ajax:
+									confirm:
+										message: 'Are you sure you wish to delete the Region "[[region_name]]" and all its localized phrases?'
+										multiple_select_message: >
+											Are you sure you wish to delete the selected regions and all
+											their localized phrases?
+										button_message: Delete
+										cancel_button_message: Cancel
+										message_type: warning
+									request:
+										action: delete_region
+								traits:
+									can_delete_region: Yes
+						hidden_nav:
+							region_id_to_phrase_id:
+								panel:
+									db_items:
+										table: |
+											[[DB_NAME_PREFIX]]visitor_phrases AS vp
+											INNER JOIN 
+												[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r 
+											ON
+												vp.code = CONCAT('_REGION_NAME_',r.code)
+										id_column: vp.id
+									refiners:
+										region_id_to_phrase_id:
+											sql: |
+												vp.module_class_name = 'zenario_country_manager'
+												AND vp.language_id = [[FOCUSED_LANGUAGE_ID]]
+												AND r.id =  [[REFINER_ID]]
+									refiner_required: Yes
+									item:
+										link:
+											path: zenario__languages/nav/vlp/vlp_chained/panel
+											branch: Yes
+											refiner: translations
+									allow_bypass: Yes
+									return_if_empty: Yes

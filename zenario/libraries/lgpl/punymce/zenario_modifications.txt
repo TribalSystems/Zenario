@@ -1,0 +1,51 @@
+css changes:
+	css/editor.css
+		Added
+			#punymce p {
+				margin: 0px;
+			}
+	plugins/emoticons/css/editor.css
+		Added
+			.punymce a.emoticon { margin: 1px; }
+	Emoticons CSS and .gif files copied to the root directory for smaller path names in HTML/CSS files
+
+Bug fixes with dynamic loading in IE
+	puny_mce_src.js
+		Removed:
+				// Fake DOMContentLoaded on IE when not running under HTTPs
+				document.write('<script id=__ie_onload defer src=javascript:void(0)><\/script>');
+				pageDOM.get("__ie_onload").onreadystatechange = function() {
+					if (this.readyState == "complete") {
+						Event._pageInit();
+						pageDOM.get("__ie_onload").onreadystatechange = null; // Prevent leak
+					}
+				};
+
+Added a hack to work-around a bug in Firefox:
+	puny_mce_src.js
+		Added:
+				//Hack to work around a problem in Firefox 19
+				if (t.getContent() == '[[HIDE_ME]]') {
+					 t.setContent('');
+				}
+
+Added support for more elements/tags to the BBCode Plugin:
+	plugins/bbcode_src.js
+		a few new regexp rules added
+		some regexp rules removed
+		one line reordered
+		"zenario_anonymous_comments.toBBCode = " added to a function definition so we can use it elsewhere
+		See source file for more info
+
+Workaround for a bug in YUI Compressor when compressing plugins/emoticons/emoticons_src.js
+	replaced:
+					return '¤' + ar.length + '¤';
+	with:
+					return '`~`~' + ar.length + '`';
+	replaced
+		h = h.replace(/¤([^¤]+)¤/g, function(a, b) {
+	with:
+		h = h.replace(/`~`~([^`]+)`/g, function(a, b) {
+
+2013-05-23: Domingo renamed blank.htm to blank.html as it was showng a Not Found momemtarily when loading the editor.
+

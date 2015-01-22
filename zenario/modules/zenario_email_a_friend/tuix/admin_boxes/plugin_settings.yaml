@@ -1,0 +1,25 @@
+plugin_settings:
+	module_class_name: zenario_email_a_friend
+	tabs:
+		first_tab:
+			label: Settings
+			fields:
+				email_template:
+						plugin_setting:
+							name: email_template
+							foreign_key_to: email_template
+							dangling_cross_references: remove
+						label: 'Email Template:'
+						pick_items:
+							path: zenario__email_template_manager/nav/email_templates/panel
+							min_path: zenario__email_template_manager/nav/email_templates/panel
+							max_path: zenario__email_template_manager/nav/email_templates/panel
+							target_path: zenario__email_template_manager/nav/email_templates/panel
+							select_phrase: Select Email Template...
+							nothing_selected_phrase: No Email Template selected...
+							hide_remove_button: Yes
+						value: zenario_email_a_friend__to_visitor_email_this_page_to_friend_en
+						note_below: >
+							Please see the Module description to get a full list of
+							Merge Fields which can be used in the selected Email
+							Template.

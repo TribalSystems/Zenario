@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",tr
+
+Plugin
+zenario_contact_form
+
+"Phrase Code",Translation
+_ADDRESS_INCOMPLETE,"Lütfen adresinizi giriniz."
+_ADDRESS:,"Adresiniz:"
+_CAPTCHA_INVALID,"Lütfen insan olduğunuzu doğrulayınız."
+_CAPTCHA:,"Pardon, insan olup olmadığınızı kontrol etmemiz gerekiyor:"
+_CITY_INCOMPLETE,"Lütfen şehir adını giriniz."
+_CITY:,"Şehir:"
+_CLEAR_FORM,"Formu temizle"
+_CLICK_HERE, "Buraya tıklayın"
+_COMPANY_INCOMPLETE,"Lütfen şirket adını giriniz."
+_COMPANY:,"Şirket Adı:"
+_CONTACT_FORM_CONFIRMATION_MSG, "Teşekkürler, mesajınız yollandı."
+_CONTACT_US, "Bize ulaşın"
+_COUNTRY_INCOMPLETE,"Lütfen ülke adını giriniz."
+_COUNTRY:,"Ülke adı:"
+_EMAIL_INCOMPLETE,"Aşağıdaki zorunlu alan boş bırakılmıştır: E-posta Adresi."
+_EMAIL_INVALID,"Lütfen geçerli e-posta adresi giriniz."
+_EMAIL_MESSAGE_NOT_SENT, "Pardon, websitemizde sorun var. Mesajınız yollanamadı."
+_EMAIL_SENDER_IP,"Gönderenin IP adresi:"
+_EMAIL:, "E-posta adresi:"
+_HEADING,"Bizle bağlantıya geçmek için bu formu kullanınız"
+_MESSAGE_INCOMPLETE,"Lütfen mesajınızı giriniz."
+_MESSAGE:,"Mesajınız:"
+_NAME_INCOMPLETE,"Lütfen adınızı giriniz."
+_NAME:, "Adınız:"
+_PHONE_INCOMPLETE,"Lütfen telefon numaranızı giriniz."
+_PHONE:, "Telefon numaranız:"
+_POST_CODE_INCOMPLETE,"Lütfen posta kodunu giriniz."
+_POST_CODE:,"Posta kodunuz:"
+_PROVINCE_INCOMPLETE,"Lütfen ülke adını giriniz."
+_PROVINCE:,"Ülke adı:"
+_SUBMIT,"Gönder"

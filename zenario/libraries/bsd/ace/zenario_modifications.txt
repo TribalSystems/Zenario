@@ -1,0 +1,1 @@
+Deleted the worker-xquery.js file for a smaller download

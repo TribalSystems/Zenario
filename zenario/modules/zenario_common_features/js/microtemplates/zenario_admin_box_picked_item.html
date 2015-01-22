@@ -1,0 +1,67 @@
+<div class="zenario_row_input_button">
+<% if (m.noItemSelected) { %>
+	<input
+		type="text"
+		readonly="readonly"
+		class="form_field form_picked_item"
+		value="{{m.nothing_selected_phrase|e}}"
+		{{(m.readOnly? ' disabled="disabled"' : '')}}
+	/>
+
+<% } else { %>
+	
+	<% if (m.isUpload) { %>
+		<% if (m.thumbnail) { %>
+			<img
+				class="zeario_picked_image zeario_picked_image__{{m.extension|e}}"
+				onclick="{{m.thumbnail.onclick|e}}"
+				src="{{m.thumbnail.src|e}}"
+			/>
+		<% } else { %>
+			<a
+				target="_blank"
+				href="{{m.adminDownload|e}}"
+				class="zeario_picked_file_icon zeario_picked_file_icon__{{m.extension|e}}"
+			>Download</a>
+		<% } %>
+	<% } %>
+	
+	<input
+		type="text"
+		value="{{m.label|e}}"
+		class="form_field form_picked_item"
+		readonly="readonly"
+		{{(m.readOnly? ' disabled="disabled"' : '')}}
+	/>
+	
+	<% if (m.nudgeUp) { %>
+		<input
+			type="button"
+			value="^"
+			onclick="{{m.nudgeUp.onclick|e}}"
+			class="organizer_nudgeup"
+		/>
+	<% } %>
+	
+	<% if (m.nudgeDown) { %>
+		<input
+			type="button"
+			value="v"
+			onclick="{{m.nudgeDown.onclick|e}}"
+			class="organizer_nudgedown"
+		/>
+	<% } %>
+	
+	<% if (m.removeButton) { %>
+		<div
+			onclick="{{m.removeButton.onclick|e}}"
+			class="launch_keeper organizer_removebutton control_for__{{m.id|e}}
+				<% if (m.tempReadOnly) { %>
+					submit_disabled" disabled="disabled
+				<% } %>
+			"
+			title="{{zenarioA.phrase.remove}}"
+		>{{zenarioA.phrase.remove}}</div>
+	<% } %>
+<% } %>
+</div>

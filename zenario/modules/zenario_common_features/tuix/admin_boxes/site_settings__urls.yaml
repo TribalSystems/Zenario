@@ -1,0 +1,67 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: urls
+    title: Editing settings for URLs
+    tabs:
+        urls:
+            label: URLs
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            This tab contains settings for generating URLs for the pages
+                            on your site.
+                mod_rewrite_enabled:
+                    site_setting:
+                        name: mod_rewrite_enabled
+                    label: 'Use mod_rewrite:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    note_below: |
+                        Use friendly URLs.
+                        Turn this on if your Apache installation has support for mod_rewrite and is configured with rewrite rules.
+                        This may improve search engine optimization.
+                        <br/>
+                        Please see <a href="http://zenar.io/search-engine-friendly-urls.html" target="_blank">zenar.io/search-engine-friendly-urls.html</a>
+                        for more information.
+                mod_rewrite_suffix:
+                    site_setting:
+                        name: mod_rewrite_suffix
+                    label: 'mod_rewrite Suffix:'
+                    type: select
+                    value: ""
+                    empty_value: '-- No Suffix --'
+                    note_below: |
+                        An optional suffix which every friendly URL will have.
+                        Internal links created by the CMS will have this suffix.
+                translations_different_aliases:
+                    visible_if: zenarioA.multipleLanguagesEnabled()
+                    site_setting:
+                        name: translations_different_aliases
+                    label: 'Default behaviour for Translations:'
+                    type: select
+                    empty_value: Translations all use the same Alias
+                    values:
+                        1: Translations may have different Aliases
+                    value: "1"
+                translations_hide_language_code:
+                    visible_if: zenarioA.multipleLanguagesEnabled()
+                    site_setting:
+                        name: translations_hide_language_code
+                    same_row: Yes
+                    pre_field_html: '&nbsp; &nbsp;'
+                    type: select
+                    empty_value: Always add the language code (e.g. pagename,en)
+                    values:
+                        1: Hide the language code if possible
+                    value: "1"
+                    note_below: >
+                        When a URL contains a language code it will be preceded by a
+                        comma, e.g. pagename,en

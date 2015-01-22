@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_file_type:
+	priv: _PRIV_EDIT_CONTENT_TYPE
+	title: Registering a new custom file type
+	key:
+		id: ''
+	max_height: 125
+	hide_tab_bar: true
+	tabs:
+		details:
+			label: Extension
+			edit_mode:
+				enabled: true
+				always_on: true
+			fields:
+				type:
+					label: 'Extension:'
+					type: text
+					pre_field_html: .
+					maxlength: 10
+					style: 'width: 10em;'
+					validation:
+						required: Please enter an Extension.
+				mime_type:
+					label: 'MIME Type:'
+					type: text
+					maxlength: 128
+					style: 'width: 15em;'
+					value: application/octet-stream
+					validation:
+						required: Please enter a MIME Type.

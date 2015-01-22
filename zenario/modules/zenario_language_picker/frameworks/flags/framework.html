@@ -1,0 +1,20 @@
+<div class="lang_pick_box">
+	[cms:section name="Prompt_Phrase_Section"]
+		<div class="lang_choose_text">[cms:phrase code="_CHOOSE_YOUR_LANGUAGE:"/]</div>
+	[/cms:section]
+	<div class="lang_choices">
+			[cms:section name="Selection_List_Entry_Current_Language"]
+				<div class="lang_[cms:merge name='Flag_Lang'/] lang_flag" title="[cms:merge name='Language_Name'/]">
+					<span class="flag">[cms:merge name='Flag_Lang'/]</span>
+				</div>
+			[/cms:section]
+			[cms:section name="Selection_List_Entry_Other_Languages"]
+				<div class="lang_[cms:merge name='Flag_Lang'/] lang_flag" title="[cms:merge name='Language_Name'/]">
+					<a href="[cms:merge name='Language_Link'/]">
+						<span class="flag">[cms:merge name='Flag_Lang'/]</span>
+					</a>
+				</div>
+			[/cms:section]
+	</div>
+</div>
+

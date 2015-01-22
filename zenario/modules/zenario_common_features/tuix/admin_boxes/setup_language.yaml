@@ -1,0 +1,72 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_setup_language:
+	title: ""
+	key:
+		id: ""
+	tabs:
+		settings:
+			label: Settings
+			edit_mode:
+				priv: _PRIV_MANAGE_LANGUAGE_CONFIG
+				enabled: Yes
+			fields:
+				english_name:
+					label: 'Language English Name:'
+					type: text
+					maxlength: "100"
+					validation:
+						required: Please enter an English name.
+					note_below: >
+						The name of the language in English. This will be displayed
+						in the CMS to Administrators.
+				language_local_name:
+					label: 'Language Local Name:'
+					type: text
+					maxlength: "100"
+					validation:
+						required: Please enter a local name.
+					note_below: >
+						The name of the language, in its local tongue. This will be
+						displayed to visitors.
+				flag_filename:
+					label: 'Flag CSS class name:'
+					type: text
+					maxlength: 5
+					style: >
+						width: 6em;
+					pre_field_html: >
+						lang_
+					note_below: |
+						Any Language Pickers on your site will use this CSS class name when they wish to show a flag.
+					validation:
+						required: Please enter a class name
+				detect:
+					type: checkbox
+					label: 'Use browser language detection:'
+					redraw_onchange: Yes
+					note_below: |
+						The CMS will redirect a visitor to the home page of this language based on the
+													language requested by their browser.
+				detect_lang_codes:
+					type: text
+					maxlength: "100"
+					label: 'Detected language codes:'
+					note_below: |
+						When a visitor accesses the site without a specific page set in their URL,
+													they will be directed to the home page of this language if their requested
+													language matches one of the language codes listed here (comparison is case-insensitive).
+													Enter one or more language codes, separate multiple codes with a comma.
+					visible_if: "zenarioAB.value('detect')"
+				translate_phrases:
+					type: checkbox
+					label: 'Translate phrases:'
+					note_below: |
+						If a phrase (not a phrase code starting with an underscore, which are always looked up) is found in a Twig framework and this option is checked, it will search for a translation in the database. Otherwise it will just use them as-is.
+				search_type:
+					label: 'Search algorithm:'
+					type: radios
+					values:
+						full_text: Use MySQL full-text search
+						simple: Use "LIKE" in searches
+					value: full_text

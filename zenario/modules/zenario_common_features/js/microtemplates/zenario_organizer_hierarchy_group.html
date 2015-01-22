@@ -1,0 +1,14 @@
+<ol class="dd-list">
+	<% for (var i = 0; i < zenarioO.itemHierarchyArray[m.parentId].length; ++i) { %>
+		<% var id = zenarioO.itemHierarchyArray[m.parentId][i]; %>
+		<% if (m.parentId? m.parentId === m.itemsById[id].parentId : !m.itemsById[id].parentId || !zenarioO.sortedItems[m.itemsById[id].parentId]) { %>
+			<li class="dd-item dd3-item {{zenarioO.changingHierarchyView? 'organizer_menu_handle' : ''|escape}}" data-id="{{m.itemsById[id].id|escape}}">
+				{{zenarioA.microTemplate('zenario_organizer_hierarchy_row', m.itemsById[id])}}
+				
+				<% if (zenarioO.itemHierarchyArray[m.itemsById[id].id]) { %>
+					{{zenarioA.microTemplate('zenario_organizer_hierarchy_group', {itemsById: m.itemsById, parentId: m.itemsById[id].id})}}
+				<% } %>
+			</li>
+		<% } %>
+	<% } %>
+</ol>

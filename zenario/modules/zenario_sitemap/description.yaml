@@ -1,0 +1,24 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Site Map
+description: |
+	<p>This is an essential Module which automatically generates a Site Map of your Zenario website.</p>
+	
+	<p>The Site Map Module will display all public, Published pages which are in the Menu hierarchy to site visitors in a structured way.</p>
+	
+	<p>Items which are private (i.e. password-protected for Extranet Users only) may only appear in the Site Map when a User is logged in, according to the Hide setting on each Menu Node.</p>
+		<p>Apply your own styling using Skins to make your Site Map display exactly the way you like.</p>
+keywords: map, plan, site, structure
+vlp_class_name: zenario_sitemap
+css_class_name: zenario_sitemap
+is_pluggable: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Site Map
+dependencies:
+	zenario_menu: Yes

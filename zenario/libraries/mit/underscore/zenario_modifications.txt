@@ -1,0 +1,18 @@
+Added a hack to the template function to make twig-style syntax possible.
+(Without this hack, the escape/interpolate patterns ended up matching each other,
+causing bugs if both were used on the same line.)
+
+	Replaced
+      if (escape) {
+	
+	With
+      var isEscape;
+      if (settings.twigStyleSyntax
+       && interpolate
+       && (isEscape = interpolate.match(/(.*)\|e(|scape)$\s*/))) {
+      	escape = isEscape[1];
+      	interpolate = false;
+      }
+      
+      if (escape) {
+

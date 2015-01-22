@@ -1,0 +1,37 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Image Container
+class_name: zenario_image_container
+description: |
+	<p>An Image Container allows you to display an image on a page in a content-managed way.</p>
+				
+				<p>The image size can be controlled, and it can be given an link destination plus additional text.</p>
+				
+				<p>There is support for reponsive websites, in that you can specify an alternate image to be displed when viewed on a mobile device.</p>
+				
+				<p>Images can be in JPG, PNG and GIF formats. The CMS automatically resizes large images down in size.</p>
+				
+				<p>If the link from an Image Container is to a content item on this site, the link will be deleted
+				automatically if that content item is ever trashed.</p>
+				
+				<p>If you link to a document on your site, you have the option of linking to its download page, or linking directly to the file download.</p>
+				
+				<p>Image Containers are nestable; you can insert several of them into a Slideshow plugin to create animated effects.</p>
+keywords: >
+	masthead, image, hero, responsive, picture, gif, jpg, jpeg, png
+dependencies:
+	zenario_banner: Yes
+inheritance:
+	inherit_settings_from_module: zenario_banner
+	#inherit_frameworks_from_module: zenario_banner
+vlp_class_name: zenario_banner
+is_pluggable: Yes
+can_be_version_controlled: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled Image Container

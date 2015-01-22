@@ -1,0 +1,2008 @@
+---
+
+top_level_page: ref_of_elements_and_properties
+pages:
+    - admin_box
+    - advanced_search
+    - ajax
+    - collection_buttons
+    - columns
+    - combine_items
+    - confirm
+    - db_items
+    - do_csv_export
+    - format
+    - hidden_nav
+    - item
+    - items
+    - item_buttons
+    - item_link
+    - link
+    - nav
+    - panel
+    
+    # There is a line of code in doc_tools.js that will direct links to the panels page to the panel page
+    #- panels
+    
+    - organizer_quick
+    - pick_items
+    - quick_filter_buttons
+    - refiners
+    - reorder
+    - table_join
+    - trash
+    - upload
+    - xml
+
+
+
+
+#oneOf:
+#    - label
+#    - tooltip
+#dependencies:
+#dependencies_if_true:
+#forbidden_if_true:
+#    tooltip: css_class
+# or
+#    tooltip:
+#        - css_class
+
+common_definitions:
+    stringy: &stringy
+        - number
+        - string
+    variable: &variable
+        - boolean
+        - number
+        - string
+    css_class: &css_class
+        type: string
+        description: A CSS class name to add to this element, which should be used to define an icon.
+    ord: &ord
+        type: number
+        description: >
+            This controls the order in which elements are drawn on the screen.
+            
+            If not set, it defaults to the order the CMS finds them in.
+    hidden: &hidden
+        type: boolean
+        description: >
+            The hidden property hides elements from view when <code>true</code>.
+    visible_if: &visible_if
+        type: string
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+            
+            See http://zenar.io/visibility-in-tuix for examples.
+    table_join: &table_join
+        type: string
+        static: true
+        preFillOrganizerPanel: true
+        description: >
+            This lets you add a table join to another table
+    
+    link_properties: &link_properties
+        path:
+            type: string
+            static: true
+            description: >
+                The tag-path of a panel to link to.
+                
+                This must be a tag-path; you may not enter a navigation path.
+        refiner:
+            type: string
+            static: true
+            description: >
+                If the panel you are linking has a refiner defined,
+                you can create a link to panel that will use that refiner by entering its name here.
+        unselect_items:
+            type: boolean
+            description: >
+                Setting this property will deselect any items on the current panel before
+                navigation.
+
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Organizer Schema
+
+type: object
+additionalProperties:
+    type: object
+    required:
+        - label
+        - nav
+    additionalProperties: false
+    properties:
+        label:
+            type: string
+            description: >
+                The label for this element.
+        tooltip:
+            type: string
+            description: >
+                A tooltip for this element.
+                From 6.1.1 onwards this is also visible on the screen.
+        css_class: *css_class
+        ord: *ord
+        hidden: *hidden
+        visible_if: *visible_if
+        
+        nav:
+            type: object
+            additionalProperties:
+                type: object
+                            
+                required:
+                    - label
+                properties:
+                    label:
+                        type: string
+                        description: >
+                            The label for this element.
+                    tooltip:
+                        type: string
+                        description: |
+                            A tooltip for this element.
+                    css_class: *css_class
+                    ord: *ord
+                    hidden: *hidden
+                    visible_if: *visible_if
+                    link:
+                        type: object
+                        required:
+                            - path
+                        properties: *link_properties
+                        description: >
+                            If you set a link on a nav element, an administrator will be taken to
+                            the link's destination panel when they click on it.
+                    
+                    panel:
+                        type: object
+                        static: true
+                        description: >
+                            If you set a panel on a nav element, an administrator will be taken into
+                            the panel when they click on it.
+                        #properties: *panel_properties #This will be set in dev_tools.js instead
+        
+        panels:
+            type: object
+            additionalProperties:
+                type: object
+                static: true
+                required:
+                    - title
+                properties:
+                    title:
+                        type: string
+                        description: >
+                            The title to display at the top of the panel.
+                            
+                            This also appears on the back button, when clicking the back button would take you back to this panel.
+                    select_mode_title:
+                        type: string
+                        description: >
+                            A different title to display when in select mode.
+                        default: (defaults to the title property)
+                    multiple_select_mode_title:
+                        type: string
+                        description: >
+                            A different title to display when in select mode with multiple selection enabled.
+                        default: (defaults to the select_mode_title property)
+                    
+                    view_mode:
+                        enum:
+                            - grid
+                            - list
+                        description: >
+                            The default view mode for this panel.
+                    
+                            This must <strong>not</strong> be a mode that you've disabled.
+                    
+                            This will be ignored if hierarchy view is enabled.
+                        default: grid
+                    
+                    disable_grid_view:
+                        type: boolean
+                        description: >
+                            Set this property to disable grid view.
+                    disable_list_view:
+                        type: boolean
+                        description: >
+                            Set this property to disable list view.
+                    
+                    db_items:
+                        type: object
+                        required:
+                            - table
+                            - id_column
+                        description: >
+                            This lets you automatically populate a panel's <code>items</code> array with items from the database.
+                            
+                            Using <code>db_items</code> also enables server-side searching, sorting, filtering and pagination features.
+                        properties:
+                            table:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    The name of a table in the database (including the prefix), and an alias.
+                                    
+                                    E.g. <code>[[DB_NAME_PREFIX]]some_table_name AS t</code>
+                            id_column:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    The name of the id-column in your table, which will be used for the ids of the rows in Organizer.
+                                    
+                                    E.g. t.id
+                            encode_id_column:
+                                type: boolean
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    Automatically call the encodeItemIdForStorekeeper() function on the id column.
+                                    You should do this if the id is not numeric.
+                                    
+                                    Note that while the *encoding* will be automatic, the *decoding* is not, and
+                                    you'll still need to call decodeItemIdForStorekeeper() manually in the
+                                    appropriate places.
+                            hierarchy_column:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    This is used for hierarchy view. You can define the column that should be used
+                                    for the parent-child relationships.
+                            
+                                    The column named in <code>hierarchy_column</code> should specify the parent id. If it is
+                                    zero or empty then an item will be a top-level item.
+                                    If the specified parent does not exist in the data then an item will also be
+                                    considered to be a top-level item.
+                            
+                                    Setting this property will completely disable grid and list view. Instead
+                                    Organizer will show in hierarchy view.
+                            group_by:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    A column or comma-separated list of columns to group by. Defaults to
+                                    <code>id_column</code> if not set.
+                                    If you've used CONCAT() or some other function name for your <code>id_column</code> then
+                                    you should set this to improve the efficiency of the generated SQL statement.
+                                default: (defaults to the id_column property)
+                            where_statement:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    A WHERE-statement to apply to your query
+                                default: WHERE 1=1
+                            client_side:
+                                type: boolean
+                                static: true
+                                description: >
+                                    Set this property to do searches/sorting/pagination on the client, not the server.
+                                    
+                                    This reduces the number of AJAX requests made to the server, and also allows fields
+                                    that were generated in PHP code to be sortable/searchable.
+                                    
+                                    However this feature is not scalable; when there is a large number of rows in a panel,
+                                    all of this data will be downloaded with each AJAX request which will greatly slow Organizer down.
+                                    
+                                    Filters and quick-filters will always be done on the server and will always trigger an AJAX request
+                                    when changed.
+                    
+                    columns:
+                        type: object
+                        description: >
+                            You should use this to specify the columns that will appear in your panel.
+                            
+                        commented_out_description: |
+                            If you are using the <code>db_items</code> property and wish the value of a column to come
+                            from a table in the database, you will also need to provide the needed SQL
+                            snippets to look it up.
+                        additionalProperties:
+                            type: object
+                            properties:
+                                title:
+                                    type: string
+                                    description: >
+                                        Setting a Title for a Column makes it visible to the Admin in List Views, as well as in the Column Picker.
+                                
+                                        Not setting a title on the column is the same as hiding it.
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        Lets you specify a tooltip for the column's header.
+                                ord: *ord
+                                css_class: *css_class
+                                hidden: *hidden
+                                visible_if: *visible_if
+                                db_column:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        The column in the database, or a SQL expression.
+                                        Each table should be given its own unique alias, but you should not give
+                                        aliases to columns.
+                                
+                                        You do not need to provide this property if you plan to populate this column in
+                                        PHP rather than MySQL.
+                                
+                                searchable:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Whether to search this column when the Admin enters text into the search
+                                        box.
+                                
+                                        This works slightly differently depending on whether the <code>client_side</code> property is set:
+                                
+                                        • If it is set, then the searching will be done in JavaScript on the client.
+                                
+                                        • If it is not set, then the searching will be done in MySQL on the
+                                            server, and will only work on columns that are in the database (and
+                                            not columns computed in PHP).
+                                ascii_only:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        You must flag any database columns that use the ascii characterset rather than UTF-8 with this
+                                        property to avoid a database error when searching for multilingual characters.
+                                
+                                search_column:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to specify a different column definition to use for searches.
+                                    default: (defaults to the db_column property)
+                                sort_column:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to specify a different column definition to use when sorting.
+                                    default: (defaults to the db_column property)
+                                sort_column_desc:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to specify a different column definition to use when sorting
+                                        descending.
+                                    default: "<code>sort_column</code> DESC"
+                                
+                                table_join: *table_join
+                                server_side_only:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Together with the <code>title</code> property, the <code>server_side_only</code> property controls when
+                                        data in a column is sent to a client.
+                                
+                                        Setting the <code>server_side_only</code> property and not setting a <code>title</code> will ensure
+                                        that the data in a column is never sent to the client.
+                                        Setting the <code>server_side_only</code> property and a <code>title</code> will make a column only
+                                        visible in a CSV Export.
+                                        Not setting the <code>server_side_only</code> property or a <code>title</code> will send a column's
+                                        data to the client; the data will not be visible as a column but can still
+                                        be used by confirm messages, label properties, and so on.
+                                
+                                        Note that the column's definition will always be sent to the client.
+                                
+                                item_link:
+                                    enum:
+                                        - content_item
+                                        - content_item_or_url
+                                        - menu_item
+                                    description: >
+                                        This lets you define a link to a content item or menu node in Organizer.
+                                format:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        This lets you define the data-format of a column.
+                                        
+                                        If you don't set this property, it is assumed to be text.
+                                values:
+                                    type: object
+                                    description: >
+                                        If you use the enum format for a column, you should provide a list of values
+                                        (with real values as keys and display values as values).
+                                        
+                                        If you enter an asterisk (*) as the value, this will match any non-empty value.
+                                        (Or match any empty value when the admin inverts the filter.)
+                                    additionalProperties:
+                                        type: variable
+                                empty_value:
+                                    type: string
+                                    description: >
+                                        If a column is empty, show this text instead of a blank cell.
+                                item_link:
+                                    enum:
+                                        - xxsmall
+                                        - xsmall
+                                        - small
+                                        - medium
+                                        - large
+                                        - xlarge
+                                        - xxlarge
+                                    default: medium
+                                    description: >
+                                        This lets you set an initial display-width for a column
+                                length_limit:
+                                    type: number
+                                    description: >
+                                        Include this property to place a limit on the number of characters which can be
+                                        shown in this column.
+                                
+                                        If any text was hidden, the full text will be visible as a tooltip over the
+                                        column.
+                                align_right:
+                                    type: boolean
+                                    description: >
+                                        Text in this column will align right rather then left.
+                                        Useful for displaying numbers.
+                                show_by_default:
+                                    type: boolean
+                                    description: >
+                                        Whether to show this column in list/summary view by default.
+                                always_show:
+                                    type: boolean
+                                    description: >
+                                        Always show this column in list/summary view, and don't let an Admin turn
+                                        it off.
+                                disallow_sorting:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to disallow sorting on a column.
+                                        If there is a column where the display value is a different format to the
+                                        actual value then you should include this property to avoid confusing the Admin.
+                                
+                                        Note that sorting works slightly differently depending on whether the
+                                        <code>client_side</code> property is set.
+                                
+                                        • If it is set, then the searching will be done in JavaScript on the client.
+                                
+                                        • If it is not set, then the searching will be done in MySQL on the
+                                            server, and will only work on columns that are in the database (and
+                                            not columns computed in PHP).
+                                disallow_filtering:
+                                    type: boolean
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        Allows you to disallow filtering on a column.
+                    
+                    default_sort_column:
+                        type: string
+                        static: true
+                        description: >
+                            The code-name of a column (not the name in SQL) to use as the default sort column.
+                        default: name
+                    default_sort_desc:
+                        type: boolean
+                        static: true
+                        description: >
+                            If this property is set, your panel will sort its items in descending order by default.
+                    
+                    quick_filter_buttons:
+                        type: object
+                        description: >
+                            Quick filter buttons appear at the top of Organizer, and can be used to apply filters on
+                            columns with just one click.
+                        additionalProperties:
+                            type: object
+                            oneOf:
+                                -
+                                    required:
+                                        - css_class
+                                -
+                                    required:
+                                        - label
+                            properties:
+                                ord: *ord
+                                css_class: *css_class
+                                label:
+                                    type: string
+                                    description: >
+                                        A label for this button
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip for this button
+                                
+                                hidden: *hidden
+                                visible_if: *visible_if
+                                
+                                parent:
+                                    type: string
+                                    description: >
+                                        If you enter the name of another quick filter button here, this button
+                                        will appear as a drop-down when the admin hovers their mouse over the named button.
+                                column:
+                                    type: string
+                                    description: >
+                                        The codename/property name of a column from <code>columns</code> to apply the filter on.
+                                value:
+                                    type: string
+                                    description: >
+                                        The value of the column to use.
+                                        
+                                        (Note that you don't need to enter this for "Yes or no"-type columns.)
+                                        
+                                        For enums, if you enter an asterisk (*) as the value, this will match any non-empty value.
+                                        (Or match any empty value if you set the invert property as well.)
+                                invert:
+                                    type: boolean
+                                    description: >
+                                        Whether to invert the filter
+                                
+                                remove_filter:
+                                    type: boolean
+                                    description: >
+                                        A quick filter will the "remove_filter" property will turn the filters off for a column
+                                        when an administrator clicks it.
+                                
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip for this button
+                                
+                                hide_in_select_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Select Mode.
+                                select_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Select Mode.
+                                hide_in_quick_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Quick Mode.
+                                quick_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Quick Mode.
+                                
+                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+                                        this button will appear in both Select Mode and Quick Mode.
+                                only_show_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Only show the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                hide_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Hide the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                    
+                    refiners:
+                        type: object
+                        description: >
+                            This lets you create refined views of the data in your panel.
+                            
+                            A refined view might only show specific items, show different columns, or show different buttons.
+                        additionalProperties:
+                            type: object
+                            properties:
+                                sql:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    description: >
+                                        A refiner is a SQL snippet that will be added to the WHERE statement if
+                                        enabled, and can be used to refiner the results in some additional way.
+                                
+                                        For example:
+                                            t.some_column_name IS NOT NULL
+                                
+                                        Refiners that were called from an item-level action will set the item id in
+                                        a constant which you can reference, for example:
+                                            t.some_column_name = [[REFINER_ID]]
+                                
+                                        Or if multiple selection was enabled, another constant can be used:
+                                            t.some_column_name IN [[REFINER_IDS]]
+                                
+                                        Refiners will only work with panels with a <code>db_items</code> property
+                                table_join: *table_join
+                                sql_when_searching:
+                                    type: string
+                                    static: true
+                                    description: >
+                                        If the Admin has entered a search query in the search box and you have set
+                                        this property, the CMS will use this SQL instead of your <code>sql</code> property.
+                                table_join_when_searching:
+                                    type: string
+                                    static: true
+                                    description: >
+                                        If the Admin has entered a search query in the search box and you have set
+                                        this property, the CMS will use this table join instead of your <code>table_join</code>
+                                        property.
+                                allow_unauthenticated_xml_access:
+                                    type: boolean
+                                    static: true
+                                    description: >
+                                        If you have a panel with the xml and allow_unauthenticated_xml_access
+                                        properties, if you wish visitors to see this refiner without needing to be logged in
+                                        as an Admin, you must also add the allow_unauthenticated_xml_access property
+                                        to this refiner.
+                                use_different_view_options:
+                                    type: boolean
+                                    static: true
+                                    description: >
+                                        If you set this property, the view options for this refiner will differ to the
+                                        view options that the panel normally uses.
+                                
+                                        This means two things. Firstly, if an Admin makes any changes to their view
+                                        options on a panel using this refiner, the saved options will be stored
+                                        against this refiner rather than against the panel as is normally the case.
+                                
+                                        Secondly, it means that you can change the value of the <code>view_mode</code> property
+                                        (for panels) or the <code>always_show</code> or <code>show_by_default</code> properties (for columns)
+                                        in your PHP methods when this refiner is active, and have the changes only
+                                        affect the view options for this refiner.
+                                use_different_view_options_per_refiner_id:
+                                    type: boolean
+                                    static: true
+                                    description: >
+                                        This works in the same way as the <code>use_different_view_options</code> property, except
+                                        that the view options will differ again for each different value of this
+                                        refiner.
+                                
+                                        You should only use this option when a refiner has only a few possible
+                                        values, otherwise it will create a lot of clutter in an Admin's Organizer
+                                        preferences.
+                                use_different_view_options_per_id_in_previous_refiner:
+                                    type: string
+                                    static: true
+                                    description: >
+                                        This works in the same way as the <code>use_different_view_options_per_refiner_id</code> property,
+                                        except you can specify the name of a refiner on a previous panel
+                                        that was accessed before this one. (Unlike the last two properties this isn't a
+                                        boolean property; you need to specify the name of a refiner that was used on a
+                                        previous panel.)
+                                
+                                        Note that if the names of the refiners match, it's possible for one or more
+                                        refiners with the <code>use_different_view_options_per_id_in_previous_refiner</code>
+                                        property set to share the same view options as a refiner with the
+                                        <code>use_different_view_options_per_refiner_id</code> property set.
+                    
+                    refiner_required:
+                        type: boolean
+                        static: true
+                        description: >
+                            Setting this property flags that this panel shouldn't be shown without a refiner.
+                    
+                    items:
+                        type: object
+                        description: >
+                            An array of arrays that represents the items in your panel and their properties/column values.
+                            
+                            If you use the <code>db_items</code> property, this will be automatically populated for you.
+                        additionalProperties:
+                            type: object
+                            oneOf:
+                                -
+                                    required:
+                                        - link
+                                -
+                                    required:
+                                        - panel
+                                -
+                                    {}
+                            additionalProperties:
+                                type: *variable
+                                description: >
+                                    For each of your columns, you should add a property to each of your items to
+                                    store the value of that column.
+                            
+                                    E.g. if you have a column called name, you should set the name property for
+                                    each of your items.
+                            
+                                    For panels with the db_items property, your items/columns will be populated automatically.
+                            
+                            properties:
+                                css_class:
+                                    type: string
+                                    description: >
+                                        A CSS class name for the item, which should define its icon.
+                                row_css_class:
+                                    type: string
+                                    description: >
+                                        This property lets you add a CSS class name to the whole row for the Item which
+                                        you can then style.
+                                
+                                        The class name will be added in Grid, Summary, List and Close-up View.
+                                
+                                        If you wish to style specific modes differently then you may make use of
+                                        the .grid_view .summary_view .list_view and .close_up_view CSS Selectors.
+                                cell_css_classes:
+                                    type: object
+                                    description: >
+                                        You can use this to give individual cells a css class by creating elements here with
+                                        the same element name as the columns.
+                                    additionalProperties:
+                                        type: string
+                                        description: >
+                                            A css class name for the item in the column with this element's name.
+                                
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip to display. Won't be HTML Escaped.
+                                image:
+                                    type: string
+                                    description: >
+                                        A URL for an image in grid view. Should be 180 × 130 pixels in size
+                                        (slightly smaller than 180 × 130 is okay, but no bigger).
+                                
+                                        Note that if you don't include a http:// in your URL then it will be
+                                        automatically prefixed by the URLBasePath.
+                                list_image:
+                                    type: string
+                                    description: >
+                                        A URL for an image in list or hierarchy view. Should be 24 × 23 pixels in size
+                                        (slightly smaller than 24 × 23 is okay, but no bigger).
+                                
+                                        Note that if you don't include a http:// in your URL then it will be
+                                        automatically prefixed by the URLBasePath.
+                                
+                                disable_reorder:
+                                    type: boolean
+                                    description: >
+                                        New in version 7.0.0
+                                        Setting this for an item will stop an administrator reordering it in
+                                        hierarchy mode.
+                                
+                                frontend_link:
+                                    type: string
+                                    description: >
+                                        A link to this item in the front end.
+                                        You should to provide this if you use the <code>frontend_link</code> button type for
+                                        an Item Button or an Inline Button
+                                
+                                navigation_path:
+                                    type: string
+                                    description: >
+                                        A navigation path to this item in Organizer (i.e., it ought to take you to
+                                        the current item in the current panel if this text was copy-pasted into the hash-property).
+                                
+                                        This property is read in 'get_item_links' mode, which is currently only used on
+                                        the Content Item and Menu Node panels.
+                                
+                                popout:
+                                    type: object
+                                    description: >
+                                        If you have an Item Button or an Inline Button with a <code>popout</code> action,
+                                        then you can also add properties here against each item,
+                                        which will be merged with the popout properties on the button if this
+                                        item is selected.
+                                    additionalProperties:
+                                        type: *variable
+                                        description: >
+                                            A property to set/override
+                                
+                                link:
+                                    type: object
+                                    static: true
+                                    required:
+                                        - path
+                                    properties: *link_properties
+                                    description: >
+                                        If you set a link on an item, this will cause a little folder icon to appear next
+                                        to the item's icon.
+                                
+                                        If an administrator clicks on the folder, they will be taken to the specified location in Organizer.
+                                
+                                        If the link is to a refiner, the id of the item they click on will be used as the
+                                        refinerId.
+                                
+                                panel:
+                                    type: object
+                                    description: >
+                                        If you set a panel on an item, this will cause a little folder icon to appear next
+                                        to the item's icon.
+                                
+                                        If an administrator clicks on the folder, they will be taken taken into the panel.
+                                    #properties: *panel_properties #This will be set in dev_tools.js instead
+                    
+                    item:
+                        type: object
+                        description: >
+                            This lets you set a few default properties for the items that appear in your panel.
+                        properties:
+                            css_class:
+                                type: string
+                                description: >
+                                    A CSS class name to use as a default if you omit the <code>css_class</code> property in an
+                                    item.
+                                    Note that for each item, you must either provide an <code>image</code> or a <code>css_class</code>.
+                            tooltip:
+                                type: string
+                                description: >
+                                    Lets you specify a tooltip that applies for every item.
+                            
+                                    This can contain [[merge_field]]s which match up to the column names, if you want
+                                    to have the column values placed in them.
+                            tooltip_when_link_is_active:
+                                type: string
+                                description: >
+                                    A different tooltip to display if a link is active on an item.
+                            link:
+                                type: object
+                                static: true
+                                required:
+                                    - path
+                                properties: *link_properties
+                                description: >
+                                    Setting this property will create a link on all of the items in the current panel.
+                            
+                                    This will cause a little folder icon to appear next each item's icon.
+                            
+                                    If the admin clicks on the folder, they will be taken to the specified location in Organizer.
+                            
+                                    If the link is to a refiner, the id of the item they click on will be used as the
+                                    refinerId.
+                    
+                    no_items_message:
+                        type: string
+                        description: >
+                            A message to display when there are no items.
+                        default: There is nothing to display in this view.
+                    no_items_in_search_message:
+                        type: string
+                        description: >
+                            A message to display when there are no items in a search, filter or refiner.
+                        default: There is nothing that matches your search.
+                    
+                    popout_message:
+                        type: string
+                        description: >
+                            If set, this message will be shown in an prompt box whenever an admin
+                            navigates to the panel.
+                    
+                            The message won't trigger a second time if an admin refreshes the panel, or
+                            navigates to the panel using the back button.
+                    
+                            The message will not HTML escaped.
+                    
+                            You can use all of the features from http://zenar.io/customising-popout-messages-in-admin-mode
+                            in order to customise the message.
+                    
+                            Note that this will clash with the <code>popout_message</code> property for Admin Boxes;
+                            you can use one or the other, but not both at the same time.
+                    
+                    
+                    collection_buttons:
+                        type: object
+                        description: >
+                            Collection buttons appear when no items are selected, and are intended to be for actions that apply to the Panel as a whole.
+                        
+                        additionalProperties:
+                            type: object
+                            oneOf:
+                                -
+                                    required:
+                                        - ajax
+                                -
+                                    required:
+                                        - do_csv_export
+                                -
+                                    required:
+                                        - admin_box
+                                -
+                                    required:
+                                        - call_js_function
+                                -
+                                    required:
+                                        - navigation_path
+                                -
+                                    required:
+                                        - frontend_link
+                                -
+                                    required:
+                                        - help
+                                -
+                                    required:
+                                        - link
+                                -
+                                    required:
+                                        - panel
+                                -
+                                    required:
+                                        - organizer_quick
+                                -
+                                    required:
+                                        - pick_items
+                                -
+                                    required:
+                                        - popout
+                                -
+                                    required:
+                                        - upload
+                            properties:
+                                ord: *ord
+                                css_class: *css_class
+                                label:
+                                    type: string
+                                    description: >
+                                        A label for this button
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip for this button
+                                hidden: *hidden
+                                visible_if: *visible_if
+                                
+                                disabled:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be disabled.
+                                
+                                disabled_if:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated.
+                                        
+                                        If the code provided evaluates to <code>true</code> the button will be disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled_tooltip:
+                                    type: string
+                                    default: (defaults to the tooltip property)
+                                    description: >
+                                        A tooltip for this button if it is disabled.
+                        
+                        
+                                #Collection Buttons share the following child-properties with Item Buttons
+                                hide_in_select_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Select Mode.
+                                select_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Select Mode.
+                                hide_in_quick_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Quick Mode.
+                                quick_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Quick Mode.
+                                
+                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+                                        this button will appear in both Select Mode and Quick Mode.
+                                only_show_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Only show the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                hide_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Hide the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                
+                                
+                                #Collection Buttons also use the following property:
+                                hide_when_no_search_results:
+                                    type: boolean
+                                    description: >
+                                        Don't show this button if there are no search results.
+                                
+                                
+                                #In addition, a Collection Button should have one (and only one) of the following properties as an action:
+                                ajax: &ajax
+                                    type: object
+                                    description: >
+                                        Send an AJAX request to your <code>handleOrganizerPanelAJAX()</code> method.
+
+                                    properties:
+                                        confirm:
+                                            type: object
+                                            description: >
+                                                Use this to display a confirmation prompt before performing the AJAX action.
+                                            properties:
+                                                message:
+                                                    type: string
+                                                    description: >
+                                                        A message for the confirmation prompt.
+                                                
+                                                        If this is an item or inline button, your message may contain [[merge_field]]s
+                                                        which match up to the column names, and will be populated according to the item
+                                                        which is selected.
+                                                        (Note that this won't work if multiple items are selected.)
+                                                
+                                                        If you don't want a hard-coded warning message, then you can omit the message
+                                                        property completely. This will cause the CMS will launch an AJAX call to your
+                                                        handleOrganizerPanelAJAX() method (using $_GET rather than $_POST) to look up the text needed.
+                                                multiple_select_message:
+                                                    type: string
+                                                    description: >
+                                                        In Organizer, this property allows you to set a different message if multiple
+                                                        items are selected.
+                                                    default: (defaults to the title property)
+                                                html: &message_html
+                                                    type: boolean
+                                                    description: >
+                                                        If this is set, the message will not be html-escaped.
+                                                button_message:
+                                                    type: string
+                                                    description: >
+                                                        A message for the confirm button
+                                                cancel_button_message:
+                                                    type: string
+                                                    description: >
+                                                        A message for the cancel button
+                                                message_type:
+                                                    enum:
+                                                        - none
+                                                        - error
+                                                        - warning
+                                                        - question
+                                                        - success
+                                                    default: none
+                                                    description: >
+                                                        The type of message. A different styling will be applied for each different type.
+                                                download:
+                                                    type: boolean
+                                                    description: >
+                                                        You can set to offer a file download instead of performing an AJAX request.
+                                        request: &request
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                                description: >
+                                                    A variable to put in the $_GET or $_POST of the AJAX request.
+                                            description: >
+                                                You can use the request property to add requests to the AJAX request.
+                                        
+                                                These will be in the $_GET when seeking confirmation, and in the $_POST
+                                                when performing the action.
+                                do_csv_export:
+                                    type: boolean
+                                    description: >
+                                        Deprecated functionality.
+                                
+                                admin_box: &admin_box
+                                    type: object
+                                    description: >
+                                        This lets you open an Admin Box that you have written in your Module,
+                                        or call an Admin Box from a different Module.
+                                    properties:
+                                        path:
+                                            description: >
+                                                The tag path to the Admin Box.
+                                                
+                                                (This will just be one property long, as Admin Boxes all sit at the top-level in their schema.)
+                                        key:
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                                description: >
+                                                    A variable or meta-information to pass into the key of the Admin Box.
+                                            description: >
+                                                Any variables set here will be passed on to the key of the Admin Box.
+                                        tab:
+                                            type: *stringy
+                                            description: >
+                                                The name of a tab to open up in.
+                                            default: (the first tab of the Admin Box)
+                                        values:
+                                            type: object
+                                            additionalProperties:
+                                                type: object
+                                                description: >
+                                                    The key of a tab in the Admin Box
+                                                additionalProperties:
+                                                    type: *variable
+                                                    description: >
+                                                        The key and initial value of a field in the admin box.
+                                            commented_out_html_description: |
+                                                <p>You can enter some initial values for the fields in your admin box by passing
+                                                in an array of arrays (tabs => (fields => values)).</p>
+                                        
+                                                <p>These values will override the default values for the fields, but won't
+                                                overwritten any values set in PHP in your <code>fillAdminBox()</code> method.</p>
+                                
+                                call_js_function: &call_js_function
+                                    type: object
+                                    commented_out_html_description: |
+                                        <p>This is advanced functionality, mainly aimed at buttons and toolbars on the Admin Toolbar but will also work with Organizer buttons, that can be used to call a specific function from the CMS' library of JavaScript functions.</p>
+                                        <p>If your Plugin is on the current page you could also create a button that called a JavaScript function from its library.</p>
+                                        <p>The function being called should accept the following two paramaters:</p>
+                                        <ul>
+                                        <li>The button that was just pressed, as a JSON object</li>
+                                        <li>The currently selected id or ids (this will be a comma-separated list if multiple items are selected).</li>
+                                        </ul>
+                                        <h2>Buttons are Hidden when Functions do not exist</h2>
+                                        <p>If the function you specify does not actually exist, this will cause the button (or the whole toolbar, if you placed this property on a toolbar) to be hidden.</p>
+                                    required:
+                                        - function
+                                    properties:
+                                        encapsulated_object:
+                                            type: string
+                                            description: >
+                                                If the function you are calling is part of an encapsulated object, you should
+                                                name that object in this property.
+                                        function:
+                                            type: string
+                                            description: >
+                                                The name of the function you wish to call.
+                                
+                                navigation_path:
+                                    type: string
+                                    description: >
+                                        This property allows you to create a button that takes you to a specified navigation path in Organizer when pressed.
+                                
+                                        Be aware that this will be a one-way link; as you are entering a navigation path, you will override any existing
+                                        navigation history with the history from the navigation path.
+                                frontend_link:
+                                    type: string
+                                    description: >
+                                        This property allows you to link to the front end by providing a URL.
+                                
+                                        You can provide an external URL (which will always open in a new window),
+                                        or an internal link relative to the CMS root directory.
+                                
+                                help: &help
+                                    type: object
+                                    description: >
+                                        This property provides you with a simple way of displaying a short pop-up message.
+                                    required:
+                                        - message
+                                    properties:
+                                        message:
+                                            type: string
+                                            description: >
+                                                A help message to display when clicking on this button.
+                                        html: *message_html
+                                        message_type:
+                                            enum:
+                                                - none
+                                                - error
+                                                - warning
+                                                - question
+                                                - success
+                                            default: question
+                                            description: >
+                                                The type of message. A different styling will be applied for each different type.
+                                
+                                link:
+                                    type: object
+                                    static: true
+                                    required:
+                                        - path
+                                    properties: *link_properties
+                                    description: >
+                                        If you set a link on a collection button, an administrator will be taken to the
+                                        specified location in Organizer when they click on it.
+                                
+                                panel:
+                                    type: object
+                                    description: >
+                                        If you set a panel on a collection button, an administrator will be taken
+                                        into the panel when they click on it.
+                                    #properties: *panel_properties #This will be set in dev_tools.js instead
+                        
+                                organizer_quick: &organizer_quick
+                                    type: object
+                                    description: >
+                                        This will display Organizer in quick mode when clicked.
+                                    required:
+                                        - path
+                                        - min_path
+                                    properties:
+                                        path:
+                                            type: string
+                                            description: >
+                                                The path of the panel in Organizer that you wish to show.
+                                        
+                                                You may enter either a tag path or a navigation path, but if you enter a
+                                                navigation path you cannot leave the min_path and target_path properties unset.
+                                                
+                                                If this is for an item button, you may use the mergefield <code>[[id]]</code> in
+                                                your path to substitue in the current item's id.
+                                        min_path:
+                                            type: string
+                                            default: (defaults to the path property)
+                                            description: >
+                                                You must enter the tag path of a panel to act as a barrier to navigation.
+                                        
+                                                If the disallow_refiners_looping_on_min_path property is set,
+                                                the back button will not be shown on this panel.
+                                        
+                                                If the disallow_refiners_looping_on_min_path property is not set,
+                                                the back button will not be shown on this panel if it were to navigate
+                                                away from the panel.
+                                                Refiners that "loop", going from and to the same panel over and over again,
+                                                will still show the back button.
+                                        
+                                                This must be a tag path.
+                                        max_path:
+                                            type:
+                                                - string
+                                                - boolean
+                                            default: (defaults to the target_path property)
+                                            description: >
+                                                You can enter the path of a panel to act as a barrier to navigation.
+                                        
+                                                This works like a limit; the Admin will not be able to navigate away from this
+                                                panel except by pressing the back button.
+                                        
+                                                This must be a tag path.
+                                        
+                                                If you don't want to use a limit you can also set this property to false to disable it.
+                                        disallow_refiners_looping_on_min_path:
+                                            type: boolean
+                                            description: >
+                                                This modifies the logic for how the min_path property works with refiners.
+                                
+                        
+                                pick_items: &pick_items
+                                    type: object
+                                    description: >
+                                        A pick items button will display Organizer in select mode when clicked,
+                                        and will let an Admin pick items from a panel.
+                                    required:
+                                        - path
+                                        - target_path
+                                        - min_path
+                                    oneOf:
+                                        -
+                                            required:
+                                                - request
+                                        -
+                                            required:
+                                                - ajax
+                                    properties:
+                                        path:
+                                            type: string
+                                            description: >
+                                                The path of the panel in Organizer that you wish to show.
+                                        
+                                                You may enter either a tag path or a navigation path, but if you enter a
+                                                navigation path you cannot leave the min_path and target_path properties unset.
+                                        target_path:
+                                            type: string
+                                            default: (defaults to the path property)
+                                            description: >
+                                                The tag path of the panel in Organizer where the "Choose" button should be shown.
+                                        
+                                                This must be a tag path.
+                                        min_path:
+                                            type: string
+                                            default: (defaults to the path property)
+                                            description: >
+                                                You must enter the tag path of a panel to act as a barrier to navigation.
+                                        
+                                                If the disallow_refiners_looping_on_min_path property is set,
+                                                the back button will not be shown on this panel.
+                                        
+                                                If the disallow_refiners_looping_on_min_path property is not set,
+                                                the back button will not be shown on this panel if it were to navigate
+                                                away from the panel.
+                                                Refiners that "loop", going from and to the same panel over and over again,
+                                                will still show the back button.
+                                        
+                                                This must be a tag path.
+                                        max_path:
+                                            type:
+                                                - string
+                                                - boolean
+                                            default: (defaults to the target_path property)
+                                            description: >
+                                                You can enter the path of a panel to act as a barrier to navigation.
+                                        
+                                                This works like a limit; the Admin will not be able to navigate away from this
+                                                panel except by pressing the back button.
+                                        
+                                                This must be a tag path.
+                                        
+                                                If you don't want to use a limit you can also set this property to false to disable it.
+                                        disallow_refiners_looping_on_min_path:
+                                            type: boolean
+                                            description: >
+                                                This modifies the logic for how the min_path property works with refiners.
+                                
+                                        one_to_one_choose_phrase:
+                                            type: string
+                                            default: Choose
+                                            description: >
+                                                A phrase for the choose button.
+                                
+                                        multiple_select:
+                                            type: boolean
+                                            description: >
+                                                Setting this option will allow an Admin to pick multiple values.
+                                                They will be stored as comma-separated values.
+                                        one_to_many_choose_phrase:
+                                            type: string
+                                            default: (defaults to the one_to_one_choose_phrase property)
+                                            description: >
+                                                A phrase for the choose button then multiple items are selected.
+                                
+                                        allow_no_selection:
+                                            type: boolean
+                                            description: >
+                                                Setting this property will allow an Admin to press the "choose" button without
+                                                anything selected.
+                                        
+                                                You would use this option if you wanted them to select a location or a refiner
+                                                in Organizer rather than an item specifically; you can check the variables
+                                                set in the POST request to see which refiners were in use and which values they
+                                                had.
+                                        
+                                                A typical example of what you might see in the POST request might be:
+                                                    <code>child&#95;&#95;refinerName=language&child&#95;&#95;refinerId=1&child&#95;&#95;refiner&#95;&#95;language=en</code>
+                                        one_to_many_choose_phrase:
+                                            type: string
+                                            default: (defaults to the one_to_one_choose_phrase property)
+                                            description: >
+                                                A phrase for the choose button if no items are selected in Select Mode and
+                                                <code>allow_no_selection</code> is enabled.
+                                
+                                        request: *request
+                                        ajax: *ajax
+                        
+                                popout: &popout
+                                    type: object
+                                    description: >
+                                        This property allows you to open a Pop-out window when an Admin clicks on your button.
+                                        A typical usage would be to display a bigger version of an image or movie.
+                                
+                                        This is implemented using the Colorbox library.
+                                    required:
+                                        - href
+                                    properties:
+                                        href:
+                                            type: string
+                                            description: >
+                                                A link to a page/image/animation you wish to be shown.
+                                        title:
+                                            type: string
+                                            description: >
+                                                Use this property to add a title for the floating box.
+                                            #default: (the item's name)
+                                
+                                        css_class:
+                                            type: string
+                                            description: >
+                                                A CSS class name to place round the
+                                    additionalProperties:
+                                        type: *variable
+                                        description: >
+                                            Any additional properties will be passed on to the Colorbox library.
+                                    
+                                            You can see http://www.jacklmoore.com/colorbox/ for a description of
+                                            what other properties are available.
+                                
+                                upload: &upload
+                                    type: object
+                                    description: >
+                                        Uploads a file to the CMS.
+                            
+                                    properties:
+                                        accept:
+                                            type: string
+                                            description: >
+                                                The types of file(s) to accept (e.g.
+                                                audio/*
+                                                video/*
+                                                image/*
+                                                MIME_type)
+                                        multi:
+                                            type: boolean
+                                            description: >
+                                                Whether to allow multiple file-selection, for browsers that support HTML 5.
+                                        
+                                                (Separate AJAX requests will be run for each file; you do not need to handle this differently.)
+                                        drag_and_drop:
+                                            type: boolean
+                                            description: >
+                                                Whether to allow drag-and-drop uploads for browsers that support HTML 5.
+                                        
+                                                Note that only one button at a time may use a drag-and-drop upload.
+                                                
+                                                Currently only works for item buttons and collection buttons, and not inline buttons.
+                                        request: *request
+                        
+                                       
+                    
+                    item_buttons:
+                        type: object
+                        description: >
+                            Item buttons appear when one or more items are selected, and are intended to be for actions that apply to the selected items.
+                        additionalProperties:
+                            type: object            
+                            oneOf:
+                                -
+                                    required:
+                                        - ajax
+                                -
+                                    required:
+                                        - admin_box
+                                -
+                                    required:
+                                        - call_js_function
+                                -
+                                    required:
+                                        - navigation_path
+                                -
+                                    required:
+                                        - frontend_link
+                                -
+                                    required:
+                                        - help
+                                -
+                                    required:
+                                        - link
+                                -
+                                    required:
+                                        - panel
+                                -
+                                    required:
+                                        - combine_items
+                                -
+                                    required:
+                                        - popout
+                                -
+                                    required:
+                                        - upload
+                            properties:
+                                ord: *ord
+                                css_class: *css_class
+                                label:
+                                    type: string
+                                    description: >
+                                        A label for this button
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip for this button
+                                hidden: *hidden
+                                visible_if: *visible_if
+                                
+                                visible_if_for_all_selected_items:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated for each selected item.
+                                        Each item must match for the button to be shown.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                visible_if_for_any_selected_items:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated for each selected item.
+                                        At least one item must match for the button to be shown.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be disabled.
+                                
+                                disabled_if:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated.
+                                        
+                                        If the code provided evaluates to <code>true</code> the button will be disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled_if_for_all_selected_items:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated for each selected item.
+                                        If each item matches, the button will be disabled.
+                                
+                                disabled_if_for_any_selected_items:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated for each selected item.
+                                        If at least one item matches, the button will be disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled_tooltip:
+                                    type: string
+                                    default: (defaults to the tooltip property)
+                                    description: >
+                                        A tooltip for this button if it is disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                #Item Buttons share the following child-properties with Collection Buttons
+                                hide_in_select_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Select Mode.
+                                select_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Select Mode.
+                                hide_in_quick_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Quick Mode.
+                                quick_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Quick Mode.
+                                        
+                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+                                        this button will appear in both Select Mode and Quick Mode.
+                                only_show_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Only show the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                hide_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Hide the button if the named refiner has been applied.
+                                        
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                
+                                
+                                #Item Buttons also use the following properties:
+                                multiple_select:
+                                    type: boolean
+                                    description: >
+                                        This marks that this button is prepared to work on multiple items.
+                                multiple_select_only:
+                                    type: boolean
+                                    description: >
+                                        This marks that this button will only appear when multiple items are
+                                        selected.
+                                
+                                        If you use this property you must also use the <code>multiple_select</code> property.
+                                multiple_select_max_items:
+                                    type: number
+                                    description: >
+                                        This property takes a number; if you set it then this button won't be shown
+                                        when more than this number of items are selected
+                                
+                                        If you use this property you must also use the <code>multiple_select</code> property.
+                                multiple_select_label:
+                                    type: string
+                                    description: >
+                                        A label for this button for when more than one item is selected.
+                                    default: (defaults to the label property)
+                                multiple_select_tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip to show when more than one item is selected.
+                                    default: (defaults to the tooltip property)
+                                
+                                #In addition, an Item Button should have one (and only one) of the following properties as an action:
+                                ajax: *ajax
+                                call_js_function: *call_js_function
+                                organizer_quick: *organizer_quick
+                                combine_items: *pick_items
+                                admin_box: *admin_box
+                        
+                                navigation_path:
+                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
+                                    type: string
+                                    description: >
+                                        This property allows you to create a button that takes you to a specified navigation path in Organizer when pressed.
+                                
+                                        Be aware that this will be a one-way link; as you are entering a navigation path, you will override any existing
+                                        navigation history with the history from the navigation path.
+                                
+                                        If a panel has column named navigation_path, the value of that column will be used
+                                        instead of this property.
+                                frontend_link:
+                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
+                                    type: string
+                                    description: >
+                                        This property allows you to link to the front end by providing a URL.
+                                
+                                        You can provide an external URL (which will always open in a new window),
+                                        or an internal link relative to the CMS root directory.
+                                
+                                        If a panel has column named frontend_link, the value of that column will be used
+                                        instead of this property.
+                                
+                                help: *help
+                                
+                                link:
+                                    type: object
+                                    static: true
+                                    required:
+                                        - path
+                                    properties: *link_properties
+                                    description: >
+                                        If you set a link on an item or inline button, an administrator will be taken to the
+                                        specified location in Organizer when they click on it.
+                                
+                                        If you specify a refiner, the id of the item selected will be used as the refiner id.
+                                
+                                panel:
+                                    type: object
+                                    description: >
+                                        If you set a panel on an item or inline button, an administrator will be taken
+                                        into the panel when they click on it.
+                                    #properties: *panel_properties #This will be set in dev_tools.js instead
+                        
+                                popout: *popout
+                                upload: *upload
+                    
+                    hidden_nav:
+                        type: object
+                        description: >
+                            Hidden navigation is effectively a button that is always hidden.
+                        additionalProperties:
+                            type: object            
+                            oneOf:
+                                -
+                                    required:
+                                        - link
+                                -
+                                    required:
+                                        - panel
+                            properties:
+                                
+                                link:
+                                    type: object
+                                    static: true
+                                    required:
+                                        - path
+                                    properties: *link_properties
+                                
+                                panel:
+                                    type: object
+                                    #properties: *panel_properties #This will be set in dev_tools.js instead
+                    
+                    
+                    reorder:
+                        type: object
+                        properties:
+                            column:
+                                type: string
+                                static: true
+                                description: >
+                                    The codename/property name of a column from <code>columns</code> that defines the ordinal.
+                            hierarchy_view_mode:
+                                enum:
+                                    - parent_ids
+                                    - parent_ids_and_ordinals
+                                description: >
+                                    If you are using hierarchy view and wish to enable the reorder functionality,
+                                    you must set this property to one of two possible options:
+                                
+                                    • parent_ids lets an Admin change the parent/child relationship between items by dragging them around.
+                                
+                                    • parent_ids_and_ordinals lets an Admin change the parent/child relationship between items and their ordinals
+                                    by dragging them around. The <code>column</code> property must be set to use this option.
+                            hierarchy_depth:
+                                type: number
+                                default: 99
+                                description: >
+                                    New in version 7.0.0
+                                    The maximum depth to use in hierachy mode
+                            lazy_load:
+                                type: boolean
+                                static: true
+                                description: >
+                                    New in version 7.0.0
+                                    For hierarchy mode, only load things that are visible.
+                                    Note that every time a new section is opened, this will trigger an AJAX request to reload the panel.
+                        
+                        description: >
+                            This lets admins rearrange items in Organizer by dragging them around.
+                    
+                    key:
+                        description: >
+                            This lets you set variables/meta-information about this panel.
+                        type: object
+                        additionalProperties:
+                            type: *variable
+                            description: >
+                                A variable or meta-information that you define about this Panel.
+                        description: >
+                            The key of a Panel lets you store meta-information and variables.
+                            
+                            If you have any AJAX buttons on this Panel, these variables will be available in the request.
+                            
+                            If you open any Admin Boxes from this Panel, these variables will be
+                            passed on to the key of the Admin Box.
+                    
+                    force_view_mode:
+                        enum:
+                            - grid
+                            - list
+                        description: >
+                            You can set this property to overwrite an administrator's saved preference on a temporary basis
+                            and force them into a specific view mode.
+                            
+                            Note that if they change their view options whilst using your chosen view mode
+                            then it will be set in their preferences; otherwise their view will snap back
+                            to its previous value when this property is removed.
+                    
+                    label_format_for_grid_view:
+                        type: string
+                        description: >
+                            Allows you to format your label, using the [[column_name]] syntax to reference
+                            other columns.
+                            
+                            Defaults to "[[name]]", where "name" is the value you choose for your default_sort_column
+                            above.
+                        default: (defaults to the default_sort_column property)
+                    label_format_for_picked_items:
+                        type: string
+                        description: >
+                            This allows you to set a different label format for when an item is picked in
+                            a Organizer Picker.
+                        default: (defaults to the label_format_for_grid_view property)
+                    label_format_for_popouts:
+                        type: string
+                        description: >
+                            This allows you to set a different label format for when an item is displayed
+                            in a floating "pop out" box.
+                    
+                    trash:
+                        description: >
+                            This creates a clickable "Trash can" icon at the bottom right of the panel in full mode.
+                        
+                        type: object
+                        commented_out_description: >
+                            This property provides a Trash can icon at the bottom right of the current Panel.
+                            This can be clicked and navigated into just like a button.
+                            
+                            The Trash icon will not be visible in Select Mode.
+                        oneOf:
+                            -
+                                required:
+                                    - link
+                            -
+                                required:
+                                    - panel
+                        properties:
+                            empty:
+                                type: boolean
+                                description: >
+                                    Is the trash empty?
+                            empty_css_class:
+                                type: string
+                                description: >
+                                    A CSS class for the trash, when the <code>empty</code> property is set.
+                                default: trash_button_empty
+                            full_css_class:
+                                type: string
+                                description: >
+                                    A CSS class for the trash, when the <code>empty</code> property is not set.
+                                default: trash_button_full
+                            empty_tooltip:
+                                type: string
+                                description: >
+                                    A tooltip to show for the trash, when the <code>empty</code> property is set.
+                                default: View Trash
+                            full_tooltip:
+                                type: string
+                                description: >
+                                    A tooltip to show for the trash, when the <code>empty</code> property is not set.
+                                default: View Trash
+                            
+                            link:
+                                type: object
+                                static: true
+                                required:
+                                    - path
+                                properties: *link_properties
+                                description: >
+                                    If you set a link on the trash can, an administrator will be taken to the
+                                    specified location in Organizer when they click on it.
+                            
+                                    You would normally link to a refiner; e.g. a refiner that shows trashed/archived items.
+                            
+                            panel:
+                                type: object
+                                description: >
+                                    If you set a panel on the trash can, an administrator will be taken
+                                    into the panel when they click on it.
+                                #properties: *panel_properties #This will be set in dev_tools.js instead
+                    
+                    xml:
+                        type: object
+                        properties:
+                            outer_tag:
+                                type: string
+                                description: >
+                                    The name of the wrapping outer property in XML.
+                                default: Organizer
+                            outer_tag_attributes:
+                                type: object
+                                description: >
+                                    You can use this object to set attributes on the outer XML property.
+                                additionalProperties:
+                                    type: string
+                                    description: >
+                                        An attribute to be added to the outer XML property.
+                            only_show_items_tag:
+                                type: boolean
+                                description: >
+                                    If this is set, only the <code>items</code> of the panel will be outputted.
+                            
+                            allow_unauthenticated_xml_access:
+                                type: boolean
+                                static: true
+                                description: >
+                                    Setting this property allows data for a panel to be shown in XML form without
+                                    checking to see if an Admin is logged in.
+                        
+                        description: |
+                            Forces Organizer to output data in XML format, rather than in JSON format.
+                        
+                            This is deprecated functionality.
+                    
+                    allow_bypass:
+                        type: boolean
+                        description: >
+                            If there is only one item in this panel, and the item has a double click link,
+                            the client will skip this panel and go straight into the item.
+                    return_if_empty:
+                        type: boolean
+                        description: >
+                            If this property is set on a Panel, and the Panel is empty, an Admin will
+                            automatically be returned to the previous panel.
+                    no_return:
+                        type: boolean
+                        description: >
+                            If this property is set on a Panel, when an Admin navigates using a link on said
+                            Panel, (e.g. by double clicking on an item or by clicking on a toolbar button
+                            with a link), they will not be able to return to the Panel by clicking
+                            Organizer's back button.
+                    
+                            Note that this property does not disable the Browser's back button, nor does it stop
+                            an Admin navigating by typing a path into the URL bar.
+                    disable_periodic_refresh:
+                        type: boolean
+                        description: >
+                            Allows you to disable the client automatic refreshing the panel.
+                    
+                            (The panel can still be refreshed manually by the admin using it.)
+                    
+                    back_link:
+                        type: string
+                        static: true
+                        description: >
+                            The tag-path that the Admin will be taken to if they click on the back-link.
+                            If this property has an empty value then the back-button will not be shown.
+                            
+                            If this property is omitted then the CMS will try to work the correct path out
+                            logically, so you normally don't need to set this property unless you wish to
+                            overwrite the default behaviour.
+                            
+                            If the Admin arrives at a panel through a <code>link</code> with the <code>branch</code> property set,
+                            the <code>back_link</code> will be ignored and they will be taken to their previous
+                            location instead.
+                            
+                            This must be a tag-path; you may not enter a navigation path.
+                        default: (intelligent default)
+                    
+                    advanced_search:
+                        type: boolean
+                        description: |
+                            Deprecated functionality.
+                
+                #This will be merged with the properties property above in dev_tools.js
+                merge:
+                    item_buttons:
+                        additionalProperties:
+                            properties:
+                                organizer_quick:
+                                    properties:
+                                        path:
+                                            type: string
+                                            description: >
+                                                The path of the panel in Organizer that you wish to show.
+                                        
+                                                You may enter either a tag path or a navigation path, but if you enter a
+                                                navigation path you cannot leave the min_path and target_path properties unset.
+                                                
+                                                If you need to use the id of the currently selected item in the path,
+                                                you may use [[id]] to merge it in.
+                                combine_items:
+                                    description: >
+                                        A combine items button will display Organizer in select mode when clicked,
+                                        and will let an Admin pick items from a panel.
+                                
+                                        For example, Admins can be viewing a list of Users, select a User, and then use a combine
+                                        items button to make that user the child of a different User that they then select.
+                                
+                                        An AJAX request will be sent to the server after the admin picks something. You need to
+                                        provide either the request or the ajax property, but not both.
+                                    properties:
+                                        many_to_one_choose_phrase:
+                                            type: string
+                                            description: >
+                                                A phrase for the choose button if multiple items were selected initially.
+                                            default: (defaults to the one_to_one_choose_phrase property)
+                                        many_to_many_choose_phrase:
+                                            type: string
+                                            description: >
+                                                A phrase for the choose button if multiple items were selected initially, and
+                                                if multiple items are selected in Select Mode.
+                                            default: (defaults to the many_to_one_choose_phrase property)
+                                        many_to_one_choose_phrase:
+                                            type: string
+                                            description: >
+                                                A phrase for the choose button if multiple items were selected initially, the
+                                                <code>allow_no_selection</code> property is set, and if no items are selected in Select Mode.
+                                            default: (defaults to the one_to_no_selection_choose_phrase property)
+                                popout:
+                                    type: object
+                                    description: >
+                                        This property allows you to open a Pop-out window when an Admin clicks on your button.
+                                        A typical usage would be to display a bigger version of an image or movie.
+                                
+                                        This is implemented using the Colorbox library.
+                            
+                                        If a panel has column(s) called id, filename or checksum, 
+                                        the values of these columns for the currently selected item will
+                                        be added onto the end of the URL specified in the <code>href</code> property as requests.
+                            
+            
+
+    
+    
+    
+commented_out_html_description: |
+    <p>Organizer is built on static YAML files, written in the zenario User Interface Language (TUIX), which describe and give structure to its sections and Panels.</p>
+    <p>Organizer Apps, which are zenario Modules, are written in the same language and using the same schema as Organizer - which is an App itself.</p>
+    <p>In order to add functionality to Organizer, your Module must contain one or more YAML files in its&nbsp;<code>tuix/organizer&nbsp;</code>subdirectory.
+        (There is no need to have multiple files, but if your App has multiple sections we would recommend that you create one file per section.)</p>
+    <p>The YAML files serve as a map or plan of what functionality your Plugin adds to Organizer, and where.</p>
+    <p>For example, a YAML property may define the buttons which are added to Organizer, or the top level links that appear at the left hand-side.</p>
+    <p>When developing Organizer Apps, the flow of the Schema is one-way. Your YAML files are read by the CMS on the server and turned into a PHP array, which then passes them to the client as JSON. The client does not pass the JSON object back, but instead replies using <code>GET</code> or&nbsp;<code>POST</code> AJAX requests.</p>
+    <h2>The top level items</h2>
+    <p>The first things in the Organizer Schema are the top level items. These add links to the left-hand panel in Organizer.</p>
+    <p>Note that if you wish to include functionality in Organizer you must either create a top level item to contain it, or to place your functionality within another Module's top level item.</p>
+

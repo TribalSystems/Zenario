@@ -1,0 +1,41 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        custom_datasets:
+            title: Custom Datasets
+            no_items_message: >
+                There are no modules running that use datasets.
+            default_sort_column: label
+            view_mode: list
+            disable_grid_view: true
+            columns:
+                label:
+                    title: Dataset
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: medium
+                system_table:
+                    title: System Database Table
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: medium
+                table:
+                    title: Database Table
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: medium
+                type:
+                    title: Type
+                    width: xxlarge
+                    show_by_default: Yes
+            item:
+                css_class: 'menu_section'
+                tooltip_when_link_is_active: Define fields in this dataset
+                link:
+                    path: zenario__administration/panels/custom_tabs_and_fields
+                    refiner: dataset_id
+                            
+            
+            # Note there are no buttons; creating new/editing existing datasets is not implemented yet!
+                    

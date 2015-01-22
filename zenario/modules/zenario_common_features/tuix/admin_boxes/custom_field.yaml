@@ -1,0 +1,285 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_custom_field:
+    priv: _PRIV_MANAGE_DATASET
+    
+    key:
+        id: false
+        dataset_id: false
+        tab_name: false
+        numValues: 2
+    
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: Yes
+            fields:
+                label:
+                    label: 'Label:'
+                    type: text
+                    maxlength: 64
+                    validation:
+                        required: 'Please enter a label'
+                    onkeyup: |
+                        if (!zenarioAB.focus.key.id) {
+                            zenario.get('db_column').value =
+                                this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
+                        }
+                    note_below: |
+                        The text of the label that appears before the field.
+                        
+                db_column:
+                    label: 'Code name:'
+                    type: text
+                    maxlength: 64
+                    validation:
+                        required: 'Please enter a code name'
+                    note_below: |
+                        This will be used for the name of the column in the database.
+                
+                type:
+                    label: 'Type:'
+                    type: radios
+                    redraw_onchange: true;
+                    values:
+                        group:
+                            label: 'Group'
+                            note_below: 'A checkbox that can be used to grant permission to access content items; can have child characteristics'
+                        checkbox:
+                            label: 'Single checkbox'
+                            note_below: 'A simple yes/no field; can control the visibility of other fields'
+                        checkboxes:
+                            label: 'Multiple checkboxes'
+                            note_below: 'Allows one or more choices from a list of values you define'
+                        date:
+                            label: 'Date'
+                            note_below: 'A pop-up date-picker'
+                        editor:
+                            label: 'Editor'
+                            note_below: 'A HTML editor that will let an administrator enter rich-text'
+                        radios:
+                            label: 'Multiple radio-buttons'
+                            note_below: 'Allows one choice from a list of values you define'
+                        centralised_radios:
+                            label: 'Multiple radio-buttons (centralised)'
+                            note_below: 'Allows one choice from a system-generated list'
+                        select:
+                            label: 'Select list'
+                            note_below: 'Allows one choice from a list of values you define'
+                        centralised_select:
+                            label: 'Select list (centralised)'
+                            note_below: 'Allows one choice from a system-generated list'
+                        text:
+                            label: 'Text'
+                            note_below: 'A one-line text field'
+                        textarea:
+                            label: 'Textarea'
+                            note_below: 'A multi-line text field'
+                        url:
+                            label: 'URL'
+                            note_below: 'A one-line text field that lets you enter a URL'
+                    validation:
+                        required: Please select a type
+                
+                values_source:
+                    visible_if: "({centralised_radios:1,centralised_select:1})[zenarioAB.value('type', 'details')]"
+                    label: 'Source:'
+                    type: select
+                    values: {}
+                
+                protected:
+                    label: 'Protected'
+                    type: checkbox
+                    note_below: 'Protected fields cannot be deleted'
+                
+        display:
+            label: Display
+            edit_mode:
+                enabled: Yes
+            fields:
+                parent_id:
+                    label: 'Only show if this field is checked:'
+                    type: select
+                    empty_value: " -- Select -- "
+                width:
+                    visible_if: "({editor:1,text:1,textarea:1})[zenarioAB.value('type', 'details')]"
+                    label: 'Width of the field on the admin box:'
+                    type: select
+                    empty_value: " -- Default width -- "
+                    values: 
+                        1:
+                            ord: 1
+                            label: 1 character (em)
+                        5:
+                            ord: 2
+                            label: 5 characters (em)
+                        10:
+                            ord: 3
+                            label: 10 characters (em)
+                        25:
+                            ord: 4
+                            label: 25 characters (em)
+                        40:
+                            ord: 5
+                            label: 40 characters (em)
+                        56:
+                            ord: 6
+                            label: 56 characters (em)
+                height:
+                    visible_if: "({editor:1,textarea:1})[zenarioAB.value('type', 'details')]"
+                    label: 'Height of the field on the admin box:'
+                    type: select
+                    empty_value: " -- Default rows -- "
+                    values: 
+                        3:
+                            ord: 1
+                            label: 3 rows
+                        5:
+                            ord: 2
+                            label: 5 rows
+                        10: 
+                            ord: 3
+                            label: 10 rows
+                        20: 
+                            ord: 4
+                            label: 20 rows
+                note_below:
+                    label: 'Help text:'
+                    type: text
+                    note_below: |
+                        This is a message to administrators that explains what to enter for the field.
+                        For example, like this message.
+                
+        validation:
+            label: Validation
+            edit_mode:
+                enabled: Yes
+            fields:
+                required:
+                    label: 'Required'
+                    type: checkbox
+                    redraw_onchange: true
+                    note_below: |
+                        An administrator will not be able to save a record until all of the required fields are complete.
+                required_message:
+                    visible_if: "zenarioAB.value('required')"
+                    label: 'Message if not complete:'
+                    type: text
+                validation:
+                    visible_if: "({text:1})[zenarioAB.value('type', 'details')]"
+                    label: 'Validation:'
+                    type: radios
+                    value: none
+                    values:
+                        none:
+                            label: 'None'
+                        email:
+                            label: 'Email'
+                            note_below: 'Must be a valid email address'
+                        emails:
+                            label: 'Multiple emails'
+                            note_below: 'Must be a comma-seperated list of valid email addresses'
+                        no_spaces:
+                            label: 'No spaces allowed'
+                            note_below: 'May not contain spaces'
+                        numeric:
+                            label: 'Numeric'
+                            note_below: 'Must be a number'
+                        screen_name:
+                            label: 'Screen name'
+                            note_below: 'Only word characters, digits and spaces are allowed'
+                    redraw_onchange: true
+                    note_below: |
+                        An administrator will not be able to save a record if this field does not match the validation rule chosen.
+                validation_message:
+                    visible_if: "({text:1})[zenarioAB.value('type', 'details')] && zenarioAB.value('validation') && zenarioAB.value('validation') != 'none'"
+                    label: 'Message if not valid:'
+                    type: text
+                
+        organizer:
+            label: Organizer
+            edit_mode:
+                enabled: Yes
+            fields:
+                show_in_organizer:
+                    label: 'Show in Organizer panel'
+                    type: checkbox
+                    redraw_onchange: true
+                searchable:
+                    visible_if: "zenarioAB.value('show_in_organizer') == 1"
+                    label: 'Searchable'
+                    type: checkbox
+                sortable:
+                    visible_if: "zenarioAB.value('show_in_organizer') == 1"
+                    label: 'Sortable'
+                    type: checkbox
+                visibility:
+                    visible_if: "zenarioAB.value('show_in_organizer') == 1"
+                    label: 'Visibility:'
+                    type: select
+                    empty_value: 'Hide by default'
+                    values:
+                        1:
+                            ord: 1
+                            label: 'Show by default'
+                        2:
+                            ord: 1
+                            label: 'Always show'
+                    note_below: "Administrators will not be able to hide this field in Organizer if it is set to &quot;Always show&quot;."
+                
+                
+        lov:
+            visible_if: "({checkboxes:1,radios:1,select:1})[zenarioAB.value('type', 'details')]"
+            label: Values
+            edit_mode:
+                enabled: true
+                always_on: true
+                enable_revert: false
+            fields:
+                add_num:
+                    ord: 100001
+                    type: select
+                    hidden: true
+                    value: 1
+                    values:
+                        1:
+                            ord: 1
+                            label: 'Add 1 more value'
+                        2:
+                            ord: 2
+                            label: 'Add 2 more values'
+                        5:
+                            ord: 5
+                            label: 'Add 5 more values'
+                        10:
+                            ord: 10
+                            label: 'Add 10 more values'
+                add:
+                    #same_row: true
+                    ord: 100002
+                    type: submit
+                    value: Add a value
+            
+            custom__template_fields:
+                label:
+                    type: text
+                id:
+                    same_row: true
+                    type: hidden
+                delete:
+                    same_row: true
+                    type: submit
+                    value: 'X'
+                    onclick: >
+                        if (!confirm('Are you sure you wish to delete this value?')) {
+                            return false;
+                        }
+                nudge_down:
+                    same_row: true
+                    type: submit
+                    value: 'v'
+                nudge_up:
+                    same_row: true
+                    type: submit
+                    value: '^'

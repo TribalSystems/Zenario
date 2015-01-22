@@ -1,0 +1,55 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__menu:
+	nav:
+		default_language:
+			panel:
+				title: Menu Languages
+				no_items_message: >
+					No Languages have been enabled. You must enable a Language
+					before creating any Menu Nodes.
+				view_mode: grid
+				no_return: Yes
+				allow_bypass: Yes
+				db_items:
+					table: '[[DB_NAME_PREFIX]]languages AS l'
+					id_column: l.id
+					client_side: Yes
+					where_statement: "WHERE l.id = (SELECT value FROM [[DB_NAME_PREFIX]]site_settings where name = 'default_language')"
+				item:
+					link:
+						path: zenario__menu/hidden_nav/sections/panel
+						branch: Yes
+						refiner: language
+		by_language:
+			panel:
+				title: Menu Languages
+				no_items_message: >
+					No Languages have been enabled. You must enable a Language
+					before creating any Menu Nodes.
+				view_mode: list
+				disable_grid_view: Yes
+				php: Yes
+				db_items:
+					table: '[[DB_NAME_PREFIX]]languages AS l'
+					id_column: l.id
+					client_side: Yes
+				refiners:
+					show_language_choice:
+						exists: Yes
+				columns:
+					name:
+						title: Language Name
+						searchable: Yes
+						db_column: l.id
+						format: language_english_name_with_id
+						show_by_default: Yes
+				item:
+					name: Language
+					names: Languages
+					css_class: ""
+					tooltip_when_link_is_active: 'View menu sections in the language &quot;[[name]]&quot;.'
+					link:
+						path: zenario__menu/hidden_nav/sections/panel
+						branch: Yes
+						refiner: language

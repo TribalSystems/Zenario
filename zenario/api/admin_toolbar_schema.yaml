@@ -1,0 +1,546 @@
+------
+
+common_definitions:
+	stringy: &stringy
+		- number
+		- string
+	variable: &variable
+		- boolean
+		- number
+		- string
+	css_class: &css_class
+		type: string
+		description: A CSS class name for the item, which should define its icon.
+	ord: &ord
+		type: number
+		description: |
+			The ord property controls the order in which things are drawn on the screen.
+			If not set, it defaults to the order the CMS finds them in.
+		default: (the order in which this was found in, e.g. 1, 2, 3, ...)
+	hidden: &hidden
+		type: boolean
+		html_description: >
+			<p>If you want to hide and show TUIX elements such as toolbar buttons, toolbar tabs or Admin Box fields in different situations, you can set the <span class="code">&lt;hidden&gt;</span> property to hide them in your php methods such as <span class="code">fillAdminToolbar()</span>, <span class="code">formatAdminBox()</span> and <span class="code">preFillOrganizerPanel()</span>.</p>
+			<p>Anything with the hidden property set to true will be hidden from view. But note that data is still sent from the server to the client.</p>
+	visible_if: &visible_if
+		type: string
+		html_description: >
+			<p>In some cases, you may wish to conditionally show something that you can't alter in your php methods (for example, whether empty slots are currently being shown).</p>
+			<p>You can use this property to provide a snippet of JavaScript, which will be evaluated every time your button, tab or field is to be shown. Your button, tab or field will only be shown if the evaluated code returns <span class="code">true</span>.</p>
+			<p>A few useful conditions might be:</p>
+			<ul>
+				<li><code>!zenario.browserIsIE()</code>
+					<ul><li>Do not show something in Internet Explorer</li></ul></li>
+				<li><code>!zenario.browserIsIE(7)</code>
+					<ul><li>Do not show something in Internet Explorer versions 7 or earlier</li></ul></li>
+				<li><code>zenarioA.siteSettings.my_setting</code>
+					<ul><li>Only show something when a Site Setting is enabled. (But note that only numeric Site Settings are available in JavaScript.)</li></ul></li>
+				<li><code>zenarioA.slotWandOn</code>
+					<ul><li>Only show a button when empty slots are shown.</li></ul></li>
+				<li><code>!zenarioA.slotWandOn</code>
+					<ul><li>Only show a button when empty slots are not shown.</li></ul></li>
+				<li><code>zenarioA.showGridOn</code>
+					<ul><li>Only show a button when the grid shown.</li></ul></li>
+				<li><code>!zenarioA.showGridOn</code>
+					<ul><li>Only show a button when the grid is not shown.</li></ul></li>
+			</ul>
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Admin Toolbar Schema
+
+type: object
+properties:
+	toolbars:
+		type: object
+	sections:
+		type: object
+
+
+
+# This is the old schema from version 6.0.6
+# To do: It needs updating and rewriting into JSON Schema format!
+
+#Key:
+#    <tag_name>
+#        A tag with no special marking is optional.
+#    *<tag_name>
+#        A tag with an asterisk to the left of it is mandatory.
+#        It must be included if you include its parent.
+#    -<tag_name>
+#        A tag with a hyphen to the left of it has a default value if omitted.
+#    ?<tag_name>
+#        A tag with a question mark is a boolean tag.
+#        Possible values can be "Yes" or "No", 1 or 0, "True" or "False", and so on.
+#        Omitting a boolean tag is the same as setting it to "False".
+#    <+tag_name></+tag_name>
+#        A plus in a tag's name indicates that this tag can have any name.
+#        Names may contain only alphanumeric characters, underscores or hyphens.
+#        There are five reserved names (<back_link>, <class_name>, <count>, <panel> and
+#            <ord>) which cannot be used.
+#        You may also repeat this tag more than once, as long as a different custom name
+#            is used each time.
+#        (Note that no other type of tag can have a custom name.)
+#
+#<?xml version="1.0" encoding="UTF-8"?>
+#<admin_toolbar>
+#	<toolbars>
+#		<title>
+#			(From 6.0.2 onwards)
+#			The message that appears on the admin toolbar.
+#		</title>
+#		<css_class>
+#			(From 6.0.4 onwards)
+#			You can include this tag to add a CSS class name to the admin toolbar.
+#		</css_class>
+#		
+#		<+toolbar>
+#			-<ord>
+#				The order that the toolbars should be displayed in. Defaults to the
+#				order the CMS finds them in.
+#			</ord>
+#			?<hidden>Use this tag to hide a toolbar.</hidden>
+#			<visible_if>
+#			
+#			*<toolbar_microtemplate>
+#				(From 6.1.1 onwards)
+#				The microtemplate that should be used to display the toolbar.
+#			</toolbar_microtemplate>
+#			
+#			<css_class>
+#				(From 6.0.2 onwards)
+#				You can include this tag to add a CSS class name to the tab for this
+#				toolbar.
+#			</css_class>
+#			*<page_mode>
+#				(From 6.0.3 onwards)
+#				The page mode to use for this toolbar.
+#				
+#				Different Slots and Actions appear in the front-end of the site
+#				depending on what the current page mode.
+#				
+#				Possible values are:
+#					preview
+#					edit
+#					edit_disabled
+#					rollback
+#					menu
+#					item
+#					template
+#					template_family
+#			</page_mode>
+#			
+#			*<label>The label for this tab</label>
+#			<tooltip>A tooltip to display.</tooltip>
+#			
+#			
+#			If you wish something to happen when an Admin clicks on a Toolbar, then you
+#			can include one (and only one) of the following tags as an action:
+#			<ajax>
+#				-- or -- 
+#			<admin_box>
+#				-- or -- 
+#			<call_js_function>
+#				-- or -- 
+#			<frontend_link>
+#				-- or -- 
+#			?<help>
+#				-- or -- 
+#			<pick_items>
+#		</+toolbar>
+#	</toolbars>
+#	<sections>
+#</admin_toolbar>
+#
+#
+#
+#
+#<sections>
+#	<+section>
+#		-<ord>
+#			The order that the sections should be displayed in. Defaults to the order
+#			the CMS finds them in.
+#		</ord>
+#		
+#		<label>
+#			Setting this tag will add a coloured label to the left of the buttons.
+#		</label>
+#		
+#		<css_class>
+#			(From 6.0.4 onwards)
+#			You can include this tag to add a CSS class name to the tab for this
+#			section.
+#			If you're using the <label> tag then you can use this to change the colour
+#			of the label's background. Some pre-written classes that you can use are:
+#				zenario_section_brown
+#				zenario_section_green
+#				zenario_section_grey
+#				zenario_section_orange
+#		</css_class>
+#		
+#		?<hidden>Use this tag to hide a section.</hidden>
+#		<visible_if>
+#		
+#		<appears_in_toolbars>
+#			?<+toolbar>
+#				This section will appear in the listed toolbar.
+#			</+toolbar>
+#		</appears_in_toolbars>
+#		
+#		<buttons>
+#	</+section>
+#</sections>
+#
+#
+#
+#
+#<buttons>
+#	<+button>
+#		Admin Toolbar Buttons share the following child-tags with Collection Buttons
+#		and Item Buttons in Storekeeper:
+#		-<ord>
+#			Enter a number between 10 and 98 to change the order of your button.
+#			Defaults to the order that the CMS finds them in.
+#		</ord>
+#		
+#		*<css_class>
+#			A CSS class name for the button, which should define its width and/or icon.
+#			You can specify multiple class names, separated by a space.
+#			
+#			From 6.0.4, you can have a label and an icon for your button if you add
+#			the "label_to_the_left" CSS class name, or just a label if you use the
+#			"label_without_icon" CSS class name.
+#		</css_class>
+#		<label>
+#			(From 6.0.3 onwards)
+#			A text-label for your button that will appear in addition to the icon.
+#			If you use this tag, you should ensure that the CSS you are using for the
+#			button supports having a text-label.
+#		</label>
+#		<tooltip>A tooltip for this button</tooltip>
+#		
+#		?<hidden>
+#			You can use this tag to hide a button.
+#			You may also use the unset() function in PHP to hide a button, however
+#			using unset() may cause PHP errors if another script then tries to
+#			access the button.
+#		</hidden>
+#		<visible_if>
+#		
+#		
+#		Admin Toolbar Buttons also use the following tag:
+#		-<appears_in_toolbars>
+#			?<+toolbar>
+#				This button will appear in the listed toolbar.
+#			</+toolbar>
+#		</appears_in_toolbars>
+#		
+#		
+#		In addition, an Admin Toolbar Button should have one (and only one) of the
+#		following tags as an action:
+#		<ajax>
+#			-- or -- 
+#		<admin_box>
+#			-- or -- 
+#		<call_js_function>
+#			-- or -- 
+#		<frontend_link>
+#			-- or -- 
+#		?<help>
+#			-- or -- 
+#		<pick_items>
+#			-- or -- 
+#		<organizer_quick>
+#	</+button>
+#</buttons>
+#
+#
+#
+#
+#<ajax>
+#	<confirm>
+#	*<request>
+#		<+request>value</+request>
+#	</request>
+#</ajax>
+#
+#
+#
+#
+#
+#<admin_box>
+#	(From 5.2.5 onwards)
+#	*<path>
+#		The path to the Admin Box.
+#		This will usually be just a name, as Admin Boxes are usually defined at the top
+#		level.
+#	</path>
+#	<key>
+#		<+name>value</+name>
+#	</key>
+#	-<tab>The name of a tab to open up in.</tab>
+#	<values>
+#		(From 6.0.5 onwards)
+#		You can enter some initial values for the fields in your admin box by passing
+#		in an array of arrays (tabs => (fields => values))
+#		
+#		<+tab>
+#			<+field>value</+field>
+#		</+tab>
+#	</values>
+#</admin_box>
+#
+#
+#
+#<confirm>
+#	?<show>
+#		(From 5.2.7 onwards)
+#		Admin Boxes will only show a confirmation if the <show> tag is set.
+#		
+#		Storekeeper and the Admin Toolbar ignore this tag, and will always shows a
+#		confirmation if the <confirm> tag exists.
+#	</show>
+#	<message>
+#		A warning message to display before performing this action.
+#	</message>
+#	-<multiple_select_message>
+#		In Storekeeper, this tag allows you to set a different message if multiple
+#		items are selected.
+#		If you don't set this then the text from <message> will be used instead.
+#		
+#		Admin Boxes and the Admin Toolbar ignore this tag.
+#	</multiple_select_message>
+#	?<html>
+#		This tag controls whether to HTML-escape <message> and
+#		<multiple_select_message>.
+#		Setting it means that they will not be escaped.
+#	</html>
+#	
+#	<button_message>Confirm Button Message</button_message>
+#	<cancel_button_message>Cancel Button Message</cancel_button_message>
+#	-<message_type>
+#		none, error, warning, question or success.
+#		Defaults to none if not set.
+#	</message_type>
+#	
+#	?<download>
+#		You can set this in Storekeeper to offer a file download upon completion.
+#		
+#		From 5.2.7 onwards you can also set this for Admin Boxes.
+#	</download>
+#</confirm>
+#
+#
+#
+#<frontend_link>
+#	A URL to link to.
+#	Can be an external URL (which will always open in a new window),
+#	or an internal link relative to the CMS root directory.
+#</frontend_link>
+#
+#
+#
+#
+#<help>
+#	(From 6.0.1 onwards)
+#	<message>
+#		A help message to display when clicking on this button.
+#	</message>
+#		-- or -- 
+#	<exists>Yes</exists>
+#	
+#	?<html>
+#		(From 6.0.6 onwards)
+#		This tag controls whether to HTML-escape the message.
+#		Setting it means that it will not be escaped.
+#	</html>
+#	-<message_type>
+#		(From 6.0.6 onwards)
+#		none, error, warning, question or success.
+#		Defaults to question if not set.
+#	</message_type>
+#</help>
+#
+#
+#
+#
+#<call_js_function>
+#	(From 6.0.2 onwards)
+#	<encapsulated_object>
+#		If the function you are calling is part of an encapsulated object, you should
+#		name that object in this tag.
+#	</encapsulated_object>
+#	*<function>
+#		The name of the function you wish to call.
+#	</function>
+#</call_js_function>
+#
+#
+#
+#<visible_if>
+#	(From 6.0.4 onwards)
+#	A JavaScript expression to be evaluated.
+#	
+#	A few useful conditions might be:
+#		!zenario.browserIsIE()
+#			Do not show something in Internet Explorer
+#		!zenario.browserIsIE(7)
+#			Do not show something in Internet Explorer versions 7 or earlier
+#		zenarioA.siteSettings.my_setting
+#			Only show something when a Site Setting is enabled.
+#			(But note that only numeric Site Settings are available in JavaScript.)
+#		zenarioA.menuWandOn
+#			Only show a button on the Admin Toolbar when the Menu Wand is enabled.
+#		!zenarioA.menuWandOn
+#			Only show a button on the Admin Toolbar when the Menu Wand is disabled.
+#		zenarioAB.editModeOn()
+#			Only show a field in an Admin Box when a tab is in edit mode.
+#		!zenarioAB.editModeOn()
+#			Only show a field in an Admin Box when a tab is in view mode.
+#		zenarioAB.focus.key.cType == 'html'
+#			Show or hide a field or tab in an Admin Box depending on a value in the
+#			key of the Admin Box.
+#		zenarioAB.value('my_checkbox')
+#			Show or hide a field or tab in an Admin Box depending on whether a checkbox
+#			on the current tab has been checked.
+#		zenarioAB.value('my_field') == 'value'
+#			Show or hide a field or tab in an Admin Box depending on the value of a
+#			field on the current tab.
+#		zenarioAB.value('my_field', 'my_tab') == 'value'
+#			Show or hide a field or tab in an Admin Box depending on the value of a
+#			field on a specific tab.
+#</visible_if>
+#
+#
+#
+#<pick_items>
+#	*<path>Path to open up in. Can be a deep link.</path>
+#	*<target_path>
+#		Path to show the choose button in. Must be a shallow link.
+#	</target_path>
+#	*<min_path>
+#		Admins will not be able to go back above this path using the back button.
+#		Must be a shallow link.
+#	</min_path>
+#	-<max_path>
+#		Admins will not be able to go past this path by double-clicking on an item.
+#		Must be a shallow link.
+#		Defaults to <target_path> if not set.
+#		Set to no or false to disable.
+#	</max_path>
+#	?<disallow_refiners_looping_on_min_path>
+#		If this is set, Admins will not be able to navigate back through a refiner set
+#		on the <min_path> panel.
+#	</disallow_refiners_looping_on_min_path>
+#	
+#	-<one_to_one_choose_phrase>
+#		A phrase for the choose button. Defaults to Choose if omitted.
+#	</one_to_one_choose_phrase>
+#	?<multiple_select>
+#		Whether to allow multiple selection in Select Mode.
+#	</multiple_select>
+#	-<one_to_many_choose_phrase>
+#		A phrase for the choose button if multiple items are selected in Select Mode.
+#		Defaults to <one_to_one_choose_phrase> if omitted.
+#	</one_to_many_choose_phrase>
+#	
+#	
+#	The following four tags only apply to Buttons in Storekeeper and the Admin Toolbar:
+#	<request>
+#		<+request>value</+request>
+#	</request>
+#		-- or -- 
+#	<ajax>
+#	
+#	?<allow_no_selection>
+#		(From 6.0.4 onwards)
+#		Setting this tag will allow an Admin to press the "choose" button without
+#		anything selected.
+#		
+#		You would use this option if you wanted them to select a location or a refiner
+#		in Storekeeper rather than an item specifically; you can check the variables
+#		set in the POST request to see which refiners were in use and which values they
+#		had.
+#		
+#		A typical example of what you might see in the POST request might be:
+#			child__refinerName=language&child__refinerId=1&child__refiner__language=en
+#	</allow_no_selection>
+#	<one_to_no_selection_choose_phrase>
+#		A phrase for the choose button if no items are selected in Select Mode and
+#		<allow_no_selection> is enabled.
+#		Defaults to <one_to_one_choose_phrase> if omitted.
+#	</one_to_no_selection_choose_phrase>
+#	
+#	
+#	The following seven tags only apply to Fields in Admin Boxes:
+#	-<select_phrase>The text for the Select button</select_phrase>
+#	-<nothing_selected_phrase>
+#		Text to show in place of a name if nothing is selected
+#	</nothing_selected_phrase>
+#	?<hide_select_button>
+#		(From 5.2.7 onwards)
+#		Do not show the Select button.
+#	</hide_select_button>
+#	?<hide_remove_button>
+#		(From 5.2.7 onwards)
+#		Do not show the Remove button(s).
+#	</hide_remove_button>
+#	
+#	||?<by_language>
+#		(From 6.0.3 onwards)
+#		This tag can be used on any picker that selects a Content Item.
+#		Setting it will start the Admin out in the "By Language" Panel, under the
+#		appropriate language
+#	</by_language>
+#	||?<equivalence>
+#		(From 6.0.3 onwards)
+#		This tag can be used on any picker that selects a Content Item.
+#		Setting it will turn that picker into an Equivalence picker; i.e. you're not
+#		selecting a specific Content Item, but instead you're picking that Content Item
+#		or one of its chained Translations.
+#		If this tag is set, you can pass any Content ID and Type in as a value for this
+#		field, and the CMS will automatically show the Admin the appropriate
+#		translation based upon the language that they are currently editing.
+#	</equivalence>
+#</pick_items>
+#
+#
+#
+#<organizer_quick>
+#	(From 6.0.2 onwards)
+#	*<path>Path to open up in. Can be a deep link.</path>
+#	*<target_path>
+#		The path to a panel that you are targeting. Changes or reloads made whilst on
+#		this panel will also trigger Slots and/or the Admin Toolbar on the opening page
+#		to be reloaded as well (see the tags below).
+#		Must be a shallow link.
+#	</target_path>
+#	*<min_path>
+#		Admins will not be able to go back above this path using the back button.
+#		Must be a shallow link.
+#	</min_path>
+#	-<max_path>
+#		Admins will not be able to go past this path by double-clicking on an item.
+#		Must be a shallow link.
+#		Defaults to <target_path> if not set.
+#		Set to no or false to disable.
+#	</max_path>
+#	?<disallow_refiners_looping_on_min_path>
+#		If this is set, Admins will not be able to navigate back through a refiner set
+#		on the <min_path> panel.
+#	</disallow_refiners_looping_on_min_path>
+#	
+#	?<reload_admin_toolbar>
+#		If this tag is set, a change or reload on the <target_path> will also trigger
+#		the Admin Toolbar on the opening page to be reloaded as well.
+#	</reload_admin_toolbar>
+#	<reload_slot>
+#		If the name of a slot (it must be a full slot, not an empty one) is provided in
+#		this tag, a change or reload on the <target_path> will also trigger that slot
+#		to be reloaded as well.
+#	</reload_slot>
+#	?<reload_menu_slots>
+#		If this tag is set, a change or reload on the <target_path> will also trigger
+#		any slots containing Menu-related Plugins (i.e. any Plugin that called the
+#		$this->showInMenuMode() initialization function) to be reloaded as well.
+#	</reload_menu_slots>
+#</organizer_quick>

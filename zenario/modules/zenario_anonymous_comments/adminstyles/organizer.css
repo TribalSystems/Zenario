@@ -1,0 +1,18 @@
+#organizer_leftColumn .organizer_item a.zenario__social {
+	background: url('../../../admin/images/sprites/org-icons-1.png') no-repeat;
+	background-position: -656px -56px;
+}
+
+#organizer_leftColumn .legend_on a.zenario__social,
+#organizer_leftColumn .organizer_item a.zenario__social:hover {
+	background-position: -708px -55px;
+}
+
+
+#rightColumn div.organizer_item .pending_comment {
+	background: transparent url(images/pending-comments-grid-icon.gif) no-repeat scroll 0 6px;
+}
+
+#rightColumn table tr td div.pending_comment {
+	background: transparent url(images/pending-comments-list-icon.png) no-repeat scroll 50% 50%;
+}

@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_plugin_nest__convert_between:
+	tabs:
+		convert:
+			fields:
+				zenario_plugin_tabbed_nest_current:
+					ord: "20"
+					snippet:
+						html: Tabbed Nest
+					current_module: zenario_plugin_tabbed_nest
+				zenario_plugin_tabbed_nest:
+					ord: "120"
+					type: radio
+					name: radio
+					post_field_html: |
+						<label for="zenario_plugin_tabbed_nest">
+															Tabbed Nest
+														</label>
+					convert_to: zenario_plugin_tabbed_nest
+					convert_to_framework: tabs
+					req_only_1_plugin: No
+					req_only_1_type_of_plugin: Yes
+					req_only_banner_plugins: No
+				zenario_plugin_tabbed_nest_note:
+					ord: "121"
+					same_row: Yes
+					note_below: |
+						A Nest must contain only one type of Plugin to be converted to a Tabbed Nest.
+													Tabbed Nests must contain one tab per Plugin inside; converting a Nest to one will add extra tabs as needed.
+					convert_to: zenario_plugin_tabbed_nest

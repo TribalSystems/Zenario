@@ -1,0 +1,233 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_menu:
+    priv: _PRIV_VIEW_MENU_ITEM
+    title: Creating a menu node
+    key:
+        sectionId: ""
+        languageId: ""
+        parentMenuID: ""
+        suggestedName: ""
+        id: ""
+        cID: ""
+        cType: ""
+        mode: ""
+    tabs:
+        text:
+            label: Menu node
+            edit_mode:
+                enabled: ""
+            fields:
+                description:
+                    ord: 0
+                    full_width: Yes
+                    snippet:
+                        html: "The navigation hierarchy of this site is comprised of menu nodes. Use this screen to set this menu node's text."
+                multilingual_description:
+                    ord: 1
+                    same_row: Yes
+                    snippet:
+                        html: ""
+                section_id:
+                    ord: 2
+                    label: 'Menu section:'
+                    type: text
+                    read_only: Yes
+                menu_title:
+                    ord: 3
+                    label: 'Menu text:'
+                    type: text
+                    onkeyup: |
+                        get('path_of__' + this.id).value =
+                                                        !this.value?
+                                                            ''
+                                                        :    !get('parent_path_of__' + this.id).value?
+                                                                this.value
+                                                            :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
+                path_of__menu_title:
+                    ord: 1003
+                    same_row: Yes
+                    pre_field_html: |
+                        <br/>
+                                                        Path:
+                    type: text
+                    disabled: disabled
+                    class: zenario_textbox_noborder
+                parent_path_of__menu_title:
+                    ord: 1004
+                    same_row: Yes
+                    type: hidden
+                target_loc:
+                    ord: 1005
+                    label: 'Type of link:'
+                    type: radios
+                    value: none
+                    values:
+                        none:
+                            ord: 1
+                            label: "Don't link"
+                        int:
+                            ord: 2
+                            label: 'Internal - link to a content item'
+                        ext:
+                            ord: 3
+                            label: 'External - link to a full URL'
+                        exts:
+                            ord: 4
+                            label: 'Link by language - link to different external URL / Content alias by language'
+                    format_onchange: Yes
+                hyperlink_target:
+                    ord: 1006
+                    label: 'Content item:'
+                    pick_items:
+                        equivalence: Yes
+                        path: zenario__content/hidden_nav/language_equivs/panel
+                        min_path: zenario__content/hidden_nav/language_equivs/panel
+                        max_path: zenario__content/hidden_nav/language_equivs/panel
+                        target_path: zenario__content/hidden_nav/language_equivs/panel
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select a content item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: "You've set the destination to be to a content item, please select a content item."
+                    format_onchange: Yes
+                    side_note: "Multilingual sites: if a translation exists in the visitor's language, the link destination always will be to that translation."
+                hyperlink_anchor:
+                    ord: 1006.5
+                    label: 'Anchor name:'
+                    type: text
+                    side_note: >
+                        If you have an anchor on the page, you can specify it here and you'll be taken to its location on navigation.
+                hide_private_item:
+                    ord: 1007
+                    label: 'Privacy:'
+                    type: select
+                    values:
+                        - 
+                            ord: 0
+                            label: Always show, even if the item is private
+                        - 
+                            ord: 1
+                            label: Only show to visitors who can see the target item
+                        - 
+                            ord: 2
+                            label: Only show to visitors who are logged out
+                        - 
+                            ord: 3
+                            label: Always show to visitors who are logged in
+                    side_note: >
+                        If the linked-to content item is private, you can control
+                        when the menu node is displayed.
+                use_download_page:
+                    ord: 1008
+                    label: 'Use a download page:'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Link to the file's download page, rather than a direct link to the file.
+                                                    This option only applies to Document content items.
+                    hidden: Yes
+                ext_url:
+                    ord: 1009
+                    label: 'External URL:'
+                    type: url
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter a URL
+                open_in_new_window:
+                    ord: 1010
+                    label: 'Open in a new window'
+                    type: checkbox
+            show_errors_after_field: description
+        advanced:
+            label: Advanced
+            edit_mode:
+                enabled: ""
+            fields:
+                description:
+                    ord: 0
+                    full_width: Yes
+                    snippet:
+                        html: "Your site can have rich menu nodes, with images, additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
+                image_id:
+                    ord: 1
+                    label: 'Image:'
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                use_rollover_image:
+                    ord: 1.1
+                    label: 'Use a rollover image'
+                    type: checkbox
+                    format_onchange: true
+                rollover_image_id:
+                    ord: 1.2
+                    label: 'Rollover image:'
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+                    pre_field_html: >
+                        <span class="zenario_css_class_label">
+                            zenario_menu_node
+                        </span>
+                    side_note: |
+                        This menu node will appear as a &lt;li&gt; with these CSS class names.
+                hide_by_static_method:
+                    ord: 7.1
+                    label: |
+                        Call a module's static method to show/hide the menu node
+                    type: checkbox
+                    format_onchange: true
+                menu__module_class_name:
+                    ord: 7.2
+                    hidden: true
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: "200"
+                menu__method_name:
+                    ord: 7.3
+                    hidden: true
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: "127"
+                menu__param_1:
+                    ord: 7.4
+                    hidden: true
+                    label: 'Parameter 1:'
+                    type: text
+                    maxlength: "255"
+                menu__param_2:
+                    ord: 7.5
+                    hidden: true
+                    label: 'Parameter 2:'
+                    type: text
+                    maxlength: "255"
+                rel_tag:
+                    ord: 8
+                    label: 'Rel-Tag:'
+                    type: text
+                    maxlength: 100
+                accesskey:
+                    ord: 9
+                    label: 'Access key:'
+                    size: 1
+                    maxlength: 1
+                    type: text

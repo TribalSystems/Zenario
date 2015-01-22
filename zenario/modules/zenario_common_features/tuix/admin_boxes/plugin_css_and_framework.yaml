@@ -1,0 +1,69 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_css_and_framework:
+    css_class: zab_plugin 
+    key:
+        id: ""
+        instanceId: ""
+        isVersionControlled: ""
+        cID: ""
+        cType: ""
+        cVersion: ""
+        slotName: ""
+        languageId: ""
+        nest: ""
+        moduleId: ""
+        frontEnd: ""
+    hide_tab_bar: true
+    tabs:
+        last_tab:
+            ord: "100"
+            label: 'Framework & CSS'
+            fields:
+                css_class:
+                    label: 'CSS classes:'
+                    type: radios
+                    values:
+                        '#default#':
+                            ord: 1
+                            label: ''
+                        '#custom#':
+                            ord: 999
+                            label: ''
+                
+                css_class_custom:
+                    same_row: true
+                    type: text
+                    onkeydown: >
+                        if (this.value != ''
+                         && (event.keyCode == 13 || event.keyCode > 45)) {
+                            zenario.get('css_class___#custom#').checked = true;
+                        }
+                    onblur: >
+                        if (this.value == ''
+                         && zenario.get('css_class___#custom#').checked) {
+                            zenario.get('css_class___#custom#').checked = false;
+                            zenario.get('css_class___#default#').checked = true;
+                        }
+                
+                
+                framework:
+                    label: 'Framework:'
+                    type: select
+                    format_onchange: Yes
+                    note_below: "The selected framework file is displayed below (editing may be available via your server's file system):"
+                framework_source:
+                    full_width: Yes
+                    type: code_editor
+                    read_only: true
+                    style: >
+                        height: 30em;
+    confirm:
+        show: No
+        message: |
+            You are editing a Published Content Item.
+                            
+                            The CMS will make an identical Draft version for you to work on privately. Visitors will only see your changes when you Publish the new version.
+        button_message: Create a Draft
+        cancel_button_message: Cancel
+        message_type: warning

@@ -1,0 +1,119 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+toolbars:
+    preview:
+        ord: "10"
+        label: Navigate
+        tooltip: To navigate your site, use this mode
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_preview_tab
+    menu1:
+        ord: "20"
+        priv: _PRIV_VIEW_MENU_ITEM
+        label: Menu
+        tooltip: >
+            Edit menu node text and work with the navigation hierarchy
+        css_class: zenario_at_menu_tab zenario_at_menu_tab_primary
+        page_mode: menu
+        toolbar_microtemplate: zenario_toolbar_menu_tab
+    menu_secondary:
+        ord: ""
+        label: ""
+        css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
+        page_mode: menu
+        tooltip: Secondary menu node|Make changes to the navigation hierarchy
+        toolbar_microtemplate: zenario_toolbar_menu_tab
+    edit_disabled:
+        ord: "40"
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Editing of this version is disabled because a draft version exists
+        page_mode: edit_disabled
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    edit:
+        ord: "41"
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Edit this content item
+        page_mode: edit
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    rollback:
+        ord: "42"
+        priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+        label: Edit
+        tooltip: Viewing a previous version of this content item
+        page_mode: rollback
+        toolbar_microtemplate: zenario_toolbar_edit_tab
+    template:
+        ord: "50"
+        priv: _PRIV_MANAGE_TEMPLATE_SLOT
+        label: Layout
+        tooltip: >
+            View the layout used by this page, and configure plugins that are used on it
+        page_mode: template
+        toolbar_microtemplate: zenario_toolbar_layout_tab
+sections:
+    template:
+        appears_in_toolbars:
+            template: Yes
+        buttons:
+            id_and_name:
+                hidden: Yes
+                label: ""
+            usage:
+                hidden: Yes
+                label: ""
+            edit_grid:
+                priv: _PRIV_EDIT_TEMPLATE_FAMILY
+                hide_in_select_mode: Yes
+                label: Edit layout
+                tooltip: Edit the grid CSS, create and manage slots
+                popout:
+                    href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
+                    width: 100%
+                    height: 100%
+                    maxWidth: 100%
+                    maxHeight: 100%
+                    initialWidth: 100%
+                    initialHeight: 100%
+                    iframe: Yes
+                    transition: none
+                    css_class: zenario_grid_maker
+                traits:
+                    grid: Yes
+                without_columns_set:
+                    missing: Yes
+            settings:
+                priv: _PRIV_VIEW_TEMPLATE
+                label: Change skin
+                admin_box:
+                    path: zenario_layout
+                    key:
+                        id: ""
+                without_traits:
+                    unregistered: Yes
+            skq:
+                label: Organize layout...
+                organizer_quick:
+                    path: ""
+                    target_path: zenario__layouts/nav/layouts/panel
+                    min_path: zenario__layouts/nav/layouts/panel
+                    max_path: No
+                    disallow_refiners_looping_on_min_path: No
+                    reload_admin_toolbar: Yes
+    status_button:
+        buttons:
+            status_button:
+                css_class: zenario_at_status_button
+                label: ""
+                tooltip: ""
+            publish:
+                priv: _PRIV_PUBLISH_CONTENT_ITEM
+                label: Publish
+                css_class: zenario_at_publish_button
+                admin_box:
+                    path: zenario_publish
+
+meta_info:
+    title: ''
+    version: ''

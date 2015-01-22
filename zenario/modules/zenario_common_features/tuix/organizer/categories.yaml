@@ -1,0 +1,133 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+	nav:
+		categories:
+			panel:
+				title: Content item categories
+				view_mode: list
+				disable_grid_view: Yes
+				no_items_in_search_message: No categories have been created. Click "Create" to create a category.
+				db_items:
+					table: '[[DB_NAME_PREFIX]]categories AS cat'
+					custom_where_statement_top_level: WHERE cat.parent_id = 0
+					id_column: cat.id
+					client_side: Yes
+				refiners:
+					top_level:
+						sql: cat.parent_id = 0
+					parent_category:
+						sql: 'cat.parent_id = [[REFINER__PARENT_CATEGORY]]'
+				item:
+					name: Category
+					names: Categories
+					tooltip_when_link_is_active: 'View child categories of "[[name]]".'
+					link:
+						path: zenario__content/nav/categories/panel
+						refiner: parent_category
+						branch: Yes
+				columns:
+					id:
+						title: id
+						db_column: cat.id
+						searchable: Yes
+						align_right: Yes
+					name:
+						title: Name
+						searchable: Yes
+						db_column: cat.name
+						show_by_default: Yes
+					item_count:
+						title: Content Items
+						db_column: |
+							(
+								SELECT COUNT(DISTINCT c.id, c.type)
+								FROM [[DB_NAME_PREFIX]]category_item_link AS cil
+								INNER JOIN [[DB_NAME_PREFIX]]content AS c
+								   ON c.equiv_id = cil.equiv_id
+								  AND c.type = cil.content_type
+								  AND c.status NOT IN ('trashed','deleted')
+								WHERE cil.category_id = cat.id
+							)
+						show_by_default: Yes
+					public:
+						title: Public
+						db_column: cat.public
+						format: yes_or_no
+						show_by_default: Yes
+					landing_page:
+						title: Landing Page
+						item_link: content_item
+						show_by_default: Yes
+					landing_page_equiv_id:
+						db_column: cat.landing_page_equiv_id
+					landing_page_content_type:
+						db_column: cat.landing_page_content_type
+					path:
+						title: Path
+					children:
+						title: Sub-categories
+						show_by_default: Yes
+				default_sort_column: name
+				label_format_for_grid_view: |
+					[[name]]
+											([[item_count]])
+				collection_buttons:
+					create:
+						priv: _PRIV_MANAGE_CATEGORY
+						css_class: zenario_create_a_new
+						label: Create a category
+						admin_box:
+							path: zenario_categories
+				item_buttons:
+					edit:
+						priv: _PRIV_MANAGE_CATEGORY
+						label: Category properties
+						admin_box:
+							path: zenario_categories
+					view_dropdown:
+						label: View
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					view_content:
+						label: View content items in this category
+						link:
+							path: zenario__content/nav/content/panel
+							refiner: category
+							branch: Yes
+					action_dropdown:
+						label: Actions
+						multiple_select: Yes
+						hide_when_children_are_not_visible: Yes
+					change_public_name:
+						parent: action_dropdown
+						priv: _PRIV_VIEW_LANGUAGE
+						hide_in_select_mode: Yes
+						label: Change public pame(s)
+						link:
+							path: zenario__languages/nav/vlp/panel
+							branch: Yes
+							refiner: category_public_name
+						traits:
+							public: Yes
+					delete:
+						priv: _PRIV_MANAGE_CATEGORY
+						label: Delete
+						multiple_select: Yes
+						multiple_select_tooltip: Delete categories
+						hide_in_select_mode: Yes
+						ajax:
+							confirm:
+								message: |
+									Are you sure you wish to delete the category "[[name]]"?
+									
+									Any sub-categories of this category will be deleted and all associations with content item will be removed, but no content items will be deleted.
+								multiple_select_message: |
+									Are you sure you wish to delete these categories?
+									
+									Any child categories of this category will be deleted and all associations with content will be removed, but no content items will be deleted.
+								button_message: Delete
+								cancel_button_message: Cancel
+								message_type: warning
+							request:
+								delete: "1"

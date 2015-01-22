@@ -1,0 +1,1 @@
+Added a bugfix for the animation from https://github.com/fredhq/roundabout/issues/72

@@ -1,0 +1,27 @@
+<div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" [cms:merge name='Wrap'/]>
+	[cms:section name='Image']
+		<div class="banner_image" >
+			<a [cms:merge name='Image_Link_Href'/][cms:merge name='Target_Blank'/]>
+				<img src="[cms:merge name='Image_Src'/]" alt="[cms:merge name='Image_Alt'/]" title="[cms:merge name='Image_Title'/]" [cms:merge name='Image_Style'/]/>
+				[cms:merge name='Rollover_Images'/]
+				[cms:section name='Enlarge_Image']
+					<span class="banner_image_zoom" title="[cms:phrase code='_ENLARGE_THIS_IMAGE'/]">[cms:phrase code='_ENLARGE_THIS_IMAGE'/]</span>
+				[/cms:section]
+			</a>
+		</div>
+	[/cms:section]
+	[cms:section name='Title']
+		<div class="banner_title">
+			<h2><a [cms:merge name='Link_Href'/][cms:merge name='Target_Blank'/]>[cms:merge name='Title'/]</a></h2>
+		</div>
+	[/cms:section]
+	[cms:section name='Text']
+		<div class="banner_text">[cms:merge name='Text'/]</div>
+	[/cms:section]
+	<div class="banner_more">
+		<a [cms:merge name='Link_Href'/][cms:merge name='Target_Blank'/]>
+			[cms:phrase code='_FIND_OUT_MORE'/]
+		</a>
+	</div>
+	
+</div></div></div>

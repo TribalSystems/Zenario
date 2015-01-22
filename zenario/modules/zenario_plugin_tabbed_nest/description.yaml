@@ -1,0 +1,30 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Tabbed Nest
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+description: |
+    <p>This Module allows you to set up and manage a collection of multiple Plugins in one Slot (which is called a Nest),
+                    then display one-at-a-time to a visitor using a tabbed interface.</p>
+                <p>Only one tab will be displayed to visitors at a time and different tabs will be loaded in via AJAX if a visitor clicks on them.</p>
+                
+                <p>Nests are managed using the Quick Admin Panel, which allows you to access Admin controls yet still see some of the page you are working on.</p>
+                
+                <p>To add a Plugin to a Nest you can either copy an existing plugin, or add a new plugin.</p>
+                <p>Once in a Nest, Plugins can be re-ordered, and can be modified in much the same was as any other Plugin in a Slot.</p>
+keywords: nest, panel, tab, tabbed
+vlp_class_name: zenario_plugin_nest
+css_class_name: zenario_plugin_nest
+default_framework: tabs
+is_pluggable: true
+can_be_version_controlled: false
+nestable: false
+default_instance_name: Untitled Tabbed Nest
+dependencies:
+    zenario_plugin_nest: true
+inheritance:
+    inherit_frameworks_from_module: zenario_plugin_nest
+    inherit_settings_from_module: zenario_plugin_nest

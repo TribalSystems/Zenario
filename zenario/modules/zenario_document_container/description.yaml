@@ -1,0 +1,21 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Document Container
+class_name: zenario_document_container
+description: |
+	<p>A Document Container allows you to display a document on a page in a content-managed way.</p>
+	
+	<p>The document can be displayed together with an thumbnail and or a description.</p>
+keywords: >
+	file, document, download, pdf, doc, docx, xls, xlsx
+
+is_pluggable: Yes
+can_be_version_controlled: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled Document Container

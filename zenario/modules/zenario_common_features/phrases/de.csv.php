@@ -1,0 +1,40 @@
+"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",de
+
+Plugin
+zenario_common_features
+
+"Phrase Code",Translation
+_MONTH_LONG_01,"Januar"
+_MONTH_LONG_02,"Februar"
+_MONTH_LONG_03,"März"
+_MONTH_LONG_04,"April"
+_MONTH_LONG_05,"Mai"
+_MONTH_LONG_06,"Juni"
+_MONTH_LONG_07,"Juli"
+_MONTH_LONG_08,"August"
+_MONTH_LONG_09,"September"
+_MONTH_LONG_10,"Oktober"
+_MONTH_LONG_11,"November"
+_MONTH_LONG_12,"Dezember"
+_MONTH_SHORT_01,"Januar"
+_MONTH_SHORT_02,"Februar"
+_MONTH_SHORT_03,"März"
+_MONTH_SHORT_04,"April"
+_MONTH_SHORT_05,"Mai"
+_MONTH_SHORT_06,"Juni"
+_MONTH_SHORT_07,"Juli"
+_MONTH_SHORT_08,"August"
+_MONTH_SHORT_09,"September"
+_MONTH_SHORT_10,"Oktober"
+_MONTH_SHORT_11,"November"
+_MONTH_SHORT_12,"Dezember"
+_WEEKDAY_0,"Sonntag"
+_WEEKDAY_1,"Montag"
+_WEEKDAY_2,"Dienstag"
+_WEEKDAY_3,"Mittwoch"
+_WEEKDAY_4,"Donnerstag"
+_WEEKDAY_5,"Freitag"
+_WEEKDAY_6,"Samstag"

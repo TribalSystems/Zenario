@@ -1,0 +1,17 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Google Map Location
+description: |
+	<p>Displays a map view of a specified location, and allows site creator to mark a location on the Map.</p><p>
+					 The size of the map window and a detailed description of the location can be defined in the Module's settings.</p>
+vlp_class_name: zenario_google_map
+css_class_name: zenario_google_map
+is_pluggable: Yes
+can_be_version_controlled: Yes
+default_framework: standard
+default_instance_name: Google Map Location

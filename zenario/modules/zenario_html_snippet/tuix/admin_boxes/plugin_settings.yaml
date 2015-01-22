@@ -1,0 +1,40 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Content
+            fields:
+                html:
+                    plugin_setting:
+                        name: html
+                        is_searchable_content: Yes
+                    label: 'Raw HTML:'
+                    type: code_editor
+                    language: html
+                    value: ""
+                cookie_consent:
+                    plugin_setting:
+                        name: cookie_consent
+                    label: 'Cookie Consent:'
+                    type: select
+                    visible_if: "zenarioA.siteSettings.cookie_require_consent == 'explicit'"
+                    value: not_needed
+                    values:
+                        not_needed:
+                            label: HTML does not contain code that sets cookies
+                        needed:
+                            label: >
+                                HTML contains code that sets cookies; hide it when consent
+                                is not given by the visitor
+                        required:
+                            label: >
+                                HTML contains code that sets cookies; hide it and request
+                                consent until consent is given by the visitor
+                hide_in_admin_mode:
+                    plugin_setting:
+                        name: hide_in_admin_mode
+                    label: 'Hide in Admin Mode:'
+                    type: checkbox
+                    value: ""
+    module_class_name: zenario_html_snippet

@@ -1,0 +1,218 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        site_settings:
+            title: Site Settings
+            view_mode: list
+            disable_grid_view: Yes
+            disable_periodic_refresh: Yes
+            columns:
+                name:
+                    title: Settings
+                    show_by_default: Yes
+                    searchable: Yes
+                    width: large
+                desc:
+                    width: xxlarge
+                    title: Description
+                    show_by_default: Yes
+                    searchable: Yes
+                keywords:
+                    title: Keywords
+                    searchable: Yes
+            item:
+                name: Settings
+                names: Settings
+                css_class: setting
+            items:
+                administration:
+                    name: Administration
+                    desc: Settings that affect administering the site.
+                    keywords: >
+                        page size auto-lock drafts autolock drafts default permissions for new content items
+                        release date minimum admin password strength
+                api_keys:
+                    name: API Keys
+                    desc: API Keys and settings for third party services.
+                    keywords: dropbox google translate translation tools
+                captcha:
+                    name: Captcha
+                    desc: Settings for the captchas used by some plugins.
+                cookies:
+                    name: Cookies
+                    desc: "Settings that control when cookies are placed on a visitor's computer."
+                    keywords: implied consent explicit consent message
+                date_and_time:
+                    name: Date and Time
+                    desc: Set the formats used when displaying dates and times.
+                    keywords: date format date-picker time format
+                dirs:
+                    name: Directories
+                    desc: >
+                        Set the location of the Backup and Dropbox
+                        directories.
+                    keywords: backup directory dropbox directory
+                email:
+                    name: Email
+                    desc: Settings for sending emails.
+                    keywords: smtp mail test send debug mode system email address from
+                external_programs:
+                    name: External programs
+                    desc: >
+                        Settings for the external server programs such as antiword and
+                        pdftotext.
+                    keywords: >
+                        antiword pdftotext pdf-to-text pdf to text ghostscript word document
+                        plain text extract plaintext extract image thumbnail
+                files_and_images:
+                    name: File and Image Handling
+                    desc: Settings for how files and images are managed in the CMS.
+                    keywords: >
+                        image thumbnail working copy jpeg file upload sizes
+                        file download restrict by IP
+                head_and_foot:
+                    name: Head and Foot
+                    desc: |
+                        Add HTML to the <head> tag or to the bottom of
+                        the <body> tag of all pages on your site.
+                primary_domain:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Primary Domain
+                    desc: Set the Primary Domain for your site.
+                branding:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Branding
+                    desc: >
+                        Change the favicon used for Organizer and the logo used on the site disabled and
+                        admin login screen.
+                urls:
+                    name: URLs
+                    desc: Settings that affect how URLs for your site are generated.
+                    keywords: mod_rewrite suffix default behaviour for translations alias language code
+                users:
+                    name: Users
+                    desc: Settings that affect extranet users & contacts.
+                    keywords: screen names log all sign-ins logins passwords maximum user image file sizes
+                web_pages:
+                    name: Optimization
+                    desc: Settings that affect or speed up web pages.
+                    keywords: >
+                        compress web pages quickly
+                        CSS file wrappers
+                        caching of SQL queries
+                        query cache size
+                        cookie-free domain for hosting static files
+                        show SQL errors to visitors
+                        show run-time notices
+                        show strict errors
+                        show all other errors
+                        caching
+                        cache web pages
+                        cache plugins
+                        cache AJAX and RSS
+                        show debug info
+                        cache stats refresh statistics
+                        clear cache clear the cache
+
+                xml_sitemap:
+                    priv: _PRIV_EDIT_SITE_SETTING
+                    css_class: xml_sitemap
+                    name: XML Sitemap
+                    desc: Enable an XML Sitemap for your site.
+                    keywords: google bing search index sitemap url
+            
+            # These controls don't use the usual Site Settings Admin Box,
+            # but we put them here anyway as this is the logical place to look for them
+                favicon:
+                    css_class: favicon
+                    name: Favicon
+                    desc: >
+                        Upload or remove a Favicon or a Home Screen Icon for this site
+                    is_not_site_setting: true
+                
+                site_enabled:
+                    css_class: site_enabled
+                    name: Site Enabled
+                    desc: Disable this site to hide it from visitors.
+                    is_not_site_setting: true
+                site_disabled:
+                    css_class: site_disabled
+                    name: Site Disabled
+                    desc: Enable this site so visitors can see it.
+                    is_not_site_setting: true
+                site_reset:
+                    priv: _PRIV_RESET_SITE
+                    css_class: site_reset
+                    name: Site Reset
+                    desc: Delete this entire site except for administrator accounts.
+                    is_not_site_setting: true
+            item_buttons:
+                edit_setting:
+                    label: Properties
+                    admin_box:
+                        path: site_settings
+                    visible_if_for_all_selected_items: |
+                        !item.is_not_site_setting
+                
+                favicon:
+                    label: Properties
+                    tooltip: >
+                        Upload or remove a Favicon or a Home Screen Icon for this site
+                    visible_if_for_all_selected_items: |
+                        id == 'favicon'
+                    admin_box:
+                        path: zenario_favicon
+                site_reset:
+                    priv: _PRIV_RESET_SITE
+                    label: Site Reset
+                    hide_in_select_mode: Yes
+                    visible_if_for_all_selected_items: |
+                        id == 'site_reset'
+                    disabled_if: |
+                        zenarioA.siteSettings.site_enabled
+                    disabled_tooltip: >
+                        Cannot Reset Site|You cannot reset this site while it is
+                        enabled for visitors. You must disable the site before
+                        resetting it.
+                    admin_box:
+                        path: zenario_site_reset
+                disable_site:
+                    priv: _PRIV_EDIT_SITE_SETTING
+                    label: Disable this Site
+                    hide_in_select_mode: Yes
+                    visible_if_for_all_selected_items: |
+                        id == 'site_enabled'
+                    admin_box:
+                        path: zenario_enable_site
+                enable_site:
+                    priv: _PRIV_EDIT_SITE_SETTING
+                    label: Enable this Site
+                    hide_in_select_mode: Yes
+                    visible_if_for_all_selected_items: |
+                        id == 'site_disabled'
+                    admin_box:
+                        path: zenario_enable_site
+                
+                #view_dropdown:
+                #    label: View
+                #    hide_when_children_are_not_visible: Yes
+                #profile:
+                #    parent: view_dropdown
+                #    label: Profile
+                #    admin_box:
+                #        path: zenario_admin
+                #        key:
+                #            view_profile: "1"
+                #    visible_if_for_all_selected_items: |
+                #        id == 'profile'
+                #action_dropdown:
+                #    label: Actions
+                #    hide_when_children_are_not_visible: Yes
+                #change_password:
+                #    parent: action_dropdown
+                #    local_admins_only: Yes
+                #    label: Change Password
+                #    frontend_link: 'zenario/admin/welcome.php?task=change_password&sk=zenario__administration/nav/configure_settings/panel//profile'
+                #    visible_if_for_all_selected_items: |
+                #        id == 'profile'

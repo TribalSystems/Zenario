@@ -1,0 +1,72 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_alias:
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    max_height: "400"
+    hide_tab_bar: Yes
+    tabs:
+        meta_data:
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_DRAFT
+            fields:
+                language_id:
+                    label: 'Language:'
+                    type: select
+                    read_only: Yes
+                alias:
+                    label: 'Alias:'
+                    type: text
+                    maxlength: "75"
+                    onkeyup: zenarioAB.validateAlias();
+                    onchange: zenarioAB.focus.___alias_changed = true;
+                    note_below: |
+                        A friendly name for this content item, and part of its URL.
+                        When combined with the content item's language code, is unique.
+                        Lower case only, may not contain spaces or special characters.
+                    post_field_html: '<div id="alias_warning_display"></div>'
+                update_translations:
+                    visible_if: zenarioA.multipleLanguagesEnabled()
+                    label: 'For Translations:'
+                    type: select
+                    values:
+                        update_all:
+                            ord: "1"
+                            label: Update all Aliases
+                        update_this:
+                            ord: "2"
+                            label: Just update this translation
+                    onchange: zenarioAB.validateAlias();
+                    redraw_onchange: Yes
+                lang_code_in_url:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                                 && zenarioAB.value('update_translations') == 'update_this'
+                    label: 'Language code:'
+                    type: select
+                    values:
+                        show:
+                            ord: "1"
+                            label: Always add the language code
+                        hide:
+                            ord: "2"
+                            label: Hide the language code if possible
+                        default:
+                            ord: "3"
+                            label__show: Use default behaviour (Always add the language code)
+                            label__hide: Use default behaviour (Hide the language code if possible)
+                    onchange: zenarioAB.validateAlias();
+                lang_code_in_url_dummy:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                                 && zenarioAB.value('update_translations') != 'update_this'
+                    label: 'Language code:'
+                    type: select
+                    read_only: Yes
+                    values:
+                        show:
+                            ord: "1"
+                            label: Always add the language code

@@ -1,0 +1,27 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Editing API keys
+    tabs:
+        dropbox:
+            label: Dropbox
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains API keys for dropbox.
+                dropbox_api_key:
+                    site_setting:
+                        name: dropbox_api_key
+                    label: 'Dropbox API Key:'
+                    type: text
+                    note_below: |
+                        An application key that can use the Dropbox API.
+                                                        You can obtain a key at
+                                                        <a href="https://www.dropbox.com/developers/apps" target="_blank">
+                                                            https://www.dropbox.com/developers/apps
+                                                        </a>.
+    setting_group: api_keys

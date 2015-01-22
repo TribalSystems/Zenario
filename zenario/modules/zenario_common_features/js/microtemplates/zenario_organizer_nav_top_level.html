@@ -1,0 +1,22 @@
+<div class="organizer_item">
+	<div
+		class="organizer_legend {{m.selected? 'legend_on' : ''|escape}}"
+		
+		<% if (m['data-intro']) { %>
+			data-intro="{{m['data-intro']|escape}}"
+		<% } %>
+		<% if (m['data-position']) { %>
+			data-position="{{m['data-position']|escape}}"
+		<% } %>
+		<% if (m['data-step']) { %>
+			data-step="{{m['data-step']|escape}}"
+		<% } %>
+	>
+		<a title="{{m.label|escape}}|{{m.tooltip|escape}}"
+			class="{{m.css_class|escape}}"
+			href="{{m.href|escape}}"
+			onclick="{{m.onclick}}">
+				<span></span>
+		</a>
+	</div>
+</div>

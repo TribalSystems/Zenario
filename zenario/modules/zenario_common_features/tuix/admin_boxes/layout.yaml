@@ -1,0 +1,96 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_layout:
+    priv: _PRIV_VIEW_TEMPLATE
+    key:
+        id: ''
+        family_name: ''
+        file_base_name: ''
+        current_name: ''
+        duplicate: ''
+        create_layout_from_template_file: ''
+    tabs:
+        template:
+            label: Details
+            edit_mode:
+                priv: _PRIV_EDIT_TEMPLATE
+                enabled: Yes
+                always_on: Yes
+            fields:
+                description:
+                    ord: "0"
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            Use this screen to set the name of your layout and set its skin.
+                path:
+                    label: 'Template file:'
+                    type: text
+                    read_only: Yes
+                name:
+                    label: 'Layout name:'
+                    type: text
+                    maxlength: "255"
+                    note_below: Please choose a unique name for this layout.
+                    validation:
+                        required: Please enter a name for this layout.
+                content_type:
+                    label: 'Content type:'
+                    type: text
+                    pick_items:
+                        path: zenario__content/nav/content_types/panel
+                        target_path: zenario__content/nav/content_types/panel
+                        min_path: zenario__content/nav/content_types/panel
+                        max_path: zenario__content/nav/content_types/panel
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select a Content Type...
+                        hide_remove_button: Yes
+                    format_onchange: Yes
+                    value: html
+                    validation:
+                        required: Please select a content type.
+                    note_below: Specify which content type this layout may be used for.
+                skin_id:
+                    label: 'Skin:'
+                    pick_items:
+                        path: ""
+                        target_path: zenario__layouts/hidden_nav/skins/panel
+                        min_path: zenario__layouts/hidden_nav/skins/panel
+                        max_path: zenario__layouts/hidden_nav/skins/panel
+                        disallow_refiners_looping_on_min_path: Yes
+                        one_to_one_choose_phrase: Choose this skin
+                        select_phrase: Change skin...
+                        nothing_selected_phrase: No skin selected
+                        hide_remove_button: Yes
+                    format_onchange: Yes
+                    note_below: |
+                        Changing the skin of this layout will immediately effect
+                        the style of all content items that use it.
+        css:
+            label: CSS
+            edit_mode:
+                priv: _PRIV_EDIT_TEMPLATE
+                enabled: Yes
+                always_on: Yes
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            If you wish to style this layout specifically in your skin,
+                            you may specify one or more css classes which will be applied
+                            to all pages using this layout.
+                css_class:
+                    label: 'CSS class names:'
+                    type: text
+                    maxlength: 100
+                    note_below: |
+                        A &lt;div&gt; with these CSS class names will be added to every page
+                        that uses this layout.
+    max_height: "350"
+    confirm:
+        show: ""
+        message: ""
+        button_message: Save
+        cancel_button_message: Cancel
+        message_type: warning

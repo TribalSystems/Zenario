@@ -1,0 +1,44 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_export_vlp:
+	priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+	title: Exporting Language Phrases to a file
+	key:
+		id: ""
+	max_height: "200"
+	hide_tab_bar: Yes
+	tabs:
+		export:
+			edit_mode:
+				enabled: Yes
+				always_on: Yes
+			fields:
+				desc:
+					full_width: Yes
+					snippet:
+						html: ""
+				option:
+					label: 'Export:'
+					type: select
+					values:
+						present: ""
+						missing: ""
+						all: ""
+					value: all
+				format:
+					label: 'Format:'
+					type: select
+					values:
+						xlsx:
+							ord: "1"
+							label: xlsx (Excel 2007) (Recommended)
+						xls:
+							ord: "2"
+							label: xls (Excel 5)
+						csv:
+							ord: "3"
+							label: csv (comma-separated values)
+					value: xlsx
+	download: Yes
+	save_button_message: Export
+	cancel_button_message: Cancel

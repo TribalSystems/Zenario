@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Breadcrumbs
+description: |
+	<p>This is an essential Module which displays a breadcrumb trail to the currently viewed Content Item.</p>
+	
+	<p>The Menu Node name of your Home page (often the word "Home") is prepended, so that users see a breadcrumb trail of the form:</p>
+	
+	<pre>Home > Products > Zenario > Pro </pre>
+	
+	<p>Each part of the breadcrumb trail is a hyperlink to the relevant page. You may customize the character separator (> in the above example) via the Module's settings.</p>
+	
+	<p>You can use this Module in connection with Invisible Menu Nodes. When a Menu Node is Invisible it will appear in the breadcrumb trail but not in the regular menu navigation.</p>
+keywords: >
+	nav, navigation, breadcrumb, crumb, cookie, trail, path,
+	location, glyph, hansel, gretel
+css_class_name: zenario_breadcrumbs
+is_pluggable: Yes
+can_be_version_controlled: No
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled Breadcrumbs
+dependencies:
+	zenario_menu: Yes

@@ -1,0 +1,206 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+	title: Editing settings for files and images
+	tabs:
+		image_sizes:
+			label: Image sizes
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: |
+							This tab contains settings for the storage and processing of images.
+															Working copy images may be stored to improve performance when automatically resizing large images.
+				thumbnail_wc:
+					label: 'Use a thumbnail working copy:'
+					type: checkbox
+					redraw_onchange: Yes
+				thumbnail_wc_image_size:
+					site_setting:
+						name: thumbnail_wc_image_size
+					label: 'Thumbnail working copy:'
+					pre_field_html: |
+						The CMS will store a working copy of images with either dimension greater than the following: 
+													<br/>
+													<br/>
+					post_field_html: pixels
+					note_below: |
+						The working copy, constrained in both dimensions to the size given above,
+													will be used to automatically generate thumbnails and other small images.
+					type: text
+					value: "300"
+					style: 'width: 5em;'
+					slider:
+						range: min
+						min: "200"
+						max: "1000"
+						before_field: Yes
+						step: "25"
+					validation:
+						required_if_not_hidden: 'Please enter a  constraint.'
+						numeric: The large constraint must be numeric.
+					visible_if: "zenarioAB.value('thumbnail_wc')"
+				working_copy_image:
+					label: 'Use a large image working copy:'
+					type: checkbox
+					redraw_onchange: Yes
+				working_copy_image_size:
+					site_setting:
+						name: working_copy_image_size
+					label: 'Large image working copy:'
+					pre_field_html: |
+						The CMS will store a second working copy of images with either dimension greater than the following:
+													<br/>
+													<br/>
+					post_field_html: pixels
+					type: text
+					style: 'width: 6em;'
+					slider:
+						range: min
+						min: "500"
+						max: "2000"
+						before_field: Yes
+						step: "50"
+					validation:
+						required_if_not_hidden: Please enter a very large constraint.
+						numeric: The very large constraint must be numeric.
+					visible_if: "zenarioAB.value('working_copy_image')"
+				working_copy_image_threshold:
+					site_setting:
+						name: working_copy_image_threshold
+					label: 'Threshold:'
+					pre_field_html: |
+						The CMS will use a working copy when the desired output size of the image is exactly the same size as the working copy, or when it is not more than the following proportion of the working copy's dimensions:
+													<br/><br/>
+					post_field_html: %
+					type: text
+					value: "66"
+					style: 'width: 3em;'
+					slider:
+						range: min
+						min: "50"
+						max: "100"
+						before_field: Yes
+					validation:
+						required_if_not_hidden: Please enter a percentage.
+						numeric: The percentage must be numeric.
+					visible_if: "zenarioAB.value('thumbnail_wc') || zenarioAB.value('working_copy_image')"
+				jpeg_quality:
+					site_setting:
+						name: jpeg_quality
+					label: 'JPEG Quality:'
+					type: text
+					value: "85"
+					style: 'width: 50px;'
+					slider:
+						range: min
+						min: "1"
+						max: "100"
+						before_field: Yes
+					note_below: |
+						If the CMS needs to resize a JPEG image (e.g. to create a thumbnail),
+													the newly created image will be saved at this quality.
+				image_mobile_resize_point:
+					site_setting:
+						name: image_mobile_resize_point
+					label: 'Image mobile resize point:'
+					type: text
+					validation:
+						required_if_not_hidden: Please enter a width.
+						numeric: The width must be a number.
+					value: "767"
+					maxlength: "5"
+					style: 'width: 5em;'
+					post_field_html: '&nbsp;pixels'
+					note_below: |
+						This value determines the point at which plugins with seperate mobile content will
+						display thier mobile content over their regular content.
+		filesizes:
+			label: File Upload Sizes
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: This tab contains settings for file uploads.
+				content_max_filesize:
+					site_setting:
+						name: content_max_filesize
+					label: 'Maximum Content File Size:'
+					type: text
+					value: "20000000"
+					note_below: >
+						This allows you to set a maximum allowed uploadable file
+						size (in bytes) for Pictures, Audio, Video, and other
+						Content Types.
+					validation:
+						required: Please enter a Maximum Content File Size.
+						numeric: The Maximum Content File Size must be numeric.
+				max_content_image_filesize:
+					site_setting:
+						name: max_content_image_filesize
+					label: 'Maximum Image File Size:'
+					type: text
+					value: "500000"
+					note_below: |
+						This allows you to set a maximum allowed uploadable file size (in bytes) for images which are to be used with HTML and
+													other types of Content Items.
+					validation:
+						required: Please enter a Maximum Image File Size.
+						numeric: The Maximum Content Image File Size must be numeric.
+				max_content_movie_filesize:
+					site_setting:
+						name: max_content_movie_filesize
+					label: 'Maximum Animation File Size:'
+					type: text
+					value: "20000000"
+					note_below: |
+						This allows you to set a maximum allowed uploadable file size (in bytes) for Animation which are to be used with HTML and
+													other types of Content Items.
+					validation:
+						required: Please enter a Maximum Animation File Size.
+						numeric: The Maximum Content Movie File Size must be numeric.
+				apache_max_filesize:
+					label: 'Largest Possible Upload Size:'
+					type: text
+					read_only: Yes
+					note_below: |
+						This is the size of the largest uploaded file that your server will accept.
+													Your server administrator can change this by changing the server's Apache Config.
+				max_allowed_packet:
+					label: 'MySQL max_packet_size:'
+					type: text
+					read_only: Yes
+					note_below: |
+						This is the size of the largest possible command the CMS can send to your database.
+														Images, along with their thumbnails and their working copies, will be added to the database using one command,
+														so this puts a limit on the size of image that you can add to the CMS.
+														Your server administrator can change this by changing the <code>max_allowed_packet</code> setting
+														in the server's MySQL configuration.
+		file_downloads:
+			label: File Downloads
+			edit_mode:
+				enabled: Yes
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: No
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: This tab contains settings for file downloads.
+				restrict_downloads_by_ip:
+					site_setting:
+						name: restrict_downloads_by_ip
+					label: 'Restrict by IP:'
+					type: checkbox
+					value: "1"
+					note_below: "Places a <code>.htaccess</code> file in the temporary document directory to allow access only from the client's IP address."
+	setting_group: files_and_images

@@ -1,0 +1,23 @@
+<div class="zenario_grid_preview" style="width:{{(m.max + m.leftHack)}}px;">
+	<div class="zenario_grid_preview_frame">
+		<div class="zenario_grid_preview_overlay" id="{{m.gridId}}-slider_overlay" id="{{m.gridId}}-overlay"></div>
+		<iframe id="{{m.gridId}}-iframe" src="{{m.src}}" width="{{m.startingValue}}" height="{{zenarioG.lastIframeHeight}}"></iframe>
+		<div class="zenario_grid_preview_resize" id="{{m.gridId}}-slider" style="width:{{(m.max - m.min)}}px; margin-left: {{(m.min + m.leftHack)}}px;"></div>
+	</div>
+		
+	<div class="zenario_grid_preview_controls">
+		<div class="zenario_grid_preview_ruler" style="width:{{(m.max + 1)}}px; margin-right:{{(m.leftHack - 1)}}px;"></div>
+		
+		<div class="zenario_grid_preview_size_wrap">
+			<div class="zenario_grid_preview_size" id="{{m.gridId}}-size" style="margin-left: {{(m.startingValue)}}px;">
+				<input class="zenario_grid_preview_value" id="{{m.gridId}}-slider_val" type="text" value="{{m.startingValue}}"/>
+			</div>
+		</div>
+		
+		<div class="zenario_grid_preview_resize_buttons" id="{{m.gridId}}-resize_buttons">
+			<a class="zenario_grid_preview_mobile" id="{{m.gridId}}-slider_mobile" type="button"><span>{{zenarioA.phrase.gridMobile}}</span></a>
+			<a class="zenario_grid_preview_tablet" id="{{m.gridId}}-slider_tablet" type="button"><span>{{zenarioA.phrase.gridTablet}}</span></a>
+			<a class="zenario_grid_preview_desktop" id="{{m.gridId}}-slider_desktop" type="button"><span>{{zenarioA.phrase.gridDesktop}}</span></a>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,57 @@
+<div class="zenario_debugInfo">
+	<div class="zenario_debugInfoTitle">Path Inspector</div>
+	<table class="organizer_basic_info">
+		<tr><th>Mode:</th><td>
+			<% if (window.zenarioOQuickMode) { %>
+				Quick
+			<% } else if (window.zenarioOSelectMode) { %>
+				Select
+			<% } else { %>
+				Full
+			<% } %>
+		</td><td>
+			<div class="organizer_info_box" title="{{zenarioA.phrase.debugHelpMode|escape}}"></div>
+		</td></tr>
+		
+		<tr><th>Navigation path:</th><td>
+			<textarea readonly="readonly" rows="2">{{zenarioO.getHash()|escape}}</textarea>
+		</td><td>
+			<div class="organizer_info_box" title="{{zenarioA.phrase.debugHelpNavigationPath|escape}}"></div>
+		</td></tr>
+		
+		<tr><th>Tag path:</th><td>
+			<input type="text" readonly="readonly" value="{{zenarioO.path|escape}}"/>
+		</td><td>
+			<div class="organizer_info_box" title="{{zenarioA.phrase.debugHelpTagPath|escape}}"></div>
+		</td></tr>
+	</table>
+		
+	<% for (var b in zenarioO.branches) { if (b > 0) { %>
+		<div class="organizer_refiner_no">
+			Refiner #{{b|escape}}
+			<div class="organizer_info_box" title="{{zenarioA.phrase.debugHelpRefiner|escape}}"></div>
+		</div>
+		<table class="organizer_refiner_info">
+			
+			<% var refiner; if (refiner = zenarioO.branches[b].refiners[zenarioO.branches[b].to]) { %>
+				<tr><th>Codename:</th><td>
+					<input type="text" readonly="readonly" value="{{refiner.name|escape}}"/>
+				</td></tr>
+				<tr><th>Value:</th><td>
+					<input type="text" readonly="readonly" value="{{refiner.id|escape}}"/>
+				</td></tr>
+			<% } %>
+			
+			<tr><th>From tag path:</th><td>
+				<input type="text" readonly="readonly" value="{{zenarioO.branches[b].from|escape}}"/>
+			</td></tr>
+			<tr><th>To tag path:</th><td>
+				<input type="text" readonly="readonly" value="{{zenarioO.branches[b].to|escape}}"/>
+			</td></tr>
+		</table>
+	<% }} %>
+	
+	<div class="organizer_cfti">
+		Click for TUIX Inspector
+	</div>
+</div>
