@@ -51,9 +51,9 @@ Learn Zenario
 
 * Can't find what you're looking for? Ask us in the [forum](http://zenar.io/forums).
 
-Keep updated
+Packaged versions
 ---------------------
-* Find the latest version [here](http://zenar.io/download-zenario)
+* Find the packaged version in various formats [here](http://zenar.io/download-zenario)
 
 
 
