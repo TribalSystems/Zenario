@@ -1,17 +1,12 @@
 Contributing
 -----------------------------
 
-Contributions are welcome via pull requests, but please be aware of the following guidelines:
+Zenario allows you to write your own custom modules to add new features to the CMS. If you would like help to get started please see our [Developer Guides](http://zenar.io/developer-documentation). You can also create your own skins to assign to the layouts of your site. For more info see our guides for [Creating a skin](http://zenar.io/creating-a-skin).
 
-* Please submit modules as subdirectories in the zenario_custom/modules directory.
+If you wish to contribute your modules and skins to our repository then:
 
 * Please submit skins as subdirectories in the zenario_custom/templates/grid_templates/skins directory.
+* Please submit modules as subdirectories in the zenario_custom/modules directory.
+* Please make sure that your PHP code meets the guidelines stated in the Standards and security section of our website.
 
-We don't currently accept pull requests to the core software (though we may fix any reported bugs)
-
-Resources
-------------------
-
-* [Standards and security](http://zenar.io/standards-and-security)
-
-* [Creating a skin](http://zenar.io/creating-a-skin)
+We don't currently accept pull requests to the core software althought we will fix any reported bugs.
