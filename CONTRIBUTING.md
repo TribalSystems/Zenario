@@ -7,6 +7,6 @@ If you wish to contribute your modules and skins to our repository then:
 
 * Please submit skins as subdirectories in the zenario_custom/templates/grid_templates/skins directory.
 * Please submit modules as subdirectories in the zenario_custom/modules directory.
-* Please make sure that your PHP code meets the guidelines stated in the Standards and security section of our website.
+* Please make sure that your PHP code meets the guidelines stated in the [Standards and security](http://zenar.io/standards-and-security) section of our website.
 
 We don't currently accept pull requests to the core software althought we will fix any reported bugs.
