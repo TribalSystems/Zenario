@@ -51,9 +51,9 @@ Learn Zenario
 
 * Can't find what you're looking for? Ask us in the [forum](http://zenar.io/forums).
 
-Packaged versions
+Download Zenario
 ---------------------
-* Find the packaged version in various formats [here](http://zenar.io/download-zenario)
+* You can download a packaged version of Zenario in either zip, gzip or 7zip format at [zenar.io/download-zenario](http://zenar.io/download-zenario)
 
 
 
