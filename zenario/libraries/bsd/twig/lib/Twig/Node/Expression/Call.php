@@ -12,10 +12,8 @@ abstract class Twig_Node_Expression_Call extends Twig_Node_Expression
 {
     protected function compileCallable(Twig_Compiler $compiler)
     {
-        $callable = $this->getAttribute('callable');
-
         $closingParenthesis = false;
-        if ($callable) {
+        if ($this->hasAttribute('callable') && $callable = $this->getAttribute('callable')) {
             if (is_string($callable)) {
                 $compiler->raw($callable);
             } elseif (is_array($callable) && $callable[0] instanceof Twig_ExtensionInterface) {
@@ -165,7 +163,7 @@ abstract class Twig_Node_Expression_Call extends Twig_Node_Expression
         }
 
         if (!empty($parameters)) {
-            throw new Twig_Error_Syntax(sprintf('Unknown argument%s "%s" for %s "%s".', count($parameters) > 1 ? 's' : '' , implode('", "', array_keys($parameters)), $this->getAttribute('type'), $this->getAttribute('name')));
+            throw new Twig_Error_Syntax(sprintf('Unknown argument%s "%s" for %s "%s".', count($parameters) > 1 ? 's' : '', implode('", "', array_keys($parameters)), $this->getAttribute('type'), $this->getAttribute('name')));
         }
 
         return $arguments;

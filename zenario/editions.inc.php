@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,6 @@
 
 
 cms_core::$editions = array(
-	'zenario_enterprise_features' => 'zenario_enterprise_features',
 	'zenario_pro_features' => 'zenario_pro_features',
 	'zenario_common_features' => 'zenario_common_features'
 );

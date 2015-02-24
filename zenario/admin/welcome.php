@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -182,7 +182,7 @@ echo
 <head>
 	<title>', adminPhrase('Welcome to Zenario'), '</title>';
 
-getCSSJSCodeHash($updateDB = false);
+checkForChangesInCssJsAndHtmlFiles();
 $v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
 CMSWritePageHead('../', 'welcome', false);
 

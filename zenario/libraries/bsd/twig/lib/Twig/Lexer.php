@@ -80,6 +80,8 @@ class Twig_Lexer implements Twig_LexerInterface
         if (function_exists('mb_internal_encoding') && ((int) ini_get('mbstring.func_overload')) & 2) {
             $mbEncoding = mb_internal_encoding();
             mb_internal_encoding('ASCII');
+        } else {
+            $mbEncoding = null;
         }
 
         $this->code = str_replace(array("\r\n", "\r"), "\n", $code);
@@ -130,7 +132,7 @@ class Twig_Lexer implements Twig_LexerInterface
             throw new Twig_Error_Syntax(sprintf('Unclosed "%s"', $expect), $lineno, $this->filename);
         }
 
-        if (isset($mbEncoding)) {
+        if ($mbEncoding) {
             mb_internal_encoding($mbEncoding);
         }
 
@@ -321,7 +323,6 @@ class Twig_Lexer implements Twig_LexerInterface
             $this->moveCursor($match[0]);
 
         } elseif (preg_match(self::REGEX_DQ_STRING_DELIM, $this->code, $match, null, $this->cursor)) {
-
             list($expect, $lineno) = array_pop($this->brackets);
             if ($this->code[$this->cursor] != '"') {
                 throw new Twig_Error_Syntax(sprintf('Unclosed "%s"', $expect), $lineno, $this->filename);

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -52,18 +52,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			}
 			break;
 		case 'zenario_country_manager__region':
-			if (!arrayKey($values,'details/code')) {
-				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please enter a Code");
-				break;
-			}
 			if (!arrayKey($values,'details/name')) {
 				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please enter a Name");
+				break;
+			}
+			if (!arrayKey($values, 'details/region_type') && setting('zenario_country_manager__region_type_management')) {
+				$box['tabs']['details']['errors'][] = adminPhrase("Error. Please select region type");
 				break;
 			}
 			$parentRegionId = arrayKey($box,'key','parent_id');
 			$countryCode = arrayKey($box,'key','country_id');
 			$regionName = arrayKey($values,'details/name');
-			$regionCode = arrayKey($values,'details/code');
 			$regionId = arrayKey($box,'key','id');
 
 			if ($parentRegionId){
@@ -73,12 +72,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							array('subregion_name' => $regionName, 'region_name' => self::getEnglishRegionName($parentRegionId)));
 					break;
 				} 
-				if ($regionCode && $regions = self::getRegions('all','',$regionCode,false,$parentRegionId,'',$regionId)) {
-					$box['tabs']['details']['errors'][] = 
-						adminPhrase('Error. The Sub-Region with code "[[subregion_code]]" already exists in the Region "[[region_name]]"',
-								array('subregion_code' => $regionCode, 'region_name' =>  self::getEnglishRegionName($parentRegionId)) );
-					break;
-				}
 			} elseif ($countryCode) {
 				if ($regions = self::getRegions('all',$countryCode,'',false,0,$regionName,$regionId)) {
 					$box['tabs']['details']['errors'][] = 
@@ -86,13 +79,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							array('region_name' => $regionName, 'country_name' => self::getEnglishCountryName($countryCode)));
 					break;
 				}
-				if ($regionCode && $regions = self::getRegions('all',$countryCode,$regionCode,false,0,'',$regionId)){
-					$box['tabs']['details']['errors'][] = 
-						adminPhrase('Error. The Region with code "[[region_code]]" already exists in the Country "[[country_name]]"',
-							array('region_code' => $regionCode, 'country_name' => self::getEnglishCountryName($countryCode))
-						);
-					break;
-				} 
 			} else {
 				return 'Error. No parent Country or Region was set.';
 			}

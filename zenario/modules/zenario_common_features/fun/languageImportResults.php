@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ if ($error) {
 } elseif ($numberOf['added'] || $numberOf['updated']) {
 	echo '<!--Message_Type:Success-->';
 	if ($changeButtonHTML) {
-		echo '<!--Button_HTML:<input type="button" class="submit" value="', adminPhrase('OK'), '" onclick="zenarioO.reload(\'zenario__languages/nav/languages/panel\');"/>-->';
+		echo '<!--Button_HTML:<input type="button" class="submit" value="', adminPhrase('OK'), '" onclick="zenarioO.reload(\'zenario__languages/panels/languages\');"/>-->';
 	}
 	echo adminPhrase("Language Pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	

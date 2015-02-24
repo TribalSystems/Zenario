@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $box['tabs']['file']['hidden'] = true;
 
 if (isset($box['tabs']['template'])) {
-	$box['tabs']['template']['notices']['archived_template']['show'] = false;
 	
 	if (!$box['key']['cID']) {
 		if ($values['template/layout_id']) {
@@ -43,12 +42,39 @@ if (isset($box['tabs']['template'])) {
 	$box['tabs']['template']['fields']['skin_id']['current_value'] =
 		$skinId = templateSkinId($values['template/layout_id']);
 	
-	if ($values['template/layout_id']) {
-		if (getRow('layouts', 'status', $values['template/layout_id']) != 'active') {
+	$fields['css/background_image']['side_note'] = '';
+	$fields['css/bg_color']['side_note'] = '';
+	$fields['css/bg_position']['side_note'] = '';
+	$fields['css/bg_repeat']['side_note'] = '';
+	$box['tabs']['template']['notices']['archived_template']['show'] = false;
+	
+	if ($values['template/layout_id']
+	 && ($layout = getTemplateDetails($values['template/layout_id']))) {
+		
+		if ($layout['status'] != 'active') {
 			$box['tabs']['template']['notices']['archived_template']['show'] = true;
+		}
+		
+		if ($layout['bg_image_id']) {
+			$fields['css/background_image']['side_note'] = htmlspecialchars(
+				adminPhrase("Setting a background image here will override the background image set on this item's layout ([[id_and_name]]).", $layout));
+		}
+		if ($layout['bg_color']) {
+			$fields['css/bg_color']['side_note'] = htmlspecialchars(
+				adminPhrase("Setting a background color here will override the background color set on this item's layout ([[id_and_name]]).", $layout));
+		}
+		if ($layout['bg_position']) {
+			$fields['css/bg_position']['side_note'] = htmlspecialchars(
+				adminPhrase("Setting a background position here will override the background position set on this item's layout ([[id_and_name]]).", $layout));
+		}
+		if ($layout['bg_repeat']) {
+			$fields['css/bg_repeat']['side_note'] = htmlspecialchars(
+				adminPhrase("Setting an option here will override the option set on this item's layout ([[id_and_name]]).", $layout));
 		}
 	}
 }
+
+
 		
 $box['tabs']['meta_data']['fields']['description']['hidden'] = false;
 $box['tabs']['meta_data']['fields']['writer']['hidden'] = false;

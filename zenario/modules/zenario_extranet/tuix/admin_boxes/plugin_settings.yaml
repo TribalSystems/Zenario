@@ -1,0 +1,165 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_extranet
+    tabs:
+        first_tab:
+            label: Login
+            fields:
+                login_with:
+                    plugin_setting:
+                        name: login_with
+                    label: 'Login with:'
+                    type: radios
+                    values:
+                        Email:
+                            label: Email
+                        Screen_Name:
+                            label: >
+                                Screen Name (requires the "user_use_screen_name" site
+                                setting enabled)
+                    value: Email
+                enable_remember_me:
+                    plugin_setting:
+                        name: enable_remember_me
+                    label: 'Offer to remember screen name:'
+                    type: checkbox
+                    value: "1"
+                    side_note: Allow User to have his screen name stored using a cookie.
+                enable_log_me_in:
+                    plugin_setting:
+                        name: enable_log_me_in
+                    label: 'Offer persistent login:'
+                    type: checkbox
+                    value: ""
+                    note_below: >
+                        Allow User to stay logged in using a cookie until they
+                        manually log out.
+        welcome_back_page:
+            label: Action after login
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            These settings control what happens after an Extranet User
+                            logs in. The only apply if this Plugin is placed on the
+                            Extranet Login page.
+                requires_terms_and_conditions:
+                    plugin_setting:
+                        name: requires_terms_and_conditions
+                    label: 'Access to site requires terms and conditions to be accepted:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    side_note: >
+                        If the user has not accepted the terms and condictions the
+                        login will fail and the user will see an additional checkbox
+                        asking them to accept the T's and C's.
+                terms_and_conditions_page:
+                    plugin_setting:
+                        name: terms_and_conditions_page
+                        foreign_key_to: content
+                    label: 'Terms and conditions page:'
+                    pick_items:
+                        equivalence: Yes
+                        path: zenario__content/panels/language_equivs
+                        min_path: zenario__content/panels/language_equivs
+                        max_path: zenario__content/panels/language_equivs
+                        target_path: zenario__content/panels/language_equivs
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select Content Item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a terms and conditions page
+                    side_note: >
+                        A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
+                show_welcome_page:
+                    plugin_setting:
+                        name: show_welcome_page
+                    label: 'Redirect to Welcome Back page:'
+                    type: radios
+                    value: _NEVER
+                    values:
+                        _ALWAYS:
+                            ord: "1"
+                            label: Always redirect to the Welcome Back page
+                        _IF_NO_PREVIOUS_PAGE:
+                            ord: "2"
+                            label: >
+                                As second priority; if another private Content Item was
+                                requested, redirect to that Item
+                        _NEVER:
+                            ord: "3"
+                            label: >
+                                Never (redirect to requested private Item, or else to the
+                                previous page viewed)
+                    format_onchange: Yes
+                welcome_page:
+                    plugin_setting:
+                        name: welcome_page
+                        foreign_key_to: content
+                    label: 'Welcome Back Page:'
+                    pick_items:
+                        equivalence: Yes
+                        path: zenario__content/panels/language_equivs
+                        min_path: zenario__content/panels/language_equivs
+                        max_path: zenario__content/panels/language_equivs
+                        target_path: zenario__content/panels/language_equivs
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select Content Item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a welcome back page
+        error_messages:
+            label: Error messages
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            These settings control what the user sees if the login 
+                            process fails.
+                email_not_in_db_message:
+                    plugin_setting:
+                        name: email_not_in_db_message
+                    label: 'If email address is not in the database:'
+                    type: text
+                    value: "This email address is not associated with any account."
+                    show_phrase_icon: true
+                wrong_password_message:
+                    plugin_setting:
+                        name: wrong_password_message
+                    label: 'If email address is in the database but the password is incorrect:'
+                    type: text
+                    value: "The password you have entered is incorrect."
+                    show_phrase_icon: true
+                account_suspended_message:
+                    plugin_setting:
+                        name: account_suspended_message
+                    label: 'If user account is suspended:'
+                    type: text
+                    value: "Your account is suspended. Please contact the site administrator for assistance."
+                    show_phrase_icon: true
+                account_pending_message:
+                    plugin_setting:
+                        name: account_pending_message
+                    label: 'If user account is pending (email verified):'
+                    type: text
+                    value: "Your account has not yet been activated by the site administator. Please contact us for further assistance."
+                    show_phrase_icon: true
+                account_not_verified_message:
+                    plugin_setting:
+                        name: account_not_verified_message
+                    label: 'If user account is pending and email address not verified:'
+                    type: text
+                    value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
+                    show_phrase_icon: true
+                contact_not_extranet_message:
+                    plugin_setting:
+                        name: contact_not_extranet_message
+                    label: 'If email entered is a contact not a extranet user:'
+                    type: text
+                    value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
+                    show_phrase_icon: true
+

@@ -1,0 +1,41 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Extranet Password Reminder
+description: |
+    <p>This Module allows registered Extranet Users who have forgotten their Password and/or Screen Name to retrieve their details by entering their email address.</p>
+            <p>When you install this Module it will automatically create a Password Reminder page on your site. The Module inserts a plugin of this Module on that page.</p>
+        <p>Registered Extranet Users will then be able to enter the email address with which they have registered, and the Module will send an email containing their details.</p>
+            <p>The default behaviour is to have just one Password Reminder page, however on a multilingual site you may create a Password Reminder page for each Language by creating translations of the original Password Reminder page in each Language.</p>
+        <p>This Module installs a password reminder Email Template, which can be edited. The selected Email Template can contain merge fields which will be replaced by real values when the email is sent:</p>
+        <ul>
+            <li>[[first_name]] - User's first name.</li>
+            <li>[[last_name]] - User's last name.</li>
+            <li>[[screen_name]] - User's screen name.</li>
+            <li>[[password]] - User's password.</li>
+            <li>[[email]] - User's email address.</li>
+            <li>[[hash]] - A hash code required to activate the email address.</li>
+            <li>[[ip_address]] - The IP address of the computer from which email address change was requested.</li>
+            <li>[[cms_url]] - A Website URL.</li>
+        </ul>
+keywords: extranet, password, recover, remind, reminder, user
+vlp_class_name: zenario_extranet_password_reminder
+css_class_name: zenario_extranet_password_reminder
+is_pluggable: Yes
+nestable: Yes
+default_framework: standard
+special_pages:
+    special_page:
+        page_type: zenario_password_reminder
+        default_alias: password-reminder
+        default_title: Password Reminder
+        footer_menu_title: Password Reminder
+        only_show_to_visitors_who_are_logged_out: Yes
+        logic: create_and_maintain_in_default_language
+dependencies:
+    zenario_extranet: Yes
+default_instance_name: Extranet Password Reminder

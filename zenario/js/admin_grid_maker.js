@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1009,8 +1009,9 @@ zenarioG.drawEditor = function(
 		} else {
 			if (!cells[i].name) {
 				cells[i].name = zenarioG.uniqueRandomName();
-			} else if (!zenarioG.names[cells[i].name]) {
-				zenarioG.names[cells[i].name] = true;
+			
+			} else if (!zenarioG.checkIfNameUsed(cells[i].name)) {
+				zenarioG.registerNewName(cells[i].name);
 				++zenarioG.randomNameCount;
 			}
 			
@@ -1026,6 +1027,7 @@ zenarioG.drawEditor = function(
 								' data-for="' + elId + '-' + i + '"' +
 								' data-name="' + htmlspecialchars(cells[i].name) + '"' +
 								' data-small="' + htmlspecialchars(cells[i].small) + '"' +
+								' data-height="' + htmlspecialchars(cells[i].height) + '"' +
 								' data-is_full="' + engToBoolean(cells[i].isAlpha && cells[i].isOmega) + '"' +
 								' data-is_last="' + engToBoolean(!cells[i].isAlpha && cells[i].isOmega) + '"' +
 								' data-css_class="' + htmlspecialchars(cells[i].css_class) + '"';
@@ -1037,6 +1039,7 @@ zenarioG.drawEditor = function(
 								' title="' + phrase.gridEditProperties + '"' +
 							'>' +
 								htmlspecialchars(cells[i].name) +
+								(cells[i].height && cells[i].height != 'small'? ' (' + cells[i].height + ')': '') + 
 							'</span></div></div>';
 				html += '</div>';
 				
@@ -1422,6 +1425,7 @@ zenarioG.drawEditor = function(
 						type: $el.attr('data-type'),
 						name: $el.attr('data-name'),
 						small: $el.attr('data-small'),
+						height: $el.attr('data-height'),
 						is_full: $el.attr('data-is_full'),
 						is_last: $el.attr('data-is_last'),
 						css_class: $el.attr('data-css_class'),
@@ -1633,7 +1637,7 @@ zenarioG.markAsSaved = function(data, useMessageBoxForSuccessMessage) {
 	if (window.parent
 	 && window.parent.zenarioO.init) {
 		switch (window.parent.zenarioO.path) {
-			case 'zenario__layouts/nav/layouts/panel':
+			case 'zenario__layouts/panels/layouts':
 				if (data.layoutId) {
 					window.parent.zenarioO.refreshToShowItem(data.layoutId);
 				}
@@ -1993,14 +1997,14 @@ zenarioG.saveProperties = function(el, params) {
 				$('#zenario_grid_error').html(phrase.gridErrorNameFormat).slideDown();
 				return;
 		
-			} else if (params.name != data.cells[i].name && zenarioG.names[params.name]) {
+			} else if (params.name != data.cells[i].name && zenarioG.checkIfNameUsed(params.name)) {
 				$('#zenario_grid_error').html(phrase.gridErrorNameInUse).slideDown();
 				return;
 			}
 			
 			//Rename the slot
 			delete zenarioG.names[data.cells[i].name];
-			zenarioG.names[params.name] = true;
+			zenarioG.registerNewName(params.name);
 		}
 		
 		foreach (params as var j) {
@@ -2038,11 +2042,19 @@ zenarioG.uniqueRandomName = function() {
 	
 	do {
 		name = zenarioG.randomName(length);
-	} while (zenarioG.names[name]);
+	} while (zenarioG.checkIfNameUsed(name));
 	
 	zenarioG.names[name] = true;
 	++zenarioG.randomNameCount;
 	return name;
+};
+
+zenarioG.checkIfNameUsed = function(name) {
+	return zenarioG.names[name.toLowerCase()] !== undefined;
+};
+
+zenarioG.registerNewName = function(name) {
+	return zenarioG.names[name.toLowerCase()] = name;
 };
 
 //Redraw the editor

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,20 @@ if (!setting('default_language')) {
 	return;
 }
 
+//Have we set up special pages before or is this the first time..?
+//Check the special pages table, if there are already linked pages then this isn't the first time
+$firstSetup = !checkRowExists('special_pages', array('equiv_id' => array('!' => 0)));
+
 
 //Look for any special pages
 if ($resultSp = getRows('special_pages', true, array())) {
 	while ($sp = sqlFetchAssoc($resultSp)) {
+		
+		if (!$firstSetup
+		 && $sp['logic'] == 'create_in_default_language_on_install') {
+			//Only create dummy pages such as the "Second Page" on the first install, don't try to add or maintain their presence later
+			continue;
+		}
 		
 		$thisLang = false;
 		$equivs = array();
@@ -50,8 +60,8 @@ if ($resultSp = getRows('special_pages', true, array())) {
 			$equivs = equivalences($sp['equiv_id'], $sp['content_type']);
 		}
 		
-		//If the create_lang_equiv_content flag is set, also ensure that an equiv exists for each extra Language
-		if ($sp['create_lang_equiv_content']) {
+		//If the create_and_maintain_in_all_languages logic is used, also ensure that an equiv exists for each extra Language
+		if ($sp['logic'] == 'create_and_maintain_in_all_languages') {
 			$result = getRows('languages', array('id'), array());
 			while ($row = sqlFetchAssoc($result)) {
 				if (!isset($langsToCreate[$row['id']]) && !isset($equivs[$row['id']]) && $row['id'] != $thisLang) {
@@ -83,6 +93,23 @@ if ($resultSp = getRows('special_pages', true, array())) {
 								$cType = 'html';
 								createDraft($cID, $cIDFrom = false, $cType, $cVersion, $cVersionFrom = false, $langId);
 								
+								
+								//Try to get the right layout for this
+								$layoutId = getDefaultTemplateId('html');
+								
+								if (!empty($page['layout'])) {
+									$sql = "
+										SELECT layout_id
+										FROM ". DB_NAME_PREFIX. "layouts
+										WHERE name LIKE '%". likeEscape($page['layout']). "%'
+										LIMIT 1";
+									$resultL = sqlSelect($sql);
+									if ($layout = sqlFetchAssoc($resultL)) {
+										$layoutId = $layout['layout_id'];
+									}
+								}
+								
+								
 								//Try to add an alias (so long as the alias is not taken)
 								if ($alias = arrayKey($page, 'default_alias')) {
 									//Attempt to make the alias unique if we're adding multiple languages
@@ -99,7 +126,9 @@ if ($resultSp = getRows('special_pages', true, array())) {
 									$alias = '';
 								}
 								
-								setRow('versions', array('title' => arrayKey($page, 'default_title')), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+								setRow('versions',
+									array('title' => arrayKey($page, 'default_title'), 'layout_id' => $layoutId),
+									array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 								
 								if (!$sp['equiv_id']) {
 									$sp['equiv_id'] = $cID;
@@ -109,18 +138,22 @@ if ($resultSp = getRows('special_pages', true, array())) {
 									$sp['equiv_id'] = recordEquivalence($sp['equiv_id'], $cID, $cType);
 								}
 								
-								//Update the special pages table
-								updateRow(
-									'special_pages',
-									array(
-										'equiv_id' => $sp['equiv_id'],
-										'content_type' => $sp['content_type']),
-									array(
-										'page_type' => $sp['page_type']));
+								//Update the special pages table to record which page is the special page,
+								//unless we are using the create_in_default_language_on_install logic in which case we won't make
+								//the created page a special page
+								if ($sp['logic'] != 'create_in_default_language_on_install') {
+									updateRow(
+										'special_pages',
+										array(
+											'equiv_id' => $sp['equiv_id'],
+											'content_type' => $sp['content_type']),
+										array(
+											'page_type' => $sp['page_type']));
+								}
 								
 								
 								//Work out a free main slot to put a Plugin in
-								$template = getRow('layouts', array('layout_id', 'file_base_name', 'family_name'), getDefaultTemplateId('html'));
+								$template = getRow('layouts', array('layout_id', 'file_base_name', 'family_name'), $layoutId);
 								$slotName = getTemplateMainSlot($template['family_name'], $template['file_base_name']);
 								
 								//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
@@ -213,7 +246,6 @@ if ($resultSp = getRows('special_pages', true, array())) {
 											'target_loc' => 'int',
 											'content_id' => $cID,
 											'content_type' => $cType,
-											'ordinal' => $row[0],
 											'hide_private_item' => 
 												engToBooleanArray($page, 'only_show_to_visitors_who_are_logged_in')?
 													3

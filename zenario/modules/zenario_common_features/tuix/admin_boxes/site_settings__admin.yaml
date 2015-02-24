@@ -57,6 +57,12 @@ site_settings:
                     full_width: Yes
                     snippet:
                         html: This tab contains settings for when working with content items.
+                create_draft_warning:
+                    site_setting:
+                        name: create_draft_warning
+                    label: 'Warn me when creating a draft'
+                    type: checkbox
+                    value: "1"
                 lock_item_upon_draft_creation:
                     site_setting:
                         name: lock_item_upon_draft_creation
@@ -112,10 +118,10 @@ site_settings:
                         name: notification_to_new_admin
                     label: 'Email template:'
                     pick_items:
-                        path: zenario__email_template_manager/nav/email_templates/panel
-                        target_path: zenario__email_template_manager/nav/email_templates/panel
-                        min_path: zenario__email_template_manager/nav/email_templates/panel
-                        max_path: zenario__email_template_manager/nav/email_templates/panel
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: Yes
                         nothing_selected_phrase: No email template selected
                         select_phrase: Select an email template...

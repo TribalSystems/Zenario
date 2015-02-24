@@ -1,0 +1,32 @@
+<div class="slide_upload_images">
+	<a onclick="zenario_slideshow_2.pickImagesFromOrganizer(); return false;" class="button_add_images_organizer">
+		<button>Add images from Organizer</button>
+	</a>
+	<a onclick="zenario_slideshow_2.uploadImages();" class="button_upload_images">
+		<button>Upload Images</button>
+	</a>
+</div>
+<div class="slide_navigation">
+	<a onclick="zenario_slideshow_2.selectLastImage();">
+		<button class="last">Last</button>
+	</a>
+	<a onclick="zenario_slideshow_2.selectFirstImage();">
+		<button class="first">First</button>
+	</a>
+	<a onclick="zenario_slideshow_2.nudgeImageUp();">
+		<button class="up">Up</button>
+	</a>
+	<a onclick="zenario_slideshow_2.nudgeImageDown();">
+		<button class="down">Down</button>
+	</a>
+	<a onclick="zenario_slideshow_2.deleteSlide();">
+		<button class="delete">Delete</button>
+	</a>
+</div>
+<div id="zenario_slide_small_preview_group">	
+	<div id="zeanrio_slideshow_drop_target" style="background: white; border: 3px dashed grey;">
+		<ul id="zenario_sortable">
+			{{zenarioA.microTemplate('zenario_slide_image', m.slideDetails )}}
+		</ul>
+	</div>
+</div>

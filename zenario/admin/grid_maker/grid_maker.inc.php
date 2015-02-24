@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -701,7 +701,36 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, $gCols
 				
 					//Draw a slot
 					} elseif (!empty($line['line'][$i]['slot']) && !empty($line['line'][$i]['name'])) {
-						$html .= ' slot '. HTMLId($line['line'][$i]['name']). '">';
+						$html .= ' slot ';
+						
+						switch (arrayKey($line['line'][$i], 'height')) {
+							case 'xxlarge':
+								$height = 5;
+								$html .= 'xxlarge_slot';
+								break;
+							case 'xlarge':
+								$height = 4;
+								$html .= 'xlarge_slot';
+								break;
+							case 'large':
+								$height = 3;
+								$html .= 'large_slot';
+								break;
+							case 'medium':
+								$height = 2;
+								$html .= 'medium_slot';
+								break;
+							default:
+								$height = 1;
+								$html .= 'small_slot';
+						}
+						
+						$line['height'] = max(
+							$line['height'],
+							$height
+						);
+						
+						$html .= ' '. HTMLId($line['line'][$i]['name']). '">';
 				
 						$html .= $nl. "\t<". "?php slot('". HTMLId($line['line'][$i]['name']). "', 'grid'); ?". ">";
 					
@@ -752,7 +781,7 @@ public static function generateThumbnail(&$data, $highlightSlot, $requestedWidth
 	$colSize = 8;
 	$marginSize = 2;
 	$outerMarginSize = 2;
-	$rowSize = 5;
+	$rowSize = 3;
 	$vMarginSize = 2;
 
 	$width = $cols * $colSize + ($cols-1) * $marginSize + 2 * $outerMarginSize;
@@ -809,7 +838,8 @@ public static function generateThumbnailR(
 		foreach ($lines as &$line) {
 			
 			$x = $startX;
-			$y2 = $y + $line['height'] * $rowSize + ($line['height'] - 1) * $vMarginSize;
+			$height = (int) $line['height'];
+			$y2 = $y + $height * $rowSize + ($height - 1) * $vMarginSize;
 			
 			if (!empty($line['line'])) {
 				foreach ($line['line'] as &$cell) {
@@ -818,10 +848,30 @@ public static function generateThumbnailR(
 					//print_r(array($x, $y, $x2, $y2));
 					
 					if (!empty($cell['name'])) {
+						
+						switch (arrayKey($cell, 'height')) {
+							case 'xxlarge':
+								$height = 5;
+								break;
+							case 'xlarge':
+								$height = 4;
+								break;
+							case 'large':
+								$height = 3;
+								break;
+							case 'medium':
+								$height = 2;
+								break;
+							default:
+								$height = 1;
+						}
+						
+						$y3 = $y + $height * $rowSize + ($height - 1) * $vMarginSize;
+						
 						if ($highlightSlot == $cell['name']) {
-							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y2-1, $highlightColour);
+							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y3-1, $highlightColour);
 						} else {
-							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y2-1, $slotColour);
+							imagefilledrectangle($img->getHandle(), $x, $y, $x2-1, $y3-1, $slotColour);
 						}
 					
 					} elseif (!empty($cell['lines'])) {

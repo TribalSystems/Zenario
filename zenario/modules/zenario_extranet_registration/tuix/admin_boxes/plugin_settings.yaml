@@ -1,0 +1,410 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	module_class_name: zenario_extranet_registration
+	tabs:
+		first_tab:
+			ord: "1"
+			label: Initial signup
+			fields:
+				desc:
+					ord: "0"
+					full_width: Yes
+					snippet:
+						html: Configure the initial registration form that is used to create the user account.
+				initial_email_address_status:
+					label: 'Verify email address:'
+					type: radios
+					plugin_setting:
+						name: initial_email_address_status
+					values:
+						not_verified:
+							label: Require verification
+						verified:
+							label: Don't verify
+					value: not_verified
+					format_onchange: Yes
+					side_note: >
+						Send a verification email to the user with an embedded link; use this to be sure that the email address entered can be accessed.
+				verification_email_template:
+					label: 'Email template for verifications:'
+					plugin_setting:
+						name: verification_email_template
+						foreign_key_to: email_template
+						dangling_cross_references: remove
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						select_phrase: Select Email Template...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select an email template
+					value: zenario_extranet_registration__to_user_email_verification_en
+					side_note: >
+						Please see the module description to get a full list of merge fields which can be used in the selected email template.
+				enable_notifications_on_user_signup:
+					label: 'Notifications:'
+					type: checkbox
+					plugin_setting:
+						name: enable_notifications_on_user_signup
+					format_onchange: Yes
+					side_note: >
+						Alert an administrator every time a user completes the form.
+					value: ""
+				user_signup_notification_email_address:
+					label: 'Email address for notifications:'
+					type: text
+					plugin_setting:
+						name: user_signup_notification_email_address
+					side_note: >
+						Notify these administrators of new sign-ups. Separate multiple email addresses with commas.
+				user_signup_notification_email_template:
+					label: 'Email template for notifications:'
+					plugin_setting:
+						name: user_signup_notification_email_template
+						foreign_key_to: email_template
+						dangling_cross_references: remove
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						select_phrase: Select Email Template...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select an email template
+					value: >
+						zenario_extranet_registration__to_admin_user_signup_notification_en
+				user_passwords:
+					label: 'User to choose password:'
+					plugin_setting:
+						name: user_passwords
+					type: checkbox
+					value: "0"
+					side_note: >
+						Allow use to choose a memorable password. Otherwise create a random password. Applies only to extranet users, not Contacts.
+				requires_terms_and_conditions:
+					plugin_setting:
+						name: requires_terms_and_conditions
+					label: 'Registration requires terms and conditions to be accepted:'
+					type: checkbox
+					value: ""
+					format_onchange: Yes
+					side_note: >
+						If the terms and condictions checkbox is not checked the user wll not be able to register.
+				terms_and_conditions_page:
+					plugin_setting:
+						name: terms_and_conditions_page
+						foreign_key_to: content
+					label: 'Terms and conditions page:'
+					pick_items:
+						equivalence: Yes
+						path: zenario__content/panels/language_equivs
+						min_path: zenario__content/panels/language_equivs
+						max_path: zenario__content/panels/language_equivs
+						target_path: zenario__content/panels/language_equivs
+						disallow_refiners_looping_on_min_path: Yes
+						select_phrase: Select Content Item...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select a terms and conditions page
+					side_note: >
+						A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
+				use_captcha:
+					plugin_setting:
+						name: use_captcha
+					label: 'Show captcha:'
+					type: checkbox
+					format_onchange: Yes
+					side_note: >
+						Require completion of a captcha to ensure we're dealing with a human.
+		user_activation:
+			label: User activation
+			fields:
+				desc:
+					full_width: Yes
+					snippet:
+						html: Using this tab, you can set up the User/Contact activation policy.
+				initial_account_status:
+					label: 'Status upon signup:'
+					type: radios
+					plugin_setting:
+						name: initial_account_status
+					values:
+						contact:
+							label: Contact
+						pending:
+							label: Pending
+					format_onchange: Yes
+					value: pending
+					side_note: >
+						Upon initial sign-up, class people as either "Contacts" or make them "Pending" as extranet users.
+				verified_account_status:
+					label: 'Status after email verification:'
+					type: radios
+					plugin_setting:
+						name: verified_account_status
+					values:
+						contact:
+							label: Set to Contact
+						active:
+							label: Set to Extranet User (Active status)
+						leave:
+							label: Leave as-is
+						check_trusted:
+							label: Set to User (Active) if from a trusted domain, otherwise leave as-is
+					format_onchange: Yes
+					value: active
+					side_note: >
+						When the user verifies his email address, set his status to Active (allowing him to log in), otherwise leave as Contact/Pending.
+				welcome_email_template:
+					label: '"Welcome" email:'
+					plugin_setting:
+						name: welcome_email_template
+						foreign_key_to: email_template
+						dangling_cross_references: remove
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						select_phrase: Select email template...
+					side_note: "Pick the email template to send the welcome emails to newly activated users. This setting applies only when the User's initial status is Active. Please see the module description to get a full list of merge fields which can be used."
+					value: zenario_extranet_registration__to_user_account_activation_en
+				
+				trusted_email_domains:
+					plugin_setting:
+						name: trusted_email_domains
+					label: 'List of trusted email domains:'
+					type: text
+					side_note: >
+						Enter a comma separated list of email domains, e.g., @tribiq.com,@zenario.com,@bigcompany.co.uk. Users registering
+						using an email from one of these domains will be set to active after email verification, otherwise they're left
+						as-is.
+					
+				show_welcome_page:
+					plugin_setting:
+						name: show_welcome_page
+					label: 'Redirect to first visit welcome page:'
+					type: radios
+					value: _NEVER
+					values:
+						_ALWAYS:
+							ord: "1"
+							label: Always redirect to a first visit welcome page
+						_IF_NO_PREVIOUS_PAGE:
+							ord: "2"
+							label: >
+								As second priority; if another private content item was
+								requested, redirect to that item
+						_NEVER:
+							ord: "3"
+							label: >
+								Never (redirect to requested private content item, or else to the
+								previous page viewed)
+					format_onchange: Yes
+				welcome_page:
+					plugin_setting:
+						name: welcome_page
+						foreign_key_to: content
+					label: 'First visit welcome page:'
+					pick_items:
+						equivalence: Yes
+						path: zenario__content/panels/language_equivs
+						min_path: zenario__content/panels/language_equivs
+						max_path: zenario__content/panels/language_equivs
+						target_path: zenario__content/panels/language_equivs
+						disallow_refiners_looping_on_min_path: Yes
+						select_phrase: Select content item...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select a content item
+				user_activation_notification_email_enable:
+					label: Notify an administrator by email when a user is activated
+					type: checkbox
+					plugin_setting:
+						name: user_activation_notification_email_enable
+					format_onchange: Yes
+					side_note: >
+						You can enable email notifications here when the User
+						account status is set to active or account awaits for the
+						manual activation. Email notification are send when
+						activation policy is applied to the User account. Depending
+						on the settings on the "Initial signup" tab this may occur
+						on user signup or when User clicks verification link.
+					value: ""
+				user_activation_notification_email_template:
+					label: Email template:
+					plugin_setting:
+						name: user_activation_notification_email_template
+						foreign_key_to: email_template
+						dangling_cross_references: remove
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						select_phrase: Select email template...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select an email template
+					side_note: >
+						Please see the module description to get a full list of
+						merge fields.
+					value: zenario_extranet_registration__to_admin_user_activation_notification_en
+				user_activation_notification_email_address:
+					label: "Send to:"
+					type: text
+					plugin_setting:
+						name: user_activation_notification_email_address
+					side_note: >
+						Enter the recipient(s) who should be notified. Multiple email addresses can be separated by commas.
+		user_characteristics:
+			label: User characteristics
+			fields:
+				set_characteristics_on_new_users:
+					plugin_setting:
+						name: set_characteristics_on_new_users
+					label: Set a characteristic when creating the user/contact
+					type: checkbox
+					format_onchange: Yes
+					side_note: >
+						When users or contacts are created with this form, you can specify a characteristic that is set for those users.
+
+				select_characteristics_for_new_users:
+					plugin_setting:
+						name: select_characteristics_for_new_users
+					label: 'Characteristic:'
+					type: select
+					load_values_from_organizer_path: zenario__users/panels/boolean_and_list_only
+					empty_value: ' -- Select -- '
+					validation:
+						required_if_not_hidden: Please select a user characteristic.
+					format_onchange: Yes
+				
+				select_characteristic_values_for_new_users:
+					plugin_setting:
+						name: select_characteristic_values_for_new_users
+					label: 'Characteristic values:'
+					type: checkboxes
+					validation:
+						required_if_not_hidden: Please select a value for the user characteristic.
+					
+				set_timer_on_new_users:
+					plugin_setting:
+						name: set_timer_on_new_users
+					label: 'Set a timer:'
+					type: checkbox
+					format_onchange: Yes
+					side_note: >
+						When users or contacts are created with this form, you can specify a timer that is set for those users.
+					
+				timer_for_new_users:
+					plugin_setting:
+						name: timer_for_new_users
+					label: 'User timer:'
+					pick_items:
+						path: zenario__users/hidden_nav/timer_templates/panel/refiners/only_allow_new_users/////
+						min_path: zenario__users/hidden_nav/timer_templates/panel
+						max_path: zenario__users/hidden_nav/timer_templates/panel
+						target_path: zenario__users/hidden_nav/timer_templates/panel
+						select_phrase: Select user timer...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select a user timer.
+					side_note: >
+						When users or contacts are created with this form, only timers that are open will be applied for those users.
+		groups:
+			label: Groups
+			fields:
+				add_user_to_group:
+					plugin_setting:
+						name: add_user_to_group
+					label: Add the user to a group
+					type: checkbox
+					format_onchange: true
+					side_note: >
+						When users or contacts are created with this form, you can add that user to a group.
+				select_group_for_new_users:
+					plugin_setting:
+						name: select_group_for_new_users
+					label: 'Group'
+					type: select
+					load_values_from_organizer_path: zenario__users/panels/groups_only
+					empty_value: ' -- Select -- '
+					validation:
+						required_if_not_hidden: Please select a group.
+						
+		registration_codes:
+			label: Registration Codes
+			fields:
+				desc:
+					full_width: Yes
+					snippet:
+						html: >
+							Using this tab, you can set up the User registration code
+							policy.
+				enable_registration_code:
+					label: 'Enable Registration Code:'
+					type: checkbox
+					plugin_setting:
+						name: enable_registration_code
+					side_note: >
+						Check this box to enable Users to enter code on Registration
+						that may add them to a Group.
+					format_onchange: Yes
+				require_valid_code:
+					label: 'Require Code to be valid:'
+					type: checkbox
+					plugin_setting:
+						name: require_valid_code
+					side_note: >
+						Check this box to force the User to enter a valid code
+						before registering.
+					hidden: Yes
+		error_messages:
+			label: Error messages
+			fields:
+				description:
+					full_width: Yes
+					snippet:
+						html: >
+							These settings control what the user sees if the registration or resend verification email process fails.
+				email_not_in_db_message:
+					plugin_setting:
+						name: email_not_in_db_message
+					label: 'If email address is not in the database:'
+					type: text
+					value: "This email address is not associated with any account."
+					show_phrase_icon: true
+				already_verified_message:
+					plugin_setting:
+						name: already_verified_message
+					label: 'If email address is ready verified and resend verification email is requested:'
+					type: text
+					value: "This email address has already been verified."
+					show_phrase_icon: true
+				contact_not_extranet_message:
+					plugin_setting:
+						name: contact_not_extranet_message
+					label: 'If email entered is a contact not a extranet user:'
+					type: text
+					value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
+					show_phrase_icon: true
+				account_suspended_message:
+					plugin_setting:
+						name: account_suspended_message
+					label: 'If user account is suspended:'
+					type: text
+					value: "Your account is suspended. Please contact the site administrator for assistance."
+					show_phrase_icon: true
+				account_not_verified_message:
+					plugin_setting:
+						name: account_not_verified_message
+					label: 'If user account is pending and email address not verified:'
+					type: text
+					value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
+					show_phrase_icon: true
+				

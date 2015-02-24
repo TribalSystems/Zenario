@@ -1,9 +1,26 @@
 <div class="hide_in_edit_mode">
 {% if error == false %}
-	{% if Documents %}
+	
+	{% if Documents or Download_Archive %}
 		{% if main_folder_title %}
 			<div class="folder_title"><h1>{{main_folder_title}}</h1></div>
 		{% endif %}
+	{% endif %}
+	
+	{% if Download_Archive %}
+		{% if Archive_Error %}
+			<div class="error">{{Archive_Error}}</div> 
+		{% endif %}
+		<div id="archive_download_link">
+			{% if Anchor_Link %}
+				{{'Download all documents as single ZIP file:'|trans}} <a {{Anchor_Link}} onclick="zenario_document_container.refreshPluginSlot(this,'{{Requests}}');return false;">{{'Prepare archive'|trans}}</a>
+			{% elseif Download_Page %}
+				{{'Your ZIP download is ready:'|trans}} <a href="{{Archive_Link}}" onclick="{{Google_Analytics_Link}}">{{Archive_Filename}}</a>
+			{% elseif Empty_Archive %}
+				{{'No documents to download'|trans}}
+			{% endif %}
+		</div>
+	{% elseif Documents %}
 		{% for item in Documents %}
 			<div class="document_wrap">
 			{% if item.Thumbnail %}
@@ -14,7 +31,7 @@
 				<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
 			{% endif %}
 			{% if item.Document_Type == 'file' %}
-				<div class="level_{{item.Document_Level}}"><a href="{{item.Document_Link}}" target="_blank">{{item.Document_Link_Text}}</a></div>
+				<div class="level_{{item.Document_Level}}"><a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Document_Link_Text}}</a></div>
 			{% else %}
 				<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
 			{% endif %}
@@ -28,7 +45,7 @@
 		{% else %}
 			<div class="no_thumbnail_{{Document_Mime}}"></div>
 		{% endif %}
-		<div id="{{Document_css_id}}"><a href="{{Document_Link}}" target="_blank">{{Document_Link_Text}}</a></div>
+		<div id="{{Document_css_id}}"><a href="{{Document_Link}}" target="_blank" onclick="{{Google_Analytics_Link}}">{{Document_Link_Text}}</a></div>
 	{% endif %}
 {% else %}
 	{% if error == 'no_user' %}

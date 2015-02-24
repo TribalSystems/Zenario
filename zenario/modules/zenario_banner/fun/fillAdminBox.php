@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,11 +32,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		//For Wireframe Plugins, pick images from this item's images, rather thamn 
-		if ($box['key']['isVersionControlled']
-		 && isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
+		if ($box['key']['isVersionControlled']/*
+		 && isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])*/) {
 			$box['tabs']['first_tab']['fields']['image']['pick_items']['path'] =
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['path'] =
-				'zenario__content/nav/content/panel/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
+				'zenario__content/panels/content/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
 			
 			$box['tabs']['first_tab']['fields']['image']['pick_items']['min_path'] =
 			$box['tabs']['first_tab']['fields']['image']['pick_items']['max_path'] =
@@ -44,12 +44,7 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['min_path'] =
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['max_path'] =
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['target_path'] =
-				'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel';
-			
-			if (!$box['key']['nest']) {
-				unset($box['tabs']['text']);
-			}
-			
+				'zenario__content/panels/inline_images_for_content';
 		}
 		
 		$box['first_display'] = true;
@@ -74,8 +69,19 @@ switch ($path) {
 		 && ($nestedPlugin = getNestDetails($box['key']['nest']))
 		 && (getModuleClassName($nestedPlugin['module_id']) == 'zenario_banner')) {
 			$box['tabs']['first_tab']['fields']['canvas']['note_below'] =
-			$box['tabs']['destination']['fields']['enlarge_canvas']['note_below'] =
+			$box['tabs']['first_tab']['fields']['enlarge_canvas']['note_below'] =
 				adminPhrase('This setting may be overwritten by the settings of the Nest.');
+		}
+		
+		//Don't show notes about translations if this won't be translated
+		if ($box['key']['isVersionControlled']
+		 || !checkRowExists('languages', array('translate_phrases' => 1))) {
+			unset($box['tabs']['text']['fields']['title']['note_below']);
+			unset($box['tabs']['text']['fields']['title']['show_phrase_icon']);
+			unset($box['tabs']['text']['fields']['text']['note_below']);
+			unset($box['tabs']['text']['fields']['text']['show_phrase_icon']);
+			unset($box['tabs']['text']['fields']['more_link_text']['note_below']);
+			unset($box['tabs']['text']['fields']['more_link_text']['show_phrase_icon']);
 		}
 		
 		break;

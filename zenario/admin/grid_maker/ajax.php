@@ -52,7 +52,11 @@ if (!empty($_REQUEST['data'])) {
 	}
 
 } elseif (!empty($_REQUEST['loadDataFromLayout'])) {
-	$data = zenario_grid_maker::readLayoutCode($_REQUEST['loadDataFromLayout']);
+	if (!empty($_REQUEST['id'])) {
+		$data = zenario_grid_maker::readLayoutCode($_REQUEST['id']);
+	} else {
+		$data = zenario_grid_maker::readLayoutCode($_REQUEST['loadDataFromLayout']);
+	}
 }
 
 if (is_array($data) && zenario_grid_maker::validateData($data)) {
@@ -348,11 +352,10 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		} else {
 			header('Content-Type: text/html; charset=UTF-8');
 			
-			/*
-			require_once(CMS_ROOT. 'zenario/adminheader.inc.php');
-			getCSSJSCodeHash();
-			$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
-			*/
+			//require_once(CMS_ROOT. 'zenario/adminheader.inc.php');
+			//checkForChangesInCssJsAndHtmlFiles();
+			//$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+			
 			echo
 			'<!DOCTYPE HTML>
 			<html>
@@ -364,8 +367,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 			echo $css;
 			
 			echo '
-				#main_container_preview {
-					background-image: url('. $imgBg. ');
+				div.main_container_preview {
+					background-image: url('. $imgBg. ') !important;
 				}';
 			
 			
@@ -384,7 +387,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 			
 		
 			
-			$previewBG = '<div id="main_container_preview" class="zenario_grid_bg_preview container container_';
+			$previewBG = '<div class="main_container_preview zenario_grid_bg_preview container container_';
 			
 			echo
 					str_replace(
@@ -392,8 +395,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 							'<div class="container container_',
 							'<div class="container-fluid container_'),
 						array(
-							'<div id="main_container_preview" class="zenario_grid_bg_preview container container_',
-							'<div id="main_container_preview" class="zenario_grid_bg_preview container-fluid container_'),
+							'<div class="main_container_preview zenario_grid_bg_preview container container_',
+							'<div class="main_container_preview zenario_grid_bg_preview container-fluid container_'),
 						str_replace("<!--php slot('", '<div class="zenario_grid_border">', str_replace(array("', 'grid'); -->", "', 'outside_of_grid'); -->", "'); -->"), '</div>',
 							str_replace('<'. '?', '<!--', str_replace('?'. '>', '-->', 
 								$html

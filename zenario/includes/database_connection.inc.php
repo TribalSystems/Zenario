@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -347,60 +347,356 @@ function syncSuperAdmin($adminIdG) {
 //
 
 
-//Include a checksum calculated from the modificaiton dates of any files in Core/Module directories
-//The intention is that if this is different, we know that there have been changes to the code on the server
-function getModuleCodeHash(&$modules, $dbUpdateSafemode = false) {
-	$dirs = array();
-	$modules = getRunningModules($dbUpdateSafemode);
+function checkForChangesInPhpFiles() {
 	
-	foreach ($modules as $module) {
-		foreach (array(
-			'/', 'fun/',
-			'classes/admin_boxes/', 'classes/organizer/',
-			'tuix/admin_boxes/', 'tuix/organizer/',
-			'tuix/admin_toolbar/', 'tuix/help/', 'tuix/slot_controls/'
-		) as $subDir) {
-			if ($dir = moduleDir($module['class_name'], $subDir, true, false, false)) {
-				$dirs[] = $dir;
+	//Safety catch - do not try to do anything if there is no database connection!
+	if (!cms_core::$lastDB) {
+		return;
+	}
+	
+	require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	
+	//Make sure we are in the CMS root directory.
+	//This should already be done, but I'm being paranoid...
+	chdir(CMS_ROOT);
+	
+	$time = time();
+	
+	//Get the date of the last time we ran this check and there was a change.
+	if (!($lastChanged = (int) setting('php_files_last_changed'))) {
+		//If this has never been run before then it must be run now!
+		$changed = true;
+	
+	//Otherwise, work out the time difference between that time and now
+	} else {
+		
+		try {
+			//Check to see if there are any .xml or .yaml files that have changed on the system
+			$find =
+				' -name "*.php"'.
+				' -not -path "./cache/*"'.
+				' -not -path "./public/*"'.
+				' -not -path "./private/*"'.
+				' -not -path "*/.*"'.
+				' -print'.
+				' | sed 1q';
+			
+			//If possble, try to use the UNIX shell
+			switch (PHP_OS) {
+				case 'Linux':
+					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					$useFallback = false;
+					break;
+				
+				case 'Darwin':
+					$ago = $time - $lastChanged;
+					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
+					$useFallback = false;
+					break;
+				
+				default:
+					$useFallback = true;
+			}
+	
+		} catch (Exception $e) {
+			$useFallback = true;
+		}
+		
+		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
+		if ($useFallback) {
+			$dirs = array('zenario', 'zenario/admin', 'zenario/api', 'zenario/includes');
+			foreach (array('', 'fun/', 'classes/admin_boxes/', 'classes/organizer/') as $dir) {
+				foreach (moduleDirs($dir) as $dir2) {
+					$dirs[] = $dir2;
+				}
+			}
+			
+			$changed = false;
+			foreach ($dirs as $dir) {
+				chdir(CMS_ROOT. $dir);
+					foreach (array_map('filemtime', scandir('.')) as $mtime) {
+						if ($mtime > $lastChanged) {
+							$changed = true;
+							break 2;
+						}
+					}
+				chdir(CMS_ROOT);
 			}
 		}
 	}
+	chdir(CMS_ROOT);
 	
-	//Also include the CMS's files if there have been modifications in SVN
-	foreach (array('admin/', 'api/', 'includes/', 'includes/fun/') as $subDir) {
-		$dirs[] = 'zenario/'. $subDir;
+	
+	if ($changed) {
+		setSetting('php_files_last_changed', $time);
+		setSetting('php_version', hash64(setting('site_id'). $time));
+	}
+}
+
+
+function checkForChangesInYamlFiles() {
+	
+	//Safety catch - do not try to do anything if there is no database connection!
+	if (!cms_core::$lastDB) {
+		return;
 	}
 	
-	$mTimes = '';
-	foreach ($dirs as $dir) {
-		chdir(CMS_ROOT. $dir);
-		$mTimes .= $dir. '-'. print_r(array_map('filemtime', scandir('.')), true);
+	//Make sure we are in the CMS root directory.
+	//This should already be done, but I'm being paranoid...
+	chdir(CMS_ROOT);
+	
+	$time = time();
+	
+	//Get the date of the last time we ran this check and there was a change.
+	if (!($lastChanged = (int) setting('yaml_files_last_changed'))) {
+		//If this has never been run before then it must be run now!
+		$changed = true;
+	
+	//Otherwise, work out the time difference between that time and now
+	} else {
+		
+		try {
+			//Check to see if there are any .xml or .yaml files that have changed on the system
+			$find =
+				' -path "*modules/*/tuix/*.*ml"'.
+				' -not -path "./cache/*"'.
+				' -not -path "./public/*"'.
+				' -not -path "./private/*"'.
+				' -not -path "*/.*"'.
+				' -print'.
+				' | sed 1q';
+			
+			//If possble, try to use the UNIX shell
+			switch (PHP_OS) {
+				case 'Linux':
+					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					$useFallback = false;
+					break;
+				
+				case 'Darwin':
+					$ago = $time - $lastChanged;
+					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
+					$useFallback = false;
+					break;
+				
+				default:
+					$useFallback = true;
+			}
+	
+		} catch (Exception $e) {
+			$useFallback = true;
+		}
+		
+		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
+		if ($useFallback) {
+			$changed = false;
+			foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer') as $type) {
+				foreach (moduleDirs('tuix/'. $type. '/') as $tuixDir) {
+					chdir(CMS_ROOT. $tuixDir);
+						foreach (array_map('filemtime', scandir('.')) as $mtime) {
+							if ($mtime > $lastChanged) {
+								$changed = true;
+								break 3;
+							}
+						}
+					chdir(CMS_ROOT);
+				}
+			}
+		}
 	}
 	chdir(CMS_ROOT);
 	
-	//Calculate a checksum from all of the times
-	$module_code_hash = base64_encode(sha1($mTimes, true));
 	
-	//Check to see if this checksum has changed
-	if ($module_code_hash != setting('module_code_hash')
-	 || setting('need_to_log_tuix_file_contents')) {
-		//If so, rescan the TUIX files, and come up with a list of what paths are in what files
+	if ($changed) {
+		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
+		require_once CMS_ROOT. 'zenario/adminheader.inc.php';
 		
-		//Hack to let this function be called from quick_ajax.php without errors:
-		//Don't do this if this if the logTUIXFileContents() function hasn't been included
-		if (function_exists('logTUIXFileContents')) {
-			logTUIXFileContents($modules);
-			deleteRow('site_settings', 'need_to_log_tuix_file_contents');
-		} else {
-			setRow('site_settings', array('value' => '1'), 'need_to_log_tuix_file_contents');
+		//Scan the TUIX files, and come up with a list of what paths are in what files
+		$tuixFiles = array();
+		$result = getRows('tuix_file_contents', true, array());
+		while ($tf = sqlFetchAssoc($result)) {
+			$key = $tf['module_class_name']. '/'. $tf['type']. '/'. $tf['filename'];
+			$key2 = $tf['path']. '//'. $tf['setting_group'];
+		
+			if (empty($tuixFiles[$key])) {
+				$tuixFiles[$key] = array();
+			}
+			$tuixFiles[$key][$key2] = $tf;
+		}
+	
+		$contents = array();
+		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer') as $type) {
+			foreach (moduleDirs('tuix/'. $type. '/') as $moduleClassName => $dir) {
+			
+				if ($type == 'organizer') {
+					$type = 'storekeeper';
+				}
+			
+				foreach (scandir($dir) as $file) {
+					if (substr($file, 0, 1) != '.') {
+						$key = $moduleClassName. '/'. $type. '/'. $file;
+						$filemtime = null;
+						$md5_file = null;
+						$changes = true;
+						$first = true;
+					
+						//Check the modification time and the checksum of the file. If either are the same as before,
+						//there's no need to update this row.
+						if (!empty($tuixFiles[$key])) {
+							foreach ($tuixFiles[$key] as $key2 => &$tf) {
+							
+								//Note that this is an array of arrays, but I only need to check the first one
+								if ($first) {
+									$filemtime = filemtime($dir. $file);
+								
+									if ($tf['last_modified'] == $filemtime) {
+										$changes = false;
+								
+									} else {
+										$md5_file = md5_file($dir. $file);
+									
+										if ($tf['checksum'] == $md5_file) {
+											$changes = false;
+										}
+									}
+								}
+							
+								//Note that this is an array of arrays, but I only need to check the first one
+								if (!$changes) {
+									$tf['status'] = 'unchanged';
+								}
+							}
+							unset($tf);
+						
+							if (!$changes) {
+								continue;
+							}
+						} else {
+							$tuixFiles[$key] = array();
+						}
+					
+						//If there have been changes, or if this is the first time we've seen this file,
+						//read it, then loop through it looking for all of the TUIX paths it contains
+							//Note that as we know there are changes, I'm overriding the normal timestamp logic in zenarioReadTUIXFile()
+						if (($tags = zenarioReadTUIXFile($dir. $file, false))
+						 && (!empty($tags))
+						 && (is_array($tags))) {
+						
+							if ($filemtime === null) {
+								$filemtime = filemtime($dir. $file);
+							}
+							if ($md5_file === null) {
+								$md5_file = md5_file($dir. $file);
+							}
+						
+							$pathsFound = false;
+							if ($type == 'storekeeper' || $type == 'organizer') {
+								//For Storekeeper, run zenarioAJAXShortenPath() to get their short paths
+								$paths = array();
+								logTUIXFileContentsR($paths, $tags, $type);
+							
+								foreach ($paths as $path => $dummy) {
+									$pathsFound = true;
+									$settingGroup = '';
+								
+									$key2 = $path. '//'. $settingGroup;
+									$tuixFiles[$key][$key2] = array(
+										'type' => $type,
+										'path' => $path,
+										'setting_group' => $settingGroup,
+										'module_class_name' => $moduleClassName,
+										'filename' => $file,
+										'last_modified' => $filemtime,
+										'checksum' => $md5_file,
+										'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
+									);
+								}
+							}
+						
+							if (!$pathsFound) {
+								//For anything else, just read the top-level path
+								//Note - also do this for Storekeeper if no paths were found above,
+								//as logTUIXFileContentsR() will miss files that have navigation definitions but no panel definitions
+								foreach ($tags as $path => &$tag) {
+								
+									$settingGroup = '';
+									if ($type == 'admin_boxes') {
+										if ($path == 'plugin_settings' && !empty($tag['module_class_name'])) {
+											$settingGroup = $tag['module_class_name'];
+									
+										} elseif ($path == 'advanced_search' && !empty($tag['storekeeper_path'])) {
+											$settingGroup = $tag['storekeeper_path'];
+									
+										} elseif ($path == 'site_settings' && !empty($tag['setting_group'])) {
+											$settingGroup = $tag['setting_group'];
+										}
+								
+									} elseif ($type == 'slot_controls') {
+										if (!empty($tag['module_class_name'])) {
+											$settingGroup = $tag['module_class_name'];
+										}
+									}
+								
+									$key2 = $path. '//'. $settingGroup;
+									$tuixFiles[$key][$key2] = array(
+										'type' => $type,
+										'path' => $path,
+										'setting_group' => $settingGroup,
+										'module_class_name' => $moduleClassName,
+										'filename' => $file,
+										'last_modified' => $filemtime,
+										'checksum' => $md5_file,
+										'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
+									);
+								}
+							}
+						}
+						unset($tags);
+					}
+				}
+			}
+		}
+	
+	
+	
+		//Loop through the array we've generated, and take actions as appropriate
+		foreach ($tuixFiles as $key => &$tuixFile) {
+			foreach ($tuixFile as $key2 => $tf) {
+			
+				//Where we could no longer find files, delete them
+				if (empty($tf['status'])) {
+					$sql = "
+						DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
+						WHERE type = '". sqlEscape($tf['type']). "'
+						  AND path = '". sqlEscape($tf['path']). "'
+						  AND setting_group = '". sqlEscape($tf['setting_group']). "'
+						  AND module_class_name = '". sqlEscape($tf['module_class_name']). "'
+						  AND filename = '". sqlEscape($tf['filename']). "'";
+					sqlSelect($sql);
+			
+				//Add/update newly added/edited files
+				} else if ($tf['status'] != 'unchanged') {
+					$sql = "
+						INSERT INTO ". DB_NAME_PREFIX. "tuix_file_contents
+						SET type = '". sqlEscape($tf['type']). "',
+							path = '". sqlEscape($tf['path']). "',
+							setting_group = '". sqlEscape($tf['setting_group']). "',
+							module_class_name = '". sqlEscape($tf['module_class_name']). "',
+							filename = '". sqlEscape($tf['filename']). "',
+							last_modified = ". (int) $tf['last_modified']. ",
+							checksum = '". sqlEscape($tf['checksum']). "'
+						ON DUPLICATE KEY UPDATE
+							last_modified = VALUES(last_modified),
+							checksum = VALUES(checksum)";
+					sqlSelect($sql);
+				}
+			
+			}
 		}
 		
-		//Store the results as a site setting, for quick access in visitor mode
-		setRow('site_settings', array('value' => $module_code_hash), 'module_code_hash');
-		cms_core::$siteConfig['module_code_hash'] = $module_code_hash;
+		setSetting('yaml_files_last_changed', $time);
+		setSetting('yaml_version', hash64(setting('site_id'). $time));
 	}
-	
-	return $module_code_hash;
 }
 
 //Get all existing modules
@@ -789,7 +1085,7 @@ function checkRowExists(
 	}
 }
 
-function setRow($table, $values, $ids = array(), $insertIfNotPresent = true) {
+function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $insertIgnore = false) {
 	$sqlW = '';
 	
 	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
@@ -854,7 +1150,7 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true) {
 	
 	} elseif ($insertIfNotPresent) {
 		$sql = '
-			INSERT INTO `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
+			INSERT '. ($insertIgnore? 'IGNORE ' : ''). 'INTO `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
 		
 		$first = true;
 		$hadColumns = array();

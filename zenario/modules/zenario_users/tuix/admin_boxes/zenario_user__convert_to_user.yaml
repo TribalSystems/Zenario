@@ -1,0 +1,125 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user__convert_to_user:
+    priv: _PRIV_CHANGE_USER_STATUS
+    key:
+        id: ""
+    max_height: "550"
+    tabs:
+        details:
+            label: Convert to user
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                activate_user_info:
+                    ord: 1
+                    full_width: 1
+                    snippet:
+                        html: "You are about to change this contact into an active user; this means that the user will be able to log in to a password-protected area of your site."
+                email: 
+                    label: "Email:"
+                    type: text
+                    read_only: true
+                    format_onchange: Yes
+                salutation: 
+                    label: "Salutation:"
+                    type: text
+                    read_only: true
+                first_name: 
+                    label: "First Name:"
+                    type: text
+                    read_only: true
+                last_name: 
+                    label: "Last Name:"
+                    type: text
+                    read_only: true
+                screen_name: 
+                    label: "Screen Name:"
+                    type: text
+                    maxlength: 50
+                    validation:
+                        required: "Please enter a screen name"
+                suggest_screen_name:
+                    same_row: true
+                    dataset_label: '[Suggest screen name button]'
+                    snippet:
+                        html: |
+                            <input type="button" value="Suggest" onclick="
+                                    screen_name_field = zenario.get('screen_name');
+                                    if (screen_name_field) {
+                                        screen_name_field.value = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {screen_name_suggestion: 1, first_name: zenario.get('first_name').value, last_name: zenario.get('last_name').value, email: zenario.get('email').value}, false, false);
+                                    }
+                            "/>
+                password:
+                    label: "Password:"
+                    type: password
+                    validation:
+                        required: "Please enter a password"
+                reveal_password:
+                    same_row: true
+                    value: Reveal
+                    dataset_label: '[Reveal password button]'
+                    type: toggle
+                    onclick: |
+                        var fields = zenarioAB.focus.tabs.details.fields,
+                            passwordEl = zenario.get('password'),
+                            passwordField = fields.password,
+                            revealEl = zenario.get('reveal_password'),
+                            revealField = fields.reveal_password,
+                            previouslyPressed = zenarioAB.value('reveal_password', 'details');
+                    
+                        if (passwordEl && revealEl) {
+                            passwordEl.type = 
+                            passwordField.type =
+                                previouslyPressed? 'password' : 'text';
+                            
+                            revealEl.value =
+                            revealField.current_value =
+                                previouslyPressed? 'Reveal' : 'Hide';
+                        }
+                suggest_password:
+                    same_row: true
+                    dataset_label: '[Suggest password button]'
+                    snippet:
+                        html: |
+                            <input type="button" value="Suggest" onclick="
+                                var password = zenario.nonAsyncAJAX('zenario/admin/quick_ajax.php', {password_suggestion: 1}, false, false),
+                                    passwordEl;
+                            
+                                if (passwordEl = zenario.get('password')) {
+                                    passwordEl.value = password;
+                                }
+                            "/>
+                password_needs_changing:
+                    priv: _PRIV_CHANGE_USER_PASSWORD
+                    label: "Ask user to change their password on next login"
+                    type: checkbox
+                    side_note: "When an extranet user next logs in to the site, they will be asked to change his password before he can access the extranet area."
+                terms_and_conditions_accepted:
+                    label: "User has accepted terms and conditions"
+                    side_note: "When checked, this indicates the user has accepted the site's terms and conditions; when unchecked, they will be asked to accept when they next logs in."
+                    type: checkbox
+                send_activation_email_to_user:
+                    label: 'Send activation email to User'
+                    type: checkbox
+                    side_note: "Send an activation email to the user with there login details on."
+                    visible_if: |
+                        zenarioAB.value('email', 'details')
+                email_to_send:
+                    label: 'Email Template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select an Email Template
+                    visible_if: |
+                        zenarioAB.value('send_activation_email_to_user', 'details')
+                        && zenarioAB.value('email', 'details')
+                    side_note: >
+                        An email based on the selected Email Template will be sent
+                        to the User.

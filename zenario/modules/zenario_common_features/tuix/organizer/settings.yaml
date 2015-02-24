@@ -43,6 +43,10 @@ zenario__administration:
                     name: Cookies
                     desc: "Settings that control when cookies are placed on a visitor's computer."
                     keywords: implied consent explicit consent message
+                datasets:
+                    name: Datasets
+                    desc: Settings for datasets.
+                    keywords: datasets data sets data-sets
                 date_and_time:
                     name: Date and Time
                     desc: Set the formats used when displaying dates and times.

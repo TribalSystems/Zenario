@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ if (!is_readable($location) || !is_file($location) || !($file['size'] = filesize
 }
 
 if ($filename === false) {
-	$filename = preg_replace('/([^.a-z0-9]+)/i', '_', basename($location));
+	$filename = preg_replace('/([^.a-z0-9\s]+)/i', '-', basename($location));
 }
 
 $file['filename'] = $filename;

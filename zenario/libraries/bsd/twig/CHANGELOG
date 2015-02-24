@@ -1,6 +1,34 @@
-* 1.15.0 (2013-XX-XX)
+* 1.16.1 (2014-10-10)
 
+ * improved error reporting in a sandboxed template
+ * fixed missing error file/line information under certain circumstances
+ * fixed wrong error line number in some error messages
+ * fixed the in operator to use strict comparisons
+ * sped up the slice filter
+ * fixed for mb function overload mb_substr acting different
+ * fixed the attribute() function when passing a variable for the arguments
+
+* 1.16.0 (2014-07-05)
+
+ * changed url_encode to always encode according to RFC 3986
+ * fixed inheritance in a 'use'-hierarchy
+ * removed the __toString policy check when the sandbox is disabled
+ * fixed recursively calling blocks in templates with inheritance
+
+* 1.15.1 (2014-02-13)
+
+ * fixed the conversion of the special '0000-00-00 00:00' date
+ * added an error message when trying to import an undefined block from a trait
+ * fixed a C extension crash when accessing defined but uninitialized property.
+
+* 1.15.0 (2013-12-06)
+
+ * made ignoreStrictCheck in Template::getAttribute() works with __call() methods throwing BadMethodCallException
+ * added min and max functions
  * added the round filter
+ * fixed a bug that prevented the optimizers to be enabled/disabled selectively
+ * fixed first and last filters for UTF-8 strings
+ * added a source function to include the content of a template without rendering it
  * fixed the C extension sandbox behavior when get or set is prepend to method name
 
 * 1.14.2 (2013-10-30)

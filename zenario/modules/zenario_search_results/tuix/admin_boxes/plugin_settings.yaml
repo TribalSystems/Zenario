@@ -1,200 +1,200 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-	tabs:
-		first_tab:
-			ord: "1"
-			label: Display
-			fields:
-				show_private_items:
-					plugin_setting:
-						name: show_private_items
-					label: 'Show private items:'
-					type: checkbox
-					value: "1"
-					format_onchange: Yes
-				hide_private_items:
-					plugin_setting:
-						name: hide_private_items
-					label: 'Private items:'
-					type: select
-					value: "1"
-					values:
-						1:
-							ord: "1"
-							label: >
-								Only show links to private content items to authorized
-								visitors
-						0:
-							ord: "2"
-							label: Show links to private content items to all visitors
-				data_field:
-					plugin_setting:
-						name: data_field
-					label: 'Show summary from:'
-					type: select
-					value: content_summary
-					values:
-						none:
-							ord: "1"
-							label: Do not show a summary
-						content_summary:
-							ord: "2"
-							label: "Item's summary"
-						description:
-							ord: "3"
-							label: "Item's description"
-				use_pagination:
-					plugin_setting:
-						name: use_pagination
-					label: 'Paginate:'
-					type: checkbox
-					value: "1"
-				pagination_style:
-					plugin_setting:
-						name: pagination_style
-					label: 'Pagination style:'
-					type: select
-					value: zenario_common_features::pagCloseWithNPIfNeeded
-				page_size:
-					plugin_setting:
-						name: page_size
-					label: 'Page size:'
-					type: text
-					validation:
-						numeric: Please enter a number for the Page Size.
-					value: "5"
-				enable_categories:
-					plugin_setting:
-						name: enable_categories
-					label: 'Enable searching by categories:'
-					type: checkbox
-					value: ""
-					note_below: >
-						Categories containing matching content items will be
-						displayed to the visitor so that he may refine his search.
-		weightings:
-			ord: "3"
-			label: Weightings
-			fields:
-				alias_weighting:
-					plugin_setting:
-						name: alias_weighting
-					label: 'Alias weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-				title_weighting:
-					plugin_setting:
-						name: title_weighting
-					label: 'Title weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _HIGH
-				keywords_weighting:
-					plugin_setting:
-						name: keywords_weighting
-					label: 'Keywords weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _MEDIUM
-				description_weighting:
-					plugin_setting:
-						name: description_weighting
-					label: 'Description weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-				content_summary_weighting:
-					plugin_setting:
-						name: content_summary_weighting
-					label: 'Content Summary weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-				content_weighting:
-					plugin_setting:
-						name: content_weighting
-					label: 'Content weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-				filename_weighting:
-					plugin_setting:
-						name: filename_weighting
-					label: 'Filename weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-				extract_weighting:
-					plugin_setting:
-						name: extract_weighting
-					label: 'File extract weighting:'
-					type: radios
-					values:
-						_NONE:
-							label: None
-						_LOW:
-							label: Low
-						_MEDIUM:
-							label: Medium
-						_HIGH:
-							label: High
-					value: _LOW
-	module_class_name: zenario_search_results
+    tabs:
+        first_tab:
+            ord: "1"
+            label: Display
+            fields:
+                show_private_items:
+                    plugin_setting:
+                        name: show_private_items
+                    label: 'Show private items:'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                hide_private_items:
+                    plugin_setting:
+                        name: hide_private_items
+                    label: 'Private items:'
+                    type: select
+                    value: "1"
+                    values:
+                        1:
+                            ord: "1"
+                            label: >
+                                Only show links to private content items to authorized
+                                visitors
+                        0:
+                            ord: "2"
+                            label: Show links to private content items to all visitors
+                data_field:
+                    plugin_setting:
+                        name: data_field
+                    label: 'Show summary from:'
+                    type: select
+                    value: content_summary
+                    values:
+                        none:
+                            ord: "1"
+                            label: Do not show a summary
+                        content_summary:
+                            ord: "2"
+                            label: "Item's summary"
+                        description:
+                            ord: "3"
+                            label: "Item's description"
+                use_pagination:
+                    plugin_setting:
+                        name: use_pagination
+                    label: 'Paginate:'
+                    type: checkbox
+                    value: "1"
+                pagination_style:
+                    plugin_setting:
+                        name: pagination_style
+                    label: 'Pagination style:'
+                    type: select
+                    value: zenario_common_features::pagCloseWithNPIfNeeded
+                page_size:
+                    plugin_setting:
+                        name: page_size
+                    label: 'Page size:'
+                    type: text
+                    validation:
+                        numeric: Please enter a number for the Page Size.
+                    value: "5"
+                enable_categories:
+                    plugin_setting:
+                        name: enable_categories
+                    label: 'Enable searching by categories:'
+                    type: checkbox
+                    value: ""
+                    note_below: >
+                        Categories containing matching content items will be
+                        displayed to the visitor so that he may refine his search.
+        weightings:
+            ord: "3"
+            label: Weightings
+            fields:
+                alias_weighting:
+                    plugin_setting:
+                        name: alias_weighting
+                    label: 'Alias weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+                title_weighting:
+                    plugin_setting:
+                        name: title_weighting
+                    label: 'Title weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _HIGH
+                keywords_weighting:
+                    plugin_setting:
+                        name: keywords_weighting
+                    label: 'Keywords weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _MEDIUM
+                description_weighting:
+                    plugin_setting:
+                        name: description_weighting
+                    label: 'Description weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+                content_summary_weighting:
+                    plugin_setting:
+                        name: content_summary_weighting
+                    label: 'Content Summary weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+                content_weighting:
+                    plugin_setting:
+                        name: content_weighting
+                    label: 'Content weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+                filename_weighting:
+                    plugin_setting:
+                        name: filename_weighting
+                    label: 'Filename weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+                extract_weighting:
+                    plugin_setting:
+                        name: extract_weighting
+                    label: 'File extract weighting:'
+                    type: radios
+                    values:
+                        _NONE:
+                            label: None
+                        _LOW:
+                            label: Low
+                        _MEDIUM:
+                            label: Medium
+                        _HIGH:
+                            label: High
+                    value: _LOW
+    module_class_name: zenario_search_results

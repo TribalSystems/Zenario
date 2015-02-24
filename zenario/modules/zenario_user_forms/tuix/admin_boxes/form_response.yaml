@@ -1,0 +1,15 @@
+---
+zenario_user_form_response:
+    title: "Form response"
+    hide_tab_bar: Yes
+    key:
+        id: ""
+    tabs:
+        form_fields:
+            label: Fields
+            edit_mode:
+                enabled: No
+            fields:
+                response_datetime:
+                    label: 'Date/Time Responded'
+                    type: text

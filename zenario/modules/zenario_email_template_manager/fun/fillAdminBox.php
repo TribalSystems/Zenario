@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -61,15 +61,15 @@ switch ($path) {
 		}
 
 		if ($box['key']['id']) {
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['path'] = 'zenario__email_template_manager/nav/email_templates/panel/item_buttons/images//'. (int) $box['key']['id']. '//';
+			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['path'] = 'zenario__email_template_manager/panels/email_templates/item_buttons/images//'. (int) $box['key']['id']. '//';
 			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['min_path'] =
 			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['max_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel';
+			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/panels/email_images_for_email_templates';
 		} else {
 			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['path'] =
 			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['min_path'] =
 			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['max_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel';
+			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/panels/email_images_shared';
 		}
 		
 		break;

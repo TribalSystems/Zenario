@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -78,9 +78,9 @@ class zenario_ctype_news extends module_base_class {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
-			case 'zenario__content/nav/content/panel':
-			case 'zenario__content/hidden_nav/chained/panel':
-			case 'zenario__content/hidden_nav/language_equivs/panel':
+			case 'zenario__content/panels/content':
+			case 'zenario__content/panels/chained':
+			case 'zenario__content/panels/language_equivs':
 				//...
 				
 				break;

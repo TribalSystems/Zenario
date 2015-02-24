@@ -4,7 +4,6 @@ zenario__administration:
     panels:
         custom_tabs_and_fields:
             disable_periodic_refresh: Yes
-            items: {}
             refiners:
                dataset_id: {}
             refiner_required: true
@@ -78,7 +77,7 @@ zenario__administration:
                     visible_if_for_all_selected_items: |
                         item.is_tab
                     css_class: zenario_create_a_new
-                    label: Create a field on the selected tab
+                    label: Create field on selected tab
                     admin_box:
                         path: zenario_custom_field
                     hide_in_select_mode: Yes
@@ -87,14 +86,14 @@ zenario__administration:
                     priv: _PRIV_MANAGE_DATASET
                     visible_if_for_all_selected_items: |
                         item.is_field && !item.is_system
-                    label: Properties
+                    label: Edit custom field properties
                     admin_box:
                         path: zenario_custom_field
                     hide_in_select_mode: Yes
                 
                 edit_tab:
                     priv: _PRIV_MANAGE_DATASET
-                    label: Properties
+                    label: Rename tab
                     visible_if_for_all_selected_items: |
                         item.is_tab && !item.is_system
                     admin_box:
@@ -103,7 +102,7 @@ zenario__administration:
                 
                 edit_system_tab:
                     priv: _PRIV_MANAGE_DATASET
-                    label: Properties
+                    label: Rename tab
                     visible_if_for_all_selected_items: |
                         !item.is_field && item.is_system
                     admin_box:
@@ -112,7 +111,7 @@ zenario__administration:
                 
                 edit_system_field:
                     priv: _PRIV_MANAGE_DATASET
-                    label: Properties
+                    label: Edit system field properties
                     visible_if_for_all_selected_items: |
                         item.is_field && item.is_system
                     admin_box:

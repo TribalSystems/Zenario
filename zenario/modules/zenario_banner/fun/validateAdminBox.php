@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -31,13 +31,22 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		
-		if ($changes['first_tab/alt_tag'] && !$values['first_tab/alt_tag']) {
+		if (!empty($fields['first_tab/alt_tag'])
+		 && empty($fields['first_tab/alt_tag']['hidden'])
+		 && $changes['first_tab/alt_tag']
+		 && !$values['first_tab/alt_tag']) {
 			$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter an alt-tag.');
 		}
-		if ($changes['first_tab/image_title'] && !$values['first_tab/image_title']) {
+		if (!empty($fields['first_tab/image_title'])
+		 && empty($fields['first_tab/image_title']['hidden'])
+		 && $changes['first_tab/image_title']
+		 && !$values['first_tab/image_title']) {
 			$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a title.');
 		}
-		if ($changes['first_tab/floating_box_title'] && !$values['first_tab/floating_box_title']) {
+		if (!empty($fields['first_tab/floating_box_title'])
+		 && empty($fields['first_tab/floating_box_title']['hidden'])
+		 && $changes['first_tab/floating_box_title']
+		 && !$values['first_tab/floating_box_title']) {
 			$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a floating box title attribute.');
 		}
 		

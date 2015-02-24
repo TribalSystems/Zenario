@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -86,7 +86,7 @@ zenarioO.columnWidths = {
 
 
 //Go to the "Content by Layout" panel by default
-zenarioO.defaultPath = 'zenario__content/nav/content/panel';
+zenarioO.defaultPath = 'zenario__content/panels/content';
 zenarioO.defaultPathInIframePreload = 'loading_message/panel';
 
 
@@ -928,8 +928,14 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		noReturnEnabled = engToBoolean(zenarioO.focus.no_return);
 	}
 	
-	zenarioO.path = path;
+	//This variable is used by dev tools to load dev information on the last panel
 	zenarioO.url = url + zenario.urlRequest(requests);
+	
+	//This variable is used later to launch a second AJAX request, if we need to repeat
+	//the same query with the same search/filters as before
+	zenarioO.lastRequests = requests;
+	
+	zenarioO.path = path;
 	zenarioO.voPath = viewOptionsPath;
 	zenarioO.defaultSortColumn = defaultSortColumn;
 	zenarioO.thisPageSize = thisPageSize;
@@ -977,6 +983,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		zenarioO.labelFormat = '[[' + zenarioO.defaultSortColumn + ']]';
 	}
 	zenarioO.popoutLabelFormat = zenarioO.focus.label_format_for_popouts;
+	zenarioO.boldColsInListView = zenarioO.focus.bold_columns_in_list_view || zenarioO.focus.label_format_for_picked_items || zenarioO.labelFormat;
 	
 	//Check if we have a column description, and set a default one if not
 	if (!zenarioO.focus.columns) {
@@ -1023,12 +1030,12 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 			zenarioO.view_mode = zenarioO.focus.view_mode;
 		
 		} else {
-			zenarioO.view_mode = 'grid';
+			zenarioO.view_mode = 'list';
 		}
 		
 		//Check that view_mode is a valid choice
 		if (zenarioO.view_mode !== 'grid' && zenarioO.view_mode !== 'list') {
-			zenarioO.view_mode = 'grid';
+			zenarioO.view_mode = 'list';
 		}
 	}
 	
@@ -1201,7 +1208,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	zenarioO.menuItems = {};
 	zenarioO.contentItems = {};
 	zenarioO.itemLinkRequestsLeft = 0;
-	zenarioO.shallowLinks = {'content_item': 'zenario__content/nav/content/panel', 'content_item_or_url': 'zenario__content/nav/content/panel', 'menu_item': 'zenario__menu/hidden_nav/menu_nodes/panel'};
+	zenarioO.shallowLinks = {'content_item': 'zenario__content/panels/content', 'content_item_or_url': 'zenario__content/panels/content', 'menu_item': 'zenario__menu/panels/menu_nodes'};
 	
 	foreach (contentTags as var lang) {
 		foreach (contentTags as var parent) {
@@ -1344,6 +1351,7 @@ zenarioO.go3 = function(goNum, searchTerm, backwards, runFunctionAfter) {
 	}
 	
 	zenarioO.setWrapperClass('loaded', true);
+	zenarioO.setWrapperClass('filters_set', zenarioO.filtersSet);
 	
 	if (runFunctionAfter) {
 		runFunctionAfter();
@@ -1508,7 +1516,7 @@ zenarioO.searchAndSortItems = function() {
 			zenarioO.searchMatches = 0;
 			var matchedItemsArray = [],
 				matchedItemsObject = {},
-				lowerCaseSearchTerm = zenarioO.searchTerm.toLowerCase(),
+				lowerCaseSearchTerm = zenarioO.searchTerm.toLowerCase? zenarioO.searchTerm.toLowerCase() : lowerCaseSearchTerm,
 				itemNo;
 			
 			foreach (zenarioO.sortedItems as itemNo) {
@@ -1813,25 +1821,36 @@ zenarioO.drawPanel = function() {
 	if (!bespoke && zenarioO.reorderingUsingOldMethod) {
 		$('#organizer_items_wrapper').sortable({
 			opacity: 0.8,
+			start: function() {
+				zenarioO.closeSlidedownView();
+			},
 			stop: function (sorted) {
 				//Handle the results of a reorder
 				
 				//Get a list of item ids in the new order
-				var newOrder = $('#organizer_items_wrapper').sortable('toArray', {attribute: 'data-id'});
-				var oldOrder = [];
-				var values = [];
-				var items = {};
-				var saves = '';
+				var newOrder = $('#organizer_items_wrapper').sortable('toArray', {attribute: 'data-id'}),
+					oldOrder = [],
+					values = [],
+					items = {},
+					saves = '',
+					itemNo,
+					i;
+				
+				//Remove any bad data; e.g. slide-down view <div>s
+				for (i = newOrder.length; i >= 0; --i) {
+					if (newOrder[i] === ''
+					 || newOrder[i] === undefined) {
+						newOrder.splice(i, 1);
+					}
+				}
 				
 				//Create an array of which items we can see
-				foreach (newOrder as var itemNo) {
-					var i = newOrder[itemNo];
+				foreach (newOrder as itemNo => i) {
 					items[i] = true;
 				}
 				
 				//Look through the searchedItems array and get their old order, and their value from the items array
-				foreach (zenarioO.searchedItems as var itemNo) {
-					var i = zenarioO.searchedItems[itemNo];
+				foreach (zenarioO.searchedItems as itemNo => i) {
 					if (items[i]) {
 						oldOrder.push(i);
 						values.push(zenarioO.focus.items[i][zenarioO.focus.reorder.column]);
@@ -1840,8 +1859,7 @@ zenarioO.drawPanel = function() {
 				
 				//Look through newOrder and oldOrder for any changes, and update those column
 				var actionRequests = zenarioO.getKey();
-				foreach (newOrder as var itemNo) {
-					var i = newOrder[itemNo];
+				foreach (newOrder as itemNo => i) {
 					if (i != oldOrder[itemNo]) {
 						saves += (saves? ',' : '') + i;
 						actionRequests['item__' + i] = values[itemNo];
@@ -2304,7 +2322,7 @@ zenarioO.itemClick = function(id, e, isCheckbox, useTimeOutIfDoubleClickEnabled)
 	zenarioO.itemClicked = true;
 	
 	if (isCheckbox) {
-		zenarioA.stop(e);
+		zenario.stop(e);
 	}
 	
 	if (!zenarioO.focus || !zenarioO.focus.items[id]) {
@@ -2643,7 +2661,7 @@ zenarioO.itemDoubleClick = function(id, e) {
 		return false;
 	}
 	
-	zenarioA.stop(e);
+	zenario.stop(e);
 	
 	//Stop multiple clicks
 	if (zenarioO.itemJustDoubleClicked) {
@@ -2869,31 +2887,45 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 };
 
 
-//In grid view, there is not much space for the labels, and long words would cut into the space of the next labels,
-//causing text to overlap and look horrible.
-//These two functions are used to try and put line-breaks in at appropriate places, to stop words getting too long
+//Given a long piece of text that doesn't wrap, attempt to add tiny spaces to force it to wrap at certain points
 zenarioO.applySmallSpaces = function(text) {
-	var pos, out = '';
+	var pos, piece, snipTo, out = '', wordLength = 25;
+	
+	//Firstly, do our best to spit between existing words, and anything else that would wrap normally
 	while ((pos = text.search(/([a-z][A-Z]|[a-zA-Z][^a-zA-Z\)]|[^a-zA-Z\(][a-zA-Z]|[0-9][^0-9\)]|[^0-9\(][0-9])/)) != -1) {
-		out += zenarioO.maxLengthString(htmlspecialchars(text.substr(0, pos + 1)), 15);
 		
-		if (text.substr(0, pos + 2).search(/\s/) == -1) {
-			out += '<span style="font-size: 1px;"> </span>';
+		//Spilt the text up into each piece.
+		//Where we spilt by a space, include the space as part of the piece before.
+		//If we split by something that wasn't a space, keep the non-space as part of the word after
+		if (text[pos + 1].match(/\s/) !== null) {
+			snipTo = pos + 2;
+		} else {
+			snipTo = pos + 1;
 		}
 		
-		text = text.substr(pos + 1);
+		piece = text.substr(0, snipTo);
+		text = text.substr(snipTo);
+		
+		//If this word is longer than the max length, forcible split it up.
+		out += zenarioO.maxLengthString(htmlspecialchars(piece, false, 'asis'), wordLength);
+		
+		//If there was no space in this piece, add one
+		if (piece.search(/\s/) == -1) {
+			out += '<span style="font-size: 1px;"> </span>';
+		}
 	}
 	
-	out += zenarioO.maxLengthString(htmlspecialchars(text), 15);
+	//If the last piece is longer than the max length, forcibly split it up.
+	out += zenarioO.maxLengthString(htmlspecialchars(text), wordLength);
 	
 	return out;
 };
 
-zenarioO.maxLengthString = function(text, length) {
+zenarioO.maxLengthString = function(text, wordLength) {
 	var out = '';
-	while (text.length > length) {
-		out += text.substr(0, length) + '<span style="font-size: 1px;"> </span>';
-		text = text.substr(length);
+	while (text.wordLength > wordLength) {
+		out += text.substr(0, wordLength) + '<span style="font-size: 1px;"> </span>';
+		text = text.substr(wordLength);
 	}
 	
 	out += text;
@@ -3787,197 +3819,38 @@ zenarioO.canSortColumn = function(c) {
 };
 
 zenarioO.canFilterColumn = function(c) {
-	
+	//Only allow filtering for columns in the database
 	if (!zenarioO.focus.columns[c].db_column
 	 || engToBoolean(zenarioO.focus.columns[c].server_side_only)
 	 || engToBoolean(zenarioO.focus.columns[c].disallow_filtering)) {
 		return false;
 	}
 	
-	if (zenarioO.focus.columns[c].format == 'date'
-	 || zenarioO.focus.columns[c].format == 'datetime'
-	 || zenarioO.focus.columns[c].format == 'datetime_with_seconds') {
-	} else if (zenarioO.focus.columns[c].format == 'yes_or_no') {
-	} else if (
-		(zenarioO.focus.columns[c].format == 'enum' && zenarioO.focus.columns[c].values)
-	 || zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_english_name'
-	 || zenarioO.focus.columns[c].format == 'language_local_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_local_name'
-	) {
-	} else if (engToBoolean(zenarioO.focus.columns[c].searchable)) {
-	} else {
+	//Catch the case where an enum column is missing its values - don't allow filtering here
+	if (zenarioO.focus.columns[c].format == 'enum' && !zenarioO.focus.columns[c].values) {
 		return false;
 	}
 	
-	return true;
+	switch (zenarioO.focus.columns[c].format) {
+		//Date and enum type fields are implemented as a drop-down select list or toggle.
+		//They should be filterable if an index has been created on that field.
+		case 'date':
+		case 'datetime':
+		case 'datetime_with_seconds':
+		case 'yes_or_no':
+		case 'enum':
+		case 'language_english_name_with_id':
+		case 'language_english_name':
+		case 'language_local_name_with_id':
+		case 'language_local_name':
+			return !engToBoolean(zenarioO.focus.columns[c].disallow_sorting);
+		
+		//Text type fields are implemented as a search box.
+		//They should be filterable if they are flagged as searchable.
+		default:
+			return engToBoolean(zenarioO.focus.columns[c].searchable);
+	}
 };
-
-/*zenarioO.setFilterOptions = function(c) {
-	
-	if (!zenarioO.canFilterColumn(c)) {
-		return false;
-	}
-	
-	var html =
-		'<div class="organizer_filterfields" id="organizer_filterfields">';
-	
-	zenarioAB.shownTab = 'cp';
-	zenarioAB.focus = {
-		tab: 'cp',
-		tabs: {
-			cp: {
-				edit_mode: {
-					on: true,
-					enabled: true,
-					always_on: true
-				},
-				fields: {}
-			}
-		}
-	};
-				
-	var filterType = false,
-		invertLink =
-			'<a class="' + (zenarioO.getFilterValue('not', c)? 'inverter not' : 'inverter') + '"' +
-				' title="' + phrase.invertFilter + '"' +
-				' onclick="zenarioO.invertFilter(this, \'' + htmlspecialchars(c) + '\', \'' + htmlspecialchars(zenarioO.focus.columns[c].format) + '\');">';
-	
-	if (zenarioO.focus.columns[c].format == 'date' || zenarioO.focus.columns[c].format == 'datetime') {
-		filterType = 'date';
-		zenarioAB.focus.tabs.cp.fields['date_after_col_' + c] = {
-			ord: 7,
-			label: phrase.after,
-			type: 'date',
-			_change_filter_on_change: true,
-			value: zenarioO.getFilterValue('date_after_col_', c)
-		};
-		zenarioAB.focus.tabs.cp.fields['date_before_col_' + c] = {
-			ord: 8,
-			label: phrase.before,
-			type: 'date',
-			_change_filter_on_change: true,
-			value: zenarioO.getFilterValue('date_before_col_', c)
-		};
-	
-	} else if (zenarioO.focus.columns[c].format == 'yes_or_no') {
-		filterType = 'yes_or_no';
-		
-		//Attempt to add a colon to the title of the column
-		var label = ('' + zenarioO.focus.columns[c].title);
-		if (label.indexOf(':') == -1) {
-			label += ':';
-			label = label.replace(/\s*:/, ':');
-		}
-		
-		zenarioAB.focus.tabs.cp.fields['yes_or_no_' + c] = {
-			ord: 7,
-			row_class: 'yes_or_no',
-			label: htmlspecialchars(label),
-			type: 'radios',
-			_change_filter_on_change: true,
-			values: {
-				'yes': {
-					ord: 1,
-					label: phrase.yes
-				},
-				'no': {
-					ord: 2,
-					label: phrase.no
-				}
-			},
-			value: zenarioO.getFilterValue('yes_or_no_', c)
-		};
-	
-	} else if (
-		(zenarioO.focus.columns[c].format == 'enum' && zenarioO.focus.columns[c].values)
-	 || zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_english_name'
-	 || zenarioO.focus.columns[c].format == 'language_local_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_local_name'
-	) {
-		filterType = 'enum';
-		var values;
-		
-		if (zenarioO.focus.columns[c].format == 'enum') {
-			//Get the list of values for this column, adding on an empty value if one is not present
-			values = zenarioO.focus.columns[c].values;
-			if (!values[''] && !values[0]) {
-				values = {};
-				values[''] = phrase.selectListSelect;
-				
-				foreach (zenarioO.focus.columns[c].values as var v) {
-					values[v] = zenarioO.focus.columns[c].values[v];
-				}
-			}
-		
-		} else {
-			values = {};
-			values[''] = phrase.selectListSelect;
-			
-			foreach (zenarioA.lang as var v) {
-				if (zenarioA.lang[v].enabled) {
-					values[v] = zenarioA.lang[v].name;
-					
-					if (zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-					 || zenarioO.focus.columns[c].format == 'language_local_name_with_id') {
-						values[v] += ' (' + v + ')';
-					}
-				}
-			}
-		}
-		
-		zenarioAB.focus.tabs.cp.fields['enum_' + c] = {
-			ord: 7,
-			row_class: 'enum',
-			label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.isnt : phrase.is) + '</a>',
-			type: 'select',
-			_change_filter_on_change: true,
-			values: values,
-			value: zenarioO.getFilterValue('enum_', c)
-		};
-	
-	} else if (engToBoolean(zenarioO.focus.columns[c].searchable)) {
-		filterType = 'search';
-		zenarioAB.focus.tabs.cp.fields['searchcol_' + c] = {
-			ord: 7,
-			label: invertLink + phrase.contains + '</a>',
-			type: 'text',
-			onkeyup: 'zenarioAB.changeFiltersAfterDelay();',
-			value: zenarioO.getFilterValue('searchcol_', c)
-		};
-	
-	} else {
-		return false;
-	}
-	
-	zenarioAB.focus.tabs.cp.fields['remove_filter_' + c] = {
-		ord: 9,
-		type: 'button',
-		same_row: true,
-		onclick: "zenarioO.clearFilter('" + jsEscape(c) + "'); zenarioA.closeBox('AdminColumnFilter'); zenarioO.refreshAndShowPage();",
-		'class': zenarioO.filterSetOnColumn(c)? 'organizer_remove_filter organizer_remove_filter_active' : 'organizer_remove_filter organizer_remove_filter_inactive',
-		value: phrase.clear
-	};
-	
-	zenarioAB.focus.tabs.cp.fields['close_filter_' + c] = {
-		ord: 9.1,
-		type: 'button',
-		same_row: true,
-		onclick: "zenarioA.closeBox('AdminColumnFilter'); zenarioO.refreshAndShowPage();",
-		'class': 'organizer_close_filter',
-		value: ''
-	};
-	
-	zenarioAB.sortTabs();
-	html += zenarioAB.draw2(true);
-	
-	html += '</div>';
-	
-	get('zenario_fbAdminColumnFilter').innerHTML = html;
-	zenario.addJQueryElements('#zenario_fbAdminColumnFilter ', true);
-	zenarioO.size(true);
-};*/
 
 zenarioO.showHideColumn = function(show, c) {
 	//Ignore requests to hide columns that are forced on
@@ -4762,7 +4635,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 								"zenarioO.selectedItems['" + htmlspecialchars(i) + "'] = true;" +
 								"zenarioO.saveSelection();" +
 								"zenarioO.go('" + htmlspecialchars(zenarioO.shallowLinks[item_link]) + "', true, {id: '" + htmlspecialchars(value) + "', name: 'following_item_link', languageId: '" + htmlspecialchars(zenarioO.itemLanguage(i)) + "'}, undefined, undefined, undefined, undefined, '" + htmlspecialchars(value) + "');" +
-								"return zenarioA.stop(event);" +
+								"return zenario.stop(event);" +
 							'"';
 					
 					} else if (item.navigation_path) {
@@ -6273,7 +6146,8 @@ zenarioO.setPanelItems = function() {
 	}
 	foreach (zenarioO.sortedColumns as colNo => c) {
 		
-		if (zenarioO.labelFormat.indexOf('[[' + c + ']]') !== -1) {
+		if (zenarioO.boldColsInListView == c
+		 || zenarioO.boldColsInListView.indexOf('[[' + c + ']]') !== -1) {
 			labelColumns[c] = true;
 		}
 		
@@ -6813,7 +6687,7 @@ zenarioO.setPanelItems = function() {
 };
 
 zenarioO.toggleSlidedownView = function(i, e) {
-	zenarioA.stop(e);
+	zenario.stop(e);
 	
 	if (zenarioO.inCloseUpView && i == zenarioO.itemToSelect) {
 		zenarioO.closeSlidedownView(i);
@@ -7070,7 +6944,7 @@ zenarioO.updateYourWorkInProgress = function() {
 				var url =
 						URLBasePath + 'zenario/admin/ajax.php' +
 						'?_json=1' +
-						'&path=zenario__content/nav/content/panel' +
+						'&path=zenario__content/panels/content' +
 						'&_sort_col=last_modified_datetime' +
 						'&_sort_desc=1' +
 						'&_start=0' +
@@ -7461,9 +7335,9 @@ zenarioO.size = function(refresh) {
 			
 			if (get('organizer_colsortfields')) {
 				if (zenario.browserIsIE(6)) {
-					get('organizer_colsortfields').style.height = (1*height - outerGap) + 'px';
+					get('organizer_colsortfields').style.height = (1*height - outerGap - 130) + 'px';
 				} else {
-					get('organizer_colsortfields').style.maxHeight = (1*height - outerGap) + 'px';
+					get('organizer_colsortfields').style.maxHeight = (1*height - outerGap - 130) + 'px';
 				}
 			}
 			

@@ -45,6 +45,7 @@ common_definitions:
         - boolean
         - number
         - string
+        - "null"
     ord: &ord
         type: number
         description: >
@@ -452,6 +453,8 @@ additionalProperties:
                                         - checkbox
                                         - checkboxes
                                         - code_editor
+                                        - color_picker
+                                        - colour_picker
                                         - date
                                         - datetime
                                         - editor
@@ -884,6 +887,7 @@ additionalProperties:
                                                 - content
                                                 - email_template
                                                 - file
+                                                - files
                                                 - menu_section
                                             static: true
                                             description: >
@@ -895,7 +899,8 @@ additionalProperties:
                                                     • categories (a comma-separated list of Categories),
                                                     • content (a Content Item),
                                                     • email_template,
-                                                    • file (an inline file or movie),
+                                                    • file (an inline file),
+                                                    • files (a comma-separated list of inline files),
                                                     • menu_section (a section in the Menu).
                                                 
                                                 Some Modules may add other values that you can use here.
@@ -1200,6 +1205,19 @@ additionalProperties:
                                             
                                             The Ace Editor (http://ace.c9.io/) is used to power these fields, and the language can be any
                                             language that Ace supports.
+                                    
+                                    color_picker_options:
+                                        type: object
+                                        description: >
+                                            If you create a color_picker type field, which are implemented using the spectrum library,
+                                            you can pass an options object using this property.
+                                            
+                                            See http://bgrins.github.io/spectrum/ for the available options.
+                                    
+                                    colour_picker_options:
+                                        type: object
+                                        description: >
+                                            Alias of color_picker_options. (But note you can't use both.)
                                     
                                     insert_image_button:
                                         type:

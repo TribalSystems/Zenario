@@ -1,103 +1,103 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_categories:
-	priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-	key:
-		id: ""
-		originalId: ""
-		equivId: ""
-		cType: ""
-	hide_tab_bar: false
-	tabs:
-		categories:
-			label: Categories
-			edit_mode:
-				enabled: true
-			fields:
-				desc:
-					full_width: true
-					snippet:
-						html: ""	
-				categories:
-					label: 'Categories:'
-					type: checkboxes
-					values: ""
-					checking_child_checks_parents: true
-					read_only: false
-				no_categories:
-					label: 'Categories:'
-					snippet:
-						html: No Categories have been created.
-		
-		
-	confirm:
-		message: ''
-		message_type: warning
-		button_message: Save
-		cancel_button_message: Cancel
-		
+    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+    key:
+        id: ""
+        originalId: ""
+        equivId: ""
+        cType: ""
+    hide_tab_bar: false
+    tabs:
+        categories:
+            label: Categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""    
+                categories:
+                    label: 'Categories:'
+                    type: checkboxes
+                    values: ""
+                    checking_child_checks_parents: true
+                    read_only: false
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: No Categories have been created.
+        
+        
+    confirm:
+        message: ''
+        message_type: warning
+        button_message: Save
+        cancel_button_message: Cancel
+        
 zenario_content_categories_add:
-	priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-	key:
-		id: ""
-		originalId: ""
-		equivId: ""
-		cType: ""
-	hide_tab_bar: false
-	tabs:
-		
-		categories_add:
-			label: Add categories
-			edit_mode:
-				enabled: true
-			fields:
-				desc:
-					full_width: true
-					snippet:
-						html: ""	
-				categories_add:
-					label: 'Add Categories:'
-					type: checkboxes
-					values: ""
-					checking_child_checks_parents: true
-				no_categories:
-					label: 'Categories:'
-					snippet:
-						html: No Categories have been created.
-				
-	confirm:
-		message: ''
-		message_type: warning
-		button_message: Save
-		cancel_button_message: Cancel
-		
+    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+    key:
+        id: ""
+        originalId: ""
+        equivId: ""
+        cType: ""
+    hide_tab_bar: false
+    tabs:
+        
+        categories_add:
+            label: Add categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""    
+                categories_add:
+                    label: 'Add Categories:'
+                    type: checkboxes
+                    values: ""
+                    checking_child_checks_parents: true
+                no_categories:
+                    label: 'Categories:'
+                    snippet:
+                        html: No Categories have been created.
+                
+    confirm:
+        message: ''
+        message_type: warning
+        button_message: Save
+        cancel_button_message: Cancel
+        
 zenario_content_categories_remove:
-	priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-	key:
-		id: ""
-		originalId: ""
-		equivId: ""
-		cType: ""
-	hide_tab_bar: false
-	tabs:
-		
-		categories_remove:
-			label: Remove categories
-			edit_mode:
-				enabled: true
-			fields:
-				desc:
-					full_width: true
-					snippet:
-						html: ""	
-				categories_remove:
-					label: 'Remove Categories:'
-					type: checkboxes
-					values: ""
-					checking_parent_checks_children: true
-		
-	confirm:
-		message: ''
-		message_type: warning
-		button_message: Save
-		cancel_button_message: Cancel
+    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+    key:
+        id: ""
+        originalId: ""
+        equivId: ""
+        cType: ""
+    hide_tab_bar: false
+    tabs:
+        
+        categories_remove:
+            label: Remove categories
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""    
+                categories_remove:
+                    label: 'Remove Categories:'
+                    type: checkboxes
+                    values: ""
+                    checking_parent_checks_children: true
+        
+    confirm:
+        message: ''
+        message_type: warning
+        button_message: Save
+        cancel_button_message: Cancel

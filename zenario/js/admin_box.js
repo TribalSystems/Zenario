@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -752,20 +752,13 @@ zenarioAB.drawFields = function() {
 	
 	zenarioAB.sliders = {};
 	zenarioAB.codeEditors = {};
+	zenarioAB.colourPickers = {};
 	
 	var tab = zenarioAB.focus.tab,
 		html = '',
 		buttonHTML = '';
 	
-	if (zenarioAB.savedAndContinued(tab)) {
-		buttonHTML =
-			'<div class="zenario_editCancelButton">' +
-				'<input class="submit_disabled" type="button" value="' +
-					phrase.undoChanges + 
-				'">' +
-			'</div>';
-	
-	} else if (zenarioAB.editCancelEnabled(tab)) {
+	if (!zenarioAB.savedAndContinued(tab) && zenarioAB.editCancelEnabled(tab)) {
 		buttonHTML =
 			'<div class="zenario_editCancelButton">' +
 				'<input class="submit" type="button" onclick="zenarioAB.changeMode(); return false;" value="' +
@@ -866,6 +859,7 @@ zenarioAB.drawFields = function() {
 zenarioAB.insertHTML = function(html) {
 	var id,
 		tab = get('zenario_abtab'),
+		details,
 		language;
 	
 	tab.innerHTML = html;
@@ -908,12 +902,12 @@ zenarioAB.insertHTML = function(html) {
 	
 	//Set up code editors
 	if (zenarioAB.codeEditors) {
-		foreach (zenarioAB.codeEditors as id) {
+		foreach (zenarioAB.codeEditors as id => details) {
 			var codeEditor = ace.edit(id);
 			codeEditor.session.setUseSoftTabs(false);
 			codeEditor.setShowPrintMargin(false);
 			
-			if (zenarioAB.codeEditors[id].readonly) {
+			if (details.readonly) {
 				codeEditor.setReadOnly(true);
 				codeEditor.setBehavioursEnabled(false);
 				//codeEditor.session.setOption("useWorker", false);
@@ -938,6 +932,12 @@ zenarioAB.insertHTML = function(html) {
 				}
 			}
 			
+		}
+	}
+	
+	if (zenarioAB.colourPickers) {
+		foreach (zenarioAB.colourPickers as id => details) {
+			$(get(id)).spectrum(details);
 		}
 	}
 };
@@ -1197,7 +1197,8 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 	var html = '',
 		hasSlider = false,
 		extraAtt = {'class': ''},
-		extraAttAfter = {};
+		extraAttAfter = {},
+		color_picker_options;
 	
 	if (field === undefined) {
 		field = zenarioAB.focus.tabs[tab].fields[id];
@@ -1485,6 +1486,14 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			extraAtt['class'] = ' zenario_embedded_ace_editor';
 			zenarioAB.codeEditors[id] = {readonly: readOnly, language: field.language};
 			
+		} else if (field.type == 'color_picker' || field.type == 'colour_picker') {
+			html += '<input';
+			extraAtt['class'] = ' zenario_color_picker';
+			color_picker_options = field.color_picker_options || field.colour_picker_options || {};
+			color_picker_options.disabled = readOnly;
+			color_picker_options.preferredFormat = color_picker_options.preferredFormat || 'hex';
+			zenarioAB.colourPickers[id] = color_picker_options;
+			
 		} else if (field.type == 'editor') {
 			html += '<textarea';
 			
@@ -1765,7 +1774,7 @@ zenarioAB.chooseFromDropbox = function(id) {
 					return false;
 				}
 			
-				values = field.current_value;
+				values = (field.current_value === undefined? field.value : field.current_value);
 				multiple_select = engToBoolean(field.upload.multi);
 				
 				foreach (data as i) {
@@ -1817,7 +1826,8 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 				return false;
 			}
 			
-			values = field.current_value;
+			values = (field.current_value === undefined? field.value : field.current_value);
+			
 			multiple_select = engToBoolean(field.upload.multi);
 			
 			foreach (responses as i) {
@@ -2011,7 +2021,7 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 	
 	var col = 0,
 		html = '',
-		v,
+		m, v,
 		lovField;
 	
 	if (level) {
@@ -2019,6 +2029,7 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 	}
 	
 	foreach (sortOrder as var i) {
+		m = {};
 		v = sortOrder[i];
 		
 		//Make sure the number is numeric if it looks numeric
@@ -2039,9 +2050,8 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 		}
 		
 		if ((!parent && !thisParent) || (parent == thisParent)) {
-			if (++col > cols) {
+			if (m.newRow = (++col > cols)) {
 				col = 1;
-				html += '<br/>';
 			}
 			
 			//Work out whether this should be checked
@@ -2116,34 +2126,20 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 				}
 			}
 			
+			//If I need different html in different places I might need to use:
+			//zenarioA.microTemplate(zenarioAB.templatePrefix + '_radio_or_checkbox', m)
 			
-			if (lovField.pre_field_html !== undefined) {
-				html += lovField.pre_field_html;
-			}
+			m.lovId = id + '___' + v;
+			m.lovField = lovField;
+			m.lovHTML = zenarioAB.drawField(tab, id, true, v, thisField, thisValue, false, tempReadOnly, sortOrder, lovField);
 			
-			
-			html += zenarioAB.drawField(tab, id, true, v, thisField, thisValue, false, tempReadOnly, sortOrder, lovField);
-			
-			
-			html +=
-				'<label for="' + htmlspecialchars(id + '___' + v) + '" id="label_for__' + htmlspecialchars(id + '___' + v) + '"> ' +
-					htmlspecialchars(lovField.label) +
-				'</label>';
-			
-			if (lovField.post_field_html !== undefined) {
-				html += lovField.post_field_html;
-			}
-			
-			if (lovField.note_below !== null
-			 && lovField.note_below !== undefined) {
-				html += '<div class="zenario_note_below">' + lovField.note_below + '</div>'
-			}
-			
-			
+			m.childrenHTML = '';
 			if (existingParents[v]) {
-				html += zenarioAB.hierarchicalBoxes(tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, v, $.extend(true, {}, parents), level + 1);
+				m.childrenHTML = zenarioAB.hierarchicalBoxes(tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, v, $.extend(true, {}, parents), level + 1);
 				col = 0;
 			}
+			
+			html += zenarioA.microTemplate('zenario_admin_box_radio_or_checkbox', m);
 		}
 	}
 	
@@ -2209,7 +2205,10 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 		for (var i = 0; i < sortedPickedItems.length; ++i) {
 			var item = sortedPickedItems[i][0],
 				label = sortedPickedItems[i][1],
+				numeric = item == 1 * item,
 				extension,
+				widthAndHeight,
+				path,
 				src,
 				mi = {
 					id: id,
@@ -2219,6 +2218,26 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 					last: i == sortedPickedItems.length - 1,
 					readOnly: readOnly,
 					tempReadOnly: tempReadOnly};
+			
+			//Attempt to work out the path to the item in Organizer, and include an "info" button there
+			//If this is a file upload, the info button shouldn't be shown for newly uploaded files;
+			//only files with an id should show the info button.
+			if (field.pick_items
+			 && (!field.upload || numeric)
+			 && (path = field.pick_items.path)
+			 && (path == field.pick_items.target_path || field.pick_items.min_path == field.pick_items.target_path)) {
+				
+				//No matter what the generated path was, there should always be two slashes between the selected item and the path
+				if (zenario.rightHandedSubStr(path, 2) == '//') {
+					path += item;
+				} else if (zenario.rightHandedSubStr(path, 1) == '/') {
+					path += '/' + item;
+				} else {
+					path += '//' + item;
+				}
+				
+				mi.organizerPath = path;
+			}
 			
 			
 			if (field.upload) {
@@ -2236,7 +2255,7 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 				mi.extension = extension;
 				
 				//Generate a link to the selected file
-				if (item == 1 * item) {
+				if (numeric) {
 					//If this is an existing file (with a numeric id), link by id
 					src = URLBasePath + 'zenario/file.php?id=' + item;
 				} else {
@@ -2246,11 +2265,22 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 			
 				//Check if this is an image that has been chosen
 				if (extension.match(/gif|jpg|jpeg|png/)) {
-					//If so, display a thumbnail that opens a colorbox when clicked
+					//For images, display a thumbnail that opens a colorbox when clicked
 					mi.thumbnail = {
 						onclick: "zenarioAB.showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "');",
 						src: src + "&sk=1"
 					};
+					
+					//Attempt to get the width and height from the label, and work out the correct
+					//width and height for the thumbnail.
+					//(The max is 180 by 120; this is the size of Organizer thumbnails and
+					// is also set in zenario/file.php)
+					widthAndHeight = ('' + label).match(/.*\[\s*(\d+)p?x?\s*[×x]\s*(\d+)p?x?\s*\]$/);
+					if (widthAndHeight && widthAndHeight[1] && widthAndHeight[2]) {
+						zenarioA.resizeImage(widthAndHeight[1], widthAndHeight[2], 180, 120, mi.thumbnail);
+					}
+					
+					
 				} else {
 					//Otherwise display a downlaod link
 					mi.adminDownload = src + "&adminDownload=1";
@@ -2640,7 +2670,8 @@ zenarioAB.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 zenarioAB.readField = function(f) {
 	var value = undefined,
 		tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[f];
+		field = zenarioAB.focus.tabs[tab].fields[f],
+		el;
 	
 	//Non-field types
 	if (!field || field.snippet || field.type == 'submit' || field.type == 'toggle') {
@@ -2698,7 +2729,7 @@ zenarioAB.readField = function(f) {
 		if (field.type == 'editor') {
 			if (window.tinyMCE) {
 				if (tinyMCE.get(f)) {
-					content = tinyMCE.get(f).getContent();
+					content = zenarioA.tinyMCEGetContent(tinyMCE.get(f));
 				}
 			}
 		} else if (field.type == 'code_editor') {
@@ -2721,12 +2752,23 @@ zenarioAB.readField = function(f) {
 	
 	//Normal fields
 	} else {
-		if (!readOnly && get(f)) {
+		if (!readOnly && (el = get(f))) {
 			if (field.type == 'checkbox' || field.type == 'radio') {
-				zenarioAB.focus.tabs[tab].fields[f].current_value = value = get(f).checked? true : false;
+				value = el.checked? true : false;
+			
+			} else if (field.type == 'color_picker' || field.type == 'colour_picker') {
+				//For colour pickers, make sure we get the colour in hex, as for some reason spectrum often
+				//loves to output values in hsv which isn't a supported format!
+				try {
+					value = $(el).spectrum('get').toHexString();
+				} catch (e) {
+					value = $(el).val();
+				}
+			
 			} else {
-				zenarioAB.focus.tabs[tab].fields[f].current_value = value = $(get(f)).val();
+				value = $(el).val();
 			}
+			zenarioAB.focus.tabs[tab].fields[f].current_value = value;
 		
 		} else {
 			delete zenarioAB.focus.tabs[tab].fields[f].current_value;

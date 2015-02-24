@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+function trackFileDownload($url) {
+	if (!empty($_SESSION['admin_userid'])) {
+		return '';
+	} else {
+		return "if (window.ga) ga('send', 'pageview', {'page' : '".jsEscape($url)."'});";
+	}
+}
 
 function addFileToDocstoreDir($usage, $location, $filename = false, $mustBeAnImage = false, $deleteWhenDone = true) {
 	return addFileToDatabase($usage, $location, $filename, $mustBeAnImage, $deleteWhenDone, true);

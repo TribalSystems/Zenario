@@ -116,10 +116,10 @@ zenario__content:
                     priv: _PRIV_MANAGE_TEMPLATE_SLOT
                     label: Insert plugin from library...
                     combine_items:
-                        path: zenario__modules/nav/modules/panel/refiners/slotable_only////
-                        target_path: zenario__modules/nav/instances/panel
-                        min_path: zenario__modules/nav/modules/panel
-                        max_path: zenario__modules/nav/instances/panel
+                        path: zenario__modules/panels/modules/refiners/slotable_only////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/plugins
                         one_to_one_choose_phrase: Insert plugin
                         request:
                             level: 2
@@ -133,10 +133,10 @@ zenario__content:
                     parent: insert_dropdown
                     label: Insert plugin from library...
                     combine_items:
-                        path: zenario__modules/nav/modules/panel/refiners/slotable_only////
-                        target_path: zenario__modules/nav/instances/panel
-                        min_path: zenario__modules/nav/modules/panel
-                        max_path: zenario__modules/nav/instances/panel
+                        path: zenario__modules/panels/modules/refiners/slotable_only////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/plugins
                         one_to_one_choose_phrase: Insert plugin
                         request:
                             level: 1
@@ -150,10 +150,10 @@ zenario__content:
                     parent: insert_dropdown
                     label: Show a different plugin on this content item...
                     combine_items:
-                        path: zenario__modules/nav/modules/panel/refiners/slotable_only////
-                        target_path: zenario__modules/nav/instances/panel
-                        min_path: zenario__modules/nav/modules/panel
-                        max_path: zenario__modules/nav/instances/panel
+                        path: zenario__modules/panels/modules/refiners/slotable_only////
+                        target_path: zenario__modules/panels/plugins
+                        min_path: zenario__modules/panels/modules
+                        max_path: zenario__modules/panels/plugins
                         one_to_one_choose_phrase: Insert plugin
                         request:
                             level: 1

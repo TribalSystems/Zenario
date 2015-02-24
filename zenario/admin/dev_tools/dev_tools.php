@@ -45,7 +45,7 @@ $prefix = '../../';
 CMSWritePageHead($prefix, false, false);
 
 
-getCSSJSCodeHash();
+checkForChangesInCssJsAndHtmlFiles();
 $v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
 
 echo '
@@ -57,6 +57,7 @@ CMSWritePageBody('', false);
 CMSWritePageFoot($prefix, false, false, false);
 
 echo '
+<script type="text/javascript" src="../../libraries/apache/docson/lib/marked.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libraries/mit/js-yaml/js-yaml.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libraries/public_domain/tv4/tv4.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libraries/public_domain/tv4/customised_messages.js?v=', $v, '"></script>';

@@ -20,6 +20,23 @@
 		<textarea name="html">{{htmlspecialchars(m.html)}}</textarea>
 	<% } %>
 	
+	<% if (m.type == 'slot') { %>
+		<div class="zenario_grid_slot_heights">
+			<% var h, heights = ['small', 'medium', 'large', 'xlarge', 'xxlarge']; %>
+			<% for (h in heights) { %>
+				<input type="radio" name="height" value="{{heights[h]}}"
+					id="zenario_grid_height_{{heights[h]}}"
+					{{(heights[h] == m.height || (h == 0 && !m.height)? 'checked="checked"' : '')}}
+				/>
+				<label for="zenario_grid_height_{{heights[h]}}">{{heights[h]}}</label>
+				<% if (h % 3 == 2) { %>
+					<br/>
+				<% } %>
+			<% } %>
+		</div>
+		<br/>
+	<% } %>
+	
 	<% if (m.type == 'grid_break' || m.type == 'grid_break_with_slot') { %>
 		<p>{{zenarioA.phrase.gridGridCSSClass}}</p>
 		<input type="text" name="grid_css_class" value="{{htmlspecialchars(m.grid_css_class)}}" maxlength="100"/>

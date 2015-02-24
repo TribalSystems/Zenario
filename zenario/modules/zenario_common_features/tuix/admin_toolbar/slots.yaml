@@ -1,27 +1,27 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 sections:
-	template:
-		buttons:
-			view_dropdown:
-				label: View
-				hide_when_children_are_not_visible: Yes
-				ord: 20
-			head:
-				label: HTML in head of page
-				parent: view_dropdown
-				tooltip: ''
-				admin_box:
-					path: zenario_head_foot_slot
-					key:
-						mode: head
-						level: layout
-			foot:
-				label: HTML at foot of page
-				parent: view_dropdown
-				tooltip: ''
-				admin_box:
-					path: zenario_head_foot_slot
-					key:
-						mode: foot
-						level: layout
+    template:
+        buttons:
+            view_dropdown:
+                label: View
+                hide_when_children_are_not_visible: Yes
+                ord: 20
+            head:
+                label: HTML in head of page
+                parent: view_dropdown
+                tooltip: ''
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: head
+                        level: layout
+            foot:
+                label: HTML at foot of page
+                parent: view_dropdown
+                tooltip: ''
+                admin_box:
+                    path: zenario_head_foot_slot
+                    key:
+                        mode: foot
+                        level: layout

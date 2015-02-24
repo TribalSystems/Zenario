@@ -31,5 +31,6 @@ tv4.addLanguage('en', {
 	ARRAY_UNIQUE: "Array items are not unique (indices {match1} and {match2})",
 	ARRAY_ADDITIONAL_ITEMS: "Additional items not allowed",
 	//Unrecognised properties
-	OBJECT_ADDITIONAL_PROPERTIES: "Unrecognised property"
+	OBJECT_ADDITIONAL_PROPERTIES: 'Warning: unrecognised property. You probably have a typo in the property name.\n' +
+		'If you are trying to add your own meta-data, please prefix your custom property names with "custom_" to avoid this warning.\n'
 });

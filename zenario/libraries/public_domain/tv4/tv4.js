@@ -325,6 +325,7 @@ ValidatorContext.prototype.validateType = function validateType(data, schema) {
 		altDataType2 = '';
 	
 	if (dataType == 'string'
+	 && data !== ''
 	 && data == 1 * data
 	 && data.replace(/[0-9\.]/g, '') == '') {
 		altDataType1 = dataType;

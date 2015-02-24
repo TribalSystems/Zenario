@@ -1,247 +1,184 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__users:
-	nav:
-		admins:
-			panel:
-				title: Administrators
-				no_items_message: This site has no Administrators. Click "Create" to create one.
-				view_mode: list
-				db_items:
-					table: '[[DB_NAME_PREFIX]]admins AS a'
-					id_column: a.id
-					custom_where_statement_if_no_refiner: "WHERE status != 'deleted'"
-				refiners:
-					active:
-						sql: "status != 'deleted'"
-					trashed:
-						sql: "status = 'deleted'"
-				label_format_for_grid_view: '[[first_name]] [[last_name]] ([[username]][[csuper]])'
-				columns:
-					username:
-						title: Username
-						db_column: a.username
-						show_by_default: Yes
-						searchable: Yes
-					first_name:
-						title: First Name
-						db_column: a.first_name
-						show_by_default: Yes
-						searchable: Yes
-					last_name:
-						title: Last Name
-						db_column: a.last_name
-						show_by_default: Yes
-						searchable: Yes
-					email:
-						title: Email
-						db_column: a.email
-						searchable: Yes
-					authtype:
-						title: Auth type
-						db_column: a.authtype
-						format: enum
-						values:
-							local: Local
-							super: Multi-site
-					csuper:
-						db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
-					status:
-						db_column: a.status
-						server_side_only: Yes
-					created_date:
-						title: Creation Date
-						db_column: a.created_date
-						format: date
-					last_login:
-						title: Last Login
-						db_column: a.last_login
-						format: date
-					last_login_ip:
-						title: Last Login IP Address
-						db_column: a.last_login_ip
-					last_platform:
-						title: Last platform
-						db_column: a.last_platform
-					last_browser:
-						title: Last browser
-						db_column: a.last_browser
-					last_browser_version:
-						title: Last browser version
-						db_column: a.last_browser_version
-					has_permissions:
-						title: Has Permissions
-						db_column: "1"
-						format: yes_or_no
-						
-					filename:
-						db_column: f.filename
-						table_join: >
-							LEFT JOIN [[DB_NAME_PREFIX]]files AS f
-							ON a.image_id = f.id
-							AND f.`usage` = 'admin'
-					checksum:
-						db_column: f.checksum
-						table_join: >
-							LEFT JOIN [[DB_NAME_PREFIX]]files AS f
-							ON a.image_id = f.id
-							AND f.`usage` = 'admin'
-					has_image:
-						format: yes_or_no
-						db_column: f.id IS NOT NULL
-						table_join: >
-							LEFT JOIN [[DB_NAME_PREFIX]]files AS f
-							ON a.image_id = f.id
-							AND f.`usage` = 'admin'
-						width: xxsmall
-					
-				quick_filter_buttons:
-					all:
-						label: 'All'
-						column: authtype
-						remove_filter: true
-					local:
-						label: 'Local'
-						column: authtype
-						value: local
-					super:
-						label: 'Multi-site'
-						column: authtype
-						value: super
+    panels:
+        administrators:
+            title: Administrators
+            no_items_message: This site has no Administrators. Click "Create" to create one.
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]admins AS a'
+                id_column: a.id
+                custom_where_statement_if_no_refiner: "WHERE status != 'deleted'"
+            refiners:
+                active:
+                    sql: "status != 'deleted'"
+                trashed:
+                    sql: "status = 'deleted'"
+            label_format_for_grid_view: '[[first_name]] [[last_name]] ([[username]][[csuper]])'
+            columns:
+                username:
+                    title: Username
+                    db_column: a.username
+                    show_by_default: Yes
+                    searchable: Yes
+                first_name:
+                    title: First Name
+                    db_column: a.first_name
+                    show_by_default: Yes
+                    searchable: Yes
+                last_name:
+                    title: Last Name
+                    db_column: a.last_name
+                    show_by_default: Yes
+                    searchable: Yes
+                email:
+                    title: Email
+                    db_column: a.email
+                    searchable: Yes
+                authtype:
+                    title: Auth type
+                    db_column: a.authtype
+                    format: enum
+                    values:
+                        local: Local
+                        super: Multi-site
+                csuper:
+                    db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
+                status:
+                    db_column: a.status
+                    server_side_only: Yes
+                created_date:
+                    title: Creation Date
+                    db_column: a.created_date
+                    format: date
+                last_login:
+                    title: Last Login
+                    db_column: a.last_login
+                    format: date
+                last_login_ip:
+                    title: Last Login IP Address
+                    db_column: a.last_login_ip
+                last_platform:
+                    title: Last platform
+                    db_column: a.last_platform
+                last_browser:
+                    title: Last browser
+                    db_column: a.last_browser
+                last_browser_version:
+                    title: Last browser version
+                    db_column: a.last_browser_version
+                has_permissions:
+                    title: Has Permissions
+                    db_column: "1"
+                    format: yes_or_no
+                    
+                filename:
+                    db_column: f.filename
+                    table_join: >
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        ON a.image_id = f.id
+                        AND f.`usage` = 'admin'
+                checksum:
+                    db_column: f.checksum
+                    table_join: >
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        ON a.image_id = f.id
+                        AND f.`usage` = 'admin'
+                has_image:
+                    format: yes_or_no
+                    db_column: f.id IS NOT NULL
+                    table_join: >
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        ON a.image_id = f.id
+                        AND f.`usage` = 'admin'
+                    width: xxsmall
+                
+            quick_filter_buttons:
+                all:
+                    label: 'All'
+                    column: authtype
+                    remove_filter: true
+                local:
+                    label: 'Local'
+                    column: authtype
+                    value: local
+                super:
+                    label: 'Multi-site'
+                    column: authtype
+                    value: super
 
-				item:
-					css_class: admin_item
-				collection_buttons:
-					create:
-						priv: _PRIV_CREATE_ADMIN
-						css_class: zenario_create_a_new
-						label: Create a local admininstrator
-						hide_on_refiner: trashed
-						hide_in_select_mode: Yes
-						admin_box:
-							path: zenario_admin
-				item_buttons:
-					edit:
-						ord: "1"
-						priv: _PRIV_VIEW_ADMIN
-						label: Properties
-						hide_in_select_mode: Yes
-						admin_box:
-							path: zenario_admin
-					
-					image_dropdown:
-						hide_in_select_mode: Yes
-						label: Image
-						hide_when_children_are_not_visible: Yes
-					upload_image:
-						label: Upload an image
-						hide_in_select_mode: Yes
-						parent: image_dropdown
-						priv: _PRIV_EDIT_ADMIN
-						tooltip: |
-							Upload an image|
-							You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for this Admin.<br/>
-						upload:
-							fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-							fileDesc: Images
-							request:
-								upload_image: Yes
-						without_traits:
-							has_image: Yes
-					view_image:
-						parent: image_dropdown
-						ord: "50"
-						label: View image
-						popout:
-							href: zenario/file.php?usage=admin
-						traits:
-							has_image: Yes
-					replace_image:
-						hide_in_select_mode: Yes
-						parent: image_dropdown
-						ord: "51"
-						priv: _PRIV_EDIT_ADMIN
-						label: Upload a new image
-						tooltip: |
-							Upload a new image|
-							You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an image for this user.<br/>
-							Your new image will replace the existing one.
-						upload:
-							fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-							fileDesc: Images
-							request:
-								upload_image: Yes
-						traits:
-							has_image: Yes
-					delete_image:
-						hide_in_select_mode: Yes
-						parent: image_dropdown
-						ord: "52"
-						priv: _PRIV_EDIT_ADMIN
-						label: Remove image
-						ajax:
-							confirm:
-								message: 'Are you sure you want to remove the image from admin "[[username]]"?'
-								button_message: Remove
-								cancel_button_message: Cancel
-								message_type: warning
-							request:
-								delete_image: "1"
-						traits:
-							has_image: Yes
-					
-					action_dropdown:
-						label: Actions
-						multiple_select: Yes
-						hide_when_children_are_not_visible: Yes
-					restore_admin:
-						parent: action_dropdown
-						priv: _PRIV_DELETE_ADMIN
-						label: Restore
-						multiple_select: Yes
-						multiple_select_tooltip: Restore the selected local administrators
-						hide_in_select_mode: Yes
-						only_show_on_refiner: trashed
-						ajax:
-							confirm:
-								message: 'Are you sure you wish to restore the local administrator "[[username]]"?'
-								multiple_select_message: >
-									Are you sure you wish to restore the selected local
-									administrators?
-								button_message: Restore
-								cancel_button_message: Cancel
-								message_type: warning
-							request:
-								restore: "1"
-						traits:
-							local: yes
-							trashed: yes
-					trash_admin:
-						parent: action_dropdown
-						priv: _PRIV_DELETE_ADMIN
-						label: Trash
-						hide_in_select_mode: Yes
-						multiple_select: Yes
-						multiple_select_tooltip: Trash the selected local administrators
-						ajax:
-							confirm:
-								message: 'Are you sure you wish to trash the Local Administrator "[[username]]"?'
-								multiple_select_message: >
-									Are you sure you wish to trash the selected local
-									administrators?
-								button_message: Trash
-								cancel_button_message: Cancel
-								message_type: warning
-							request:
-								trash: "1"
-						traits:
-							local: yes
-							active: yes
-						without_traits:
-							current_admin: yes
-				default_sort_column: username
-				trash:
-					link:
-						path: zenario__users/nav/admins/panel
-						refiner: trashed
-						branch: Yes
+            item:
+                css_class: admin_item
+            collection_buttons:
+                create:
+                    priv: _PRIV_CREATE_ADMIN
+                    css_class: zenario_create_a_new
+                    label: Create a local admininstrator
+                    hide_on_refiner: trashed
+                    hide_in_select_mode: Yes
+                    admin_box:
+                        path: zenario_admin
+            item_buttons:
+                edit:
+                    ord: "1"
+                    priv: _PRIV_VIEW_ADMIN
+                    label: Properties
+                    hide_in_select_mode: Yes
+                    admin_box:
+                        path: zenario_admin
+                action_dropdown:
+                    label: Actions
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
+                restore_admin:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_ADMIN
+                    label: Restore
+                    multiple_select: Yes
+                    multiple_select_tooltip: Restore the selected local administrators
+                    hide_in_select_mode: Yes
+                    only_show_on_refiner: trashed
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to restore the local administrator "[[username]]"?'
+                            multiple_select_message: >
+                                Are you sure you wish to restore the selected local
+                                administrators?
+                            button_message: Restore
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            restore: "1"
+                    traits:
+                        local: yes
+                        trashed: yes
+                trash_admin:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_ADMIN
+                    label: Trash
+                    hide_in_select_mode: Yes
+                    multiple_select: Yes
+                    multiple_select_tooltip: Trash the selected local administrators
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to trash the Local Administrator "[[username]]"?'
+                            multiple_select_message: >
+                                Are you sure you wish to trash the selected local
+                                administrators?
+                            button_message: Trash
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            trash: "1"
+                    traits:
+                        local: yes
+                        active: yes
+                    without_traits:
+                        current_admin: yes
+            default_sort_column: username
+            trash:
+                link:
+                    path: zenario__users/panels/administrators
+                    refiner: trashed
+                    branch: Yes

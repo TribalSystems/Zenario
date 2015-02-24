@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,9 @@ $actionsL = array();
 $actionsG = array();
 $adminIdL = false;
 $image = false;
+
+//Check if the database schema is reasonably up to date
+connectLocalDB();
 $result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "admins WHERE Field = 'image_id'");
 $dbAtRecentRevision = sqlFetchRow($result);
 

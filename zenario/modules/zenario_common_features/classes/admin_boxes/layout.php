@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -57,6 +57,10 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			$box['tabs']['template']['fields']['skin_id']['value'] = $details['skin_id'];
 			$box['tabs']['template']['fields']['content_type']['value'] = $details['content_type'];
 			$box['tabs']['css']['fields']['css_class']['value'] = $details['css_class'];
+			$box['tabs']['css']['fields']['background_image']['value'] = $details['bg_image_id'];
+			$box['tabs']['css']['fields']['bg_color']['value'] = $details['bg_color'];
+			$box['tabs']['css']['fields']['bg_position']['value'] = $details['bg_position'];
+			$box['tabs']['css']['fields']['bg_repeat']['value'] = $details['bg_repeat'];
 			
 			if ($box['key']['duplicate']) {
 				$box['title'] = adminPhrase('Duplicating the layout "[[id_and_name]]".', $details);
@@ -82,7 +86,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 
 		
 		$box['tabs']['template']['fields']['skin_id']['pick_items']['path'] = 
-			'zenario__layouts/nav/template_families/panel/hidden_nav/view_usable_skins//'. encodeItemIdForStorekeeper($box['key']['family_name']). '//';
+			'zenario__layouts/panels/template_families/hidden_nav/view_usable_skins//'. encodeItemIdForStorekeeper($box['key']['family_name']). '//';
 		
 		//For new Layouts, check how many possible Skins there are for this Template Family.
 		//If there is only one possible choice, choose it by default.
@@ -172,7 +176,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 					//If successful, note down the new name
 					$layout['file_base_name'] = $newName;
 					
-					getCSSJSCodeHash($updateDB = true, $forceScan = true);
+					checkForChangesInCssJsAndHtmlFiles($forceScan = true);
 				
 				} else {
 					//If duplicating, don't allow the duplication when the files could not be copied
@@ -205,7 +209,21 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 		if (engToBooleanArray($box['tabs']['css'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE') && $box['key']['id']) {
 			$vals = array();
 			$vals['css_class'] = $values['css/css_class'];
+			
+			if (($filepath = getPathOfUploadedFileInCacheDir($values['css/background_image']))
+			 && ($imageId = addFileToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+				$vals['bg_image_id'] = $imageId;
+			} else {
+				$vals['bg_image_id'] = $values['css/background_image'];
+			}
+			
+			$vals['bg_color'] = $values['css/bg_color'];
+			$vals['bg_position'] = $values['css/bg_position']? $values['css/bg_position'] : null;
+			$vals['bg_repeat'] = $values['css/bg_repeat']? $values['css/bg_repeat'] : null;
+			
 			saveTemplate($vals, $box['key']['id']);
+			
+			deleteUnusedBackgroundImages();
 		}
 	}
 }

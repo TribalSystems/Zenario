@@ -1,0 +1,36 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_newsletter_template:
+    title: "Creating a newsletter template"
+    hide_tab_bar: true
+    key:
+        id: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: Yes
+                enabled: Yes
+            fields:
+                name:
+                    label: 'Template Name:'
+                    type: text
+                    maxlength: "255"
+                    validation:
+                        required: Please enter a name for this newsletter template
+                body:
+                    full_width: Yes
+                    type: editor
+                    style: 'width: 98%;'
+                    rows: "30"
+                    insert_image_button:
+                        pick_items:
+                            path: ""
+                            target_path: ""
+                            min_path: ""
+                            max_path: ""
+                            disallow_refiners_looping_on_min_path: Yes
+                    insert_link_button:
+                        exists: Yes
+                

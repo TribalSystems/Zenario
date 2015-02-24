@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -64,11 +64,11 @@ if (!empty($_REQUEST['_get_data_revision'])) {
 	//Add a calculation of the Module hash, as if there are code changes we'll want this to report a different number
 	//In admin mode this is calcuated each time; in Visitor mode we'll just use the cached value
 	if (!empty($_REQUEST['admin'])) {
-		$modules = array();
-		echo getModuleCodeHash($modules, $dbUpdateSafemode = true), '___';
-	} else {
-		echo setting('module_code_hash'), '___';
+		checkForChangesInYamlFiles();
+		checkForChangesInPhpFiles();
 	}
+	echo setting('yaml_version'), '___';
+	echo setting('php_version'), '___';
 	
 	//Report the current data revision to the client
 	$sql = "

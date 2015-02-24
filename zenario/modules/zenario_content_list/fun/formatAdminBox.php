@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
+		$fields['each_item/author_canvas']['hidden'] = !$values['each_item/show_author_image'];
+		$fields['each_item/author_width']['hidden'] =
+			$fields['each_item/author_canvas']['hidden'] ||
+				!in($values['each_item/author_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
+				 
+		$fields['each_item/author_height']['hidden'] = 
+			$fields['each_item/author_canvas']['hidden'] ||
+				!in($values['each_item/author_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+		
+		$fields['each_item/author_offset']['hidden'] = 
+			$fields['each_item/author_canvas']['hidden'] ||
+				$values['each_item/author_canvas'] != 'resize_and_crop';
+		
+		
 		if ($values['show_headings'] != 1) {
 			$fields['heading_if_items']['hidden'] = true;
 		} else {

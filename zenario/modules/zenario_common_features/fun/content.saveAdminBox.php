@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -104,11 +104,27 @@ if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'])
 	}
 }
 
-//Set the Layout and Skin
+//Set the Layout
 if (engToBooleanArray($box, 'tabs', 'template', 'edit_mode', 'on')
  && checkPriv('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
 	$newLayoutId = $values['template/layout_id'];
-	$version['css_class'] = $values['template/css_class'];
+}
+
+//Save the CSS and background
+if (engToBooleanArray($box, 'tabs', 'css', 'edit_mode', 'on')
+ && checkPriv('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $box['key']['cID'], $box['key']['cType'])) {
+	$version['css_class'] = $values['css/css_class'];
+	
+	if (($filepath = getPathOfUploadedFileInCacheDir($values['css/background_image']))
+	 && ($imageId = addFileToDatabase('background_image', $filepath, false, $mustBeAnImage = true))) {
+		$version['bg_image_id'] = $imageId;
+	} else {
+		$version['bg_image_id'] = $values['css/background_image'];
+	}
+	
+	$version['bg_color'] = $values['css/bg_color'];
+	$version['bg_position'] = $values['css/bg_position']? $values['css/bg_position'] : null;
+	$version['bg_repeat'] = $values['css/bg_repeat']? $values['css/bg_repeat'] : null;
 }
 
 //Save the chosen file, if a file was chosen
@@ -180,6 +196,10 @@ if ($box['key']['translate']) {
 			  AND mn.content_type = '". sqlEscape($box['key']['cType']). "'";
 		sqlQuery($sql);
 	}
+}
+
+if (isset($version['bg_image_id'])) {
+	deleteUnusedBackgroundImages();
 }
 
 return false;

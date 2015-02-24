@@ -282,8 +282,10 @@ diagnostics:
                     row_class: warning
                     snippet:
                         html: |
-                            Apache mod_rewrite support for <code>.htaccess</code> files is not enabled
-                            (this is optional, but recommended)
+                            Friendly URLs are not supported (this is optional, but recommended).
+                            
+                            Please check your Apache configuration (that the mod_rewrite module is enabled),
+                            and that your Zenario directory contains the .htaccess file.
                     hide_on_install: true
                     visible_if: |
                         zenarioAB.togglePressed() && !zenarioA.isHtaccessWorking()

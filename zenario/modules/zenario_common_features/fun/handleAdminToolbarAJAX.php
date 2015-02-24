@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ if (request('mID') && post('menu_item')) {
 	
 	} else {
 		//Most of the logic for Menu Nodes is already included for Storekeeper, so include those functions
-		$this->handleOrganizerPanelAJAX('zenario__menu/hidden_nav/menu_nodes/panel', request('mID'), $ids, false, false);
+		$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', request('mID'), $ids, false, false);
 	}
 
 } elseif (post('rollback')) {
@@ -86,7 +86,7 @@ if (request('mID') && post('menu_item')) {
 
 } else {
 	//Most of the logic for Content is already included for Storekeeper, so include those functions
-	$this->handleOrganizerPanelAJAX('zenario__content/nav/content/panel', $cType. '_'. $cID, $ids, false, false);
+	$this->handleOrganizerPanelAJAX('zenario__content/panels/content', $cType. '_'. $cID, $ids, false, false);
 }
 
 return false;

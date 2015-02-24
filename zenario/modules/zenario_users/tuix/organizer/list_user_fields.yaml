@@ -1,0 +1,58 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    panels:
+        all_fields:
+            title: User fields
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No user fields have been created
+            columns:
+                label:
+                    title: Label
+        boolean_and_list_only:
+            title: Checkbox, radio-group and select-list type fields
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No fields of this type have been created
+            columns:
+                label:
+                    title: Label
+        text_only:
+            title: Text type fields
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No fields of this type have been created
+            columns:
+                label:
+                    title: Label
+        country_only:
+            title: Country picker fields
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No fields of this type have been created
+            columns:
+                label:
+                    title: Label
+        boolean_and_groups_only:
+            title: Groups or checkbox fields
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No fields of this type have been created
+            columns:
+                label:
+                    title: Label
+        groups_only:
+            title: Groups
+            view_mode: list
+            disable_grid_view: true
+            default_sort_column: label
+            no_items_message: No groups have been created
+            columns:
+                label:
+                    title: Label

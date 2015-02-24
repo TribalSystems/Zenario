@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Extranet Logout
+description: |
+    <p>This Module allows Extranet Users to log out of your site.</p>
+            <p>When you install this Module it will automatically create a Logout page on your site.</p>
+            <p>The default behaviour is to have just one Logout page,
+                however you may create a Logout page for each Language on your site
+                by creating translations of the original Logout page in each Language.</p>
+             <p>Users can then log out of the Extranet system by navigating to the Logout page.</p>
+keywords: extranet, logout, user
+vlp_class_name: zenario_extranet_logout
+css_class_name: zenario_extranet_logout
+is_pluggable: Yes
+default_framework: standard
+special_pages:
+    special_page:
+        page_type: zenario_logout
+        default_alias: logout
+        default_title: Logout
+        footer_menu_title: Logout
+        only_show_to_visitors_who_are_logged_in: Yes
+        logic: create_and_maintain_in_default_language
+dependencies:
+    zenario_extranet: Yes
+default_instance_name: Extranet Logout

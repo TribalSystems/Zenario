@@ -162,7 +162,7 @@ full_slot:
                 edit: true
                 layout: true
             onclick: >
-                if (zenarioA.draft(this.id)) {
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to hide this ~plugin~ on this content item?', 'Hide')) {
                     zenarioA.hidePlugin(this, slotName);
                 }
                 return false;
@@ -181,7 +181,7 @@ full_slot:
             page_modes:
                 edit: true
             onclick: >
-                if (zenarioA.draft(this.id)) {
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to remove this ~plugin~?', 'Remove')) {
                     zenarioA.removePlugin(this, slotName, 1);
                 }
                 return false;

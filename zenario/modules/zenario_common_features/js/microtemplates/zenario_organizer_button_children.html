@@ -2,7 +2,13 @@
 		{{m.css_class|escape}}
 		{{m.disabled? 'organizer_button_disabled' : ''}}
 	">
-		<a href="{{zenario.ifNull(m.href, '#')|escape}}" title="{{m.tooltip|escape}}" onclick="{{m.onclick}}">
+		<a
+			title="{{m.tooltip|escape}}"
+			onclick="{{m.onclick}}"
+			<% if (m.href) { %>
+				href="{{m.href|escape}}"
+			<% } %>
+		>
 			<span>{{m.label|escape}}</span>
 		</a>
 	</li>

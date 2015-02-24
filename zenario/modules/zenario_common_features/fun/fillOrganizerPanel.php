@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	
-	case 'zenario__menu/hidden_nav/sections/panel':
+	case 'zenario__menu/panels/sections':
 		if (get('refiner__language')) {
 			$panel['title'] = adminPhrase('Menu sections (language [[lang]])', array('lang' => getLanguageName(get('refiner__language'))));
 		}
@@ -55,7 +55,7 @@ switch ($path) {
 			). '"></iframe>';
 		
 		break;
-	case 'zenario__content/nav/hierarchical_files/panel':
+	case 'zenario__content/panels/documents':
 		
 		if (isset($panel['item_buttons']['autoset'])
 		 && !checkRowExists('document_rules', array())) {
@@ -72,10 +72,36 @@ switch ($path) {
 				$item['traits']['is_folder'] = true;
 				$tempArray = getRowsArray('documents', 'id', array('folder_id' => $item['id']));
 				$item['folder_file_count'] = count($tempArray);
+				if (!$item['folder_file_count']) {
+					$item['traits']['is_empty_folder'] = true;
+				}
 			} else {
+			
+			/* if one document has public link */
+				$fileId = getRow('documents', 'file_id', $item['id']);
+				
+				$file = getRow('files', 
+								array('id', 'filename', 'path', 'created_datetime'),
+								$fileId);
+				if($file['filename']) {
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+							if(is_link($symPath)) {
+								$publicLink = true;
+							}else{
+								$publicLink = false;
+							}
+					}
+				}
+			$item['traits']['public_link'] = $publicLink;
+			//change icon
+			//$item['css_class'] = 'zenario_file_link_item';
+			
+			/* */
+			
 				$item['css_class'] = 'zenario_file_item';
-				
-				
 				$sql = "
 					SELECT
 						file_id,
@@ -152,7 +178,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__menu/hidden_nav/menu_nodes/panel':
+	case 'zenario__menu/panels/menu_nodes':
 		return require funIncPath(__FILE__, 'menu_nodes.fillOrganizerPanel');
 
 	
@@ -160,7 +186,7 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'slots.fillOrganizerPanel');
 	
 	
-	case 'zenario__layouts/nav/template_families/panel':
+	case 'zenario__layouts/panels/template_families':
 
 		foreach ($panel['items'] as $family => &$item) {
 			$item['path'] = CMS_ROOT. zenarioTemplatePath($item['name']);
@@ -178,7 +204,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__layouts/nav/layouts/panel':
+	case 'zenario__layouts/panels/layouts':
 		require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 		
 		$panel['key']['disableItemLayer'] = true;
@@ -209,37 +235,11 @@ switch ($path) {
 		$foundPaths = array();
 		$defaultLayouts = getRowsArray('content_types', 'default_layout_id', array());
 		
+		$templatePreview = '';
+		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = array();
 			
-			//Numeric ids are Layouts
-			if (is_numeric($id)) {
-				//Add user images to each Layout, if they have an image
-				if ($item['checksum']) {
-					$item['traits']['has_image'] = true;
-					$img = '&usage=template&c='. $item['checksum'];
-					
-					$item['image'] = 'zenario/file.php?sk=1'. $img;
-					$item['list_image'] = 'zenario/file.php?skl=1'. $img;
-				}
-				
-				if (!checkRowExists('content_types', array('default_layout_id' => $id)) && !checkRowExists('versions', array('layout_id' => $id))) {
-					$item['traits']['deletable'] = true;
-				
-				}
-				
-				if ($item['status'] == 'suspended') {
-					$item['traits']['archived'] = true;
-				}
-				
-				$item['usage_status'] = $item['usage_count'];
-			
-			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created
-			} else {
-				$item['name'] = adminPhrase('[[Unregistered template file]]');
-				$item['usage_status'] = $item['status'];
-				$item['traits']['unregistered'] = true;
-			}
 			
 			//For each Template file that's not missing, check its size and check the contents
 			//to see if it has grid data saved inside it.
@@ -264,26 +264,61 @@ switch ($path) {
 				if ($foundPaths[$item['path']]['grid']) {
 					$item['traits']['grid'] = true;
 				}
-			
 			} else {
 				$item['missing'] = 1;
 				$item['usage_status'] = 'missing';
 			}
 			
-			//If a Layout did not have an image set, and was a grid layout,
-			//Try to automatically add a thumbnail
-			if (empty($item['image'])
-			 && !empty($foundPaths[$item['path']]['grid'])) {
-				$item['image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=180&height=130&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
-				$item['list_image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=24&height=23&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
-			}
 			
+			//Numeric ids are Layouts
+			if (is_numeric($id)) {
+				
+				if ($item['family_name'] == 'grid_templates') {
+					$layoutDetails = zenario_grid_maker::readLayoutCode($id);
+					$summary = 'Gridmaker layout / ';
+					if ($layoutDetails['fluid']) {
+						$summary .= 'Fluid ';
+					} else {
+						$summary .= 'Fixed width ';
+					}
+					if ($layoutDetails['responsive']) {
+						$summary .= '/ Responsive ';
+					}
+					$summary .= '/ '.$layoutDetails['gCols'].' columns';
+				} else {
+					$summary = 'Static';
+				}
+				$item['summary'] = $summary;
+				
+				if (!checkRowExists('content_types', array('default_layout_id' => $id)) && !checkRowExists('versions', array('layout_id' => $id))) {
+					$item['traits']['deletable'] = true;
+				
+				}
+				
+				if ($item['status'] == 'suspended') {
+					$item['traits']['archived'] = true;
+				}
+				
+				$item['usage_status'] = $item['usage_count'];
+				
+				// Try to automatically add a thumbnail
+				if (!empty($foundPaths[$item['path']])) {
+					$item['image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=180&height=130&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
+					$item['list_image'] = 'zenario/admin/grid_maker/ajax.php?thumbnail=1&width=24&height=23&loadDataFromLayout='. $id. '&checksum='. $foundPaths[$item['path']]['checksum'];
+				}
+				
+			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created
+			} else {
+				$item['name'] = adminPhrase('[[Unregistered template file]]');
+				$item['usage_status'] = $item['status'];
+				$item['traits']['unregistered'] = true;
+			}
 		}
-
+		
 		break;
 	
 	
-	case 'zenario__layouts/hidden_nav/skins/panel':
+	case 'zenario__layouts/panels/skins':
 		require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 		
 		if (($refinerName == 'template_family' || $refinerName == 'template_family__panel_above')
@@ -302,7 +337,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__layouts/hidden_nav/skins/panel/hidden_nav/skin_files/panel':
+	case 'zenario__layouts/panels/skin_files':
 		
 		if ($skin = getSkinFromId(get('refiner__skin'))) {
 			
@@ -359,11 +394,11 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__content/nav/languages/panel':
+	case 'zenario__content/panels/languages':
 		return require funIncPath(__FILE__, 'languages.fillOrganizerPanel');
 	
 	
-	case 'zenario__content/nav/content_types/panel':
+	case 'zenario__content/panels/content_types':
 		foreach ($panel['items'] as $id => &$item) {
 			$item['css_class'] = 'content_type_'. $item['content_type_id'];
 			
@@ -377,7 +412,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/nav/categories/panel':
+	case 'zenario__content/panels/categories':
 		$langs = getLanguages();
 		foreach($langs as $lang) {
 			$panel['columns']['lang_'. $lang['id']] = array('title' => $lang['id']);
@@ -430,20 +465,21 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/nav/content/panel':
-	case 'zenario__content/hidden_nav/chained/panel':
-	case 'zenario__content/hidden_nav/language_equivs/panel':
+	case 'zenario__content/panels/content':
+	case 'zenario__content/panels/chained':
+	case 'zenario__content/panels/language_equivs':
 		return require funIncPath(__FILE__, 'content.fillOrganizerPanel');
 	
 	
 	
 	
 	case 'generic_image_panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel':
+	case 'zenario__content/panels/background_images':
+	case 'zenario__content/panels/email_images_for_email_templates':
+	case 'zenario__content/panels/email_images_shared':
+	case 'zenario__content/panels/inline_images_for_content':
+	case 'zenario__content/panels/inline_images_for_reusable_plugins':
+	case 'zenario__content/panels/inline_images_shared':
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$img = 'zenario/file.php?c='. $item['checksum'];
@@ -493,11 +529,11 @@ switch ($path) {
 		break;
 		
 	
-	case 'zenario__modules/nav/modules/panel':
+	case 'zenario__modules/panels/modules':
 		return require funIncPath(__FILE__, 'modules.fillOrganizerPanel');
 
 	
-	case 'zenario__modules/nav/instances/panel':
+	case 'zenario__modules/panels/plugins':
 		
 		if (get('refiner__plugin') && !isset($_GET['refiner__all_instances'])) {
 			$panel['title'] =
@@ -531,7 +567,7 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__modules/nav/modules/panel/hidden_nav/view_frameworks/panel':
+	case 'zenario__modules/panels/modules/hidden_nav/view_frameworks/panel':
 		
 		if ($refinerName == 'module' && ($module = getModuleDetails(get('refiner__module')))) {
 			$panel['title'] =
@@ -546,7 +582,7 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__languages/nav/languages/panel':
+	case 'zenario__languages/panels/languages':
 		if ($mode != 'xml') {
 			
 			$enabledCount = 0;
@@ -584,7 +620,7 @@ switch ($path) {
 		break;
 		
 	
-	case 'zenario__languages/nav/vlp/panel':
+	case 'zenario__languages/panels/phrases':
 		/*
 		if ($mode != 'xml') {
 			foreach ($panel['items'] as $id => &$item) {
@@ -621,7 +657,7 @@ switch ($path) {
 		break;
 		
 	
-	case 'zenario__users/nav/admins/panel':
+	case 'zenario__users/panels/administrators':
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$item['traits'] = array();

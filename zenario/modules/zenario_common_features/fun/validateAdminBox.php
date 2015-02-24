@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,12 @@ switch ($path) {
 			} else {
 				$tags = '';
 				
-				$result = getRows('special_pages', array('equiv_id', 'content_type'), array(), array('page_type'));
+				$result = getRows(
+					'special_pages',
+					array('equiv_id', 'content_type'),
+					array('logic' => array('create_and_maintain_in_default_language','create_and_maintain_in_all_languages')),
+					array('page_type'));
+				
 				while ($row = sqlFetchAssoc($result)) {
 					if (!getRow('content', 'visitor_version', array('id' => $row['equiv_id'], 'type' => $row['content_type']))) {
 						$tags .= ($tags? ', ' : ''). '"'. formatTag($row['equiv_id'], $row['content_type']). '"';
@@ -283,24 +288,6 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario_phrase':
-		if (!$box['key']['id'] && !$box['key']['translation']) {
-			if (!$code = $values['phrase/code']) {
-				$box['tabs']['phrase']['errors'][] = adminPhrase('Please enter a phrase code.');
-		
-			} elseif (substr($code, 0, 1) != '_') {
-				$box['tabs']['phrase']['errors'][] = adminPhrase('Phrase codes must start with an underscore.');
-		
-			} else {
-				if (checkIfPhraseIsProtected(setting('default_language'), getModuleClassName($values['phrase/module']), $code, true)) {
-					$box['tabs']['phrase']['errors'][] = adminPhrase('This Phrase code already exists for this Module.');
-				}
-			}
-		}
-		
-		break;
-	
-	
 	case 'zenario_create_vlp':
 		if (!$values['details/language_id']) {
 			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a Language Code.');
@@ -318,6 +305,23 @@ switch ($path) {
 		
 		if ($values['details/folder_name'] == "") {
 			$box['tabs']['details']['errors'][] = adminPhrase('You must give the folder a name.');
+		}
+		break;
+		
+	case 'zenario_migrate_old_documents':
+		if (!checkRowExists('documents', array('type' => 'folder', 'id' => $values['details/folder']))) {
+			$box['tabs']['details']['errors'][] = adminPhrase('You must select a folder for the documents.');
+		}
+		break;
+	
+	case 'zenario_document_move':
+		
+		if (!$values['details/move_to'] && !$values['details/move_to_root']) {
+			$box['tabs']['details']['errors'][] = adminPhrase('You must select a target folder.');
+		}
+		$ids = explode(',', $box['key']['id']);
+		if (in_array($values['details/move_to'], $ids)) {
+			$box['tabs']['details']['errors'][] = adminPhrase('You can not move a folder inside itself.');
 		}
 		break;
 	

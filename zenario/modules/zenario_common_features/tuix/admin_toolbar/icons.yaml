@@ -4,35 +4,49 @@ sections:
     icons:
         buttons:
             item_categories_some:
+                ord: 10
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
             item_categories_none:
+                ord: 11
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
+            layout_id: 
+                ord: 18
+                css_class: zenario_at_icon_layout
+                tooptip: Content Item Layout
             alias:
+                ord: 20
                 css_class: zenario_at_icon_alias zenario_at_icon_has_alias
                 tooltip: ""
             no_alias:
+                ord: 21
                 css_class: zenario_at_icon_alias zenario_at_icon_no_alias
-                tooltip: This Content Item has no friendly name
+                tooltip: This content item does not have an alias
             language_id:
+                ord: 30
                 css_class: zenario_at_icon_language
                 label: ""
             title:
+                ord: 40
                 css_class: zenario_at_icon_title
                 tooltip: ""
             version_3:
+                ord: 50
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             version_2:
+                ord: 60
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             version_1:
+                ord: 70
                 hidden: true
                 css_class: zenario_at_icon_version
                 label: ""
             tag_id:
+                ord: 80
                 css_class: zenario_at_icon_tag_id
                 label: ""

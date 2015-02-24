@@ -1,0 +1,257 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user_admin_box_form_field:
+	key:
+		id: ''
+		form_id: ''
+		numValues: 2
+	tabs:
+		details:
+			label: Details
+			edit_mode:
+				enabled: Yes
+				always_on: Yes
+			fields:
+				unlinked_form_field_description:
+					snippet:
+						html: |
+							An unlinked field is not tied to any user dataset field. Therefore any information entered into an unlinked field can only be saved
+							in the submission log, or used in emails.
+					hidden: true
+				field_type_picker:
+					label: 'Type:'
+					type: radios
+					values:
+						checkbox:
+							label: Single checkbox
+							side_note: A simple yes/no field; can control the visibility of other fields.
+						checkboxes:
+							label: Multiple checkboxes
+							side_note: Allows one or more choices from a list of values you define.
+						date:
+							label: Date
+							side_note: A pop-up date-picker
+						editor:
+							label: Editor
+							side_note: A HTML editor that will let an administrator enter rich-text.
+						radios:
+							label: Multiple radio-buttons
+							side_note: Allows one choice from a list of values you define.
+						select:
+							label: Select list
+							side_note: Allows one choice from a list of values you define.
+						text:
+							label: Text
+							side_note: A one-line text field.
+						textarea:
+							label: Textarea
+							side_note: A multi-line text field.
+						url:
+							label: URL
+							side_note: A one-line text field that lets you enter a URL.
+						attachment:
+							label: Attachment
+							site_note: Allows the user to add a file.
+					validation:
+						required_if_not_hidden: Please select a type
+					hidden: true
+					format_onchange: true
+				warning:
+					snippet:
+						html: '<div class="zenario_fbWarning">This form is not saving records or sending emails. No processing is being done with this field.</div>'
+					hidden: true
+				name:
+					label: 'Name:'
+					type: text
+					maxlength: 255
+					validation:
+						required_if_not_hidden: 'Please enter a name for this form field'
+					side_note: >
+						This is used to identify this field for admins and is not seen by users.
+					onkeyup: if (!zenarioAB.focus.key.id) { get('label').value = get('name').value; }
+				label:
+					label: 'Label:'
+					type: text
+					maxlength: 255
+					side_note: >
+						This will be the field label as seen by the user. 
+				readonly_or_mandatory:
+					label: 'Mandatory / Read-only:'
+					type: select
+					values:
+						none:
+							label: 'None'
+							ord: 1
+						mandatory:
+							label: 'Mandatory'
+							ord: 2
+						readonly:
+							label: 'Read-only'
+							ord: 3
+						conditional_mandatory:
+							label: 'Conditional mandatory'
+							ord: 4
+					value: none
+					format_onchange: true
+					side_note: >
+						Choose whether this field is mandatory or read-only.
+				condition_field:
+					label: 'Condition field:'
+					type: select
+					empty_value: '-- Select --'
+					format_onchange: true
+					validation:
+						required_if_not_hidden: 'Please select a conditional form field'
+					side_note: >
+						Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select
+				mandatory_if:
+					label: 'Mandatory if:'
+					type: select
+					empty_value: '-- Select --'
+					validation:
+						required_if_not_hidden: 'Please select a conditional form field value'
+				required_error_message:
+					label: 'Error message when field is incomplete:'
+					type: text
+					maxlength: 255
+					side_note: >
+						Enter an error message when this field is incomplete.
+					validation:
+						required_if_not_hidden: 'Please enter an error message for this field.'
+				validation:
+					label: 'Validation:'
+					type: select
+					values:
+						none:
+							label: 'None'
+						email:
+							label: 'Email'
+						url:
+							label: 'URL'
+						number:
+							label: 'Number'
+						integer:
+							label: 'Integer'
+						floating_point:
+							label: 'Floating point'
+					value: none
+					format_onchange: true
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'text');
+					
+				validation_error_message:
+					label: 'Error message when validation fails:'
+					type: text
+					maxlength: 255
+					side_note: >
+						Enter an error message when validation fails.
+				
+				size:
+					label: 'Width:'
+					type: select
+					values:
+						small:
+							label: 'Small'
+						medium:
+							label: 'Medium'
+						large:
+							label: 'Large'
+					value: medium
+					side_note: |
+						Size of the input box on the page.
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'text');
+						
+				placeholder:
+					label: 'Placeholder:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter a value to be displayed as a placeholder until the user enters something.
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'text') || zenarioO.columnEqual('field_type', 'textarea');
+				default_value:
+					label: 'Default value:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter a value to pre-populate this field.
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'text');
+				
+				note_to_user:
+					label: 'Note to user:'
+					type: textarea
+					maxlength: 255
+					side_note: |
+						Enter a note to the user that will be displayed below this field.
+					
+				css_classes:
+					label: 'CSS classes:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter a list of classes separated by spaces that'll be applied to this field.
+		lov:
+			visible_if: "({checkboxes:1,radios:1,select:1})[zenarioAB.value('field_type_picker', 'details')]"
+			label: Values
+			edit_mode:
+				enabled: true
+				always_on: true
+				enable_revert: false
+			fields:
+				number_of_fields:
+					type: text
+					hidden: true
+				add_num:
+					ord: 100001
+					type: select
+					hidden: true
+					value: 1
+					values:
+						1:
+							ord: 1
+							label: 'Add 1 more value'
+						2:
+							ord: 2
+							label: 'Add 2 more values'
+						5:
+							ord: 5
+							label: 'Add 5 more values'
+						10:
+							ord: 10
+							label: 'Add 10 more values'
+				add:
+					ord: 100002
+					type: submit
+					value: Add a value
+			
+			custom__template_fields:
+				label:
+					type: text
+				id:
+					same_row: true
+					type: hidden
+				delete:
+					same_row: true
+					type: submit
+					value: 'X'
+					onclick: >
+						if (!confirm('Are you sure you wish to delete this value?')) {
+							return false;
+						}
+				nudge_down:
+					same_row: true
+					type: submit
+					value: 'v'
+				nudge_up:
+					same_row: true
+					type: submit
+					value: '^'
+		translations:
+			label: Translations
+			edit_mode:
+				enabled: true
+				always_on: true
+			fields:
+			

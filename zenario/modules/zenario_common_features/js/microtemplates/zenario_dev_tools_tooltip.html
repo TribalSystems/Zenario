@@ -60,3 +60,9 @@
 		<% } %>
 	</span>
 <% } %>
+
+<% if (m.schema.description) { %>
+	<span class="tooltip_desc">
+		{{marked(m.schema.description, {breaks: true})}}
+	</span>
+<% } %>

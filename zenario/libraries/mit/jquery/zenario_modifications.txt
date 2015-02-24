@@ -63,13 +63,13 @@ jquery.colorbox.js
 		}
 		
 	Replaced:
-				if (settings.h) {
-					photo.style.marginTop = Math.max(settings.mh - photo.height, 0) / 2 + 'px';
-				}
+					if (settings.h) {
+						photo.style.marginTop = Math.max(settings.mh - photo.height, 0) / 2 + 'px';
+					}
 	With:
-				if (settings.h || settings.minHeight) {
-					photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
-				}
+					if (settings.h || settings.minHeight) {
+						photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
+					}
 
 
 jquery.nestable.js
@@ -150,27 +150,27 @@ jquery.placeholder.js
 
 
 
-jquery-ui.visitor.min.js
+jquery-ui.visitor.js
 	This is a custom build of jQuery UI, with:
 		All of the Core components
 		The Tooltips Widget
 		All of the jQuery UI effects
-	Also, the following line has been added as a work-around for a problem for Bootstrap users where
+	
+	The following line has been added as a work-around for a problem for Bootstrap users where
 	Bootstrap's tooltip function clashed with jQuery's tooltip function:
 		$.widget.bridge('jQueryTooltip', $.ui.tooltip);
 
-jquery-ui.admin.min.js
+jquery-ui.admin.js
 	This contains all of the jQuery UI interactions
-	It also contains the code for the bounce and puff effects that were cut from jquery-ui.visitor.min.js
 
-jquery-ui.autocomplete.min.js
+jquery-ui.autocomplete.js
 	This is the Autocomplete Widget from jQuery UI
 	The Menu Widget is also included as this is a dependancy
 
-jquery-ui.datepicker.min.js
+jquery-ui.datepicker.js
 	This is the Datepicker Widget from jQuery UI
 
-jquery-ui.slider.min.js
+jquery-ui.slider.js
 	This is the Slider Widget from jQuery UI
 
 

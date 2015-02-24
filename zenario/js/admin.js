@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -57,21 +57,6 @@ zenarioA.tooltipLengthThresholds = {
 	adminToolbarTitle: 60,
 	organizerBackButton: 70,
 	organizerPanelTitle: 100
-};
-
-
-
-
-
-zenarioA.generateAutoPasswords = function() {
-var password_characters='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; 
-var password_length = '8';
-var password='';
-var len=0;
-for(var i=0;i<password_length;i++){ 
-password+=password_characters.charAt(Math.floor(Math.random()*password_characters.length))
-}
-	return password;
 };
 
 
@@ -307,7 +292,16 @@ zenarioA.pickNewPlugin = function(el, slotName, level) {
 	zenarioA.pickNewPluginSlotName = slotName;
 	zenarioA.pickNewPluginLevel = level;
 	
-	zenarioA.SK('zenarioA', 'addNewReusablePlugin', false, 'zenario__modules/nav/modules/panel/refiners/slotable_only////', 'zenario__modules/nav/instances/panel', 'zenario__modules/nav/modules/panel', 'zenario__modules/nav/instances/panel', true, true, phrase.insertReusablePlugin);
+	var path = 'zenario__modules/panels/modules/refiners/slotable_only////';
+	
+	//Select the existing module and plugin if possible
+	if (zenario.slots[slotName]
+	 && zenario.slots[slotName].moduleId
+	 && zenario.slots[slotName].instanceId) {
+		path += 'item//' + zenario.slots[slotName].moduleId + '//' + zenario.slots[slotName].instanceId;
+	}
+	
+	zenarioA.SK('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, phrase.insertReusablePlugin);
 	
 	return false;
 };
@@ -550,22 +544,28 @@ zenarioA.removePlugin = function(el, slotName, level) {
 			cType: zenario.cType,
 			cVersion: zenario.cVersion
 		},
+		doRemovePlugin = function() {
+			var error = 
+				zenario.pluginClassAJAX('zenario_common_features', req, true);
+	
+			if (error) {
+				zenarioA.showMessage(error);
+			} else {
+				zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+			}
+		};
+	
+	if (level > 1) {
 		html = zenario.pluginClassAJAX('zenario_common_features', req, false);
-	
-	if (zenarioA.loggedOut(html)) {
-		return;
-	}
-	
-	zenarioA.floatingBox(html, phrase.remove, true, false, false, function() {
-		var error = 
-			zenario.pluginClassAJAX('zenario_common_features', req, true);
-	
-		if (error) {
-			zenarioA.showMessage(error);
-		} else {
-			zenario.refreshPluginSlot(slotName, '', undefined, false, false, false, false);
+		
+		if (zenarioA.loggedOut(html)) {
+			return;
 		}
-	});
+	
+		zenarioA.floatingBox(html, phrase.remove, true, false, false, doRemovePlugin);
+	} else {
+		doRemovePlugin();
+	}
 	
 	return false;
 };
@@ -1041,6 +1041,23 @@ zenarioA.forcePathWrap = function(html, pattern, replacement) {
 
 
 
+
+
+
+zenarioA.generateRandomString = function(length) {
+	var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
+		charsLength = chars.length,
+		string = '',
+		i = 0;
+	
+	for (i = 0; i < length; ++i) { 
+		string += chars.charAt(Math.floor(Math.random() * charsLength));
+	}
+	
+	return string;
+};
+
+
 zenarioA.loggedOut = function(message) {
 	if (message.substr(0, 17) == '<!--Logged_Out-->') {
 		zenarioA.showMessage(message);
@@ -1357,6 +1374,19 @@ zenarioA.setTooltipIfTooLarge = function(target, title, sizeThreshold) {
 
 //Functions for TinyMCE
 
+//A hack to try and remove some of the bad/repeated html that TinyMCE sometimes generates,
+//e.g. duplicate id/style tags
+zenarioA.tinyMCEGetContent = function(editor) {
+	var html = $('<div/>').html(editor.getContent()).html();
+	
+	//Fix for request #2908 "Bug with WYSIWYG Editor: You can't delete an empty <h1> tag"
+	if (html == '<h1>&nbsp;</h1>') {
+		html = '';
+	}
+	
+	return html;
+};
+
 zenarioA.tinyMCEPasteRreprocess = function(pl, o) {
 	o.content = o.content.replace(
 		/<\/?font\b[^>]*?>/gi, '').replace(
@@ -1444,10 +1474,10 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 	if (type == 'file') {
 		var id = tinyMCE.activeEditor.id,
 			pick_items = {
-				path: 'zenario__content/nav/content/panel',
-				target_path: 'zenario__content/nav/content/panel',
-				min_path: 'zenario__content/nav/content/panel',
-				max_path: 'zenario__content/nav/content/panel',
+				path: 'zenario__content/panels/content',
+				target_path: 'zenario__content/panels/content',
+				min_path: 'zenario__content/panels/content',
+				max_path: 'zenario__content/panels/content',
 				disallow_refiners_looping_on_min_path: false};
 		
 		if (id
@@ -1476,9 +1506,9 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 	} else if (type == 'image') {
 		var id = tinyMCE.activeEditor.id,
 			pick_items = {
-				path: 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel',
-				target_path: 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel',
-				min_path: 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel',
+				path: 'zenario__content/panels/inline_images_shared',
+				target_path: 'zenario__content/panels/inline_images_shared',
+				min_path: 'zenario__content/panels/inline_images_shared',
 				max_path: false,
 				disallow_refiners_looping_on_min_path: false};
 		
@@ -1678,7 +1708,14 @@ zenarioA.formatSKItemField = function(value, column) {
 			value = value.replace(/\b0+/g, '');
 			
 		} else if (format == 'enum' && column.values && column.values[value] !== undefined) {
-			value = column.values[value];
+			
+			if (typeof column.values[value] == 'object') {
+				if (column.values[value].label !== undefined) {
+					value = column.values[value].label;
+				}
+			} else {
+				value = column.values[value];
+			}
 			
 		} else if ((format == 'module_name' || format == 'module_class_name') && zenarioO.init) {
 			if (!value) {
@@ -2175,9 +2212,9 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 		var object = {
 			organizer_quick: {
 				path: path,
-				target_path: 'zenario__menu/hidden_nav/menu_nodes/panel',
-				min_path: 'zenario__menu/hidden_nav/menu_nodes/panel',
-				max_path: 'zenario__menu/hidden_nav/menu_nodes/panel',
+				target_path: 'zenario__menu/panels/menu_nodes',
+				min_path: 'zenario__menu/panels/menu_nodes',
+				max_path: 'zenario__menu/panels/menu_nodes',
 				disallow_refiners_looping_on_min_path: false,
 				reload_menu_slots: true,
 				reload_admin_toolbar: true}};
@@ -2196,8 +2233,21 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 //If there is an entry (e.g. "Edit Content") in the actions dropdown that needs to be on a draft,
 //this function will create a draft of a published page (after a confirm prompt),
 //reload the page, then click the entry again.
-zenarioA.draft = function(aId, justView) {
+zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	
+	if (zenarioA.draftDoingCallback) {
+		delete zenarioA.draftDoingCallback;
+		return true;
+	
+	} else {
+		delete zenarioA.draftDoingCallback;
+	}
+	
+	var buttonsHTML,
+		object;
+	
+	//Look for the "create a draft" button on the admin toolbar
+	//If we see it, we know this is a published item and we need to create a draft
 	if (zenarioAT.focus
 	 && zenarioAT.focus.sections
 	 && zenarioAT.focus.sections.edit
@@ -2205,35 +2255,62 @@ zenarioA.draft = function(aId, justView) {
 	 && zenarioAT.focus.sections.edit.buttons.start_editing
 	 && !zenarioA.hidden(zenarioAT.focus.sections.edit.buttons.start_editing)) {
 		
-		if (justView && zenarioA.draftJustView) {
-			delete zenarioA.draftJustView;
-			return true;
-		
-		} else {
-			delete zenarioA.draftJustView;
-		}
-		
-		
-		var buttonsHTML = '',
-			object = $.extend(true, {}, zenarioAT.focus.sections.edit.buttons.start_editing);
-		
-		buttonsHTML =
-			'<input type="button" class="submit_selected" value="' + htmlspecialchars(object.ajax.confirm.button_message) + '" onclick="zenarioA.draftSetCallback(\'' + htmlspecialchars(aId) + '\'); zenarioAT.action2();"/>';
-		
-		if (justView) {
-			buttonsHTML +=
-				'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.button_message__just_view) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
-		}
-		
-		buttonsHTML +=
-			'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.cancel_button_message) + '"/>';
+		//Create a copy of it
+		object = $.extend(true, {}, zenarioAT.focus.sections.edit.buttons.start_editing);
 		
 		delete object.ajax.request.switch_to_edit_mode;
-		object.ajax.confirm.message =
-			'<!--Button_HTML:' + buttonsHTML + '-->' +
-			object.ajax.confirm.message__editing_published;
 		
+		//Should we show someone a warning before creating a draft? Or is there a warning for this button?
+		//If so, show a confirmation box with up to three options:
+		if (zenarioA.siteSettings.create_draft_warning || confirmMessage) {
+			
+			if (confirmMessage) {
+				confirmMessage += '\n\n' + object.ajax.confirm.message__editing_published;
+			} else {
+				confirmMessage = object.ajax.confirm.message__editing_published;
+				confirmButtonText = object.ajax.confirm.button_message;
+			}
+			
+			//1. Create the draft, then when the draft has been created press this option again
+			buttonsHTML =
+				'<input type="button" class="submit_selected" value="' + htmlspecialchars(confirmButtonText) + '" onclick="zenarioA.draftSetCallback(\'' + htmlspecialchars(aId) + '\'); zenarioAT.action2();"/>';
+			
+			//2. Don't create a draft, press this option again and just view in read-only mode
+			if (justView) {
+				buttonsHTML +=
+					'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.button_message__just_view) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
+			}
+			
+			//3. Cancel
+			buttonsHTML +=
+				'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.cancel_button_message) + '"/>';
+			
+			object.ajax.confirm.message = '<!--Button_HTML:' + buttonsHTML + '-->' + confirmMessage;
+			
+		
+		//If not, create the draft straight away
+		} else {
+			//Note down which button was clicked on.
+			//This button will be automatically clicked again after the page is reloaded
+			zenarioA.draftSetCallback(aId);
+			
+			//Remove any confirm prompt on the button
+			delete object.ajax.confirm;
+		}
+		
+		//"Press" the copy of the button we just made
 		zenarioA.action(zenarioAT, object);
+		return false;
+	
+	
+	//Handle the case where we're already on a draft, but there was still a confirm message to show
+	} else if (confirmMessage) {
+		buttonsHTML =
+			'<input type="button" class="submit_selected" value="' + htmlspecialchars(confirmButtonText) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
+		buttonsHTML +=
+			'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>';
+		
+		zenarioA.showMessage(confirmMessage, buttonsHTML, 'warning');
 		return false;
 	}
 	
@@ -2262,9 +2339,9 @@ zenarioA.draftSetCallback = function(aId) {
 };
 
 zenarioA.draftDoCallback = function(aId) {
-	zenarioA.draftJustView = true;
+	zenarioA.draftDoingCallback = true;
 	$('#' + aId).click();
-	delete zenarioA.draftJustView;
+	delete zenarioA.draftDoingCallback;
 };
 
 
@@ -2387,13 +2464,34 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	if ((thing = object.upload)
 	 || (thing = object.ajax)) {
 		
-		url =
-			'zenario/ajax.php?' +
-				'__pluginClassName__=' + thing.class_name +
-				'&__path__=' + zenarioCallingLibrary.path +
-				'&method_call=' + ajaxMethodCall;
+		//If an AJAX button requests all of the ids that are currently matched in Organizer,
+		//we'll need to get the details of the last Organizer panel accessed (the requests needed
+		//should be stored in zenarioO.lastRequests) and fire up the Organizer Panel to get the list of
+		//ids.
+		if (object.ajax
+		 && object.ajax.pass_matched_ids
+		 && zenarioCallingLibrary.encapName == 'zenarioO') {
+			url =
+				'zenario/admin/ajax.php?' +
+					'__pluginClassName__=' + thing.class_name +
+					'&path=' + zenarioCallingLibrary.path +
+					'&_get_ids_for_ajax_request=1' +
+					'&method_call=' + ajaxMethodCall +
+					zenario.urlRequest(zenarioO.lastRequests)
+			//requests = zenarioO.lastRequests;
+			requests = {};
 		
-		requests = zenarioCallingLibrary.getKey(itemLevel);
+		//If not then we don't need to use the whole the Organizer Panel logic, we can just use
+		//the normal ajax file.
+		} else {
+			url =
+				'zenario/ajax.php?' +
+					'__pluginClassName__=' + thing.class_name +
+					'&__path__=' + zenarioCallingLibrary.path +
+					'&method_call=' + ajaxMethodCall;
+		
+			requests = zenarioCallingLibrary.getKey(itemLevel);
+		}
 		
 		if (thing.request) {
 			$.extend(requests, thing.request);
@@ -2499,7 +2597,9 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		if (sameWindow || frontend_link.substr(0, 25) == 'zenario/admin/welcome.php') {
 			zenario.goToURL(zenario.addBasePath(frontend_link));
 		
-		} else if (frontend_link.indexOf('://') !== -1) {
+		//If there is a prototal (e.g. http://) in the URL, open it in a new window, unless it is a link
+		//to the current site
+		} else if (frontend_link.indexOf('://') !== -1 && frontend_link.indexOf(URLBasePath) !== 0) {
 			window.open(frontend_link);
 		
 		} else if (zenarioCallingLibrary.encapName == 'zenarioAT') {
@@ -2542,8 +2642,9 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		zenarioAB.open(object.admin_box.path, key, object.admin_box.tab, object.admin_box.values);
 	
 	} else if (object.popout) {
-		var id, item, title, usage;
-		var popout = $.extend(true, {}, object.popout);
+		var id, item, title, usage,
+			filename,
+			popout = $.extend(true, {}, object.popout);
 		
 		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.focus.items[id])) {
 			if (item.popout) {
@@ -2581,13 +2682,13 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			if (usage = ifNull(zenarioCallingLibrary.getKey().usage, item.usage)) {
 				popout.href += '&usage=' + encodeURIComponent(usage);
 			}
-			
-			if (item.filename) {
-				popout.href += '&filename=' + encodeURIComponent(item.filename);
-			}
 		}
 		
 		if (popout.href) {
+			if (filename = (item && item.filename) || (popout.options && popout.options.filename) || popout.filename) {
+				popout.href += '&filename=' + encodeURIComponent(filename);
+			}
+			
 			popout.href = zenario.addBasePath(popout.href);
 		}
 		
@@ -2740,7 +2841,8 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			//Use the multiple select message if more than one item is selected
 			} else if (itemLevel && zenarioCallingLibrary.itemsSelected > 1) {
-				message = ifNull(object.ajax.confirm.multiple_select_message, object.ajax.confirm.message);
+				message = ifNull(object.ajax.confirm.multiple_select_message, object.ajax.confirm.message) + '';
+				message = message.replace(/\[\[item_count\]\]/ig, zenarioCallingLibrary.itemsSelected);
 			
 			//Apply mergefields to populate the message with information from the selected row
 			//Note that if they're not going to be escaped below then they need to be here.
@@ -2849,6 +2951,36 @@ zenarioA.checkFunctionExists = function(functionName, encapName) {
 		return typeof window[functionName] == 'function';
 	}
 };
+
+
+//Given an image size and a target size, resize the image (maintaining aspect ratio).
+//This is a copy of the resizeImage() function in cms.inc.php, to ensure consistent logic
+//when generating a thumbnail in JavaScript
+zenarioA.resizeImage = function(image_width, image_height, constraint_width, constraint_height, out, allowUpscale) {
+	out.width = image_width;
+	out.height = image_height;
+	image_width = 1*image_width;
+	image_height = 1*image_height;
+	
+	if (image_width == constraint_width && image_height == constraint_height) {
+		return;
+	}
+	
+	if (!allowUpscale && (image_width <= constraint_width) && (image_height <= constraint_height)) {
+		return;
+	}
+
+	if ((constraint_width / image_width) < (constraint_height / image_height)) {
+		out.width = constraint_width;
+		out.height = Math.floor(image_height * constraint_width / image_width);
+	} else {
+		out.height = constraint_height;
+		out.width = Math.floor(image_width * constraint_height / image_height);
+	}
+
+	return;
+};
+
 
 
 
@@ -2991,18 +3123,6 @@ if (window.onpagehide) {
 } else {
 	window.onunload = zenarioA.onunload;
 }
-
-
-//Stop event propigation
-zenarioA.stop = function(e) {
-	e = (e || event);
-	
-	if (e && e.stopPropagation) {
-		e.stopPropagation();
-	}
-	
-	return false;
-};
 
 
 zenarioA.stopDefault = function(e) {

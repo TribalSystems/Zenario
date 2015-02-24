@@ -18,7 +18,7 @@
 	<% } %>
 ">
 
-	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenarioA.stop(event);">
+	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenario.stop(event);">
 		<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
 	</div>
 	<div class="organizer_cell firstcol listicon" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;">

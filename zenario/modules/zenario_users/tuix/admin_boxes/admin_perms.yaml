@@ -1,0 +1,83 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin:
+    tabs:
+        permissions:
+            
+            # The fillAdminBox(), formatAdminBox() and saveAdminBox() functions in the Community Features
+            # Module automatically add the <row_class> and <onchange> tags as well as the
+            # loading and saving logic to the fields in this tab so that they work as permission selectors.
+            
+            # You may have:
+            #     - A <type>checkbox</type> field on its own to act as a single permission.
+            #     - A <type>checkboxes</type> field to act as a list of permissions.
+            #     - A <type>checkboxes</type> field with the <checking_child_checks_parents> tag set
+            #       to act as a list of permissions with hierarchal dependencies.
+            #     - A <type>checkbox</type> field immediately followed by a <type>checkboxes</type> field
+            #       to act as a list of permissions that can be quickly turned on or off by the first
+            #       checkbox. This will also add a toggle button to allow the longer list to be hidden.
+            
+            fields:
+                perm_manage_permissions:
+                    values:
+                        _PRIV_MANAGE_PROTECTED_USER_CHARACTERISTIC:
+                            label: "Protect/deprotect a user characteristic"
+
+                perm_edit_users:
+                    type: checkbox
+                    hidden: No
+                    full_width: Yes
+                    post_field_label: Extranet User Manager
+
+                perm_edit_users_permissions:
+                    type: checkboxes
+                    hidden: No
+                    full_width: Yes
+                    checking_child_checks_parents: Yes
+                    values:
+                        _PRIV_VIEW_USER:
+                            label: "View a User's details"
+                        _PRIV_EDIT_USER:
+                            parent: _PRIV_VIEW_USER
+                            label: "Edit a User's details"
+                        _PRIV_CREATE_USER:
+                            parent: _PRIV_EDIT_USER
+                            label: Create a User
+                        _PRIV_DELETE_USER:
+                            parent: _PRIV_VIEW_USER
+                            label: Delete a User
+                        _PRIV_CHANGE_USER_STATUS:
+                            parent: _PRIV_VIEW_USER
+                            label: Activate or suspend a User
+                        _PRIV_CHANGE_USER_PASSWORD:
+                            parent: _PRIV_VIEW_USER
+                            label: "Change User's Password"
+                        _PRIV_IMPERSONATE_USER:
+                            parent: _PRIV_VIEW_USER
+                            label: Impersonate a User
+                        _PRIV_MANAGE_GROUP_MEMBERSHIP:
+                            parent: _PRIV_VIEW_USER
+                            label: Add or remove Users in a Group
+                        _PRIV_EDIT_GROUP:
+                            parent: _PRIV_VIEW_USER
+                            label: "Edit a Group's details"
+                        _PRIV_CREATE_GROUP:
+                            parent: _PRIV_EDIT_GROUP
+                            label: Create a Group
+                        _PRIV_DELETE_GROUP:
+                            parent: _PRIV_VIEW_USER
+                            label: Delete a Group
+                        _PRIV_MODERATE_USER_COMMENTS:
+                            label: "Edit and delete a User's comments and posts"
+                        _PRIV_VIEW_USER_CHARACTERISTIC:
+                            parent: _PRIV_VIEW_USER
+                            label: View User Characteristics
+                        _PRIV_EDIT_PROTECTED_USER_CHARACTERISTIC:
+                            parent: _PRIV_VIEW_USER_CHARACTERISTIC
+                            label: Edit User Characteristics
+                        _PRIV_CREATE_CHARACTERISTIC:
+                            parent: _PRIV_EDIT_PROTECTED_USER_CHARACTERISTIC
+                            label: Create User Characteristics
+                        _PRIV_SET_CHARACTERISTIC_ON_USER:
+                            parent: _PRIV_VIEW_USER_CHARACTERISTIC
+                            label: Set User Characteristics

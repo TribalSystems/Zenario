@@ -1,0 +1,122 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: users
+    title: Editing settings for users
+    tabs:
+        names:
+            label: Sign-in
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: "This tab contains settings related to sign-in behaviour."
+                user_use_screen_name:
+                    site_setting:
+                        name: user_use_screen_name
+                    label: 'Use screen names'
+                    type: checkbox
+                    value: "1"
+                    side_note: |
+                        For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
+                        If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
+                        Login Module will have the option to allow users to log in using their screen name (rather than an email address).
+                sign_in_access_log:
+                    site_setting:
+                        name: sign_in_access_log
+                    label: 'Log all sign-ins'
+                    type: checkbox
+                    value: "1"
+                    side_note: |
+                        If enabled, the site will log every sign-in by every user, including date, time, IP address and browser. 
+                                    
+        passwords:
+            label: Passwords
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                min_extranet_user_password_length:
+                    label: 'Minimum password length:'
+                    site_setting:
+                        name: min_extranet_user_password_length
+                    type: select
+                    value: "5"
+                    empty_value: No restrictions
+                    values:
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        11: "11"
+                        12: "12"
+                        13: "13"
+                        14: "14"
+                        15: "15"
+                        20: "20"
+                min_extranet_user_password_strength:
+                    label: 'Minimum password strength:'
+                    site_setting:
+                        name: min_extranet_user_password_strength
+                    type: select
+                    value: _MEDIUM
+                    values:
+                        _WEAK: Weak
+                        _MEDIUM: Medium
+                        _STRONG: Strong
+                        _VERY_STRONG: Very strong
+                plaintext_extranet_user_passwords:
+                    label: 'Store user passwords as plain text:'
+                    site_setting:
+                        name: plaintext_extranet_user_passwords
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        Storing passwords as plain text will allow the system to send
+                        out password reminders via email, but is less secure as anyone
+                        with database access to the server will be able to read
+                        people's passwords.
+                    format_onchange: true;
+            notices:
+                turn_plaintext_off_warning:
+                    show: false
+                    type: warning
+                    message: |
+                        All plain text passwords will be cleared from the records and encrypted!
+                turn_plaintext_on_warning:
+                    show: false
+                    type: warning
+                    message: |
+                        From now on, all passwords for users will be stored as plain text!
+                
+        filesizes:
+            label: File Sizes
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains settings for file uploads.
+                max_user_image_filesize:
+                    site_setting:
+                        name: max_user_image_filesize
+                    label: 'Maximum User Image File Size:'
+                    type: text
+                    value: "50000"
+                    side_note: >
+                        Maximum allowed file size for avatar images uploaded by
+                        Extranet Users, in bytes.
+                    validation:
+                        required: Please enter a Maximum User Image File Size.
+                        numeric: The Maximum User Image File Size must be numeric.

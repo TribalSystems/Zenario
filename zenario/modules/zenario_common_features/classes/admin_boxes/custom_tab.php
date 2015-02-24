@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ class zenario_common_features__admin_boxes__custom_tab extends module_base_class
 		}
 		
 		//List all possible parent fields...
-		$fields['details/parent_field_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only');
+		$fields['details/parent_field_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false);
 		
 		//...but exclude any fields on this tab!
 		if ($box['key']['id']) {

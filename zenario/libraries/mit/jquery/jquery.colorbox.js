@@ -1,8 +1,7 @@
 /*!
-	Colorbox v1.5.5 - 2014-03-13
-	jQuery lightbox and modal window plugin
-	(c) 2014 Jack Moore - http://www.jacklmoore.com/colorbox
-	license: http://www.opensource.org/licenses/mit-license.php
+	Colorbox 1.5.14
+	license: MIT
+	http://www.jacklmoore.com/colorbox
 */
 (function ($, document, window) {
 	var
@@ -81,14 +80,13 @@
 			return this.rel;
 		},
 		href: function() {
-			// Using .attr() so that the href can also be used to provide a selector for inline content
+			// using this.href would give the absolute url, when the href may have been inteded as a selector (e.g. '#container')
 			return $(this).attr('href');
 		},
 		title: function() {
 			return this.title;
 		}
 	},
-
 
 	// Abstracting the HTML and event identifiers for easy rebranding
 	colorbox = 'colorbox',
@@ -239,10 +237,10 @@
 		}
 	}
 
-	function getRelated() {
+	function getRelated(rel) {
 		index = 0;
 		
-		if (rel && rel !== 'nofollow') {
+		if (rel && rel !== false && rel !== 'nofollow') {
 			$related = $('.' + boxElement).filter(function () {
 				var options = $.data(this, colorbox);
 				var settings = new Settings(this, options);
@@ -353,13 +351,11 @@
 
 		if (!closing) {
 
-			options = $(element).data('colorbox');
+			options = $(element).data(colorbox);
 
 			settings = new Settings(element, options);
-
-			rel = settings.get('rel');
 			
-			getRelated();
+			getRelated(settings.get('rel'));
 
 			if (!open) {
 				open = active = true; // Prevents the page-change action from queuing up if the visitor holds down the left or right keys.
@@ -379,8 +375,14 @@
 				loadedWidth = $loaded.outerWidth(true);
 
 				// Opens inital empty Colorbox prior to content being loaded.
-				settings.w = setSize(settings.get('initialWidth'), 'x');
-				settings.h = setSize(settings.get('initialHeight'), 'y');
+				var initialWidth = setSize(settings.get('initialWidth'), 'x');
+				var initialHeight = setSize(settings.get('initialHeight'), 'y');
+				var maxWidth = settings.get('maxWidth');
+				var maxHeight = settings.get('maxHeight');
+
+				settings.w = (maxWidth !== false ? Math.min(initialWidth, setSize(maxWidth, 'x')) : initialWidth) - loadedWidth - interfaceWidth;
+				settings.h = (maxHeight !== false ? Math.min(initialHeight, setSize(maxHeight, 'y')) : initialHeight) - loadedHeight - interfaceHeight;
+
 				$loaded.css({width:'', height:settings.h});
 				publicMethod.position();
 
@@ -412,8 +414,9 @@
 				}
 			}
 
+			var opacity = parseFloat(settings.get('opacity'));
 			$overlay.css({
-				opacity: parseFloat(settings.get('opacity')) || '',
+				opacity: opacity === opacity ? opacity : '',
 				cursor: settings.get('overlayClose') ? 'pointer' : '',
 				visibility: 'visible'
 			}).show();
@@ -431,7 +434,7 @@
 	// Colorbox's markup needs to be added to the DOM prior to being called
 	// so that the browser will go ahead and load the CSS background images.
 	function appendHTML() {
-		if (!$box && document.body) {
+		if (!$box) {
 			init = false;
 			$window = $(window);
 			$box = $tag(div).attr({
@@ -475,7 +478,8 @@
 			$loadingBay = $tag(div, false, 'position:absolute; width:9999px; visibility:hidden; display:none; max-width:none;');
 			
 			$groupControls = $next.add($prev).add($current).add($slideshow);
-
+		}
+		if (document.body && !$box.parent().length) {
 			$(document.body).append($overlay, $box.append($wrap, $loadingBay));
 		}
 	}
@@ -545,7 +549,7 @@
 	}
 
 	// Don't do anything if Colorbox already exists.
-	if ($.colorbox) {
+	if ($[colorbox]) {
 		return;
 	}
 
@@ -693,7 +697,7 @@
 					}, 1);
 				}
 
-				if (loadedCallback) {
+				if ($.isFunction(loadedCallback)) {
 					loadedCallback();
 				}
 			},
@@ -931,15 +935,16 @@
 		}, 100);
 		
 		if (settings.get('inline')) {
+			var $target = $(href);
 			// Inserts an empty placeholder where inline content is being pulled from.
 			// An event is bound to put inline content back when Colorbox closes or loads new content.
-			$inline = $tag(div).hide().insertBefore($(href)[0]);
+			$inline = $('<div>').hide().insertBefore($target);
 
 			$events.one(event_purge, function () {
-				$inline.replaceWith($loaded.children());
+				$inline.replaceWith($target);
 			});
 
-			prep($(href));
+			prep($target);
 		} else if (settings.get('iframe')) {
 			// IFrame element won't be added to the DOM until it is ready to be displayed,
 			// to avoid problems with DOM-ready JS that might be trying to run in that iframe.
@@ -950,7 +955,7 @@
 
 			href = retinaUrl(settings, href);
 
-			photo = document.createElement('img');
+			photo = new Image();
 
 			$(photo)
 			.addClass(prefix + 'Photo')
@@ -958,61 +963,61 @@
 				prep($tag(div, 'Error').html(settings.get('imgError')));
 			})
 			.one('load', function () {
-				var percent;
-
 				if (request !== requests) {
 					return;
 				}
 
-				$.each(['alt', 'longdesc', 'aria-describedby'], function(i,val){
-					var attr = $(settings.el).attr(val) || $(settings.el).attr('data-'+val);
-					if (attr) {
-						photo.setAttribute(val, attr);
+				// A small pause because some browsers will occassionaly report a 
+				// img.width and img.height of zero immediately after the img.onload fires
+				setTimeout(function(){
+					var percent;
+
+					$.each(['alt', 'longdesc', 'aria-describedby'], function(i,val){
+						var attr = $(settings.el).attr(val) || $(settings.el).attr('data-'+val);
+						if (attr) {
+							photo.setAttribute(val, attr);
+						}
+					});
+
+					if (settings.get('retinaImage') && window.devicePixelRatio > 1) {
+						photo.height = photo.height / window.devicePixelRatio;
+						photo.width = photo.width / window.devicePixelRatio;
 					}
-				});
 
-				if (settings.get('retinaImage') && window.devicePixelRatio > 1) {
-					photo.height = photo.height / window.devicePixelRatio;
-					photo.width = photo.width / window.devicePixelRatio;
-				}
-
-				if (settings.get('scalePhotos')) {
-					setResize = function () {
-						photo.height -= photo.height * percent;
-						photo.width -= photo.width * percent;
-					};
-					if (settings.mw && photo.width > settings.mw) {
-						percent = (photo.width - settings.mw) / photo.width;
-						setResize();
+					if (settings.get('scalePhotos')) {
+						setResize = function () {
+							photo.height -= photo.height * percent;
+							photo.width -= photo.width * percent;
+						};
+						if (settings.mw && photo.width > settings.mw) {
+							percent = (photo.width - settings.mw) / photo.width;
+							setResize();
+						}
+						if (settings.mh && photo.height > settings.mh) {
+							percent = (photo.height - settings.mh) / photo.height;
+							setResize();
+						}
 					}
-					if (settings.mh && photo.height > settings.mh) {
-						percent = (photo.height - settings.mh) / photo.height;
-						setResize();
+					
+					if (settings.h || settings.minHeight) {
+						photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
 					}
-				}
-				
-				if (settings.h || settings.minHeight) {
-					photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
-				}
-				
-				if ($related[1] && (settings.get('loop') || $related[index + 1])) {
-					photo.style.cursor = 'pointer';
-					photo.onclick = function () {
-						publicMethod.next();
-					};
-				}
+					
+					if ($related[1] && (settings.get('loop') || $related[index + 1])) {
+						photo.style.cursor = 'pointer';
+						photo.onclick = function () {
+							publicMethod.next();
+						};
+					}
 
-				photo.style.width = photo.width + 'px';
-				photo.style.height = photo.height + 'px';
-
-				setTimeout(function () { // A pause because Chrome will sometimes report a 0 by 0 size otherwise.
+					photo.style.width = photo.width + 'px';
+					photo.style.height = photo.height + 'px';
 					prep(photo);
 				}, 1);
 			});
 			
-			setTimeout(function () { // A pause because Opera 10.6+ will sometimes not run the onload function otherwise.
-				photo.src = href;
-			}, 1);
+			photo.src = href;
+
 		} else if (href) {
 			$loadingBay.load(href, settings.get('data'), function (data, status) {
 				if (request === requests) {
@@ -1068,8 +1073,8 @@
 		if (!$box) { return; }
 
 		$box.stop();
-		$.colorbox.close();
-		$box.stop().remove();
+		$[colorbox].close();
+		$box.stop(false, true).remove();
 		$overlay.remove();
 		closing = false;
 		$box = null;
@@ -1077,7 +1082,7 @@
 			.removeData(colorbox)
 			.removeClass(boxElement);
 
-		$(document).unbind('click.'+prefix);
+		$(document).unbind('click.'+prefix).unbind('keydown.'+prefix);
 	};
 
 	// A method for fetching the current element Colorbox is referencing.

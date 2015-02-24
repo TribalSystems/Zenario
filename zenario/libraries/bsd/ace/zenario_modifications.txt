@@ -1,1 +1,1 @@
-Deleted the worker-xquery.js file for a smaller download
+Deleted the mode-xquery.js and worker-xquery.js files for a smaller download

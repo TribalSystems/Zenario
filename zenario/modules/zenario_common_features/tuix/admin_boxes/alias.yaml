@@ -13,21 +13,21 @@ zenario_alias:
                 enabled: Yes
                 priv: _PRIV_EDIT_DRAFT
             fields:
-                language_id:
-                    label: 'Language:'
-                    type: select
-                    read_only: Yes
                 alias:
                     label: 'Alias:'
                     type: text
                     maxlength: "75"
                     onkeyup: zenarioAB.validateAlias();
                     onchange: zenarioAB.focus.___alias_changed = true;
-                    note_below: |
-                        A friendly name for this content item, and part of its URL.
-                        When combined with the content item's language code, is unique.
+                    side_note: |
+                        An alias for this content item, and part of its URL.
+                        The combination of a content item's alias and its language code is unique.
                         Lower case only, may not contain spaces or special characters.
                     post_field_html: '<div id="alias_warning_display"></div>'
+                language_id:
+                    label: 'Language:'
+                    type: select
+                    read_only: Yes
                 update_translations:
                     visible_if: zenarioA.multipleLanguagesEnabled()
                     label: 'For Translations:'
@@ -35,7 +35,7 @@ zenario_alias:
                     values:
                         update_all:
                             ord: "1"
-                            label: Update all Aliases
+                            label: Update all aliases
                         update_this:
                             ord: "2"
                             label: Just update this translation

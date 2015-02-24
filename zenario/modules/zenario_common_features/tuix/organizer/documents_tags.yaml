@@ -1,56 +1,55 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__content:
-	nav:
-		document_tags:
-			panel:
-				view_mode: list
-				disable_grid_view: Yes
-				item:
-					css_class: zenario_file_item
-				title: Document tags
-				db_items:
-					table: |
-						[[DB_NAME_PREFIX]]document_tags AS dt
-					id_column: dt.id
-				default_sort_column: tag_name
-				columns:
-					id:
-						title: ID
-						searchable: Yes
-						db_column: dt.id
-						show_by_default: false
-						align_right: Yes
-						width: xxsmall
-					tag_name:
-						title: Tag name
-						db_column: dt.tag_name
-						show_by_default: Yes
-						width: medium
-					tag_count:
-						
-				collection_buttons:
-					create_tag:
-						label: Create a tag
-						css_class: zenario_create_a_new
-						admin_box:
-							path: zenario_document_tag
-				item_buttons:
-					tag_details:
-						hide_in_select_mode: Yes
-						label: Properties
-						admin_box:
-							path: zenario_document_tag
-					delete_file:
-						hide_in_select_mode: Yes
-						label: Delete
-						multiple_select: No
-						ajax: 
-							class_name: zenario_common_features
-							confirm: 
-								message: "Are you sure you want to delete the tag \"[[tag_name]]\"?"
-								message_type: warning
-								button_message: Delete
-								cancel_button_message: Cancel
-							request: 
-								delete: Yes
+    panels:
+        document_tags:
+            view_mode: list
+            disable_grid_view: Yes
+            item:
+                css_class: zenario_document_tag_item
+            title: Document tags
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]document_tags AS dt
+                id_column: dt.id
+            default_sort_column: tag_name
+            columns:
+                id:
+                    title: ID
+                    searchable: Yes
+                    db_column: dt.id
+                    show_by_default: false
+                    align_right: Yes
+                    width: xxsmall
+                tag_name:
+                    title: Tag name
+                    db_column: dt.tag_name
+                    show_by_default: Yes
+                    width: medium
+                tag_count:
+                    
+            collection_buttons:
+                create_tag:
+                    label: Create a tag
+                    css_class: zenario_create_a_new
+                    admin_box:
+                        path: zenario_document_tag
+            item_buttons:
+                tag_details:
+                    hide_in_select_mode: Yes
+                    label: Properties
+                    admin_box:
+                        path: zenario_document_tag
+                delete_file:
+                    hide_in_select_mode: Yes
+                    label: Delete
+                    multiple_select: No
+                    ajax: 
+                        class_name: zenario_common_features
+                        confirm: 
+                            message: "Are you sure you want to delete the tag \"[[tag_name]]\"?"
+                            message_type: warning
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                        request: 
+                            delete: Yes

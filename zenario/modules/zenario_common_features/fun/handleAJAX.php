@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -308,9 +308,6 @@ if (checkPriv()) {
 				post('slotName'), post('cID'), post('cType'), post('cVersion'));
 	
 		//Handle removing modules
-		} elseif (get('removePlugin') && get('level') == 1) {
-			echo adminPhrase('Are you sure you wish to remove this plugin?');
-	
 		//(Get the number of Content Items that use this template/template family)
 		} elseif ((get('removePlugin') || get('movePlugin')) && get('level') == 2) {
 			

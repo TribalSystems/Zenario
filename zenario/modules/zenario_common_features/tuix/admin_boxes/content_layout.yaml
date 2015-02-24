@@ -1,77 +1,77 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_layout:
-	priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-	key:
-		id: ""
-		cID: ""
-		cType: ""
-	hide_tab_bar: true
-	max_height: 200
-	tabs:
-		cant_edit:
-			hidden: true
-			notices:
-				cant_edit:
-					show: true
-					type: error
-					message: |
-						You cannot make changes as some of the selected content items are locked,
-						or you do not have permissions to edit.
-			
-		mix_of_types:
-			hidden: true
-			notices:
-				mix_of_types:
-					show: true
-					type: error
-					message: |
-						You have selected content items of more than one content type.
-						
-						You must select content items of the same type to mass-change their layout.
-			
-		layout:
-			hidden: true
-			notices:
-				archived_template:
-					show: false
-					type: warning
-					message: The chosen layout is archived.
-			edit_mode:
-				enabled: false
-			fields:
-				desc:
-					full_width: Yes
-					snippet:
-						html: >
-							Use this screen to change the layout of this content item.
-						html_multi: >
-							Use this screen to change the layout of the selected content items.
-				layout_id:
-					label: 'Layout:'
-					pick_items:
-						path: zenario__layouts/nav/layouts/panel
-						target_path: zenario__layouts/nav/layouts/panel
-						min_path: zenario__layouts/nav/layouts/panel
-						max_path: zenario__layouts/nav/layouts/panel
-						disallow_refiners_looping_on_min_path: Yes
-						nothing_selected_phrase: No layout selected
-						one_to_one_choose_phrase: Choose this layout
-						select_phrase: Select a layout...
-						hide_remove_button: Yes
-					format_onchange: Yes
-				skin_id:
-					label: 'Skin:'
-					read_only: Yes
-					pick_items:
-						path: zenario__layouts/hidden_nav/skins/panel
-						target_path: zenario__layouts/hidden_nav/skins/panel
-						min_path: zenario__layouts/hidden_nav/skins/panel
-						max_path: zenario__layouts/hidden_nav/skins/panel
-	confirm:
-		show: true
-		message: ''
-		html: true
-		message_type: warning
-		button_message: Save
-		cancel_button_message: Cancel
+    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    hide_tab_bar: true
+    max_height: 200
+    tabs:
+        cant_edit:
+            hidden: true
+            notices:
+                cant_edit:
+                    show: true
+                    type: error
+                    message: |
+                        You cannot make changes as some of the selected content items are locked,
+                        or you do not have permissions to edit.
+            
+        mix_of_types:
+            hidden: true
+            notices:
+                mix_of_types:
+                    show: true
+                    type: error
+                    message: |
+                        You have selected content items of more than one content type.
+                        
+                        You must select content items of the same type to mass-change their layout.
+            
+        layout:
+            hidden: true
+            notices:
+                archived_template:
+                    show: false
+                    type: warning
+                    message: The chosen layout is archived.
+            edit_mode:
+                enabled: false
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            Use this screen to change the layout of this content item.
+                        html_multi: >
+                            Use this screen to change the layout of the selected content items.
+                layout_id:
+                    label: 'Layout:'
+                    pick_items:
+                        path: zenario__layouts/panels/layouts
+                        target_path: zenario__layouts/panels/layouts
+                        min_path: zenario__layouts/panels/layouts
+                        max_path: zenario__layouts/panels/layouts
+                        disallow_refiners_looping_on_min_path: Yes
+                        nothing_selected_phrase: No layout selected
+                        one_to_one_choose_phrase: Choose this layout
+                        select_phrase: Select a layout...
+                        hide_remove_button: Yes
+                    format_onchange: Yes
+                skin_id:
+                    label: 'Skin:'
+                    read_only: Yes
+                    pick_items:
+                        path: zenario__layouts/panels/skins
+                        target_path: zenario__layouts/panels/skins
+                        min_path: zenario__layouts/panels/skins
+                        max_path: zenario__layouts/panels/skins
+    confirm:
+        show: true
+        message: ''
+        html: true
+        message_type: warning
+        button_message: Save
+        cancel_button_message: Cancel

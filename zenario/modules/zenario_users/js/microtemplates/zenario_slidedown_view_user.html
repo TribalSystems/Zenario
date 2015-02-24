@@ -1,0 +1,9 @@
+<p>User ID: {{m.id|escape}}</p>
+<p>{{zenarioO.columnValue(m.id, 'first_name')}} {{zenarioO.columnValue(m.id, 'last_name')}}</p>
+
+{% if (zenarioO.columnValue(m.id, 'email') && zenarioO.columnValue(m.id, 'email') != zenarioO.columnValue(m.id, 'screen_name')) { %}
+	<p>{{zenarioO.columnValue(m.id, 'screen_name')}}</p>
+	<p>{{zenarioO.columnValue(m.id, 'email')}}</p>
+{% } %}
+
+{{ zenario.sendSignal('showUserSlidedownView', m).join('') }}

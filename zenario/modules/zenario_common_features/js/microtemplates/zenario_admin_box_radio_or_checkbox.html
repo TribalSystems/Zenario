@@ -1,0 +1,34 @@
+<% if (m.newRow) { %>
+	<br/>
+<% } %>
+
+<% if (m.lovField.pre_field_html !== undefined) { %>
+	{{m.lovField.pre_field_html}}
+<% } %>
+
+<% if (m.lovField.side_note) { %>
+	<div class="zenario_side_note_wrap">
+		<div class="zenario_side_note">
+			<div class="zenario_note_icon"></div>
+			<div class="zenario_note_content">{{m.lovField.side_note}}</div>
+		</div>
+	</div>
+<% } %>
+
+{{m.lovHTML}}
+
+<label for="{{m.lovId|escape}}" id="label_for__{{m.lovId|escape}}">
+	{{m.lovField.label}}
+</label>
+
+<% if (m.lovField.post_field_html !== undefined) { %>
+	{{m.lovField.post_field_html}}
+<% } %>
+
+<% if (m.lovField.note_below) { %>
+	<div class="zenario_note_below">{{m.lovField.note_below}}</div>
+<% } %>
+
+<% if (m.childrenHTML) { %>
+	{{m.childrenHTML}}
+<% } %>

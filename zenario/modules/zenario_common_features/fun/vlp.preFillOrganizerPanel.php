@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -75,9 +75,9 @@ if (!$refinerName || $refinerName == 'language' || $refinerName == 'language_and
 	unset($panel['columns']['localized_phrases']);
 }
 
-if ($path == 'zenario__languages/nav/vlp/panel') {
+if ($path == 'zenario__languages/panels/phrases') {
 	
-	$languages = getLanguages(false, false, true, true);
+	$languages = getLanguages(false, true, true);
 	$ord = 2;
 	foreach ($languages as $language) {
 		$alias = '`'. sqlEscape('vp_'. $language['id']). '`';
@@ -87,12 +87,14 @@ if ($path == 'zenario__languages/nav/vlp/panel') {
 				'title' => 'Text in '.$language['english_name'],
 				'show_by_default' => '1',
 				'ord' => $ord,
-				'db_column' => $alias. '.local_text',
-				'table_join' => "
-					LEFT JOIN ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
-					   ON ". $alias. ".code = vp.code
-					  AND ". $alias. ".module_class_name = vp.module_class_name
-					  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'"
+				'db_column' => "(
+						SELECT local_text
+						FROM ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
+						WHERE ". $alias. ".code = vp.code
+						  AND ". $alias. ".module_class_name = vp.module_class_name
+						  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'
+						LIMIT 1
+					)"
 			);
 		$panel['columns']['protect_'. $language['id']] =
 			array(
@@ -101,14 +103,16 @@ if ($path == 'zenario__languages/nav/vlp/panel') {
 				'show_by_default' => '1',
 				'format' => 'yes_or_no',
 				'ord' => $ord + 0.01,
-				'db_column' => $alias. '.protect_flag',
 				'width' => 'xxsmall',
 				'align_right' => true,
-				'table_join' => "
-					LEFT JOIN ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
-					   ON ". $alias. ".code = vp.code
-					  AND ". $alias. ".module_class_name = vp.module_class_name
-					  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'"
+				'db_column' => "(
+						SELECT protect_flag
+						FROM ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
+						WHERE ". $alias. ".code = vp.code
+						  AND ". $alias. ".module_class_name = vp.module_class_name
+						  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'
+						LIMIT 1
+					)"
 			);
 		
 		$ord += 0.02;

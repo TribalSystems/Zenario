@@ -1,0 +1,52 @@
+display_name: Duke Street
+
+type: usable
+
+style_formats:
+	-
+		title: "Text extra small"
+		selector: "*"
+		classes: "x-small"
+	-
+		title: "Text small"
+		selector: "*"
+		classes: "small"
+	-
+		title: "Text large"
+		selector: "*"
+		classes: "large"
+	-
+		title: "Text extra large"
+		selector: "*"
+		classes: "x-large"
+	-
+		title: "Code"
+		selector: "*"
+		classes: "code"
+
+pickable_css_class_names:
+	plugins:
+		-
+			module_css_class_name: zenario_banner
+			css_class_name: banner_masthead
+			label: Masthead
+		-
+			module_css_class_name: zenario_content_list
+			css_class_name: content_list_sand_box
+			label: Recent pages
+		-
+			module_css_class_name: zenario_html_snippet
+			css_class_name: html_video_box
+			label: Watch our video
+	#content_items:
+	#	-
+	#		css_class_name: example_class
+	#		label: Example Label
+	#layouts:
+	#	-
+	#		css_class_name: example_class
+	#		label: Example Label
+	#menu_nodes:
+	#	-
+	#		css_class_name: example_class
+	#		label: Example Label

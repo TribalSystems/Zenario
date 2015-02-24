@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -100,13 +100,6 @@ switch ($floatingBoxName)
 									   'Type'=> 'varchar(255)',
 									   'Table' => ZENARIO_COUNTRY_MANAGER_PREFIX .  'country_manager_regions',
 									   'Numeric'=>false
-									   ),
-						'code' => array('Label' => 'Region code:',
-									   'Field' => 'code',
-									   'Type'=> 'varchar(5)',
-									   'Table' => ZENARIO_COUNTRY_MANAGER_PREFIX .  'country_manager_regions',
-									   'Numeric'=>false,
-									   'Note Below'=>'On a multilingual site you can use a Region code to make of a Region name.'
 									   )
 								);
 		echo dynamicThickboxFormInner(true,$editFields,array(),$_POST,$currentValues,array(),array());
@@ -118,13 +111,6 @@ switch ($floatingBoxName)
 									   'Type'=> 'varchar(255)',
 									   'Table' => ZENARIO_COUNTRY_MANAGER_PREFIX .  'country_manager_regions',
 									   'Numeric'=>false
-									   ),
-						'code' => array('Label' => 'Region code:',
-									   'Field' => 'code',
-									   'Type'=> 'varchar(5)',
-									   'Table' => ZENARIO_COUNTRY_MANAGER_PREFIX .  'country_manager_regions',
-									   'Numeric'=>false,
-									   'Note Below'=>'On a multilingual site you can use a Region code to make of a Region name.'
 									   )
 								);
 		echo dynamicThickboxFormInner(true,$editFields,array(),$_POST,array(),array(),array());

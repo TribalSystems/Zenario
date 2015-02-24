@@ -1,0 +1,59 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_pro_features_spare_alias:
+    priv: _PRIV_MANAGE_SPARE_ALIAS
+    title: Creating a spare alias (permanent redirect)
+    key:
+        id: ""
+        id_is_error_log_id: false
+    hide_tab_bar: Yes
+    tabs:
+        spare_alias:
+            edit_mode:
+                enabled: Yes
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            Use this panel to define a spare alias (permanent redirect).
+                            
+                            When a visitor follows a link to a spare alias on this site, the CMS responds with a permanent redirect. This can be a redirect to a content item, or another URL.
+                            
+                            Spare aliases are handy if a page's URL has changed (thus avoiding a Not Found message),
+                            or if you want to give the same page several aliases.
+                alias:
+                    label: 'Spare alias:'
+                    type: text
+                    maxlength: "75"
+                target_loc:
+                    label: 'Destination:'
+                    type: radios
+                    value: int
+                    values:
+                        int:
+                            ord: "2"
+                            label: Link to a content item
+                        ext:
+                            ord: "3"
+                            label: Link to an external URL
+                    format_onchange: Yes
+                hyperlink_target:
+                    label: 'Content Item:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select content item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a content item
+                    format_onchange: Yes
+                ext_url:
+                    label: 'External URL:'
+                    type: url
+                    maxlength: "255"
+                    validation:
+                        required_if_not_hidden: Please enter a URL

@@ -1,0 +1,13 @@
+.zenario_fbAdminImageManager_ImageChanger {
+	z-index: 2001;
+	background: white;
+}
+
+.zenario_fbAdminImageManager {
+	z-index: 2000;
+	background: white;
+}
+
+.zenario_fbAdminImageManager .zenario_close_image_manager {
+	float: right;
+}

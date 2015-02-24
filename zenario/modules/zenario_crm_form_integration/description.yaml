@@ -1,0 +1,22 @@
+required_cms_version: 7.0.3
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: CRM form integration
+description: |
+	<p>
+				This Module allow you integrate a CRM in the user form module.
+	</p>
+category: management
+keywords: crm, integration, form, forms
+#default_framework: standard
+vlp_class_name: zenario_crm_form_integration
+is_pluggable: No
+dependencies:
+	zenario_user_forms: true
+signals:
+	signal1:
+		name: eventUserFormSubmitted
+		static: Yes

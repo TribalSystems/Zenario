@@ -22,6 +22,6 @@ zenario_custom_tab:
                     validation:
                         required: 'Please enter a label'
                 parent_field_id:
-                    label: 'Only show if this field is checked:'
+                    label: 'Conditional display on field:'
                     type: select
-                    empty_value: " -- No parent -- "
+                    empty_value: " -- No conditional display -- "

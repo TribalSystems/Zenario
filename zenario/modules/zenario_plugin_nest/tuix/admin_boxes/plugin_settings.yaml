@@ -2,157 +2,157 @@
 ---
 plugin_settings:
 
-	tabs:
-		first_tab:
-			label: Display
-			fields:
-				use_phrases:
-					plugin_setting:
-						name: use_phrases
-					label: 'Use visitor phrases:'
-					type: checkbox
-					note_below: >
-						When enabled, visitor phrases will be merged into the header field. For example, use [[_MY_PHRASE]]
-						to merge a phrase called _MY_PHRASE
-				show_heading:
-					plugin_setting:
-						name: show_heading
-					label: 'Heading:'
-					type: select
-					empty_value: "Don't show a heading"
-					values:
-						1:
-							label: Show a heading
-					value: ""
-					format_onchange: Yes
-					
-				heading_text:
-					plugin_setting:
-						name: heading_text
-					label: Heading
-					type: text
-					value: 'Type your heading here'
+    tabs:
+        first_tab:
+            label: Display
+            fields:
+                use_phrases:
+                    plugin_setting:
+                        name: use_phrases
+                    label: 'Use visitor phrases:'
+                    type: checkbox
+                    note_below: >
+                        When enabled, visitor phrases will be merged into the header field. For example, use [[_MY_PHRASE]]
+                        to merge a phrase called _MY_PHRASE
+                show_heading:
+                    plugin_setting:
+                        name: show_heading
+                    label: 'Heading:'
+                    type: select
+                    empty_value: "Don't show a heading"
+                    values:
+                        1:
+                            label: Show a heading
+                    value: ""
+                    format_onchange: Yes
+                    
+                heading_text:
+                    plugin_setting:
+                        name: heading_text
+                    label: Heading
+                    type: text
+                    value: 'Type your heading here'
 
-		size:
-			label: Size
-			fields:
-				desc:
-					full_width: Yes
-					snippet:
-						html: |
-							You can set default values to apply to Banner Plugins that have an image.
-															The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
-				banner_canvas:
-					plugin_setting:
-						name: banner_canvas
-					label: 'Size constraint:'
-					type: select
-					value: unlimited
-					values:
-						unlimited:
-							ord: "1"
-							label: Unlimited size
-						fixed_width:
-							ord: "2"
-							label: Constrain by width
-						fixed_height:
-							ord: "3"
-							label: Constrain by height
-						fixed_width_and_height:
-							ord: "4"
-							label: Constrain by width and height
-						resize_and_crop:
-							ord: "5"
-							label: Resize and crop
-					format_onchange: Yes
-				banner_width:
-					plugin_setting:
-						name: banner_width
-					label: 'Width:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter a width.
-						numeric: The width must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-				banner_height:
-					plugin_setting:
-						name: banner_height
-					label: 'Height:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter a height.
-						numeric: The height must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-				enlarge_image:
-					plugin_setting:
-						name: enlarge_image
-					label: 'Enlarge images in a floating box:'
-					type: checkbox
-					format_onchange: Yes
-				enlarge_canvas:
-					plugin_setting:
-						name: enlarge_canvas
-					label: 'Enlarged image canvas:'
-					type: select
-					value: unlimited
-					values:
-						unlimited:
-							ord: "1"
-							label: Unlimited size
-						fixed_width:
-							ord: "2"
-							label: Constrain by width
-						fixed_height:
-							ord: "3"
-							label: Constrain by height
-						fixed_width_and_height:
-							ord: "4"
-							label: Constrain by width and height
-					format_onchange: Yes
-				enlarge_width:
-					plugin_setting:
-						name: enlarge_width
-					label: 'Width:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter an enlarged width.
-						numeric: The enlarged width must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-				enlarge_height:
-					plugin_setting:
-						name: enlarge_height
-					label: 'Height:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter an enlarged height.
-						numeric: The enlarged height must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-		author_advice:
-			visible_if: '!zenarioAB.focus.key.isVersionControlled && !zenarioAB.focus.key.nest'
-			label: Author advice
-			fields:
-				author_advice:
-					plugin_setting:
-						name: author_advice
-					label: 'Author advice:'
-					type: textarea
-					rows: "4"
-					cols: "60"
-					style: 'width: auto;'
-					note_below: >
-						Enter advice that you would like to give to Authors. This
-						will appear while in Edit Mode.
-	module_class_name: zenario_plugin_nest
+        size:
+            label: Size
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            You can set default values to apply to Banner Plugins that have an image.
+                                                            The values you choose here will apply to every Banner, unless overridden by settings of individual Banners.
+                banner_canvas:
+                    plugin_setting:
+                        name: banner_canvas
+                    label: 'Size constraint:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                banner_width:
+                    plugin_setting:
+                        name: banner_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                banner_height:
+                    plugin_setting:
+                        name: banner_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_image:
+                    plugin_setting:
+                        name: enlarge_image
+                    label: 'Enlarge images in a floating box:'
+                    type: checkbox
+                    format_onchange: Yes
+                enlarge_canvas:
+                    plugin_setting:
+                        name: enlarge_canvas
+                    label: 'Enlarged image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                    format_onchange: Yes
+                enlarge_width:
+                    plugin_setting:
+                        name: enlarge_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged width.
+                        numeric: The enlarged width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                enlarge_height:
+                    plugin_setting:
+                        name: enlarge_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter an enlarged height.
+                        numeric: The enlarged height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+        author_advice:
+            visible_if: '!zenarioAB.focus.key.isVersionControlled && !zenarioAB.focus.key.nest'
+            label: Author advice
+            fields:
+                author_advice:
+                    plugin_setting:
+                        name: author_advice
+                    label: 'Author advice:'
+                    type: textarea
+                    rows: "4"
+                    cols: "60"
+                    style: 'width: auto;'
+                    note_below: >
+                        Enter advice that you would like to give to Authors. This
+                        will appear while in Edit Mode.
+    module_class_name: zenario_plugin_nest
 

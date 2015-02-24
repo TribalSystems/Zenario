@@ -1,15 +1,18 @@
-/*! jQuery UI - v1.10.3 - 2013-10-20
-* http://jqueryui.com
-* Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
 
-(function( $, undefined ) {
+/*!
+ * jQuery UI Slider 1.11.2
+ * http://jqueryui.com
+ *
+ * Copyright 2014 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/slider/
+ */
 
-// number of pages in a slider
-// (how many times can you page up/down to go through the whole range)
-var numPages = 5;
 
-$.widget( "ui.slider", $.ui.mouse, {
-	version: "1.10.3",
+var slider = $.widget( "ui.slider", $.ui.mouse, {
+	version: "1.11.2",
 	widgetEventPrefix: "slide",
 
 	options: {
@@ -30,6 +33,10 @@ $.widget( "ui.slider", $.ui.mouse, {
 		stop: null
 	},
 
+	// number of pages in a slider
+	// (how many times can you page up/down to go through the whole range)
+	numPages: 5,
+
 	_create: function() {
 		this._keySliding = false;
 		this._mouseSliding = false;
@@ -37,6 +44,7 @@ $.widget( "ui.slider", $.ui.mouse, {
 		this._handleIndex = null;
 		this._detectOrientation();
 		this._mouseInit();
+		this._calculateNewMax();
 
 		this.element
 			.addClass( "ui-slider" +
@@ -62,7 +70,7 @@ $.widget( "ui.slider", $.ui.mouse, {
 		var i, handleCount,
 			options = this.options,
 			existingHandles = this.element.find( ".ui-slider-handle" ).addClass( "ui-state-default ui-corner-all" ),
-			handle = "<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a>",
+			handle = "<span class='ui-slider-handle ui-state-default ui-corner-all' tabindex='0'></span>",
 			handles = [];
 
 		handleCount = ( options.values && options.values.length ) || 1;
@@ -120,21 +128,25 @@ $.widget( "ui.slider", $.ui.mouse, {
 			this.range.addClass( classes +
 				( ( options.range === "min" || options.range === "max" ) ? " ui-slider-range-" + options.range : "" ) );
 		} else {
-			this.range = $([]);
+			if ( this.range ) {
+				this.range.remove();
+			}
+			this.range = null;
 		}
 	},
 
 	_setupEvents: function() {
-		var elements = this.handles.add( this.range ).filter( "a" );
-		this._off( elements );
-		this._on( elements, this._handleEvents );
-		this._hoverable( elements );
-		this._focusable( elements );
+		this._off( this.handles );
+		this._on( this.handles, this._handleEvents );
+		this._hoverable( this.handles );
+		this._focusable( this.handles );
 	},
 
 	_destroy: function() {
 		this.handles.remove();
-		this.range.remove();
+		if ( this.range ) {
+			this.range.remove();
+		}
 
 		this.element
 			.removeClass( "ui-slider" +
@@ -306,7 +318,7 @@ $.widget( "ui.slider", $.ui.mouse, {
 				} );
 				otherVal = this.values( index ? 0 : 1 );
 				if ( allowed !== false ) {
-					this.values( index, newVal, true );
+					this.values( index, newVal );
 				}
 			}
 		} else {
@@ -407,7 +419,7 @@ $.widget( "ui.slider", $.ui.mouse, {
 				this.options.value = this._values( 0 );
 				this.options.values = null;
 			} else if ( value === "max" ) {
-				this.options.value = this._values( this.options.values.length-1 );
+				this.options.value = this._values( this.options.values.length - 1 );
 				this.options.values = null;
 			}
 		}
@@ -416,7 +428,11 @@ $.widget( "ui.slider", $.ui.mouse, {
 			valsLength = this.options.values.length;
 		}
 
-		$.Widget.prototype._setOption.apply( this, arguments );
+		if ( key === "disabled" ) {
+			this.element.toggleClass( "ui-state-disabled", !!value );
+		}
+
+		this._super( key, value );
 
 		switch ( key ) {
 			case "orientation":
@@ -425,6 +441,9 @@ $.widget( "ui.slider", $.ui.mouse, {
 					.removeClass( "ui-slider-horizontal ui-slider-vertical" )
 					.addClass( "ui-slider-" + this.orientation );
 				this._refreshValue();
+
+				// Reset positioning from previous orientation
+				this.handles.css( value === "horizontal" ? "bottom" : "left", "" );
 				break;
 			case "value":
 				this._animateOff = true;
@@ -440,9 +459,11 @@ $.widget( "ui.slider", $.ui.mouse, {
 				}
 				this._animateOff = false;
 				break;
+			case "step":
 			case "min":
 			case "max":
 				this._animateOff = true;
+				this._calculateNewMax();
 				this._refreshValue();
 				this._animateOff = false;
 				break;
@@ -480,7 +501,7 @@ $.widget( "ui.slider", $.ui.mouse, {
 			// .slice() creates a copy of the array
 			// this copy gets trimmed by min and max and then returned
 			vals = this.options.values.slice();
-			for ( i = 0; i < vals.length; i+= 1) {
+			for ( i = 0; i < vals.length; i += 1) {
 				vals[ i ] = this._trimAlignValue( vals[ i ] );
 			}
 
@@ -511,12 +532,17 @@ $.widget( "ui.slider", $.ui.mouse, {
 		return parseFloat( alignValue.toFixed(5) );
 	},
 
+	_calculateNewMax: function() {
+		var remainder = ( this.options.max - this._valueMin() ) % this.options.step;
+		this.max = this.options.max - remainder;
+	},
+
 	_valueMin: function() {
 		return this.options.min;
 	},
 
 	_valueMax: function() {
-		return this.options.max;
+		return this.max;
 	},
 
 	_refreshValue: function() {
@@ -578,7 +604,6 @@ $.widget( "ui.slider", $.ui.mouse, {
 
 	_handleEvents: {
 		keydown: function( event ) {
-			/*jshint maxcomplexity:25*/
 			var allowed, curVal, newVal, step,
 				index = $( event.target ).data( "ui-slider-handle-index" );
 
@@ -618,10 +643,13 @@ $.widget( "ui.slider", $.ui.mouse, {
 					newVal = this._valueMax();
 					break;
 				case $.ui.keyCode.PAGE_UP:
-					newVal = this._trimAlignValue( curVal + ( (this._valueMax() - this._valueMin()) / numPages ) );
+					newVal = this._trimAlignValue(
+						curVal + ( ( this._valueMax() - this._valueMin() ) / this.numPages )
+					);
 					break;
 				case $.ui.keyCode.PAGE_DOWN:
-					newVal = this._trimAlignValue( curVal - ( (this._valueMax() - this._valueMin()) / numPages ) );
+					newVal = this._trimAlignValue(
+						curVal - ( (this._valueMax() - this._valueMin()) / this.numPages ) );
 					break;
 				case $.ui.keyCode.UP:
 				case $.ui.keyCode.RIGHT:
@@ -641,9 +669,6 @@ $.widget( "ui.slider", $.ui.mouse, {
 
 			this._slide( event, index, newVal );
 		},
-		click: function( event ) {
-			event.preventDefault();
-		},
 		keyup: function( event ) {
 			var index = $( event.target ).data( "ui-slider-handle-index" );
 
@@ -655,7 +680,4 @@ $.widget( "ui.slider", $.ui.mouse, {
 			}
 		}
 	}
-
 });
-
-}(jQuery));

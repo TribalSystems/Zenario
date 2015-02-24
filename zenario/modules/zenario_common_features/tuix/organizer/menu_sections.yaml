@@ -1,57 +1,58 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__menu:
-	hidden_nav:
-		sections:
-			panel:
-				title: Menu Sections
-				view_mode: list
-				disable_grid_view: Yes
-				db_items:
-					table: '[[DB_NAME_PREFIX]]menu_sections AS ms'
-					id_column: ms.id
-					client_side: Yes
-				columns:
-					name:
-						title: Section name
-						searchable: Yes
-						db_column: ms.section_name
-						show_by_default: Yes
-				item:
-					name: Section
-					names: Sections
-					css_class: menu_section
-					tooltip_when_link_is_active: 'View menu nodes in the section &quot;[[name]]&quot;.'
-					link:
-						path: zenario__menu/hidden_nav/menu_nodes/panel
-						branch: Yes
-						refiner: section
-				collection_buttons:
-					advanced_dropdown:
-						label: Advanced
-						ord: "20"
-						hide_when_children_are_not_visible: Yes
-				item_buttons:
-					view_dropdown:
-						label: View
-						ord: "10"
-						multiple_select: Yes
-						hide_when_children_are_not_visible: Yes
-					advanced_dropdown:
-						label: Advanced
-						ord: "20"
-						multiple_select: Yes
-						hide_when_children_are_not_visible: Yes
-					tree_explorer:
-						hide_in_select_mode: Yes
-						name: Explore tree
-						popout:
-							href: zenario/admin/tree_explorer/index.php?type=section
-							width: 100%
-							height: 100%
-							maxWidth: 100%
-							maxHeight: 100%
-							initialWidth: 100%
-							initialHeight: 100%
-							iframe: Yes
-							transition: none
+    panels:
+        sections:
+            title: Menu Sections
+            view_mode: list
+            #disable_grid_view: Yes
+            #default_sort_column: name
+            #default_sort_desc: Yes
+            db_items:
+                table: '[[DB_NAME_PREFIX]]menu_sections AS ms'
+                id_column: ms.id
+                client_side: Yes
+            columns:
+                name:
+                    title: Section name
+                    searchable: Yes
+                    db_column: ms.section_name
+                    show_by_default: Yes
+            item:
+                name: Section
+                names: Sections
+                css_class: menu_section
+                tooltip_when_link_is_active: 'View menu nodes in the section &quot;[[name]]&quot;.'
+                link:
+                    path: zenario__menu/panels/menu_nodes
+                    branch: Yes
+                    refiner: section
+            collection_buttons:
+                advanced_dropdown:
+                    label: Advanced
+                    ord: "20"
+                    hide_when_children_are_not_visible: Yes
+            item_buttons:
+                view_dropdown:
+                    label: View
+                    ord: "10"
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
+                advanced_dropdown:
+                    label: Advanced
+                    ord: "20"
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
+                tree_explorer:
+                    hide_in_select_mode: Yes
+                    name: Explore tree
+                    popout:
+                        href: zenario/admin/tree_explorer/index.php?type=section
+                        width: 100%
+                        height: 100%
+                        maxWidth: 100%
+                        maxHeight: 100%
+                        initialWidth: 100%
+                        initialHeight: 100%
+                        iframe: Yes
+                        transition: none

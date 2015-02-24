@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ if ($smartGroupId
 	$inclusionPieces = array();
 	$exclusionPieces = array();
 	
-	foreach (modulesAndTUIXFiles('admin_boxes', 'advanced_search', 'zenario__users/nav/users/panel', false, false) as $module) {
+	foreach (modulesAndTUIXFiles('admin_boxes', 'advanced_search', 'zenario__users/panels/users', false, false) as $module) {
 		if (inc($module['class_name'])) {
 			if ($inclusionPiece = call_user_func(array($module['class_name'], 'smartGroupInclusionsDescription'), $json)) {
 				$inclusionPieces[] = $inclusionPiece;

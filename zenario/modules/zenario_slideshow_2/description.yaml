@@ -1,0 +1,43 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Slideshow 2
+description: |
+            <p>This Module allows you to create a Slideshow of Banners with images and/or text with links.</p>
+            <p><b>Styling arrow buttons</b></p>
+            <ul>
+            <li>.arrow<b>l</b> + .arrow<b>r</b> -- normal</li>
+            <li>.arrow<b>ldn</b> + .arrow<b>rdn</b> -- mousedown</li>
+            </ul>
+            <p><b>Styling bullet navigator</b></p>
+            <ul>
+            <li>.bullet -- normal</li>
+            <li>.bullet .av -- active </li>
+            <li>.bullet .dn -- mousedown</li>
+            </ul>
+            <p><b>Styling thumbnail navigator</b></p>
+            <ul>
+            <li>.tab .p -- normal</li>
+            <li>.tab .pav -- active</li>
+            <li>.tab .pdn -- mousedown</li>
+            </ul>
+keywords: >
+    masthead, callout, call-out, document, download, image,
+    picture, gif, jpg, jpeg, png, link, hyperlink, url
+vlp_class_name: zenario_slideshow_2
+css_class_name: zenario_slideshow_2
+is_pluggable: true
+can_be_version_controlled: true
+default_framework: standard
+default_instance_name: Untitled Slideshow
+signals:
+    signal1:
+        name: eventPluginInstanceDuplicated
+        static: true
+    signal2:
+        name: eventPluginInstanceDeleted
+        static: true

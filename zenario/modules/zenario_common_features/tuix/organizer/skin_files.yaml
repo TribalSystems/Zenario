@@ -1,62 +1,57 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__layouts:
-    hidden_nav:
-        skins:
-            panel:
-                hidden_nav:
-                    skin_files:
-                        panel:
-                            php: Yes
-                            title: Skin Files
-                            no_items_message: There are no files in this skin
-                            columns:
-                                name:
-                                    title: Filename
-                                    show_by_default: Yes
-                                path:
-                                    title: Path
-                                    show_by_default: Yes
-                                filesize:
-                                    title: Size
-                                    format: filesize
-                                    show_by_default: Yes
-                            refiners:
-                                skin:
-                                    exists: Yes
-                                subpath:
-                                    exists: Yes
-                            refiner_required: Yes
-                            view_mode: list
-                            disable_grid_view: Yes
-                            disable_summary_view: Yes
-                            item:
-                                name: Skin File
-                                names: Skin Files
-                                css_class: dropbox_file
-                                link:
-                                    path: zenario__layouts/hidden_nav/skins/panel/hidden_nav/skin_files/panel
-                                    branch: Yes
-                                    refiner: subpath
-                                tooltip_when_link_is_active: 'View files in the sub-directory &quot;[[name]]&quot;'
-                            item_buttons:
-                                view_dropdown:
-                                    label: View
-                                    multiple_select: Yes
-                                    hide_when_children_are_not_visible: Yes
-                                code:
-                                    parent: view_dropdown
-                                    label: Source code
-                                    admin_box:
-                                        path: zenario_view_source_code
-                                        key:
-                                            type: skin_file
-                                    visible_if_for_all_selected_items: >
-                                        item.name.match(/\.(css|htm|html|txt|text|xml|yml|yaml)$/i)
-                                view_image:
-                                    parent: view_dropdown
-                                    label: View image
-                                    popout:
-                                        exists: Yes
-                                    visible_if_for_all_selected_items: >
-                                        item.name.match(/\.(gif|jpg|jpeg|png)$/i)
+    panels:
+        skin_files:
+            title: Skin Files
+            no_items_message: There are no files in this skin
+            columns:
+                name:
+                    title: Filename
+                    show_by_default: true
+                path:
+                    title: Path
+                    show_by_default: true
+                filesize:
+                    title: Size
+                    format: filesize
+                    show_by_default: true
+            refiners:
+                skin:
+                    exists: true
+                subpath:
+                    exists: true
+            refiner_required: true
+            view_mode: list
+            disable_grid_view: true
+            disable_summary_view: true
+            item:
+                name: Skin File
+                names: Skin Files
+                css_class: dropbox_file
+                link:
+                    path: zenario__layouts/panels/skin_files
+                    branch: true
+                    refiner: subpath
+                tooltip_when_link_is_active: 'View files in the sub-directory &quot;[[name]]&quot;'
+            item_buttons:
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                code:
+                    parent: view_dropdown
+                    label: Source code
+                    admin_box:
+                        path: zenario_view_source_code
+                        key:
+                            type: skin_file
+                    visible_if_for_all_selected_items: >
+                        item.name.match(/\.(css|htm|html|txt|text|xml|yml|yaml)$/i)
+                view_image:
+                    parent: view_dropdown
+                    label: View image
+                    popout:
+                        exists: true
+                    visible_if_for_all_selected_items: >
+                        item.name.match(/\.(gif|jpg|jpeg|png)$/i)

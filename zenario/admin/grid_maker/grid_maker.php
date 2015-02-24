@@ -20,7 +20,7 @@ $prefix = '../../';
 CMSWritePageHead($prefix, false, false);
 
 
-getCSSJSCodeHash();
+checkForChangesInCssJsAndHtmlFiles();
 $v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
 
 echo '

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -399,5 +399,12 @@ revision(28,
 ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions
 DROP KEY `code`,
 ADD CONSTRAINT UNIQUE  (`name`,`parent_id`,`country_id`)
+_sql
+);
+revision(58,
+<<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions 
+	ADD COLUMN `region_type` enum('region', 'state', 'city') NOT NULL DEFAULT 'region',
+	ADD KEY (`region_type`);
 _sql
 );

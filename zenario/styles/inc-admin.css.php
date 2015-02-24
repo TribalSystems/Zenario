@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -52,8 +52,13 @@ incCCS('zenario/styles/admin_controls');
 incCCS('zenario/styles/admin');
 incCCS('zenario/styles/colorbox');
 
-//Just testing - include the intro library
+//Include other third-party libraries
 incCCS('zenario/libraries/mit/intro/introjs');
+incCCS('zenario/libraries/mit/spectrum/spectrum');
+
+echo '
+$.fn.spectrum.load = false;
+';
 
 
 //Include a list of fixes for IE

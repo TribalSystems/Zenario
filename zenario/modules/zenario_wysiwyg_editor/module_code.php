@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -76,14 +76,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box.
-				//The only thing you can change is the Framework and CSS.
-				//EXCEPTION: With Nested WYSIWYG Editors, allow them to be edited from the settings box.
-				if ($box['key']['isVersionControlled'] && !$box['key']['nest']) {
-					$box['tabs']['first_tab']['hidden'] = true;
-					$box['tabs']['first_tab']['fields']['html']['hidden'] = true;
-					$box['tabs']['first_tab']['edit_mode'] = array('enabled' => false, 'on' => false, 'always_on' => false);
-				}
 				
 				//Removed the "Sync Content Summary" option
 				/*
@@ -111,12 +103,12 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				//Otherwise remove the ability to add images
 				if ($box['key']['isVersionControlled'] && empty($box['tabs']['first_tab']['hidden'])) {
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['path'] =
-						'zenario__content/nav/content/panel/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
+						'zenario__content/panels/content/item_buttons/images//'. $box['key']['cType']. '_'. $box['key']['cID']. '//';
 					
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['min_path'] =
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['max_path'] =
 					$box['tabs']['first_tab']['fields']['html']['insert_image_button']['pick_items']['target_path'] =
-						'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel';
+						'zenario__content/panels/inline_images_for_content';
 				
 				} else {
 					unset($box['tabs']['first_tab']['fields']['html']['insert_image_button']);
@@ -136,14 +128,6 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				//Workaround for problems with absolute and relative URLs:
 					//Second, convert all absolute URLs to relative URLs when saving
 				stripAbsURLsFromAdminBoxField($box['tabs']['first_tab']['fields']['html']);
-				
-				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box
-				//The only thing you can change is the Framework and CSS
-				if ($box['key']['isVersionControlled'] && !$box['key']['nest']) {
-					$box['tabs']['first_tab']['hidden'] = true;
-					$box['tabs']['first_tab']['fields']['html']['hidden'] = true;
-					$box['tabs']['first_tab']['edit_mode'] = array('enabled' => false, 'on' => false, 'always_on' => false);
-				}
 				
 				break;
 		}
@@ -182,6 +166,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		
 		//Alow allow editing of inline content if this is a version controlled Plugin
 		if ($this->isVersionControlled) {
+			
 			//Handle submitting revisions by AJAX
 			if (post('_zenario_save_content_')) {
 				$this->saveContent();
@@ -200,6 +185,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 					$this->openEditor();
 				}
 			}
+			
+			// Enable double click access to editor
+			$buttonSelector = '#zenario_slot_control__'.$this->slotName.'__actions__'.$this->moduleClassName.'__edit_inline';
+			$this->callScript('zenario_wysiwyg_editor', 'listenForDoubleClick', $this->slotName, $this->containerId, $buttonSelector);
+			
 		}
 		
 		return zenario_html_snippet::init();

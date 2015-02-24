@@ -267,9 +267,9 @@ div.zenario_add_cell {
 
 div.zenario_grid_border {
 	overflow:hidden;
+	/*border-bottom-style: none;*/
 	padding: 10px 0 5px;
 	border: red 2px solid;
-	/*border-bottom-style: none;*/
 	margin-top: 10px;
 	margin-bottom: 10px;
 	background: url('../admin/images/grid_maker/white-bg.png');
@@ -316,6 +316,46 @@ div.zenario_grid_break_outer_wrap div.zenario_grid_border {
 	border: 1px solid black;
 	/*background: #fdd5d5;*/
 }
+
+
+/*  Different Grid Heights  */
+
+body.iframe .zenario_grid_bg_preview .small_slot div.zenario_grid_border {
+	/*border: 2px;*/
+	padding: 5px 0 5px;
+	height: 16px;
+}
+
+body.iframe .zenario_grid_bg_preview .medium_slot div.zenario_grid_border {
+	/*border: 2px;*/
+	padding: 10px 0 5px;
+	height: 61px;
+}
+
+body.iframe .zenario_grid_bg_preview .large_slot div.zenario_grid_border {
+	/*border: 2px;*/
+	padding: 10px 0 5px;
+	height: 111px;
+}
+
+body.iframe .zenario_grid_bg_preview .xlarge_slot div.zenario_grid_border {
+	/*border: 2px;*/
+	padding: 10px 0 5px;
+	height: 161px;
+}
+
+body.iframe .zenario_grid_bg_preview .xxlarge_slot div.zenario_grid_border {
+	/*border: 2px;*/
+	padding: 10px 0 5px;
+	height: 211px;
+}
+
+
+
+
+
+
+
 
 /* Settings area 
 --------------------------------------------------------------------------------------------------*/

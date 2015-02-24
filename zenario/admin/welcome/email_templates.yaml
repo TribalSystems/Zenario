@@ -3,24 +3,23 @@ email_templates:
         subject: "Zenario is installed successfully!"
         from: Zenario Installer
         body: |
-            Congratulations!
+            Congratulations! You have successfully installed Zenario.
 
-            You have successfully installed Zenario.
+            Your site's home page is [[URL]][[SUBDIRECTORY]]
 
-            Your site's main URL for visitors is: [[URL]][[SUBDIRECTORY]]
+            To administer your site, please go to [[URL]][[SUBDIRECTORY]]zenario/admin
 
-            Your site's URL for administration: [[URL]][[SUBDIRECTORY]]zenario/admin
+            Your admin username is [[USERNAME]]
 
-            Here is a record of your Administrator username and password:
-            
-            Username: [[USERNAME]]
-            Password: [[PASSWORD]]
+            You can get free support and documentation at http://zenar.io.
 
-            You can get support at http://zenar.io
+            Follow us on Twitter at https://twitter.com/ZenarioCMS.
 
-            and also http://tribalsystems.uk where hosting, support, Template Design and other development services are available.
+            For commercial support, hosting, design and development services, please visit http://tribalsystems.uk.
 
             Thank you for choosing Zenario!
+
+             -- Your friendly team at zenar.io
     reset_password:
         subject: Your Zenario Admin Password has been reset
         from: Zenario
@@ -29,10 +28,10 @@ email_templates:
             
             It looks like you requested a reminder of your login details for the site at [[URL]][[SUBDIRECTORY]].
 
-            Here are your Administrator details:
+            Here are your administrator login details:
 
-            Your Username: [[USERNAME]]
-            Your (newly reset) Password: [[PASSWORD]]
+            Your admin username: [[USERNAME]]
+            Your new password: [[PASSWORD]]
 
             Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin
 
@@ -47,29 +46,30 @@ email_templates:
         body: |
             Dear [[NAME]],
             
-            It looks like you requested your Administrator login details at [[URL]][[SUBDIRECTORY]].
+            It looks like you requested your administrator login details at [[URL]][[SUBDIRECTORY]].
 
-            Here are your temporary Administrator login details:
+            We've made you a temporary password that is now valid for 24 hours from the time of this email.
 
-            Your Admin Username:           [[USERNAME]]
-            Your Temporary Admin Password: [[PASSWORD]]
+            Here are your administrator login details:
+
+            Your admin username:           [[USERNAME]]
+            Your temporary password:       [[PASSWORD]]
 
             What to do now:
 
-            1) Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin.
+            1) Please follow this link to the Admin area of your site: [[URL]][[SUBDIRECTORY]]admin
 
-            2) Enter your Admin Username and Temporary Password.
+            2) Enter your admin username and temporary password.
 
-            3) Choose a new Admin Password.
+            3) Choose a new password.
 
             You can then continue administering your site in the normal way.
 
-            Note that the above password is temporary and will be invalid if you do not log in within 24 hours.
-
-            If you have not requested that the CMS send your Administrator details, please ignore this email and the temporary password, and log into your site in the normal way.
+            Didn't ask for password assistance?
 
             This request was made from IP address [[IP]].
 
+            If you have not requested that Zenario send your administrator details, please ignore this email, and log into your site using your usual password.
 
 
             This is an automated email, please do not try to reply.

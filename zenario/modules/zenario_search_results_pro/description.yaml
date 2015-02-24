@@ -1,0 +1,39 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Search Results Pro
+description: |
+    <p>
+                This Module allows visitors to search your site's content against entered keywords.
+            </p>
+            <p>
+                Either all or any of the following information sources can be searched: page title, page
+                description, defined keywords, alias, and WYSIWYG Editors or HTML Snippets on 
+                the page. (Only version controlled content is searched. Plugins are not searched.) Each information source can be given its own search weighting enabling you to
+                easily tune your search.
+            </p>
+            <p>
+                Visitors can also filter their search results by Category, if you choose to enable this
+                feature and have created some public Categories.
+            </p>
+            <p>
+                Search results are separated into HTML Pages, News and Documents in a tabbed interface.
+            </p>
+keywords: find, lookup, search
+vlp_class_name: zenario_search_results_pro
+css_class_name: zenario_search_results
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Search Results
+dependencies:
+    zenario_search_results: true
+inheritance:
+    inherit_frameworks_from_module: zenario_search_results
+    inherit_settings_from_module: zenario_search_results
+    allow_upgrades_from_module:
+        zenario_search_results: true

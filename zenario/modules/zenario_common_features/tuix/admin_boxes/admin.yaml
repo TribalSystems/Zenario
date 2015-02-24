@@ -17,6 +17,16 @@ zenario_admin:
                     full_width: Yes
                     snippet:
                         html: "Use this screen to define a new administrator for this site."
+                image:
+                    label: 'Image:'
+                    upload:
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
                 username:
                     label: 'Administrator username:'
                     type: text
@@ -55,7 +65,7 @@ zenario_admin:
                     snippet:
                         html: >
                             <input type="button" onclick="
-                                var suggestedPassword = zenarioA.generateAutoPasswords(),
+                                var suggestedPassword = zenarioA.generateRandomString(8),
                                     passwordField = zenario.get('password'),
                                     passwordConfirmField = zenario.get('password_confirm');
                                 passwordField.value = suggestedPassword;
@@ -103,7 +113,7 @@ zenario_admin:
                     snippet:
                         html: >
                             <input type="button" onclick="
-                                var suggestedPassword = zenarioA.generateAutoPassword(),
+                                var suggestedPassword = zenarioA.generateRandomString(8),
                                     passwordField = zenario.get('password'),
                                     passwordConfirmField = zenario.get('password_confirm');
                                 passwordField.value = suggestedPassword;

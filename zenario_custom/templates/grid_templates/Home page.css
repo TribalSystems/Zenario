@@ -1,0 +1,191 @@
+
+/*	769 - 1140 fluid responsive Grid (12 cols)
+	Based on the 960 Grid System from http://960.gs/ (Licensed under MIT)  */
+
+
+/*	Hide grid-specific elements and responsive slots when not displaying the grid  */
+
+.clear,
+.space,
+.pad_slot,
+.responsive {
+	display: none;
+}
+
+
+/*	Only show the grid if the screen is wide enough  */
+
+ @media all and (min-width: 769px) {
+
+
+/*	Main container  */
+
+body {
+	min-width: 769px;
+}
+
+.container_12 {
+	min-width: 769px;
+	max-width: 1140px;
+	margin: 0 auto;
+	padding: 0;
+}
+
+
+/*	Grid cells and gutters  */
+
+.container_12 .span {
+	display: inline;
+	float: left;
+	margin-left: 2.1%;
+	margin-right: 2.1%;
+}
+
+
+/*	Fluid widths and margins for cells (and any nested cells)  */
+
+.container_12 .span {
+	margin-left: 2.1%;
+	margin-right: 2.1%;
+}
+
+.container_12 .span1  {
+	width: 4.483%;
+}
+
+.container_12 .span2  {
+	width: 13.167%;
+}
+
+.container_12 .span3  {
+	width: 21.85%;
+}
+
+.container_12 .span4  {
+	width: 30.533%;
+}
+
+.container_12 .span5  {
+	width: 39.217%;
+}
+
+.container_12 .span6  {
+	width: 47.9%;
+}
+
+.container_12 .span7  {
+	width: 56.583%;
+}
+
+.container_12 .span8  {
+	width: 65.267%;
+}
+
+.container_12 .span9  {
+	width: 73.95%;
+}
+
+.container_12 .span10  {
+	width: 82.633%;
+}
+
+.container_12 .span11  {
+	width: 91.317%;
+}
+
+
+/*	Full width cells  */
+
+.container_12 .span1_1 {
+	width: 100%;
+}
+
+.span .span1_1,
+.span .span .span1_1,
+.span .span .span .span1_1 {
+	width: 100%;
+}
+
+
+/*	The outermost gutters of the page  */
+
+.container_12 .alpha {
+	margin-left: 0%;
+}
+
+.container_12 .omega {
+	margin-right: 0%;
+}
+
+
+/*	Remove the outermost gutters from nested cells  */
+
+.container .span .alpha,
+.container .span .span .alpha,
+.container .span .span .span .alpha {
+	margin-left: 0;
+}
+
+.container .span .omega,
+.container .span .span .omega,
+.container .span .span .span .omega {
+	margin-right: 0;
+}
+
+
+/*	Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width  */
+
+.container .omega {
+	margin-left: -50px;
+	float: right;
+}
+
+
+/*	Make sure the <div>s clear properly, and stop empty slots collapsing the grid.
+	Code used from http://sonspring.com/journal/clearing-floats
+	and http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified  */
+
+.container:before,
+.container:after {
+	content: '.';
+}
+
+.container:before,
+.container:after,
+.pad_slot,
+.clear {
+	width: 0;
+	height: 0;
+	font-size: 0;
+	line-height: 0;
+	display: block;
+	overflow: hidden;
+	visibility: hidden;
+}
+
+.pad_slot  {
+	height: 1px;
+}
+
+.container:after,
+.clear {
+	clear: both;
+}
+
+
+/*	Fix a problem in IE 6/7.
+	This code could be moved to an IE-specific stylesheet.  */
+
+body.ie6 .container,
+body.ie7 .container {
+	zoom: 1;
+}
+
+
+/*	Only show certain responsive slots when not displaying the grid  */
+
+.container .responsive_only {
+	display: none;
+}
+
+ }

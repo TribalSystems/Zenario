@@ -1,0 +1,89 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__menu:
+    panels:
+        sections:
+            collection_buttons:
+                create:
+                    priv: _PRIV_ADD_MENU_SECTION
+                    css_class: zenario_create_a_new
+                    label: Create a menu section
+                    parent: advanced_dropdown
+                    hide_in_select_mode: Yes
+                    admin_box:
+                        path: zenario_menu_section
+            item_buttons:
+                rename:
+                    priv: _PRIV_ADD_MENU_SECTION
+                    label: Rename section
+                    parent: advanced_dropdown
+                    ord: "5"
+                    hide_in_select_mode: Yes
+                    admin_box:
+                        path: zenario_menu_section
+                delete:
+                    priv: _PRIV_DELETE_MENU_SECTION
+                    label: Delete section
+                    parent: advanced_dropdown
+                    ord: "10"
+                    hide_in_select_mode: Yes
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the menu section "[[name]]"?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_menu_section: "1"
+                    traits:
+                        empty: Yes
+        menu_nodes:
+            columns:
+                zenario_pro_features__invisible:
+                    title: Invisible
+                    format: yes_or_no
+                    yes_phrase: Invisible
+                    no_phrase: ''
+                    db_column: mi.invisible
+            item_buttons:
+                zenario_pro_features__make_visible:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    label: Make visible
+                    multiple_select: Yes
+                    one_with_columns_set:
+                        zenario_pro_features__invisible: Yes
+                    without_traits:
+                        ghost: Yes
+                    ajax:
+                        confirm:
+                            message: 'Do you wish to make the Menu Node "[[name]]" visible in the Menu Tree?'
+                            multiple_select_message: >
+                                Do you wish to make the selected Menu Nodes visible in the
+                                Menu Tree?
+                            button_message: Make Visible
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_visible: "1"
+                zenario_pro_features__make_invisible:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    hide_in_select_mode: Yes
+                    label: Make invisible
+                    multiple_select: Yes
+                    one_without_columns_set:
+                        zenario_pro_features__invisible: Yes
+                    without_traits:
+                        ghost: Yes
+                    ajax:
+                        confirm:
+                            message: 'Do you wish to make the Menu Node "[[name]]" invisible in the Menu Tree?'
+                            multiple_select_message: >
+                                Do you wish to make the selected Menu Nodes invisible in the
+                                Menu Tree?
+                            button_message: Make Invisible
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_invisible: "1"

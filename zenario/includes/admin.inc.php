@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 	$module = getModuleDetails($moduleId);
 	
 	$skLink = 'zenario/admin/organizer.php?fromCID='. (int) $cID. '&fromCType='. urlencode($cType);
-	$modulesLink = '#zenario__modules/nav/modules/panel//' . $moduleId;
+	$modulesLink = '#zenario__modules/panels/modules//' . $moduleId;
 	
 	$info['module_name']['label'] =
 		adminPhrase('Module: <a href="[[link]]">[[display_name]]</a>',
@@ -106,7 +106,7 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 			$ucPluginAdminName = adminPhrase('Plugin');
 		}
 		
-		$pluginsLink = '#zenario__modules/nav/modules/panel/item//' . $moduleId. '//'. $instanceId;
+		$pluginsLink = '#zenario__modules/panels/modules/item//' . $moduleId. '//'. $instanceId;
 		
 		$info['module_name']['css_class'] = 'zenario_slotControl_reusable';
 		
@@ -115,8 +115,8 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 		$mrg['content_items'] = checkInstancesUsage($instanceId, $publishedOnly = false, $itemLayerOnly = true);
 		$mrg['layouts'] = checkInstancesUsageOnLayouts($instanceId);
 		$mrg['plugins_link'] = htmlspecialchars($skLink. $pluginsLink);
-		$mrg['content_items_link'] = htmlspecialchars($skLink. '#zenario__modules/nav/instances/panel/item_buttons/usage_item//'. (int) $instanceId. '//');
-		$mrg['layouts_link'] = $skLink. htmlspecialchars('#zenario__modules/nav/instances/panel/item_buttons/usage_template//'. (int) $instanceId. '//');
+		$mrg['content_items_link'] = htmlspecialchars($skLink. '#zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//');
+		$mrg['layouts_link'] = $skLink. htmlspecialchars('#zenario__modules/panels/plugins/item_buttons/usage_template//'. (int) $instanceId. '//');
 		
 		//Not used on any layouts
 		if (!$mrg['layouts']) {
@@ -172,8 +172,13 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 	
 	if (isset($actions) && is_array($actions)) {
 		foreach ($actions as &$action) {
-			if (is_array($action) && !empty($action['label'])) {
-				$action['label'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
+			if (is_array($action)) {
+				if (!empty($action['label'])) {
+					$action['label'] = str_replace('~plugin~', $pluginAdminName, str_replace('~Plugin~', $ucPluginAdminName, $action['label']));
+				}
+				if (!empty($action['onclick'])) {
+					$action['onclick'] = str_replace('~plugin~', jsEscape($pluginAdminName), str_replace('~Plugin~', jsEscape($ucPluginAdminName), $action['onclick']));
+				}
 			}
 		}
 	}
@@ -479,9 +484,12 @@ function syncInlineFileLinks($usage, &$files, &$html, &$htmlChanged) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function syncInlineFiles(&$files, $key) {
-	//Mark all existing images as not in use
-	updateRow('inline_file_link', array('in_use' => 0), $key);
+function syncInlineFiles(&$files, $key, $flagOthersAsNotInUse = true) {
+	
+	if ($flagOthersAsNotInUse) {
+		//Mark all existing images as not in use
+		updateRow('inline_file_link', array('in_use' => 0), $key);
+	}
 	
 	//Add in the ones that we actually found, or mark them as in use if they are already there
 	foreach ($files as $file) {
@@ -495,23 +503,33 @@ function syncInlineFiles(&$files, $key) {
 //Note that any files in the docstore directory are never deleted from the database.
 //Shared files, and files used for cont
 function deleteUnusedInlineFile($fileId, $allowDeleteShared = false) {
+	
+	//Check that the file is not used anywhere!
 	if (!checkRowExists('users', array('image_id' => $fileId))
 	 && !checkRowExists('groups', array('image_id' => $fileId))
 	 && !checkRowExists('versions', array('file_id' => $fileId))
-	 && !checkRowExists('layouts', array('image_id' => $fileId))
 	 && !checkRowExists('inline_file_link', array('file_id' => $fileId, 'foreign_key_to' => array('!' => 'reusable_plugin')))
 	 && !checkRowExists('plugin_settings', array('foreign_key_to' => 'file', 'foreign_key_id' => $fileId))) {
 		
-		$file = getRow('files', array('usage', 'shared'), $fileId);
+		$sql = "
+			SELECT 1
+			FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
+			WHERE ps.foreign_key_to = 'multiple_files'
+			  AND FIND_IN_SET('". (int) $fileId. "', ps.value)
+			LIMIT 1";
+		$result = sqlQuery($sql);
 		
-		if (!$allowDeleteShared && $file['shared']) {
-			return;
-		} else if ($file['usage'] == 'favicon' || $file['usage'] == 'mobile_icon') {
-			return;
-		} else {
-			deleteFileFromCmsStorage($fileId);
+		if (!sqlFetchRow($result)) {
+			$file = getRow('files', array('usage', 'shared'), $fileId);
+		
+			if (!$allowDeleteShared && $file['shared']) {
+				return;
+			} else if ($file['usage'] == 'favicon' || $file['usage'] == 'mobile_icon') {
+				return;
+			} else {
+				deleteFileFromCmsStorage($fileId);
+			}
 		}
-		
 	}
 }
 
@@ -554,11 +572,7 @@ function deleteUnusedFilesByLinkedKey($key) {
 //Look for User/Group/Template files that are not in use, and remove them
 function deleteUnusedImagesByUsage($usage) {
 	
-	if ($usage == 'template') {
-		$usage = 'layout';
-	}
-	
-	if ($usage != 'group' && $usage != 'layout' && $usage != 'user' && $usage != 'admin') {
+	if ($usage != 'group' && $usage != 'user' && $usage != 'admin') {
 		return;
 	}
 	
@@ -575,6 +589,20 @@ function deleteUnusedImagesByUsage($usage) {
 	while ($file = sqlFetchAssoc($result)) {
 		deleteUnusedInlineFile($file['id']);
 	}
+}
+
+function deleteUnusedBackgroundImages() {
+	$sql = "
+		DELETE f.*
+		FROM ". DB_NAME_PREFIX. "files AS f
+		LEFT JOIN ". DB_NAME_PREFIX. "layouts AS l
+		   ON l.bg_image_id = f.id
+		LEFT JOIN ". DB_NAME_PREFIX. "versions AS v
+		   ON v.bg_image_id = f.id
+		WHERE l.bg_image_id IS NULL
+		  AND v.bg_image_id IS NULL
+		  AND f.`usage` = 'background_image'";
+	sqlUpdate($sql);
 }
 
 
@@ -824,7 +852,10 @@ function allowTrash($cID, $cType, $status = false, $lastModified = false) {
 			$status = getRow('content', 'status', array('id' => $cID, 'type' => $cType));
 		}
 		
-		if ($status == 'published' || $status == 'published_with_draft' || $status == 'hidden_with_draft') {
+		if ($status == 'published'
+		 || $status == 'published_with_draft'
+		 || $status == 'hidden'
+		 || $status == 'hidden_with_draft') {
 			return true;
 		} else {
 			return false;
@@ -1261,31 +1292,6 @@ function setPasswordAdmin($adminId, $password, $requireChange = null, $isPasswor
 	$result = sqlQuery($sql);
 }
 
-function hashPassword($salt, $password) {
-	if ($hash = hashPasswordSha2($salt, $password)) {
-		return $hash;
-	} else {
-		return hashPasswordSha1($salt, $password);
-	}
-}
-
-function hashPasswordSha2($salt, $password) {
-	if ($hash = @hash('sha256', $salt. $password, true)) {
-		return 'sha256'. base64_encode($hash);
-	} else {
-		return false;
-	}
-}
-
-//Old sha1 function for passwords created before zenario 6.0.5. Or if sha2 is not enabled on a server.
-function hashPasswordSha1($salt, $password) {
-	$result = sqlSelect(
-		"SELECT SQL_NO_CACHE SHA('". sqlEscape($salt. $password). "')");
-	$row = sqlFetchRow($result);
-	return $row[0];
-
-}
-
 function cancelPasswordChange($adminId) {
 	
 	if (checkAdminTableColumnsExist() >= 1) {
@@ -1367,6 +1373,18 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 	if (isset($submission['css_class'])) {
 		$values['css_class'] = $submission['css_class'];
 	}
+	if (isset($submission['bg_image_id'])) {
+		$values['bg_image_id'] = $submission['bg_image_id'];
+	}
+	if (isset($submission['bg_color'])) {
+		$values['bg_color'] = $submission['bg_color'];
+	}
+	if (isset($submission['bg_repeat'])) {
+		$values['bg_repeat'] = $submission['bg_repeat'];
+	}
+	if (isset($submission['bg_position'])) {
+		$values['bg_position'] = $submission['bg_position'];
+	}
 	if (isset($submission['name'])) {
 		$values['name'] = $submission['name'];
 	}
@@ -1396,7 +1414,7 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 		
 		$details = getRow(
 			'layouts',
-			array('css_class', 'image_id', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
+			array('css_class', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
 			$sourceTemplateId);
 		
 		updateRow('layouts', $details, $layoutId);
@@ -1772,44 +1790,100 @@ function checkTemplateFamilyInFS($template_family) {
 	return $template_family && is_dir(CMS_ROOT. zenarioTemplatePath($template_family));
 }
 
-//Include a checksum calculated from the modificaiton dates of any css and js files in the Core or the Skin
-//Not that this is only calculated for admins, and cached for visitors
-function getCSSJSCodeHash($updateDB = true, $forceScan = false, $justScan = false) {
-	$mTimes = '';
-	$dirs = array(CMS_ROOT. 'zenario/js/', CMS_ROOT. 'zenario/styles/');
-	$lessFiles = array();
+//Include a checksum calculated from the modificaiton dates of any css/js/html files
+//Note that this is only calculated for admins, and cached for visitors
+function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 	
-	if (file_exists($dir = CMS_ROOT. zenarioTemplatePath('grid_templates'))) {
-		$dirs[] = $dir;
+	//Safety catch - do not try to do anything if there is no database connection!
+	if (!cms_core::$lastDB) {
+		return;
 	}
 	
-	//Loop through the zenario_custom/templates directory, looking for Skins
-	if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
-		foreach (scandir($dir) as $family) {
-			if (substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
-				$dirs[] = $dir2;
+	//require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	
+	//Make sure we are in the CMS root directory.
+	//This should already be done, but I'm being paranoid...
+	chdir(CMS_ROOT);
+	
+	$time = time();
+	
+	//Get the date of the last time we ran this check and there was a change.
+	if (!($lastChanged = (int) setting('css_js_html_files_last_changed'))) {
+		//If this has never been run before then it must be run now!
+		$changed = true;
+	
+	} elseif ($forceScan) {
+		$changed = true;
+	
+	//Otherwise, work out the time difference between that time and now
+	} else {
+		
+		//Check to see if there are any .css, .js or .html files that have changed on the system
+		$useFallback = true;
+		try {
+			if (defined('PHP_OS')) {
+				$find =
+					' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html*" -o -path "*/skins/*/description.yaml" \\)'.
+					' -not -path "./cache/*"'.
+					' -not -path "./public/*"'.
+					' -not -path "./private/*"'.
+					' -not -path "*/.*"'.
+					' -print'.
+					' | sed 1q';
 				
-				if (is_dir($dir3 = $dir2. '/skins/')) {
-					foreach (scandir($dir3) as $skin) {
-						if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
-							//For each Skin, add it to the list of directories
-							$dirs[] = $dir4;
+				//If possble, try to use the UNIX shell
+				if (PHP_OS == 'Linux') {
+					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					$useFallback = false;
+				
+				} elseif (PHP_OS == 'Darwin') {
+					$ago = $time - $lastChanged;
+					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
+					$useFallback = false;
+				}
+			}
+	
+		} catch (Exception $e) {
+			$useFallback = true;
+		}
+		
+		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
+		if ($useFallback) {
+			$changed = false;
+			
+			//Check the JavaScript and Styles directories in the CMS
+			$dirs = array(CMS_ROOT. 'zenario/js/', CMS_ROOT. 'zenario/styles/');
+			
+			//Check all tempalte files
+			if (file_exists($dir = CMS_ROOT. zenarioTemplatePath('grid_templates'))) {
+				$dirs[] = $dir;
+			}
+	
+			//Loop through the zenario_custom/templates directory, looking for Skins
+			if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
+				foreach (scandir($dir) as $family) {
+					if (substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
+						$dirs[] = $dir2;
+				
+						if (is_dir($dir3 = $dir2. '/skins/')) {
+							foreach (scandir($dir3) as $skin) {
+								if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
+									//For each Skin, add it to the list of directories
+									$dirs[] = $dir4;
 							
-							//Recurse through its subdirectories, adding each subdirectory as well
-							//If we see any .less files, also keep a record of them
-								//Note: this code is currently commented out!
-							foreach(
-								new RecursiveIteratorIterator(
-									new RecursiveDirectoryIterator($dir4),
-									RecursiveIteratorIterator::SELF_FIRST
-								)
-							as $path => $SplFileInfo) {
-								if (strpos($path, '/.') === false
-								 && strpos($path, '\\.') === false) {
-									if ($SplFileInfo->isDir()) {
-										$dirs[] = $path;
-									//} else if (strtolower(substr($path, -5) == '.less')) {
-										//$lessFiles[] = $path;
+									//Recurse through its subdirectories, adding each subdirectory as well
+									foreach(
+										new RecursiveIteratorIterator(
+											new RecursiveDirectoryIterator($dir4),
+											RecursiveIteratorIterator::SELF_FIRST
+										)
+									as $path => $SplFileInfo) {
+										if (strpos($path, '/.') === false
+										 && strpos($path, '\\.') === false) {
+											if ($SplFileInfo->isDir()) {
+												$dirs[] = $path;
+											}
+										}
 									}
 								}
 							}
@@ -1817,143 +1891,154 @@ function getCSSJSCodeHash($updateDB = true, $forceScan = false, $justScan = fals
 					}
 				}
 			}
-		}
-	}
-	
-	
-	//Also check for the js/ and adminstyles/ directories in Modules, and Module Swatches
-	foreach (array(
-		'zenario/modules/',
-		'zenario_extra_modules/',
-		'zenario_custom/modules/',
-		'zenario_custom/frameworks/'
-	) as $mDir) {
-		if (is_dir($dir = CMS_ROOT. $mDir)) {
-			foreach (scandir($dir) as $module) {
-				if (substr($module, 0, 1) != '.') {
-					if ($mDir != 'zenario_custom/frameworks/') {
-						foreach (array('/adminstyles/', '/js/', '/js/templates/') as $dir2) {
-							if (is_dir($dir3 = $dir. $module. $dir2)) {
-								$dirs[] = $dir3;
+			
+			
+			//Also check for the js/ and adminstyles/ directories in Modules, and Module Swatches
+			foreach (array(
+				'zenario/modules/',
+				'zenario_extra_modules/',
+				'zenario_custom/modules/',
+				'zenario_custom/frameworks/'
+			) as $mDir) {
+				if (is_dir($dir = CMS_ROOT. $mDir)) {
+					foreach (scandir($dir) as $module) {
+						if (substr($module, 0, 1) != '.') {
+							if ($mDir != 'zenario_custom/frameworks/') {
+								foreach (array('/adminstyles/', '/js/', '/js/templates/') as $dir2) {
+									if (is_dir($dir3 = $dir. $module. $dir2)) {
+										$dirs[] = $dir3;
+									}
+								}
 							}
-						}
-					}
 					
-					if (is_dir($dir2 = $dir. $module. '/frameworks/')) {
-						foreach (scandir($dir2) as $framework) {
-							if (substr($framework, 0, 1) != '.'
-							 && (file_exists($dir3 = $dir2. $framework. '/framework.html')
-							  || file_exists($dir3 = $dir2. $framework. '/framework.twig.html'))) {
-								$mTimes .= filemtime($dir3);
+							if (is_dir($dir2 = $dir. $module. '/frameworks/')) {
+								foreach (scandir($dir2) as $framework) {
+									if (substr($framework, 0, 1) != '.') {
+										if (is_dir($dir3 = $dir2. $framework)) {
+											$dirs[] = $dir3;
+										}
+									}
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-	}
 	
-	foreach ($dirs as $dir) {
-		chdir($dir);
-		$mTimes .= $dir. '-'. print_r(array_map('filemtime', scandir('.')), true);
+			foreach ($dirs as $dir) {
+				chdir($dir);
+					foreach (array_map('filemtime', scandir('.')) as $mtime) {
+						if ($mtime > $lastChanged) {
+							$changed = true;
+							break 2;
+						}
+					}
+				chdir(CMS_ROOT);
+			}
+		}
 	}
 	chdir(CMS_ROOT);
 	
 	
-	$css_js_version = hash64($mTimes, 15). substr((string) setting('site_id'), 0, 2);
-	
-	if ($justScan) {
-		return $css_js_version;
-	
-	} elseif ($forceScan || ($css_js_version != setting('css_js_version'))) {
+	if ($changed) {
+		//Clear the page cache completely if a Skin or a Template Family has changed
+		$sql = '';
+		$ids = $values = array();
+		cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
 		
-		if ($updateDB) {
-			//Clear the page cache completely if a Skin or a Template Family has changed
-			$sql = '';
-			$ids = $values = array();
-			cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
-			
-			
-			//Mark all current Template Families/Template Files/Skins as missing
-			updateRow('template_families', array('missing' => 1), array());
-			updateRow('template_files', array('missing' => 1), array());
-			updateRow('skins', array('missing' => 1), array());
-			
-			//Ensure that there is always a Template File and Family in the database to cover
-			//any Layouts and Skins that are also in the database, even if they would be missing.
-			foreach (getDistinctRowsArray('layouts', array('family_name')) as $row) {
-				setRow('template_families', array('missing' => 1), $row);
-			}
-			foreach (getDistinctRowsArray('layouts', array('family_name', 'file_base_name')) as $row) {
-				setRow('template_files', array('missing' => 1), $row);
-			}
-			foreach (getDistinctRowsArray('skins', array('family_name')) as $row) {
-				setRow('template_families', array('missing' => 1), $row);
-			}
-			
-			//Check that all of the template-families, files and skins in the filesystem are
-			//registered in the database, and add any newly found files/directories.
-			if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
-				foreach (scandir($dir) as $family) {
-					if ($family && substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
-						setRow('template_families', array('missing' => 0), array('family_name' => $family));
-						
-						foreach (scandir($dir2) as $templateFile) {
-							if (substr($templateFile, 0, 1) != '.'
-							 && substr($templateFile, -8) == '.tpl.php'
-							 && is_file($dir2. '/'. $templateFile)) {
-								setRow(
-									'template_files',
-									array('missing' => 0),
-									array(
-										'family_name' => $family,
-										'file_base_name' => substr($templateFile, 0, -8)));
-							}
+		
+		//Mark all current Template Families/Template Files/Skins as missing
+		updateRow('template_families', array('missing' => 1), array());
+		updateRow('template_files', array('missing' => 1), array());
+		updateRow('skins', array('missing' => 1), array());
+		
+		//Ensure that there is always a Template File and Family in the database to cover
+		//any Layouts and Skins that are also in the database, even if they would be missing.
+		foreach (getDistinctRowsArray('layouts', array('family_name')) as $row) {
+			setRow('template_families', array('missing' => 1), $row);
+		}
+		foreach (getDistinctRowsArray('layouts', array('family_name', 'file_base_name')) as $row) {
+			setRow('template_files', array('missing' => 1), $row);
+		}
+		foreach (getDistinctRowsArray('skins', array('family_name')) as $row) {
+			setRow('template_families', array('missing' => 1), $row);
+		}
+		
+		//Check that all of the template-families, files and skins in the filesystem are
+		//registered in the database, and add any newly found files/directories.
+		if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
+			foreach (scandir($dir) as $family) {
+				if ($family && substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
+					setRow('template_families', array('missing' => 0), array('family_name' => $family));
+					
+					foreach (scandir($dir2) as $templateFile) {
+						if (substr($templateFile, 0, 1) != '.'
+						 && substr($templateFile, -8) == '.tpl.php'
+						 && is_file($dir2. '/'. $templateFile)) {
+							setRow(
+								'template_files',
+								array('missing' => 0),
+								array(
+									'family_name' => $family,
+									'file_base_name' => substr($templateFile, 0, -8)));
 						}
-						
-						if (is_dir($dir3 = $dir2. '/skins/')) {
-							foreach (scandir($dir3) as $skin) {
-								if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
-									$row = array('family_name' => $family, 'name' => $skin);
-									setRow('skins', array('missing' => 0), $row);
-									
-									//Also update the Skin's description
-									$desc = false;
-									if (loadSkinDescription($row, $desc)) {					
-										updateRow('skins',
-											array(
-												'display_name' => ifNull(arrayKey($desc, 'display_name'), $row['name']),
-												'type' => ifNull(arrayKey($desc, 'type'), 'usable'),
-												'extension_of_skin' => arrayKey($desc, 'extension_of_skin'),
-												'css_class' => arrayKey($desc, 'css_class')),
-											$row);
-									}
+					}
+					
+					if (is_dir($dir3 = $dir2. '/skins/')) {
+						foreach (scandir($dir3) as $skin) {
+							if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
+								$row = array('family_name' => $family, 'name' => $skin);
+								setRow('skins', array('missing' => 0), $row);
+								
+								//Also update the Skin's description
+								$desc = false;
+								if (loadSkinDescription($row, $desc)) {					
+									updateRow('skins',
+										array(
+											'display_name' => ifNull(arrayKey($desc, 'display_name'), $row['name']),
+											'type' => ifNull(arrayKey($desc, 'type'), 'usable'),
+											'extension_of_skin' => arrayKey($desc, 'extension_of_skin'),
+											'css_class' => arrayKey($desc, 'css_class')),
+										$row);
 								}
 							}
 						}
 					}
 				}
 			}
-			
-			//Delete anything that is missing *and* not used
-			foreach(getRowsArray('skins', 'id', array('missing' => 1)) as $skinId) {
-				if (!checkSkinInUse($skinId)) {
-					deleteSkinAndClearForeignKeys($skinId);
-				}
+		}
+		
+		//Delete anything that is missing *and* not used
+		foreach(getRowsArray('skins', 'id', array('missing' => 1)) as $skinId) {
+			if (!checkSkinInUse($skinId)) {
+				deleteSkinAndClearForeignKeys($skinId);
 			}
-			foreach(getRowsArray('template_files', array('family_name', 'file_base_name'), array('missing' => 1)) as $tf) {
-				if (!checkRowExists('layouts', $tf)) {
-					deleteRow('template_files', $tf);
-				}
+		}
+		foreach(getRowsArray('template_files', array('family_name', 'file_base_name'), array('missing' => 1)) as $tf) {
+			if (!checkRowExists('layouts', $tf)) {
+				deleteRow('template_files', $tf);
 			}
-			foreach(getRowsArray('template_families', 'family_name', array('missing' => 1)) as $familyName) {
-				if (!checkTemplateFamilyInUse($familyName)) {
-					deleteRow('template_families', $familyName);
-				}
+		}
+		foreach(getRowsArray('template_families', 'family_name', array('missing' => 1)) as $familyName) {
+			if (!checkTemplateFamilyInUse($familyName)) {
+				deleteRow('template_families', $familyName);
 			}
 		}
 		
-		setSetting('css_js_version', $css_js_version, $updateDB);
+		setSetting('css_js_html_files_last_changed', $time);
+		setSetting('css_js_version', hash64(setting('site_id'). $time, 16));
+	}
+	
+	return $changed;
+}
+
+//Quick version of the above that just checks for missing template files
+function checkForMissingTemplateFiles() {
+	foreach(getRowsArray('template_files', array('family_name', 'file_base_name', 'missing')) as $tf) {
+		$missing = (int) !file_exists(CMS_ROOT. zenarioTemplatePath($tf['family_name'], $tf['file_base_name']));
+		if ($missing != $tf['missing']) {
+			updateRow('template_files', array('missing' => $missing), $tf);
+		}
 	}
 }
 
@@ -1993,7 +2078,6 @@ function deleteLayout($layout, $deleteFromDB) {
 	
 		deleteRow('layouts', array('layout_id' => $layout['layout_id']));
 		deleteRow('plugin_layout_link', array('layout_id' => $layout['layout_id']));
-		deleteUnusedImagesByUsage('template');
 	}
 	
 	//Check whether anything else uses this Template File
@@ -2825,9 +2909,6 @@ function runModule($id, $test) {
 			
 			//Add any content types this module has
 			setupModuleContentTypesFromXMLDescription($module['class_name']);
-			
-			$modules = array();
-			getModuleCodeHash($modules, true);
 		}
 	}
 }
@@ -2835,9 +2916,6 @@ function runModule($id, $test) {
 function suspendModule($id) {
 	suspendModuleCheckForDependencies(getModuleDetails($id));
 	updateRow('modules', array('status' => 'module_suspended'), $id);
-	
-	$modules = array();
-	getModuleCodeHash($modules, true);
 }
 
 function succeedModule($id, $preview = false) {
@@ -3860,7 +3938,7 @@ function performDBUpdate($path, $updateFile, $uninstallPluginOnFail, $currentRev
 		}
 		
 		//Attempt to apply the XML file
-		if (!setupModuleFromXMLDescription($moduleName)) {
+		if (!setupModuleFromDescription($moduleName)) {
 			exit;
 		}
 		
@@ -4113,7 +4191,7 @@ function loadModuleDescription($moduleName, &$tags) {
 }
 
 //Get the XML description of a module, and apply it
-function setupModuleFromXMLDescription($moduleClassName) {
+function setupModuleFromDescription($moduleClassName) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -4297,17 +4375,17 @@ function getPluginInstanceUsageStorekeeperDeepLink($instanceId, $moduleId = fals
 	}
 	
 	return absCMSDirURL(). 'zenario/admin/organizer.php#'.
-			'zenario__modules/nav/modules/panel/item//'. (int) $moduleId. '//item_buttons/view_content_items//'. (int) $instanceId. '//';
+			'zenario__modules/panels/modules/item//'. (int) $moduleId. '//item_buttons/view_content_items//'. (int) $instanceId. '//';
 }
 
 function getTemplateUsageStorekeeperDeepLink($layoutId) {
 	return absCMSDirURL(). 'zenario/admin/organizer.php#'.
-			'zenario__layouts/nav/layouts/panel/view_content//'. (int) $layoutId.  '//';
+			'zenario__layouts/panels/layouts/view_content//'. (int) $layoutId.  '//';
 }
 
 function getTemplateFamilyUsageStorekeeperDeepLink($templateFamily) {
 	return absCMSDirURL(). 'zenario/admin/organizer.php#'.
-			'zenario__layouts/nav/template_families/panel/view_content//'. encodeItemIdForStorekeeper($templateFamily).  '//';
+			'zenario__layouts/panels/template_families/view_content//'. encodeItemIdForStorekeeper($templateFamily).  '//';
 }
 
 
@@ -4752,7 +4830,12 @@ function restoreLocationalSiteSettings() {
 	
 	$sql = "
 		DELETE FROM ". DB_NAME_PREFIX. "site_settings
-		WHERE name IN ('css_js_version', 'module_code_hash', 'module_description_hash')";
+		WHERE name IN (
+			'css_js_version', 'css_js_html_files_last_changed',
+			'yaml_version', 'yaml_files_last_changed',
+			'php_version', 'php_files_last_changed',
+			'module_description_hash'
+		)";
 	@sqlSelect($sql);
 }
 
@@ -4775,7 +4858,7 @@ function convertMySQLToJqueryDateFormat($value) {
 }
 
 //Format the values for the date-format select lists in the installer and the site-settings
-function formatDateFormatSelectList(&$field, $javascript = false) {
+function formatDateFormatSelectList(&$field, $addFormatInBrackets = false, $isJavaScriptFormat = false) {
 	
 	//	//Check the current date
 	//	$dd = date('d');
@@ -4801,7 +4884,7 @@ function formatDateFormatSelectList(&$field, $javascript = false) {
 	}
 	
 	foreach ($field['values'] as $value => &$details) {
-		if ($javascript) {
+		if ($isJavaScriptFormat) {
 			$value = str_replace(
 				array('yy', 'y', 'm', '%c%c', 'd', '%e%e', 'M'),
 				array('%Y', '%y', '%c', '%m', '%e', '%d', '%b'),
@@ -4817,15 +4900,19 @@ function formatDateFormatSelectList(&$field, $javascript = false) {
 		$row = sqlFetchRow($result);
 		$example = $row[0];
 		
-		$sql = "SELECT DATE_FORMAT('" . sqlEscape($ddmmyyyyDate) . "', '" . sqlEscape($value) . "')";
-		$result = sqlQuery($sql);
-		$row = sqlFetchRow($result);
-		$ddmmyyy = str_replace(
-			array('04', '4', '03', '3', '2', 'Monday', 'Mon', 'March', 'Mar'),
-			array('dd', 'd', 'mm', 'm', 'y', 'Day', 'Day', 'Month', 'Mon'),
-			$row[0]);
+		if ($addFormatInBrackets) {
+			$sql = "SELECT DATE_FORMAT('" . sqlEscape($ddmmyyyyDate) . "', '" . sqlEscape($value) . "')";
+			$result = sqlQuery($sql);
+			$row = sqlFetchRow($result);
+			$ddmmyyy = str_replace(
+				array('04', '4', '03', '3', '2', 'Monday', 'Mon', 'March', 'Mar'),
+				array('dd', 'd', 'mm', 'm', 'y', 'Day', 'Day', 'Month', 'Mmm'),
+				$row[0]);
 		
-		$details['label'] = $example. ' ('. $ddmmyyy. ')';
+			$details['label'] = $example. ' ('. $ddmmyyy. ')';
+		} else {
+			$details['label'] = $example;
+		}
 	}
 }
 
@@ -5366,33 +5453,23 @@ function getCustomFieldsParents($field, &$fields) {
 		SELECT *
 		FROM ". DB_NAME_PREFIX. "custom_dataset_fields
 		WHERE dataset_id = ". (int) $field['dataset_id']. "
-		  AND id = ". (int) $field['parent_id']. "
-		  AND is_system_field = 0";
+		  AND id = ". (int) $field['parent_id'];
 	
 	$result = sqlQuery($sql);
 	if ($parent = sqlFetchAssoc($result)) {
 		if (!isset($fields[$parent['id']])) {
+			
+			if (!$parent['is_system_field']) {
+				$parent['field_name'] = '__custom_field_'. $parent['id'];
+			}
+			$parent['tab_name/field_name'] = $parent['tab_name']. '/'. $parent['field_name'];
+			
 			$fields[$parent['id']] = $parent;
+			
 			getCustomFieldsParents($parent, $fields);
 		}
 	}
 }
-
-/*
-function getCustomFieldsParents($field, &$checkedFields) {
-	
-	if ($field['parent_id'] && !isset($checkedFields[$field['parent_id']])) {
-		
-	}
-	
-	while ($field['parent_id']
-	
-	if ($field['parent_id']) {
-		
-	}
-	
-}
-*/
 
 function checkColumnExistsInDB($table, $column) {
 	$sql = "
@@ -5547,196 +5624,6 @@ function logTUIXFileContentsR(&$paths, &$tags, $type, $path = '') {
 				$thisPath = $path. '/'. $tagName;
 			}
 			logTUIXFileContentsR($paths, $tag, $type, $thisPath);
-		}
-	}
-}
-
-
-
-//Scan the TUIX files, and come up with a list of what paths are in what files
-function logTUIXFileContents(&$modules) {
-	
-	$tuixFiles = array();
-	$result = getRows('tuix_file_contents', true, array());
-	while ($tf = sqlFetchAssoc($result)) {
-		$key = $tf['module_class_name']. '/'. $tf['type']. '/'. $tf['filename'];
-		$key2 = $tf['path']. '//'. $tf['setting_group'];
-		
-		if (empty($tuixFiles[$key])) {
-			$tuixFiles[$key] = array();
-		}
-		$tuixFiles[$key][$key2] = $tf;
-	}
-	
-	$contents = array();
-	foreach ($modules as $module) {
-		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'storekeeper', 'organizer') as $type) {
-			if ($dir = moduleDir($module['class_name'], 'tuix/'. $type. '/', true, false, false)) {
-				
-				if ($type == 'organizer') {
-					$type = 'storekeeper';
-				}
-				
-				foreach (scandir($dir) as $file) {
-					if (substr($file, 0, 1) != '.') {
-						$key = $module['class_name']. '/'. $type. '/'. $file;
-						$filemtime = null;
-						$md5_file = null;
-						$changes = true;
-						$first = true;
-						
-						//Check the modification time and the checksum of the file. If either are the same as before,
-						//there's no need to update this row.
-						if (!empty($tuixFiles[$key])) {
-							foreach ($tuixFiles[$key] as $key2 => &$tf) {
-								
-								//Note that this is an array of arrays, but I only need to check the first one
-								if ($first) {
-									$filemtime = filemtime($dir. $file);
-									
-									if ($tf['last_modified'] == $filemtime) {
-										$changes = false;
-									
-									} else {
-										$md5_file = md5_file($dir. $file);
-										
-										if ($tf['checksum'] == $md5_file) {
-											$changes = false;
-										}
-									}
-								}
-								
-								//Note that this is an array of arrays, but I only need to check the first one
-								if (!$changes) {
-									$tf['status'] = 'unchanged';
-								}
-							}
-							unset($tf);
-							
-							if (!$changes) {
-								continue;
-							}
-						} else {
-							$tuixFiles[$key] = array();
-						}
-						
-						//If there have been changes, or if this is the first time we've seen this file,
-						//read it, then loop through it looking for all of the TUIX paths it contains
-							//Note that as we know there are changes, I'm overriding the normal timestamp logic in zenarioReadTUIXFile()
-						if (($tags = zenarioReadTUIXFile($dir. $file, false))
-						 && (!empty($tags))
-						 && (is_array($tags))) {
-						 	
-						 	if ($filemtime === null) {
-						 		$filemtime = filemtime($dir. $file);
-						 	}
-						 	if ($md5_file === null) {
-						 		$md5_file = md5_file($dir. $file);
-						 	}
-						 	
-						 	$pathsFound = false;
-							if ($type == 'storekeeper' || $type == 'organizer') {
-								//For Storekeeper, run zenarioAJAXShortenPath() to get their short paths
-								$paths = array();
-								logTUIXFileContentsR($paths, $tags, $type);
-								
-								foreach ($paths as $path => $dummy) {
-									$pathsFound = true;
-									$settingGroup = '';
-									
-									$key2 = $path. '//'. $settingGroup;
-									$tuixFiles[$key][$key2] = array(
-										'type' => $type,
-										'path' => $path,
-										'setting_group' => $settingGroup,
-										'module_class_name' => $module['class_name'],
-										'filename' => $file,
-										'last_modified' => $filemtime,
-										'checksum' => $md5_file,
-										'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
-									);
-								}
-							}
-							
-							if (!$pathsFound) {
-								//For anything else, just read the top-level path
-								//Note - also do this for Storekeeper if no paths were found above,
-								//as logTUIXFileContentsR() will miss files that have navigation definitions but no panel definitions
-								foreach ($tags as $path => &$tag) {
-									
-									$settingGroup = '';
-									if ($type == 'admin_boxes') {
-										if ($path == 'plugin_settings' && !empty($tag['module_class_name'])) {
-											$settingGroup = $tag['module_class_name'];
-										
-										} elseif ($path == 'advanced_search' && !empty($tag['storekeeper_path'])) {
-											$settingGroup = $tag['storekeeper_path'];
-										
-										} elseif ($path == 'site_settings' && !empty($tag['setting_group'])) {
-											$settingGroup = $tag['setting_group'];
-										}
-									
-									} elseif ($type == 'slot_controls') {
-										if (!empty($tag['module_class_name'])) {
-											$settingGroup = $tag['module_class_name'];
-										}
-									}
-									
-									$key2 = $path. '//'. $settingGroup;
-									$tuixFiles[$key][$key2] = array(
-										'type' => $type,
-										'path' => $path,
-										'setting_group' => $settingGroup,
-										'module_class_name' => $module['class_name'],
-										'filename' => $file,
-										'last_modified' => $filemtime,
-										'checksum' => $md5_file,
-										'status' => empty($tuixFiles[$key][$key2])? 'new' : 'updated'
-									);
-								}
-							}
-						}
-						unset($tags);
-					}
-				}
-			}
-		}
-	}
-	
-	
-	
-	//Loop through the array we've generated, and take actions as appropriate
-	foreach ($tuixFiles as $key => &$tuixFile) {
-		foreach ($tuixFile as $key2 => $tf) {
-			
-			//Where we could no longer find files, delete them
-			if (empty($tf['status'])) {
-				$sql = "
-					DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
-					WHERE type = '". sqlEscape($tf['type']). "'
-					  AND path = '". sqlEscape($tf['path']). "'
-					  AND setting_group = '". sqlEscape($tf['setting_group']). "'
-					  AND module_class_name = '". sqlEscape($tf['module_class_name']). "'
-					  AND filename = '". sqlEscape($tf['filename']). "'";
-				sqlSelect($sql);
-			
-			//Add/update newly added/edited files
-			} else if ($tf['status'] != 'unchanged') {
-				$sql = "
-					INSERT INTO ". DB_NAME_PREFIX. "tuix_file_contents
-					SET type = '". sqlEscape($tf['type']). "',
-						path = '". sqlEscape($tf['path']). "',
-						setting_group = '". sqlEscape($tf['setting_group']). "',
-						module_class_name = '". sqlEscape($tf['module_class_name']). "',
-						filename = '". sqlEscape($tf['filename']). "',
-						last_modified = ". (int) $tf['last_modified']. ",
-						checksum = '". sqlEscape($tf['checksum']). "'
-					ON DUPLICATE KEY UPDATE
-						last_modified = VALUES(last_modified),
-						checksum = VALUES(checksum)";
-				sqlSelect($sql);
-			}
-			
 		}
 	}
 }
@@ -6608,10 +6495,10 @@ function resyncEquivalence($cID, $cType) {
 function allowRemoveEquivalence($cID, $cType) {
 	//Check if this is a special page
 	if (($specialPage = isSpecialPage($cID, $cType))
-	 && ($specialPage = getRow('special_pages', array('equiv_id', 'create_lang_equiv_content'), array('page_type' => $specialPage)))) {
+	 && ($specialPage = getRow('special_pages', array('equiv_id', 'logic'), array('page_type' => $specialPage)))) {
 		//Never allow the main special page to be unlinked.
-		//And never allow any special page to be unlinked if create_lang_equiv_content is set.
-		return $cID != $specialPage['equiv_id'] && !$specialPage['create_lang_equiv_content'];
+		//And never allow any special page to be unlinked if the create_and_maintain_in_all_languages logic is used.
+		return $cID != $specialPage['equiv_id'] && $specialPage['logic'] != 'create_and_maintain_in_all_languages';
 	} else {
 		return true;
 	}

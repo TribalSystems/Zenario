@@ -1,0 +1,195 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    nav:
+        smart_groups:
+            priv: _PRIV_VIEW_USER
+            ord: "3"
+            label: Smart groups
+            tooltip: >
+                Smart groups are auto-updated views of user data, based on
+                filters that you define
+            link:
+                path: zenario__users/panels/smart_groups
+    
+    panels:
+        users:
+            refiners:
+                smart_group:
+                    sql: 'TRUE'
+                    table_join: 
+            #            |LEFT JOIN [[DB_NAME_PREFIX]]smart_group_opt_outs AS sgoo
+            #              ON sgoo.smart_group_id = [[REFINER_ID]]
+            #              AND sgoo.user_id = u.id
+            #columns:
+            #    opted_out:
+            #        title: Opted out
+            #        db_column: sgoo.user_id IS NOT NULL
+            #        format: yes_or_no
+            #        show_by_default: true
+            #        ord: 100
+            #    opted_out_on:
+            #        title: Opted out on
+            #        db_column: sgoo.opted_out_on
+            #        format: datetime
+            #        show_by_default: true
+            #        ord: 101
+            #    opt_out_method:
+            #        title: Opted out method
+            #        db_column: sgoo.opt_out_method
+            #        ord: 102
+            #        format: enum
+            #        values:
+            #            admin: Manually excluded by an Administrator
+            #        show_by_default: true
+            collection_buttons:
+                save_as_smart_group:
+                    priv: _PRIV_CREATE_GROUP
+                    ord: "0.1"
+                    hide_in_select_mode: true
+                    label: Save
+                    tooltip: Save this Advanced Search as a Smart Group
+                    visible_if: zenario_users.showCreateSmartGroupFromAdvancedSearch()
+                    call_js_function:
+                        encapsulated_object: zenario_users
+                        function: createSmartGroupFromAdvancedSearch
+            item_buttons:
+                #opt_out:
+                 #   priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                  #  ord: "94"
+                   # label: Exclude user
+                    #multiple_select: true
+                    #only_show_on_refiner: smart_group
+                    #one_without_columns_set:
+                    #    opted_out: true
+                    #ajax:
+                    #    confirm:
+                    #        message: |
+                    #            Are you sure you want to exclude the User "[[screen_name]]" from this Smart Group?
+                    #            This User normally matches the filters of this Smart Group, but you may manually exclude them. Anything that uses this Smart Group will honour this exception.
+                    #        multiple_select_message: |
+                    #            Are you sure you want to exclude these Users from this Smart Group?
+                    #            These Users normally match the filters of this Smart Group, but you may manually exclude them. Anything that uses this Smart Group will honour this exception.
+                    #        button_message: Exclude
+                    #        cancel_button_message: Cancel
+                    #        message_type: warning
+                    #    request:
+                    #        opt_out: "1"
+                #remove_opt_out:
+                #    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                #    ord: "95"
+                #    label: Cancel exclusion
+                #    tooltip: Cancel exclusion from this Smart Group
+                #    multiple_select_tooltip: "Manually remove these Users' opt outs of this Smart Group"
+                #    multiple_select: true
+                #    only_show_on_refiner: smart_group
+                #    one_with_columns_set:
+                #        opted_out: true
+                #    ajax:
+                #        confirm:
+                #            message: "Are you sure you wish to cancel this User's exclusion from this Smart Group?"
+                #            multiple_select_message: "Are you sure you wish to cancel these Users' exclusions from this Smart Group?"
+                #            button_message: true
+                #            cancel_button_message: No
+                #            message_type: warning
+                #        request:
+                #            remove_opt_out: "1"
+    
+        
+        smart_groups:
+            title: Smart groups
+            view_mode: list
+            disable_grid_view: true
+            db_items:
+                table: '[[DB_NAME_PREFIX]]smart_groups AS sg'
+                id_column: sg.id
+                client_side: true
+            columns:
+                name:
+                    title: Name
+                    db_column: sg.name
+                    searchable: true
+                    width: large
+                    show_by_default: true
+                members:
+                    title: Members
+                    width: small
+                    show_by_default: true
+                created_on:
+                    title: Date/Time Created
+                    db_column: sg.created_on
+                    format: datetime
+                last_modified_on:
+                    title: Date/Time Last Modified
+                    db_column: sg.last_modified_on
+                    format: datetime
+                description:
+                    title: Description
+                    width: xxlarge
+                    show_by_default: true
+            
+            label_format_for_grid_view: |
+                [[name]] ([[members]])
+            
+            item:
+                name: Smart group
+                names: Smart groups
+                css_class: group
+            no_items_message: No smart groups are defined.
+            collection_buttons:
+                create:
+                    priv: _PRIV_CREATE_GROUP
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create
+                    call_js_function:
+                        encapsulated_object: zenario_users
+                        function: createSmartGroup
+                help:
+                    label: Help
+                    help:
+                        message: >
+                            Smart groups are views of user-related data that you can
+                            define. They can be set to automatically filter user
+                            information based on a customized list of selection
+                            criteria, like a database query.
+            item_buttons:
+                edit:
+                    priv: _PRIV_VIEW_USER
+                    hide_in_select_mode: true
+                    label: Properties
+                    call_js_function:
+                        encapsulated_object: zenario_users
+                        function: editSmartGroup
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                group_members:
+                    parent: view_dropdown
+                    label: Members
+                    link:
+                        path: zenario__users/panels/users
+                        branch: true
+                        refiner: smart_group
+                delete:
+                    priv: _PRIV_DELETE_GROUP
+                    hide_in_select_mode: true
+                    ord: "99"
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to delete the smart group "[[name]]"?
+                                No users will be deleted.
+                                This action cannot be undone.
+                            multiple_select_message: |
+                                Are you sure you wish to delete all of the selected smart groups?
+                                No users will be deleted.
+                                This action cannot be undone.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"

@@ -91,7 +91,7 @@ empty_slot:
                 edit: true
                 layout: true
             onclick: >
-                if (zenarioA.draft(this.id)) {
+                if (zenarioA.draft(this.id, false, 'Are you sure you wish to show this ~plugin~ on this content item?', 'Show')) {
                     zenarioA.showPlugin(this, slotName);
                 }
                 return false;

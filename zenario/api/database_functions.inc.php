@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,7 @@ function getDistinctRowsArray($table, $cols, $ids = array(), $orderBy = array(),
 }
 
 
-function inEscape($csv, $escaping = 'sql') {
+function inEscape($csv, $escaping = 'sql', $prefix = false) {
 	if (!is_array($csv)) {
 		$csv = explode(',', $csv);
 	}
@@ -75,6 +75,13 @@ function inEscape($csv, $escaping = 'sql') {
 		} elseif ($escaping === 'sql') {
 			$sql .= "'". sqlEscape($var). "'";
 		
+		} elseif ($escaping === 'identifier') {
+			if ($prefix) {
+				$sql .= $prefix. ".";
+			}
+			
+			$sql .= "`". sqlEscape($var). "`";
+		
 		} else {
 			$sql .= str_replace(',', '', $var);
 		}
@@ -82,8 +89,8 @@ function inEscape($csv, $escaping = 'sql') {
 	return $sql;
 }
 
-function insertRow($table, $values) {
-	return setRow($table, $values, array());
+function insertRow($table, $values, $insertIgnore = false) {
+	return setRow($table, $values, array(), true, $insertIgnore);
 }
 
 function likeEscape($sql, $allowStarsAsWildcards = false, $asciiCharactersOnly = false) {

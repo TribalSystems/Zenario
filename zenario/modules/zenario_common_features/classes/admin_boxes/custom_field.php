@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -179,7 +179,7 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 		}
 		
 		//List all possible parent fields...
-		$fields['display/parent_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only');
+		$fields['display/parent_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false);
 		
 		//...being careful not to let something be a parent of itself, or any of its children!
 		if ($box['key']['id'] && isset($field)) {
@@ -258,7 +258,9 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 		 || $fields['details/db_column']['current_value'] != $fields['details/db_column']['value']) {
 			if (checkColumnExistsInDB($dataset['table'], $fields['details/db_column']['current_value'])
 			 || checkColumnExistsInDB($dataset['system_table'], $fields['details/db_column']['current_value'])) {
-				$fields['details/db_column']['error'] = adminPhrase('That column already exists in the table.');
+				$fields['details/db_column']['error'] =
+					adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', 
+						array('db_column' => $fields['details/db_column']['current_value']));
 			}
 		}
 		

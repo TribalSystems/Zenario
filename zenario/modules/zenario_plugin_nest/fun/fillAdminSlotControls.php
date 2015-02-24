@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ if (isset($controls['actions']['settings']['onclick'])) {
 		if (!isVersionControlled || zenarioA.draft(this.id, true)) {
 			var object = {
 				organizer_quick: {
-					path: 'zenario__modules/nav/modules/panel/item_buttons/view_instances//". $this->moduleId. "//item_buttons/zenario_plugin_nest__view_nested_plugins//". $this->instanceId. "//',
+					path: 'zenario__modules/panels/modules/item_buttons/view_instances//". $this->moduleId. "//item_buttons/zenario_plugin_nest__view_nested_plugins//". $this->instanceId. "//',
 					target_path: 'zenario__modules/hidden_nav/zenario_plugin_nest/panel',
 					min_path: 'zenario__modules/hidden_nav/zenario_plugin_nest/panel',
 					max_path: 'zenario__modules/hidden_nav/zenario_plugin_nest/panel',

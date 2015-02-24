@@ -2,477 +2,495 @@
 
 top_level_page: ref_of_properties
 pages:
-	-content_types
-	-inheritance
-	-jobs
-	-signals
-	-special_pages
+    -content_types
+    -inheritance
+    -jobs
+    -signals
+    -special_pages
 
 common_definitions:
-	stringy: &stringy
-		- number
-		- string
-	variable: &variable
-		- boolean
-		- number
-		- string
+    stringy: &stringy
+        - number
+        - string
+    variable: &variable
+        - boolean
+        - number
+        - string
 
 $schema: 'http://json-schema.org/draft-04/schema#'
 
 type: object
 required:
-	- display_name
-	- description
+    - display_name
+    - description
 properties:
-	display_name:
-		type: string
-		default: "(Your module's class name)"
-		description: >
-			The display name of the module, which will be shown to administrators.
-	required_cms_version:
-		type: string
-		default: "(The current version of the CMS)"
-		description: >
-			The version number of the CMS that your module requires to run, e.g. 7.0.0
-	author_name:
-		type: string
-		description: >
-			Your name or your company's name.
-	copyright_info:
-		type: string
-		description: >
-			Any copyright information.
-	license_info:
-		type: string
-		description: >
-			The name of the license you are using, e.g. Modified BSD License
-		
-			If you wish to release your module under more than one license, you can
-			enter multiple names separated by a comma.
-	keywords:
-		type: string
-		description: >
-			A comma-separated list of keywords that an administrator can search for in the modules
-			panel in organizer.
-	is_pluggable:
-		type: boolean
-		default: "(Intelligent default)"
-		description: >
-			If your module is pluggable then you should set this property.
-			A module that is pluggable can generate plugins.
-		
-			If you don't specify this property, or don't write a <code>description.yaml</code> file for your
-			module, then the CMS will take an intelligent guess based on whether you have
-			the <code>showSlot()</code> function in your module_code.php.
-	default_instance_name:
-		type: string
-		default: "(Your module's class name)"
-		description: >
-			The default name for an instance of your module, required for pluggable
-			modules.
-	can_be_version_controlled:
-		type: boolean
-		description: >
-			If your module is pluggable, setting this property will allow it to generate
-			version-controlled  plugins.
-			(If you don't set this property, it will only be able to generate library
-			plugins.)
-	nestable:
-		type: boolean
-		description: >
-			If your module is pluggable, setting this property will allow its plugins to be
-			inserted in a nest.
-		
-			(Most modules can, but if you find that your module is unstable when nested,
-			 or if your module uses the <code>showInFloatingBox()</code> init function,
-			 or nesting is just counterintuitive to what your module does,
-			 then you should not set this property.)
-	vlp_class_name:
-		type: string
-		default: "(Your module's class name)"
-		description: >
-			If your module is pluggable, you should provide a class name to use for
-			phrases.
-			This should usually be the same as your module's directory/class name, however you can
-			set it to the <code>vlp_class_name</code> of another module to use that module's phrases.
-	css_class_name:
-		type: string
-		default: "(Your module's class name)"
-		description: >
-			If your module is pluggable, you should provide a class name to use for
-			phrases.
-			This should usually be the same as your module's class name, however you can
-			set it to the class name of another module to use that module's styles.
-	default_framework:
-		type: string
-		description: >
-			The directory-name of the default framework for your module.
-			
-			Required for pluggable modules.
+    display_name:
+        type: string
+        default: "(Your module's class name)"
+        description: >
+            The display name of the module, which will be shown to administrators.
+    required_cms_version:
+        type: string
+        default: "(The current version of the CMS)"
+        description: >
+            The version number of the CMS that your module requires to run, e.g. 7.0.0
+    author_name:
+        type: string
+        description: >
+            Your name or your company's name.
+    copyright_info:
+        type: string
+        description: >
+            Any copyright information.
+    license_info:
+        type: string
+        description: >
+            The name of the license you are using, e.g. Modified BSD License
+        
+            If you wish to release your module under more than one license, you can
+            enter multiple names separated by a comma.
+    keywords:
+        type: string
+        description: >
+            A comma-separated list of keywords that an administrator can search for in the modules
+            panel in organizer.
+    is_pluggable:
+        type: boolean
+        default: "(Intelligent default)"
+        description: >
+            If your module is pluggable then you should set this property.
+            A module that is pluggable can generate plugins.
+        
+            If you don't specify this property, or don't write a <code>description.yaml</code> file for your
+            module, then the CMS will take an intelligent guess based on whether you have
+            the <code>showSlot()</code> function in your module_code.php.
+    default_instance_name:
+        type: string
+        default: "(Your module's class name)"
+        description: >
+            The default name for an instance of your module, required for pluggable
+            modules.
+    can_be_version_controlled:
+        type: boolean
+        description: >
+            If your module is pluggable, setting this property will allow it to generate
+            version-controlled  plugins.
+            (If you don't set this property, it will only be able to generate library
+            plugins.)
+    nestable:
+        type: boolean
+        description: >
+            If your module is pluggable, setting this property will allow its plugins to be
+            inserted in a nest.
+        
+            (Most modules can, but if you find that your module is unstable when nested,
+             or if your module uses the <code>showInFloatingBox()</code> init function,
+             or nesting is just counterintuitive to what your module does,
+             then you should not set this property.)
+    vlp_class_name:
+        type: string
+        default: "(Your module's class name)"
+        description: >
+            If your module is pluggable, you should provide a class name to use for
+            phrases.
+            This should usually be the same as your module's directory/class name, however you can
+            set it to the <code>vlp_class_name</code> of another module to use that module's phrases.
+    css_class_name:
+        type: string
+        default: "(Your module's class name)"
+        description: >
+            If your module is pluggable, you should provide a class name to use for
+            phrases.
+            This should usually be the same as your module's class name, however you can
+            set it to the class name of another module to use that module's styles.
+    default_framework:
+        type: string
+        description: >
+            The directory-name of the default framework for your module.
+            
+            Required for pluggable modules.
 
-	dependencies:
-		type: object
-		additionalProperties:
-			type: boolean
-		description: >
-			An array of modules that your module depends on.
-			Note that the names of the modules must be stored in the keys, not the values.
+    dependencies:
+        type: object
+        additionalProperties:
+            type: boolean
+        description: >
+            An array of modules that your module depends on.
+            Note that the names of the modules must be stored in the keys, not the values.
 
-	inheritance:
-		type: object
-		properties:
-			inherit_description_from_module:
-				type: string
-				description: >
-					If you create a simple or a "skinny" module that extends another module - or
-					is just very similar to another module - then you can enter the class name of
-					that module here to automatically copy that module's descriptive properties,
-					dependencies and inheritances from its <code>description.yaml</code> file.
-		
-					Where you have both set the same property, the property in your module's <code>description.yaml</code>
-					file will overwrite the property from the module your are inheriting from.
-		
-					You may only specify one module to inherit the description from, but this
-					inheritance can be chained; i.e. if you inherit the description of a module
-					that itself inherits the description of a third module, you'll get a combined
-					description from all three modules.
-		
-					Only the basic descriptive properties, <code>dependencies</code> and <code>inheritance</code> are copied.
-		
-					The <code>content_types</code>, <code>jobs</code>, <code>signals</code> and
-					<code>special_pages</code> properties are not copied. You must
-					repeat these properties in your own <code>description.yaml</code> file if you wish to use them.
-			
-			inherit_frameworks_from_module:
-				type: string
-				description: >
-					If you enter the class name of a module here, any Frameworks available to
-					plugins of that module will also be available to plugins of your module.
-		
-					In the event of any name clashes the frameworks in your module will be used
-					in preference.
-		
-					You may only specify one module to inherit Frameworks from, but this
-					inheritance can be chained; i.e. if you inherit Frameworks from a module that
-					itself inherits Frameworks from a third module, plugins of your module can use
-					the combination of Frameworks from all three modules.
-			
-			include_javascript_from_module:
-				type: string
-				description: >
-					If you enter the class name of a module here, any JavaScript functions
-					defined for plugins in that module will also be available for your plugins
-					to call on.
-		
-					But note that their encapsulated name does not change; i.e. if you write
-					my_module_b which extends my_module_a, then include JavaScript from
-					my_module_a in my_module_b, the syntax for these functions will still be:
-						<code>my_module_a.functionNameFromModuleA();</code>
-					and not:
-						<code>my_module_b.functionNameFromModuleA();</code>
-			
-			inherit_settings_from_module:
-				type: string
-				description: >
-					If you enter the class name of a module here, any Plugin Settings defined
-					for that module will be automatically made available to plugins of your
-					module.
-					However you still have the power to add additional Settings of your own,
-					or to hide or otherwise alter the predefined Settings.
-		
-					Note that the <code>fillAdminBox()</code>, <code>formatAdminBox()</code>, <code>validateAdminBox()</code> and
-					<code>saveAdminBox()</code> methods of the module you specify here are still called. If you
-					wish to hide any predefined fields or tabs you should do so by setting the
-					<code>hidden</code> property, rather than trying to use <code>unset()</code> which may cause PHP notices and
-					unintended functionality in the original module's code.
-		
-					You may only specify one module to inherit Settings from, but this
-					inheritance can be chained; i.e. if you inherit Settings from a module that
-					itself inherits Settings from a third module, you are effectively inheriting
-					Settings from all three modules.
-				
-			allow_upgrades_from_module:
-				type: object
-				additionalProperties:
-					type: boolean
-				description: >
-					If you enter the class name(s) of a module here, Admins will be able to
-					upgrade plugins handled by that module to be
-					handled by your module instead.
-					The process is also reversible; Admins will also have the option of
-					downgrading plugins handled by your module to be
-					handled by that module again.
-	
-	signals:
-		type: object
-		additionalProperties:
-			type: object
-			required:
-				- name
-			properties:
-				name:
-					type: string
-					description: >
-						The name of a signal that this module listens for
-				static:
-					type: boolean
-					description: >
-						Whether your method is static.
-						Using static methods is recommended, as it is slightly more efficient.
-				suppresses_module_class_name:
-					type: string
-					description: >
-						This property allows you to handle a signal in place of a different module.
-	
-	jobs:
-		type: object
-		additionalProperties:
-			type: object
-			required:
-				- name
-			properties:
-				name:
-					type: string
-					description: >
-						A method in your module that should be called for this job.
-						This is also visible to Admins, and is used for the name of this job.
-				static:
-					type: boolean
-					description: >
-						Whether your method is static.
-						Using static methods is recommended, as it is slightly more efficient.
-				
-				manager_class_name:
-					type: string
-					default: zenario_scheduled_task_manager
-					description: >
-						The class name of the module that you wish to manage this Job, for example
-						the zenario_scheduled_task_manager module or the
-						zenario_incoming_email_manager module.
-			
-						If you let the zenario_scheduled_task_manager module manage your job, then
-						your method will be called periodically.
-						If you let the zenario_incoming_email_manager module manage your job, then
-						your method will be called when an email is received.
-		
-				#If your job is a Scheduled Task, you should set default values for the
-				#frequency at which it will be called using the following properties:
-				months:
-					type: string
-					description: >
-						A comma-sparated list of months in the year this job should run on.
-						E.g. jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
-				
-				days:
-					type: string
-					description: >
-						A comma-sparated list of the week this job should run on.
-						E.g. mon,tue,wed,thr,fri,sat,sun
-				
-				hours:
-					type: string
-					description: >
-						A comma-sparated list of the hours this job should run on.
-						E.g. 0h,12h for midnight and midday.
-				
-				minutes:
-					type: string
-					description: >
-						A comma-sparated list of hours this job should run on.
-						E.g. 0m,20m,40m for every 20 minutes.
-				
-				first_n_days_of_month:
-					type: number
-					default: '0 (off)'
-					description: >
-						Only run on the first n days of the month.
-			
-						Alternately you may enter a negative number to
-						only run on the first n days of the month.
-			
-						Defaults to 0, which turns this option off.
-				
-				log_on_action:
-					type: boolean
-					description: >
-						Whether to add a log entry if this job does something.
-				
-				log_on_no_action:
-					type: boolean
-					description: >
-						Whether to add a log entry if this job does nothing.
-				
-				email_on_action:
-					type: boolean
-					description: >
-						Whether to send an email if this job does something.
-				
-				email_on_no_action:
-					type: boolean
-					description: >
-						Whether to send an email if this job does nothing.
-	
-	content_types:
-		type: object
-		additionalProperties:
-			type: object
-			required:
-				- content_type_id
-				- content_type_name_en
-				- default_template_name
-			properties:
-				content_type_id:
-					type: string
-					description: >
-						The id of the Content Type, e.g. html, news, document.
-						Must be unique on a site.
-						Can only be made up of the letters a-z in lowercase.
-				content_type_name_en:
-					type: string
-					description: >
-						An English name for the content type.
-						This will be shown to administrators.
-				default_template_name:
-					type: string
-					description: >
-						The CMS will automatically create a new layout for your content type when
-						it is installed on a site, with this name.
-				enable_summary_auto_update:
-					type: boolean
-					description: >
-						Whether to prompt an Admin to update a Content Item's Summary when they are
-						editing a Content Item.
-			
-						This will be the default value; it can be overwritten on a per site basis
-						by changing it in the Content Type settings.
-				description_field:
-					enum:
-						- optional
-						- mandatory
-						- hidden
-					default: optional
-					description: >
-						Whether to show the description field to Admins.
-			
-						This will be the default value; it can be overwritten on a per site basis by changing it in the Content Type settings.
-				keywords_field:
-					enum:
-						- optional
-						- mandatory
-						- hidden
-					default: optional
-					description: >
-						Whether to show the keywords field to Admins.
-			
-						This will be the default value; it can be overwritten on a per site basis
-						by changing it in the Content Type settings.
-				summary_field:
-					enum:
-						- optional
-						- mandatory
-						- hidden
-					default: optional
-					description: >
-						Whether to show the summary field to Admins.
-			
-						This will be the default value; it can be overwritten on a per site basis
-						by changing it in the Content Type settings.
-				release_date_field:
-					enum:
-						- optional
-						- mandatory
-						- hidden
-					default: optional
-					description: >
-						Whether to show the release date field to Admins.
-			
-						This will be the default value; it can be overwritten on a per site basis
-						by changing it in the Content Type settings.
-				writer_field:
-					enum:
-						- optional
-						- mandatory
-						- hidden
-					default: optional
-					description: >
-						Whether to show the writer field to Admins.
-			
-						This will be the default value; it can be overwritten on a per site basis
-						by changing it in the Content Type settings.
-	
-	special_pages:
-		type: object
-		additionalProperties:
-			type: object
-			required:
-				- page_type
-				- default_alias
-				- default_title
-			properties:
-				page_type:
-					type: string
-					description: >
-						A code name for this special page.
-						Should be prefixed with your name or company name to avoid any clashes with
-						other Plugin Developers.
-				default_alias:
-					type: boolean
-					description: >
-						An alias to give this page by default.
-				default_title:
-					type: string
-					description: >
-						A title to give this page by default.
-				default_content:
-					type: string
-					description: >
-						If your module does not have the <code>is_pluggable</code> property set, this property will
-						place a WYSIWYG Editor on the page upon creation with the
-						specified content.
-			
-						If your module does have the <code>is_pluggable</code> property set, this property will be
-						ignored and a library plugin from your module will be placed on the page
-						instead.
-				
-				menu_title:
-					type: string
-					description: >
-						You can set this property to automatically create a Menu Node with the specified
-						title.
-				footer_menu_title:
-					type: string
-					description: >
-						You can set this property to automatically create a Footer-Menu Node with the
-						specified title.
-				menu_rel_tag:
-					type: string
-					description: >
-						This property lets you set a Rel-Tag on the Menu Node(s) created by the
-						<code>menu_title</code> or <code>footer_menu_title</code> properties.
-						E.g. for the search page, the rel tag would be "search".
-				only_show_to_visitors_who_are_logged_in:
-					type: boolean
-					description: >
-						This lets you set the created Menu Nodes to only be for logged in Extranet
-						Users by default.
-				only_show_to_visitors_who_are_logged_out:
-					type: boolean
-					description: >
-						This lets you set the created Menu Nodes to only be for logged out visitors
-						by default.
-				
-				create_language_equivalent_content:
-					type: boolean
-					description: >
-						If this property is not set, then a Special Page will only be created in the
-						first or the default Language of a Site.
-						If this property is set, then a Special Page will be created in every Language
-						of a Site.
-				
-				publish:
-					type: boolean
-					description: >
-						If this property is set, the Special Page will be published by default.
-						If you feel that you can make your Special Page look presentable using just
-						the options here, you may wish it to be published straight away to reduce
-						the amount of setup that an Administrator needs to perform.
+    inheritance:
+        type: object
+        properties:
+            inherit_description_from_module:
+                type: string
+                description: >
+                    If you create a simple or a "skinny" module that extends another module - or
+                    is just very similar to another module - then you can enter the class name of
+                    that module here to automatically copy that module's descriptive properties,
+                    dependencies and inheritances from its <code>description.yaml</code> file.
+        
+                    Where you have both set the same property, the property in your module's <code>description.yaml</code>
+                    file will overwrite the property from the module your are inheriting from.
+        
+                    You may only specify one module to inherit the description from, but this
+                    inheritance can be chained; i.e. if you inherit the description of a module
+                    that itself inherits the description of a third module, you'll get a combined
+                    description from all three modules.
+        
+                    Only the basic descriptive properties, <code>dependencies</code> and <code>inheritance</code> are copied.
+        
+                    The <code>content_types</code>, <code>jobs</code>, <code>signals</code> and
+                    <code>special_pages</code> properties are not copied. You must
+                    repeat these properties in your own <code>description.yaml</code> file if you wish to use them.
+            
+            inherit_frameworks_from_module:
+                type: string
+                description: >
+                    If you enter the class name of a module here, any Frameworks available to
+                    plugins of that module will also be available to plugins of your module.
+        
+                    In the event of any name clashes the frameworks in your module will be used
+                    in preference.
+        
+                    You may only specify one module to inherit Frameworks from, but this
+                    inheritance can be chained; i.e. if you inherit Frameworks from a module that
+                    itself inherits Frameworks from a third module, plugins of your module can use
+                    the combination of Frameworks from all three modules.
+            
+            include_javascript_from_module:
+                type: string
+                description: >
+                    If you enter the class name of a module here, any JavaScript functions
+                    defined for plugins in that module will also be available for your plugins
+                    to call on.
+        
+                    But note that their encapsulated name does not change; i.e. if you write
+                    my_module_b which extends my_module_a, then include JavaScript from
+                    my_module_a in my_module_b, the syntax for these functions will still be:
+                        <code>my_module_a.functionNameFromModuleA();</code>
+                    and not:
+                        <code>my_module_b.functionNameFromModuleA();</code>
+            
+            inherit_settings_from_module:
+                type: string
+                description: >
+                    If you enter the class name of a module here, any Plugin Settings defined
+                    for that module will be automatically made available to plugins of your
+                    module.
+                    However you still have the power to add additional Settings of your own,
+                    or to hide or otherwise alter the predefined Settings.
+        
+                    Note that the <code>fillAdminBox()</code>, <code>formatAdminBox()</code>, <code>validateAdminBox()</code> and
+                    <code>saveAdminBox()</code> methods of the module you specify here are still called. If you
+                    wish to hide any predefined fields or tabs you should do so by setting the
+                    <code>hidden</code> property, rather than trying to use <code>unset()</code> which may cause PHP notices and
+                    unintended functionality in the original module's code.
+        
+                    You may only specify one module to inherit Settings from, but this
+                    inheritance can be chained; i.e. if you inherit Settings from a module that
+                    itself inherits Settings from a third module, you are effectively inheriting
+                    Settings from all three modules.
+                
+            allow_upgrades_from_module:
+                type: object
+                additionalProperties:
+                    type: boolean
+                description: >
+                    If you enter the class name(s) of a module here, Admins will be able to
+                    upgrade plugins handled by that module to be
+                    handled by your module instead.
+                    The process is also reversible; Admins will also have the option of
+                    downgrading plugins handled by your module to be
+                    handled by that module again.
+    
+    signals:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - name
+            properties:
+                name:
+                    type: string
+                    description: >
+                        The name of a signal that this module listens for
+                static:
+                    type: boolean
+                    description: >
+                        Whether your method is static.
+                        Using static methods is recommended, as it is slightly more efficient.
+                suppresses_module_class_name:
+                    type: string
+                    description: >
+                        This property allows you to handle a signal in place of a different module.
+    
+    jobs:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - name
+            properties:
+                name:
+                    type: string
+                    description: >
+                        A method in your module that should be called for this job.
+                        This is also visible to Admins, and is used for the name of this job.
+                static:
+                    type: boolean
+                    description: >
+                        Whether your method is static.
+                        Using static methods is recommended, as it is slightly more efficient.
+                
+                manager_class_name:
+                    type: string
+                    default: zenario_scheduled_task_manager
+                    description: >
+                        The class name of the module that you wish to manage this Job, for example
+                        the zenario_scheduled_task_manager module or the
+                        zenario_incoming_email_manager module.
+            
+                        If you let the zenario_scheduled_task_manager module manage your job, then
+                        your method will be called periodically.
+                        If you let the zenario_incoming_email_manager module manage your job, then
+                        your method will be called when an email is received.
+        
+                #If your job is a Scheduled Task, you should set default values for the
+                #frequency at which it will be called using the following properties:
+                months:
+                    type: string
+                    description: >
+                        A comma-sparated list of months in the year this job should run on.
+                        E.g. jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+                
+                days:
+                    type: string
+                    description: >
+                        A comma-sparated list of the week this job should run on.
+                        E.g. mon,tue,wed,thr,fri,sat,sun
+                
+                hours:
+                    type: string
+                    description: >
+                        A comma-sparated list of the hours this job should run on.
+                        E.g. 0h,12h for midnight and midday.
+                
+                minutes:
+                    type: string
+                    description: >
+                        A comma-sparated list of hours this job should run on.
+                        E.g. 0m,20m,40m for every 20 minutes.
+                
+                first_n_days_of_month:
+                    type: number
+                    default: '0 (off)'
+                    description: >
+                        Only run on the first n days of the month.
+            
+                        Alternately you may enter a negative number to
+                        only run on the first n days of the month.
+            
+                        Defaults to 0, which turns this option off.
+                
+                log_on_action:
+                    type: boolean
+                    description: >
+                        Whether to add a log entry if this job does something.
+                
+                log_on_no_action:
+                    type: boolean
+                    description: >
+                        Whether to add a log entry if this job does nothing.
+                
+                email_on_action:
+                    type: boolean
+                    description: >
+                        Whether to send an email if this job does something.
+                
+                email_on_no_action:
+                    type: boolean
+                    description: >
+                        Whether to send an email if this job does nothing.
+    
+    content_types:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - content_type_id
+                - content_type_name_en
+                - default_template_name
+            properties:
+                content_type_id:
+                    type: string
+                    description: >
+                        The id of the Content Type, e.g. html, news, document.
+                        Must be unique on a site.
+                        Can only be made up of the letters a-z in lowercase.
+                content_type_name_en:
+                    type: string
+                    description: >
+                        An English name for the content type.
+                        This will be shown to administrators.
+                default_template_name:
+                    type: string
+                    description: >
+                        The CMS will automatically create a new layout for your content type when
+                        it is installed on a site, with this name.
+                enable_summary_auto_update:
+                    type: boolean
+                    description: >
+                        Whether to prompt an Admin to update a Content Item's Summary when they are
+                        editing a Content Item.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+                description_field:
+                    enum:
+                        - optional
+                        - mandatory
+                        - hidden
+                    default: optional
+                    description: >
+                        Whether to show the description field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis by changing it in the Content Type settings.
+                keywords_field:
+                    enum:
+                        - optional
+                        - mandatory
+                        - hidden
+                    default: optional
+                    description: >
+                        Whether to show the keywords field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+                summary_field:
+                    enum:
+                        - optional
+                        - mandatory
+                        - hidden
+                    default: optional
+                    description: >
+                        Whether to show the summary field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+                release_date_field:
+                    enum:
+                        - optional
+                        - mandatory
+                        - hidden
+                    default: optional
+                    description: >
+                        Whether to show the release date field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+                writer_field:
+                    enum:
+                        - optional
+                        - mandatory
+                        - hidden
+                    default: optional
+                    description: >
+                        Whether to show the writer field to Admins.
+            
+                        This will be the default value; it can be overwritten on a per site basis
+                        by changing it in the Content Type settings.
+    
+    special_pages:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - page_type
+                - default_alias
+                - default_title
+            properties:
+                page_type:
+                    type: string
+                    description: >
+                        A code name for this special page.
+                        Should be prefixed with your name or company name to avoid any clashes with
+                        other Plugin Developers.
+                default_alias:
+                    type: boolean
+                    description: >
+                        An alias to give this page by default.
+                default_title:
+                    type: string
+                    description: >
+                        A title to give this page by default.
+                default_content:
+                    type: string
+                    description: >
+                        If your module does not have the <code>is_pluggable</code> property set, this property will
+                        place a WYSIWYG Editor on the page upon creation with the
+                        specified content.
+            
+                        If your module does have the <code>is_pluggable</code> property set, this property will be
+                        ignored and a library plugin from your module will be placed on the page
+                        instead.
+                
+                menu_title:
+                    type: string
+                    description: >
+                        You can set this property to automatically create a Menu Node with the specified
+                        title.
+                footer_menu_title:
+                    type: string
+                    description: >
+                        You can set this property to automatically create a Footer-Menu Node with the
+                        specified title.
+                menu_rel_tag:
+                    type: string
+                    description: >
+                        This property lets you set a Rel-Tag on the Menu Node(s) created by the
+                        <code>menu_title</code> or <code>footer_menu_title</code> properties.
+                        E.g. for the search page, the rel tag would be "search".
+                only_show_to_visitors_who_are_logged_in:
+                    type: boolean
+                    description: >
+                        This lets you set the created Menu Nodes to only be for logged in Extranet
+                        Users by default.
+                only_show_to_visitors_who_are_logged_out:
+                    type: boolean
+                    description: >
+                        This lets you set the created Menu Nodes to only be for logged out visitors
+                        by default.
+                
+                layout:
+                    type: string
+                    description: >
+                        The name of a layout to use for the created page.
+                        (If you do not set a name, or the name is not found, then the default html layout will be used.)
+                
+                logic:
+                    enum:
+                        - create_and_maintain_in_default_language
+                        - create_and_maintain_in_all_languages
+                        - create_in_default_language_on_install
+                    default: create_and_maintain_in_default_language
+                    description: >
+                        The logic that should be followed for this special page.
+                        
+                        create_and_maintain_in_default_language:
+                            A special page will only be created in the first or the default Language of a site.
+                        
+                        create_and_maintain_in_all_languages:
+                            A special page will be created in every language.
+                        
+                        create_in_default_language_on_install:
+                            A normal page will be created if this module is running on the first install of the site.
+                            This page will not be flagged as "special", can't be found using the langSpecialPage() function,
+                            and can be deleted by an administrator.
+                
+                publish:
+                    type: boolean
+                    description: >
+                        If this property is set, the Special Page will be published by default.
+                        If you feel that you can make your Special Page look presentable using just
+                        the options here, you may wish it to be published straight away to reduce
+                        the amount of setup that an Administrator needs to perform.

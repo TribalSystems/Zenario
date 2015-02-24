@@ -30,7 +30,7 @@ zenario_content:
         source_menu_parent: ""
         quick_create_content: ""
         quick_create_menu: ""
-    title: Creating a Content Item
+    title: Creating a content item
     tabs:
         meta_data:
             ord: 10
@@ -43,6 +43,7 @@ zenario_content:
                     ord: 20
                     label: 'Browser title:'
                     type: text
+                    maxlength: 75
                     onkeyup: |
                         zenarioAB.contentTitleChange();
                                                     cnt = $('#title').val().length;
@@ -97,6 +98,7 @@ zenario_content:
                     ord: 40
                     label: 'Menu node text:'
                     type: text
+                    maxlength: 255
                     onchange: zenarioAB.focus.___menu_title_changed = true;
                     onkeyup: |
                         get('menu_path').value =
@@ -122,16 +124,16 @@ zenario_content:
                     ord: 50
                     label: 'Alias:'
                     type: text
-                    maxlength: "75"
+                    maxlength: 75
                     onkeyup: |
                         if ($('#alias').val()) {
                                                             $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
                                                         }
                     onchange: zenarioAB.focus.___alias_changed = true;
                     note_below: |
-                        A friendly name for this content item, and part of its URL.
-                                                    When combined with the content item's language code, is unique.
-                                                    Lower case only, may not contain spaces or special characters.
+                        An alias for this content item, and part of its URL.
+                        The combination of the content item's alias and its language code is unique across the site.
+                        Lower case only, may not contain spaces or special characters.
                     post_field_html: '<div id="alias_warning_display"></div>'
                 domain_and_subdir:
                     same_row: true
@@ -207,9 +209,9 @@ zenario_content:
                     ord: 100
                     label: 'Writer:'
                     pick_items:
-                        path: zenario__users/nav/admins/panel
-                        target_path: zenario__users/nav/admins/panel
-                        min_path: zenario__users/nav/admins/panel
+                        path: zenario__users/panels/administrators
+                        target_path: zenario__users/panels/administrators
+                        min_path: zenario__users/panels/administrators
                         select_phrase: Select an Administrator...
                         nothing_selected_phrase: Nobody selected
                     format_onchange: true
@@ -227,8 +229,8 @@ zenario_content:
                     type: editor
                     insert_link_button:
                         exists: true
-                    rows: "4"
-                    cols: "80"
+                    rows: 4
+                    cols: 80
                 lock_summary_view_mode:
                     label: 'Protected:'
                     ord: 140
@@ -313,7 +315,7 @@ zenario_content:
                         html: ""
         template:
             ord: 30
-            label: 'Layout & CSS'
+            label: 'Layout'
             edit_mode:
                 enabled: false
                 priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
@@ -334,10 +336,10 @@ zenario_content:
                 layout_id:
                     label: 'Layout:'
                     pick_items:
-                        path: zenario__layouts/nav/layouts/panel
-                        target_path: zenario__layouts/nav/layouts/panel
-                        min_path: zenario__layouts/nav/layouts/panel
-                        max_path: zenario__layouts/nav/layouts/panel
+                        path: zenario__layouts/panels/layouts
+                        target_path: zenario__layouts/panels/layouts
+                        min_path: zenario__layouts/panels/layouts
+                        max_path: zenario__layouts/panels/layouts
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose this Layout
                         select_phrase: Select a Layout...
@@ -347,16 +349,103 @@ zenario_content:
                     label: 'Skin:'
                     read_only: true
                     pick_items:
-                        path: zenario__layouts/hidden_nav/skins/panel
-                        target_path: zenario__layouts/hidden_nav/skins/panel
-                        min_path: zenario__layouts/hidden_nav/skins/panel
-                        max_path: zenario__layouts/hidden_nav/skins/panel
+                        path: zenario__layouts/panels/skins
+                        target_path: zenario__layouts/panels/skins
+                        min_path: zenario__layouts/panels/skins
+                        max_path: zenario__layouts/panels/skins
+        css:
+            ord: 31
+            label: Background & CSS
+            edit_mode:
+                enabled: false
+                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+            fields:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: |
+                            Use this screen to set the background for this content item.
+                background_image:
+                    label: 'Background image:'
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/background_images
+                        target_path: zenario__content/panels/background_images
+                        min_path: zenario__content/panels/background_images
+                        max_path: zenario__content/panels/background_images
+                        multiple_select: false
+                        select_phrase: 'Use existing...'
+                    redraw_onchange: true
+                
+                bg_color:
+                    label: 'Background color:'
+                    type: color_picker
+                    color_picker_options:
+                        allowEmpty: true
+                        showInput: true
+                        showPalette: true
+                        showInitial: true
+                        clickoutFiresChange: true
+                    maxlength: 64
+                
+                bg_position:
+                    label: 'Background position:'
+                    type: select
+                    empty_value: "[ Don't specify ]"
+                    values:
+                        'left top':
+                            label: '↖ Top left'
+                        'center top':
+                            label: '↑ Top center'
+                        'right top':
+                            label: '↗ Top right'
+                        'left center':
+                            label: '← Left center'
+                        'center center':
+                            label: '• Center'
+                        'right center':
+                            label: '→ Right center'
+                        'left bottom':
+                            label: '↙ Bottom left'
+                        'center bottom':
+                            label: '↓ Bottom center'
+                        'right bottom':
+                            label: '↘ Bottom right'
+                
+                bg_repeat:
+                    label: 'Background repeat:'
+                    type: select
+                    empty_value: "[ Don't specify ]"
+                    values:
+                        repeat:
+                            label: ' ⸬ Repeat in all directions'
+                        repeat-x:
+                            label: ' … Repeat horizontally'
+                        repeat-y:
+                            label: ' ⋮ Repeat vertically'
+                        no-repeat:
+                            label: " • Don't repeat"
+                
+                desc2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            If you wish to style this content item specifically in your skin, you may give it one or more CSS class names.
+                            A <code>&lt;div&gt;</code> with these class names will be added to this page.
                 css_class:
                     label: 'CSS class names:'
                     type: text
                     maxlength: 100
-                    note_below: |
-                        A &lt;div&gt; with these CSS class names will be added to this page.
+        
         file:
             ord: 35
             label: File

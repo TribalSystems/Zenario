@@ -7,56 +7,56 @@ start_running_on_install: true
 license_info: Modified BSD License
 display_name: Meta Data
 description: |
-	<p>
-				Displays the CMS Meta Data of the current Content Item to a visitor.
-			</p>
-			<p>You can use this Module to display any or all of the following fields on a page:
-				<ul>
-					<li>Title</li>
-					<li>Release Date</li>
-					<li>Categories</li>
-					<li>Description</li>
-					<li>Summary</li>
-					<li>Keywords</li>
-					<li>Language</li>
-					</ul>
-				</p>
-			<p>
-				You can use the Settings for this Module to turn each of these on or off, and the 
-				Framework to fine-tune the output as seen by visitors.
-			</p>
-			<p>
-				For example, you may want to show the Release Date on all of your News Items. To do 
-				this, place an Instance of this Module on a News Item, and configure the Settings to 
-				show Date. You can choose the date format. To make this display consistently on all News
-				Items, you should apply this at a Layout Layer.
-			</p>
-			<p>
-				If you select Categories in the Module's settings, this Module will display a list of 
-				the Public Categories of the Content Item in alphabetical order. (Categories not marked 
-				as Public are treated as internal categories only and will not be shown to visitors.)
-			</p>
-			<p>
-				The Public name of the Category - that is, the name seen by visitors - can be stored in 
-				all enabled languages, such that visitors see appropriate names for the Category, even 
-				though it only has one internal name for administration purposes. You can edit the 
-				Public names via the Languages' core phrases.
-			</p>
-			<p>
-				Where a Category has a Category Landing Page defined, the name of the Category will 
-				also be a hyperlink to that Landing Page.
-			</p>
-			<p>
-				This is a helpful feature if you have a large volume of content, such as lists of 
-				Documents, or an online store. It would be typical to put a Content Summary List on the
-				Landing Page of the Category to list the Category's contents.
-			</p>
-			<p>
-				Note that Title, Description, Keywords and Language are added to the source 
-				&#60;head&#62; area of your pages by default, so there is no need to use this 
-				Module for that purpose. This Module is intended only to display the information in the
-				viewable &#60;body&#62; areas of the page.
-			</p>
+    <p>
+                Displays the CMS Meta Data of the current Content Item to a visitor.
+            </p>
+            <p>You can use this Module to display any or all of the following fields on a page:
+                <ul>
+                    <li>Title</li>
+                    <li>Release Date</li>
+                    <li>Categories</li>
+                    <li>Description</li>
+                    <li>Summary</li>
+                    <li>Keywords</li>
+                    <li>Language</li>
+                    </ul>
+                </p>
+            <p>
+                You can use the Settings for this Module to turn each of these on or off, and the 
+                Framework to fine-tune the output as seen by visitors.
+            </p>
+            <p>
+                For example, you may want to show the Release Date on all of your News Items. To do 
+                this, place an Instance of this Module on a News Item, and configure the Settings to 
+                show Date. You can choose the date format. To make this display consistently on all News
+                Items, you should apply this at a Layout Layer.
+            </p>
+            <p>
+                If you select Categories in the Module's settings, this Module will display a list of 
+                the Public Categories of the Content Item in alphabetical order. (Categories not marked 
+                as Public are treated as internal categories only and will not be shown to visitors.)
+            </p>
+            <p>
+                The Public name of the Category - that is, the name seen by visitors - can be stored in 
+                all enabled languages, such that visitors see appropriate names for the Category, even 
+                though it only has one internal name for administration purposes. You can edit the 
+                Public names via the Languages' core phrases.
+            </p>
+            <p>
+                Where a Category has a Category Landing Page defined, the name of the Category will 
+                also be a hyperlink to that Landing Page.
+            </p>
+            <p>
+                This is a helpful feature if you have a large volume of content, such as lists of 
+                Documents, or an online store. It would be typical to put a Content Summary List on the
+                Landing Page of the Category to list the Category's contents.
+            </p>
+            <p>
+                Note that Title, Description, Keywords and Language are added to the source 
+                &#60;head&#62; area of your pages by default, so there is no need to use this 
+                Module for that purpose. This Module is intended only to display the information in the
+                viewable &#60;body&#62; areas of the page.
+            </p>
 vlp_class_name: zenario_meta_data
 css_class_name: zenario_meta_data
 is_pluggable: Yes

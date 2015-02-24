@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Forms
+description: |
+    <p>
+        This module lets you build forms that are used by website visitors and extranet users.
+    </p><p>
+        In organizer under the forms panel, you can create a new form and edit existing ones. You're able to set how to form will behave
+        on a web-page from it's properties. A form can log data from submissions, create and store data next to a user account, send emails to administrators and the user provided an email field is on the form and send a signal. After a forms been submitted, you can choose what happens next. The user can stay on the page with the form, be redirected to another page or show a success message when successfull. Forms also have the option of requiring a Captcha to be completed before it can be submitted.
+    </p><p>
+        Once a forms been created, form fields can be added and edited. A form field can be linked to a dataset field for a user, or be unlinked. An unlinked form field cannot be saved against a user, and can only be recorded in the submission log. Fields have a list of properties used to customize their functionality, including their label, whether to make it mandatory or read-only and many others.
+    </p><p>
+        Once a form has been created, to place it on a page a new plugin needs to be created from the Forms module, and a form assigned to it in it's plugin settings
+    </p>
+keywords: form, forms, profile, user, data view
+vlp_class_name: zenario_user_forms
+css_class_name: zenario_user_forms
+is_pluggable: true
+can_be_version_controlled: false
+nestable: true
+default_framework: standard
+dependencies:
+    zenario_users: true
+default_instance_name: Untitled form

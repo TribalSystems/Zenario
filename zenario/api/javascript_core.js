@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -390,7 +390,7 @@
 	zenario.loadPhrases = function(vlpClass, code) {
 	
 		var url = URLBasePath + 'zenario/ajax.php'
-			+ '?method_call=adminPhrase'
+			+ '?method_call=loadPhrase'
 			+ '&__class__=' + encodeURIComponent(vlpClass)
 			+ '&langId=' + encodeURIComponent(zenario.langId);
 	
@@ -419,7 +419,8 @@
 		 || zenario.phrases[vlpClass][text] === undefined) {
 			zenario.loadPhrases(vlpClass, text);
 		}
-		if (zenario.phrases[vlpClass][text] === undefined) {
+		if (zenario.phrases[vlpClass][text] === null
+		 || zenario.phrases[vlpClass][text] === undefined) {
 			zenario.phrases[vlpClass][text] = text;
 		}
 	

@@ -1,0 +1,62 @@
+zenario_user_admin_box_form_field:
+	tabs: 
+		crm_integration:
+			hidden: false
+			label: 'CRM integration'
+			edit_mode:
+				enabled: true
+			fields:
+				number_of_fields:
+					label: 'number_of_fields'
+					type: text
+					hidden: true
+				index:
+					type: text
+					hidden: true
+				crm_field_name:
+					label: 'CRM field name:'
+					type: text
+					#hidden: true
+					side_note: This is used to identify the field in the CRM.
+				desc:
+					full_width: true
+					snippet:
+						html: >
+							Use textboxes below to enter CRM values for input options.<br>
+			custom_template_fields:
+				custom_field_name:
+					pre_field_html: '<tr><td>'
+					post_field_html: '</td>'
+					type: text
+					full_width: true
+					same_row: true
+					read_only: yes
+					style: >
+						width: 20em;
+				custom_field_value:
+					pre_field_html: '<td>'
+					post_field_html: '</td>'
+					type: text
+					same_row: true
+					style: >
+						width: 20em;
+					#side_note: If this input is empty then it will be set the same value.
+				custom_field_id:
+					pre_field_html: '<td>'
+					post_field_html: '</td></tr>'
+					same_row: true
+					type: text
+					hidden: true
+		crm_integration_message:
+			hidden: false
+			label: 'CRM integration'
+			edit_mode:
+				enabled: true
+			fields:
+				desc:
+					full_width: true
+					snippet:
+						html: >
+							You will be able to set CRM values after you have created your new field.<br><br>
+							Please press 'Save' to create your new field.
+

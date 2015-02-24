@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -12404,15 +12404,6 @@ _sql
 _sql
 
 
-//Clear the css_js_version value to force a rescan of the zenario_custom/templates/ directory
-);	revision( 21560
-, <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]site_settings`
-	SET value = ''
-	WHERE name = 'css_js_version'
-_sql
-
-
 //Add new language setting - serch for content in the databse can be now performed using MATCH AGAINST (full_text) or LIKE (simple) methods
 );revision( 21655
 , <<<_sql
@@ -13523,17 +13514,6 @@ _sql
 	ADD COLUMN `extract_wordcount` int(10) unsigned NOT NULL DEFAULT 0
 _sql
 
-//Clear the tuix_file_contents table as everything in it will now be wrong
-);	revision( 27930		//Bumped up from revision 24360/24490/25340/26960
-, <<<_sql
-	TRUNCATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents`
-_sql
-
-, <<<_sql
-	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
-	WHERE name = 'module_code_hash'
-_sql
-
 
 );	revision( 27931
 , <<<_sql
@@ -13678,4 +13658,137 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]files`
 	ADD KEY (`storekeeper_list_height`)
 _sql
+
+
+//Enable background images for Content Items/Layouts
+); 	revision( 29000
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
+	ADD COLUMN `background_image_id` int(10) unsigned NOT NULL default 0
+	AFTER `css_class`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `background_image_id` int(10) unsigned NOT NULL default 0
+	AFTER `css_class`
+_sql
+
+//Remove the create_lang_equiv_content column from the special_pages table and replace it with an enum which has a new third option
+); 	revision( 29030
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]special_pages`
+	ADD COLUMN `logic`
+		ENUM('create_and_maintain_in_default_language', 'create_and_maintain_in_all_languages', 'create_in_default_language_on_install')
+		NOT NULL default 'create_and_maintain_in_default_language'
+	AFTER `create_lang_equiv_content`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]special_pages` SET
+		`logic` = 'create_and_maintain_in_all_languages'
+	WHERE create_lang_equiv_content = 1
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]special_pages`
+	DROP COLUMN `create_lang_equiv_content`
+_sql
+
+//Automatically strip off all of the [[ double square brackets ]] from the title fields of banners
+//as these are now not needed
+);	revision( 29180
+,<<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	SET ps.value = REPLACE(REPLACE(ps.value, '[[', ''), ']]', '')
+	WHERE ps.nest = 0
+	  AND m.class_name = 'zenario_banner'
+	  AND ps.name = 'title'
+	  AND ps.value LIKE '[[%]]'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	   ON np.id = ps.nest
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = np.module_id
+	SET ps.value = REPLACE(REPLACE(ps.value, '[[', ''), ']]', '')
+	WHERE ps.nest != 0
+	  AND m.class_name = 'zenario_banner'
+	  AND ps.name = 'title'
+	  AND ps.value LIKE '[[%]]'
+_sql
+
+
+//Enable more background options for Content Items/Layouts
+); 	revision( 29230
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
+	CHANGE COLUMN `background_image_id` `bg_image_id` int(10) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
+	ADD COLUMN `bg_color` varchar(64) NOT NULL default ''
+	AFTER `bg_image_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
+	ADD COLUMN `bg_position` enum('left top', 'center top', 'right top', 'left center', 'center center', 'right center', 'left bottom', 'center bottom', 'right bottom')
+	NULL default NULL
+	AFTER `bg_color`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
+	ADD COLUMN `bg_repeat` enum('repeat', 'repeat-x', 'repeat-y', 'no-repeat')
+	NULL default NULL
+	AFTER `bg_position`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	CHANGE COLUMN `background_image_id` `bg_image_id` int(10) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `bg_color` varchar(64) NOT NULL default ''
+	AFTER `bg_image_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `bg_position` enum('left top', 'center top', 'right top', 'left center', 'center center', 'right center', 'left bottom', 'center bottom', 'right bottom')
+	NULL default NULL
+	AFTER `bg_color`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `bg_repeat` enum('repeat', 'repeat-x', 'repeat-y', 'no-repeat')
+	NULL default NULL
+	AFTER `bg_position`
+_sql
+); revision ( 29238
+
+,<<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
+	SET name = 'user_form'
+	WHERE name = 'user_profile_form'
+_sql
+
+); revision( 29239
+
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	DROP COLUMN `image_id`
+_sql
+
 );

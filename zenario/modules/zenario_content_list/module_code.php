@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ class zenario_content_list extends module_base_class {
 	//Returns a list of fields needed by the Plugin
 	//Intended to be easily overwritten
 	protected function lookForContentSelect() {
-		return "
+		$sql = "
 			SELECT
 				v.id,
 				v.type,
@@ -57,6 +57,13 @@ class zenario_content_list extends module_base_class {
 				IFNULL(v.publication_date, c.first_created_datetime) AS `content_table_date`,
 				publication_date as release_date,
 				". ifNull($this->dataField, "''"). " AS `content_table_data`";
+		if ($this->setting('show_author_image')) {
+			$sql .= ', 
+				ad.image_id AS writer_image_id,
+				fi.alt_tag';
+		}
+		
+		return $sql;
 	}
 	
 	
@@ -72,6 +79,13 @@ class zenario_content_list extends module_base_class {
 			   ON cil.equiv_id = c.equiv_id
 			  AND cil.content_type = c.type
 			  AND cil.category_id = ". (int) $this->setting('category');
+		}
+		if ($this->setting('show_author_image')) {
+			$sql .= '
+			LEFT JOIN '.DB_NAME_PREFIX.'admins AS ad
+				ON v.writer_id = ad.id
+			LEFT JOIN '.DB_NAME_PREFIX.'files AS fi
+				ON ad.image_id = fi.id';
 		}
 		
 		return $sql;
@@ -118,6 +132,7 @@ class zenario_content_list extends module_base_class {
 		$sql =
 			sqlToSearchContentTable($this->setting('hide_private_items'), $this->setting('only_show'), $this->lookForContentTableJoins()).
 			$this->lookForContentWhere();
+		
 		return $sql;
 	}
 	
@@ -177,6 +192,14 @@ class zenario_content_list extends module_base_class {
 				if ($row['writer_id']) {
 					$item['Author'] = $row['writer_name'];
 				}
+				if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
+					
+					$width = $height = $url = false;
+					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'));
+					$item['Author_Image_Src'] = $url;
+					$item['Author_Image_Alt'] = $row['alt_tag'];
+				}
+				
 				$item['language_id'] = $row['language_id'];
 				$item['equiv_id'] = $row['equiv_id'];
 				
@@ -231,14 +254,12 @@ class zenario_content_list extends module_base_class {
 					
 				
 				if ($row['type'] == 'document') {
+					$link = $this->linkToItem($row['id'], $row['type'], false, 'download=1', $row['alias']);
 					$item['Download_Page_Link'] = $item['Link'];
 					$item['Download_Page_Full_Link'] = $item['Full_Link'];
 					$item['Download_Now_Link'] = $this->linkToItemAnchor($row['id'], $row['type'], false, 'download=1', $row['alias']);
-					$item['Download_Now_Full_Link'] = $this->escapeAppropriately($this->linkToItem($row['id'], $row['type'], true, 'download=1', $row['alias']));
-					
-					if (inc('zenario_google_analytics_tracker')) {
-						$item['Download_Now_Link'] .= ' onclick="'. htmlspecialchars(zenario_google_analytics_tracker::trackDownloadNow($row['id'], $row['type'], $row['alias'])). '"';
-					}
+					$item['Download_Now_Full_Link'] = $this->escapeAppropriately(absCMSDirURL() . $link);
+					$item['Download_Now_Link'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
 					
 					if (!$this->setting('use_download_page')) {
 						$item['Link'] = $item['Download_Now_Link'];
@@ -289,7 +310,6 @@ class zenario_content_list extends module_base_class {
 			$sql.
 			$this->orderContentBy().
 			paginationLimit($this->page, $this->setting('page_size'));
-		
 		
 		return sqlQuery($sql);
 	}
@@ -386,6 +406,7 @@ class zenario_content_list extends module_base_class {
 				'Row' => $this->items,
 				'Show_Date' => $this->setting('show_dates'),
 				'Show_Author' => $this->setting('show_author'),
+				'Show_Author_Image' => $this->setting('show_author_image'),
 				'Show_Excerpt' => (bool) $this->dataField,
 				'Show_Item_Title' => (bool)$this->setting('show_titles'),
 				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),

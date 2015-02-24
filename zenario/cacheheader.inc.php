@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -220,6 +220,34 @@ function moduleDir($moduleName, $subDir = '', $checkExists = false, $checkFramew
 	} else {
 		return false;
 	}
+}
+
+function moduleDirs($tests = 'module_code.php') {
+	$dirs = array();
+	
+	if (!is_array($tests)) {
+		$tests = array($tests);
+	}
+	
+	foreach (array(
+		'zenario/modules/',
+		'zenario_extra_modules/',
+		'zenario_custom/modules/'
+	) as $path) {
+		if (is_dir($path)) {
+			foreach (scandir($path) as $dir) {
+				if (substr($dir, 0, 1) != '.') {
+					foreach ($tests as $test) {
+						if (file_exists(CMS_ROOT. $path. $dir. '/'. $test)) {
+							$dirs[$dir] = $path. $dir. '/'. $test;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return $dirs;
 }
 
 //Get the value of a site setting from the Core

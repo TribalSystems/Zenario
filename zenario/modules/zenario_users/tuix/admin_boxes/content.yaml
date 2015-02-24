@@ -1,0 +1,70 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_content:
+    tabs:
+        privacy:
+            hidden: false
+            label: Permissions
+            edit_mode:
+                enabled: ""
+                priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: Use this screen to edit Permissions for this Content Item.
+                privacy:
+                    label: 'Visible To:'
+                    type: radios
+                    values:
+                        public:
+                            ord: "1"
+                            label: Publicly Visible
+                        all_extranet_users:
+                            ord: "2"
+                            label: Private, can be viewed by All Extranet Users
+                        group_members:
+                            ord: "3"
+                            label: Private, can be viewed by members of the selected Group(s)
+                        specific_users:
+                            ord: "4"
+                            label: Private, can be viewed by the selected Extranet User(s)
+                        no_access:
+                            ord: "5"
+                            label: No Regular Access
+                    redraw_onchange: Yes
+                
+                group_members:
+                    label: 'Group(s):'
+                    type: checkboxes
+                    load_values_from_organizer_path: zenario__users/panels/groups_only
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'group_members'
+                
+                specific_users:
+                    label: 'User(s):'
+                    pick_items:
+                        path: zenario__users/panels/users
+                        target_path: zenario__users/panels/users
+                        min_path: zenario__users/panels/users
+                        max_path: zenario__users/panels/users
+                        disallow_refiners_looping_on_min_path: Yes
+                        one_to_one_choose_phrase: Select User
+                        multiple_select: Yes
+                        one_to_many_choose_phrase: Select Users
+                        select_phrase: Select User(s)...
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'specific_users'
+                
+                log_user_access:
+                    label: 'Log User Access:'
+                    type: checkbox
+                    visible_if: >
+                        ({all_extranet_users:1, group_members:1, specific_users:1}[zenarioAB.value('privacy')])
+                
+                no_access:
+                    snippet:
+                        html: |
+                            <i>This option can be used in conjunction with a Module, such as the Ecommerce Module, to sell access to this Content.</i>
+                    visible_if: >
+                        zenarioAB.value('privacy') == 'no_access'

@@ -1,0 +1,85 @@
+zenario_user_admin_box_form:
+	tabs: 
+		crm_integration:
+			hidden: false
+			label: 'CRM integration'
+			edit_mode:
+				enabled: true
+			fields:
+				enable_crm_integration:
+					label: 'Enable CRM integration'
+					type: checkbox
+					format_onchange: Yes
+				crm_url:
+					label: "CRM form action URL:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 416px"
+					side_note: Enter the URL of the CRM which will receive the form information.
+					#ord: 4
+				desc:
+					full_width: true
+					snippet:
+						html: >
+							Use textboxes below to add additional CRM fields to the form when is submitted.<br> 
+				name1:
+					label: "Name / Value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					#ord: 4
+				value1:
+					same_row: Yes
+					label: "value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					side_note: Additional field in the form.
+				name2:
+					label: "Name / Value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+				value2:
+					same_row: Yes
+					label: "value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					side_note: Additional field in the form.
+				name3:
+					label: "Name / Value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+				value3:
+					same_row: Yes
+					label: "value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					side_note: Additional field in the form.
+				name4:
+					label: "Name / Value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					side_note: Additional field in the form.
+				value4:
+					same_row: Yes
+					label: "value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+				name5:
+					label: "Name / Value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+				value5:
+					same_row: Yes
+					label: "value:"
+					type: text
+					maxlength: "255"
+					style: "text-align:left; width: 200px"
+					side_note: Additional field in the form.

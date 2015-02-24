@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 switch ($path) {
-	case 'zenario__menu/hidden_nav/menu_nodes/panel':
+	case 'zenario__menu/panels/menu_nodes':
 		if (!get('refiner__show_language_choice') && !in($mode, 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_missing_items'];
 		}
@@ -43,7 +43,7 @@ switch ($path) {
 		break;
 	
 
-	case 'zenario__users/nav/admins/panel':
+	case 'zenario__users/panels/administrators':
 		if (!$refinerName && !in($mode, 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
 		}
@@ -82,13 +82,19 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__content/nav/languages/panel':
+	case 'zenario__content/panels/languages':
 		//Check if a specific Content Type has been set
 		if (get('refiner__content_type')) {
 			$panel['key']['cType'] = get('refiner__content_type');
 		} elseif (get('refiner__template')) {
 			$panel['key']['cType'] = getRow('layouts', 'content_type', get('refiner__template'));
 		}
+		
+		break;
+	
+	
+	case 'zenario__content/panels/content_types':
+		checkForMissingTemplateFiles();
 		
 		break;
 	
@@ -102,13 +108,13 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/nav/content/panel':
-	case 'zenario__content/hidden_nav/chained/panel':
-	case 'zenario__content/hidden_nav/language_equivs/panel':
+	case 'zenario__content/panels/content':
+	case 'zenario__content/panels/chained':
+	case 'zenario__content/panels/language_equivs':
 		return require funIncPath(__FILE__, 'content.preFillOrganizerPanel');
 	
 	
-	case 'zenario__content/nav/categories/panel':
+	case 'zenario__content/panels/categories':
 		
 		
 		if (!$refinerName && !in($mode, 'get_item_name', 'get_item_links')) {
@@ -123,7 +129,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel':
+	case 'zenario__content/panels/email_images_for_email_templates':
 		if (inc('zenario_email_template_manager')) {
 			if ($refinerId && $details = zenario_email_template_manager::getTemplateByCode($refinerId)) {
 				$panel['title'] = adminPhrase('Images in the Email Template "[[template_name]]"', $details);
@@ -135,12 +141,12 @@ switch ($path) {
 		}
 		
 	case 'generic_image_panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel':
+	case 'zenario__content/panels/email_images_shared':
+	case 'zenario__content/panels/inline_images_for_content':
+	case 'zenario__content/panels/inline_images_for_reusable_plugins':
+	case 'zenario__content/panels/inline_images_shared':
 		
-		if (in($path, 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel')) {
+		if (in($path, 'zenario__content/panels/inline_images_for_content')) {
 			$cID = $cType = false;
 			getCIDAndCTypeFromTagId($cID, $cType, get('refiner__content'));
 			
@@ -149,27 +155,19 @@ switch ($path) {
 				unset($panel['collection_buttons']['upload']);
 			}
 			
-			if ($path == 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel') {
+			if ($path == 'zenario__content/panels/inline_images_for_content') {
 				$panel['title'] =
 					adminPhrase('Images used on the content item [[tag]], version [[version]]',
 						array(
 							'tag' => formatTagFromTagId(get('refiner__content')),
 							'version' => getRow('content', 'admin_version', array('tag_id' => get('refiner__content')))));
 			}
-		
-		} elseif (in($path, 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel')) {
-			$sql = "
-				INSERT IGNORE INTO ". DB_NAME_PREFIX. "inline_file_link (`file_id`, `foreign_key_to`)
-				SELECT DISTINCT foreign_key_id, 'reusable_plugin'
-				FROM ". DB_NAME_PREFIX. "plugin_settings
-				WHERE is_content = 'synchronized_setting'
-				  AND foreign_key_to = 'file'";
-			sqlUpdate($sql, false);
 		}
 		
 		//Don't do anything fancy if we're just looking up a name
 		if (in($mode, 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['table'] = '[[DB_NAME_PREFIX]]files AS f';
+			unset($panel['refiner_required']);
 			unset($panel['db_items']['where_statement']);
 			unset($panel['columns']['usage_file_link']);
 			unset($panel['columns']['usage_plugins']);
@@ -182,11 +180,15 @@ switch ($path) {
 		break;
 		
 	
-	case 'zenario__modules/nav/modules/panel':
+	case 'zenario__modules/panels/modules':
 		return require funIncPath(__FILE__, 'modules.preFillOrganizerPanel');
 	
 	
-	case 'zenario__layouts/nav/layouts/panel':
+	case 'zenario__layouts/panels/layouts':
+		
+		if (!checkForChangesInCssJsAndHtmlFiles()) {
+			checkForMissingTemplateFiles();
+		}
 		
 		if (isset($_GET['refiner__trash'])) {
 			$panel['title'] = adminPhrase('Archived Layouts');
@@ -224,21 +226,24 @@ switch ($path) {
 		if (isset($_GET['refiner__template_family'])) {
 			unset($panel['columns']['family_name']['title']);
 		}
-
-	case 'zenario__layouts/nav/template_families/panel':
-	case 'zenario__layouts/hidden_nav/skins/panel':
-	case 'zenario__layouts/hidden_nav/skins/panel/hidden_nav/skin_files/panel':
 		
-		getCSSJSCodeHash();
+		break;
+		
+
+	case 'zenario__layouts/panels/template_families':
+	case 'zenario__layouts/panels/skins':
+	case 'zenario__layouts/panels/skin_files':
+		
+		checkForChangesInCssJsAndHtmlFiles();
 	
 		break;
 
 	
-	case 'zenario__languages/nav/languages/panel':
+	case 'zenario__languages/panels/languages':
 		return require funIncPath(__FILE__, 'languages.preFillOrganizerPanel');
 
 	
-	case 'zenario__languages/nav/vlp/panel':
+	case 'zenario__languages/panels/phrases':
 	case 'zenario__languages/nav/vlp/vlp_chained/panel':
 		return require funIncPath(__FILE__, 'vlp.preFillOrganizerPanel');
 

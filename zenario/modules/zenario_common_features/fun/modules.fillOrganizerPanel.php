@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -371,26 +371,6 @@ foreach ($panel['items'] as $id => &$module) {
 						$module['close_up_view_bottom'] .= htmlspecialchars($table);
 					}
 					$module['close_up_view_bottom'] .= '</td></tr>';
-				}
-				
-				
-				
-				if (!empty($desc['preview_images'])) {
-					if (is_array($desc['preview_images'])) {
-						$i = 0;
-						$module['images'] = array();
-						foreach ($desc['preview_images'] as $image) {
-							if (!empty($image['url'])) {
-								$image['href'] = moduleDir($module['name'], $image['url']);
-								unset($image['url']);
-							}
-							if (!empty($image['popout_url'])) {
-								$image['popout_href'] = moduleDir($module['name'], $image['popout_url']);
-								unset($image['popout_url']);
-							}
-							$module['images'][++$i] = $image;
-						}
-					}
 				}
 			}
 		}

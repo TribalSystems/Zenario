@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-define('TINYMCE_DIR', 'lgpl/tinymce_4_0_19b');
+
+define('IGNORE_REVERTS', false);
+define('RECOMPRESS_EVERYTHING', false);
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_6');
+define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
+define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
+
 
 function displayUsage() {
 	echo
 "A tool for minifying JavaScript used by Zenario;
 this is a wrapper for calling YUI Compressor (http://developer.yahoo.com/yui/compressor/)
-and Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
+or Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
 
 Usage:
 	php js_minify p
@@ -41,6 +47,10 @@ Usage:
 		Create/update minified JavaScript and CSS files.
 	php js_minify v
 		Create/update minified JavaScript and CSS files, with debug/verbose mode enabled.
+
+(Note that the Zenario download does not come with a copy of Closure Compiler to save space,
+ but if you download a copy and put it in the right place then this program will use it.)
+
 ";
 	exit;
 }
@@ -50,13 +60,12 @@ class macros {
 	public static $patterns = array();
 	public static $replacements = array();
 }
-
 macros::$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
 macros::$replacements[] = 'for (\2\3 in \1) { if (!zenario.has(\1, \3)) continue; \4 \5 = \1[\3];';
 macros::$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
 macros::$replacements[] = 'for (\2\3 in \1) { if (!zenario.has(\1, \3)) continue;';
 
-
+//Change directory to the CMS root directory
 $prefix = '';
 do {
 	if (is_file($prefix. 'zenario/cacheheader.inc.php')) {
@@ -70,6 +79,10 @@ do {
 	}
 	$prefix .= '../';
 } while (true);
+
+//Use the closure compiler for .js files if it has been installed
+//(otherwise we must use YUI Compressor which gives slightly larger filesizes).
+define('USE_CLOSURE_COMPILER', file_exists(CLOSURE_COMPILER_PATH));
 
 
 
@@ -88,12 +101,6 @@ if (!isset($argv[1])) {
 } else {
 	displayUsage();
 }
-
-
-
-define('USE_CLOSURE_COMPILER', true);
-define('IGNORE_REVERTS', false);
-define('RECOMPRESS_EVERYTHING', false);
 
 
 
@@ -187,7 +194,7 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 						file_put_contents($minFile, json_encode($tags));
 					
 					} elseif (!$isCSS && USE_CLOSURE_COMPILER) {
-						exec('java -jar zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar '. $v. ' --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
+						exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
 									escapeshellarg($minFile).
 							//Code to generate a source-map if needed
 								//' --source_map_format=V3 --create_source_map '.
@@ -196,7 +203,7 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 									escapeshellarg($srcFile)
 							);
 					} else {
-						exec('java -jar zenario/libraries/not_to_redistribute/yuicompressor/yuicompressor-2.4.2.jar '. $v. '--line-break 150 -o '.
+						exec('java -jar '. escapeshellarg(YUI_COMPRESSOR_PATH). ' --type '. ($isCSS? 'css' : 'js'). ' '. $v. '--line-break 150 -o '.
 									escapeshellarg($minFile).
 								' '. 
 									escapeshellarg($srcFile)
@@ -305,11 +312,11 @@ if ((is_dir($dir = 'zenario/libraries/mit/jquery/css/')) && ($scan = scandir($di
 }
 
 //Minify TinyMCE files
-minify('zenario/libraries/'. TINYMCE_DIR. '/', 'tinymce.jquery', $level, '.js');
-minify('zenario/libraries/'. TINYMCE_DIR. '/themes/modern/', 'theme', $level, '.js');
-if ($scan = scandir('zenario/libraries/'. TINYMCE_DIR. '/plugins')) {
+minify(TINYMCE_DIR. '/', 'tinymce.jquery', $level, '.js');
+minify(TINYMCE_DIR. '/themes/modern/', 'theme', $level, '.js');
+if ($scan = scandir(TINYMCE_DIR. '/plugins')) {
 	foreach ($scan as $module) {
-		if (substr($module, 0, 1) != '.' && is_dir($dir = 'zenario/libraries/'. TINYMCE_DIR. '/plugins/'. $module. '/')) {
+		if (substr($module, 0, 1) != '.' && is_dir($dir = TINYMCE_DIR. '/plugins/'. $module. '/')) {
 			minify($dir, 'plugin', $level, '.js');
 		}
 	}
@@ -335,6 +342,9 @@ if ($scan = scandir('zenario/libraries/lgpl/punymce/plugins')) {
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 
+//Minify Modernizr
+minify('zenario/libraries/bsd/modernizr/', 'modernizr', $level, '.js');
+
 //Minify intro.js
 minify('zenario/libraries/mit/intro/', 'introjs', $level, '.css');
 minify('zenario/libraries/mit/intro/', 'introjs-rtl', $level, '.css');
@@ -342,6 +352,13 @@ minify('zenario/libraries/mit/intro/', 'intro', $level, '.js');
 
 //Minify Respond
 minify('zenario/libraries/mit/respond/', 'respond', $level, '.js');
+
+//Minifythe Responsive Multilevel Menu plugin
+minify('zenario/libraries/mit/ResponsiveMultiLevelMenu/js/', 'jquery.dlmenu', $level, '.js');
+
+//Minify Spectrum
+minify('zenario/libraries/mit/spectrum/', 'spectrum', $level, '.css');
+minify('zenario/libraries/mit/spectrum/', 'spectrum', $level, '.js');
 
 //Minify the split library for IE 8
 minify('zenario/libraries/mit/split/', 'split', $level, '.js');

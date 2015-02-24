@@ -43,7 +43,9 @@ special_pages:
             <p>You can get support and downloads at <a href="http://zenar.io" target="_blank">http://zenar.io</a>.</p>
             <p>We hope you enjoy using Zenario.</p>
         menu_title: Home
-        create_language_equivalent_content: Yes
+        footer_menu_title: Home
+        logic: create_and_maintain_in_all_languages
+        layout: Home page
     zenario_not_found:
         page_type: zenario_not_found
         default_alias: not-found
@@ -52,6 +54,7 @@ special_pages:
             <h1>Error 404: Page or CMS Item Not Found</h1>
                             <p>The requested Item was not found on this server or may not be accessed.</p>
         publish: Yes
+        logic: create_and_maintain_in_default_language
     zenario_no_access:
         page_type: zenario_no_access
         default_alias: no-access
@@ -60,6 +63,45 @@ special_pages:
             <h1>Access Permission Denied (401)</h1>
                             <p>Sorry, you have tried to access an item that requires a higher level of permissions than you currently possess.</p>
         publish: Yes
+        logic: create_and_maintain_in_default_language
+    zenario_example_page:
+        page_type: zenario_example_page
+        default_alias: second_page
+        default_title: Second page
+        default_content: |
+            <h1>This is a simple content page</h1>
+            
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
+                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+
+            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
+                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
+                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
+
+            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
+                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
+                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
+                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
+                mauris sit amet nibh. Donec sodales sagittis magna.</p>
+            
+            <h2>This is a simple content page</h2>
+            
+            <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis
+                dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim.
+                Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.</p>
+
+            <p>In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus.
+                Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim.
+                Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus.</p>
+
+            <p>Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper
+                ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing
+                sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus.
+                Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla
+                mauris sit amet nibh. Donec sodales sagittis magna.</p>
+        menu_title: Second page
+        logic: create_in_default_language_on_install
 pagination_types:
     pagSelectList:
         function_name: pagSelectList

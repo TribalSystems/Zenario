@@ -1,0 +1,17 @@
+zenario__user_forms:
+	panels:
+		zenario_user_forms__form_fields:
+			db_items:
+			columns:
+				crm_field_name:
+					title: CRM Field Name
+					db_column: ""
+					searchable: true
+					show_by_default: true
+					width: large
+				crm_field_values:
+					title: CRM Field Values
+					db_column: ""
+					searchable: true
+					show_by_default: true
+					width: large

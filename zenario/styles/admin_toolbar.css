@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -353,13 +353,14 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_language a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_version a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a {
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_tag_id a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_layout a {
 	height:22px;
 	background:#E2E2E2;
 	float:right;
 	text-align:center;
 	padding:0 4px;
-	line-height:20px;
+	line-height:22px;
 	-webkit-border-radius: 2px;
 	-moz-border-radius: 2px;
 	border-radius: 2px;
@@ -465,6 +466,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 #zenario_at .zenario_at_toolbar,
 #zenario_at .zenario_at_toolbar a {
 	color:#000;
+}
+
+#zenario_at .zenario_at_toolbar a {
+	cursor:pointer;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {

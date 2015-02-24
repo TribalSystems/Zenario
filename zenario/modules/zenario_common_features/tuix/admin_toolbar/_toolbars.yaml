@@ -96,8 +96,8 @@ sections:
                 label: Organize layout...
                 organizer_quick:
                     path: ""
-                    target_path: zenario__layouts/nav/layouts/panel
-                    min_path: zenario__layouts/nav/layouts/panel
+                    target_path: zenario__layouts/panels/layouts
+                    min_path: zenario__layouts/panels/layouts
                     max_path: No
                     disallow_refiners_looping_on_min_path: No
                     reload_admin_toolbar: Yes

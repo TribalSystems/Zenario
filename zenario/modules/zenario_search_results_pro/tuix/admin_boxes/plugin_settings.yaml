@@ -1,0 +1,40 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        content_types:
+            ord: "2"
+            label: Content items to search
+            fields:
+                search_html:
+                    plugin_setting:
+                        name: search_html
+                    label: 'HTML page:'
+                    type: checkbox
+                    value: "1"
+                search_document:
+                    plugin_setting:
+                        name: search_document
+                    label: 'Document / File:'
+                    type: checkbox
+                    value: "1"
+                search_news:
+                    plugin_setting:
+                        name: search_news
+                    label: 'News item:'
+                    type: checkbox
+                    value: "1"
+                search_in_languages:
+                    label: 'Search content items in:'
+                    plugin_setting:
+                        name: search_in_languages
+                    type: radios
+                    values:
+                        current:
+                            ord: "1"
+                            label: Current language
+                        all:
+                            ord: "1"
+                            label: All languages
+                    value: current
+    module_class_name: zenario_search_results_pro

@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Passwords
+            fields:
+                password_reset_email_template:
+                    plugin_setting:
+                        name: password_reset_email_template
+                        foreign_key_to: email_template
+                        dangling_cross_references: remove
+                    label: 'Password reset Email Template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required: Please select an Email Template
+                    value: >
+                        zenario_extranet_password_reset__to_user_password_reset_en
+                    note_below: >
+                        Please see the Module description to get a full list of
+                        Merge Fields which can be used in the selected Email
+                        Template.
+    module_class_name: zenario_extranet_password_reset

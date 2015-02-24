@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,24 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+
+function directoryIsWritable($dir) {
+	
+	//Check to see if the directory is flagged as writable
+	if (!@is_writable($dir)) {
+		return false;
+	}
+	
+	//Check to see if the directory is flagged as listable/executable
+	if (substr($dir, -1) == '/') {
+		$dir .= '.';
+	} else {
+		$dir .= '/.';
+	}
+	
+	return @file_exists($dir);
+}
 
 
 
@@ -65,7 +83,7 @@ function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
 				$rowClasses['backup_dir_status'] = 'sub_invalid';
 				$snippets['backup_dir_status'] = adminPhrase('Zenario is already installed in this directory. Please choose a different directory.');
 			
-			} elseif (!is_writable($values['backup_dir'])) {
+			} elseif (!directoryIsWritable($values['backup_dir'])) {
 				$rowClasses['backup_dir_status'] = 'sub_invalid';
 				$snippets['backup_dir_status'] = adminPhrase('Directory is not writable by the web server, please fix its permissions.');
 			
@@ -91,7 +109,7 @@ function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
 				$rowClasses['docstore_dir_status'] = 'sub_invalid';
 				$snippets['docstore_dir_status'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
 			
-			} elseif (!is_writable($values['docstore_dir'])) {
+			} elseif (!directoryIsWritable($values['docstore_dir'])) {
 				$rowClasses['docstore_dir_status'] = 'sub_invalid';
 				$snippets['docstore_dir_status'] = adminPhrase('This directory is not writable.');
 			
@@ -183,9 +201,19 @@ function readSampleConfigFile($patterns) {
 	return str_replace($searches, $replaces, file_get_contents(CMS_ROOT. 'zenario/admin/db_install/zenario_siteconfig.sample.php'));
 }
 
+//Check whether the config file exists.
+//Note: if it doesn't exist, return false
+//Note: if exists but is empty, return 0
 function checkConfigFileExists() {
+	if (!@file_exists(CMS_ROOT. 'zenario_siteconfig.php')) {
+		return false;
+	}
 	$filesize = @filesize(CMS_ROOT. 'zenario_siteconfig.php');
-	return $filesize && $filesize >= 20;
+	if ($filesize && $filesize >= 20) {
+		return true;
+	} else {
+		return 0;
+	}
 }
 
 function compareVersionNumber($actual, $required) {
@@ -554,9 +582,10 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 	if ($box['tab'] == 6 && (!empty($box['tabs'][6]['fields']['ive_done_it']['pressed']) || !empty($box['tabs'][6]['fields']['do_it_for_me']['pressed']))) {
 		$box['tabs'][6]['errors'] = array();
 		
+		$checkConfigFileExists = checkConfigFileExists();
 		if (!empty($box['tabs'][6]['fields']['do_it_for_me']['pressed'])) {
 			$permErrors = false;
-			if (!checkConfigFileExists()) {
+			if (!$checkConfigFileExists) {
 				if (!file_exists(CMS_ROOT. 'zenario_siteconfig.php')) {
 					$box['tabs'][6]['errors'][] =
 						adminPhrase('Please create a file called zenario_siteconfig.php. If you want this installer to populate it, it can be empty but writable.');
@@ -573,12 +602,15 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			}
 		
 		} else {
-			if (!checkConfigFileExists()) {
+			if ($checkConfigFileExists === false) {
 				$box['tabs'][6]['errors'][] = adminPhrase('Please create a file named zenario_siteconfig.php in the location shown below.');
+			
+			} elseif ($checkConfigFileExists === 0) {
+				$box['tabs'][6]['errors'][] = adminPhrase('Please please enter the text as shown into your zenario_siteconfig.php file.');
 			}
 		}
 		
-		if (checkConfigFileExists()) {
+		if ($checkConfigFileExists) {
 			if (!@include_once CMS_ROOT. 'zenario_siteconfig.php') {
 				$box['tabs'][6]['errors'][] = adminPhrase('There is a syntax error in zenario_siteconfig.php');
 			} else {
@@ -589,6 +621,11 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					}
 				}
 			}
+		}
+		
+		if (!empty($box['tabs'][6]['errors'])) {
+			$box['tabs'][6]['fields']['ive_done_it']['pressed'] = false;
+			$box['tabs'][6]['fields']['do_it_for_me']['pressed'] = false;
 		}
 	}
 	
@@ -614,7 +651,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		case 2:
 			if (!empty($box['tabs'][2]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][2]['errors']);
 				$box['tab'] = 1;
+			
 			} elseif (!empty($box['tabs'][2]['fields']['next']['pressed'])) {
 				$box['tab'] = 3;
 			}
@@ -624,7 +663,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		case 3:
 			if (!empty($box['tabs'][3]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][3]['errors']);
 				$box['tab'] = 2;
+			
 			} elseif (!empty($box['tabs'][3]['fields']['next']['pressed'])) {
 				if (!empty($box['tabs'][1]['fields']['restore']['pressed'])) {
 					$box['tab'] = 45;
@@ -638,7 +679,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		case 4:
 			if (!empty($box['tabs'][4]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][4]['errors']);
 				$box['tab'] = 3;
+			
 			} elseif (!empty($box['tabs'][4]['fields']['next']['pressed'])) {
 				$box['tab'] = 5;
 			}
@@ -648,7 +691,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		case 5:
 			if (!empty($box['tabs'][5]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][5]['errors']);
 				$box['tab'] = 4;
+			
 			} elseif (!empty($box['tabs'][5]['fields']['next']['pressed'])) {
 				$box['tab'] = 6;
 			}
@@ -658,7 +703,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			
 		case 45:
 			if (!empty($box['tabs'][45]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][45]['errors']);
 				$box['tab'] = 3;
+			
 			} elseif (!empty($box['tabs'][45]['fields']['next']['pressed'])) {
 				$box['tab'] = 6;
 			}
@@ -668,11 +715,14 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		case 6:
 			if (!empty($box['tabs'][6]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][6]['errors']);
+				
 				if (!empty($box['tabs'][1]['fields']['restore']['pressed'])) {
 					$box['tab'] = 45;
 				} else {
 					$box['tab'] = 5;
 				}
+			
 			} elseif (!empty($box['tabs'][6]['fields']['do_it_for_me']['pressed']) || !empty($box['tabs'][6]['fields']['ive_done_it']['pressed'])) {
 				$box['tab'] = 7;
 			}
@@ -682,6 +732,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			
 		case 7:
 			if (!empty($box['tabs'][7]['fields']['previous']['pressed'])) {
+				unset($box['tabs'][7]['errors']);
 				$box['tab'] = 6;
 			}
 			
@@ -846,7 +897,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					$box['tabs'][4]['fields']['language_id']['values'][$langId] = $phrases[0]. ' ('. $langId. ')';
 				}
 				
-				formatDateFormatSelectList($box['tabs'][4]['fields']['vis_date_format_short']);
+				formatDateFormatSelectList($box['tabs'][4]['fields']['vis_date_format_short'], true);
 				formatDateFormatSelectList($box['tabs'][4]['fields']['vis_date_format_med']);
 				formatDateFormatSelectList($box['tabs'][4]['fields']['vis_date_format_long']);
 			}
@@ -1511,7 +1562,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
 	
-	} elseif (!is_writable($box['tabs'][0]['fields']['backup_dir']['current_value'])) {
+	} elseif (!directoryIsWritable($box['tabs'][0]['fields']['backup_dir']['current_value'])) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
 	
@@ -1534,7 +1585,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
 	
-	} elseif (!is_writable($box['tabs'][0]['fields']['docstore_dir']['current_value'])) {
+	} elseif (!directoryIsWritable($box['tabs'][0]['fields']['docstore_dir']['current_value'])) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
 	
@@ -1553,7 +1604,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	
 	} elseif (!setting('template_dir_can_be_readonly')) {
 	
-		if (!is_writable($tdir)) {
+		if (!directoryIsWritable($tdir)) {
 			$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
 			$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
 	
@@ -1577,10 +1628,10 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			if ($fileNotWritable === true) {
 				if ($fileWritable) {
 					$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('Some of the files in this directory are not writable by the web server (e.g. use &quot;chmod 666 *.php *.css&quot;).');
+					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('Some of the files in this directory are not writable by the web server (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).');
 				} else {
 					$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The files in this directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.php *.css&quot;).');
+					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The files in this directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).');
 				}
 			
 			} elseif ($fileNotWritable !== false) {
@@ -1606,7 +1657,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['cache_dir_status']['snippet']['html'] =
 			adminPhrase('This directory does not exist.');
 	
-	} elseif (!is_writable(CMS_ROOT. 'cache')) {
+	} elseif (!directoryIsWritable(CMS_ROOT. 'cache')) {
 		$box['tabs'][0]['fields']['cache_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['cache_dir_status']['snippet']['html'] =
 			adminPhrase('This directory is not writable.');
@@ -1623,7 +1674,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['private_dir_status']['snippet']['html'] =
 			adminPhrase('This directory does not exist.');
 	
-	} elseif (!is_writable(CMS_ROOT. 'private')) {
+	} elseif (!directoryIsWritable(CMS_ROOT. 'private')) {
 		$box['tabs'][0]['fields']['private_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['private_dir_status']['snippet']['html'] =
 			adminPhrase('This directory is not writable.');
@@ -1640,7 +1691,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$box['tabs'][0]['fields']['public_dir_status']['snippet']['html'] =
 			adminPhrase('This directory does not exist.');
 	
-	} elseif (!is_writable(CMS_ROOT. 'public')) {
+	} elseif (!directoryIsWritable(CMS_ROOT. 'public')) {
 		$box['tabs'][0]['fields']['public_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['public_dir_status']['snippet']['html'] =
 			adminPhrase('This directory is not writable.');
@@ -1899,7 +1950,7 @@ function redirectAdmin($getRequest) {
 	
 	} elseif (getCIDAndCTypeFromTagId($cID, $cType, $request)) {
 		$cType = ifNull(preg_replace('/\W/', '', $cType), 'html');
-		
+	
 	} elseif ($request && ($content = getRow('content', array('id', 'type'), array('alias' => $request)))) {
 		$cID = $content['id'];
 		$cType = $content['type'];

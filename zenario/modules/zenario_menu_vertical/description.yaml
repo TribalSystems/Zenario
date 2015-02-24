@@ -7,19 +7,19 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Menu (Vertical)
 description: |
-	<p>Displays a portion of the hierarchical menu of your Zenario website, using a vertical list. This is designed to be used as a side menu.</p>
-	
-					<p>This Module can generate different types of menu, including "popout" menus (which appear upon mouseover).</p>
-	
-					<p>The navigation bar is vertically arranged; for a horizontal navigation bar, use the Menu (Horizontal) Plugin.</p>
-	
-					<p>It supports a change of style (e.g. colour) of a Menu Node when a user's mouse is hovering over that Menu Node. It also supports the display of an indication of the visitor's current location.</p>
-	
-					<p>In Administration Mode the generated menu contains "Add a Menu Node here" icons, which help an Author rapidly expand and develop a web site.</p>
-	
-					<p>It also supports displaying the menu hierarchy from any of 7 different levels - from Levels 1 to 5, and two levels that are relative to the current Content Item.</p>
-	
-					<p>It supports multiple Menu Sections if you have Zenario Pro, providing support for different menu trees.</p>
+    <p>Displays a portion of the hierarchical menu of your Zenario website, using a vertical list. This is designed to be used as a side menu.</p>
+    
+                    <p>This Module can generate different types of menu, including "popout" menus (which appear upon mouseover).</p>
+    
+                    <p>The navigation bar is vertically arranged; for a horizontal navigation bar, use the Menu (Horizontal) Plugin.</p>
+    
+                    <p>It supports a change of style (e.g. colour) of a Menu Node when a user's mouse is hovering over that Menu Node. It also supports the display of an indication of the visitor's current location.</p>
+    
+                    <p>In Administration Mode the generated menu contains "Add a Menu Node here" icons, which help an Author rapidly expand and develop a web site.</p>
+    
+                    <p>It also supports displaying the menu hierarchy from any of 7 different levels - from Levels 1 to 5, and two levels that are relative to the current Content Item.</p>
+    
+                    <p>It supports multiple Menu Sections if you have Zenario Pro, providing support for different menu trees.</p>
 keywords: menu, navigation
 css_class_name: zenario_menu_vertical
 is_pluggable: Yes
@@ -27,6 +27,6 @@ nestable: Yes
 default_framework: standard
 default_instance_name: Untitled Vertical Menu
 dependencies:
-	zenario_menu: Yes
+    zenario_menu: Yes
 inheritance:
-	inherit_settings_from_module: zenario_menu
+    inherit_settings_from_module: zenario_menu

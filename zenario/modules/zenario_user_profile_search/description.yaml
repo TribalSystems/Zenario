@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: User profile search
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+description: '<p>Allows users to be searched by the content on their profile.</p>'
+keywords: user, profile, search
+vlp_class_name: zenario_user_profile_search
+is_pluggable: Yes
+default_framework: standard
+default_instance_name: User profile search
+
+special_pages:
+    special_page:
+        page_type: zenario_user_profile_search
+        default_alias: profile-search
+        default_title: Profile Search
+        footer_menu_title: Profile search
+        only_show_to_visitors_who_are_logged_in: Yes
+        logic: create_and_maintain_in_default_language
+
+dependencies:
+    zenario_extranet: Yes
+    zenario_users: Yes
+    zenario_country_manager: Yes
+    zenario_user_forms: Yes

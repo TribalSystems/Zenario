@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -38,10 +38,14 @@ if (checkPriv()) {
 		CMSWritePageBodyAdminClass($bodyTag, $toolbars);
 	} else {
 		$includeAdminToolbar = false;
-		$bodyTag .= ' zenario_adminMode zenario_pageMode_preview zenario_menuWand_off zenario_slotWand_off';
+		$bodyTag .= ' zenario_adminLoggedIn zenario_pageMode_preview zenario_menuWand_off zenario_slotWand_off';
 	}
 } else {
 	$includeAdminToolbar = false;
+}
+
+if (cms_core::$userId) {
+	$bodyTag .= ' zenario_userLoggedIn';
 }
 
 $toolbarAttr = '';

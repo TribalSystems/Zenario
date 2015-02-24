@@ -372,8 +372,10 @@ body.webkit input {
 	padding:12px 30px 12px 20px;
 }
 .welcome div.thickbox_table div#row__zenario_siteconfig textarea#zenario_siteconfig{
-	line-height: 20px;
-	font-size:12px;
+	line-height: 16px;
+	font-size: 10.4px;
+	font-family: Monaco, monospace;
+	height: 300px;
 }
 .welcome div.thickbox_table input.pressed,
 .welcome div.thickbox_table input.not_pressed

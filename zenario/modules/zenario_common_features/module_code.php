@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -84,15 +84,17 @@ class zenario_common_features extends module_base_class {
 		} elseif ($details && $details['type'] == 'file') {
 			if ($details['file_id']) {
 				$fileDetails = getRow('files', array('path', 'filename', 'location'), $details['file_id']);
-				deleteRow('files', array('id' => $details['file_id']));
+				$symPath = CMS_ROOT . 'public' . '/' . $fileDetails['path'] . '/'. $fileDetails['filename'];
+				$symFolder = CMS_ROOT . 'public' . '/' . $fileDetails['path'];
+				if (file_exists($symPath)) {
+					unlink($symPath);
+					rmdir($symFolder);
+				}
 				if ($fileDetails['location'] == 'docstore' &&  $fileDetails['path']) {
 					unlink(setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename']);
 					rmdir(setting('docstore_dir') . '/'. $fileDetails['path']);
 				}
-				$symPath = CMS_ROOT . 'public' . '/' .  $fileDetails['filename'];
-				if (file_exists($symPath)) {
-					unlink($symPath);
-				}
+				deleteRow('files', array('id' => $details['file_id']));
 			}
 			if ($details['thumbnail_id']) {
 				deleteRow('files', array('id' => $details['thumbnail_id']));
@@ -495,7 +497,7 @@ class zenario_common_features extends module_base_class {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
 		}
 		
-		if ($path == 'zenario__content/nav/content/panel/test_bespoke_dynamic_html') {
+		if ($path == 'zenario__content/panels/content/test_bespoke_dynamic_html') {
 			//A test standalone application in Organizer, written dynamically using plain HTML
 			$panel['html'] = '
 				<h1>A test standalone application in Organizer, written dynamically using plain HTML</h1>

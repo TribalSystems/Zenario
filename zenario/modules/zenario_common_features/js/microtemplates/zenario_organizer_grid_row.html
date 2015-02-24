@@ -14,7 +14,7 @@
 	"
 >
 	<% if (zenarioO.itemButtonsExist) { %>	
-		<div class="organizer_checkbox_at_top_left" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenarioA.stop(event);">
+		<div class="organizer_checkbox_at_top_left" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenario.stop(event);">
 			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
 		</div>
 	<% } %>

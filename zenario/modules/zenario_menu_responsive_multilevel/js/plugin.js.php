@@ -1,15 +1,11 @@
 <?php
 
-require '../lib/js/modernizr.custom.js';
-
-echo "\n/**/\n";
-
-require '../lib/js/jquery.dlmenu.js';
+require CMS_ROOT. 'zenario/libraries/mit/ResponsiveMultiLevelMenu/js/jquery.dlmenu.min.js';
 
 echo "\n/**/\n";
 
 ?>
 
-zenario_menu_responsive_multilevel.setup = function() {
-	$( '#dl-menu' ).dlmenu();
+zenario_menu_responsive_multilevel.init = function(id) {
+	$('#' + id).dlmenu();
 };

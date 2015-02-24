@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +65,7 @@ class zenario_common_features__admin_boxes__custom_system_tab extends module_bas
 			if ($details['label']) $values['details/label'] = $details['label'];
 		}
 		
-		$box['title'] = adminPhrase('Customising the system tab "[[label]]"', $tab);
+		$box['title'] = adminPhrase('Renaming the system tab "[[label]]"', $tab);
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

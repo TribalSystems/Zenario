@@ -1,482 +1,448 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__layouts:
-    nav:
+    panels:
         layouts:
-            panel:
-                title: Layouts
-                view_mode: list
-                no_items_message: No layouts have been created
-                grid_view_microtemplate: zenario_grid_view_layout
-                db_items:
-                    table: >
-                        [[DB_NAME_PREFIX]]template_files AS tf
-                        LEFT JOIN [[DB_NAME_PREFIX]]layouts AS l
-                           ON l.family_name = tf.family_name
-                          AND l.file_base_name = tf.file_base_name
-                        LEFT JOIN [[DB_NAME_PREFIX]]content_types AS ct
-                           ON l.layout_id = ct.default_layout_id
-                    id_column: "IFNULL(l.layout_id, CONCAT(tf.family_name, '/', tf.file_base_name))"
-                    encode_id_column: true
-                    where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
-                    custom_where_statement__without_unregistered: WHERE l.status IS NOT NULL
-                    custom_where_statement__trash: "WHERE l.status = 'suspended'"
-                disable_summary_view: true
-                columns:
-                    code:
-                        title: ID
-                        show_by_default: true
-                        db_column: "CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)))"
-                        searchable: true
-                        width: xxsmall
-                    name:
-                        title: Layout name
-                        show_by_default: true
-                        db_column: l.name
-                        searchable: true
-                        width: large
-                    path:
-                        title: Template File
-                        db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', tf.family_name, '/', tf.file_base_name, '.tpl.php')"
-                        show_by_default: No
-                        searchable: true
-                        ascii_only: true
-                        width: xlarge
-                    family_name:
-                        title: Skin
-                        db_column: tf.family_name
-                        searchable: true
-                    template_filename:
-                        title: Template Filename
-                        db_column: CONCAT(tf.file_base_name, '.tpl.php')
-                        searchable: true
-                        ascii_only: true
-                    filesize:
-                        title: Template File Size
-                        format: filesize
-                    missing:
-                        title: File Missing
-                        db_column: tf.missing
-                        format: yes_or_no
-                    default:
-                        #title: Default layout for content type
-                        db_column: ct.default_layout_id IS NOT NULL
-                        format: yes_or_no
-                    status:
-                        title: Status
-                        show_by_default: true
-                        format: enum
-                        values:
-                            active: Active
-                            active_default: Active; default layout for content type
-                            suspended: Archived
-                            unregistered: Unregistered
-                            missing: Template file missing
-                            missing_default: Template file missing; default layout for content type
-                        db_column: >
-                            CONCAT(
-                                IF (tf.missing = 1, 'missing', IFNULL(l.status, 'unregistered')),
-                                IF (ct.default_layout_id IS NULL, '', '_default'))
-                        width: large
-                    content_type:
-                        title: Content Type
-                        db_column: l.content_type
-                        show_by_default: true
-                        format: enum
-                        searchable: true
-                        width: small
-                    checksum:
-                        db_column: f.checksum
-                        table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = l.image_id AND f.`usage` = 'template'"
-                    filename:
-                        db_column: f.filename
-                        table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = l.image_id AND f.`usage` = 'template'"
-                    usage_count:
-                        title: Usage
-                        db_column: |
-                            (
-                                                        SELECT COUNT(DISTINCT c.id, c.type)
-                                                        FROM [[DB_NAME_PREFIX]]versions AS v
-                                                        INNER JOIN [[DB_NAME_PREFIX]]content AS c
-                                                           ON c.id = v.id
-                                                          AND c.type = v.type
-                                                          AND c.admin_version = v.version
-                                                          AND c.status NOT IN ('trashed','deleted')
-                                                        WHERE v.layout_id = l.layout_id
-                                                          AND v.type = l.content_type
-                                                    )
-                        show_by_default: true
-                        align_right: true
-                        width: xxsmall
-                    grid_name:
-                        exists: true
-                    usage_status:
-                        format: enum
-                        values:
-                            active: Active
-                            suspended: Archived
-                            unregistered: Unregistered
-                            missing: Template file missing
-                default_sort_column: name
-                label_format_for_popouts: '[[code]] [[name]]'
-                label_format_for_picked_items: '[[code]] [[name]]'
-                refiners:
-                    template_family:
-                        sql: 'tf.family_name = [[REFINER__TEMPLATE_FAMILY]]'
-                    content_type:
-                        sql: 'content_type = [[REFINER_ID]]'
-                    module_usage:
-                        table_join: |
-                            INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                       ON pitl.module_id = [[REFINER__MODULE_USAGE]]
-                                                      AND pitl.layout_id = l.layout_id
-                    plugin_instance_usage:
-                        table_join: |
-                            INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                       ON pitl.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]
-                                                      AND pitl.layout_id = l.layout_id
-                    trash:
-                        exists: true
+            title: Layouts
+            view_mode: list
+            no_items_message: No layouts have been created
+            grid_view_microtemplate: zenario_grid_view_layout
+            db_items:
+                table: >
+                    [[DB_NAME_PREFIX]]template_files AS tf
+                    LEFT JOIN [[DB_NAME_PREFIX]]layouts AS l
+                       ON l.family_name = tf.family_name
+                      AND l.file_base_name = tf.file_base_name
+                    LEFT JOIN [[DB_NAME_PREFIX]]content_types AS ct
+                       ON l.layout_id = ct.default_layout_id
+                id_column: "IFNULL(l.layout_id, CONCAT(tf.family_name, '/', tf.file_base_name))"
+                encode_id_column: true
+                where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
+                custom_where_statement__without_unregistered: WHERE l.status IS NOT NULL
+                custom_where_statement__trash: "WHERE l.status = 'suspended'"
+            disable_summary_view: true
+            columns:
+                code:
+                    title: ID
+                    show_by_default: true
+                    db_column: "CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)))"
+                    searchable: true
+                    width: xxsmall
+                name:
+                    title: Layout name
+                    show_by_default: true
+                    db_column: l.name
+                    searchable: true
+                    width: large
+                summary:
+                    title: Summary
+                    show_by_default: true
+                    width: xlarge
+                family_name:
+                    title: Skin
+                    db_column: tf.family_name
+                    searchable: true
+                template_filename:
+                    title: Template filename
+                    db_column: CONCAT(tf.file_base_name, '.tpl.php')
+                    searchable: true
+                    ascii_only: true
+                filesize:
+                    title: Template file size
+                    format: filesize
+                missing:
+                    title: File missing
+                    db_column: tf.missing
+                    format: yes_or_no
+                default:
+                    #title: Default layout for content type
+                    db_column: ct.default_layout_id IS NOT NULL
+                    format: yes_or_no
+                status:
+                    title: Status
+                    show_by_default: true
+                    format: enum
+                    values:
+                        active: Active
+                        active_default: Active; default layout for content type
+                        suspended: Archived
+                        unregistered: Unregistered
+                        missing: Template file missing
+                        missing_default: Template file missing; default layout for content type
+                    db_column: >
+                        CONCAT(
+                            IF (tf.missing = 1, 'missing', IFNULL(l.status, 'unregistered')),
+                            IF (ct.default_layout_id IS NULL, '', '_default'))
+                    width: large
+                content_type:
+                    title: Content Type
+                    db_column: l.content_type
+                    show_by_default: true
+                    format: enum
+                    searchable: true
+                    width: small
+                usage_count:
+                    title: Usage
+                    db_column: |
+                        (
+                                                    SELECT COUNT(DISTINCT c.id, c.type)
+                                                    FROM [[DB_NAME_PREFIX]]versions AS v
+                                                    INNER JOIN [[DB_NAME_PREFIX]]content AS c
+                                                       ON c.id = v.id
+                                                      AND c.type = v.type
+                                                      AND c.admin_version = v.version
+                                                      AND c.status NOT IN ('trashed','deleted')
+                                                    WHERE v.layout_id = l.layout_id
+                                                      AND v.type = l.content_type
+                                                )
+                    show_by_default: true
+                    align_right: true
+                    width: xxsmall
+                grid_name:
+                    exists: true
+                usage_status:
+                    format: enum
+                    values:
+                        active: Active
+                        suspended: Archived
+                        unregistered: Unregistered
+                        missing: Template file missing
+                path:
+                    title: Path to template file
+                    db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', tf.family_name, '/', tf.file_base_name, '.tpl.php')"
+                    show_by_default: true
+                    searchable: true
+                    ascii_only: true
+                    width: xxlarge
+            default_sort_column: name
+            label_format_for_grid_view: '[[code]] [[name]]'
+            label_format_for_popouts: '[[code]] [[name]]'
+            label_format_for_picked_items: '[[code]] [[name]]'
+            bold_columns_in_list_view: '[[code]]'
+            refiners:
+                template_family:
+                    sql: 'tf.family_name = [[REFINER__TEMPLATE_FAMILY]]'
+                content_type:
+                    sql: 'content_type = [[REFINER_ID]]'
+                module_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                                                   ON pitl.module_id = [[REFINER__MODULE_USAGE]]
+                                                  AND pitl.layout_id = l.layout_id
+                plugin_instance_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                                                   ON pitl.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]
+                                                  AND pitl.layout_id = l.layout_id
                 trash:
-                    empty_tooltip: View archived layouts
-                    full_tooltip: View archived layouts
-                    link:
-                        path: zenario__layouts/nav/layouts/panel
-                        refiner: trash
-                        branch: true
-                item:
-                    name: Layout
-                    names: Layouts
-                    css_class: template
-                collection_buttons:
-                    create:
-                        priv: _PRIV_EDIT_TEMPLATE_FAMILY
-                        hide_in_select_mode: true
-                        css_class: zenario_create_a_new
-                        label: Create a layout
-                        hide_on_refiner:
-                            module_usage: true
-                            plugin_instance_usage: true
-                        popout:
-                            href: zenario/admin/grid_maker/grid_maker.php
-                            width: 100%
-                            height: 100%
-                            maxWidth: 100%
-                            maxHeight: 100%
-                            initialWidth: 100%
-                            initialHeight: 100%
-                            iframe: true
-                            transition: none
-                            css_class: zenario_grid_maker
+                    exists: true
+            trash:
+                empty_tooltip: View archived layouts
+                full_tooltip: View archived layouts
+                link:
+                    path: zenario__layouts/panels/layouts
+                    refiner: trash
+                    branch: true
+            item:
+                name: Layout
+                names: Layouts
+                css_class: template
+            collection_buttons:
+                create:
+                    priv: _PRIV_EDIT_TEMPLATE_FAMILY
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create a layout
+                    hide_on_refiner:
+                        module_usage: true
+                        plugin_instance_usage: true
+                    popout:
+                        href: zenario/admin/grid_maker/grid_maker.php
+                        width: 100%
+                        height: 100%
+                        maxWidth: 100%
+                        maxHeight: 100%
+                        initialWidth: 100%
+                        initialHeight: 100%
+                        iframe: true
+                        transition: none
+                        css_class: zenario_grid_maker
+                help:
+                    label: Help
                     help:
-                        label: Help
-                        help:
-                            message: |
-                                Every content item relies on a layout. Layouts define the HTML of the finished pages, the positions of slots, and which plugins are in the slots.
-                                
-                                This panel lists the layouts that are already defined for your site.
-                                
-                                To create a layout using the gridmaker interactive tool, click the "Create" button. This will allow you to define a 960 type grid, and to specify the positions of slots on the layout.
+                        message: |
+                            Every content item relies on a layout. Layouts define the HTML of the finished pages, the positions of slots, and which plugins are in the slots.
+                            
+                            This panel lists the layouts that are already defined for your site.
+                            
+                            To create a layout using the gridmaker interactive tool, click the "Create" button. This will allow you to define a 960 type grid, and to specify the positions of slots on the layout.
+            
+            inline_buttons:
+                template_file_missing:
+                    css_class: zenario_ib_warning
+                    tooltip: |
+                        Template file is missing!
+                    visible_if_for_all_selected_items: |
+                        item.missing
+                grid_preview:
+                    css_class: inspect
+                    tooltip: View image
+                    popout:
+                        href: zenario/admin/grid_maker/ajax.php?thumbnail=1&width=800&height=500&loadDataFromLayout=1
+                        filename: dummy.png
+                        options:
+                            type: image
+                    traits:
+                        grid: true
+                    without_traits:
+                        unregistered: true
+            item_buttons:
+                create_layout_from_template_file:
+                    priv: _PRIV_VIEW_TEMPLATE
+                    label: Register layout
+                    admin_box:
+                        path: zenario_layout
+                        key:
+                            create_layout_from_template_file: true
+                    traits:
+                        unregistered: true
+                    without_columns_set:
+                        missing: true
+                settings:
+                    priv: _PRIV_VIEW_TEMPLATE
+                    hide_in_select_mode: true
+                    label: Layout properties
+                    admin_box:
+                        path: zenario_layout
+                    without_traits:
+                        unregistered: true
+                edit_grid:
+                    priv: _PRIV_EDIT_TEMPLATE_FAMILY
+                    hide_in_select_mode: true
+                    label: Edit layout
+                    popout:
+                        href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
+                        width: 100%
+                        height: 100%
+                        maxWidth: 100%
+                        maxHeight: 100%
+                        initialWidth: 100%
+                        initialHeight: 100%
+                        iframe: true
+                        transition: none
+                        css_class: zenario_grid_maker
+                    traits:
+                        grid: true
+                    without_columns_set:
+                        missing: true
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                code:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: HTML source
+                    visible_if_for_all_selected_items: >
+                        !zenario.engToBoolean(item.missing)
+                    admin_box:
+                        path: zenario_view_source_code
+                        key:
+                            type: layout
+                view_content:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: Content items using this layout
+                    link:
+                        path: zenario__layouts/panels/layouts/templates_content_via_ctype/panel
+                        refiner: templates_content_via_ctype
+                        branch: true
+                    without_traits:
+                        unregistered: true
+                view_slots:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: List of slots
+                    link:
+                        path: zenario__content/panels/slots
+                        refiner: template
+                        branch: true
+                    without_traits:
+                        unregistered: true
                 
-                item_buttons:
-                    create_layout_from_template_file:
-                        priv: _PRIV_VIEW_TEMPLATE
-                        label: Register layout
-                        admin_box:
-                            path: zenario_layout
-                            key:
-                                create_layout_from_template_file: true
-                        traits:
-                            unregistered: true
-                        without_columns_set:
-                            missing: true
-                    settings:
-                        priv: _PRIV_VIEW_TEMPLATE
-                        hide_in_select_mode: true
-                        label: Layout properties
-                        admin_box:
-                            path: zenario_layout
-                        without_traits:
-                            unregistered: true
-                    edit_grid:
-                        priv: _PRIV_EDIT_TEMPLATE_FAMILY
-                        hide_in_select_mode: true
-                        label: Edit layout
-                        popout:
-                            href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
-                            width: 100%
-                            height: 100%
-                            maxWidth: 100%
-                            maxHeight: 100%
-                            initialWidth: 100%
-                            initialHeight: 100%
-                            iframe: true
-                            transition: none
-                            css_class: zenario_grid_maker
-                        traits:
-                            grid: true
-                        without_columns_set:
-                            missing: true
-                    view_dropdown:
-                        label: View
-                        multiple_select: true
-                        hide_when_children_are_not_visible: true
-                    view_image:
-                        parent: image_dropdown
-                        label: View image
-                        popout:
-                            href: zenario/file.php?usage=template
-                        traits:
-                            has_image: true
-                    code:
-                        parent: view_dropdown
-                        hide_in_select_mode: true
-                        label: HTML source
-                        visible_if_for_all_selected_items: >
-                            !zenario.engToBoolean(item.missing)
-                        admin_box:
-                            path: zenario_view_source_code
-                            key:
-                                type: layout
-                    view_content:
-                        parent: view_dropdown
-                        hide_in_select_mode: true
-                        label: Content items using this layout
+                head_slot_layers:
+                    parent: view_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    label: HTML in head of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            level: layout
+                            mode: head
+                    
+                foot_slot_layers:
+                    parent: view_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    label: HTML at foot of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            level: layout
+                            mode: foot
+                
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                duplicate:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_TEMPLATE
+                    hide_in_select_mode: true
+                    label: Duplicate
+                    admin_box:
+                        path: zenario_layout
+                        key:
+                            duplicate: "1"
+                    without_traits:
+                        unregistered: true
+                restore:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_TEMPLATE
+                    hide_in_select_mode: true
+                    label: Restore
+                    multiple_select: true
+                    multiple_select_tooltip: Restore the selected Layouts
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to restore the "[[code]] [[name]]" Layout?'
+                            multiple_select_message: Are you sure you wish to restore the selected Layouts?
+                            button_message: Restore
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            restore: "1"
+                    traits:
+                        archived: true
+                archive:
+                    parent: action_dropdown
+                    priv: _PRIV_EDIT_TEMPLATE
+                    hide_in_select_mode: true
+                    label: Archive
+                    multiple_select: true
+                    multiple_select_tooltip: Archive the selected layouts
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to archive the "[[code]] [[name]]" layout?
+                                                            
+                                                            This action will not affect existing content items using this layout, but you will no longer be able to select it.
+                            multiple_select_message: |
+                                Are you sure you wish to archive the selected layouts?
+                                                            
+                                                            This action will not affect existing content items using these layouts, but you will no longer be able to select them.
+                            button_message: Archive
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            archive: "1"
+                    without_traits:
+                        deletable: true
+                        archived: true
+                        unregistered: true
+                    without_columns_set:
+                        default: true
+                delete:
+                    priv: _PRIV_EDIT_TEMPLATE
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    multiple_select_tooltip: Delete the selected layouts
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the layout "[[code]] [[name]]"?'
+                            multiple_select_message: Are you sure you wish to delete the selected layouts?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                    traits:
+                        deletable: true
+                    without_traits:
+                        unregistered: true
+                    without_columns_set:
+                        default: true
+            
+            #    This is a hack to get the content type in the chain of refiners when viewing the Content using a Layout
+            #    or Content using a Layout by Language.
+            #    
+            #    Firstly, we go though a refiner that looks up the Content Type of the Layout from the Layout Id.
+            #    
+            #    Secondly, we go through another refiner that looks up the value of the template id from the original
+            #    refiner and repropagates that with the correct name.
+            #    
+            #    Finally, we go to the actual location that we want to go to.
+            templates_content_via_ctype:
+                panel:
+                    db_items:
+                        table: '[[DB_NAME_PREFIX]]layouts AS l'
+                        id_column: l.content_type
+                    refiner_required: true
+                    refiners:
+                        templates_content_via_ctype:
+                            sql: 'l.layout_id = [[REFINER_ID]]'
+                    allow_bypass: true
+                    item:
                         link:
-                            path: zenario__layouts/nav/layouts/panel/templates_content_via_ctype/panel
-                            refiner: templates_content_via_ctype
+                            path: zenario__layouts/panels/layouts/templates_content_via_ctype2/panel
                             branch: true
-                        without_traits:
-                            unregistered: true
-                    view_slots:
-                        parent: view_dropdown
-                        hide_in_select_mode: true
-                        label: List of slots
+                            refiner: content_type
+            templates_content_via_ctype2:
+                panel:
+                    db_items:
+                        table: '[[DB_NAME_PREFIX]]layouts AS l'
+                        id_column: l.layout_id
+                    refiner_required: true
+                    refiners:
+                        content_type:
+                            sql: |
+                                l.layout_id = [[REFINER__TEMPLATES_CONTENT_VIA_CTYPE]]
+                                                                AND l.content_type = [[REFINER_ID]]
+                    allow_bypass: true
+                    item:
                         link:
-                            path: zenario__content/panels/slots
+                            path: zenario__content/panels/content
                             branch: true
                             refiner: template
-                        without_traits:
-                            unregistered: true
-                    
-                    head_slot_layers:
-                        parent: view_dropdown
-                        priv: _PRIV_MANAGE_ITEM_SLOT
-                        label: HTML in head of page
-                        admin_box:
-                            path: zenario_head_foot_slot
-                            key:
-                                level: layout
-                                mode: head
-                        
-                    foot_slot_layers:
-                        parent: view_dropdown
-                        priv: _PRIV_MANAGE_ITEM_SLOT
-                        label: HTML at foot of page
-                        admin_box:
-                            path: zenario_head_foot_slot
-                            key:
-                                level: layout
-                                mode: foot
-                    
-                    action_dropdown:
-                        label: Actions
-                        multiple_select: true
-                        hide_when_children_are_not_visible: true
-                    image_dropdown:
-                        label: Layout image
-                        multiple_select: true
-                        hide_when_children_are_not_visible: true
-                    upload_image:
-                        priv: _PRIV_EDIT_TEMPLATE
-                        hide_in_select_mode: true
-                        parent: image_dropdown
-                        label: Set image
-                        tooltip: |
-                            Attach an image to this layout|
-                                                    You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an image for this Layout.<br/>
-                                                    Uploading an image will replace any existing image.
-                        multiple_select: true
-                        multiple_select_tooltip: |
-                            Attach an image to these layouts|
-                                                    You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an image for these Layout.<br/>
-                                                    Uploading an image will replace any existing images.
-                        upload:
-                            fileExt: '*.gif;*.jpg;*.jpeg;*.png'
-                            fileDesc: Images
-                            request:
-                                upload_image: true
-                        without_traits:
-                            unregistered: true
-                    delete_image:
-                        parent: image_dropdown
-                        priv: _PRIV_EDIT_TEMPLATE
-                        hide_in_select_mode: true
-                        label: Remove image
-                        multiple_select: true
-                        ajax:
-                            confirm:
-                                message: 'Are you sure you want to remove the image for the Layout "[[name]]"?'
-                                multiple_select_message: >
-                                    Are you sure you want to remove the images for the selected
-                                    Layouts?
-                                button_message: Remove
-                                cancel_button_message: Cancel
-                                message_type: warning
-                            request:
-                                delete_image: "1"
-                        one_with_traits:
-                            has_image: true
-                    duplicate:
-                        parent: action_dropdown
-                        priv: _PRIV_EDIT_TEMPLATE
-                        hide_in_select_mode: true
-                        label: Duplicate
-                        admin_box:
-                            path: zenario_layout
-                            key:
-                                duplicate: "1"
-                        without_traits:
-                            unregistered: true
-                    restore:
-                        parent: image_dropdown
-                        priv: _PRIV_EDIT_TEMPLATE
-                        hide_in_select_mode: true
-                        label: Restore
-                        multiple_select: true
-                        multiple_select_tooltip: Restore the selected Layouts
-                        ajax:
-                            confirm:
-                                message: 'Are you sure you wish to restore the "[[code]] [[name]]" Layout?'
-                                multiple_select_message: Are you sure you wish to restore the selected Layouts?
-                                button_message: Restore
-                                cancel_button_message: Cancel
-                                message_type: warning
-                            request:
-                                restore: "1"
-                        traits:
-                            archived: true
-                    archive:
-                        parent: action_dropdown
-                        priv: _PRIV_EDIT_TEMPLATE
-                        hide_in_select_mode: true
-                        label: Archive
-                        multiple_select: true
-                        multiple_select_tooltip: Archive the selected layouts
-                        ajax:
-                            confirm:
-                                message: |
-                                    Are you sure you wish to archive the "[[code]] [[name]]" layout?
-                                                                
-                                                                This action will not affect existing content items using this layout, but you will no longer be able to select it.
-                                multiple_select_message: |
-                                    Are you sure you wish to archive the selected layouts?
-                                                                
-                                                                This action will not affect existing content items using these layouts, but you will no longer be able to select them.
-                                button_message: Archive
-                                cancel_button_message: Cancel
-                                message_type: warning
-                            request:
-                                archive: "1"
-                        without_traits:
-                            deletable: true
-                            archived: true
-                            unregistered: true
-                        without_columns_set:
-                            default: true
-                    delete:
-                        priv: _PRIV_EDIT_TEMPLATE
-                        label: Delete
-                        hide_in_select_mode: true
-                        multiple_select: true
-                        multiple_select_tooltip: Delete the selected layouts
-                        ajax:
-                            confirm:
-                                message: 'Are you sure you wish to delete the layout "[[code]] [[name]]"?'
-                                multiple_select_message: Are you sure you wish to delete the selected layouts?
-                                button_message: Delete
-                                cancel_button_message: Cancel
-                                message_type: warning
-                            request:
-                                delete: "1"
-                        traits:
-                            deletable: true
-                        without_traits:
-                            unregistered: true
-                        without_columns_set:
-                            default: true
-                inline_buttons: ""
-                
-                #    This is a hack to get the content type in the chain of refiners when viewing the Content using a Layout
-                #    or Content using a Layout by Language.
-                #    
-                #    Firstly, we go though a refiner that looks up the Content Type of the Layout from the Layout Id.
-                #    
-                #    Secondly, we go through another refiner that looks up the value of the template id from the original
-                #    refiner and repropagates that with the correct name.
-                #    
-                #    Finally, we go to the actual location that we want to go to.
-                templates_content_via_ctype:
-                    panel:
-                        db_items:
-                            table: '[[DB_NAME_PREFIX]]layouts AS l'
-                            id_column: l.content_type
-                        refiner_required: true
-                        refiners:
-                            templates_content_via_ctype:
-                                sql: 'l.layout_id = [[REFINER_ID]]'
-                        allow_bypass: true
-                        item:
-                            link:
-                                path: zenario__layouts/nav/layouts/panel/templates_content_via_ctype2/panel
-                                branch: true
-                                refiner: content_type
-                templates_content_via_ctype2:
-                    panel:
-                        db_items:
-                            table: '[[DB_NAME_PREFIX]]layouts AS l'
-                            id_column: l.layout_id
-                        refiner_required: true
-                        refiners:
-                            content_type:
-                                sql: |
-                                    l.layout_id = [[REFINER__TEMPLATES_CONTENT_VIA_CTYPE]]
-                                                                    AND l.content_type = [[REFINER_ID]]
-                        allow_bypass: true
-                        item:
-                            link:
-                                path: zenario__content/nav/content/panel
-                                branch: true
-                                refiner: template
-                templates_languages_via_ctype:
-                    panel:
-                        db_items:
-                            table: '[[DB_NAME_PREFIX]]layouts AS l'
-                            id_column: l.content_type
-                        refiner_required: true
-                        refiners:
-                            templates_languages_via_ctype:
-                                sql: 'l.layout_id = [[REFINER_ID]]'
-                        allow_bypass: true
-                        item:
-                            link:
-                                path: zenario__layouts/nav/layouts/panel/templates_languages_via_ctype2/panel
-                                branch: true
-                                refiner: content_type
-                templates_languages_via_ctype2:
-                    panel:
-                        db_items:
-                            table: '[[DB_NAME_PREFIX]]layouts AS l'
-                            id_column: l.layout_id
-                        refiner_required: true
-                        refiners:
-                            content_type:
-                                sql: |
-                                    l.layout_id = [[REFINER__TEMPLATES_LANGUAGES_VIA_CTYPE]]
-                                                                    AND l.content_type = [[REFINER_ID]]
-                        allow_bypass: true
-                        item:
-                            link:
-                                path: zenario__content/nav/languages/panel
-                                branch: true
-                                refiner: template
+            templates_languages_via_ctype:
+                panel:
+                    db_items:
+                        table: '[[DB_NAME_PREFIX]]layouts AS l'
+                        id_column: l.content_type
+                    refiner_required: true
+                    refiners:
+                        templates_languages_via_ctype:
+                            sql: 'l.layout_id = [[REFINER_ID]]'
+                    allow_bypass: true
+                    item:
+                        link:
+                            path: zenario__layouts/panels/layouts/templates_languages_via_ctype2/panel
+                            branch: true
+                            refiner: content_type
+            templates_languages_via_ctype2:
+                panel:
+                    db_items:
+                        table: '[[DB_NAME_PREFIX]]layouts AS l'
+                        id_column: l.layout_id
+                    refiner_required: true
+                    refiners:
+                        content_type:
+                            sql: |
+                                l.layout_id = [[REFINER__TEMPLATES_LANGUAGES_VIA_CTYPE]]
+                                                                AND l.content_type = [[REFINER_ID]]
+                    allow_bypass: true
+                    item:
+                        link:
+                            path: zenario__content/panels/languages
+                            branch: true
+                            refiner: template

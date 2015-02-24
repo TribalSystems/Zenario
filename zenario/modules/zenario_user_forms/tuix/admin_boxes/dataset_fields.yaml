@@ -1,0 +1,21 @@
+---
+zenario_user_dataset_field_picker:
+    title: "Adding a dataset field"
+    max_height: 100
+    hide_tab_bar: Yes
+    key:
+        id: ""
+    tabs:
+        dataset_fields:
+            label: Fields
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                dataset_fields:
+                    label: 'Dataset field:'
+                    type: select
+                    load_values_from_organizer_path: zenario__users/panels/all_fields
+                    empty_value: ' -- Select -- '
+                    format_onchange: Yes
+                    ord: "4"

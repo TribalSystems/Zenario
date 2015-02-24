@@ -1,0 +1,114 @@
+<div class="extranet_wrap">
+	<div class="extranet_outer_wrap">
+		<div class="extranet_inner_wrap">
+		
+		[cms:section name="Message_Display"]
+			<div class="extranet_message">[cms:merge name="Message"/]</div>
+		[/cms:section]
+		
+		[cms:section name="Login_Form"]
+			<div>
+			
+				<h2>[cms:phrase code="_SIGN_IN"/]</h2>
+			
+				[cms:section name="Error_Display"]
+					<div class="extranet_error">[cms:merge name="Error"/]</div>
+				[/cms:section]
+				
+				[cms:section name="Login_with_screen_name"]
+					<div class="extranet_field">
+						<div class="label">[cms:phrase code="_SCREEN_NAME:"/]</div>
+						[cms:input type="text" name="extranet_screen_name" required="true" class="extranet_text"/]
+					</div>
+				[/cms:section]
+				[cms:section name="Login_with_email"]
+					<div class="extranet_field">
+						<div class="label">[cms:phrase code="_EMAIL:"/]</div>
+						[cms:input type="text" name="extranet_email" pattern="email" required="true" class="extranet_text"/]
+					</div>
+				[/cms:section]
+				<div class="extranet_field">
+					<div class="label">[cms:phrase code="_PASSWORD:"/]</div>
+					[cms:input type="password" name="extranet_password" required="true" class="extranet_password"/]
+				</div>
+				[cms:section name="Ts_And_Cs_Section"]
+					<div class="extranet_terms_and_conditions">
+						<label for="extranet_terms_and_conditions">[cms:merge name='Ts_And_Cs_Link'/]</label>
+						[cms:input type="checkbox" name="extranet_terms_and_conditions" id="extranet_terms_and_conditions"/]
+					</div>
+				[/cms:section]
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="[cms:phrase code='_LOGIN'/]" /></div></div>
+				
+				[cms:section name="Remember_Me_Section"]
+					<div class="extranet_remember_me">
+						<label for="extranet_remember_me">[cms:phrase code="_REMEMBER_ME"/]</label>
+						[cms:input type="checkbox" name="extranet_remember_me" id="extranet_remember_me" checked="checked"/]
+					</div>
+				[/cms:section]
+				[cms:section name="Log_Me_In_Section"]
+					<div class="extranet_log_me_in">
+						<label for="extranet_log_me_in">[cms:phrase code="_LOG_ME_IN"/]</label>
+						[cms:input type="checkbox" name="extranet_log_me_in" id="extranet_log_me_in" checked="checked"/]
+					</div>
+				[/cms:section]
+				
+			</div>
+			<div class="extranet_links">
+				[cms:section name="Forget_Password_Link_Section"]
+					<div><a [cms:merge name='Forget_Password_Link'/]>[cms:phrase code="_FORGOTTEN_PASSWORD"/]</a></div>
+				[/cms:section]
+				[cms:section name="Reset_Password_Link_Section"]
+					<div><a [cms:merge name='Reset_Password_Link'/]>[cms:phrase code="Forgotten password?"/]</a></div>
+				[/cms:section]
+				[cms:section name="Registration_Link_Section"]
+					<div><a [cms:merge name='Registration_Link'/]>[cms:phrase code="_REGISTER"/]</a></div>
+				[/cms:section]
+			</div>
+		[/cms:section]
+		[cms:section name="Logged_In"]
+			[cms:section name="Welcome_Message_Section"]
+				<div class="extranet_welcome_text">[cms:merge name="Welcome_Message"/]</div>
+			[/cms:section]
+			[cms:section name="Destination_url_section"] 
+				<div class="extranet_requested_link">
+					[cms:phrase code="_REQUESTED_LINK:"/]
+					<a href="[cms:merge name='destURL_Link'/]">[cms:merge name="destURL_Title"/]</a>
+				</div>
+			[/cms:section]
+			<div class="extranet_links">
+				[cms:section name="Change_Password_Link_Section"]
+					<div>
+						<a [cms:merge name='Change_Password_Link'/]>[cms:phrase code="_CHANGE_PASSWORD"/]</a>
+					</div>
+				[/cms:section]
+				[cms:section name="Logout_Link_Section"]
+					<div>
+						<a [cms:merge name='Logout_Link'/]>[cms:phrase code="_LOGOUT"/]</a>
+					</div>
+				[/cms:section]
+			</div>
+		[/cms:section]
+		
+		 [cms:section name="Change_Password_Form"]
+			<h1>[cms:phrase code="_CHANGE_PASSWORD_TITLE"/]</h1>
+			
+			[cms:section name="Password_Error_Display"]
+				<div class="extranet_error">[cms:merge name="Error"/]</div>
+			[/cms:section]
+			
+			<div>
+				<div class="extranet_field">
+					<div class="label">[cms:phrase code="_NEW_PASSWORD"/]:</div>
+					[cms:input type="password" name="extranet_new_password" pattern="new_password" required="true" class="extranet_password"/]
+				</div>
+				<div class="extranet_field">
+					<div class="label">[cms:phrase code="_NEW_PASSWORD_REPEAT"/]:</div>
+					[cms:input type="password" name="extranet_new_password_confirm" required="true" class="extranet_password"/]
+				</div>
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_change_password" class="extranet_submit i" value="[cms:phrase code='_CHANGE_PASSWORD'/]" /></div></div>
+			</div>
+		[/cms:section]
+		
+		</div>
+	</div>
+</div>

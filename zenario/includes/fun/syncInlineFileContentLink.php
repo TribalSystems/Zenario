@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -32,23 +32,40 @@ $content = '';
 
 
 //Add images linked via Version Controlled modules
+$fileIdsInPlugins = array();
 $sql = "
-	SELECT f.id
+	SELECT ps.value
 	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
 	INNER JOIN ". DB_NAME_PREFIX. "plugin_settings AS ps
 	   ON pi.id = ps.instance_id
 	  AND ps.is_content = 'version_controlled_setting'
-	INNER JOIN ". DB_NAME_PREFIX. "files AS f
-	   ON ps.foreign_key_to = 'file'
-	  AND ps.foreign_key_id = f.id
+	  AND ps.foreign_key_to IN('file', 'multiple_files')
 	WHERE pi.content_id = ". (int) $cID. "
 	  AND pi.content_type = '". sqlEscape($cType). "'
 	  AND pi.content_version = ". (int) $cVersion;
 $result = sqlQuery($sql);
 
-while ($file = sqlFetchAssoc($result)) {
-	$fileId = $file['id'];
-	$files[$fileId] = array('id' => $fileId);
+while ($fileIds = sqlFetchRow($result)) {
+	if ($fileIds = explode(',', $fileIds[0])) {
+		foreach ($fileIds as $fileId) {
+			if ($fileId = (int) trim($fileId)) {
+				$fileIdsInPlugins[$fileId] = $fileId;
+			}
+		}
+	}
+}
+
+//Do a quick check to see if all of those ids exist, only add the ones in the database!
+if (!empty($fileIdsInPlugins)) {
+	$sql = "
+		SELECT f.id
+		FROM ". DB_NAME_PREFIX. "files AS f
+		WHERE f.id IN (". inEscape($fileIdsInPlugins, 'numeric'). ")";
+	$result = sqlQuery($sql);
+	while ($file = sqlFetchAssoc($result)) {
+		$fileId = $file['id'];
+		$files[$fileId] = array('id' => $fileId);
+	}
 }
 
 

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -47,14 +47,6 @@ echo '
 </script>';
 
 
-if ($isWelcome || checkPriv()) {
-	if (!$isWelcome) {
-		$modules = array();
-		$moduleCodeHash = getModuleCodeHash($modules);
-	}
-	setupAdminFloatingBoxes();
-}
-
 //Add JS needed for the CMS
 echo '
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery.min.js?v=', $v, '"></script>
@@ -63,6 +55,14 @@ echo '
 	
 //Add JS needed for the CMS in Admin mode
 if ($isWelcome || checkPriv()) {
+	
+	if (!$isWelcome) {
+		checkForChangesInPhpFiles();
+		checkForChangesInYamlFiles();
+	}
+	
+	setupAdminFloatingBoxes();
+	
 	echo '
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
@@ -75,8 +75,10 @@ if ($isWelcome || checkPriv()) {
 	}
 	
 	if ($includeOrganizer) {
+		$moduleCodeHash = setting('php_version'). '___'. setting('yaml_version');
+		
 		$jsModuleIds = '';
-		foreach ($modules as $module) {
+		foreach (getRunningModules() as $module) {
 			if (moduleDir($module['class_name'], 'js/organizer.js', true)
 			 || moduleDir($module['class_name'], 'js/organizer.min.js', true)
 			 || moduleDir($module['class_name'], 'js/storekeeper.js', true)

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,9 @@ class zenario_google_map extends module_base_class {
 	function addToPageHead() {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
+			
 			echo '
-				<script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
+				<script src="' . httpOrhttps() .'maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
 		}
 	}
 	

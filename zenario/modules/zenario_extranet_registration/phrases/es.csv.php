@@ -1,0 +1,53 @@
+﻿"<?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>"
+
+"Zenario VISITOR LANGUAGE PACK WORKSHEET",,"Target Language ID"
+"(Do not edit this column)","To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->",es
+
+Plugin
+zenario_extranet_registration
+
+"Phrase Code",Translation
+
+_CAPTCHA_INVALID,"Por favor verifique correctamente que usted es una usuario humano."
+_CAPTCHA:,"Lo sentimos, necesitamos confirmar que es un usuario humano:"
+_CHANGE_PASSWORD,"Cambiar su Contraseña"
+_COULD_NOT_SEND_REGISTRATION_EMAIL,"Se ha encontrado un problema con nuestro sistema de correo. Por el momento nos es imposible enviarle un correo de confirmación de registro."
+_EMAIL:,"Dirección de email:"
+_ERROR_EMAIL_IN_USE,"Esta Dirección de email ya está registrada."
+_ERROR_EMAIL_IN_USE_RESEND_VERIFICATION_EMAIL,"Esta Dirección de email ya está registrada. Si ha registrado esta dirección de email pero no ha recibido el correo de verificación por favor haga click <a [[resend_verification_email]]>reenviar correo de verificación</a>."
+_ERROR_EMAIL_NOT_IN_USE,"Esta Dirección de email  no está asociada a ninguna cuenta."
+_ERROR_EMAIL,"Por favor ingrese su Dirección de email."
+_ERROR_EMAIL_VERIFIED,"Esta Dirección de email ya ha sido verificada."
+_ERROR_FIRST_NAME,"Por favor ingrese su Nombre."
+_ERROR_INVALID_EMAIL,"Por favor ingrese una Dirección de email válida."
+_ERROR_INVALID_SCREEN_NAME,"Su Nombre de Usuario contiene caracteres especiales. Por favor escoja un Nombre de Usuario de solo letras."
+_ERROR_LAST_NAME,"Por favor ingrese su Apellido."
+_ERROR_NEW_PASSWORD_LENGTH,"Por favor asegúrese de que su contraseña contiene al menos [[min_password_length]] caracteres."
+_ERROR_NEW_PASSWORD_MATCH,"Las contraseñas ingresadas no coinciden."
+_ERROR_NEW_PASSWORD_NOT_STRONG_ENOUGH,"La contraseña ingresada no es lo suficientemente fuerte. Por favor ingrese una contraseña más larga o combine mayúsculas y minúsculas, números o caracteres alfanuméricos."
+_ERROR_NEW_PASSWORD,"Por favor ingrese su contraseña."
+_ERROR_REPEAT_NEW_PASSWORD,"Por favor vuelva a ingresar su contraseña."
+_ERROR_SCREEN_NAME_IN_USE,"Este Nombre de Usuario ya está en uso."
+_ERROR_SCREEN_NAME,"Por favor ingrese su Nombre de Usuario."
+_ERROR_VERIFICATION_FAILED,"Lo sentimos, pero no se ha encontrado su registro. Por favor asegúrese que el link de verificación es correcto."
+_FIRST_NAME:,"Nombre:"
+_LAST_NAME:,"Apellido:"
+_LOGIN,"Iniciar sesión"
+_LOGOUT,"Cerrar sesión"
+_PASSWORD_CONFIRMATION:,"Repetir contraseña:"
+_PASSWORD:,"Contraseña:"
+_PLEASE_ACCEPT_COOKIES,"Antes de registrarse este sitio web necesita almacenar una cookie en su ordenador. Por favor acepte las cookies de este sitio web para continuar."
+_REGISTER,"Registrarse"
+_REGISTRATION_TITLE,"Crear una cuenta"
+_REQUESTED_LINK:,"Página solicitada:"
+_RESEND_VERIFICATION_EMAIL_DESC,"Use esta opción si ya está registrado pero no ha recibido su email de verificación."
+_RESEND_VERIFICATION_EMAIL,"Reenviar Email de Verificación"
+_RESEND_VERIFICATION_EMAIL_TITLE,"Reenviar Email de Verificación"
+_RESIDENTIAL_ADDRESS,"Información de residencia",
+_SALUTATION:,"Sr/Sra/Srta:"
+_SCREEN_NAME:,"Nombre de Usuario:"
+_SELECT,"-- Por favor seleccione --"
+_THANK_YOU_VERIFY_EMAIL,"Gracias por registrarse. Se ha enviado un correo de confirmación con un hipervínculo. Asegúrese de revisar su carpeta de correo no deseado. Por favor haga click en el hipervínculo del correo para verificar su registro."
+_THANK_YOU_VERIFY_EMAIL_RESENT,"Su email de verificación ha sido enviado. Por favor asegúrese de revisar su carpeta de correo no deseado."
+_THANK_YOU_WAIT_FOR_ACTIVATION,"Gracias por registrarse. Su cuenta será activada manualmente por uno de nuestros Administradores antes de que usted pueda iniciar sesión."
+_WELCOME,"Bienvenido, [[user]]"

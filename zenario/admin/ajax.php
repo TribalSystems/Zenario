@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -84,6 +84,8 @@ if (get('_ab')) {
 		define('ORGANIZER_MODE', $mode = 'get_item_links');
 	} elseif (get('_get_item_data')) {
 		define('ORGANIZER_MODE', $mode = 'get_item_data');
+	} elseif (get('_get_ids_for_ajax_request')) {
+		define('ORGANIZER_MODE', $mode = 'get_ids_for_ajax_request');
 	} else {
 		define('ORGANIZER_MODE', $mode = 'full');
 	}
@@ -234,8 +236,8 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 								$langIdToUse = ifNull(arrayKey($box, 'key', 'languageId'), setting('default_language'));
 								
 								//Attempt to change the opening path to the correct path for the language. But only do this if we recognise the format.
-								if (empty($field['pick_items']['path']) || $field['pick_items']['path'] == 'zenario__content/hidden_nav/language_equivs/panel') {
-									$field['pick_items']['path'] = 'zenario__content/nav/languages/panel/item//'. $langIdToUse. '//collection_buttons/equivs////';
+								if (empty($field['pick_items']['path']) || $field['pick_items']['path'] == 'zenario__content/panels/language_equivs') {
+									$field['pick_items']['path'] = 'zenario__content/panels/languages/item//'. $langIdToUse. '//collection_buttons/equivs////';
 								}
 							}
 							
@@ -262,8 +264,8 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 								}
 								
 								//Attempt to change the opening path to the correct path for the language. But only do this if we recognise the format.
-								if (empty($field['pick_items']['path']) || substr($field['pick_items']['path'], 0, 26) == 'zenario__content/nav/languages/panel') {
-									$field['pick_items']['path'] = 'zenario__content/nav/languages/panel/item//'. $langIdToUse. '//';
+								if (empty($field['pick_items']['path']) || substr($field['pick_items']['path'], 0, 26) == 'zenario__content/panels/languages') {
+									$field['pick_items']['path'] = 'zenario__content/panels/languages/item//'. $langIdToUse. '//';
 								}
 							}
 						
@@ -699,10 +701,9 @@ if ($requestedPath && $tags['class_name']) {
 						$cCol = array();
 						$cCol['db_column'] = "custom.`". $cfield['db_column']. "`";
 						$cCol['searchable'] = $cfield['searchable'];
-						$cCol['sortable'] = $cfield['sortable'];
+						$cCol['disallow_sorting'] = !$cfield['sortable'];
 						$cCol['show_by_default'] = $cfield['show_by_default'];
 						$cCol['always_show'] = $cfield['always_show'];
-						$cCol['filterable'] = $cfield['sortable'];
 			
 						switch ($cfield['type']) {
 							case 'editor':
@@ -759,13 +760,6 @@ if ($requestedPath && $tags['class_name']) {
 								$cCol['format'] = 'enum';
 								$cCol['values'] = getDatasetFieldLOV($cfield, true);
 								break;
-				
-							default:
-								//Plain text fields should be filterable if they are also searchable,
-								//as their filters have a search box in them
-								//(Other types of format let you pick specific values as filters, which
-								// means they should be filterable if they are sortable.)
-								$cCol['filterable'] = $cfield['searchable'];
 						}
 			
 						$cCol['ord'] = ++$ord;
@@ -883,7 +877,7 @@ if ($requestedPath && $tags['class_name']) {
 						 || (engToBooleanArray($col, 'searchable') && (isset($_GET['_search']) || !empty($filters[$colName]['searchcol_'])))
 						 || (in(arrayKey($col, 'format'), 'enum', 'language_english_name', 'language_english_name_with_id', 'language_local_name', 'language_local_name_with_id') && !empty($filters[$colName]['enum_']))
 						 || (arrayKey($col, 'format') == 'yes_or_no' && !empty($filters[$colName]['yes_or_no_']))
-						 || ((arrayKey($col, 'format') == 'date' || arrayKey($col, 'format') == 'datetime')
+						 || ((!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
 						  && (!empty($filters[$colName]['date_after_col_']) || !empty($filters[$colName]['date_before_col_'])))) {
 							$sortExtraTables[prefixTableJoin($col['table_join'])] = true;
 						} else {
@@ -1031,7 +1025,7 @@ if ($requestedPath && $tags['class_name']) {
 					
 					//Search for any dates on or after a certain date
 					if (!empty($filters[$colName]['date_after_col_'])
-					 && (arrayKey($col, 'format') == 'date' || arrayKey($col, 'format') == 'datetime')
+					 && (!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
 					 && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $filters[$colName]['date_after_col_']) == '') {
 						$whereStatement .= "
 						  AND ". $columnName.
@@ -1040,7 +1034,7 @@ if ($requestedPath && $tags['class_name']) {
 					
 					//Search for any dates on or before a certain date
 					if (!empty($filters[$colName]['date_before_col_'])
-					 && (arrayKey($col, 'format') == 'date' || arrayKey($col, 'format') == 'datetime')
+					 && (!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
 					 && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $filters[$colName]['date_before_col_']) == '') {
 						$whereStatement .= "
 						  AND ". $columnName.
@@ -1067,7 +1061,7 @@ if ($requestedPath && $tags['class_name']) {
 			if (!empty($tags['db_items']['where_statement'])) {
 				$whereStatement = $tags['db_items']['where_statement']. $whereStatement;
 			} else {
-				$whereStatement = "WHERE 1=1". $whereStatement;
+				$whereStatement = "WHERE TRUE". $whereStatement;
 			}
 			
 			//Order by the sort column
@@ -1084,7 +1078,66 @@ if ($requestedPath && $tags['class_name']) {
 			$in = "";
 			$noResults = false;
 			
-			if ($groupBy === $idColumn && $mode == 'get_item_links') {
+			
+			//Handle AJAX buttons that ask for a list of matched ids
+			//Note that this code is similar to the logic in zenario/ajax.php that normally handles
+			//the handleOrganizerPanelAJAX() and organizerPanelDownload() methods, except this version
+			//also runs preFillOrganizerPanel() and includes a list of ids
+			if ($mode == 'get_ids_for_ajax_request') {
+
+				//Get a list of all of the matched ids
+				$sql = "
+					SELECT ". $idColumn. "
+					FROM ". $tags['db_items']['table'];
+			
+				foreach ($sortExtraTables as $join => $dummy) {
+					$sql .= "
+						". $join;
+				}
+				
+				$sql .= "
+					". $whereStatement. "
+					GROUP BY ". $groupBy. "
+					ORDER BY ". $orderBy;
+				
+				$storekeeperQueryIds = addConstantsToString($sql);
+				$result = sqlSelect($storekeeperQueryIds);
+				
+				$ids = array();
+				while ($row = sqlFetchRow($result)) {
+					$ids[] = $row[0];
+				}
+				
+				if (!request('__pluginClassName__')
+				 || empty($modules[request('__pluginClassName__')])) {
+					echo 'Error, could not find the module for this button on this panel.';
+					exit;
+				}
+				
+				if (post('_download')) {
+					$modules[request('__pluginClassName__')]->organizerPanelDownload($requestedPath, $ids, request('refinerName'), request('refinerId'));
+				} else {
+					$newIds = $modules[request('__pluginClassName__')]->handleOrganizerPanelAJAX($requestedPath, $ids, '', request('refinerName'), request('refinerId'));
+	
+					if ($newIds && !is_array($newIds)) {
+						$newIds = explode(',', $newIds);
+					}
+				
+					if ($newIds) {
+						if (!is_array(session('sk_new_ids'))) {
+							$_SESSION['sk_new_ids'] = array();
+						}
+						foreach ($newIds as $id) {
+							$_SESSION['sk_new_ids'][$id] = true;
+						}
+					}
+				
+				}
+				
+				exit;
+			
+			
+			} elseif ($groupBy === $idColumn && $mode == 'get_item_links') {
 				//Only look for a few specific items
 					//(Somewhat of a bespoke feature at the moment, it's not in the schema)
 				foreach(explode(',', $_REQUEST['_get_item_links']) as $i => $id) {
@@ -1099,9 +1152,6 @@ if ($requestedPath && $tags['class_name']) {
 						$in .= is_numeric($id)? (int) $id : "'". sqlEscape($id). "'";
 					}
 				}
-				
-			} elseif ($mode == 'csv' || $mode == 'xml') {
-		 		//Don't pre-run the query looking for ids, and order things when doing the actual query
 			
 			} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openItemInHierarchy']))) {
 				$openItemsInHierarchy = array();
@@ -1173,9 +1223,7 @@ if ($requestedPath && $tags['class_name']) {
 				$whereStatement .= ")))";
 				
 			
-			} elseif (get('_limit')) {
-				//If "_limit" is in the request, this means that server side sorting/pagination is being used
-				
+			} else {
 				//Get a count of all the rows, and get each id in the correct order
 				$sql = "
 					SELECT ". $idColumn;
@@ -1204,13 +1252,12 @@ if ($requestedPath && $tags['class_name']) {
 					unset($storekeeperQueryIds);
 				}
 				
-				//For panel requests that are part of a queue, don't attempt to fetch any items.
-				//But to try and load other information such as the count and the title.
+				//For panel requests that are part of a queue, don't attempt to fetch any ids, just get a count.
 				if (get('_queued')) {
 					$count = sqlNumRows($result);
 				
+				//Otherwise get the list of ids in the correctly sorted order
 				} else {
-					
 					$count = 0;
 					$tags['__item_sort_order__'] = array();
 					
@@ -1230,62 +1277,87 @@ if ($requestedPath && $tags['class_name']) {
 						}
 					}
 					
-					//Apply pagination using a limit
-					$start = (int) get('_start');
+					//If "_limit" is in the request, this means that server side sorting/pagination is being used
+					if (get('_limit')) {
+						//Apply pagination using the limit
+						$start = (int) get('_start');
 					
-					if ($start >= $count) {
-						$start = 0;
-					}
+						if ($start >= $count) {
+							$start = 0;
+						}
 					
-					//If we are using pagination, and have had specific item(s) requested, only show the page that item is on.
-					//In the case of a multiple selection, show the earliest page with items on
-					if (isset($_GET['_item'])) {
-						$pos = false;
-						foreach (explode(',', $_GET['_item']) as $item) {
-							$itemPos = array_search($item, $tags['__item_sort_order__']);
+						//If we are using pagination, and have had specific item(s) requested, only show the page that item is on.
+						//In the case of a multiple selection, show the earliest page with items on
+						if (isset($_GET['_item'])) {
+							$pos = false;
+							foreach (explode(',', $_GET['_item']) as $item) {
+								$itemPos = array_search($item, $tags['__item_sort_order__']);
 							
-							if ($itemPos !== false && ($pos === false || $itemPos < $pos)) {
-								$pos = $itemPos;
+								if ($itemPos !== false && ($pos === false || $itemPos < $pos)) {
+									$pos = $itemPos;
+								}
+							}
+						
+							//Change the start position appropriately
+							if ($pos !== false) {
+								$start = $pos - ($pos % (int) get('_limit'));
 							}
 						}
-						
-						//Change the start position appropriately
-						if ($pos !== false) {
-							$start = $pos - ($pos % (int) get('_limit'));
+					
+						//Set which page this should be
+						$tags['__page__'] = 1 + (int) ($start / (int) get('_limit'));
+						$stop = $start + (int) get('_limit');
+					
+						$startV = $start;
+						$stopV = $stop;
+						//Don't sent the whole collection of ids if we are using server-side pagination.
+						//But add an id either side to help with forward/back buttons in close-up view
+						if ($start > 0) {
+							--$start;
 						}
-					}
-					
-					//Set which page this should be
-					$tags['__page__'] = 1 + (int) ($start / (int) get('_limit'));
-					$stop = $start + (int) get('_limit');
-					
-					$startV = $start;
-					$stopV = $stop;
-					//Don't sent the whole collection of ids if we are using server-side pagination.
-					//But add an id either side to help with forward/back buttons in close-up view
-					if ($start > 0) {
-						--$start;
-					}
-					if ($stop < $count) {
-						++$stop;
-					}
-					
-					$new__item_sort_order__ = array();
-					for ($i = $start; $i < $stop; ++$i) {
-						if (isset($tags['__item_sort_order__'][$i]) && $tags['__item_sort_order__'][$i] !== null) {
-							$new__item_sort_order__[$i] = $tags['__item_sort_order__'][$i];
-						} else {
-							break;
+						if ($stop < $count) {
+							++$stop;
 						}
+					
+						$new__item_sort_order__ = array();
+						for ($i = $start; $i < $stop; ++$i) {
+							if (isset($tags['__item_sort_order__'][$i]) && $tags['__item_sort_order__'][$i] !== null) {
+								$new__item_sort_order__[$i] = $tags['__item_sort_order__'][$i];
+							} else {
+								break;
+							}
 						
-						if ($i >= $startV && $i < $stopV) {
-							$in .= $in? ", " : "IN (";
+							if ($i >= $startV && $i < $stopV) {
+								$in .= $in? ", " : "IN (";
 							
-							$thisId = $tags['__item_sort_order__'][$i];
+								$thisId = $tags['__item_sort_order__'][$i];
+								if ($encodeItemIdForStorekeeper) {
+									$thisId = decodeItemIdForStorekeeper($thisId);
+								}
+							
+								if (is_numeric($thisId)) {
+									$in .= (int) $thisId;
+								} else {
+									$in .= "'". sqlEscape($thisId). "'";
+								}
+							}
+						}
+					
+						//We don't need to send the ids of every single item to the client
+						unset($tags['__item_sort_order__']);
+						$tags['__item_sort_order__'] = $new__item_sort_order__;
+						unset($new__item_sort_order__);
+					
+					//A simplier version of the above that doesn't worry about pagination
+					} else {
+						foreach ($tags['__item_sort_order__'] as $i => $thisId) {
+							
+							$in .= $in? ", " : "IN (";
+						
 							if ($encodeItemIdForStorekeeper) {
 								$thisId = decodeItemIdForStorekeeper($thisId);
 							}
-							
+						
 							if (is_numeric($thisId)) {
 								$in .= (int) $thisId;
 							} else {
@@ -1294,20 +1366,23 @@ if ($requestedPath && $tags['class_name']) {
 						}
 					}
 					
+					//Flag if no rows matched the search query
 					if (!$in) {
 						$noResults = true;
 					}
 					
-					//If we're not in hierarchy mode, we don't need to send the ids of every single item
-					//to the client
-					if (!$hierarchyColumn) {
-						unset($tags['__item_sort_order__']);
-						$tags['__item_sort_order__'] = $new__item_sort_order__;
-					}
-					unset($new__item_sort_order__);
+					//Remove the $whereStatement as it's not needed as well as an IN() statement
+					$whereStatement = "WHERE TRUE";
 				}
 			}
 			
+			//When I do the work to add a new type of CSV export, the code to handle it should probably go here!
+			
+			//if (request('new_csv_mode') {
+			//	foreach ($tags['__item_sort_order__'] as $id) {
+			//		some_module::some_function($requestedPath, $id);
+			//	}
+			//} else
 			
 			if (!get('_queued')) {
 				
@@ -1316,6 +1391,7 @@ if ($requestedPath && $tags['class_name']) {
 					$count = 0;
 				}
 				
+				//If we know there will be no results, don't actually bother doing the query
 				if (!$noResults) {
 					if ($in) {
 						$in .= ")";
@@ -1434,28 +1510,28 @@ if ($requestedPath && $tags['class_name']) {
 							}
 						}
 					}
+				}
+				
+				//If this is a CSV export, offer it for download without any formatting and then exit
+				if ($mode == 'csv') {
+					fclose($f);
 					
-					//If this is a CSV export, offer it for download without any formatting and then exit
-					if ($mode == 'csv') {
-						fclose($f);
+					//...and finally offer it for download
+					header('Content-Type: text/x-csv');
+					header('Content-Disposition: attachment; filename="'. str_replace('/', '_', $requestedPath). '.csv"');
+					header('Content-Length: '. filesize($filename)); 
 					
-						//...and finally offer it for download
-						header('Content-Type: text/x-csv');
-						header('Content-Disposition: attachment; filename="'. str_replace('/', '_', $requestedPath). '.csv"');
-						header('Content-Length: '. filesize($filename)); 
-					
-						//Run the Module's rewriteHttpHeaderCSV() 
-						foreach ($modules as $className => &$module) {
-							$module->rewriteHttpHeaderCSV($requestedPath, request('refinerName'), request('refinerId'));
-						}
-					
-						readfile($filename);
-					
-						//Remove the file from the temp directory
-						@unlink($filename);
-					
-						exit;
+					//Run the Module's rewriteHttpHeaderCSV() 
+					foreach ($modules as $className => &$module) {
+						$module->rewriteHttpHeaderCSV($requestedPath, request('refinerName'), request('refinerId'));
 					}
+					
+					readfile($filename);
+					
+					//Remove the file from the temp directory
+					@unlink($filename);
+					
+					exit;
 				}
 			}
 		
@@ -1698,9 +1774,7 @@ if ($requestedPath && $tags['class_name']) {
 												if (!empty($parents)) {
 													$cfield['visible_if'] = '';
 													foreach ($parents as $parent) {
-														$parentName = '__custom_field_'. $parent['id'];
-													
-														if (empty($values[$parent['tab_name']. '/'. $parentName])) {
+														if (empty($values[$parent['tab_name/field_name']])) {
 															$values[$cfield['tab_name']. '/'. $cFieldName] = '';
 														}
 													}
@@ -1811,16 +1885,18 @@ if ($requestedPath && $tags['class_name']) {
 			if ($dataset = getRow('custom_datasets', true, array('extends_admin_box' => $requestedPath))) {
 				
 				//Define the array of tabs if it's not already defined
-				$firstTabName = false;
 				if (!isset($tags['tabs'])
 				 || !is_array($tags['tabs'])) {
 					$tags['tabs'] = array();
 				} else {
-					//If they are defined, work out which one if first
-					foreach ($tags['tabs'] as $tabName => &$tab) {
-						$firstTabName = $tabName;
-						break;
-					}
+					//This code used to try and work out which tab came first, and ensure it stayed first
+					//even if someone customising the dataset tried to move it. This wasn't working too smoothly
+					//so I have disabled it for now and we will review whether it was needed in the first place.
+					//$firstTabName = false;
+					//foreach ($tags['tabs'] as $tabName => &$tab) {
+					//	$firstTabName = $tabName;
+					//	break;
+					//}
 				}
 				
 				//Look for customised tabs
@@ -1836,8 +1912,8 @@ if ($requestedPath && $tags['class_name']) {
 					}
 					
 					//Set properties
-						//(Note that you cannot change the ordinal of the first tab)
-					if ($ctab['ord'] && $ctab['name'] != $firstTabName) {
+					//if ($ctab['ord'] && $ctab['name'] != $firstTabName) {
+					if ($ctab['ord']) {
 						$tags['tabs'][$ctab['name']]['ord'] = $ctab['ord'];
 					}
 					if ($ctab['label']) {
@@ -1851,10 +1927,16 @@ if ($requestedPath && $tags['class_name']) {
 					if (!empty($parents)) {
 						$tags['tabs'][$ctab['name']]['visible_if'] = '';
 						foreach ($parents as $parent) {
-							$parentName = '__custom_field_'. $parent['id'];
 							$tags['tabs'][$ctab['name']]['visible_if'] .=
 								($tags['tabs'][$ctab['name']]['visible_if']? ' && ' : '').
-								"zenarioAB.value('". jsEscape($parentName). "', '". jsEscape($parent['tab_name']). "') == 1";
+								"zenarioAB.value('". jsEscape($parent['field_name']). "', '". jsEscape($parent['tab_name']). "') == 1";
+							
+							//Attempt to set the redraw_onchange property for that field if it is a core field
+							//(This will miss custom fields, so we'll need to set them later)
+							if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+							 && is_array($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])) {
+								$tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']]['redraw_onchange'] = true;
+							}
 						}
 					}
 				}
@@ -1940,10 +2022,17 @@ if ($requestedPath && $tags['class_name']) {
 						if (!empty($parents)) {
 							$cfield['visible_if'] = '';
 							foreach ($parents as $parent) {
-								$parentName = '__custom_field_'. $parent['id'];
 								$cfield['visible_if'] .=
 									($cfield['visible_if']? ' && ' : '').
-									"zenarioAB.value('". jsEscape($parentName). "', '". jsEscape($parent['tab_name']). "') == 1";
+									"zenarioAB.value('". jsEscape($parent['field_name']). "', '". jsEscape($parent['tab_name']). "') == 1";
+							
+								//Attempt to set the redraw_onchange property for that field if it is on the same tab as this one
+								//(This may miss custom fields, so we'll need to set any we've missed below)
+								if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+								 && is_array($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+								 && $parent['tab_name'] == $cfield['tab_name']) {
+									$tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']]['redraw_onchange'] = true;
+								}
 							}
 						}
 					
@@ -2166,7 +2255,7 @@ if ($mode == 'get_item_data') {
 	$tags = array('items' => $tags['items'], 'item' => arrayKey($tags, 'item'));
 	foreach ($tags['items'] as $id => &$item) {
 		switch ($requestedPath) {
-			case 'zenario__menu/hidden_nav/menu_nodes/panel':
+			case 'zenario__menu/panels/menu_nodes':
 				$item = array(
 					'name' => getMenuPath($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> '),
 					'css_class' => arrayKey($item, 'css_class'),

@@ -1,0 +1,33 @@
+{# If a title has been set show the title. #}
+{% if Title %}
+	<div class="banner_title">
+		<h2>{{Title}}</h2>
+	</div>
+{% endif %}
+
+
+	
+{# If images have been set then show the images. #}
+{% if Images %}
+	<div class="banner_images"> 
+		{% for Image in Images %}
+			<div class="banner_image"> 
+				{% if Image.Floating_Box %} 
+					<a rel="colorbox" href="{{Image.Floating_Box.Src|escape}}" data-box-title="{{Image.Floating_Box.Title|escape}}">
+				{% endif %}
+				
+						<img src="{{Image.Src|escape}}" alt="{{Image.Alt|escape}}" title="{{Image.Title|escape}}"/>
+				
+				{% if Image.Floating_Box %} 
+						<span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>
+					</a>
+				{% endif %}
+			</div>
+		{% endfor %}
+	</div>
+{% endif %}
+
+{# If text has been set show the text. #}
+{% if Text %}
+	<div class="banner_text">{{Text}}</div>
+{% endif %}

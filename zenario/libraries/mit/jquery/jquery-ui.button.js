@@ -1,12 +1,18 @@
-/*! jQuery UI - v1.10.3 - 2013-10-20
-* http://jqueryui.com
-* Copyright 2013 jQuery Foundation and other contributors; Licensed MIT */
 
-(function( $, undefined ) {
+/*!
+ * jQuery UI Button 1.11.2
+ * http://jqueryui.com
+ *
+ * Copyright 2014 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/button/
+ */
 
-var lastActive, startXPos, startYPos, clickDragged,
+
+var lastActive,
 	baseClasses = "ui-button ui-widget ui-state-default ui-corner-all",
-	stateClasses = "ui-state-hover ui-state-active ",
 	typeClasses = "ui-button-icons-only ui-button-icon-only ui-button-text-icons ui-button-text-icon-primary ui-button-text-icon-secondary ui-button-text-only",
 	formResetHandler = function() {
 		var form = $( this );
@@ -21,9 +27,9 @@ var lastActive, startXPos, startYPos, clickDragged,
 		if ( name ) {
 			name = name.replace( /'/g, "\\'" );
 			if ( form ) {
-				radios = $( form ).find( "[name='" + name + "']" );
+				radios = $( form ).find( "[name='" + name + "'][type=radio]" );
 			} else {
-				radios = $( "[name='" + name + "']", radio.ownerDocument )
+				radios = $( "[name='" + name + "'][type=radio]", radio.ownerDocument )
 					.filter(function() {
 						return !this.form;
 					});
@@ -33,7 +39,7 @@ var lastActive, startXPos, startYPos, clickDragged,
 	};
 
 $.widget( "ui.button", {
-	version: "1.10.3",
+	version: "1.11.2",
 	defaultElement: "<button>",
 	options: {
 		disabled: null,
@@ -61,8 +67,7 @@ $.widget( "ui.button", {
 		var that = this,
 			options = this.options,
 			toggleButton = this.type === "checkbox" || this.type === "radio",
-			activeClass = !toggleButton ? "ui-state-active" : "",
-			focusClass = "ui-state-focus";
+			activeClass = !toggleButton ? "ui-state-active" : "";
 
 		if ( options.label === null ) {
 			options.label = (this.type === "input" ? this.buttonElement.val() : this.buttonElement.html());
@@ -94,53 +99,32 @@ $.widget( "ui.button", {
 				}
 			});
 
-		this.element
-			.bind( "focus" + this.eventNamespace, function() {
-				// no need to check disabled, focus won't be triggered anyway
-				that.buttonElement.addClass( focusClass );
-			})
-			.bind( "blur" + this.eventNamespace, function() {
-				that.buttonElement.removeClass( focusClass );
-			});
+		// Can't use _focusable() because the element that receives focus
+		// and the element that gets the ui-state-focus class are different
+		this._on({
+			focus: function() {
+				this.buttonElement.addClass( "ui-state-focus" );
+			},
+			blur: function() {
+				this.buttonElement.removeClass( "ui-state-focus" );
+			}
+		});
 
 		if ( toggleButton ) {
 			this.element.bind( "change" + this.eventNamespace, function() {
-				if ( clickDragged ) {
-					return;
-				}
 				that.refresh();
-			});
-			// if mouse moves between mousedown and mouseup (drag) set clickDragged flag
-			// prevents issue where button state changes but checkbox/radio checked state
-			// does not in Firefox (see ticket #6970)
-			this.buttonElement
-				.bind( "mousedown" + this.eventNamespace, function( event ) {
-					if ( options.disabled ) {
-						return;
-					}
-					clickDragged = false;
-					startXPos = event.pageX;
-					startYPos = event.pageY;
-				})
-				.bind( "mouseup" + this.eventNamespace, function( event ) {
-					if ( options.disabled ) {
-						return;
-					}
-					if ( startXPos !== event.pageX || startYPos !== event.pageY ) {
-						clickDragged = true;
-					}
 			});
 		}
 
 		if ( this.type === "checkbox" ) {
 			this.buttonElement.bind( "click" + this.eventNamespace, function() {
-				if ( options.disabled || clickDragged ) {
+				if ( options.disabled ) {
 					return false;
 				}
 			});
 		} else if ( this.type === "radio" ) {
 			this.buttonElement.bind( "click" + this.eventNamespace, function() {
-				if ( options.disabled || clickDragged ) {
+				if ( options.disabled ) {
 					return false;
 				}
 				$( this ).addClass( "ui-state-active" );
@@ -197,9 +181,6 @@ $.widget( "ui.button", {
 			}
 		}
 
-		// TODO: pull out $.Widget's handling for the disabled option into
-		// $.Widget.prototype._setOptionDisabled so it's easy to proxy and can
-		// be overridden by individual plugins
 		this._setOption( "disabled", options.disabled );
 		this._resetButton();
 	},
@@ -250,7 +231,7 @@ $.widget( "ui.button", {
 		this.element
 			.removeClass( "ui-helper-hidden-accessible" );
 		this.buttonElement
-			.removeClass( baseClasses + " " + stateClasses + " " + typeClasses )
+			.removeClass( baseClasses + " ui-state-active " + typeClasses )
 			.removeAttr( "role" )
 			.removeAttr( "aria-pressed" )
 			.html( this.buttonElement.find(".ui-button-text").html() );
@@ -263,10 +244,14 @@ $.widget( "ui.button", {
 	_setOption: function( key, value ) {
 		this._super( key, value );
 		if ( key === "disabled" ) {
+			this.widget().toggleClass( "ui-state-disabled", !!value );
+			this.element.prop( "disabled", !!value );
 			if ( value ) {
-				this.element.prop( "disabled", true );
-			} else {
-				this.element.prop( "disabled", false );
+				if ( this.type === "checkbox" || this.type === "radio" ) {
+					this.buttonElement.removeClass( "ui-state-focus" );
+				} else {
+					this.buttonElement.removeClass( "ui-state-focus ui-state-active" );
+				}
 			}
 			return;
 		}
@@ -350,7 +335,7 @@ $.widget( "ui.button", {
 });
 
 $.widget( "ui.buttonset", {
-	version: "1.10.3",
+	version: "1.11.2",
 	options: {
 		items: "button, input[type=button], input[type=submit], input[type=reset], input[type=checkbox], input[type=radio], a, :data(ui-button)"
 	},
@@ -372,15 +357,17 @@ $.widget( "ui.buttonset", {
 	},
 
 	refresh: function() {
-		var rtl = this.element.css( "direction" ) === "rtl";
+		var rtl = this.element.css( "direction" ) === "rtl",
+			allButtons = this.element.find( this.options.items ),
+			existingButtons = allButtons.filter( ":ui-button" );
 
-		this.buttons = this.element.find( this.options.items )
-			.filter( ":ui-button" )
-				.button( "refresh" )
-			.end()
-			.not( ":ui-button" )
-				.button()
-			.end()
+		// Initialize new buttons
+		allButtons.not( ":ui-button" ).button();
+
+		// Refresh existing buttons
+		existingButtons.button( "refresh" );
+
+		this.buttons = allButtons
 			.map(function() {
 				return $( this ).button( "widget" )[ 0 ];
 			})
@@ -406,4 +393,4 @@ $.widget( "ui.buttonset", {
 	}
 });
 
-}( jQuery ) );
+var button = $.ui.button;

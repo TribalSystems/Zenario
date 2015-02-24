@@ -37,19 +37,20 @@ zenario_menu:
                     ord: 3
                     label: 'Menu text:'
                     type: text
+                    maxlength: 255
                     onkeyup: |
                         get('path_of__' + this.id).value =
-                                                        !this.value?
-                                                            ''
-                                                        :    !get('parent_path_of__' + this.id).value?
-                                                                this.value
-                                                            :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
+                            !this.value?
+                                ''
+                            :    !get('parent_path_of__' + this.id).value?
+                                    this.value
+                                :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
                 path_of__menu_title:
                     ord: 1003
                     same_row: Yes
                     pre_field_html: |
                         <br/>
-                                                        Path:
+                            Path:
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
@@ -81,10 +82,10 @@ zenario_menu:
                     label: 'Content item:'
                     pick_items:
                         equivalence: Yes
-                        path: zenario__content/hidden_nav/language_equivs/panel
-                        min_path: zenario__content/hidden_nav/language_equivs/panel
-                        max_path: zenario__content/hidden_nav/language_equivs/panel
-                        target_path: zenario__content/hidden_nav/language_equivs/panel
+                        path: zenario__content/panels/language_equivs
+                        min_path: zenario__content/panels/language_equivs
+                        max_path: zenario__content/panels/language_equivs
+                        target_path: zenario__content/panels/language_equivs
                         disallow_refiners_looping_on_min_path: Yes
                         select_phrase: Select a content item...
                         hide_remove_button: Yes
@@ -201,25 +202,25 @@ zenario_menu:
                     hidden: true
                     label: 'Module class name:'
                     type: text
-                    maxlength: "200"
+                    maxlength: 200
                 menu__method_name:
                     ord: 7.3
                     hidden: true
                     label: 'Static method name:'
                     type: text
-                    maxlength: "127"
+                    maxlength: 127
                 menu__param_1:
                     ord: 7.4
                     hidden: true
                     label: 'Parameter 1:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                 menu__param_2:
                     ord: 7.5
                     hidden: true
                     label: 'Parameter 2:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                 rel_tag:
                     ord: 8
                     label: 'Rel-Tag:'

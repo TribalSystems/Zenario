@@ -1,6 +1,6 @@
 <?php 
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -166,7 +166,7 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 
-} elseif (get('method_call') == 'adminPhrase') {
+} elseif (get('method_call') == 'loadPhrase') {
 	
 	//Look up one or more visitor phrases
 	require 'visitorheader.inc.php';
@@ -187,7 +187,14 @@ if ($methodCall == 'refreshPlugin'
 	$phrases = array();
 	$result = sqlQuery($sql);
 	while ($row = sqlFetchAssoc($result)) {
-		$phrases[$row['code']] = $row['local_text'];
+		$isCode = substr($row['code'], 0, 1) == '_';
+		$needsTranslating = $isCode || !empty(cms_core::$translateLanguages[$languageId]);
+		
+		if ($needsTranslating) {
+			$phrases[$row['code']] = $row['local_text'];
+		} else {
+			$phrases[$row['code']] = $row['code'];
+		}
 	}
 	
 	//If this is a logged in administrator, log any missing phrases

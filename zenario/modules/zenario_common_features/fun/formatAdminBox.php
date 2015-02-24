@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,9 @@ switch ($path) {
 		}
 		
 		break;
-	
+	case 'zenario_document_move':
+		$fields['details/move_to']['hidden'] = $values['details/move_to_root'];
+		break;
 	
 	case 'zenario_admin':
 		return require funIncPath(__FILE__, 'admin.formatAdminBox');

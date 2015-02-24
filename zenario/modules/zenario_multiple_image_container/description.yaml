@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Multiple Image Container
+class_name: zenario_multiple_image_container
+description: |
+    <p>A Multiple Image Container plugin allows you to display one or multiple images
+        on a page in a content-managed way.</p>
+    
+    <p>Images can be in JPG, PNG and GIF formats. The CMS can automatically resize large images
+        down to a size of your choice.</p>
+    
+    <p>There is the option to show a larger copy of each image when clicked in a floating box
+        above the current page. These can also be displayed at a size of your choice.</p>
+
+keywords: >
+    gallery, image, picture, gif, jpg, jpeg, png
+dependencies:
+    zenario_banner: true
+inheritance:
+    inherit_settings_from_module: zenario_banner
+    #inherit_frameworks_from_module: zenario_banner
+vlp_class_name: zenario_banner
+is_pluggable: true
+can_be_version_controlled: true
+nestable: true
+default_framework: standard
+default_instance_name: Untitled Multiple Image Container

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -88,7 +88,7 @@ if (!cms_core::$cID || !isset($toolbars[session('page_toolbar')])) {
 }
 
 $class .=
-	' zenario_adminMode zenario_pageMode_'. session('page_mode').
+	' zenario_adminLoggedIn zenario_pageMode_'. session('page_mode').
 	' '.
 	(session('page_mode') == 'menu'? 'zenario_menuWand_on' : 'zenario_menuWand_off').
 	' '.

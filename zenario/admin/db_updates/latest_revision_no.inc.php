@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,9 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 28652);
-define('LATEST_BIG_CHANGE_REVISION_NO', 28000);
+define('LATEST_REVISION_NO', 29240);
+define('LATEST_BIG_CHANGE_REVISION_NO', 29232);
 define('INSTALLER_REVISION_NO', 26960);
-define('INSTALLER_DEFAULT_THEME', 'snowline');
-define('ZENARIO_CMS_VERSION', '7.0.2e');
-define('ZENARIO_CMS_NUMERIC_VERSION', '7000002');
+define('INSTALLER_DEFAULT_THEME', 'duke_street');
+define('ZENARIO_CMS_VERSION', '7.0.3a');
+define('ZENARIO_CMS_NUMERIC_VERSION', '7000003');

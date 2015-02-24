@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'zenario__menu/hidden_nav/menu_nodes/panel':
+	case 'zenario__menu/panels/menu_nodes':
 		return require funIncPath(__FILE__, 'menu_nodes.handleOrganizerPanelAJAX');
 
 	
@@ -45,7 +45,7 @@ switch ($path) {
 		return;
 	
 	
-	case 'zenario__layouts/nav/layouts/panel':
+	case 'zenario__layouts/panels/layouts':
 		//Delete a template if it is not in use
 		if (post('delete') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			foreach (explode(',', $ids) as $id) {
@@ -54,7 +54,7 @@ switch ($path) {
 					deleteLayout($id, true);
 				}
 			}
-			getCSSJSCodeHash($updateDB = true, $forceScan = true);
+			checkForChangesInCssJsAndHtmlFiles($forceScan = true);
 		
 		//Archive a template
 		} elseif (post('archive') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
@@ -69,39 +69,12 @@ switch ($path) {
 			foreach (explode(',', $ids) as $id) {
 				updateRow('layouts', array('status' => 'active'), $id);
 			}
-		
-		//Set a new image for a Layout/Layouts
-		} elseif (post('upload_image') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
-			
-			//Try to add the uploaded image to the database
-			if ($imageId = addFileToDatabase('template', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true)) {
-				//Add image to each user
-				foreach (explode(',', $ids) as $id) {
-					updateRow('layouts', array('image_id' => $imageId), $id);
-				}
-				
-				deleteUnusedImagesByUsage('template');
-				
-				echo 1;
-				return null;
-			} else {
-				echo adminPhrase('Please upload a valid GIF, JPG or PNG image.');
-				return false;
-			}
-		
-		} elseif (post('delete_image') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
-			//Remove the image for each user
-			foreach (explode(',', $ids) as $id) {
-				updateRow('layouts', array('image_id' => 0), $id);
-			}
-			
-			deleteUnusedImagesByUsage('template');
 		}
 		
 		break;
 	
 	
-	case 'zenario__layouts/hidden_nav/skins/panel':
+	case 'zenario__layouts/panels/skins':
 		if (post('make_default') && checkPriv('_PRIV_EDIT_TEMPLATE_FAMILY')) {
 			updateRow('template_families', array('skin_id' => $ids), decodeItemIdForStorekeeper(request('refiner__template_family')));
 		}
@@ -109,12 +82,12 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/nav/content/panel':
-	case 'zenario__content/hidden_nav/chained/panel':
-	case 'zenario__content/hidden_nav/language_equivs/panel':
+	case 'zenario__content/panels/content':
+	case 'zenario__content/panels/chained':
+	case 'zenario__content/panels/language_equivs':
 		return require funIncPath(__FILE__, 'content.handleOrganizerPanelAJAX');
 	
-	case 'zenario__content/nav/hierarchical_files/panel':
+	case 'zenario__content/panels/documents':
 		if (post('reorder') || post('hierarchy')) {
 			//Loop through each moved files
 			//var_dump($_POST);
@@ -155,8 +128,7 @@ switch ($path) {
 			}
 			
 			exitIfUploadError();
-			$file_id = addFileToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9]+)/i', '_',$_FILES['Filedata']['name']), false, false, true);
-			
+			$file_id = addFileToDatabase('hierarchial_file', $_FILES['Filedata']['tmp_name'], preg_replace('/([^.a-z0-9\s_]+)/i', '-',$_FILES['Filedata']['name']), false, false, true);
 			$existingFile = getRow('documents', array('id'), array('file_id' => $file_id));
 			if ($existingFile) {
 				echo "This file has already been uploaded to the files directory!";
@@ -264,18 +236,21 @@ switch ($path) {
 								array('id', 'filename', 'path', 'created_datetime'),
 								$fileId);
 				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '_' . $file['filename'];
-					$frontLink = 'public' . '/' . $file['path'] . '_' . $file['filename'];
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 						if (!file_exists($symPath)) {
+							if(!file_exists($symFolder)) {
+								mkdir($symFolder);
+							}
 							symlink($path, $symPath);
 						}
 				
-						$baseURL = 'http://' . primaryDomain();
-						
+						$baseURL = absCMSDirURL();
 						$message="<h3>The hyperlinks to your document are shown below:</h3>";
 						
-						$fullLink = $baseURL.'/'.$frontLink;
+						$fullLink = $baseURL.$frontLink;
 						$normalLink =$frontLink;
 				
 						$link = $message."Full hyperlink: <br>" . "<input type='text' style='width: 488px;' value = '".$fullLink."'/><br>Internal hyperlink:<br><input type='text' style='width: 488px;' value = '". $normalLink . "'/>";
@@ -285,11 +260,38 @@ switch ($path) {
 					}
 				}
 			}
+		}elseif(post('delete_public_link')){
+		
+				foreach (explode(',', $ids) as $id) {
+				echo "<!--Message_Type:Success-->";
+				$fileId = getRow('documents', 'file_id', $id);
+				$file = getRow('files', 
+								array('id', 'filename', 'path', 'created_datetime'),
+								$fileId);
+				if($file['filename']) {
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+							if(is_link($symPath)) {
+								$target = readlink($symPath);
+								unlink($symPath);
+								rmdir($symFolder);
+								echo "Public link was deleted successfully.";
+							}else{
+							echo 'Does not have public link to delete';
+							}
+					}
+				}
+			}
+		
+		
+		
 		}
 		
 		break;
 		
-	case 'zenario__content/nav/document_tags/panel':
+	case 'zenario__content/panels/document_tags':
 		if (post('delete')) {
 			foreach (explode(',', $ids) as $id) {
 				self::deleteDocumentTag($id);
@@ -299,11 +301,11 @@ switch ($path) {
 	
 
 	case 'editor_temp_file':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel':
-	case 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel':
+	case 'zenario__content/panels/email_images_for_email_templates':
+	case 'zenario__content/panels/email_images_shared':
+	case 'zenario__content/panels/inline_images_for_content':
+	case 'zenario__content/panels/inline_images_for_reusable_plugins':
+	case 'zenario__content/panels/inline_images_shared':
 		
 		$key = false;
 		$usage = 'inline';
@@ -313,7 +315,7 @@ switch ($path) {
 			$usage = 'editor_temp_file';
 			$privCheck = true;
 			
-		} elseif (in($path, 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel')) {
+		} elseif (in($path, 'zenario__content/panels/inline_images_for_content')) {
 			if (!$content = getRow('content', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
 				exit;
 			}
@@ -336,10 +338,10 @@ switch ($path) {
 				'foreign_key_char' => $content['type'],
 				'foreign_key_version' => $content['admin_version']);
 		
-		} elseif ($path == 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel') {
+		} elseif ($path == 'zenario__content/panels/email_images_shared') {
 			$usage = 'email';
 		
-		} elseif ($path == 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_for_email_templates/panel') {
+		} elseif ($path == 'zenario__content/panels/email_images_for_email_templates') {
 			$usage = 'email';
 			
 			if (!inc('zenario_email_template_manager')) {
@@ -360,7 +362,7 @@ switch ($path) {
 					'foreign_key_char' => '0');
 			}
 		
-		} elseif (in($path, 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel')) {
+		} elseif (in($path, 'zenario__content/panels/inline_images_for_reusable_plugins')) {
 			$key = array(
 				'foreign_key_to' => 'reusable_plugin');
 		}
@@ -368,7 +370,7 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
 	
 	
-	case 'zenario__content/nav/categories/panel':
+	case 'zenario__content/panels/categories':
 		if (post('delete') && checkPriv('_PRIV_MANAGE_CATEGORY')) {
 			foreach (explode(',', $ids) as $id) {
 				$this->deleteCategory($id);
@@ -378,11 +380,11 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__modules/nav/modules/panel':
+	case 'zenario__modules/panels/modules':
 		return require funIncPath(__FILE__, 'modules.handleOrganizerPanelAJAX');
 
 	
-	case 'zenario__modules/nav/instances/panel':
+	case 'zenario__modules/panels/plugins':
 		if (post('delete') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			foreach (explode(',', $ids) as $id) {
 				if (!checkInstancesUsage($id)) {
@@ -394,7 +396,7 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__languages/nav/languages/panel':
+	case 'zenario__languages/panels/languages':
 		if (post('import') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			
 			if (documentMimeType($_FILES['Filedata']['name']) == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -424,12 +426,12 @@ switch ($path) {
 		break;
 
 	
-	case 'zenario__languages/nav/vlp/panel':
+	case 'zenario__languages/panels/phrases':
 	case 'zenario__languages/nav/vlp/vlp_chained/panel':
 		return require funIncPath(__FILE__, 'vlp.handleOrganizerPanelAJAX');
 
 	
-	case 'zenario__users/nav/admins/panel':
+	case 'zenario__users/panels/administrators':
 		if (post('trash') && checkPriv('_PRIV_DELETE_ADMIN')) {
 			foreach (explode(',', $ids) as $id) {
 				if ($id != session('admin_userid')) {
@@ -441,24 +443,7 @@ switch ($path) {
 			foreach (explode(',', $ids) as $id) {
 				deleteAdmin($id, true);
 			}
-		} elseif (post('upload_image') && checkpriv('_PRIV_EDIT_ADMIN')) {
-			//Try to add the uploaded image to the database
-			if ($imageId = addFileToDatabase('admin', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true)) {
-				//Add image for admin
-				updateRow('admins', array('image_id' => $imageId), $ids);
-				deleteUnusedImagesByUsage('admin');
-				echo 1;
-				return null;
-			} else {
-				if($imageId) echo $error. "\n";
-				return false;
-			}
-		} elseif (post('delete_image') && checkPriv('_PRIV_EDIT_ADMIN')) {
-			//Remove the image for the admin
-			updateRow('admins', array('image_id' => 0), $ids);
-			deleteUnusedImagesByUsage('admin');
 		}
-		
 		
 		break;
 		

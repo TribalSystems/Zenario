@@ -543,6 +543,18 @@ body.ie9 .zenario_fbAdminAJAXLoader div {
 	font-style: italic;
 }
 
+/* inputs consistency between browsers */
+/* Removed as it was causing checkboxes to be hidden! */
+/*
+input, textarea, button {
+    -webkit-appearance: none; / *Safari/Chrome* /
+    -moz-appearance: none; / *Firefox* /
+    -ms-appearance: none; / *IE* /
+    -o-appearance: none; / *Opera* /
+    appearance: none;
+    -webkit-border-radius: 0; 
+}
+*/
 
 /*  Debug icon  */
 

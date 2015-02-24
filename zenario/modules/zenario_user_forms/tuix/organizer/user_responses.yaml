@@ -1,0 +1,51 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__user_forms:
+    panels:
+        zenario_user_forms__user_responses:
+            title: User Responses
+            no_items_message: No user responses have been recorded.
+            hidden: true
+            view_mode: list
+            default_sort_column: response_datetime
+            default_sort_desc: true
+           
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
+                id_column: ur.id
+                client_side: true
+            enable_close_up_view: Yes
+            label_format_for_grid_view: "[[id]]"
+            refiners:
+                form_id:
+                    sql: 'ur.form_id = [[REFINER_ID]]'
+            columns:
+                id:
+                    title: ID
+                    db_column: ur.id
+                    align_right: true
+                    width: xxsmall
+                    show_by_default: false
+                response_datetime:
+                    title: Date/Time Responded
+                    db_column: ur.response_datetime
+                    format: datetime
+                    searchable: true
+                    show_by_default: true
+            item_buttons:
+                view_response:
+                    label: 'View response'
+                    admin_box:
+                        path: zenario_user_form_response
+            collection_buttons:
+                export:
+                    label: 'Export in Excel'
+                    ajax:
+                        confirm:
+                            download: 1
+                            message: Download an Excel document of all responses for this form?
+                            button_message: Download
+                            cancel_button_message: Cancel
+                        request:
+                            download_excel: 1

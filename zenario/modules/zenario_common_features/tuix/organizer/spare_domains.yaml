@@ -28,7 +28,7 @@ zenario__administration:
                     width: xlarge
             default_sort_column: url
             item:
-                css_class: alias_url
+                css_class: url_item
             collection_buttons:
                 create:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME

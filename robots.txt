@@ -4,5 +4,4 @@ Disallow: /private/
 Disallow: /zenario/
 Disallow: /zenario_custom/frameworks/
 Disallow: /zenario_custom/templates/
-
-
+Disallow: /zenario/cookie_message.php

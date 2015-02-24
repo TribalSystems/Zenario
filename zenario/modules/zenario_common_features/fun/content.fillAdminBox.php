@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -228,12 +228,12 @@ if ($path == 'zenario_quick_create') {
 		//$box['tabs']['meta_data']['fields']['status']['value'] = $content['status'];
 		$box['tabs']['meta_data']['fields']['language_id']['value'] = $content['language_id'];
 		
-		$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/nav/content_types/panel/hidden_nav/layouts//'. $content['type']. '//';
+		$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $content['type']. '//';
 		
 		if ($version =
 			getRow(
 				'versions',
-				array('version', 'title', 'description', 'keywords', 'content_summary', 'lock_summary', 'layout_id', 'css_class', 'publication_date', 'file_id', 'writer_id', 'writer_name'),
+				true,
 				array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['source_cVersion']))
 		) {
 			$box['tabs']['meta_data']['fields']['title']['value'] = $version['title'];
@@ -244,7 +244,11 @@ if ($path == 'zenario_quick_create') {
 			$box['tabs']['meta_data']['fields']['writer_name']['value'] = $version['writer_name'];
 			$box['tabs']['meta_data']['fields']['content_summary']['value'] = $version['content_summary'];
 			$box['tabs']['template']['fields']['layout_id']['value'] = $version['layout_id'];
-			$box['tabs']['template']['fields']['css_class']['value'] = $version['css_class'];
+			$box['tabs']['css']['fields']['css_class']['value'] = $version['css_class'];
+			$box['tabs']['css']['fields']['background_image']['value'] = $version['bg_image_id'];
+			$box['tabs']['css']['fields']['bg_color']['value'] = $version['bg_color'];
+			$box['tabs']['css']['fields']['bg_position']['value'] = $version['bg_position'];
+			$box['tabs']['css']['fields']['bg_repeat']['value'] = $version['bg_repeat'];
 			$box['tabs']['file']['fields']['file']['value'] = $version['file_id'];
 			
 			if ($box['key']['cID'] && getRow('content_types', 'enable_summary_auto_update', $box['key']['cType'])) {
@@ -279,7 +283,7 @@ if ($path == 'zenario_quick_create') {
 	} else {
 		//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
 		if ($box['key']['target_cType']) {
-			$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/nav/content_types/panel/hidden_nav/layouts//'. $box['key']['target_cType']. '//';
+			$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['target_cType']. '//';
 		}
 	}
 }

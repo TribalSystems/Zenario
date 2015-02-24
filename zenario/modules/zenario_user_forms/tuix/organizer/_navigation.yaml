@@ -1,0 +1,21 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__user_forms:
+    ord: 4.5
+    css_class: zenario_user_forms_top_level
+    label: Forms
+    tooltip: 'Manage forms and view form responses'
+    nav:
+        zenario_user_forms__forms:
+            ord: 1
+            label: Forms
+            tooltip: 'Forms you can use on your site'
+            link:
+                path: zenario__user_forms/panels/zenario_user_forms__forms
+        zenario_user_forms__archive:
+            ord: 2
+            label: Archive
+            tooltip: 'View archived forms and their responses'
+            link:
+                path: zenario__user_forms/panels/zenario_user_forms__forms
+                refiner: archived

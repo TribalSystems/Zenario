@@ -1,54 +1,54 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_setup_module:
-	priv: _PRIV_RUN_MODULE
-	title: ""
-	key:
-		id: ""
-	hide_tab_bar: Yes
-	tabs:
-		problems:
-			hidden: Yes
-			edit_mode:
-				enabled: Yes
-				always_on: Yes
-				enable_revert: No
-			fields:
-				description:
-					full_width: Yes
-					snippet:
-						html: ""
-		confirm:
-			hidden: Yes
-			edit_mode:
-				enabled: Yes
-				always_on: Yes
-				enable_revert: No
-			notices:
-				are_you_sure:
-					type: warning
-					message: ""
-			fields:
-				grant_perms_desc:
-					ord: "10000"
-					full_width: Yes
-					hidden: Yes
-					type: select
-					snippet:
-						html: 'This module uses its own set of permissions: &nbsp;'
-				grant_perms:
-					ord: "10001"
-					same_row: Yes
-					hidden: Yes
-					type: select
-					values:
-						myself:
-							label: Grant myself the permissions needed to use this module
-						site_admins:
-							label: >
-								Grant all site administrators the permissions needed to use this
-								module
-						no:
-							label: Do not grant any permissions
-	save_button_message: ""
-	cancel_button_message: Cancel
+    priv: _PRIV_RUN_MODULE
+    title: ""
+    key:
+        id: ""
+    hide_tab_bar: Yes
+    tabs:
+        problems:
+            hidden: Yes
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+                enable_revert: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: ""
+        confirm:
+            hidden: Yes
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+                enable_revert: No
+            notices:
+                are_you_sure:
+                    type: warning
+                    message: ""
+            fields:
+                grant_perms_desc:
+                    ord: "10000"
+                    full_width: Yes
+                    hidden: Yes
+                    type: select
+                    snippet:
+                        html: 'This module uses its own set of permissions: &nbsp;'
+                grant_perms:
+                    ord: "10001"
+                    same_row: Yes
+                    hidden: Yes
+                    type: select
+                    values:
+                        myself:
+                            label: Grant myself the permissions needed to use this module
+                        site_admins:
+                            label: >
+                                Grant all site administrators the permissions needed to use this
+                                module
+                        no:
+                            label: Do not grant any permissions
+    save_button_message: ""
+    cancel_button_message: Cancel

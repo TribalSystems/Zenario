@@ -1,0 +1,97 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+	nav:
+		sign_in_access_log:
+			ord: "98"
+			label: Sign-in log
+			tooltip: Log of all user sign-in activity
+			panel:
+				php: Yes
+				title: Sign-in Log
+				view_mode: list
+				db_items:
+					table: '[[DB_NAME_PREFIX]]user_signin_log AS usl LEFT JOIN [[DB_NAME_PREFIX]]users AS u ON usl.user_id = u.id'
+					#id_column: CONCAT(usl.user_id, '_', usl.login_datetime, '_', usl.ip, '_', usl.screen_name, '_', usl.first_name, '_', usl.last_name)
+					id_column: usl.id
+					encode_id_column: No
+					group_by: >
+						usl.id
+				
+				columns:
+					Time:
+						width: small
+						title: Time Accessed
+						db_column: usl.login_datetime
+						#format: datetime
+						format: datetime_with_seconds
+						show_by_default: Yes
+					User_Id:
+						width: small
+						title: User ID
+						db_column: "IFNULL(u.id, CONCAT(usl.user_id, ' (account deleted)'))"
+						align_right: true
+						show_by_default: Yes
+					IP_Address:
+						width: small
+						title: IP Address
+						db_column: usl.ip
+						show_by_default: Yes
+						searchable: Yes
+					Screen_name:
+						width: small
+						title: Screen name
+						db_column: usl.screen_name
+						show_by_default: Yes
+						searchable: Yes
+					First_Name:
+						width: small
+						title: First Name
+						db_column: usl.first_name
+						show_by_default: Yes
+						searchable: Yes
+					Last_Name:
+						width: small
+						title: Last Name
+						db_column: usl.last_name
+						show_by_default: Yes
+						searchable: Yes
+					Email:
+						title: Email Address
+						db_column: usl.email
+						show_by_default: Yes
+						searchable: Yes
+				   Client_Browser:
+						title: Client Browser
+						db_column: "CONCAT(usl.platform, ' ', usl.browser, ' ', usl.browser_version)"
+						show_by_default: Yes
+						searchable: Yes
+					
+				default_sort_column: Time
+				label_format_for_grid_view: |
+					[[Time]] [[Screen_name]]
+				default_sort_column: Time
+				default_sort_desc: Yes
+				item:
+					name: sign-in Log
+					names: sign-in Logs
+					css_class: log
+				collection_buttons:
+					export:
+						css_class: export
+						label: Export Sign-in Log in CSV format
+						do_csv_export: Yes
+				no_items_message: |
+					No user sign-ins have been logged. To log sign-ins, please ensure you have enabled sign-in logging in Site Settings.
+		
+	panels:
+		users:
+			item_buttons:
+				sign_in_access_log:
+					parent: view_dropdown
+					hide_in_select_mode: Yes
+					label: Sign-in Access log
+					link:
+						path: zenario__users/nav/sign_in_access_log/panel
+						branch: Yes
+						refiner: user

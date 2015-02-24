@@ -44,6 +44,7 @@ Added a workaround for a problem where PHP might turn perfectly valid numbers in
 		altDataType2 = '';
 	
 	if (dataType == 'string'
+	 && data !== ''
 	 && data == 1 * data
 	 && data.replace(/[0-9\.]/g, '') == '') {
 		altDataType1 = dataType;

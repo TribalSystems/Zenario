@@ -97,6 +97,9 @@
 			[cms:section name="Add_New_Thread"]
 				<div class="main_btn"><div class="r"><a class="i" [cms:merge name='Add_New_Thread_Link'/]>[cms:phrase code='_ADD_THREAD'/]</a></div></div>
 			[/cms:section]
+			[cms:section name="Forum_Profile_Link"]
+				<div class="main_btn"><div class="r"><p>[cms:merge name="Forum_Profile_Link"/]</p></div></div>
+			[/cms:section]
 		</div>
 		
 		<div class="buttons moderators_buttons">
@@ -381,6 +384,17 @@
 						</div>
 					</div>
 					<div class="bottom"><div class="bl"></div><div class="br"></div></div>
+				</div></div>
+			</div>
+		[/cms:section]
+		[cms:section name="Comments_Profile_Link"]
+			<div class="[cms:merge name='ODD_OR_EVEN'/] comments_description">
+				<div class="comments_box_inner"><div class="comments_box_wrap">
+					<div class="comments_box_center">
+						<div class="comments_description_text">
+							<p>[cms:merge name="Comments_Profile_Link"/]</p>
+						</div>
+					</div>
 				</div></div>
 			</div>
 		[/cms:section]

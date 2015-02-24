@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (needRevision(156)) {
+if (needRevision(159)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	//(Note if you upgrade from version 7 or earlier this will have been done manually
@@ -38,7 +38,7 @@ if (needRevision(156)) {
 		'documents_custom_data',
 		'documents',
 		'zenario_document_properties',
-		'zenario__content/nav/hierarchical_files/panel',
+		'zenario__content/panels/documents',
 		'',
 		'');
 	//registerDataset($label, $table, $system_table = '', $extends_admin_box = '', $extends_organizer_panel = '', $view_priv = '', $edit_priv = '')
@@ -53,5 +53,5 @@ if (needRevision(156)) {
 	// by the migration script, but they're also safe to call again.)
 	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '')
 	
-	revision(156);
+	revision(159);
 }

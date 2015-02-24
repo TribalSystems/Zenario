@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -220,7 +220,7 @@ switch ($path) {
 			$box['tabs']['layout']['hidden'] = false;
 			$box['tabs']['layout']['edit_mode']['enabled'] = true;
 			
-			$box['tabs']['layout']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/nav/content_types/panel/hidden_nav/layouts//'. $box['key']['cType']. '//';
+			$box['tabs']['layout']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['cType']. '//';
 			
 			//Run a SQL query to check how many distinct values this column has for each Content Item.
 			//If there is only one unique value then populate it, otherwise show the field as blank.
@@ -300,7 +300,7 @@ switch ($path) {
 			$fields['categories/no_categories']['hidden'] = true;
 			$box['tabs']['categories']['fields']['desc']['snippet']['html'] = 
 				adminPhrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/nav/categories/panel'). '" target="_blank"'));
+					array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"'));
 			
 			
 			$inCats = array();
@@ -434,7 +434,7 @@ switch ($path) {
 			
 			$box['tabs']['categories_add']['fields']['desc']['snippet']['html'] = 
 				adminPhrase('You can put content item(s) into one or more categories. (<a[[link]]>Define categories</a>.)',
-					array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/nav/categories/panel'). '" target="_blank"'));
+					array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/categories'). '" target="_blank"'));
 			
 			
 			$inCats = array();
@@ -709,187 +709,6 @@ switch ($path) {
 		
 		break;
 	
-	
-	case 'zenario_phrase':
-		//Load details for this phrase. We could be:
-		$details = false;
-		
-		//...editing an existing phrase (that has a numeric id)
-		if ($box['key']['id'] && is_numeric($box['key']['id'])) {
-			$details = getRow('visitor_phrases', array('code', 'module_class_name', 'language_id'), $box['key']['id']);
-			
-			$box['key']['code'] = $details['code'];
-			$box['key']['language_id'] = $details['language_id'];
-			$box['key']['module_class_name'] = $details['module_class_name'];
-			if ($box['key']['is_code'] = substr($box['key']['code'], 0, 1) == '_') {
-				$fields['phrase/code']['label'] = adminPhrase('Phrase code:');
-			}
-			
-			$existingPhrases = array();
-			$result = getRows('visitor_phrases', array('local_text', 'language_id', 'protect_flag'), array('code'=>$details['code'], 'module_class_name'=>$details['module_class_name']));
-			while ($row = sqlFetchAssoc($result)) {
-				$existingPhrases[$row['language_id']] = $row;
-			}
-			$languages = getLanguages(false, false, true, true);
-			
-			if (!$box['key']['is_code']) {
-				$fields['phrase/code']['label'] = 'Phrase / '. $languages[setting('default_language')]['english_name'].':';
-				$fields['phrase/code']['note_below'] = 
-					adminPhrase('This code comes from a module or one of its plugins. In order to edit the text in '.$languages[setting('default_language')]['english_name'].'
-								please go to the module '.$details['module_class_name'].', and inspect its plugins\' settings, their frameworks, 
-								and possibly the module\'s program code.');
-				unset($languages[setting('default_language')]);
-			}
-			
-			$ord = 4;
-			foreach ($languages as $language) {
-				
-				if (isset($existingPhrases[$language['id']])) {
-					$phraseValue = $existingPhrases[$language['id']]['local_text'];
-					$protectValue = $existingPhrases[$language['id']]['protect_flag'];
-				} else {
-					$phraseValue = '';
-					$protectValue = '';
-				}
-				
-				
-				$box['tabs']['phrase']['fields'][$language['id']] =
-					array(
-						'class_name' => 'zenario_common_features',
-						'ord' => $ord,
-						'label' => $language['english_name']. ':',
-						'type' => 'textarea',
-						'rows' => '4',
-						'note_below' => 
-							"This is HTML text.
-							Any special characters such as <code>&amp;</code> <code>&quot;</code> <code>&lt;</code> or <code>&gt;</code>
-							should be escaped (i.e. by replacing them with <code>&amp;amp;</code> <code>&amp;quot;</code> <code>&amp;lt;</code>
-							and <code>&amp;gt;</code> respectively).",
-						'value' => $phraseValue
-						);
-				
-				$box['tabs']['phrase']['fields']['protect_flag_edit_mode_'. $language['id']] =
-					array(
-						'class_name' => 'zenario_common_features',
-						'ord' => $ord + 1,
-						'label' => 'Protect',
-						'type' => 'checkbox',
-						'visible_if' => 'zenarioAB.editModeOn()',
-						'value' => $protectValue,
-						'note_below' =>
-						"Protecting a Phrase will stop it from being overwritten when
-						importing Phrases from a CSV file."
-					);
-				$ord += 2;
-			}
-			
-		//...creating a translation of an existing phrase (with the id in request('refiner__translations')
-		//and the language code in $box['key']['id']) (redundant?)
-		} elseif ($box['key']['id'] && (int) request('refiner__translations')) {
-			$details = getRow('visitor_phrases', true, request('refiner__translations'));
-			
-			$box['key']['code'] = $details['code'];
-			$box['key']['language_id'] = $box['key']['id'];
-			$box['key']['module_class_name'] = $details['module_class_name'];
-			$box['key']['is_code'] = substr($box['key']['code'], 0, 1) == '_';
-			$box['key']['id'] = false;
-		
-		//...or creating a brand new phrase code.
-		} else {
-			$box['key']['id'] = false;
-			$box['key']['module_class_name'] = ifNull($box['key']['module_class_name'], request('moduleClass'));
-			$box['key']['is_code'] = true;
-			
-			$languageName = getLanguageName(setting('default_language'), false);
-			
-			$box['tabs']['phrase']['fields'][setting('default_language')] =
-				array(
-					'class_name' => 'zenario_common_features',
-					'label' => $languageName,
-					'type' => 'textarea',
-					'rows' => '4',
-					'note_below' => "
-						This is HTML text.
-						Any special characters such as <code>&amp;</code> <code>&quot;</code> <code>&lt;</code> or <code>&gt;</code>
-						should be escaped (i.e. by replacing them with <code>&amp;amp;</code> <code>&amp;quot;</code> <code>&amp;lt;</code>
-						and <code>&amp;gt;</code> respectively).",
-					'ord' => 10
-				);
-			$box['tabs']['phrase']['fields']['protect_flag_edit_mode'] = 
-				array(
-					'class_name' => 'zenario_common_features',
-					'label' => 'Protect:',
-					'type' => 'checkbox',
-					'visible_if' => 'zenarioAB.editModeOn()',
-					'note_below' =>
-					"Protecting a Phrase will stop it from being overwritten when
-					importing Phrases from a CSV file."
-				);
-		}
-		
-		//If this phrase isn't for the default language, mark it as a translation
-		if ($box['key']['language_id'] != setting('default_language')) {
-			$box['key']['translation'] = true;
-		} else {
-			$box['key']['language_id'] = setting('default_language');
-		}
-		$box['tabs']['phrase']['fields']['language_id']['value'] = $box['key']['language_id'];
-		
-		
-		//Try to set the Module's name
-		if ($box['key']['module_class_name']) {
-			if ($box['tabs']['phrase']['fields']['module']['value'] = getModuleIdByClassName($box['key']['module_class_name'])) {
-				$box['tabs']['phrase']['fields']['module']['read_only'] = true;
-			} else {
-				//If this is a phrase for a Module that doesn't exist any more, don't let it be edited
-				unset($box['tabs']['phrase']['fields']['module']['pick_items']);
-				$box['tabs']['phrase']['fields']['module']['type'] = 'text';
-				$box['tabs']['phrase']['fields']['module']['value'] = $box['key']['module_class_name'];
-				unset($box['tabs']['phrase']['edit_mode']);
-			}
-		
-		//Any unclaimed phrases should be marked against the Common Features Module
-		} else {
-			$box['tabs']['phrase']['fields']['module']['value'] = getModuleIdByClassName('zenario_common_features');
-		}
-		
-		//Only allow a code to be changed when creating a brand new phrase
-		if ($box['key']['id'] || $box['key']['code']) {
-			$box['tabs']['phrase']['fields']['code']['value'] = $box['key']['code'];
-			$box['tabs']['phrase']['fields']['code']['read_only'] = true;
-		}
-		
-		// If this a phrase code (e.g. _HELLO_WORLD) or a phrase (e.g. Hello World)
-		if ($box['key']['is_code']) {
-			//For phrase codes, show the "protected" checkbox and show the phrase code as a code
-			if ($box['key']['code'] && $box['key']['translation']) {
-				$box['title'] =
-					adminPhrase('Localizing the Phrase Code "[[code]]" into the Language "[[language]]".',
-						array('code' => $box['key']['code'], 'language' => getLanguageName($box['key']['language_id'])));
-			
-			} elseif ($box['key']['id']) {
-				$box['title'] =
-					adminPhrase('Modifying the Phrase "[[code]]".',
-						array('code' => $box['key']['code']));
-			
-			} else {
-				$box['title'] = adminPhrase('Creating a new Phrase Code');
-			}
-		
-		// If this is a phrase (not a code)
-		} else {
-			$box['title'] = adminPhrase('Modifying a Phrase');
-			
-			foreach ($languages as $language) {
-				$translate = getRow('languages', 'translate_phrases', array('id' => $language['id']));
-				$box['tabs']['phrase']['fields'][$language['id']]['read_only'] = 
-				$box['tabs']['phrase']['fields']['protect_flag_edit_mode_'. $language['id']]['read_only'] = 
-					!(bool)$translate;
-			}
-		}
-		
-		break;
-	
 	case 'zenario_document_folder':
 		if (isset($box['key']['add_folder']) && $box['key']['add_folder']) {
 			$parentFolderDetails = 
@@ -924,7 +743,7 @@ switch ($path) {
 			$fields['details/tags']['value'] = $documentTagsString;
 			$fields['details/link_to_add_tags']['snippet']['html'] = 
 					adminPhrase('To add or edit document tags click <a[[link]]>this link</a>.',
-						array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/nav/document_tags/panel'). '" target="_blank"'));
+						array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"'));
 			$fields['extract/extract_wordcount']['value'] = $documentDetails['extract_wordcount'];
 			$fields['extract/extract']['value'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
 			
@@ -940,7 +759,54 @@ switch ($path) {
 			
 		}
 		break;
-	
+		
+	case 'zenario_migrate_old_documents':
+		// Only show button if ctype_document module is running
+		if (getModuleStatusByClassName('zenario_ctype_document') == 'module_running') {
+			if ($box['key']['id']) {
+				
+				$fields['details/html']['snippet']['html'] = adminPhrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', array('link' => 'href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"'));
+				
+				// Set select lists for dataset fields
+				$link = '';
+				$datasetDetails = getDatasetDetails('documents');
+				if ($details = getDatasetDetails('documents')) {
+					$link = absCMSDirURL(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item//'.$details['id'].'//';
+				}
+				$textDocumentDatasetFields = 
+					getRowsArray('custom_dataset_fields', 'label', array('type' => 'text', 'dataset_id' => $datasetDetails['id']));
+				if (empty($textDocumentDatasetFields)) {
+					$fields['details/title']['hidden'] = $fields['details/language_id']['hidden'] = true;
+					$fields['details/title_warning']['hidden'] = $fields['details/language_id_warning']['hidden'] = false;
+					$fields['details/title_warning']['snippet']['html'] = 
+					$fields['details/language_id_warning']['snippet']['html'] = 
+						'No "Text" type fields found in the document dataset, go <a href="'.$link.'">here</a> to create one.';
+				} else {
+					$fields['details/title']['values'] = $fields['details/language_id']['values'] = $textDocumentDatasetFields;
+				}
+				$textAreaDocumentDatasetFields = 
+					getRowsArray('custom_dataset_fields', 'label', array('type' => 'textarea', 'dataset_id' => $datasetDetails['id']));
+				if (empty($textAreaDocumentDatasetFields)) {
+					$fields['details/description']['hidden'] = $fields['details/keywords']['hidden'] = true;
+					$fields['details/description_warning']['hidden'] = $fields['details/keywords_warning']['hidden'] = false;
+					$fields['details/description_warning']['snippet']['html'] = 
+					$fields['details/keywords_warning']['snippet']['html'] = 
+						'No "Textarea" type fields found in the document dataset, go <a href="'.$link.'" target="_blank">here</a> to create one.';
+				} else {
+					$fields['details/description']['values'] = $fields['details/keywords']['values'] = $textAreaDocumentDatasetFields;
+				}
+				$editorDocumentDatasetFields = 
+					getRowsArray('custom_dataset_fields', 'label', array('type' => 'editor', 'dataset_id' => $datasetDetails['id']));
+				if (empty($editorDocumentDatasetFields)) {
+					$fields['details/content_summary']['hidden'] = true;
+					$fields['details/content_summary_warning']['hidden'] = false;
+					$fields['details/content_summary_warning']['snippet']['html'] = 'No "Editor" type fields found in the document dataset, go <a href="'.$link.'">here</a> to create one.';
+				} else {
+					$fields['details/content_summary']['values'] = $editorDocumentDatasetFields;
+				}
+			}
+		}
+		break;
 	
 	case 'zenario_image':
 		if (!$details = getRow('files', array('filename', 'width', 'height', 'size', 'alt_tag', 'title', 'floating_box_title'), $box['key']['id'])) {
@@ -966,7 +832,7 @@ switch ($path) {
 	
 	case 'zenario_content_type_details':
 		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
-			'zenario__content/nav/content_types/panel/hidden_nav/layouts//'. $box['key']['id']. '//';
+			'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['id']. '//';
 		
 		foreach (getContentTypeDetails($box['key']['id']) as $col => $value) {
 			$box['tabs']['details']['fields'][$col]['value'] = $value;

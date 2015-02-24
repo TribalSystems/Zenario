@@ -1,0 +1,60 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Extranet Registration
+description: |
+    <p>This Module allows visitors to the site to register and become Extranet Users.</p>
+            <p>When you install this Module it will automatically create a Registration page on your site.</p>
+            <p>The default behaviour is to have just one Registration page,
+                however you may create a Registration page for each Language on your site
+                by creating translations of the original Registration page in each Language.</p>
+            <p>To register, visitors must enter their email address (and choose a screen name, if you have enabled screen names in your site's settings).</p>
+            <p>In order for Users to complete the registration process with no intervention from yourself, you must choose an appropriate Email Template (e.g. 'Registration Confirmation') in the Module's settings.
+            The Module will then send a registration email to each User who signs up. They must then click a link inside the email (confirming their email address) to be automatically activated on the site.</p>
+            <p>By selecting an Email Template on the "Notification" tab in the Module Slot Settings you can receive email notifications every time when a new User has signed up.</p>
+            <p>You can create your own or customize existing Email Templates. The Email Template can contain various Merge Fields. The Merge Fields are fields, that will be replaced by real values on email sent. You can use the following fields in the Emails sent by the Extranet Registration Module:</p>
+            <ul>
+                <li>[[first_name]] - Visitor's first name.</li>
+                <li>[[last_name]] - Visitor's last name.</li>
+                <li>[[screen_name]] - Visitor's screen name.</li>
+                <li>[[password]] - Visitor's password.</li>
+                <li>[[email]] - Visitor's email address.</li>
+                <li>[[hash]] - A hash code required to activate the email address (for use in email verification Templates only).</li>
+                <li>[[ip_address]] - The IP address of the computer using which new User was registered.</li>
+                <li>[[cms_url]] - A Website URL.
+                <li>[[email_confirmation_link]] - A confirmation link to finish registration process (for use in email verification Templates only).</li>
+                <li>[[storekeeper_link]] - A Storekeeper link to the newly created User (for use in admin notification Templates only).</li>
+                <li>[[user_groups]] - Comma separated list of groups to which user is signed up. Please note, this merge field can be used after User's email address verification.</li>
+                <li>[[*characteristic_name*]] - A value of the User's characteristic. Name of the characteristic should match the merge field name.</li>
+            </ul>
+            <p>The User's status will remain pending until they have confirmed their email address. Once they have done this, they will be made 'active' and will be able to log in to your site.</p>
+            <p>Alternatively, you can not pick an Email Template, and manually activate any Users who sign up.</p>
+            <p>This Module supports flexible forms. The standard framework comes with a form that captures data for the first_name and last_name fields. By editing the framework, you may also capture data for the following fields:
+            title, middle_name, maiden_name, alt_email, website, job_title, company_name, bus_address1, bus_address2, bus_address3, bus_town, bus_state, bus_postcode, bus_country_id, bus_phone, mobile, fax, res_address1, res_address2, res_address3, res_town, res_state, res_postcode, res_country_id, res_phone and address_pref.</p>
+            
+            <p>This module creates the ability for you to specify a Registration Code and to link the Code to one or more Groups. When a User, in the process of registering, enters a valid Code, the User will automatically be made a member of the Group(s).</p>
+            <p>You can specify that a valid Code is mandatory, in which case the registration process will force new Users to enter a valid Code in order to register.</p>
+            
+keywords: extranet, new, register, sign, signup, user
+vlp_class_name: zenario_extranet_registration
+css_class_name: zenario_extranet_registration
+is_pluggable: true
+can_be_version_controlled: false
+default_framework: personal
+special_pages:
+    special_page:
+        page_type: zenario_registration
+        default_alias: register
+        default_title: Register
+        footer_menu_title: Register
+        only_show_to_visitors_who_are_logged_out: true
+        logic: create_and_maintain_in_default_language
+dependencies:
+    zenario_extranet: true
+    zenario_users: true
+    zenario_country_manager: true
+default_instance_name: Extranet Registration

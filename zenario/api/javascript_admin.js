@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -68,8 +68,9 @@
 			data.i = 1*i;
 		}
 	
-		if (zenarioA.microTemplates[template]) {
-			//Named templates from an existing list
+		if (template.length < 255 && zenarioA.microTemplates[template]) {
+			//Named templates from one of the js/microtemplate directories
+			//The template name is taken from the filename
 			if (typeof zenarioA.microTemplates[template] == 'string') {
 				try {
 					var tmp = $.extend({}, _.templateSettings, true);
@@ -88,9 +89,14 @@
 			return zenarioA.microTemplates[template](data);
 	
 		} else {
-			//Custom/one-off bispoke templates
-			//return _.template(template, data, {variable: 'm', escape: /\[\[(.+?)\]\]/g, interpolate: /\{\{([\s\S]+?)\}\}/g});
-			return _.template(template, data, {variable: 'm', escape: false, interpolate: /\{\{(.+?)\}\}/g, evaluate: /\{%([\s\S]+?)%\}/g, twigStyleSyntax: true});
+			//Custom/one-off templates
+			var checksum = 'microtemplate_' + hex_md5(template);
+			
+			if (zenarioA.microTemplates[checksum] === undefined) {
+				zenarioA.microTemplates[checksum] = template;
+			}
+			
+			return zenarioA.microTemplate(checksum, data, i);
 		}
 	};
 
@@ -226,7 +232,7 @@
 	
 		//Go somewhere
 		} else if (message.substr(0, 14) == '<!--Go_To_URL:' && (end = message.indexOf('-->')) != -1) {
-			zenario.goToURL(zenario.addBasePath(message.substr(14, end - 14)));
+			zenario.goToURL(zenario.addBasePath(message.substr(14, end - 14)), true);
 			message = message.substr(end + 3);
 			hadCommand = true;
 		}

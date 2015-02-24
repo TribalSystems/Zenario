@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -463,7 +463,7 @@ class zenario_menu extends module_base_class {
 					$box['tabs']['first_tab']['fields']['specific_menu_node']['hidden'] = !($values['first_tab/menu_generation_current_or_specific']=="_SPECIFIC");
 					
 					if ($values['first_tab/menu_generation_current_or_specific']=="_SPECIFIC") {
-						$box['tabs']['first_tab']['fields']['specific_menu_node']['pick_items']['path'] = "zenario__menu/hidden_nav/sections/panel/item//" . $values['first_tab/menu_section'] . "//";
+						$box['tabs']['first_tab']['fields']['specific_menu_node']['pick_items']['path'] = "zenario__menu/panels/sections/item//" . $values['first_tab/menu_section'] . "//";
 						$box['tabs']['first_tab']['fields']['menu_start_from']['hidden'] = true;
 					} else {
 						$box['tabs']['first_tab']['fields']['menu_start_from']['hidden'] = false;

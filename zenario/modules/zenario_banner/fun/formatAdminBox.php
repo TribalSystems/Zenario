@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,30 +42,62 @@ switch ($path) {
 		$box['tabs']['first_tab']['fields']['picture']['hidden'] =
 			$values['first_tab/image_source'] != '_PICTURE';
 		
+		//Check whether an image is picked
+		$cID = $cType = $pictureCID = $pictureCType = $imageId = $imagePicked = false;
 		
-		$cID = $cType = $pictureCID = $pictureCType = $imageId = false;
-		(($values['first_tab/image_source'] == '_CUSTOM_IMAGE'
-		  && ($imageId = $values['first_tab/image']))
+		//A little hack to make extended this module easier
+		//If the extending module doesn't use the "image_source" field, just check whether
+		//the image field is empty or not
+		if (empty($fields['first_tab/image_source'])
+		 || !empty($fields['first_tab/image_source']['hidden'])) {
+			$imagePicked = !empty($values['first_tab/image']);
 		
-		 || ($values['first_tab/image_source'] == '_PICTURE'
-		  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
-		  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
+		//Otherwise run through the full logic for different types of images
+		} else {
+			$cID = $cType = $pictureCID = $pictureCType = $imageId = false;
+			
+			(($values['first_tab/image_source'] == '_CUSTOM_IMAGE'
+			  && ($imageId = $values['first_tab/image']))
+		
+			 || ($values['first_tab/image_source'] == '_PICTURE'
+			  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
+			  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
 		 
-		 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
-		  && (getCIDAndCTypeFromTagId($cID, $cType, $values['destination/hyperlink_target']))
-		  && ($imageId = itemStickyImageId($cID, $cType))));
+			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
+			  && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
+			  && ($imageId = itemStickyImageId($cID, $cType))));
+			
+			$imagePicked = (bool) $imageId;
+		}
+		
+		/* Force link_type */
+		if (($values['first_tab/image_source'] == '_NO_IMAGE') || ($values['first_tab/image_source'] == '_STICKY_IMAGE')){
+			
+			//force use link to content item
+			if ($values['first_tab/image_source'] == '_STICKY_IMAGE'){
+				$values['first_tab/link_type'] = '_CONTENT_ITEM';
+				$box['tabs']['first_tab']['fields']['link_type']['hidden'] = true;
+				
+			}else{
+				$box['tabs']['first_tab']['fields']['link_type']['hidden'] = false;
+			}
+			
+		}
+		/* end force link_type */
 		
 		$box['tabs']['first_tab']['fields']['canvas']['hidden'] = 
 		$box['tabs']['first_tab']['fields']['alt_tag']['hidden'] = 
 		$box['tabs']['first_tab']['fields']['image_title']['hidden'] = 
-			!$imageId;
+			!$imagePicked;
 		
 		$box['tabs']['first_tab']['fields']['floating_box_title']['hidden'] = 
-			!$imageId
+			!$imagePicked
 		 || $values['first_tab/image_source'] == '_STICKY_IMAGE'
-		 || $values['destination/link_type'] != '_ENLARGE_IMAGE';
+		 || $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
 		
-		if ($imageId && $image = getRow('files', array('width', 'height', 'alt_tag', 'title', 'floating_box_title'), $imageId)) {
+		if ($imagePicked
+		 && $imageId
+		 && ($image = getRow('files', array('width', 'height', 'alt_tag', 'title', 'floating_box_title'), $imageId))) {
 			$editModeOn = engToBooleanArray($box['tabs']['first_tab'], 'edit_mode', 'on');
 			
 			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
@@ -94,6 +126,17 @@ switch ($path) {
 		
 			$this->getImageHtmlSnippet($values['image'], $fields['image_thumbnail']['snippet']['html']);
 			$this->getImageHtmlSnippet($values['rollover_image'], $fields['rollover_image_thumbnail']['snippet']['html']);
+		
+			if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
+				|| $values['first_tab/image_source']  == '_PICTURE' ) {
+					$box['tabs']['first_tab']['fields']['link_type']['values']['_ENLARGE_IMAGE'] = array('ord'=>4,'label'=>'Enlarge image in fancy box');
+			} else {
+				unset($box['tabs']['first_tab']['fields']['link_type']['values']['_ENLARGE_IMAGE']);
+				if ($values['first_tab/link_type']=='_ENLARGE_IMAGE') {
+					$box['tabs']['first_tab']['fields']['link_type']['current_value'] = '_NO_LINK';
+					$box['tabs']['first_tab']['fields']['link_type']['value'] = '_NO_LINK';
+				}
+			}
 				
 		} else {
 			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['original_value'] = '';
@@ -121,69 +164,59 @@ switch ($path) {
 		 || !$values['first_tab/use_rollover'];
 		
 		
-		if (isset($box['tabs']['text']['fields']['use_phrases'])) {
-			$box['tabs']['text']['fields']['use_phrases']['hidden'] =
-				getNumLanguages() <= 1
-			 && strpos($values['text/text'], '[[') === false
-			 && strpos($values['text/text'], ']]') === false
-			 && strpos($values['text/title'], '[[') === false
-			 && strpos($values['text/title'], ']]') === false;
-		}
+		//if (isset($box['tabs']['text']['fields']['use_phrases'])) {
+		//	$box['tabs']['text']['fields']['use_phrases']['hidden'] =
+		//		getNumLanguages() <= 1
+		//	 && strpos($values['text/text'], '[[') === false
+		//	 && strpos($values['text/text'], ']]') === false
+		//	 && strpos($values['text/title'], '[[') === false
+		//	 && strpos($values['text/title'], ']]') === false;
+		//}
 		
 		
-		$box['tabs']['destination']['fields']['hyperlink_target']['hidden'] = 
-		$box['tabs']['destination']['fields']['hide_private_item']['hidden'] = 
-		$box['tabs']['destination']['fields']['use_download_page']['hidden'] = 
-			$values['destination/link_type'] != '_CONTENT_ITEM';
+		$box['tabs']['first_tab']['fields']['hyperlink_target']['hidden'] = 
+		$box['tabs']['first_tab']['fields']['hide_private_item']['hidden'] = 
+		$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM';
 
-		$box['tabs']['destination']['fields']['get_translation']['hidden'] = 
-			$values['destination/link_type'] != '_CONTENT_ITEM'
+		$box['tabs']['first_tab']['fields']['get_translation']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || getNumLanguages() < 2;
 
-		$box['tabs']['destination']['fields']['target_blank']['hidden'] = 
-			$values['destination/link_type'] != '_CONTENT_ITEM'
-		 && $values['destination/link_type'] != '_EXTERNAL_URL';
+		$box['tabs']['text']['fields']['more_link_text']['hidden'] = 
+		$box['tabs']['first_tab']['fields']['target_blank']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
+		 && $values['first_tab/link_type'] != '_EXTERNAL_URL';
 
-		$box['tabs']['destination']['fields']['use_translation']['hidden'] = 
-			$values['destination/link_type'] != '_CONTENT_ITEM'
+		$box['tabs']['first_tab']['fields']['use_translation']['hidden'] = 
+			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled'];
 
-		$box['tabs']['destination']['fields']['url']['hidden'] = 
-			$values['destination/link_type'] != '_EXTERNAL_URL';
+		$box['tabs']['first_tab']['fields']['url']['hidden'] = 
+			$values['first_tab/link_type'] != '_EXTERNAL_URL';
 
-		$box['tabs']['destination']['fields']['enlarge_canvas']['hidden'] = 
-			$values['destination/link_type'] != '_ENLARGE_IMAGE';
+		$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden'] = 
+			$values['first_tab/link_type'] != '_ENLARGE_IMAGE';
 
-		$box['tabs']['destination']['fields']['enlarge_width']['hidden'] = 
-			$box['tabs']['destination']['fields']['enlarge_canvas']['hidden']
-		 || ($values['destination/enlarge_canvas'] != 'fixed_width'
-		  && $values['destination/enlarge_canvas'] != 'fixed_width_and_height');
+		$box['tabs']['first_tab']['fields']['enlarge_width']['hidden'] = 
+			$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden']
+		 || ($values['first_tab/enlarge_canvas'] != 'fixed_width'
+		  && $values['first_tab/enlarge_canvas'] != 'fixed_width_and_height');
 
-		$box['tabs']['destination']['fields']['enlarge_height']['hidden'] = 
-			$box['tabs']['destination']['fields']['enlarge_canvas']['hidden']
-		 || ($values['destination/enlarge_canvas'] != 'fixed_height'
-		  && $values['destination/enlarge_canvas'] != 'fixed_width_and_height');
+		$box['tabs']['first_tab']['fields']['enlarge_height']['hidden'] = 
+			$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden']
+		 || ($values['first_tab/enlarge_canvas'] != 'fixed_height'
+		  && $values['first_tab/enlarge_canvas'] != 'fixed_width_and_height');
 		
 		$cID = $cType = false;
-		if ($values['destination/link_type'] == '_CONTENT_ITEM'
-		 && (getCIDAndCTypeFromTagId($cID, $cType, $values['destination/hyperlink_target']))
+		if ($values['first_tab/link_type'] == '_CONTENT_ITEM'
+		 && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
 		 && ($cType == 'document')) {
-			$box['tabs']['destination']['fields']['use_download_page']['hidden'] = false;
+			$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = false;
 		} else {
-			$box['tabs']['destination']['fields']['use_download_page']['current_value'] = false;
-			$box['tabs']['destination']['fields']['use_download_page']['hidden'] = true;
-		}
-		
-		if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
-			|| $values['first_tab/image_source']  == '_PICTURE' ) {
-				$box['tabs']['destination']['fields']['link_type']['values']['_ENLARGE_IMAGE'] = array('ord'=>4,'label'=>'Enlarge image in fancy box');
-		} else {
-			unset($box['tabs']['destination']['fields']['link_type']['values']['_ENLARGE_IMAGE']);
-			if ($values['destination/link_type']=='_ENLARGE_IMAGE') {
-				$box['tabs']['destination']['fields']['link_type']['current_value'] = '_NO_LINK';
-				$box['tabs']['destination']['fields']['link_type']['value'] = '_NO_LINK';
-			}
+			$box['tabs']['first_tab']['fields']['use_download_page']['current_value'] = false;
+			$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = true;
 		}
 		
 		
@@ -211,23 +244,23 @@ switch ($path) {
 			}
 		}
 		
-		if (isset($box['tabs']['destination']['fields']['enlarge_canvas'])
-		 && empty($box['tabs']['destination']['fields']['enlarge_canvas']['hidden'])) {
-			if ($values['destination/enlarge_canvas'] == 'fixed_width') {
-				$box['tabs']['destination']['fields']['enlarge_width']['note_below'] =
+		if (isset($box['tabs']['first_tab']['fields']['enlarge_canvas'])
+		 && empty($box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden'])) {
+			if ($values['first_tab/enlarge_canvas'] == 'fixed_width') {
+				$box['tabs']['first_tab']['fields']['enlarge_width']['note_below'] =
 					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
 			
 			} else {
-				unset($box['tabs']['destination']['fields']['enlarge_width']['note_below']);
+				unset($box['tabs']['first_tab']['fields']['enlarge_width']['note_below']);
 			}
 			
-			if ($values['destination/enlarge_canvas'] == 'fixed_height'
-			 || $values['destination/enlarge_canvas'] == 'fixed_width_and_height') {
-				$box['tabs']['destination']['fields']['enlarge_height']['note_below'] =
+			if ($values['first_tab/enlarge_canvas'] == 'fixed_height'
+			 || $values['first_tab/enlarge_canvas'] == 'fixed_width_and_height') {
+				$box['tabs']['first_tab']['fields']['enlarge_height']['note_below'] =
 					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
 			
 			} else {
-				unset($box['tabs']['destination']['fields']['enlarge_height']['note_below']);
+				unset($box['tabs']['first_tab']['fields']['enlarge_height']['note_below']);
 			}
 		}
 

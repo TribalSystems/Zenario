@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@ $chain = getRow('translation_chains', true, array('equiv_id' => $content['equiv_
 $version = getRow('versions', true, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 $menuItems = getMenuItemFromContent($cID, $cType, true, false, true);
 
-
 if (!$content || !$version) {
 	exit;
 } else {
@@ -57,7 +56,9 @@ if (!$content || !$version) {
 	}
 }
 
-
+if (!setting('create_draft_warning')) {
+	unset($adminToolbar['sections']['edit']['buttons']['start_editing']['ajax']['confirm']);
+}
 
 if (cms_core::$status == 'trashed' && $cVersion == cms_core::$adminVersion) {
 	unset($adminToolbar['sections']['edit']['buttons']['rollback_item']);
@@ -279,10 +280,10 @@ if (!cms_core::$isDraft) {
 
 
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying'])) {
-	$adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']['pick_items']['path'] = 'zenario__content/nav/content_types/panel/item//'. $cType. '//';
+	$adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']['pick_items']['path'] = 'zenario__content/panels/content_types/item//'. $cType. '//';
 }
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting'])) {
-	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/nav/content_types/panel/item//'. $cType. '//';
+	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/panels/content_types/item//'. $cType. '//';
 }
 
 
@@ -305,14 +306,13 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
 
 if (isset($adminToolbar['sections']['edit']['buttons']['view_items_images'])) {
 	$adminToolbar['sections']['edit']['buttons']['view_items_images']['organizer_quick']['path'] =
-		'zenario__content/nav/content/panel/item_buttons/images//'. $cType. '_'. $cID. '//';
+		'zenario__content/panels/content/item_buttons/images//'. $cType. '_'. $cID. '//';
 }
 
 if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
 	$adminToolbar['sections']['edit']['buttons']['view_slots']['organizer_quick']['path'] =
-		'zenario__content/nav/content/panel/item_buttons/view_slots//'. $cType. '_'. $cID. '//';
+		'zenario__content/panels/content/item_buttons/view_slots//'. $cType. '_'. $cID. '//';
 }
-
 
 
 //Multilingual options
@@ -325,11 +325,11 @@ if (getNumLanguages() <= 1) {
 } else {
 	if (isset($adminToolbar['sections']['edit']['buttons']['view_items_translations'])) {
 		$adminToolbar['sections']['edit']['buttons']['view_items_translations']['organizer_quick']['path'] =
-			'zenario__content/nav/content/panel/item_buttons/zenario_trans__view//'. $cType. '_'. $cID. '//';
+			'zenario__content/panels/content/item_buttons/zenario_trans__view//'. $cType. '_'. $cID. '//';
 	}
 	if (isset($adminToolbar['sections']['translations'])) {
 		$ord = 0;
-		foreach (getLanguages($includeAllLanguages = false, $onlyIncludeLangId = false, $orderByEnglishName = false, $defaultLangFirst = true) as $lang) {
+		foreach (getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = true) as $lang) {
 			$ddId = $lang['id']. '_dropdown';
 			$gcId = $lang['id']. '_go_or_create';
 			
@@ -499,8 +499,8 @@ if (isset($adminToolbar['sections']['template'])) {
  	
  	$adminToolbar['sections']['template']['buttons']['skq']['organizer_quick']['path'] =
  		$templateDetails['status'] == 'active'?
- 			'zenario__layouts/nav/layouts/panel//'. cms_core::$layoutId
- 		:	'zenario__layouts/nav/layouts/panel/trash////'. cms_core::$layoutId;
+ 			'zenario__layouts/panels/layouts//'. cms_core::$layoutId
+ 		:	'zenario__layouts/panels/layouts/trash////'. cms_core::$layoutId;
  	
  	$adminToolbar_buttons_head = &$adminToolbar['sections']['template']['buttons']['head'];
 	if(!isset($adminToolbar_buttons_head['tooltip'])) {
@@ -697,9 +697,34 @@ if (isSpecialPage(cms_core::$cID, cms_core::$cType)) {
 
 $adminToolbar['meta_info']['title'] =
 $adminToolbar['sections']['icons']['buttons']['title']['tooltip'] = adminPhrase('Title: [[title]]', array('title' => cms_core::$pageTitle));
+
+$layoutLabel = 'L';
+if (cms_core::$layoutId < 10) {
+	$layoutLabel .= '0';
+}
+$layoutLabel .= cms_core::$layoutId;
+$adminToolbar['sections']['icons']['buttons']['layout_id']['label'] = $layoutLabel;
+$sql = '
+	SELECT 
+		COUNT(DISTINCT c.tag_id) AS item_count, 
+		l.name
+	FROM '.DB_NAME_PREFIX.'versions v
+	INNER JOIN '.DB_NAME_PREFIX.'layouts l
+		ON v.layout_id = l.layout_id
+	INNER JOIN '.DB_NAME_PREFIX.'content c
+		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
+	WHERE v.layout_id = '.(int)cms_core::$layoutId. '
+	AND c.status NOT IN ("trashed", "deleted")';
+$result = sqlQuery($sql);
+$layoutDetails = sqlFetchAssoc($result);
+$layoutName = $layoutDetails['name'];
+$layoutItemCount = $layoutDetails['item_count'];
+
+$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
+
 $adminToolbar['sections']['icons']['buttons']['language_id']['label'] = cms_core::$langId;
 $adminToolbar['sections']['icons']['buttons']['language_id']['tooltip'] = adminPhrase('Language: [[lang]]', array('lang' => getLanguageName(cms_core::$langId)));
-
 
 //Alias
 if (cms_core::$alias) {

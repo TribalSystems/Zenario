@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -116,7 +116,7 @@ $box['tabs']['text']['fields']['section_id']['value'] = menuSectionName($box['ke
 
 
 //For multilingual sites, add extra fields for each enabled language
-$langs = getLanguages($includeAllLanguages = false, $onlyIncludeLangId = false, $orderByEnglishName = true, $defaultLangFirst = true);
+$langs = getLanguages($includeAllLanguages = false, $orderByEnglishName = true, $defaultLangFirst = true);
 $lastMenuURL = false;
 $numLangs = count($langs);
 $ord = 10;

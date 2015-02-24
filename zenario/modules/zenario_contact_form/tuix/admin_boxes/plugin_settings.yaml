@@ -103,9 +103,9 @@ plugin_settings:
                     label: 'Content Item:'
                     pick_items:
                         by_language: Yes
-                        min_path: zenario__content/nav/languages/panel
-                        max_path: zenario__content/nav/content/panel
-                        target_path: zenario__content/nav/content/panel
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: Yes
                         select_phrase: Select Content Item...
                         hide_remove_button: Yes
@@ -306,10 +306,10 @@ plugin_settings:
                     label: 'Use this email template to send form submissions:'
                     type: sk
                     pick_items:
-                        path: zenario__email_template_manager/nav/email_templates/panel
-                        min_path: zenario__email_template_manager/nav/email_templates/panel
-                        max_path: zenario__email_template_manager/nav/email_templates/panel
-                        target_path: zenario__email_template_manager/nav/email_templates/panel
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
                         select_phrase: Select Email Template...
                         nothing_selected_phrase: No Email Template selected
                         hide_remove_button: Yes

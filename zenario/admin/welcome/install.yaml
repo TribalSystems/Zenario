@@ -258,8 +258,7 @@ install:
                     row_class: valid
                     snippet:
                         html: |
-                            Apache mod_rewrite support for <code>.htaccess</code> files is enabled
-                            (this is optional, but recommended)
+                            Friendly URLs are supported (this is optional, but recommended).
                     visible_if: |
                         window.isHtaccessWorking && zenarioAB.togglePressed()
                 mr_warning_1:
@@ -267,8 +266,10 @@ install:
                     row_class: warning
                     snippet:
                         html: |
-                            Apache mod_rewrite support for <code>.htaccess</code> files is not enabled
-                            (this is optional, but recommended)
+                            Friendly URLs are not supported (this is optional, but recommended).
+                            
+                            Please check your Apache configuration (that the mod_rewrite module is enabled),
+                            and that your Zenario directory contains the .htaccess file.
                     visible_if: |
                         !window.isHtaccessWorking && zenarioAB.togglePressed()
                 sub_table_close:
@@ -367,7 +368,7 @@ install:
                 #    value: "0"
                 
                 language_id:
-                    label: 'Initial language:'
+                    label: 'Primary website language:'
                     type: select
                     empty_value: ' -- None -- '
                     value: 'en-us'
@@ -449,7 +450,7 @@ install:
                         <div class="horizontal_scroll">
                             <div>
                     type: radios
-                    value: snowline
+                    value: duke_street
                     post_field_html: |
                         </div></div>
                 previous:

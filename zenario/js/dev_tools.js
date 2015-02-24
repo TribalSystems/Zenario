@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -51,10 +51,15 @@ window.editor = ace.edit('editor');
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
+	ord: true,
+	count: true,
 	class_name: true,
 	_h: true,
 	_h_js: true,
-	_sync: true
+	_sync: true,
+	_path_here: true,
+	__page__: true,
+	__item_sort_order__: true
 };
 
 //A little hack to turn on flagging undefined additional properties in tv4
@@ -174,6 +179,7 @@ devTools.init = function(mode, schemaName, schema, skMap) {
 	var lastRow = -1,
 		text = '';
 	
+	//Show a tooltip giving information on a line when the developer hovers their mouse over it
 	editor.on("mousemove", function(e) {
 		var pos = e.getDocumentPosition();
 		
@@ -185,7 +191,6 @@ devTools.init = function(mode, schemaName, schema, skMap) {
 			//lastToken = e.editor.session.getTokenAt(pos.row, pos.column) 
 			
 			devTools.locatePosition(pos, function(path, data) {
-				
 				var sche = devTools.drillDownIntoSchema(path, data);
 				text = '';
 			
@@ -556,15 +561,22 @@ devTools.checkPathIsInData = function(path, data) {
 devTools.highlightFilesContainingSelection = function(path) {
 	
 	var files = {},
-		localPath = path;
+		localPath,
+		fullPath;
 	
 	if (devTools.rootPath) {
 		localPath = path.replace(devTools.rootPath + '/', '');
-	} else {
+		fullPath = devTools.tagPath + '/' + localPath;
+	
+	} else if (devTools.tagPath) {
 		localPath = path.replace(devTools.tagPath + '/', '');
+		fullPath = devTools.tagPath + '/' + localPath;
+	
+	} else {
+		localPath = path;
+		fullPath = path;
 	}
 	
-	var fullPath = devTools.tagPath + '/' + localPath;
 	
 	$('#view option').each(function(i, el) {
 		var view = el.value,
@@ -630,8 +642,8 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 				path: ''},
 			object: {
 				tag: '',
-				data: {},
-				schema: {},
+				data: data || {},
+				schema: devTools.schema,
 				path: '',
 				parent: {
 					schema: {},
@@ -852,7 +864,17 @@ devTools.splitLineByKey = function(text, format) {
 	
 	return false;
 };
-		
+
+
+//Given a paragraph tag, try to strip the <p> and </p> off to just get the contents
+//devTools.removeP = function(html) {
+//	if (html && html.match(/^\s*<p>.*<\/p>\s*$/i) !== null) {
+//		return $(html).html();
+//	} else {
+//		return html;
+//	}
+//};
+
 		
 
 
@@ -882,7 +904,7 @@ devTools.locatePosition = function(posIn, callbackIn) {
 	}
 	
 	//Attempt to get the current position of the cursor, and the lines in the document
-	if (v && session && pos && pos.row && (lines = session.getLines(0, session.getLength()))) {
+	if (v && session && pos && pos.row !== undefined && (lines = session.getLines(0, session.getLength()))) {
 		
 		//Starting at the current line, and then moving up, try to find a key.
 		//Stop on the first key we find
@@ -940,7 +962,7 @@ devTools.locatePositionR = function(data, path) {
 
 
 //Returns a line number, given a specified tag path
-devTools.editorGetLineNumberFromPath = function(path) {
+devTools.editorGetLineNumberFromPath = function(path, dontBeStrictAboutIndentLength) {
 	
 	var paths = path.split('/'),
 		p = -1,
@@ -969,7 +991,8 @@ devTools.editorGetLineNumberFromPath = function(path) {
 					
 					line.indent = line.indent.replace('\t', '    ');
 					if (line.key == paths[p]
-					 && line.indent.length > currentIndentLength) {
+					 && line.indent.length > currentIndentLength
+					 && (dontBeStrictAboutIndentLength || line.indent.length < currentIndentLength + 5)) {
 					 	currentIndentLength = line.indent.length;
 					 	line.number = ++l;
 						continue whileLoop;
@@ -1093,7 +1116,7 @@ devTools.showSidebar = function(path, data) {
 	}
 	
 	if (!sche) {
-		sche = devTools.drillDownIntoSchema();
+		sche = devTools.drillDownIntoSchema('', data);
 	}
 	
 	//Generate the breadcrumbs in the sidebar.

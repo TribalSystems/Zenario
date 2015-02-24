@@ -36,9 +36,9 @@ zenario_spare_domains:
                     label: |
                         Content item:
                     pick_items:
-                        path: zenario__content/nav/content/panel
-                        min_path: zenario__content/nav/content/panel
-                        max_path: zenario__content/nav/content/panel
-                        target_path: zenario__content/nav/content/panel
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
                         select_phrase: Select content item...
                         hide_remove_button: Yes

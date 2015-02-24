@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -191,6 +191,48 @@ function showCookieConsentBox() {
 		//Note that this should override showing the cookie consent box, no matter the settings
 		return;
 	}
+
+	switch (setting('cookie_require_consent')) {
+		case 'implied':
+			//Implied consent - show the cookie message, just once. Continuing to use the site counts as acceptance.
+			if (!empty($_COOKIE['cookies_accepted']) || session('cookies_accepted')) {
+				return;
+			}
+			
+			echo '
+<!--googleoff: all-->
+	<script type="text/javascript" src="zenario/cookie_message.php?type=implied"></script>
+<!--googleon: all-->';
+			
+			$_SESSION['cookies_accepted'] = true;
+			break;
+			
+			
+		case 'explicit':
+			//Explicit consent - show the cookie message until it is accepted or rejected, if the reject button is enabled.
+			if (cms_core::$cookieConsent == 'hide'
+			 || canSetCookie()
+			 || (cms_core::$cookieConsent != 'require') && session('cookies_rejected')) {
+				return;
+			}
+			
+			if (setting('cookie_consent_type') == 'message_accept_reject' && cms_core::$cookieConsent != 'require') {
+				echo '
+<!--googleoff: all-->
+	<script type="text/javascript" src="zenario/cookie_message.php?type=accept_reject"></script>
+<!--googleon: all-->';
+			} else {
+				echo '
+<!--googleoff: all-->
+	<script type="text/javascript" src="zenario/cookie_message.php?type=accept"></script>
+<!--googleon: all-->';
+			}
+			
+			break;
+	}
+	
+	
+	return;
 
 	switch (setting('cookie_require_consent')) {
 		case 'implied':
@@ -450,7 +492,14 @@ function cookieFreeDomain() {
 
 function getGlobalURL($includeProtocol = false) {
 	if ($includeProtocol) {
-		return (setting('admin_use_ssl')? 'https://' : 'http://'). primaryDomain(). (setting('admin_use_ssl_port')? ':'. setting('admin_use_ssl_port') : '');
+		
+		if (setting('admin_use_ssl')) {
+			$httpOrHttps = 'https://';
+		} else {
+			$httpOrHttps = httpOrHttps();
+		}
+		
+		return $httpOrHttps. primaryDomain(). (setting('admin_use_ssl_port')? ':'. setting('admin_use_ssl_port') : '');
 	} else {
 		return primaryDomain();
 	}
@@ -563,6 +612,35 @@ function unsetAdminSession($destorySession = true) {
 		session_destroy();
 	}
 }
+
+
+//Some password functions for users/admins
+
+function hashPassword($salt, $password) {
+	if ($hash = hashPasswordSha2($salt, $password)) {
+		return $hash;
+	} else {
+		return hashPasswordSha1($salt, $password);
+	}
+}
+
+function hashPasswordSha2($salt, $password) {
+	if ($hash = @hash('sha256', $salt. $password, true)) {
+		return 'sha256'. base64_encode($hash);
+	} else {
+		return false;
+	}
+}
+
+//Old sha1 function for passwords created before zenario 6.0.5. Or if sha2 is not enabled on a server.
+function hashPasswordSha1($salt, $password) {
+	$result = sqlSelect(
+		"SELECT SQL_NO_CACHE SHA('". sqlEscape($salt. $password). "')");
+	$row = sqlFetchRow($result);
+	return $row[0];
+}
+
+
 
 
 
@@ -700,7 +778,11 @@ function getTemplateDetails($layoutId) {
 			content_type,
 			status,
 			skin_id,
-			css_class
+			css_class,
+			bg_image_id,
+			bg_color,
+			bg_position,
+			bg_repeat
 		FROM ". DB_NAME_PREFIX. "layouts
 		WHERE layout_id = ". (int) $layoutId;
 	$result = sqlQuery($sql);
@@ -859,15 +941,18 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 	
 	//If we reach this point, we've found a translation to show, but don't know which language to show it in.
 	
-	//Get the Visitor's preferred languae from their browser.
-		//Note: as of 6.1 we only look at the first choice.
-	$acptLangId = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'], 2);
-	$acptLangId = explode(';', $acptLangId[0], 2);
-	$acptLangId = strtolower(trim($acptLangId[0]));
+	$acptLangId = $acptLangId2 = false;
+	if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+		//Get the Visitor's preferred languae from their browser.
+			//Note: as of 6.1 we only look at the first choice.
+		$acptLangId = explode(',', $_SERVER['HTTP_ACCEPT_LANGUAGE'], 2);
+		$acptLangId = explode(';', $acptLangId[0], 2);
+		$acptLangId = strtolower(trim($acptLangId[0]));
 	
-	//Also look for the first part of the language code (before the hyphen) as a fallback
-	$acptLangId2 = explode('-', $acptLangId, 2);
-	$acptLangId2 = $acptLangId2[0];
+		//Also look for the first part of the language code (before the hyphen) as a fallback
+		$acptLangId2 = explode('-', $acptLangId, 2);
+		$acptLangId2 = $acptLangId2[0];
+	}
 	
 	//Look at the languages that we have for the requested translation.
 	$sql = "
@@ -891,12 +976,12 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		}
 		
 		//If there is a match, use that and stop here
-		if ($row['detect'] && !empty($langCodes[$acptLangId])) {
+		if ($row['detect'] && $acptLangId && !empty($langCodes[$acptLangId])) {
 			$match = $row;
 			break;
 		
 		//If there is a match on the first part of the language code, remember this one as a fallback
-		} elseif ($row['detect'] && !empty($langCodes[$acptLangId2])) {
+		} elseif ($row['detect'] && $acptLangId2 && !empty($langCodes[$acptLangId2])) {
 			$match = $row;
 		
 		//If nothing else matches, make sure we go to the default language
@@ -1349,6 +1434,14 @@ function adminPhrase($code, $replace = false) {
 	}
 }
 
+function nAdminPhrase($text, $pluralText = false, $n = 1, $replace = array()) {
+	if ($pluralText !== false && $n !== 1) {
+		return adminPhrase($pluralText, $replace);
+	} else {
+		return adminPhrase($text, $replace);
+	}
+}
+
 //Deprecated, please use phrase() instead
 function getVLPPhrase($code, $replace = false, $languageId = false, $returnFalseOnFailure = false, $moduleClass = '', $phrase = false, $altCode = false) {
 	return phrase($code, $replace, $moduleClass, $languageId, 2);
@@ -1356,6 +1449,10 @@ function getVLPPhrase($code, $replace = false, $languageId = false, $returnFalse
 
 //Replacement function for gettext()/ngettext() in our Twig frameworks
 function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
+	
+	if ($code === '' || $code === false || is_null($code)) {
+		return '';
+	}
 	
 	//The twig frameworks don't pass in the phrase class name, so we need to rememeber it using a static class variable
 	if ($moduleClass === 'lookup') {
@@ -1381,15 +1478,14 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 	}
 	
 	$multiLingal = getNumLanguages() > 1;
-	$inDefaultLanguage = !$multiLingal || $languageId == setting('default_language');
 	$isCode = substr($code, 0, 1) == '_';
+	$needsTranslating = $isCode || !empty(cms_core::$translateLanguages[$languageId]);
 	$needsUpdate = false;
 	$phrase = $code;
-	$needsTranslating = $isCode || isset(cms_core::$translateLanguages[$languageId]);
 	
 	//Phrase codes (which start with an underscore) always need to be looked up
 	//Otherwise we only need to look up phrases on multi-lingual sites
-	if ($multiLingal || $isCode) {
+	if ($multiLingal || $needsTranslating) {
 		
 		//Attempt to find a record of the phrase in the database
 		$sql = "
@@ -1405,8 +1501,12 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 			//If we found a translation, replace the code/default text with the translation
 				//Note that phrases in the default language are never actually translated,
 				//we're just checking if they are there!
-			if ($isCode || !$inDefaultLanguage) {
-				$phrase = $row[0];
+			if ($needsTranslating) {
+				if (is_null($row[0])) {
+					$phrase = $code. ' (untranslated)';
+				} else {
+					$phrase = $row[0];
+				}
 			}
 			
 			//If this is the first time we've seen this phrase in visitor mode, note it down
@@ -1416,21 +1516,19 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 		
 		} else {
 			//If we didn't find a translation that we needed, complain about it
-			if ($isCode || !$inDefaultLanguage) {
+			if ($needsTranslating) {
 				$phrase = $code. ' (untranslated)';
 			}
 			
 			//For multilingal sites, any phrases that are not in the database need to be noted down
-			if (!$isCode
-			 && $multiLingal
-			 && ($inDefaultLanguage
-				 || !checkRowExists(
-						'visitor_phrases',
-						array(
-							'language_id' => setting('default_language'),
-							'module_class_name' => $moduleClass,
-							'code' => $code))
-			)) {
+			if ($multiLingal
+			 && !checkRowExists(
+					'visitor_phrases',
+					array(
+						'language_id' => setting('default_language'),
+						'module_class_name' => $moduleClass,
+						'code' => $code))
+			) {
 				$needsUpdate = true;
 			}
 		}
@@ -1903,15 +2001,18 @@ function getMenuStructure(
 						
 				} else if ($row['target_loc'] == 'int' && $row['cID']) {
 					$request = '';
-					if ($row['cType'] == 'document' && !$row['use_download_page']) {
+					$downloadDocument = ($row['cType'] == 'document' && !$row['use_download_page']);
+					if ($downloadDocument) {
 						$request = '&download=1';
-						
-						if (inc('zenario_google_analytics_tracker')) {
-							$row['onclick'] = zenario_google_analytics_tracker::trackDownloadNow($row['cID'], $row['cType'], $row['alias']);
-						}
 					}
 					
-					$row['url'] = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], true);
+					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], true);
+					
+					if ($downloadDocument) {
+						$row['onclick'] = trackFileDownload($link);
+					}
+					
+					$row['url'] = $link;
 					if (!empty($row['anchor'])) {
 						$row['url'] .= '#'.$row['anchor'];
 					}
@@ -2071,6 +2172,31 @@ function linkToItem(
 		return false;
 	}
 	
+	
+	//For single-language sites, if there is nothing in the request then links to the homepage
+	//should always use just the domain name
+	$returnFullPath = false;
+	if ($cID == cms_core::$homeCID
+	 && $cType == cms_core::$homeCType
+	 && !$request
+	 && getNumLanguages() < 2) {
+		$fullPath = true;
+		$returnFullPath = true;
+	}
+	
+	if (!$fullPath) {
+		$fullPath = '';
+	} elseif (!$httpHost) {
+		$fullPath = httpOrHttps(). httpHost(). SUBDIRECTORY;
+	} else {
+		$fullPath = httpOrHttps(). $httpHost. SUBDIRECTORY;
+	}
+	
+	if ($returnFullPath) {
+		return $fullPath;
+	}
+	
+	
 	$useAlias = ($useAliasInAdminMode || empty($_SESSION['admin_logged_into_site']) || !checkPriv());
 	$usingAlias = false;
 	
@@ -2171,14 +2297,6 @@ function linkToItem(
 		}
 	}
 	
-	if (!$fullPath) {
-		$fullPath = '';
-	} elseif (!$httpHost) {
-		$fullPath = httpOrHttps(). httpHost(). SUBDIRECTORY;
-	} else {
-		$fullPath = httpOrHttps(). $httpHost. SUBDIRECTORY;
-	}
-	
 	if ($useAlias
 	 && $cType == 'document'
 	 && ($request === '&download=1'
@@ -2211,31 +2329,34 @@ function showAdminTitle($titleAdmin, $info="") {
 	return $text;
 }
 
-function getLanguages($includeAllLanguages = false, $onlyIncludeLangId = false, $orderByEnglishName = false, $defaultLangFirst = false) {
+function getLanguages($includeAllLanguages = false, $orderByEnglishName = false, $defaultLangFirst = false) {
+		
 	$sql = "
 		SELECT
 			l.id,
 			IFNULL(en.local_text, lo.local_text) AS english_name,
 			IFNULL(lo.local_text, en.local_text) AS language_local_name,
-			IFNULL(f.local_text, 'white') as flag
-		FROM ";
-		
-	if ($onlyIncludeLangId !== false) {
-		$sql .= "
-			(SELECT '". sqlEscape($onlyIncludeLangId). "' AS id)";
+			IFNULL(f.local_text, 'white') as flag,
+			detect,
+			translate_phrases,
+			sync_assist,
+			search_type";
 	
-	} elseif ($includeAllLanguages) {
+	if ($includeAllLanguages) {
 		$sql .= "
-			(
+			FROM (
 				SELECT DISTINCT language_id AS id
 				FROM ". DB_NAME_PREFIX. "visitor_phrases
-			)";
+			) AS l
+			LEFT JOIN ". DB_NAME_PREFIX. "languages el
+			   ON l.id = el.id";
 	
 	} else {
-		$sql .= DB_NAME_PREFIX. "languages";
+		$sql .= "
+			FROM ". DB_NAME_PREFIX. "languages AS l";
 	}
 	
-	$sql .= " AS l
+	$sql .= "
 		LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS en
 		   ON en.module_class_name = 'zenario_common_features'
 		  AND en.language_id = l.id
@@ -2263,18 +2384,10 @@ function getLanguages($includeAllLanguages = false, $onlyIncludeLangId = false, 
 	$result = sqlQuery($sql);
 	$langs = array();
 	while ($row = sqlFetchAssoc($result)) {
-		if ($onlyIncludeLangId) {
-			return $row;
-		} else {
-			$langs[$row['id']] = $row;
-		}
+		$langs[$row['id']] = $row;
 	}
 	
-	if ($onlyIncludeLangId) {
-		return false;
-	} else {
-		return $langs;
-	}
+	return $langs;
 }
 
 function getNumLanguages() {
@@ -2286,11 +2399,11 @@ function getNumLanguages() {
 	return ZENARIO_NUM_LANGUAGES;
 }
 
-function getLanguage($langId = false) {
-	return getLanguages(true, ifNull($langId, session('user_lang'), setting('default_language')));
-}
-
-function getLanguageName($languageId = false, $addIdInBracketsToEnd = true, $returnIdOnFailure = true) {
+function getLanguageName($languageId = false, $addIdInBracketsToEnd = true, $returnIdOnFailure = true, $localName = false) {
+	
+	if ($languageId === false) {
+		$languageId = ifNull(cms_core::$langId, setting('default_language'));
+	}
 	
 	$name = getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_ENGLISH_NAME__', 'language_id' => $languageId, 'module_class_name' => 'zenario_common_features'));
 	
@@ -2308,12 +2421,8 @@ function getLanguageName($languageId = false, $addIdInBracketsToEnd = true, $ret
 
 }
 
-function getLanguageFlag($langId = false) {
-	if ($lang = getLanguage($langId)) {
-		return $lang['flag'];
-	} else {
-		return 'white';
-	}
+function getLanguageLocalName($languageId = false) {
+	return getLanguageName($languageId, false, false, true);
 }
 
 function isEmtpyVisitorLanguagePack( $languageId ) {
@@ -2384,7 +2493,7 @@ function getDatasetFieldsDetails($dataset) {
 }
 
 function getDatasetFieldValue($recordId, $field, $dataset = false) {
-	if (($field = getDatasetFieldDetails($field))
+	if (($field = getDatasetFieldDetails($field, $dataset))
 	 && ($dataset = getDatasetDetails(ifNull($dataset, $field['dataset_id'])))) {
 		if ($field['is_system_field']) {
 			if ($field['db_column']) {
@@ -2392,14 +2501,14 @@ function getDatasetFieldValue($recordId, $field, $dataset = false) {
 			}
 		} else {
 			if ($field['type'] == 'checkboxes') {
-				$values = getDatasetFieldLOV($cfield, false);
+				$values = getDatasetFieldLOV($field, false);
 				return inEscape(
 						getRowsArray(
 							'custom_dataset_values_link',
 							'value_id',
 							array(
-								'linking_id' => $tags['key']['id'],
-								'value_id' => array_keys($cfield['values']))),
+								'linking_id' => $recordId,
+								'value_id' => array_keys($values))),
 						'numeric');
 			} else {
 				return getRow($dataset['table'], $field['db_column'], $recordId);
@@ -2639,6 +2748,8 @@ function getGroupPrivateName($group_id) {
 	return false;
 }
 
+
+
 //CONTENT TYPE
 function getContentStatus($cID, $cType) {
 	return getRow('content', 'status', array('id' => $cID, 'type' => $cType));
@@ -2671,6 +2782,9 @@ function resizeImage($image_width, $image_height, $constraint_width, $constraint
 
 //Given an image size and a target size, resize the image by different conditions and return the values used in the calculations
 function resizeImageByMode(&$mode, $width, $height, $maxWidth, $maxHeight, &$newWidth, &$newHeight, &$cropWidth, &$cropHeight, &$cropNewWidth, &$cropNewHeight) {
+	
+	$maxWidth = (int) $maxWidth;
+	$maxHeight = (int) $maxHeight;
 	
 	if ($mode == 'unlimited') {
 		$cropNewWidth = $cropWidth = $newWidth = $width;
@@ -2721,6 +2835,26 @@ function resizeImageByMode(&$mode, $width, $height, $maxWidth, $maxHeight, &$new
 		$cropHeight = $height;
 		$cropNewWidth = $newWidth;
 		$cropNewHeight = $newHeight;
+	}
+	
+	if ($newWidth < 1) {
+		$newWidth = 1;
+	}
+	if ($cropWidth < 1) {
+		$cropWidth = 1;
+	}
+	if ($cropNewWidth < 1) {
+		$cropNewWidth = 1;
+	}
+	
+	if ($newHeight < 1) {
+		$newHeight = 1;
+	}
+	if ($cropHeight < 1) {
+		$cropHeight = 1;
+	}
+	if ($cropNewHeight < 1) {
+		$cropNewHeight = 1;
 	}
 }
 
@@ -2773,16 +2907,19 @@ function createCacheDir($dir, $type = 'downloads', $onlyForCurrentVisitor = true
 			return $path;
 		
 		} else {
-			mkdir($fullPath, 0777);
-			chmod($fullPath, 0777);
+			if (@mkdir($fullPath, 0777)) {
+				chmod($fullPath, 0777);
 			
-			if ($onlyForCurrentVisitor) {
-				htaccessFileForCurrentVisitor($fullPath, $ip);
+				if ($onlyForCurrentVisitor) {
+					htaccessFileForCurrentVisitor($fullPath, $ip);
+				}
+			
+				touch($fullPath. 'accessed');
+				chmod($fullPath. 'accessed', 0666);
+				return $path;
+			} else {
+				return false;
 			}
-			
-			touch($fullPath. 'accessed');
-			chmod($fullPath. 'accessed', 0666);
-			return $path;
 		}
 	}
 }
@@ -3295,24 +3432,6 @@ function getEmailTemplate ($name) {
 	}
 }
 
-/* Contenttype specific functions */
-
-function updateUserForumEntries($user_id,$new_user_id) {
-	$user_id = (int) $user_id;
-	$new_user_id = (int) $new_user_id;
-	
-	$sql = "UPDATE " . DB_NAME_PREFIX . "forumthread
-			SET start_user_id = " . $new_user_id . "
-			WHERE start_user_id = " . $user_id;
-	$result = sqlQuery($sql);
-
-	$sql = "UPDATE " . DB_NAME_PREFIX . "forumpost
-			SET writer_user_id = " . $new_user_id . "
-			WHERE writer_user_id = " . $user_id;
-	$result = sqlQuery($sql);
-
-}
-
 
 
 /*  modules  */
@@ -3393,34 +3512,6 @@ function getModuleIdByClassName($name) {
 
 function getModuleClassNameByName($name) {
 	return $name;
-}
-
-function moduleDirs($tests = 'module_code.php') {
-	$dirs = array();
-	
-	if (!is_array($tests)) {
-		$tests = array($tests);
-	}
-	
-	foreach (array(
-		'zenario/modules/',
-		'zenario_extra_modules/',
-		'zenario_custom/modules/'
-	) as $path) {
-		if (is_dir($path)) {
-			foreach (scandir($path) as $dir) {
-				if (substr($dir, 0, 1) != '.') {
-					foreach ($tests as $test) {
-						if (file_exists(CMS_ROOT. $path. $dir. '/'. $test)) {
-							$dirs[$dir] = $path. $dir. '/'. $test;
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	return $dirs;
 }
 
 

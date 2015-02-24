@@ -1,0 +1,145 @@
+<div class="extranet_wrap">
+	<div class="extranet_outer_wrap">
+		<div class="extranet_inner_wrap">
+
+			[cms:section name="Message_Display"]
+				<div class="extranet_message">[cms:merge name="Message"/]</div>
+			[/cms:section]
+			
+			[cms:section name="Verification_Failed"]
+				<div class="confirm_email_text">[cms:phrase code="_ERROR_VERIFICATION_FAILED"/]</div>
+			[/cms:section]
+
+			[cms:section name="Verification_Already_Done"]
+				<div class="confirm_email_text">[cms:phrase code="_ERROR_EMAIL_VERIFIED"/]</div>
+			[/cms:section]
+
+			[cms:section name="Registered_Not_Verified"]
+				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_VERIFY_EMAIL"/]</div>
+			[/cms:section]
+
+			[cms:section name="Registered_Verified_Not_Activated"]
+				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_WAIT_FOR_ACTIVATION"/]</div>
+			[/cms:section]
+
+			[cms:section name="Registered_Email_Resent"]
+				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_VERIFY_EMAIL_RESENT"/]</div>
+			[/cms:section]
+			
+			[cms:section name="Registration_Form"]
+				<h1>[cms:phrase code="_REGISTRATION_TITLE"/]</h1>
+				<div>
+					[cms:section name="Error_Display"]
+						<div class="extranet_error">[cms:merge name="Error"/]</div>
+					[/cms:section]
+					
+					[cms:section name="Choose_Screen_Name"]
+						<div class="extranet_field">
+							<div class="label">[cms:phrase code="_SCREEN_NAME:"/]</div>
+							[cms:input type="text" name="screen_name" pattern="new_screen_name" required="true" class="extranet_text"/]
+						</div>
+					[/cms:section]
+					
+					<div class="extranet_field">
+						<div class="label">[cms:phrase code="_EMAIL:"/]</div>
+						[cms:input type="text" name="email" pattern="new_email" required="true" class="extranet_text"/]
+					</div>
+
+					[cms:section name="User_passwords"]
+						<div class="extranet_field">
+							<div class="label">[cms:phrase code="_PASSWORD:"/]</div>
+							[cms:input type="password" name="extranet_new_password" pattern="new_password" required="true" class="extranet_password"/]
+						</div>
+
+						<div class="extranet_field">
+							<div class="label">[cms:phrase code="_PASSWORD_CONFIRMATION:"/]</div>
+							[cms:input type="password" name="extranet_new_password_confirm" required="true" class="extranet_password"/]
+						</div>
+					[/cms:section]
+					
+					[cms:section name="Registration_Code_Section"]
+					<div class="extranet_field">
+						<div class="label">[cms:phrase code="Resistration code:"/]</div>
+						[cms:input type="text" name="registration_code"/]
+					</div>
+					[/cms:section]
+					
+					[cms:section name="Ts_And_Cs_Section"]
+						<div class="extranet_field">
+							<label for="extranet_terms_and_conditions">[cms:merge name='Ts_And_Cs_Link'/]</label>
+							[cms:input type="checkbox" name="extranet_terms_and_conditions" id="extranet_terms_and_conditions" required="true"/]
+						</div>
+					[/cms:section]
+					
+					[cms:section name="Captcha"]
+						<div class="extranet_field">
+							<div class="captcha">
+							[cms:phrase code="_CAPTCHA:"/]
+							[cms:merge name="Captcha"/]
+							</div>
+						</div>
+					[/cms:section]
+
+					<div class="extranet_btn"><div class="r">
+						<input type="submit" name="extranet_register" class="extranet_submit i" value="[cms:phrase code='_REGISTER'/]" />
+					</div></div>
+
+				</div>
+				<div class="extranet_links">
+					[cms:section name="Resend_Link_Section"]
+						<div><a [cms:merge name='Resend_Link'/]>[cms:phrase code="_RESEND_VERIFICATION_EMAIL"/]</a></div>
+						<div class="extranet_link_desc">[cms:phrase code="_RESEND_VERIFICATION_EMAIL_DESC"/]</div>
+					[/cms:section]
+					[cms:section name="Login_Link_Section"]
+						<div><a [cms:merge name='Login_Link'/]>[cms:phrase code="_LOGIN"/]</a></div>
+					[/cms:section]
+				</div>
+			[/cms:section]
+			
+			[cms:section name="Resend_Form"]
+				<h1>[cms:phrase code="_RESEND_VERIFICATION_EMAIL_TITLE"/]</h1>
+				<div>
+					[cms:section name="Error_Display"/]
+					
+					<div class="extranet_field">
+						<div class="label">[cms:phrase code="_EMAIL:"/]</div>
+						[cms:input type="text" name="email" pattern="unverified_email" required="true" class="extranet_text"/]
+					</div>
+					
+					<div class="extranet_btn"><div class="r">
+						<input type="submit" name="extranet_register" class="extranet_submit i" value="[cms:phrase code='_RESEND_VERIFICATION_EMAIL'/]" />
+					</div></div>
+				</div>
+				<div class="extranet_links">
+					<div><a [cms:merge name='Registration_Link'/]>[cms:phrase code="_REGISTER"/]</a></div>
+					[cms:section name="Login_Link_Section"/]
+				</div>
+			[/cms:section]
+			
+			[cms:section name="Logged_In"]
+				[cms:section name="Welcome_Message_Section"]
+				<div class="extranet_welcome_text">[cms:merge name="Welcome_Message"/]</div>
+				[/cms:section]
+				[cms:section name="Destination_url_section"] 
+				<div class="extranet_requested_link">
+					[cms:phrase code="_REQUESTED_LINK:"/]
+					<a href="[cms:merge name='destURL_Link'/]">[cms:merge name="destURL_Title"/]</a>
+				</div>
+				[/cms:section]
+				<div class="extranet_links">
+					[cms:section name="Change_Password_Link_Section"]
+						<div>
+							<a [cms:merge name='Change_Password_Link'/]>[cms:phrase code="_CHANGE_PASSWORD"/]</a>
+						</div>
+					[/cms:section]
+					[cms:section name="Logout_Link_Section"]
+						<div>
+							<a [cms:merge name='Logout_Link'/]>[cms:phrase code="_LOGOUT"/]</a>
+						</div>
+					[/cms:section]
+				</div>
+			[/cms:section]
+
+		</div>
+	</div>
+</div>

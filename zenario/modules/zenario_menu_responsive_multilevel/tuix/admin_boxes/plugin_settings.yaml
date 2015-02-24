@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_menu_responsive_multilevel
+    tabs:
+        first_tab:
+            fields:
+                menu_show_admin_add_button:
+                    hidden: true
+        landing_pages:
+            ord: 1.1
+            label: Landing pages
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            Where a menu node has both child menu nodes and an attached content item:
+                landing_page_logic:
+                    plugin_setting:
+                        name: landing_page_logic
+                    type: radios
+                    value: show_children
+                    values:
+                        show_children:
+                            ord: 1
+                            label: |
+                                Clicking on it shows the child menu nodes
+                        goto_landing_page:
+                            ord: 2
+                            label: |
+                                Clicking on it goes to the landing page
+                        both:
+                            ord: 3
+                            label: |
+                                Clicking the <a> goes to the landing page, clicking the <span> shows the children

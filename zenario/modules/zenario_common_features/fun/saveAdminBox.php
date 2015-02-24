@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -226,38 +226,6 @@ switch ($path) {
 	case 'zenario_admin':
 		return require funIncPath(__FILE__, 'admin.saveAdminBox');
 	
-	
-	case 'zenario_phrase':
-		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_PHRASE');
-		
-		if ($box['key']['id']) {
-			
-			$languages = getLanguages(false, false, true, true);
-			foreach ($languages as $language) {
-				if (!empty($values['phrase/'. $language['id']])) {
-					setRow('visitor_phrases', 
-						array('local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_edit_mode_'. $language['id']]), 
-						array('code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']));
-				}
-			}
-			
-		} else {
-				
-			setRow(
-			'visitor_phrases',
-				array('local_text' => $values['phrase/'. setting('default_language')], 'protect_flag' => $values['phrase/protect_flag_edit_mode']),
-				array(
-				'module_class_name' => getModuleClassName($values['phrase/module']),
-				'language_id' => setting('default_language'),
-				'code' => $values['phrase/code']));
-		}
-		
-		// Save each enabled languages phrases
-		
-		// Save extra attributes
-		
-		break;
-	
 	case 'zenario_create_vlp':
 		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_CONFIG');
 		
@@ -377,6 +345,130 @@ switch ($path) {
 			setRow('document_tag_link', array('tag_id' => $tagId, 'document_id' => $box['key']['id']), array('tag_id' => $tagId, 'document_id' => $box['key']['id']));
 		}
 		break;
+		
+	case 'zenario_migrate_old_documents':
+		
+		$datasetDetails = getDatasetDetails('documents');
+		$documentList = explode(',',$box['key']['id']);
+		$documentData = array();
+		$documentDatasetFieldDetails = getRowsArray('custom_dataset_fields', 'db_column', array('dataset_id' => $datasetDetails['id']));
+		
+		$sql = '
+			SELECT MAX(ordinal)
+			FROM '.DB_NAME_PREFIX.'documents
+			WHERE folder_id = '.(int)$values['details/folder'];
+		$result = sqlSelect($sql);
+		$maxOrdinal = sqlFetchArray($result);
+		$ordinal = $maxOrdinal[0] ? 1 : (int)$maxOrdinal[0] + 1;
+		$failed = 0;
+		$succeeded = 0;
+		
+		foreach($documentList as $tagId) {
+			// Get old document details
+			$documentData = array();
+			$sql = '
+				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id
+				FROM '.DB_NAME_PREFIX.'content AS c
+				INNER JOIN '.DB_NAME_PREFIX.'versions AS v
+					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
+				WHERE c.tag_id = "'.sqlEscape($tagId).'"';
+			$result = sqlSelect($sql);
+			$documentData = sqlFetchAssoc($result);
+			// If alreadly migrated, go to next document
+			if (checkRowExists('documents', array('file_id' => $documentData['file_id']))) {
+				$failed++;
+				continue;
+			}
+			
+			$documentProperties = array(
+				'ordinal' => $ordinal,
+				'type' => 'file', 
+				'file_id' => $documentData['file_id'], 
+				'folder_id' => $values['details/folder']);
+			$extraProperties = self::addExtractToDocument($documentProperties['file_id']);
+			
+			$properties = array_merge($documentProperties, $extraProperties);
+			// Create new document
+			$documentId = insertRow('documents', $properties);
+			
+			// Get document custom data
+			$customData = array();
+			if ($values['details/title']) {
+				$customData[$documentDatasetFieldDetails[$values['details/title']]] = $documentData['title'];
+			}
+			if ($values['details/language_id']) {
+				$customData[$documentDatasetFieldDetails[$values['details/language_id']]] = $documentData['language_id'];
+			}
+			if ($values['details/description']) {
+				$customData[$documentDatasetFieldDetails[$values['details/description']]] = $documentData['description'];
+			}
+			if ($values['details/keywords']) {
+				$customData[$documentDatasetFieldDetails[$values['details/keywords']]] = $documentData['keywords'];
+			}
+			if ($values['details/content_summary']) {
+				$customData[$documentDatasetFieldDetails[$values['details/content_summary']]] = $documentData['content_summary'];
+			}
+			// Save document custom data
+			setRow('documents_custom_data', $customData, array('document_id' => $documentId));
+			$succeeded++;
+			
+			// Hide document
+			updateRow('content', array('status' => 'hidden'), array('tag_id' => $tagId));
+			$ordinal++;
+		}
+		// Code to show success messages after migrating documents
+		/*
+		echo '<!--Refresh_Storekeeper-->';
+		
+		if ($failed && !$succeeded) {
+			echo "<!--Message_Type:Error-->";
+			echo '<p>';
+			echo nAdminPhrase(
+				'[[failed]] file could not be migrated as a document with this file already exists',
+				'[[failed]] files could not be migrated as a document with this file already exists',
+				$failed,
+				array('failed' => $failed));
+			echo '</p>';
+		} elseif ($failed && $succeeded) {
+			echo "<!--Message_Type:Warning-->";
+			echo '<p>';
+			echo nAdminPhrase(
+				'[[failed]] file could not be migrated as a document with this file already exists',
+				'[[failed]] files could not be migrated as a document with this file already exists',
+				$failed,
+				array('failed' => $failed));
+			echo '</p>';
+			
+			echo '<p>';
+			echo nAdminPhrase(
+				'[[succeeded]] file was successfully migrated',
+				'[[succeeded]] files were successfully migrated',
+				$succeeded,
+				array('succeeded' => $succeeded));
+			echo '</p>';
+			
+		} else {
+			echo "<!--Message_Type:Success-->";
+			echo '<p>';
+			echo nAdminPhrase(
+				'[[succeeded]] file was successfully migrated',
+				'[[succeeded]] files were successfully migrated',
+				$succeeded,
+				array('succeeded' => $succeeded));
+			echo '</p>';
+		}
+		*/
+		break;
+		
+	case 'zenario_document_move':
+		if ($values['details/move_to_root']) {
+			$values['details/move_to'] = 0;
+		}
+		foreach (explode(',', $box['key']['id']) as $id) {
+			setRow('documents', array('folder_id' => $values['details/move_to']), $id);
+		}
+		break;
+		
 	case 'zenario_file_type':
 		exitIfNotCheckPriv('_PRIV_EDIT_CONTENT_TYPE');
 		

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -184,6 +184,7 @@ foreach(array(
 	'sort' => 'Sort',
 	'sortByCol' => 'Click here to sort by this column',
 	'swapContentsConfirm' => 'The contents you previously copied will appear here, and the contents that were here will be copied. Are you sure you wish to swap?',
+	'translatedField' => 'Will be translated',
 	'tru' => 'True',
 	'undoChanges' => 'Undo changes',
 	'upload' => 'Upload',
@@ -352,18 +353,19 @@ incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
-incJS('zenario/libraries/lgpl/tinymce_4_0_19b/jquery.tinymce');
+incJS('zenario/libraries/lgpl/tinymce_4_1_6/jquery.tinymce');
 //Include the selectboxes library for moving items between select lists
 incJS('zenario/libraries/mit/jquery/jquery.selectboxes');
 //Include the jQuery Slider code in Admin Mode
 incJS('zenario/libraries/mit/jquery/jquery-ui.slider');
-//Just testing - include the intro library
+
+//Include other third-party libraries
 incJS('zenario/libraries/mit/intro/intro');
-//Include the mousehold library
+incJS('zenario/libraries/mit/spectrum/spectrum');
 incJS('zenario/libraries/public_domain/mousehold/mousehold');
 
 echo '
-zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_0_19b/tinymce.jquery.min.js"';
+zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_6/tinymce.jquery.min.js"';
 
 
 //Fix for the hasLayout bug and transparent slots in IE 6 and 7

@@ -1,7 +1,7 @@
 <?php 
 
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -92,7 +92,7 @@ unset($action);
 
 if (checkPriv()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
-	getCSSJSCodeHash();
+	checkForChangesInCssJsAndHtmlFiles();
 	
 	//setAdminSession($_SESSION['admin_userid'], $_SESSION['admin_global_id']);
 
@@ -140,6 +140,14 @@ if ($status === 'no_permission') {
 	header('HTTP/1.0 404 Not Found');
 	langSpecialPage('zenario_not_found', $cID, $cType);
 	$status = getShowableContent($content, $version, $cID, $cType);
+	//Log error if errors module is running
+	if (inc('zenario_error_log')) {
+		$httpReferer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+		$requestURI = $_SERVER['REQUEST_URI'];
+		$URI = explode('/', $requestURI);
+		$pageAlias = end($URI);
+		zenario_error_log::log404Error($pageAlias, $httpReferer);
+	}
 }
 
 //Try to go to the home page as a fallback if the Not Found/No Access/Login pages could not be used above
@@ -214,7 +222,42 @@ echo
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>', htmlspecialchars(cms_core::$pageTitle), '</title>
-<link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>
+<link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>';
+
+// Add hreflang tags
+if (getNumLanguages() > 1) {
+	// If there are no important get requests
+	$getRequests = false;
+	foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+		if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+			$getRequests = true;
+			break;
+		}
+	}
+	if (!$getRequests) {
+		$sql = "
+			SELECT c.id, c.type, c.language_id
+			FROM ". DB_NAME_PREFIX. "content AS c
+			INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
+			   ON c.equiv_id = tc.equiv_id
+			  AND c.type = tc.type
+			WHERE tc.privacy = 'public'
+			  AND c.equiv_id = ". (int) cms_core::$equivId. "
+			  AND c.type = '". sqlEscape(cms_core::$cType). "'
+			  AND c.status IN ('published_with_draft', 'published')";
+		$result = sqlSelect($sql);
+		if (sqlNumRows($result) > 1) {
+			while($row = sqlFetchAssoc($result)) {
+				$pageLink = linkToItem($row['id'], $row['type'], true, '', false, true, true, primaryDomain());
+				echo '
+<link rel="alternate" href="'. htmlspecialchars($pageLink). '" hreflang="'. htmlspecialchars($row['language_id']). '">';
+			}
+		}
+	}
+}
+
+echo
+'
 <meta name="description" content="', htmlspecialchars(cms_core::$description), '" />
 <meta name="keywords" content="', htmlspecialchars(cms_core::$keywords), '" />
 <meta name="generator" content="Zenario ', getCMSVersionNumber(), '" />';

@@ -1,0 +1,69 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_multiple_image_container
+    tabs:
+        first_tab:
+            fields:
+                image_source:
+                    hidden: true
+                
+                image:
+                    plugin_setting:
+                        #name: image
+                        foreign_key_to: 'multiple_files'
+                        use_value_for_plugin_name: false
+                        
+                    label: Images
+                    pick_items:
+                        #path: zenario__content/panels/inline_images_for_reusable_plugins
+                        #min_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        #max_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        #target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        #select_phrase: Select image...
+                        multiple_select: true
+                        select_phrase: Select from Organizer...
+                    #value: ""
+                    format_onchange: false
+                    upload:
+                        multi: true
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: true
+                    validation:
+                        required_if_not_hidden: false
+
+        destination:
+            label: Actions
+            fields:
+                link_type:
+                    label: 'On click'
+                    type: radios
+                    values:
+                        _NO_LINK:
+                            label: No action
+                        _CONTENT_ITEM:
+                            hidden: true
+                        _EXTERNAL_URL:
+                            hidden: true
+                        #_ENLARGE_IMAGE:
+                        #    ord: "4"
+                        #    label: Enlarge image in floating box
+        
+        text:
+            fields:
+                more_link_text:
+                    hidden: true
+                
+                
+                # Annoying bug: you need to add an actual new field to be able to run
+                # your placeholder methods!
+                test:
+                    hidden: true
+                    
+                        

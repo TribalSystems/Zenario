@@ -1,0 +1,23 @@
+{% if showSuccessMessage %}
+	<div class="success">{{successMessage|e}}</div>
+{% elseif showForm %}
+	{% if title %}
+		<div class="title">{{title|e}}</div>
+	{% endif %}
+	<div class="user_form">
+		{{openForm}}
+		{{formFields}}
+		{% if captcha %}
+			<div class="form_field captcha">
+				<div class="field_title">{{'Please help us combat form submissions by spam devices:'|trans}}</div>
+				{{captcha_html}}
+			</div>
+		{% endif %}
+		<input type="submit" name="submit_form" value="{{'Submit'|trans}}"/>
+		{{closeForm}}
+	</div>
+{% else %}
+<div class="user_form_click_here" {{showFormJS}}>
+	<h3>{{displayText}}</h3>
+</div>
+{% endif %}

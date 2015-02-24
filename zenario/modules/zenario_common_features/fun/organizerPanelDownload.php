@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,9 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'zenario__content/nav/content/panel':
-	case 'zenario__content/hidden_nav/chained/panel':
-	case 'zenario__content/hidden_nav/language_equivs/panel':
+	case 'zenario__content/panels/content':
+	case 'zenario__content/panels/chained':
+	case 'zenario__content/panels/language_equivs':
 		$cID = $cType = false;
 		if (post('download') && getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 			//Offer a download for a file being used for a Content Item
@@ -41,9 +41,9 @@ switch ($path) {
 		break;
 		
 		
-	case 'zenario__content/nav/hierarchical_files/panel':
-	case 'zenario__content/hidden_nav/chained/panel':
-	case 'zenario__content/hidden_nav/language_equivs/panel':
+	case 'zenario__content/panels/documents':
+	case 'zenario__content/panels/chained':
+	case 'zenario__content/panels/language_equivs':
 		$file =  getRow('files', true, getRow('documents', 'file_id', $ids));
 		if ($file['path']) {
 			header('Content-Description: File Transfer');

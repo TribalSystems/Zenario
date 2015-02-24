@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -64,6 +64,11 @@ class zenario_html_snippet extends module_base_class {
 				}
 		}
 		
+		$this->raw_html = $this->setting('html');
+		if (!$this->isVersionControlled) {
+			$this->replacePhraseCodesInString($this->raw_html);
+		}
+		
 		return true;
 	}
 	
@@ -79,7 +84,7 @@ class zenario_html_snippet extends module_base_class {
 		if ($this->setting('hide_in_admin_mode') && checkPriv()) {
 			echo '<p>&nbsp;</p>';
 		} else {
-			echo $this->setting('html');
+			echo $this->raw_html;
 		}
 	}
 	

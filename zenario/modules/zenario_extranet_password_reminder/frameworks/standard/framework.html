@@ -1,0 +1,46 @@
+<div class="extranet_wrap">
+    <div class="extranet_outer_wrap">
+        <div class="extranet_inner_wrap">
+        	[cms:section name="Admin_Error"]
+        		<div class="error">[cms:merge name="Admin_Message"]</div>
+        	[/cms:section]
+        	
+            [cms:section name="Message_Display"]
+                <h1>[cms:phrase code="_PASSWORD_RETRIEVED_TITLE"/]</h1>
+                <div class="extranet_message">[cms:merge name="Message"/]</div>
+            [/cms:section]
+            
+            [cms:section name="Forget_Password_Form"]
+                <h1>[cms:phrase code="_RETRIEVE_PASSWORD_TITLE"/]</h1>
+                
+                [cms:section name="Error_Display"]
+                    <div class="extranet_error">[cms:merge name="Error"/]</div>
+                [/cms:section]
+                
+                <div>
+                    <div class="extranet_field">
+                        <div class="label">[cms:phrase code="_EMAIL:"/]</div>
+                        [cms:input type="text" name="extranet_email" pattern="email" required="true" class="extranet_text"/]
+                    </div>
+                    <div class="extranet_btn"><div class="r"><input type="submit" name="extranet_forgot_password" class="extranet_submit i" value="[cms:phrase code='_RETRIEVE_PASSWORD'/]" /></div></div>
+                </div>
+                <div class="extranet_links">
+					[cms:section name="Resend_Link_Section"]
+						<div><a [cms:merge name='Resend_Link'/]>[cms:phrase code="_RESEND_VERIFICATION_EMAIL"/]</a></div>
+						<div class="extranet_link_desc">[cms:phrase code="_RESEND_VERIFICATION_EMAIL_DESC"/]</div>
+					[/cms:section]
+                    [cms:section name="Login_Link_Section"]
+                        <div><a [cms:merge name='Login_Link'/]>[cms:phrase code="_LOGIN"/]</a></div>
+                    [/cms:section]
+                </div>
+            [/cms:section]
+            
+            [cms:section name="Login"]
+                <div class="extranet_links">
+                    [cms:section name="Login_Link_Section"/]
+                </div>
+            [/cms:section]  
+            	
+        </div>
+    </div>
+</div>

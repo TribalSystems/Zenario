@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,29 @@ class zenario_meta_data extends module_base_class {
 				$this->showSections['show_writer_name'] = true;
 			}
 		}
+		if ($this->setting('show_writer_image')){
+			$sql = '
+				SELECT f.id, f.width, f.height, f.alt_tag
+				FROM '.DB_NAME_PREFIX.'versions v
+				INNER JOIN '.DB_NAME_PREFIX.'admins a
+					ON v.writer_id = a.id
+				INNER JOIN '.DB_NAME_PREFIX.'files f
+					ON a.image_id = f.id
+				WHERE v.id = '.(int)$this->cID.'
+					AND v.type = "'.sqlEscape($this->cType).'"
+					AND v.version = '.(int)$this->cVersion;
+			$result = sqlSelect($sql);
+			$file = sqlFetchAssoc($result);
+			if (!empty($file)) {
+				$width = $height = $url = false;
+				imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
+				$this->mergeFields['Writer_Alt'] = $file['alt_tag'];
+				if ($this->mergeFields['Writer_Src'] = $url) {
+					$this->showSections['show_writer_image'] = true;
+				}
+			}
+		}
+		
 		if ($this->setting('show_title')){
 			if ($this->mergeFields['Title'] = htmlspecialchars(cms_core::$pageTitle)){
 				$this->showSections['show_title'] = true;
@@ -91,10 +114,8 @@ class zenario_meta_data extends module_base_class {
 		}	
 		
 		if ($this->setting('show_language_name')) {
-			if ($this->mergeFields['Language_name'] = getLanguage(cms_core::$langId)) {
-				$this->mergeFields['Language_name'] = $this->mergeFields['Language_name']['language_local_name'];
-				$this->showSections['show_language_name'] = true;
-			}
+			$this->mergeFields['Language_name'] = getLanguageLocalName();
+			$this->showSections['show_language_name'] = true;
 		}
 		
 		if ($this->setting('show_categories') && is_array($itemCats = getContentItemCategories($this->cID, $this->cType, true))) {
@@ -126,8 +147,19 @@ class zenario_meta_data extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-		        $box['tabs']['first_tab']['fields']['date_format']['hidden'] = 
-		        		!(arrayKey($values,'first_tab/show_date'));
+		        $fields['first_tab/date_format']['hidden'] = 
+		        	!(arrayKey($values,'first_tab/show_date'));
+		        	
+		        $fields['first_tab/canvas']['hidden'] = !$values['first_tab/show_writer_image'];
+		        $fields['first_tab/width']['hidden'] =
+		        	$fields['first_tab/canvas']['hidden'] ||
+		        	!in($values['first_tab/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
+		        $fields['first_tab/height']['hidden'] =
+		        	$fields['first_tab/canvas']['hidden'] ||
+		        	!in($values['first_tab/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+		        $fields['first_tab/offset']['hidden'] =
+		        	$fields['first_tab/canvas']['hidden'] ||
+		        	$values['first_tab/canvas'] != 'resize_and_crop';
 				break;
 		}
 	}

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 							WHERE
 									module_class_name = 'zenario_country_manager'
 								AND code IN (SELECT 
-												CONCAT('_REGION_NAME_',code) 
+												name 
 											FROM " 
 												. DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions 
 											WHERE
@@ -62,14 +62,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				}
 
 				if (post('action') == 'delete_region') {
-					$code = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "code", array('id' => $id));
+					$name = getRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", "name", array('id' => $id));
 					deleteRow("visitor_phrases", 
 								array(
 										'module_class_name' => 'zenario_country_manager',
-										'code' => '_REGION_NAME_' . $code
+										'code' => $name
 									) 
 							);
 					deleteRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions", array('id' => $id));
+					sendSignal('eventRegionDeleted', array("regionId" => $id));
 				}
 			}
 		} else {

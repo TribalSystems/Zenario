@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['show_missing_menu_nodes']['side_note'] =
 				adminPhrase(
 					'Show missing menu node text in the default language ([[english_name]]) where translated menu text is missing. (A CSS classname of "<code>missing</code>" will be added to these nodes.)',
-					getLanguage(setting('default_language')));
+					array('english_name' => getLanguageName(setting('default_language'))));
 		
 		} else {
 			$box['tabs']['first_tab']['fields']['show_missing_menu_nodes']['hidden'] = true;

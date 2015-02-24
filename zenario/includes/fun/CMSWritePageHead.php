@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -172,19 +172,29 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 }
 
 
-//Add CSS needed for modules in Admin Mode in the frontend
-if (checkPriv() && cms_core::$cID) {
-	$cssModuleIds = '';
-	foreach (getRunningModules() as $module) {
-		if (moduleDir($module['class_name'], 'adminstyles/admin_frontend.css', true)) {
-			$cssModuleIds .= ($cssModuleIds? ',' : ''). $module['id'];
+if (checkPriv()) {
+	//Add CSS needed for modules in Admin Mode in the frontend
+	if (cms_core::$cID) {
+		$cssModuleIds = '';
+		foreach (getRunningModules() as $module) {
+			if (moduleDir($module['class_name'], 'adminstyles/admin_frontend.css', true)) {
+				$cssModuleIds .= ($cssModuleIds? ',' : ''). $module['id'];
+			}
+		}
+	
+		if ($cssModuleIds) {
+			echo '
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.css.php?v=', $v, '&amp;ids=', $cssModuleIds, $gz, '&amp;admin_frontend=1" media="screen" />';
 		}
 	}
-	
-	if ($cssModuleIds) {
-		echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.css.php?v=', $v, '&amp;ids=', $cssModuleIds, $gz, '&amp;admin_frontend=1" media="screen" />';
-	}
+
+} else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) { 
+	//Add the CSS for the login link for admins if this looks like a logged out admin
+	echo '
+<style type="text/css">
+	body div.admin_link a { position:fixed; top:30px; right:0; display:inline; width:58px; height:37px; padding:32px 0 0 3px; text-align:center; color:#000; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px; text-transform:uppercase; text-decoration:none; z-index:9999999; background:url("admin/images/welcome/admin-btn-off-state.png") no-repeat 0 0; }
+	body div.admin_link a:hover { text-decoration:underline; }
+</style>';
 }
 
 
@@ -195,74 +205,113 @@ echo '
 		theme: "', jsEscape(setting('google_recaptcha_theme')), '"};
 </script>';
 
-echo '
-<style type="text/css">
-	body div.admin_link a { position:fixed; top:30px; right:0; display:inline; width:58px; height:37px; padding:32px 0 0 3px; text-align:center; color:#000; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px; text-transform:uppercase; text-decoration:none; z-index:9999999; background:url("admin/images/welcome/admin-btn-off-state.png") no-repeat 0 0; }
-	body div.admin_link a:hover { text-decoration:underline; }
-</style>';
-
 if (cms_core::$cID) {
-	$itemHTML = $templateHTML = $familyHTML = false;
+	$itemHTML = $templateHTML = $familyHTML =
+	$bgWidth = $bgHeight = $bgURL = false;
 	
+	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
-		SELECT head_html, head_cc, head_visitor_only, head_overwrite
+		SELECT head_html, head_cc, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
 		FROM ". DB_NAME_PREFIX. "versions
 		WHERE id = ". (int) cms_core::$cID. "
 		  AND type = '". sqlEscape(cms_core::$cType). "'
 		  AND version = ". (int) cms_core::$cVersion;
 	$result = sqlQuery($sql);
-	$itemHTML = sqlFetchRow($result);
+	$itemHTML = sqlFetchAssoc($result);
 	
-	switch ($itemHTML[1]) {
+	switch ($itemHTML['head_cc']) {
 		case 'required':
 			cms_core::$cookieConsent = 'require';
 		case 'needed':
 			if (!canSetCookie()) {
-				unset($itemHTML);
+				$itemHTML['head_html'] =
+				$itemHTML['head_overwrite'] = false;
 			}
 	}
 	
-	if (empty($itemHTML[3])) {
-		$sql = "
-			SELECT head_html, head_cc, head_visitor_only
-			FROM ". DB_NAME_PREFIX. "layouts
-			WHERE layout_id = ". (int) cms_core::$layoutId;
-		$result = sqlQuery($sql);
-		$templateHTML = sqlFetchRow($result);
-		
-		switch ($templateHTML[1]) {
+	//Look up the background image and any HTML to add to the HEAD from the layout
+	$sql = "
+		SELECT head_html, head_cc, head_visitor_only, bg_image_id, bg_color, bg_position, bg_repeat
+		FROM ". DB_NAME_PREFIX. "layouts
+		WHERE layout_id = ". (int) cms_core::$layoutId;
+	$result = sqlQuery($sql);
+	$templateHTML = sqlFetchAssoc($result);
+	
+	//Only add html from the layout if it's not been overridden on the Content Item
+	if (empty($itemHTML['head_overwrite'])) {
+		switch ($templateHTML['head_cc']) {
 			case 'required':
 				cms_core::$cookieConsent = 'require';
 			case 'needed':
 				if (!canSetCookie()) {
-					unset($templateHTML);
+					$templateHTML['head_html'] =
+					$templateHTML['head_overwrite'] = false;
 				}
 		}
 		
-		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !checkPriv())) {
-			echo "\n\n". $templateHTML[0], "\n\n";
+		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !checkPriv())) {
+			echo "\n\n". $templateHTML['head_html'], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !checkPriv())) {
-		echo "\n\n". $itemHTML[0], "\n\n";
+	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !checkPriv())) {
+		echo "\n\n". $itemHTML['head_html'], "\n\n";
 	}
+	
+	
+	//Check to see if there is a background image on this content item (or on this layout if not on the content item)
+	if ($itemHTML['bg_image_id']) {
+		imageLink($bgWidth, $bgHeight, $bgURL, $itemHTML['bg_image_id']);
+	} elseif ($templateHTML['bg_image_id']) {
+		imageLink($bgWidth, $bgHeight, $bgURL, $templateHTML['bg_image_id']);
+	}
+	
+	$bgColor = $itemHTML['bg_color']? $itemHTML['bg_color'] : $templateHTML['bg_color'];
+	$bgPosition = $itemHTML['bg_position']? $itemHTML['bg_position'] : $templateHTML['bg_position'];
+	$bgRepeat = $itemHTML['bg_repeat']? $itemHTML['bg_repeat'] : $templateHTML['bg_repeat'];
+	
+	if ($bgURL || $bgColor || $bgPosition || $bgRepeat) {
+		echo '
+<style type="text/css">
+	body {';
+		if ($bgURL) {
+			echo '
+		background-image: url(\'', htmlspecialchars($bgURL), '\');';
+		}
+		if ($bgColor) {
+			echo '
+		background-color: ', htmlspecialchars($bgColor), ';';
+		}
+		if ($bgPosition) {
+			echo '
+		background-position: ', htmlspecialchars($bgPosition), ';';
+		}
+		if ($bgRepeat) {
+			echo '
+		background-repeat: ', htmlspecialchars($bgRepeat), ';';
+		}
+		
+		echo '
+		}
+</style>';
+	}
+	
 }
 
 
 if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
 
-echo '
+	echo '
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">';
 
-if ($isWelcome || checkPriv()) {
-	echo '
+	if ($isWelcome || checkPriv()) {
+		echo '
 <script type="text/javascript">
 	if (typeof JSON === "undefined") {
 		document.location = "', jsEscape(absCMSDirURL(). 'zenario/admin/ie_compatibility_mode/index.php'), '";
 	}
 </script>';
-}
+	}
 
 	//Add the csshover.htc file in IE 6
 	if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {

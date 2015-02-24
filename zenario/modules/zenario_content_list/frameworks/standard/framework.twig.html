@@ -48,6 +48,11 @@
 								{% if 'Language' in item%}<span>({{item.Language|e}})</span>{% endif %}
 							</h2>
 						{% endif %}
+						{% if Show_Author_Image %}
+							<div class="content_list_author_image">
+								<img alt="{{item.Author_Image_Alt|e}}" src="{{item.Author_Image_Src|e}}"/>
+							</div>
+						{% endif %}
 						{% if Show_Author %}
 							<p class="content_list_author">{{item.Author|e}}</p>
 						{% endif %}

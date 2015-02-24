@@ -41,44 +41,44 @@ zenario_custom_field:
                 type:
                     label: 'Type:'
                     type: radios
-                    redraw_onchange: true;
+                    redraw_onchange: true
                     values:
                         group:
                             label: 'Group'
-                            note_below: 'A checkbox that can be used to grant permission to access content items; can have child characteristics'
+                            side_note: 'A checkbox that can be used to grant permission to access content items; can have child characteristics'
                         checkbox:
                             label: 'Single checkbox'
-                            note_below: 'A simple yes/no field; can control the visibility of other fields'
+                            side_note: 'A simple yes/no field; can control the visibility of other fields'
                         checkboxes:
                             label: 'Multiple checkboxes'
-                            note_below: 'Allows one or more choices from a list of values you define'
+                            side_note: 'Allows one or more choices from a list of values you define'
                         date:
                             label: 'Date'
-                            note_below: 'A pop-up date-picker'
+                            side_note: 'A pop-up date-picker'
                         editor:
                             label: 'Editor'
-                            note_below: 'A HTML editor that will let an administrator enter rich-text'
+                            side_note: 'A HTML editor that will let an administrator enter rich-text'
                         radios:
                             label: 'Multiple radio-buttons'
-                            note_below: 'Allows one choice from a list of values you define'
+                            side_note: 'Allows one choice from a list of values you define'
                         centralised_radios:
                             label: 'Multiple radio-buttons (centralised)'
-                            note_below: 'Allows one choice from a system-generated list'
+                            side_note: 'Allows one choice from a system-generated list'
                         select:
                             label: 'Select list'
-                            note_below: 'Allows one choice from a list of values you define'
+                            side_note: 'Allows one choice from a list of values you define'
                         centralised_select:
                             label: 'Select list (centralised)'
-                            note_below: 'Allows one choice from a system-generated list'
+                            side_note: 'Allows one choice from a system-generated list'
                         text:
                             label: 'Text'
-                            note_below: 'A one-line text field'
+                            side_note: 'A one-line text field'
                         textarea:
                             label: 'Textarea'
-                            note_below: 'A multi-line text field'
+                            side_note: 'A multi-line text field'
                         url:
                             label: 'URL'
-                            note_below: 'A one-line text field that lets you enter a URL'
+                            side_note: 'A one-line text field that lets you enter a URL'
                     validation:
                         required: Please select a type
                 
@@ -99,9 +99,9 @@ zenario_custom_field:
                 enabled: Yes
             fields:
                 parent_id:
-                    label: 'Only show if this field is checked:'
+                    label: 'Conditional display on field:'
                     type: select
-                    empty_value: " -- Select -- "
+                    empty_value: " -- No conditional display -- "
                 width:
                     visible_if: "({editor:1,text:1,textarea:1})[zenarioAB.value('type', 'details')]"
                     label: 'Width of the field on the admin box:'

@@ -1,40 +1,40 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-	tabs:
-		first_tab:
-			label: Map
-			fields:
-				company_name:
-					label: 'Company Name:'
-					type: text
-					plugin_setting:
-						name: company_name
-					value: zenario
-					style: width:450px;
-				address:
-					label: 'Address:'
-					type: textarea
-					plugin_setting:
-						name: address
-					value: >
-						zenario, Dukesbridge House, 23 Duke Street, Reading, RG1 4SA,
-						United Kingdom
-				width:
-					label: 'Size:'
-					pre_field_html: 'width:'
-					plugin_setting:
-						name: width
-					type: text
-					value: "300"
-					style: width:50px;
-				height:
-					pre_field_html: '&nbsp;height:'
-					post_field_html: '&nbsp;pixels'
-					same_row: Yes
-					type: text
-					plugin_setting:
-						name: height
-					value: "300"
-					style: width:50px;
-	module_class_name: zenario_google_map
+    tabs:
+        first_tab:
+            label: Map
+            fields:
+                company_name:
+                    label: 'Company Name:'
+                    type: text
+                    plugin_setting:
+                        name: company_name
+                    value: zenario
+                    style: width:450px;
+                address:
+                    label: 'Address:'
+                    type: textarea
+                    plugin_setting:
+                        name: address
+                    value: >
+                        zenario, Dukesbridge House, 23 Duke Street, Reading, RG1 4SA,
+                        United Kingdom
+                width:
+                    label: 'Size:'
+                    pre_field_html: 'width:'
+                    plugin_setting:
+                        name: width
+                    type: text
+                    value: "300"
+                    style: width:50px;
+                height:
+                    pre_field_html: '&nbsp;height:'
+                    post_field_html: '&nbsp;pixels'
+                    same_row: Yes
+                    type: text
+                    plugin_setting:
+                        name: height
+                    value: "300"
+                    style: width:50px;
+    module_class_name: zenario_google_map

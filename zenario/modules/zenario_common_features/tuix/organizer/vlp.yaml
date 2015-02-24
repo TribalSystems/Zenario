@@ -1,120 +1,120 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__languages:
-	nav:
-		vlp:
-			panel:
-				title: Phrases
-				view_mode: list
-				disable_grid_view: Yes
-				disable_summary_view: Yes
-				php: Yes
-				db_items:
-					table: >
-						[[DB_NAME_PREFIX]]visitor_phrases AS vp
-						INNER JOIN [[DB_NAME_PREFIX]]languages AS l
-						ON vp.language_id = l.id
-					id_column: vp.id
-					custom_where_statement_if_no_refiner: |
-						WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
-				refiners:
-					language:
-						exists: Yes
-					language_and_plugin:
-						table_join: |
-							INNER JOIN [[DB_NAME_PREFIX]]modules AS m
-															   ON m.id = [[REFINER__LANGUAGE_AND_PLUGIN]]
-						sql: vp.module_class_name = m.class_name
-					category_public_name:
-						sql: |
-							vp.code = '_CATEGORY_[[REFINER__CATEGORY_PUBLIC_NAME]]'
-															AND vp.module_class_name = 'zenario_common_features'
-					group_public_name:
-						sql: |
-							vp.code = '_GROUP_[[REFINER__GROUP_PUBLIC_NAME]]'
-															AND vp.module_class_name = 'zenario_common_features'
-				columns:
-					code:
-						title: Phrase code
-						searchable: Yes
-						db_column: vp.code
-						show_by_default: Yes
-						width: large
-						ord: 1
-					module_name:
-						title: Source module name
-						db_column: vp.module_class_name
-						format: module_class_name
-						show_by_default: Yes
-						width: large
-						ord: 1.1
-					module_class_name:
-						title: Source module class name
-						db_column: vp.module_class_name
-						width: large
-						ord: 1.2
-					is_code:
-						title: Is code
-						db_column: SUBSTR(vp.code, 1, 1) = '_'
-						format: yes_or_no
-						show_by_default: false
-						width: xsmall
-					seen_in_visitor_mode:
-						title: Seen in visitor mode
-						db_column: vp.seen_in_visitor_mode
-						format: yes_or_no
-						show_by_default: true
-						width: small
-					seen_in_file:
-						title: Seen in file
-						db_column: vp.seen_in_file
-						show_by_default: true
-						width: large
-				default_sort_column: code
-				item:
-					name: Phrase
-					names: Phrases
-					css_class: language
-				collection_buttons:
-					create:
-						priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-						css_class: zenario_create_a_new
-						label: Create a phrase
-						admin_box:
-							path: zenario_phrase
-				item_buttons:
-					edit:
-						priv: _PRIV_VIEW_LANGUAGE
-						label: Properties
-						admin_box:
-							path: zenario_phrase
-					merge:
-						priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-						label: Merge
-						multiple_select: true
-						multiple_select_only: true
-						without_columns_set:
-							is_code: true
-						ajax:
-							confirm:
-								html: Yes
-								message: 'Are you sure you wish to merge tthe selected phrases?'
-								button_message: Merge
-								cancel_button_message: Cancel
-								message_type: warning
-							request:
-								merge_phrases: 1
-					delete:
-						priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-						label: Delete
-						multiple_select: Yes
-						ajax:
-							confirm:
-								html: Yes
-								message: 'Are you sure you wish to delete the phrase &quot;[[code]]&quot;?'
-								multiple_select_message: Are you sure you wish to delete the selected phrases?
-								button_message: Delete
-								cancel_button_message: Cancel
-								message_type: warning
-							request:
-								delete_phrase: 1
+    panels:
+        phrases:
+            title: Phrases
+            view_mode: list
+            disable_grid_view: true
+            disable_summary_view: true
+            php: true
+            db_items:
+                table: >
+                    [[DB_NAME_PREFIX]]visitor_phrases AS vp
+                    INNER JOIN [[DB_NAME_PREFIX]]languages AS l
+                    ON vp.language_id = l.id
+                id_column: vp.id
+                custom_where_statement_if_no_refiner: |
+                    WHERE vp.language_id = [[FOCUSED_LANGUAGE_ID]]
+            refiners:
+                language:
+                    exists: true
+                language_and_plugin:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]modules AS m
+                                                           ON m.id = [[REFINER__LANGUAGE_AND_PLUGIN]]
+                    sql: vp.module_class_name = m.class_name
+                category_public_name:
+                    sql: |
+                        vp.code = '_CATEGORY_[[REFINER__CATEGORY_PUBLIC_NAME]]'
+                                                        AND vp.module_class_name = 'zenario_common_features'
+                group_public_name:
+                    sql: |
+                        vp.code = '_GROUP_[[REFINER__GROUP_PUBLIC_NAME]]'
+                                                        AND vp.module_class_name = 'zenario_common_features'
+            columns:
+                code:
+                    title: Phrase code
+                    searchable: true
+                    db_column: vp.code
+                    show_by_default: true
+                    width: large
+                    ord: 1
+                module_name:
+                    title: Source module name
+                    db_column: vp.module_class_name
+                    format: module_class_name
+                    show_by_default: true
+                    width: large
+                    ord: 1.1
+                module_class_name:
+                    title: Source module class name
+                    db_column: vp.module_class_name
+                    width: large
+                    ord: 1.2
+                is_code:
+                    title: Is code
+                    db_column: SUBSTR(vp.code, 1, 1) = '_'
+                    format: yes_or_no
+                    show_by_default: false
+                    width: xsmall
+                seen_in_visitor_mode:
+                    title: Seen in visitor mode
+                    db_column: vp.seen_in_visitor_mode
+                    format: yes_or_no
+                    show_by_default: true
+                    width: small
+                seen_in_file:
+                    title: Seen in file
+                    db_column: vp.seen_in_file
+                    show_by_default: true
+                    width: large
+            default_sort_column: code
+            item:
+                name: Phrase
+                names: Phrases
+                css_class: language
+            collection_buttons:
+                help:
+                    label: Help
+                    help:
+                        message: |
+                            This panel lists all of the phrases that exist on your site. If your site is multilingual, then a phrase's  translation will display on the page in the corresponding language.
+                            
+                            A phrase cannot be created in organizer, for a phrase to be added it must be found in a plugin's framework or created as a plugin's setting. In both cases, the phrase needs to be viewed by a visitor to be added to this panel.
+            item_buttons:
+                edit:
+                    priv: _PRIV_VIEW_LANGUAGE
+                    label: Properties
+                    admin_box:
+                        path: zenario_phrase
+                merge:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Merge
+                    multiple_select: true
+                    multiple_select_only: true
+                    without_columns_set:
+                        is_code: true
+                    ajax:
+                        confirm:
+                            html: true
+                            message: 'Are you sure you wish to merge tthe selected phrases?'
+                            button_message: Merge
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            merge_phrases: 1
+                delete:
+                    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
+                    label: Delete
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            html: Yes
+                            message: 'Are you sure you wish to delete the phrase &quot;[[code]]&quot;?'
+                            multiple_select_message: Are you sure you wish to delete the selected phrases?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_phrase: 1

@@ -19,6 +19,7 @@ _CONFIRM_APPROVE_MODIFIED_POST,"The comment has just been edited. Please review 
 _CONFIRM_APPROVE_POST,"Are you sure that you wish to approve this comment?"
 _CONFIRM_DELETE_POST,"Are you sure that you wish to delete this comment?"
 _CONFIRM_LOCK_THREAD,"Are you sure that you wish to disallow further comments?"
+_CONFIRM_NAME_WARNING, "You must confirm your Screen Name in order to comment"
 _CONFIRM_SUBS_THREAD,"Are you sure you wish to subscribe? A notification email will be sent to &quot;[[email]]&quot; when a new comment is made on this page."
 _CONFIRM_UNLOCK_THREAD,"Are you sure that you wish to allow further comments?"
 _CONFIRM_UNSUBS_THREAD,"Are you sure you wish to unsubscribe, and no longer be notified of new comments on this page?"

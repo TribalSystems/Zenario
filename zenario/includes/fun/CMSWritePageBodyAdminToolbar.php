@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ $canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, false, '', cms_core
 if (request('zenario_sk_return')) {
 	$skLink = request('zenario_sk_return');
 } else {
-	$skLink = 'zenario__content/nav/content_types/panel/item//'. cms_core::$cType. '//item//'. cms_core::$langId. '//'. cms_core::$cType. '_'. cms_core::$cID;
+	$skLink = 'zenario__content/panels/content_types/item//'. cms_core::$cType. '//item//'. cms_core::$langId. '//'. cms_core::$cType. '_'. cms_core::$cID;
 	
 }
 

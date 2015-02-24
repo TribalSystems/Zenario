@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 		switch ($path) {
-			case 'zenario__languages/nav/zenario__countries/panel':
+			case 'zenario__languages/panels/countries':
 			
 			
 				foreach ($panel['items'] as $K => &$item) {
@@ -49,14 +49,29 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				}
 				break;
 
-			case 'zenario__languages/nav/zenario__countries/panel/regions/panel':
+			case 'zenario__languages/panels/regions':
+				if (setting('zenario_country_manager__region_type_management')) {
+					$panel['columns']['region_type']['hidden'] = false;
+				}
 				foreach ($panel['items'] as $K => &$item) {
-					if ( $refinerId && $phraseId = getRow("visitor_phrases", 'id', array('code' => '_REGION_NAME_' . $item['region_code']) )) {
+					if ( $refinerId && $phraseId = getRow("visitor_phrases", 'id', array('code' => $item['region_name']) )) {
 						$item['traits']['show_localizations'] = "Yes";
 					}
 
 					if (!checkRowExists(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions', array('parent_id' => $K))) {
 						$item['traits']['can_delete_region'] = true;
+					}
+					
+					switch($item['region_type']) {
+						case 'region':
+							$item['region_type'] = 'Region';
+							break;
+						case 'city':
+							$item['region_type'] = 'City';
+							break;
+						case 'state':
+							$item['region_type'] = 'State';
+							break;
 					}
 				}
 				switch (get('refinerName')){

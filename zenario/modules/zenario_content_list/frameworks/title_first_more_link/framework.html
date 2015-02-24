@@ -32,6 +32,14 @@
 						[cms:section name="Show_Item_Title"]
 							<h2 class="content_list_title [cms:merge name='Content_Type'/]"><a [cms:merge name='Link'/]>[cms:merge name="Title"/]</a></h2>
 						[/cms:section]
+						[cms:section name="Show_Author_Image"]
+							<div class="content_list_author_image">
+								<img alt="[cms:merge name='Author_Image_Alt'/]" src="[cms:merge name='Author_Image_Src'/]"/>
+							</div>
+						[/cms:section]
+						[cms:section name="Show_Author"]
+							<p class="content_list_author">[cms:merge name="Author"/]</p>
+						[/cms:section]
 						[cms:section name="Show_Date"]
 							<p class="content_list_date">[cms:merge name="Date"/]</p>
 						[/cms:section]

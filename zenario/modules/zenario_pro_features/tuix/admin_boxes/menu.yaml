@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_menu:
+    priv: _PRIV_VIEW_MENU_ITEM
+    tabs:
+        advanced:
+            custom_fields:
+                zenario_pro_features__descriptive_text:
+                    ord: "10"
+                    label: 'Additional text:'
+                    type: textarea
+                    rows: "2"
+                    cols: "80"
+        text:
+            fields:
+                zenario_pro_features__invisible:
+                    ord: "2000"
+                    label: 'Invisible in menu navigation'
+                    type: checkbox
+                    note_below: >
+                        If invisible, menu text will appear in breadcrumb trail
+                        only.

@@ -1,0 +1,101 @@
+/* Layout min-width: 768px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 769px) {
+
+	body .zenario_skin {
+		background:#FFF;
+		font-size:87.5%;
+		padding-top:77px;
+	}
+	
+	.Top_Area {
+		overflow:hidden;
+		position:fixed;
+		margin-left:47px;
+		width:calc(100% - 47px);
+		background:transparent;
+		top:0;
+		z-index:999;
+		margin-bottom:0;
+	}
+	
+	.zenario_adminLoggedIn .Top_Mobile_Menu,
+	.zenario_adminLoggedIn.zenario_pageMode_menu .Top_Mobile_Menu,
+	.zenario_adminLoggedIn.zenario_pageMode_template .Top_Mobile_Menu,
+	.zenario_adminLoggedIn.zenario_pageMode_edit .Top_Mobile_Menu {
+		position:fixed;
+		top: 129px;
+	}
+	
+	.zenario_adminLoggedIn .Top_Area {
+		top: 129px;
+	}
+	
+	.Top_Area .slot .zenario_slot {
+		height:77px;
+	}
+	
+	.Top_Area .Top_1 {
+		float:left;
+		width:80%;
+		width:calc(100% - 43px);
+	}
+	
+	.Top_Area .Top_3 {
+		float:right;
+		width:20%;
+		width:43px;
+	}
+	
+	.Full_Width {
+		margin-top:10px;
+	}
+	
+	#cboxContent {
+		font-size:81.3%;
+		line-height:18px;
+	}
+	
+	.zenario_banner__default_style .banner_content {
+		padding:10px;
+		text-align:center;
+	}
+	
+	.zenario_slideshow_2 .slide_title {
+		font-size:1.600em;
+	}
+	
+	.zenario_comments .post_area img {
+		max-width:100%;
+		height:auto;
+	}
+	
+	.zenario_content_list__default_style .content_list_data_row div.sticky_image {
+		float:none;
+		margin:0 0 10px;
+	}
+	
+	.zenario_content_list__default_style .content_list_data_row div.sticky_image img {
+		margin:auto;
+	}
+	
+	.zenario_email_a_friend .email_friend_popup {
+		width:90%;
+		padding:5%;
+	}
+	
+	.zenario_google_map > div {
+		width:95% !important;
+	}
+	
+	.zenario_skin input[type='submit'],
+	.zenario_skin input[type='button'],
+	.zenario_skin button,
+	#colorbox input[type='submit'],
+	#colorbox input[type='button'],
+	#colorbox button,
+	.extranet_wrap a.nice_button {
+		min-width:0;
+	}
+}

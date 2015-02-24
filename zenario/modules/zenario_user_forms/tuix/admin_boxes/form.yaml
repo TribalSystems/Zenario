@@ -1,0 +1,228 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user_admin_box_form:
+    key:
+        id: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            ord: 1
+            fields:
+                name:
+                    label: 'Form name:'
+                    type: text
+                    side_note: This name is for admin use only and will not be seen by visitors
+                title:
+                    label: 'Form title:'
+                    type: text
+                    side_note: The title will be displayed above a form to visitors
+                success_message_type:
+                    label: 'Action after form submission:'
+                    type: radios
+                    values:
+                        none:
+                            label: 'Stay on form'
+                        redirect_after_submission:
+                            label: 'Redirect to a thank you page'
+                        show_success_message:
+                            label: 'Only show a success message'
+                    value: none
+                    format_onchange: true
+                    
+                redirect_location:
+                    label: 'Thank you page:'
+                    pick_items:
+                        path: zenario__content/panels/content_types
+                        min_path: zenario__content/panels/content_types
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select page...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a thank you page.
+                success_message:
+                    label: 'Message:'
+                    type: text
+                    maxlength: 255
+        captcha:
+            label: Captcha
+            ord: 3
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                captcha_tab_description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab lets you enable a captcha.
+                use_captcha:
+                    label: 'Require anonymous visitors to complete a captcha'
+                    type: checkbox
+                    format_onchange: Yes  
+                captcha_type:
+                    label: 'Type of captcha:'
+                    type: select
+                    values:
+                        word:
+                            label: 'Words'
+                        math:
+                            label: 'Math'
+                    value: words
+                extranet_users_use_captcha:
+                    label: 'Require extranet users to complete a captcha'
+                    type: checkbox
+                
+        data:
+            label: Actions on form submission
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            ord: 2
+            fields:
+                save_record:
+                    label: 'Create form submission log record'
+                    type: checkbox
+                    format_onchange: true
+                line_br_1:
+                    snippet:
+                        html: <hr />
+                
+                save_data:
+                    label: 'Create user/contact record'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN save_data options
+                email_html:
+                     pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'To create or save a user/contact record, your form must include the field "Email"'
+                    post_field_html: "</div>"
+                user_status:
+                    label: 'Create user with status:'
+                    type: radios
+                    values:
+                        contact:
+                            label: 'Contact'
+                        active:
+                            label: 'Extranet user (Active)'
+                    value: contact
+                    format_onchange: true
+                log_user_in:
+                    label: 'Log user in after form submission'
+                    type: checkbox
+                add_user_to_group:
+                    label: 'Add user/contact to group:'
+                    type: select
+                    load_values_from_organizer_path: zenario__users/panels/groups_only
+                    empty_value: ' -- Select -- '
+                duplicate_submission_html:
+                    snippet:
+                        html: <b>Actions on duplicate submissions</b>
+                user_duplicate_email_action:
+                    label: 'Action:'
+                    type: radios
+                    values:
+                        merge:
+                            label: 'Merge new data with existing'
+                        overwrite:
+                            label: 'Overwrite old record'
+                        ignore:
+                            label: 'Don’t update'
+                    value: merge
+                create_another_form_submission_record:
+                    label: 'Create another form submission log record'
+                    type: checkbox
+                    side_note: |
+                        Check "Create form submission record" if you want to create form submission records when a duplicate is found
+                # END save_data options
+                line_br_2:
+                    snippet:
+                        html: <hr />
+                
+                send_email_to_user:
+                    label: 'Send email to user'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN send_email_to_user options
+                user_email_template:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                # END send_email_to_user options
+                line_br_3:
+                    snippet:
+                        html: <hr />
+                
+                send_email_to_admin:
+                    label: 'Send email to administrator'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN send_email_to_admin options
+                admin_email_addresses:
+                    label: 'Administrator email address(s):'
+                    type: text
+                    side_note: |
+                        Enter a comma separated list of administrator emails to send this email to.
+                    validation:
+                        required_if_not_hidden: Please enter one or more admin email addresses.
+                admin_email_options:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: send_data
+                    format_onchange: true
+                admin_email_template:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select an email template for admin emails.
+                reply_to:
+                    label: 'Optional "reply-to"'
+                    type: checkbox
+                    format_onchange: true
+                # BEGIN reply_to options
+                reply_to_email_field:
+                    label: 'Reply-to email using:'
+                    type: select
+                    validation:
+                        required_if_not_hidden: Please select a reply-to email field
+                reply_to_first_name:
+                    label: 'Reply-to first name using:'
+                    type: select
+                    validation:
+                        required_if_not_hidden: Please select a reply-to first name
+                reply_to_last_name:
+                    label: 'Reply-to last name using:'
+                    type: select
+                # END reply_to options
+                # END send_email_to_admin options
+                line_br_4:
+                    snippet:
+                        html: <hr />
+                send_signal:
+                    label: 'Send a signal (advanced)'
+                    type: checkbox
+                    side_note: |
+                        Broadcast the submitted form data to other modules for them to process (advanced)
+                    note_below: |
+                        Signal name: eventUserFormSubmitted

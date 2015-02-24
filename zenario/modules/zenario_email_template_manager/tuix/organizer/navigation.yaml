@@ -1,20 +1,24 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__email_template_manager:
-	ord: 4
-	css_class: zenario_email_template_top_level
-	label: Email
-	tooltip: "Send pre-formatted emails from your site, email logs"
-	nav:
-		email_templates: 
-			label: Templates
-			tooltip: "Email templates that your site can send"
-		email_log:
-			priv: _PRIV_VIEW_USER
-			label: Sent email log
-			tooltip: "Log of emails sent from your site"
-		shared_images:
-			label: Shared images
-			tooltip: "Common images used in your email templates"
-			link:
-				path: 'zenario__content/hidden_nav/media/panel/hidden_nav/email_images_shared/panel'
+    ord: 3.5
+    css_class: zenario_email_template_top_level
+    label: Email
+    tooltip: "Send pre-formatted emails from your site, email logs"
+    nav:
+        email_templates: 
+            label: Templates
+            tooltip: "Email templates that your site can send"
+            link:
+                path: zenario__email_template_manager/panels/email_templates
+        email_log:
+            priv: _PRIV_VIEW_USER
+            label: Sent email log
+            tooltip: "Log of emails sent from your site"
+            link:
+                path: zenario__email_template_manager/panels/email_log
+        shared_images:
+            label: Shared images
+            tooltip: "Common images used in your email templates"
+            link:
+                path: 'zenario__content/panels/email_images_shared'

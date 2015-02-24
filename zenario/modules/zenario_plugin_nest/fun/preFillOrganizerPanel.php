@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ switch ($path) {
 		}
 		
 		if (isset($panel['collection_buttons']['add_existing_banner_and_tab']['pick_items'])) {
-			$panel['collection_buttons']['add_existing_banner_and_tab']['pick_items']['path'] = 'zenario__modules/nav/modules/panel/item_buttons/view_instances//'. getModuleIdByClassName('zenario_banner'). '//';
+			$panel['collection_buttons']['add_existing_banner_and_tab']['pick_items']['path'] = 'zenario__modules/panels/modules/item_buttons/view_instances//'. getModuleIdByClassName('zenario_banner'). '//';
 		}
 		
 		//The remove_all_but_last_tab button should not allow the Admin to remove a Tab if only one is left

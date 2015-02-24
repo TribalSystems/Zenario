@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -403,7 +403,7 @@ class zenario_anonymous_comments extends module_base_class {
 		if (!$screenName) {
 			return '';
 		} elseif ($userId && ($alwaysShowLink || checkPriv('_PRIV_VIEW_USER'))) {
-			return '<a href="'. absCMSDirURL(). 'admin/organizer.php#zenario__users/nav/users/panel//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
+			return '<a href="'. absCMSDirURL(). 'admin/organizer.php#zenario__users/panels/users//'. $userId. '/" target="_blank">'. htmlspecialchars($screenName). '</a>';
 		} else {
 			return htmlspecialchars($screenName);
 		}

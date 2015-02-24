@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -607,4 +607,57 @@ if (needRevision(28550)) {
 //recalcMenuPositionsTopLevel() function to fix any bad data
 if (needRevision(28650)) {
 	recalcMenuPositionsTopLevel();
+	revision(28650);
+}
+
+
+//Look through the banners that have been created, trying to migrate their frameworks as best we can
+//This won't be perfect, but should at least reduce the amount of changes that need to be made manually
+if (needRevision(28710)) {
+	if ($bannerModuleId = getRow('modules', 'id', array('class_name' => 'zenario_banner', 'status' => 'module_running'))) {
+		
+		//Look for all Banner Plugins that used More Links
+		//Also try and look up the visitor phrase that would be used for the "More Link" text
+		$sql = "
+			SELECT pi.id, pi.framework, pi.content_id, vp.local_text
+			FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
+			LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+			   ON pi.content_id = c.id
+			  AND pi.content_type = c.type
+			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp
+			   ON vp.code = '_FIND_OUT_MORE'
+			  AND vp.module_class_name = 'zenario_banner'
+			  AND vp.language_id = IFNULL(c.language_id, '". sqlEscape(setting('default_language')). "')
+			WHERE pi.framework LIKE '%more_link%' 
+			  AND pi.module_id = ". (int) $bannerModuleId;
+	
+		$result = sqlQuery($sql);
+		while ($plugin = sqlFetchAssoc($result)) {
+			//A couple of the removed frameworks have direct replacements, so we may as well fix them now
+			if ($plugin['framework'] == 'image_then_title_then_text_with_more_link') {
+				updateRow('plugin_instances', array('framework' => 'image_then_title_then_text'), $plugin['id']);
+			}
+			if ($plugin['framework'] == 'title_then_image_then_text_with_more_link') {
+				updateRow('plugin_instances', array('framework' => 'title_then_image_then_text'), $plugin['id']);
+			}
+			
+			if (!$plugin['local_text']) {
+				$plugin['local_text'] = 'Find out more';
+			}
+			
+			//Insert a new setting for the "find out more" text
+			insertRow(
+				'plugin_settings',
+				array(
+					'instance_id' => $plugin['id'],
+					'name' => 'more_link_text',
+					'nest' => 0,
+					'value' => $plugin['local_text'],
+					'is_content' => $plugin['content_id']? 'version_controlled_content' : 'synchronized_setting',
+					'format' => 'translatable_text'),
+				true);
+		}
+	}
+	
+	revision(28710);
 }

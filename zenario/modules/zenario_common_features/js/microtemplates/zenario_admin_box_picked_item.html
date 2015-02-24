@@ -16,6 +16,13 @@
 				class="zeario_picked_image zeario_picked_image__{{m.extension|e}}"
 				onclick="{{m.thumbnail.onclick|e}}"
 				src="{{m.thumbnail.src|e}}"
+				
+				<% if (m.thumbnail.width) { %>
+					width="{{m.thumbnail.width|e}}"
+				<% } %>
+				<% if (m.thumbnail.height) { %>
+					height="{{m.thumbnail.height|e}}"
+				<% } %>
 			/>
 		<% } else { %>
 			<a
@@ -62,6 +69,14 @@
 			"
 			title="{{zenarioA.phrase.remove}}"
 		>{{zenarioA.phrase.remove}}</div>
+	<% } %>
+	
+	<% if (m.organizerPath) { %>
+		<a
+			target="_blank"
+			class="zab_picked_item_info"
+			href="{{URLBasePath|e}}zenario/admin/organizer.php#{{m.organizerPath|e}}"
+		>i</a>
 	<% } %>
 <% } %>
 </div>

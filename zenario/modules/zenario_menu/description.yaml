@@ -7,15 +7,15 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Menu (Horizontal)
 description: |
-	<p>Displays a horizontal menu navigation bar, typically for use as a top menu bar of a website.</p>
-	
-					<p>This module can generate different types of menu, including "popout" menus, which appear upon mouseover.</p>
-	
-					<p>In administration mode it will display "Add a Menu Node here" icons, which help an author add pages to a web site.</p>
-	
-					<p>It supports displaying the menu hierarchy from any of 7 different levels - from Levels 1 to 5, and two levels that are relative to the current content item. In addition, it is possible to reverse the display order of the menu nodes, i.e. right to left, which is helpful when working with RTL languages, and designs which have a float-right style.</
-	
-					<p>For a vertical navigation bar, use the Menu (Vertical) plugin (zenario_menu_vertical).</p>
+    <p>Displays a horizontal menu navigation bar, typically for use as a top menu bar of a website.</p>
+    
+                    <p>This module can generate different types of menu, including "popout" menus, which appear upon mouseover.</p>
+    
+                    <p>In administration mode it will display "Add a Menu Node here" icons, which help an author add pages to a web site.</p>
+    
+                    <p>It supports displaying the menu hierarchy from any of 7 different levels - from Levels 1 to 5, and two levels that are relative to the current content item. In addition, it is possible to reverse the display order of the menu nodes, i.e. right to left, which is helpful when working with RTL languages, and designs which have a float-right style.</
+    
+                    <p>For a vertical navigation bar, use the Menu (Vertical) plugin (zenario_menu_vertical).</p>
 keywords: menu, navigation
 css_class_name: zenario_menu
 is_pluggable: Yes

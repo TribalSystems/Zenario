@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -128,7 +128,7 @@ class zenario_country_manager extends module_base_class {
 		$rv = array();
 		$values = self::getRegions($countryActivityFilter,$countryId,$regionId);
 		foreach($values as $K=>$V)
-			$rv["REGION_" .strtoupper($V['code'])]= array('phrase'=> self::adminPhrase($langId,"_REGION_NAME_" . $V['country_id'] . "_" .strtoupper($V['code'])),'id'=>$V['id'],'code'=>$V['code'],'country_id'=>$V['country_id']) ;
+			$rv[$V['id']]= array('phrase'=> self::adminPhrase($langId, $V['name']),'id'=>$V['id'], 'country_id'=>$V['country_id']);
 		return $rv;
 	}
 	
@@ -138,12 +138,10 @@ class zenario_country_manager extends module_base_class {
 	
 	
 	public static function getRegions($countryActivityFilter='all',$countryCodeFilter='',$regionCodeFilter='',$regionIdFilter=false,$parentRegionFilter=0,$regionNameFilter='',$excludeIdsCSV=''){
-		
 		$rv = array();
 		$sql = 'SELECT
 					R.id, 
 					R.parent_id,
-					R.code ,
 					R.country_id,
 					R.name,
 					R.active,
@@ -162,9 +160,6 @@ class zenario_country_manager extends module_base_class {
 		}
 		if ($countryCodeFilter) {
 			$sql .= " AND R.country_id = '" . sqlEscape($countryCodeFilter)  . "' ";
-		} 
-		if ($regionCodeFilter) {
-			$sql .= " AND R.code = '" . sqlEscape($regionCodeFilter)  . "' ";
 		} 
 		if ($parentRegionFilter) {
 			$sql .= " AND R.parent_id = " . (int) $parentRegionFilter . " " ;
@@ -202,7 +197,6 @@ class zenario_country_manager extends module_base_class {
 		$sql = 'SELECT
 					id, 
 					parent_id,
-					code ,
 					country_id,
 					name,
 					active

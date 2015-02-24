@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_common_features__organizer__custom_tabs_and_fields  extends module_base_class {
+class zenario_common_features__organizer__custom_tabs_and_fields extends module_base_class {
 	
 	public static function sortByOrdinal($a, $b) {
 		if ((float) $a['ordinal'] == (float) $b['ordinal']) {
@@ -60,18 +60,13 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 							$panel['items'][$tabName] = array(
 								'is_tab' => true,
 								'is_system' => true,
-								'css_class' => 'zenario_char_section',
+								'css_class' => 'system_tab_visible',
 								//'disable_reorder' => true,
 								'ordinal' => (float) ifNull(arrayKey($tab, 'ord'), ++$tabCount),
 								'type' => 'system_tab',
 								'label' => ifNull(arrayKey($tab, 'dataset_label'), arrayKey($tab, 'label')),
 								'tab_name' => $tabName
 							);
-							
-							//Small hack - always make the first system tab first
-							if ($tabCount == 1) {
-								$panel['items'][$tabName]['ordinal'] = 0;
-							}
 							
 							//Loop through system fields
 							if (!empty($tab['fields'])
@@ -85,7 +80,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 										$panel['items'][$id] = array(
 											'is_field' => true,
 											'is_system' => true,
-											'css_class' => 'template',
+											'css_class' => 'system_field_visible',
 											//'disable_reorder' => true,
 											'ordinal' => (float) ifNull(arrayKey($field, 'ord'), ++$fieldCount),
 											'type' => 'system_field',
@@ -114,7 +109,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 						'type' => 'tab',
 						'label' => $ctab['label'],
 						'tab_name' => $ctab['name'],
-						'css_class' => 'zenario_char_section'
+						'css_class' => 'custom_tab_visible'
 					);
 					
 					$parents = array();
@@ -123,7 +118,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 					if (!empty($parents)) {
 						$panel['items'][$ctab['name']]['parents'] = '';
 						foreach ($parents as $parent) {
-							$panel['items'][$ctab['name']]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+							if ($parent['label']) {
+								$panel['items'][$ctab['name']]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+							} else {
+								$panel['items'][$ctab['name']]['parents'] .= $parent['field_name']. ' -> ';
+							}
 						}
 					}
 				
@@ -158,11 +157,37 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 					'type' => $field['type'],
 					'label' => $field['label'],
 					'protected' => $field['protected'],
-					'css_class' => 'zenario_char_'. $field['type'],
+					'css_class' => $field['protected']? 'custom_field_protected_visible' : 'custom_field_visible'
+					//'css_class' => 'zenario_char_'. $field['type'],
 					//('group', 'checkbox', 'checkboxes', 'date', 'editor', 'radios', 'select', 'text', 'textarea', 'url')
-					
-					'user_count' => countDatasetFieldRecords($field)
 				);
+				
+				$countSetting = setting('dataset_field_used_count');
+				
+				switch($countSetting) {
+					case 'always':
+						$panel['items'][$id]['user_count'] = countDatasetFieldRecords($field);
+						break;
+					case 'never':
+						unset($panel['columns']['user_count']);
+						break;
+					case 'if_indexed':
+						if ($field['sortable']) {
+							$panel['items'][$id]['user_count'] = countDatasetFieldRecords($field);
+						}
+						break;
+				}
+				
+				if (isset($panel['items'][$id]['user_count'])) {
+					if ($panel['items'][$id]['user_count'] == 0) {
+						$panel['items'][$id]['user_count'] = "Not used";
+					} elseif ($panel['items'][$id]['user_count'] == 1) {
+						$panel['items'][$id]['user_count'] = "1 record";
+					} elseif ($panel['items'][$id]['user_count'] > 1) {
+						$panel['items'][$id]['user_count'] .= " records";
+					}
+				}
+				
 				
 				$parents = array();
 				getCustomFieldsParents($field, $parents);
@@ -170,7 +195,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 				if (!empty($parents)) {
 					$panel['items'][$id]['parents'] = '';
 					foreach ($parents as $parent) {
-						$panel['items'][$id]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+						if ($parent['label']) {
+							$panel['items'][$id]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+						} else {
+							$panel['items'][$id]['parents'] .= $parent['field_name']. ' -> ';
+						}
 					}
 				}
 				
@@ -184,7 +213,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 				array('dataset_id' => $refinerId, 'is_system_field' => 1)
 			) as $field) {
 				
-				$id = '__system_field__'. $field['tab_name']. '__'. $field['field_name'];
+				$id = '___system_field___'. $field['tab_name']. '___'. $field['field_name'];
 				
 				if (isset($panel['items'][$id])) {
 					if ($field['ord']) {
@@ -238,8 +267,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 						$details['tab_name'] = $id;
 						$customTabs[$id] = $details;
 				
-					} elseif ($explode = chopPrefixOffOfString($id, '__system_field__')) {
-						if (($explode = explode('__', $explode))
+					} elseif ($explode = chopPrefixOffOfString($id, '___system_field___')) {
+						if (($explode = explode('___', $explode))
 						 && (!empty($explode[0]))
 						 && (!empty($explode[1]))) {
 						
@@ -252,9 +281,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 								$errorSystemFieldsCannotBeMovedBetweenTabs = true;
 							}
 						} else {
-							echo $id;
-							echo ' opps';
-							exit;
+							continue;
 						}
 				
 					} elseif (is_numeric($id)) {
@@ -299,7 +326,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields  extends module
 					
 					if ($dataset['extends_admin_box']) {
 						echo "\n\n";
-						echo adminPhrase('The first system tab may not be moved, and system fields may not be moved between tabs.');
+						//echo adminPhrase('The first system tab may not be moved, and system fields may not be moved between tabs.');
+						echo adminPhrase('System fields may not be moved between tabs.');
 					}
 					
 					exit;

@@ -1,0 +1,36 @@
+<div id="zenario_image_manager">
+	
+	<div class="zenario_dragMe zenario_jqmHead">
+		<div class="zenario_jqmTitle">
+			Manage images for this slideshow
+		</div>
+		<div class="zenario_close_image_manager" onclick="return zenario_slideshow_2.closeImageManager();">
+			<p>Close</p>
+		</div>
+	</div>
+	
+	<div class="error_display" id="zenario_slideshow_error_display"></div>
+	
+	<div id="zenario_fbMain" class="zenario_jqmMain">
+		<div class="zenario_jqmWinBor">
+			<div class="zenario_jqmWinBor" id="zenario_fbAdminInner">
+				<div class="zenario_jqmWinBor">
+					<div id="zenario_slides">
+						<div>
+							{{zenarioA.microTemplate('zenario_slides', m )}}
+						</div>
+					</div>
+					<div id="zenario_slide_attributes">
+						<div>
+							{{zenarioA.microTemplate('zenario_slide_details', {} )}}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="zenario_fbButtons" class="zenario_fbButtons">
+			<button id="zenario_save_continue">Save & Continue</button>
+			<button id="zenario_save_close">Save & Close</button>
+		</div>
+	</div>
+</div>

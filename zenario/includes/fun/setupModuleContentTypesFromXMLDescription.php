@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -90,17 +90,6 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 					$layout['name'] = ifNull((string) arrayKey($type, 'default_template_name'), (string) $type['content_type_name_en']);
 					
 					saveTemplate($layout, $layoutId, $layout['layout_id']);
-					
-					
-					//A small hack to set an appropriate image for this template for pictures and documents
-					foreach (array('.gif', '.jpg', '.jpeg', '.png') as $ext) {
-						if (($imageId = getRow('files', 'id', array('filename' => $type['content_type_id']. '_layout_thumbnail'. $ext, 'usage' => 'template')))
-						 || ($imageId = getRow('files', 'id', array('filename' => 'layout_thumbnail'. $ext, 'usage' => 'template')))) {
-							setRow('layouts', array('image_id' => $imageId), $layoutId);
-							break;
-						}
-					}
-					
 					
 					//Put an instance of this Plugin on that template, if this module uses instances
 					//Otherwise put an instance of the WYSIWYG Plugin on that template, if it's running

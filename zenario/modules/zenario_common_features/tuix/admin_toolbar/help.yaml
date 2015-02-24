@@ -1,122 +1,122 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 sections:
-	help:
-		buttons:
-			preview:
-				appears_in_toolbars:
-					preview: Yes
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>Navigate Mode</strong>
-						</p>
-						<p>
-							Use this mode to navigate your site. (In other modes, most navigation is disabled.)
-						</p>
-						<p>
-							When a content item is published, this mode shows you how this content item appears to site visitors. If a draft exists, this mode shows you how the new version will appear when published.
-						</p>
-						<p>
-							If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user.
-						</p>
-			edit:
-				appears_in_toolbars:
-					edit: Yes
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>Edit Mode</strong>
-						</p>
-						<p>
-							This mode shows you the editing controls for this content item.
-						</p>
-						<p>
-							Click &quot;Start editing&quot; to create a draft that you can work on.
-						</p>
-						<p>
-							If you have Author permissions, hover over a slot in the page, and click on a &quot;pencil&quot; icon to edit.
-						</p>
-						<p>
-							If you have Designer permissions, you will be able to work with plugins that are in slots on this page. Click on a &quot;plugin&quot; icon in the page to make changes or view information.
-						</p>
-						<p>
-							If you have Publisher permissions, you will be able to publish changes. Press the &quot;Publish&quot; button when you are ready to make the new page live.
-						</p>
-			edit_disabled:
-				appears_in_toolbars:
-					edit_disabled: Yes
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>Edit Mode</strong>
-						</p>
-						<p>
-							This mode shows you the editing controls for this content item.
-						</p>
-						<p>
-							You cannot make any changes if you do not have Author permission, or if a content item is locked by another administrator.
-						</p>
-			rollback:
-				appears_in_toolbars:
-					rollback: Yes
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>History Mode</strong>
-						</p>
-						<p>
-							This mode allows you to view details of a previous version of this content item.
-						</p>
-			template:
-				appears_in_toolbars:
-					template: Yes
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>Layout mode</strong>
-						</p>
-						<p>
-							This mode shows you the slots that are occupied by plugins on the layout layer.
-						</p>
-						<p>
-							Where there is a plugin from the library in a slot on this layer, that same plugin will appear on every content item that uses this layout.
-						</p>
-						<p>
-							Where there is a version-controlled
-							Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor,
-							all content items using this layout will have a
-							Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor
-							in that slot,
-							but the content will be different for each content item.
-							Use Edit mode to edit version-controlled content.
-						</p>
-						<p>
-							In Layout mode, you may also click &quot;Edit layout&quot; to make changes to the layout itself, including the size and positions of slots.
-						</p>
-	menu_node_help:
-		buttons:
-			menu:
-				label: Help
-				help:
-					html: Yes
-					message: |
-						<p>
-							<strong>Menu Mode</strong>
-						</p>
-						<p>
-							This mode allows you to edit menu nodes, the navigation structure of the site.
-						</p>
-						<p>
-							You can use this mode to add pages to your site; look for the &quot;Add a menu node&quot; buttons.
-						</p>
+    help:
+        buttons:
+            preview:
+                appears_in_toolbars:
+                    preview: Yes
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>Navigate Mode</strong>
+                        </p>
+                        <p>
+                            Use this mode to navigate your site. (In other modes, most navigation is disabled.)
+                        </p>
+                        <p>
+                            When a content item is published, this mode shows you how this content item appears to site visitors. If a draft exists, this mode shows you how the new version will appear when published.
+                        </p>
+                        <p>
+                            If your site has an extranet area, and a content item's permissions define it as private, this mode bypasses the permissions system and shows you how it will appear to an authorized user.
+                        </p>
+            edit:
+                appears_in_toolbars:
+                    edit: Yes
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>Edit Mode</strong>
+                        </p>
+                        <p>
+                            This mode shows you the editing controls for this content item.
+                        </p>
+                        <p>
+                            Click &quot;Start editing&quot; to create a draft that you can work on.
+                        </p>
+                        <p>
+                            If you have Author permissions, hover over a slot in the page, and click on a &quot;pencil&quot; icon to edit.
+                        </p>
+                        <p>
+                            If you have Designer permissions, you will be able to work with plugins that are in slots on this page. Click on a &quot;plugin&quot; icon in the page to make changes or view information.
+                        </p>
+                        <p>
+                            If you have Publisher permissions, you will be able to publish changes. Press the &quot;Publish&quot; button when you are ready to make the new page live.
+                        </p>
+            edit_disabled:
+                appears_in_toolbars:
+                    edit_disabled: Yes
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>Edit Mode</strong>
+                        </p>
+                        <p>
+                            This mode shows you the editing controls for this content item.
+                        </p>
+                        <p>
+                            You cannot make any changes if you do not have Author permission, or if a content item is locked by another administrator.
+                        </p>
+            rollback:
+                appears_in_toolbars:
+                    rollback: Yes
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>History Mode</strong>
+                        </p>
+                        <p>
+                            This mode allows you to view details of a previous version of this content item.
+                        </p>
+            template:
+                appears_in_toolbars:
+                    template: Yes
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>Layout mode</strong>
+                        </p>
+                        <p>
+                            This mode shows you the slots that are occupied by plugins on the layout layer.
+                        </p>
+                        <p>
+                            Where there is a plugin from the library in a slot on this layer, that same plugin will appear on every content item that uses this layout.
+                        </p>
+                        <p>
+                            Where there is a version-controlled
+                            Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor,
+                            all content items using this layout will have a
+                            Banner, Content Summary List, Raw HTML Snippet or WYSIWYG editor
+                            in that slot,
+                            but the content will be different for each content item.
+                            Use Edit mode to edit version-controlled content.
+                        </p>
+                        <p>
+                            In Layout mode, you may also click &quot;Edit layout&quot; to make changes to the layout itself, including the size and positions of slots.
+                        </p>
+    menu_node_help:
+        buttons:
+            menu:
+                label: Help
+                help:
+                    html: Yes
+                    message: |
+                        <p>
+                            <strong>Menu Mode</strong>
+                        </p>
+                        <p>
+                            This mode allows you to edit menu nodes, the navigation structure of the site.
+                        </p>
+                        <p>
+                            You can use this mode to add pages to your site; look for the &quot;Add a menu node&quot; buttons.
+                        </p>

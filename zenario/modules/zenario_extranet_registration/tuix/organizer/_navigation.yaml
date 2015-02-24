@@ -1,0 +1,14 @@
+zenario__users:
+    nav:
+        zenario_extranet_registration__codes:
+            label: Codes
+            tooltip: |
+                Define Codes used for places Users in a specific Group or
+                Groups on registration
+            link:
+                path: zenario__users/panels/zenario_extranet_registration__codes
+        zenario_extranet_registration__code_groups:
+            hidden: true
+            link:
+                path: zenario__users/panels/zenario_extranet_registration__code_groups
+            

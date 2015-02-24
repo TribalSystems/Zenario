@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_menu_section:
+    priv: _PRIV_ADD_MENU_SECTION
+    key:
+        id: ""
+    title: Creating a menu section
+    max_height: "190"
+    hide_tab_bar: Yes
+    tabs:
+        menu_section:
+            edit_mode:
+                enabled: Yes
+            fields:
+                desc:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            A menu section is a major part of the navigation.<br /><br />
+                            
+                                                        The typical sections of the menu for most sites are: the main menu (usually called Main); and the footer menu (Footer). Sometimes sites have an additional navigation area, such as an area of navigation at the top of every page but away from the main menu; or they may have a menu section that is only used on certain areas of a site, such as in an extranet area or other micro-site.<br /><br />
+                                                        You should only make a new menu section if you know what you are doing!
+                section_name:
+                    label: 'Section name:'
+                    type: text
+                    maxlength: "20"
+                    validation:
+                        required: Please enter a name for your new section.
+                        screen_name: >
+                            The name may contain only alphanumeric characters,
+                            underscores and hyphens.

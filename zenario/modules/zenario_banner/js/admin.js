@@ -85,7 +85,7 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 	var slotName = zenario.getSlotnameFromEl(el);
 	
 	var saveLink = zenario.get(containerId + '_save_link').value;
-	var content = $('div#' + editorId).tinymce().getContent();
+	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_banner.AJAX(
 		saveLink,
@@ -113,10 +113,10 @@ zenario_banner.SK = function(field_name, url, type, win) {
 	
 	if (type == 'file') {
 		zenarioA.SK('zenario_banner', 'setLinkURL', false,
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
 						false, undefined, undefined, undefined, true);
 	
 	}

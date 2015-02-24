@@ -1,154 +1,154 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-	module_class_name: zenario_image_container
-	tabs:
-		first_tab:
-			fields:
-				image_source:
-					#overwrite the banner declaration
-					plugin_setting:
-						name: image_source
-					label: 'Image source:'
-					type: text
-					hidden: Yes
-					value: _CUSTOM_IMAGE
-					
-				show_custom_css_code:
-					plugin_setting:
-						name: show_custom_css_code
-					label: 'Add custom CSS:'
-					type: checkbox
-					redraw_onchange: Yes
-				custom_css_code:
-					plugin_setting:
-						name: custom_css_code
-					visible_if: "zenarioAB.value('show_custom_css_code')"
-					label: 'CSS custom code:'
-					type: textarea
-					note_below: |
-						Here you can add raw css code that will be inserted as is on the css rule for this image. 
+    module_class_name: zenario_image_container
+    tabs:
+        first_tab:
+            fields:
+                image_source:
+                    #overwrite the banner declaration
+                    plugin_setting:
+                        name: image_source
+                    label: 'Image source:'
+                    type: text
+                    hidden: Yes
+                    value: _CUSTOM_IMAGE
+                    
+                show_custom_css_code:
+                    plugin_setting:
+                        name: show_custom_css_code
+                    label: 'Add custom CSS:'
+                    type: checkbox
+                    redraw_onchange: Yes
+                custom_css_code:
+                    plugin_setting:
+                        name: custom_css_code
+                    visible_if: "zenarioAB.value('show_custom_css_code')"
+                    label: 'CSS custom code:'
+                    type: textarea
+                    note_below: |
+                        Here you can add raw css code that will be inserted as is on the css rule for this image. 
 
-		mobile_tab:
-			label: 'Mobile image'
-			ord: 2
-			fields:
-				mobile_behavior:
-					plugin_setting:
-						name: mobile_behavior
-					label: 'Mobile behavior:'
-					type: select
-					format_onchange: Yes
-					values:
-						same_image:
-							label: Show same image
-						hide_image:
-							label: Hide image
-						change_image:
-							label: Change image
-					value: same_image
+        mobile_tab:
+            label: 'Mobile image'
+            ord: 2
+            fields:
+                mobile_behavior:
+                    plugin_setting:
+                        name: mobile_behavior
+                    label: 'Mobile behavior:'
+                    type: select
+                    format_onchange: Yes
+                    values:
+                        same_image:
+                            label: Show same image
+                        hide_image:
+                            label: Hide image
+                        change_image:
+                            label: Change image
+                    value: same_image
 
-				mobile_image_thumbnail:
-					full_width: Yes
-					snippet:
-						html: ""			
+                mobile_image_thumbnail:
+                    full_width: Yes
+                    snippet:
+                        html: ""            
 
-				mobile_image:
-					plugin_setting:
-						name: mobile_image
-						foreign_key_to: file
-					label: 'Mobile image:'
-					pick_items:
-						path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel
-						min_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel
-						max_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel
-						target_path: zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel
-						select_phrase: Select mobile image...
-					value: ""
-					format_onchange: Yes
-					hidden: Yes
-				mobile_canvas:
-					plugin_setting:
-						name: mobile_canvas
-					label: 'Mobile image canvas:'
-					type: select
-					value: unlimited
-					values:
-						unlimited:
-							ord: "1"
-							label: Unlimited size
-						fixed_width:
-							ord: "2"
-							label: Constrain by width
-						fixed_height:
-							ord: "3"
-							label: Constrain by height
-						fixed_width_and_height:
-							ord: "4"
-							label: Constrain by width and height
-						resize_and_crop:
-							ord: "5"
-							label: Resize and crop
-					format_onchange: Yes
-					hidden: Yes
-				mobile_width:
-					plugin_setting:
-						name: mobile_width
-					label: 'Width:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter a width alt1.
-						numeric: The width must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-					hidden: Yes
-				mobile_height:
-					plugin_setting:
-						name: mobile_height
-					label: 'Height:'
-					type: text
-					validation:
-						required_if_not_hidden: Please enter a height.
-						numeric: The height must be a number.
-					value: ""
-					maxlength: "5"
-					style: 'width: 5em;'
-					post_field_html: '&nbsp;pixels'
-					hidden: Yes
-				mobile_offset:
-					plugin_setting:
-						name: mobile_offset
-					label: 'Offset:'
-					type: text
-					hidden: Yes
-					style: 'width: 50px;'
-					value: "0"
-					slider:
-						min: "-10"
-						max: "10"
-						before_field: Yes
-						style: 'width: 200px;'
-					note_below: |
-						Move slider to the left to move the image left/down;
-						move the slider to the right to move the image right/up.
+                mobile_image:
+                    plugin_setting:
+                        name: mobile_image
+                        foreign_key_to: file
+                    label: 'Mobile image:'
+                    pick_items:
+                        path: zenario__content/panels/inline_images_for_reusable_plugins
+                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        select_phrase: Select mobile image...
+                    value: ""
+                    format_onchange: Yes
+                    hidden: Yes
+                mobile_canvas:
+                    plugin_setting:
+                        name: mobile_canvas
+                    label: 'Mobile image canvas:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: Yes
+                    hidden: Yes
+                mobile_width:
+                    plugin_setting:
+                        name: mobile_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width alt1.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    hidden: Yes
+                mobile_height:
+                    plugin_setting:
+                        name: mobile_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    hidden: Yes
+                mobile_offset:
+                    plugin_setting:
+                        name: mobile_offset
+                    label: 'Offset:'
+                    type: text
+                    hidden: Yes
+                    style: 'width: 50px;'
+                    value: "0"
+                    slider:
+                        min: "-10"
+                        max: "10"
+                        before_field: Yes
+                        style: 'width: 200px;'
+                    note_below: |
+                        Move slider to the left to move the image left/down;
+                        move the slider to the right to move the image right/up.
 
-				mobile_show_custom_css_code:
-					plugin_setting:
-						name: mobile_show_custom_css_code
-					label: 'Add custom CSS:'
-					type: checkbox
-					redraw_onchange: Yes
-				mobile_custom_css_code:
-					plugin_setting:
-						name: mobile_custom_css_code
-					visible_if: "zenarioAB.value('mobile_show_custom_css_code')"
-					label: 'CSS custom code:'
-					type: textarea
-					note_below: |
-						Here you can add raw css code that will be inserted as is on the css rule for this image. 
-			
+                mobile_show_custom_css_code:
+                    plugin_setting:
+                        name: mobile_show_custom_css_code
+                    label: 'Add custom CSS:'
+                    type: checkbox
+                    redraw_onchange: Yes
+                mobile_custom_css_code:
+                    plugin_setting:
+                        name: mobile_custom_css_code
+                    visible_if: "zenarioAB.value('mobile_show_custom_css_code')"
+                    label: 'CSS custom code:'
+                    type: textarea
+                    note_below: |
+                        Here you can add raw css code that will be inserted as is on the css rule for this image. 
+            
 
-		text:
-			label: HTML
+        text:
+            label: HTML

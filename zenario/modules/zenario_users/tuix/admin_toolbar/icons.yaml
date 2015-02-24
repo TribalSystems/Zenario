@@ -1,0 +1,21 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    icons:
+        buttons:
+            item_permissions_open:
+                css_class: zenario_at_icon_permissions_open
+                tooltip: 'Content Item Permissions|Visible to: Publicly visible'
+                admin_box:
+                  path: zenario_content_privacy
+                ord: 15
+            
+            item_permissions_closed:
+                css_class: zenario_at_icon_permissions_closed
+                tooltip__all_extranet_users: 'Content Item Permissions|Visible to: Private, can be viewed by All Extranet Users'
+                tooltip__group_members: 'Content Item Permissions|Visible to: Private, can be viewed by members of the selected Group(s):'
+                tooltip__specific_users: 'Content Item Permissions|Visible to: Private, can be viewed by the selected Extranet User(s):'
+                tooltip__no_access: 'Content Item Permissions|Visible to: No Regular Access'
+                admin_box:
+                  path: zenario_content_privacy
+                ord: 16

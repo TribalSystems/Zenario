@@ -1,0 +1,130 @@
+/* Layout max-width: 1200px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1200px) {
+	
+	.zenario_menu ul li a,
+	.zenario_promo_menu ul li a {
+		padding:0 15px;
+	}
+}
+
+/* Layout max-width: 1140px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1180px) {
+	img { 
+		max-width: 100%; 
+		height:auto !important;
+	}
+	
+	.banner_masthead img {
+		max-width: 97%;
+	}
+	
+	.Top_1 .zenario_slot {
+		margin-left:10px;
+	}
+	
+	.Full_Width .zenario_slot,
+	.Main_Area .zenario_slot {
+		margin:0 10px 10px;
+	}
+	
+	.Full_Width .zenario_slot .zenario_slot,
+	.Main_Area .zenario_slot .zenario_slot {
+		margin:0;
+	}
+	
+	.zenario_slideshow_2 .slideshow_container, 
+	.zenario_slideshow_2 .slideshow_container div {
+		margin: auto;
+		width:100% !important;
+		height:320px !important;
+	}
+	
+	.zenario_slideshow_2 .slideshow_container div.content_container {
+		width:auto !important;
+	}
+	
+	.zenario_slideshow_2 .slideshow_container div.content_container,
+	.zenario_slideshow_2 .slideshow_container div.content_container div {
+    	height:auto !important;
+	}
+	
+}
+
+
+/* Layout max-width: 1140px - 769px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (min-width : 769px) and (max-width: 1140px) {
+
+	.zenario_image_container a {
+		width:100% !important;
+		background-size:100% auto;
+	}
+	
+}
+
+/* Layout max-width: 850px - 769px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (min-width : 769px) and (max-width: 850px) {
+
+	.zenario_menu ul li a,
+	.zenario_promo_menu ul li a {
+		padding:0 10px;
+	}
+}
+
+	
+/* Layout max-width: 560px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 560px) {
+	
+	.Full_Width {
+		margin-top:5px;
+	}
+
+	.zenario_slideshow_2 .slide_title {
+		font-size:1em;
+	}
+	
+	.zenario_slideshow_2 .slide_extra_html {
+		font-size:0.933em;
+		line-height:1.2em;
+		font-weight:normal;
+	}
+	
+	.zenario_slideshow_2 .slide_inner .content_container {
+		left:5%;
+	}
+}
+
+/* Slideshow 2 fixed heights
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 980px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:280px !important; } }
+@media all and (max-width: 880px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:260px !important; } }
+@media all and (max-width: 780px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:220px !important; } }
+@media all and (max-width: 680px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:170px !important; } }
+@media all and (max-width: 580px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:140px !important; } }
+@media all and (max-width: 480px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:120px !important; } }
+@media all and (max-width: 400px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:100px !important; } }
+@media all and (max-width: 380px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:90px !important; } }
+@media all and (max-width: 320px) { .zenario_slideshow_2 .slideshow_container,  .zenario_slideshow_2 .slideshow_container div { height:80px !important; } }
+
+@media all and (max-width: 1200px) {
+	.zenario_slideshow_2 .slideshow_container div.bullet {
+		width:100% !important;
+		height:16px !important; 
+	}
+	
+	.zenario_slideshow_2 .slideshow_container div.bullet div { 
+		width:8px !important; 
+		height:8px !important; 
+		margin:0 2px 0!important; 
+	}
+}

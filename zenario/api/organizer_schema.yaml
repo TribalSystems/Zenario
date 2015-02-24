@@ -56,6 +56,7 @@ common_definitions:
         - boolean
         - number
         - string
+        - "null"
     css_class: &css_class
         type: string
         description: A CSS class name to add to this element, which should be used to define an icon.
@@ -202,7 +203,7 @@ additionalProperties:
                             This must <strong>not</strong> be a mode that you've disabled.
                     
                             This will be ignored if hierarchy view is enabled.
-                        default: grid
+                        default: list
                     
                     disable_grid_view:
                         type: boolean
@@ -212,6 +213,15 @@ additionalProperties:
                         type: boolean
                         description: >
                             Set this property to disable list view.
+                    
+                    slidedown_view_microtemplate:
+                        type: string
+                        description: >
+                            If you enter the name of a microtemplate here, a "toggle" button will be placed
+                            next to each item in Organizer, which will cause the microtemplate to appear
+                            by sliding down when clicked on.
+                            
+                            The toggle button only appears in grid or list view.
                     
                     db_items:
                         type: object
@@ -424,12 +434,12 @@ additionalProperties:
                                         If you enter an asterisk (*) as the value, this will match any non-empty value.
                                         (Or match any empty value when the admin inverts the filter.)
                                     additionalProperties:
-                                        type: variable
+                                        type: *variable
                                 empty_value:
                                     type: string
                                     description: >
                                         If a column is empty, show this text instead of a blank cell.
-                                item_link:
+                                width:
                                     enum:
                                         - xxsmall
                                         - xsmall
@@ -1054,8 +1064,9 @@ additionalProperties:
                                                 multiple_select_message:
                                                     type: string
                                                     description: >
-                                                        In Organizer, this property allows you to set a different message if multiple
-                                                        items are selected.
+                                                        In Organizer, this property allows you to set a different message if multiple items are selected.
+                                                        
+                                                        You can use the [[item_count]] merge field if you want to display the number of items in your message.
                                                     default: (defaults to the title property)
                                                 html: &message_html
                                                     type: boolean
@@ -1403,7 +1414,7 @@ additionalProperties:
                                         css_class:
                                             type: string
                                             description: >
-                                                A CSS class name to place round the
+                                                A CSS class name to place on the floating box.
                                     additionalProperties:
                                         type: *variable
                                         description: >
@@ -1495,6 +1506,15 @@ additionalProperties:
                                     type: string
                                     description: >
                                         A tooltip for this button
+                                
+                                parent:
+                                    type: string
+                                    description: >
+                                        Enter the codename/property name of another button into this property
+                                        to cause your button to appear underneath that button as a dropdown.
+                                        
+                                        There's a limit of 2 levels; you can't have a dropdown inside a dropdown.
+                                
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
@@ -1786,6 +1806,13 @@ additionalProperties:
                         description: >
                             This allows you to set a different label format for when an item is displayed
                             in a floating "pop out" box.
+                    bold_columns_in_list_view:
+                        type: string
+                        description: >
+                            This allows you to set which columns appear in bold in list view.
+                            You can pass the code-name of a column, or multiple code-names each
+                            surrounded by double-square-brackets like in the "label_format" fields.
+                        default: (defaults to the label_format_for_picked_items property)
                     
                     trash:
                         description: >

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 
 		if ($box['key']['id']) {
-			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id'), $box['key']['id'])) {
+			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id', 'image_id'), $box['key']['id'])) {
 				exit;
 
 			} elseif ($details['authtype'] != 'local') {
@@ -69,6 +69,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			$values['first_name'] = $details['first_name'];
 			$values['last_name'] = $details['last_name'];
 			$values['email'] = $details['email'];
+			$values['image'] = $details['image_id'];
 
 			//Get a list of permissions that an Admin is in
 			$perms = array();
@@ -298,13 +299,19 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		((!$box['key']['id'] && $tab = 'details') || (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on') && $tab = 'password'));
 
 		if (engToBooleanArray($box['tabs']['details'], 'edit_mode', 'on')) {
-
+			
 			$details = array(
 					'username' => $values['details/username'],
 					'first_name' => $values['details/first_name'],
 					'last_name' => $values['details/last_name'],
 					'email' => $values['details/email']);
-
+			
+			$image = $values['details/image'];
+			if ($image && ($filepath = getPathOfUploadedFileInCacheDir($image))) {
+				$image_id = addFileToDatabase('admin', $filepath, false, true);
+				$details['image_id'] = $image_id;
+			}
+			
 			if ($box['key']['id']) {
 				$details['modified_date'] = now();
 			} else {
@@ -313,6 +320,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			}
 
 			$box['key']['id'] = setRow('admins', $details, (int) $box['key']['id']);
+			deleteUnusedImagesByUsage('admin');
 		}
 		
 		//send email if inform by email checked

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -36,57 +36,6 @@ function addUserToGroup($userId, $groupId, $remove = false) {
 	}
 }
 
-function checkCredentials($name, $password, $format = 'email') {
-	$sql = "
-		SELECT id, first_name, screen_name, email, password, status
-		FROM ". DB_NAME_PREFIX. "users
-		WHERE password = BINARY '". sqlEscape($password). "'";
-	
-	if ($format == 'screen_name') {
-		$sql .=	"
-		  AND screen_name = '". sqlEscape($name). "'";
-	} else {
-		$sql .=	"
-		  AND email = '". sqlEscape($name). "'";
-	}
-	
-	$result = sqlQuery($sql);
-	if ($row = sqlFetchAssoc($result)) {
-		return $row;
-	} else {
-		return false;
-	}
-}
-
-//Check if this is an employee
-	//Warning - this is depcrecated and no longer works!
-function checkIfUserIsEmployee($userId){
-	return false;
-}
-
-function checkLogin($name, $password, $format = 'email') {
-	$sql = "
-		SELECT id, first_name, last_name, screen_name, email, password
-		FROM ". DB_NAME_PREFIX. "users
-		WHERE password = BINARY '". sqlEscape($password). "' 
-		  AND status = 'active'";
-	
-	if ($format == 'screen_name') {
-		$sql .=	"
-		  AND screen_name = '". sqlEscape($name). "'";
-	} else {
-		$sql .=	"
-		  AND email = '". sqlEscape($name). "'";
-	}
-	
-	$result = sqlQuery($sql);
-	if ($row = sqlFetchAssoc($result)) {
-		return $row;
-	} else {
-		return false;
-	}
-}
-
 //Check for permission to see a content item
 //	function checkPerm($cID, $cType, $cVersion = false) {}
 
@@ -100,12 +49,13 @@ function checkLogin($name, $password, $format = 'email') {
 function logUserInAutomatically() {
 	if (isset($_SESSION)) {
 		if (empty($_SESSION['extranetUserID'])) {
+			
 			if (isset($_COOKIE['LOG_ME_IN_COOKIE'])
 			 && ($idAndMD5 = explode('_', $_COOKIE['LOG_ME_IN_COOKIE'], 2))
 			 && (count($idAndMD5) == 2)
 			 && ($user = getRow('users', array('id', 'first_name', 'last_name', 'email', 'screen_name', 'password'), array('id' => (int) $idAndMD5[0], 'status' => 'active')))
 			 && ($idAndMD5[1] === md5(httpHost(). $user['id']. $user['screen_name']. $user['email']. $user['password']))) {
-				logUserIn($user['id'], $user);
+				logUserIn($user['id']);
 				
 				if (setting('cookie_consent_for_extranet') == 'granted') {
 					setCookieConsent();
@@ -259,41 +209,25 @@ function smartGroupExclusionsDescription($values) {
 	return $rv;
 }
 
-function smartGroupSQL($smartGroupId, &$whereStatement, &$joins, $excludeOptOuts = true) {
+function smartGroupSQL($smartGroupId, &$whereStatement, &$joins) {
 	if ($json = getRow('smart_groups', 'values', $smartGroupId)) {
-		if (advancedSearchSQL($whereStatement, $joins, 'zenario__users/nav/users/panel', $json, $smartGroupId)) {
-
-			/*if ($excludeOptOuts) {
-				$join = "
-					LEFT JOIN ". DB_NAME_PREFIX. "smart_group_opt_outs AS sgoo_" . sqlEscape((string)$smartGroupId) . "
-					   ON sgoo_" . sqlEscape((string)$smartGroupId) . ".user_id = u.id
-					  AND sgoo_" . sqlEscape((string)$smartGroupId) . ".smart_group_id = ". (int) $smartGroupId;
-					
-				$joins[$join] = true;
-					
-				$whereStatement .= "
-					AND sgoo_" . sqlEscape((string)$smartGroupId) . ".user_id IS NULL";
-			}*/ // disabled opt out functionallity 
-
-			return true;
-		}
+		return advancedSearchSQL($whereStatement, $joins, 'zenario__users/panels/users', $json, $smartGroupId);
 	}
 	return false;
 }
 
-function smartGroup($smartGroupId, $excludeOptOuts = true) {
-
-	$users = array();
-	$joins = array();
+function countSmartGroupMembers($smartGroupId) {
 
 	$sql = "
-		SELECT u.id
+		SELECT COUNT(DISTINCT u.id)
 		FROM ". DB_NAME_PREFIX. "users AS u";
 
 	$whereStatement = "
 		WHERE TRUE";
+	
+	$joins = array();
 
-	if (smartGroupSQL($smartGroupId, $whereStatement, $joins, $excludeOptOuts)) {
+	if (smartGroupSQL($smartGroupId, $whereStatement, $joins)) {
 			
 		foreach ($joins as $join => $dummy) {
 			$sql .= "
@@ -301,18 +235,14 @@ function smartGroup($smartGroupId, $excludeOptOuts = true) {
 		}
 			
 		$sql .= $whereStatement;
-		$result = sqlQuery($sql);
-			
-		unset($sql);
-		unset($joins);
-		unset($whereStatement);
-			
-		while ($row = sqlFetchRow($result)) {
-			$users[$row[0]] = $row[0];
+		
+		if (($result = sqlQuery($sql))
+		 && ($row = sqlFetchRow($result))) {
+			return $row[0];
 		}
 	}
 
-	return $users;
+	return 0;
 }
 
 function optOutOfSmartGroup($smartGroupId, $userId, $method) {
@@ -342,6 +272,112 @@ function isInvalidUser($values, $id = false) {
 	return saveUser($values, $id, false);
 }
 
+function generateUserScreenName($firstName, $lastName, $email = '') {
+	$firstName = preg_replace('/[^A-Za-z0-9\-]/', '', $firstName);
+	$lastName = preg_replace('/[^A-Za-z0-9\-]/', '', $lastName);
+	if ($firstName || $lastName) {
+		// Remove special characters
+		$simpleScreenName = $firstName. $lastName;
+	} elseif ($email) {
+		$emailArray = explode('@', $email);
+		$simpleScreenName = $emailArray[0];
+	} else {
+		$simpleScreenName = 'User';
+	}
+	$screenNames = array();
+	// Get all current similar screen names from all linked sites
+	if (file_exists(CMS_ROOT. 'zenario_usersync_config.php') && inc('zenario_users')) {
+		require CMS_ROOT. 'zenario_usersync_config.php';
+		$thisIsHub =
+			$hub['DBHOST'] == DBHOST
+		 && $hub['DBNAME'] == DBNAME;
+		
+		$screenNames = getSimilarScreenNames($simpleScreenName, $thisIsHub, $hub, $satellites);
+		connectLocalDB();
+	}
+	$sql = '
+		SELECT screen_name 
+		FROM '.DB_NAME_PREFIX.'users
+		WHERE screen_name LIKE "'.sqlEscape($simpleScreenName).'%"';
+	$result = sqlSelect($sql);
+	while ($user = sqlFetchAssoc($result)) {
+		$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+	}
+	if (!isset($screenNames[strtoupper($simpleScreenName)])) {
+		return $simpleScreenName;
+	} else {
+		$digits = 1;
+		do {
+		if (strlen($simpleScreenName) >= 50) {
+				$simpleScreenName = substr($simpleScreenName, 0, (50 - $digits));
+			}
+			$randomScreenName = $simpleScreenName. str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
+			$unique = true;
+			foreach($screenNames as $screenName) {
+				if (strtoupper($screenName) == strtoupper($randomScreenName)) {
+					$unique = false;
+					break;
+				}
+			}
+			$digits++;
+		} while ($unique == false);
+		return $randomScreenName;
+	}
+}
+
+function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
+	$screenNames = array();
+	$DBHost = DBHOST;
+	$DBName = DBNAME;
+	// if not thisIsHub, return hubs screen names
+	if (!$thisIsHub) {
+		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'])) {
+			cms_core::$lastDB = $dbSelected;
+			cms_core::$lastDBHost = $hub['DBHOST'];
+			cms_core::$lastDBName = $hub['DBNAME'];
+			cms_core::$lastDBPrefix = $hub['DB_NAME_PREFIX'];
+			
+			$sql = '
+				SELECT screen_name
+				FROM '. $hub['DB_NAME_PREFIX']. 'users
+				WHERE screen_name LIKE "'.sqlEscape($screenName).'%"';
+			
+			$result = sqlSelect($sql);
+			while ($user = sqlFetchAssoc($result)) {
+				$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+			}
+		} else {
+			return false;
+		}
+	// If thisIsHub, return all satellite screen names
+	} else {
+		foreach($satellites as $satellite) {
+			if ($satellite['DBHOST'] == $DBHost
+				&& $satellite['DBNAME'] == $DBName) {
+				continue;
+			} else {
+				if ($dbSelected = connectToDatabase($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'])) {
+					cms_core::$lastDB = $dbSelected;
+					cms_core::$lastDBHost = $satellite['DBHOST'];
+					cms_core::$lastDBName = $satellite['DBNAME'];
+					cms_core::$lastDBPrefix = $satellite['DB_NAME_PREFIX'];
+					
+					$sql = '
+						SELECT screen_name
+						FROM '. $satellite['DB_NAME_PREFIX']. 'users
+						WHERE screen_name LIKE "'.sqlEscape($screenName).'%"';
+					
+					$result = sqlSelect($sql);
+					while ($user = sqlFetchAssoc($result)) {
+						$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+					}
+				}
+			}
+		}
+	}
+	return $screenNames;
+}
+
 function getNextScreenName() {
 	$sql = "
 		SELECT IFNULL(MAX(id), 0) + 1
@@ -367,7 +403,10 @@ function getNextScreenName() {
 function saveUser($values, $id = false, $doSave = true) {
 	//Ensure the screen name is set by default
 	if (!$id && empty($values['screen_name'])) {
-		$values['screen_name'] = getNextScreenName();
+		$firstName = isset($values['first_name']) ? $values['first_name'] : '';
+		$lastName = isset($values['last_name']) ? $values['last_name'] : '';
+		$email = isset($values['email']) ? $values['email'] : '';
+		$values['screen_name'] = generateUserScreenName($values['first_name'], $values['last_name'], $values['email']);
 	}
 	
 	//First, validate the submission.
@@ -415,8 +454,19 @@ function saveUser($values, $id = false, $doSave = true) {
 		return false;
 	
 	} else {
+		
+		$password = false;
+		if (isset($values['password'])) {
+			$password = $values['password'];
+			unset($values['password']);
+		}
+		
 		//Save the details to the database
 		$newId = setRow('users', $values, $id);
+		
+		if ($password !== false) {
+			setUsersPassword($newId, $password);
+		}
 		
 		//Send a signal to let other Modules know this event has happened
 		if ($id) {
@@ -442,11 +492,14 @@ function saveUser($values, $id = false, $doSave = true) {
 
 
 
-function logUserIn($userId, $user = false) {
+function logUserIn($userId) {
 	
-	if (!$user) {
-		$user = getRow('users', array('first_name', 'last_name', 'screen_name', 'email'), $userId);
-	}
+	//Get details on this user
+	$user = getRow('users', array('id', 'first_name', 'last_name', 'screen_name', 'email', 'password'), $userId);
+	
+	//Create a login hash (used for the logUserInAutomatically() function)
+	$user['login_hash'] = $user['id']. '_'. md5(httpHost(). $user['id']. $user['screen_name']. $user['email']. $user['password']);
+	unset($user['password']);
 	
 	//Update their last login time
 	$sql = "
@@ -455,8 +508,7 @@ function logUserIn($userId, $user = false) {
 			ip = '" . visitorIP() . "',
 			last_login = NOW()
 		WHERE id = ". (int) $userId;
-	
-	$result2 = sqlQuery($sql);
+	sqlUpdate($sql);
 	
 
 	if(setting('sign_in_access_log'))
@@ -483,11 +535,10 @@ function logUserIn($userId, $user = false) {
 	$_SESSION["extranetUserID"] = $userId;
 	$_SESSION["extranetUser_firstname"] = $user['first_name'];
 	
-
-	//Check if this is an employee
-	$_SESSION["extranetUserIsAnEmployee"] = checkIfUserIsEmployee($userId);
-
+	
 	sendSignal("eventUserLoggedIn",array("user_id" => $userId));
+	
+	return $user;
 }
 
 function getUserDetails($user_id) {
@@ -526,42 +577,72 @@ function getUserIdFromScreenName($screenName) {
 	return getRow('users', 'id', array('screen_name' => $screenName));
 }
 
-function getScreenAndPasswordFromEmail($email) {
-	$sql = "
-		SELECT screen_name, 
-			password 
-		FROM " . DB_NAME_PREFIX . "users 
-		WHERE email = '" . sqlEscape($email) . "'";
-	$result = sqlQuery($sql);
-	if (sqlNumRows($result) ==0) {
-		return false;
-	}
-	$users = array ();
-	while ($row = sqlFetchArray( $result )) {
-		$users[$row['screen_name']] = $row['password'];
-	}
-	return $users;
-}
-
 function createPassword() {
 	return randomString(8);
 }
 
-function changePassword($id, $newPassword) {
-	$sql = "
-		UPDATE " . DB_NAME_PREFIX . "users 
-		SET password = '" . sqlEscape( $newPassword ) . "' 
-		WHERE id = " . (int) $id;
-	$result = sqlQuery($sql);
+function setUsersPassword($userId, $password, $needsChanging = -1, $plaintext = -1) {
+	
+	if ($plaintext === -1) {
+		$plaintext = setting('plaintext_extranet_user_passwords');
+	}
+	
+	if ($plaintext) {
+		$salt = null;
+	
+	} else {
+		//Generate a random salt for this password. If someone gets hold of the encrypted value of
+		//the password in the database, having a salt on it helps to stop dictonary attacks.
+		$salt = randomString(8);
+		$password = hashPassword($salt, $password);
+	}
+	
+	
+	$details = array('password' => $password, 'password_salt' => $salt);
+	
+	if ($needsChanging !== -1) {
+		$details['password_needs_changing'] = $needsChanging;
+	}
+	
+	updateRow('users', $details, $userId);
 }
 
-function changeStatus($userId, $newStatus) {
-	$sql = "
-		UPDATE " . DB_NAME_PREFIX . "users 
-		SET status = '" . $newStatus . "' 
-		WHERE id = " . (int) $userId;
-	sqlQuery($sql);
-	return true;
+function checkUsersPassword($userId, $password) {
+	//Look up some of this user's details
+	if (!$user = getRow('users', array('id', 'password', 'password_salt'), (int) $userId)) {
+		return false;
+	}
+	
+	//Should the password be stored encrypted?
+	$shouldBeEncrypted = !setting('plaintext_extranet_user_passwords');
+	
+	//The password could have been stored as either plain text, sha1 or sha2.
+	if ($user['password_salt'] === null) {
+		//Non-hashed passwords
+		$wasEncrypted = false;
+		$correct = $user['password'] === $password;
+	
+	} elseif (substr($user['password'], 0, 6) != 'sha256') {
+		//SHA1
+		$wasEncrypted = true;
+		$correct = $user['password'] == hashPasswordSha1($user['password_salt'], $password);
+	
+	} else {
+		//SHA2
+		$wasEncrypted = true;
+		$correct = $user['password'] == hashPasswordSha2($user['password_salt'], $password);
+	}
+	
+	if ($correct) {
+		//If the password was not stored in the form chosen in the site settings, save it in the correct form
+		if ($wasEncrypted != $shouldBeEncrypted) {
+			setUsersPassword($user['id'], $password);
+		}
+		
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function deleteUser($userId) {
@@ -585,9 +666,8 @@ function updateUserHash($userId) {
 		UPDATE 
 			"  . DB_NAME_PREFIX . "users 
 		SET 
-			hash = md5(CONCAT(email, screen_name,'" . primaryDomain() . "'))
+			hash = md5('".sqlEscape(randomString())."')
 		WHERE 
 			id = " . (int) $userId;
-
 	sqlQuery($sql);
 }

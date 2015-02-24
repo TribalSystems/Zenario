@@ -1,0 +1,162 @@
+<form id="zenario_slide_settings_form">
+	<div id="zenario_main_image_details" class="zenario_slide_attributes_panel">
+		<div>
+
+		<div class="zenario_main_slide">
+			<img id="zenario_main_image_preview" src="{{m.image_src_thumbnail_1|e}}" alt="{{m.alt_tag|e}}" />
+		</div>
+		
+		<p id="zenario_main_image_dimensions"></p>
+		
+		<div class="zenario_slide_settings_section zenario_slide_settings_choose_image">
+			<p>Main Image:</p>
+			<input type="text" name="filename" size="50" readonly/> 
+			<button type="button" id="zenario_change_image">Change Image</button>
+		</div>
+		
+		<p>Alt-tag:</p>
+		<input type="text" name="overwrite_alt_tag" id="zenario_overwrite_alt_tag" size="40"/>
+		
+		<div id="zenario_main_tab_name">
+			<p>Tab name</p>
+			<input type="text" name="tab_name" id="zenario_tab_name" size="50"/>
+		</div>
+		
+		<p>Slide title:</p>
+		<input type="text" name="slide_title" id="zenario_slide_title" size="50"/>
+		<input type="hidden" name="title_transition" id="zenario_extra_html_transition" size="50"/>
+		
+		<p>Description (HTML)</p>
+		<textarea name="slide_extra_html" id="zenario_slide_extra_html"></textarea>
+		<input type="hidden" name="extra_html_transition" id="zenario_extra_html_transition" size="50"/>
+		</div>
+	</div>
+	
+	<div id="zenario_rollover_image_details" class="zenario_slide_attributes_panel" hidden>
+		<div>
+		<div class="zenario_rollover_slide">
+			
+			<img id="zenario_rollover_image_preview" src="{{m.rollover_image_src_thumbnail_1}}" alt="{{m.r_alt_tag}}" />
+			<p id="zenario_rollover_image_dimensions"></p>
+		</div>
+		<p>Rollover Image:</p>
+		<input type="text" id="zenario_rollover_filename" name="r_filename" size="50" readonly/>
+		<button type="button" id="zenario_change_rollover_image">Change Image</button>
+		<button type="button" id="zenario_remove_rollover_image">Remove</button>
+		<p>Alt-tag:</p>
+		<input type="text" name="rollover_overwrite_alt_tag" id="zenario_rollover_overwrite_alt_tag" size="40"/>
+		
+	</div>
+	</div>
+	
+	<div id="zenario_mobile_image_details" class="zenario_slide_attributes_panel" hidden>
+		<div>
+		<div class="zenario_mobile_slide">
+			
+			<img id="zenario_mobile_image_preview" src="{{m.mobile_image_src_thumbnail_1}}" alt="{{m.m_alt_tag}}"/>
+			<p id="zenario_mobile_image_dimensions"></p>
+		</div>
+		<p>Mobile Image:</p>
+		<input type="text" id="zenario_mobile_filename" name="m_filename" size="50" readonly/>
+		<button type="button" id="zenario_change_mobile_image">Change Image</button>
+		<button type="button" id="zenario_remove_mobile_image">Remove</button>
+		
+		<p>Alt-tag:</p>
+		<input type="text" name="mobile_overwrite_alt_tag" id="zenario_mobile_overwrite_alt_tag" size="40"/>
+		
+		<div id="zenario_mobile_tab_name">
+			<p>Tab name</p>
+			<input type="text" name="mobile_tab_name" id="zenario_tab_name" size="50"/>
+		</div>
+		
+		<p>Slide title</p>
+		<input type="text" name="mobile_slide_title" id="zenario_mobile_slide_title" size="50"/>
+		
+		<p>Description (HTML)</p>
+		<textarea name="mobile_slide_extra_html" id="zenario_mobile_slide_extra_html"></textarea>
+	</div>
+	</div>
+	
+	<div id="zenario_slide_settings" class="zenario_slide_options_panel">
+		<div>
+			<div id="zenario_image_type">
+				<div id="zenario_edit_main_image" class="slide_tab current">Main Image</div>
+				<div id="zenario_edit_rollover_image" class="slide_tab">Rollover Image</div>
+				<div id="zenario_edit_mobile_image" class="slide_tab">Mobile Image</div>
+			</div>
+			<div id="zenario_slide_settings_inner">
+				<p>Link:</p>
+				<select id="zenario_select_link_type" name="target_loc">
+					<option value="none">Don't link</option>
+					<option value="internal">Internal - link to a content item</option>
+					<option value="external">External - link to a full URL</option>
+				</select>
+				
+				<div id="zenario_internal_link_settings" hidden>
+					<p>Content item:</p>
+					<input id="zenario_content_item_link" name="content_item_link" type="text" readonly size="50"/>
+					<button type="button" id="zenario_select_content_item" onclick="zenario_slideshow_2.pickContentItemLinkFromOrganizer();">Select a content item...</button>
+					<input type="hidden" id="zenario_content_item_id" name="content_item_tag_id">
+				</div>
+				
+				<div id="zenario_external_link_settings" hidden>
+					<p>External URL:</p>
+					<input id="zenario_external_link" name="external_link" type="text" size="50"/>
+				</div>
+				
+				<div id="zenario_open_in_new_window_settings" hidden>
+					<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window"/>
+					Open in a new window
+				</div>
+				
+				<div id="zenario_link_to_translation_chain_settings" hidden>
+					<input type="checkbox" id="zenario_link_to_translation_chain" name="link_to_translation_chain"/>
+					Use translation chain
+				</div>
+				
+				<p>Slide visibility by user:</p>
+				<select id="zenario_select_slide_visibility" name="slide_visibility">
+					<option value="everyone">Everyone</option>
+					<option value="logged_in">Logged-in users</option>
+					<option value="logged_out">Anonymous visitors</option>
+					<option value="logged_in_with_field">Logged-in users with dataset field:</option>
+					<option value="logged_in_without_field">Logged-in users without dataset field:</option>
+					<option value="call_static_method">Call a module's static method (advanced)</option>
+				</select>
+				
+				<div id="zenario_user_field_settings" hidden>
+					<!-- List of select options generated in PHP, set in JS -->
+					<select id="zenario_dataset_boolean_and_groups_only" name="field_id">
+						<option value="0" selected>-- Select --</option>
+					</select>
+				</div>
+				
+				<div id="zenario_static_method_settings" hidden> 
+					<div id="zenario_module_class_name_settings">
+						<p>Module class name:</p>
+						<input id="zenario_module_class_name" name="plugin_class" type="text"/>
+					</div>
+					<div id="zenario_static_method_name_settings">
+						<p>Static method name:</p>
+						<input id="zenario_static_method_name" name="method_name" type="text"/>
+					</div>
+					<div id="zenario_parameter_1_settings">
+						<p>Parameter 1:</p>
+						<input id="zenario_parameter_1" name="param_1" type="text"/>
+					</div>
+					<div id="zenario_parameter_2_settings">
+						<p>Parameter 2:</p>
+						<input id="zenario_parameter_2" name="param_2" type="text"/>
+					</div>
+				</div>
+				
+				<div id="zenario_slide_hidden_setting">
+					<input type="checkbox" id="zenario_slide_hidden" name="hidden" />
+					Disable slide
+				</div>
+				
+				
+			</div>
+		</div>
+	</div>
+</form>

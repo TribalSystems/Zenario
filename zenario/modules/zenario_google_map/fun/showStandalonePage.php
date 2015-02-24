@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ echo '<!DOCTYPE HTML>
 			margin: 0;
 		}
 	</style>
-	<script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
+	<script src="' . httpOrhttps() . 'maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
 </head>
 <body>
 	<div id="map">

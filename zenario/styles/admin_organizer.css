@@ -194,6 +194,7 @@ body.webkit input {
 	border:0;
 	padding:0 8px 0 26px;
 	height:34px;
+	line-height:34px;
 	background: url("../admin/images/icon-eyeglass.png") no-repeat 4px center;
 }
 
@@ -877,7 +878,6 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a {
 	display: block;
 	position:absolute;
-	right:10px;
 	top:10px;
 	height: 22px;
 	width: 22px;
@@ -889,6 +889,14 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 #zenario_fbAdminAdvancedSearch div.organizer_colsortheader a:hover,
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a:hover {
 	background-color:#007FA3;
+}
+
+#zenario_fbAdminAdvancedSearch div.organizer_colsortheader a {
+	right:10px;
+}
+
+#zenario_fbAdminViewModeOptions div.organizer_colsortheader a { 
+	right:20px;
 }
 
 #zenario_fbAdminAdvancedSearch p,
@@ -1782,6 +1790,14 @@ body.ie9 #organizer_preloader_circle div {
 #organizer_previousToolbar {
 	position: absolute;
 }
+
+#organizer_collectionToolbar a,
+#organizer_itemToolbar a,
+#organizer_previousToolbar a,
+#organizer_quickFilter a {
+	cursor:pointer;
+}
+
 
 #organizer_itemToolbar {
 	z-index:9;
@@ -3014,6 +3030,12 @@ body.ie9 #organizer_preloader_circle div {
 	float: left;
 }
 
+.organizer_inline_buttons .zenario_ib_warning {
+	background: url('../admin/images/inline_buttons/inline-warning-triangle-icon.png') no-repeat center center;
+	width: 18px;
+	height: 18px;
+}
+
 
 
 
@@ -3539,18 +3561,21 @@ body.ie8 #organizer_rightColumn div.organizer_row div.organizer_cell div.ghost {
 	/* to add */
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.urls_collection {
-	/* to add */
-}
-
-#organizer_rightColumn div.organizer_row div.organizer_cell div.alias_urls_collection,
-#organizer_rightColumn #organizer_panelTitle div.alias_url {
+#organizer_rightColumn div.organizer_row div.organizer_cell div.urls_collection,
+#organizer_rightColumn #organizer_panelTitle div.url_item {
 	background:  -15px -2894px no-repeat;
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col.png');
 }
 
+#organizer_rightColumn div.organizer_row div.organizer_cell div.alias_urls_collection,
+#organizer_rightColumn #organizer_panelTitle div.alias_url {
+	background:  -15px -2944px no-repeat;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col.png');
+}
+
 #organizer_rightColumn div.organizer_row div.organizer_cell div.url_item {
-	/* to add */
+	background:  -15px -2894px no-repeat;
+	background-image: url('../admin/images/sprites/sprite-list-icons-single-col.png');
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.alias_url {
@@ -3588,6 +3613,53 @@ body.ie8 #organizer_rightColumn div.organizer_row div.organizer_cell div.ghost {
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_trans_chain {
 	/* to add */
 }
+
+
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_hidden {/* currently not used */
+    background: no-repeat -20px -17px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_protected_hidden {/* currently not used */
+    background: no-repeat -20px -78px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_protected_visible {/* currently not used */
+    background: no-repeat -20px -139px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_field_visible {/* currently not used */
+    background: no-repeat -20px -200px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_tab_hidden {/* currently not used */
+    background: no-repeat -20px -261px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.custom_tab_visible {
+    background: no-repeat -20px -322px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.system_field_hidden {/* currently not used */
+    background: no-repeat -20px -383px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.system_field_visible {
+    background: no-repeat -20px -444px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.system_tab_hidden {/* currently not used */
+    background: no-repeat -20px -505px url('../admin/images/sprites/dataset-icons.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.system_tab_visible {
+    background: no-repeat -20px -568px url('../admin/images/sprites/dataset-icons.png');
+}
+
+
+
+
+
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.xml_sitemap {
 	background:  -15px -1540px no-repeat;
@@ -4269,4 +4341,8 @@ table.table-bordered td
 }
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_folder_item {
 	background:url("../admin/images/sprites/sprite-list-icons-single-col.png") no-repeat -15px -3293px;
+}
+#organizer_rightColumn #organizer_panelTitle div.zenario_document_tag_item,
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_document_tag_item {
+	background:url("../admin/images/document-tag-icon.png") no-repeat center -12px;
 }

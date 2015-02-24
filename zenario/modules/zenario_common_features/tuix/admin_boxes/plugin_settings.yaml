@@ -19,7 +19,7 @@ plugin_settings:
             label: Details
             fields:
                 instance_name:
-                    label: 'Plugin name'
+                    label: 'Plugin name:'
                     type: text
     confirm:
         show: No

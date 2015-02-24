@@ -1,29 +1,29 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_plugin_nest__tab:
-	key:
-		id: ""
-		instanceId: ""
-	title: Tab
-	max_height: "150"
-	hide_tab_bar: Yes
-	tabs:
-		tab:
-			label: Details
-			edit_mode:
-				enabled: Yes
-				always_on: Yes
-			fields:
-				tab:
-					label: 'Tab:'
-					type: text
-					read_only: Yes
-				name_or_title:
-					label: 'Title or Title Phrase Code:'
-					type: text
-					maxlength: "100"
-					note_below: |
-						Tabs will only be visible where a tab based framework is selected in this nest's Settings.
-													Visitor Phrases will be merged into the field above. For example, use [[_MY_PHRASE]] to merge a Phrase called _MY_PHRASE.
-	save_button_message: 'Save & Close'
-	save_and_continue_button_message: 'Save & Continue'
+    key:
+        id: ""
+        instanceId: ""
+    title: Tab
+    max_height: "150"
+    hide_tab_bar: Yes
+    tabs:
+        tab:
+            label: Details
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                tab:
+                    label: 'Tab:'
+                    type: text
+                    read_only: Yes
+                name_or_title:
+                    label: 'Title or Title Phrase Code:'
+                    type: text
+                    maxlength: "100"
+                    note_below: |
+                        Tabs will only be visible where a tab based framework is selected in this nest's Settings.
+                                                    Visitor Phrases will be merged into the field above. For example, use [[_MY_PHRASE]] to merge a Phrase called _MY_PHRASE.
+    save_button_message: 'Save & Close'
+    save_and_continue_button_message: 'Save & Continue'

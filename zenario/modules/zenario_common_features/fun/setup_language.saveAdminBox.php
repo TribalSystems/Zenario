@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -91,12 +91,6 @@ importPhrasesForModules($langId);
 
 //Go to the language in the enabled languages panel.
 //We should also reload the page if any of the language names were changed, or if this was the first language to be added
-if ($addedFirstLanguage
- || $values['settings/english_name'] != $box['tabs']['settings']['fields']['english_name']['value']
- || $values['settings/language_local_name'] != $box['tabs']['settings']['fields']['language_local_name']['value']) {
-	$box['popout_message'] = '<!--Go_To_URL:zenario/admin/welcome.php?task=reload_sk&sk='. rawurlencode('zenario__languages/nav/languages/panel//'. $langId). '-->';
-} else {
-	$box['popout_message'] = '<!--Go_To_Storekeeper_Panel:zenario__languages/nav/languages/panel//'. $langId. '-->';
-}
+$box['popout_message'] = '<!--Go_To_URL:zenario/admin/welcome.php?task=reload_sk&sk='. rawurlencode('zenario__languages/panels/languages//'. $langId). '-->';
 
 return false;

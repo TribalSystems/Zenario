@@ -1,0 +1,76 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    nav:
+        zenario_settings_pro_features__spare_aliases:
+            ord: 5.1
+            #css_class: alias_urls_collection
+            name: Spare aliases (redirects)
+            tooltip: Manage spare aliases (redirects)
+            link:
+                path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
+    panels:
+        zenario_settings_pro_features__spare_aliases:
+            title: Spare Aliases
+            no_items_message: No spare aliases have been created.
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]spare_aliases AS sa'
+                id_column: sa.alias
+            columns:
+                alias:
+                    title: Spare alias
+                    db_column: sa.alias
+                    searchable: Yes
+                    show_by_default: Yes
+                content_item:
+                    title: Redirect to content item
+                    show_by_default: Yes
+                    db_column: "CONCAT(sa.content_type, '_', sa.content_id)"
+                    item_link: content_item
+                ext_url:
+                    title: Redirect to external URL
+                    show_by_default: Yes
+                    db_column: sa.ext_url
+                    item_link: content_item_or_url
+                created_datetime:
+                    title: When created
+                    show_by_default: Yes
+                    db_column: sa.created_datetime
+                    format: datetime
+            default_sort_column: alias
+            item:
+                css_class: alias_url
+            collection_buttons:
+                create:
+                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    css_class: zenario_create_a_new
+                    label: Create
+                    admin_box:
+                        path: zenario_pro_features_spare_alias
+            item_buttons:
+                edit:
+                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    label: Properties
+                    admin_box:
+                        path: zenario_pro_features_spare_alias
+                delete:
+                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    label: Delete
+                    multiple_select: Yes
+                    hide_in_select_mode: Yes
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure that you wish to remove the spare alias "[[alias]]"?
+                                
+                                                                            No content items will be deleted.
+                            multiple_select_message: |
+                                Are you sure that you wish to remove these spare aliases selected?
+                                
+                                                                            No content items will be deleted.
+                            button_message: Remove
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"

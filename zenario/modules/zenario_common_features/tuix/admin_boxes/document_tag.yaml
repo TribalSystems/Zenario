@@ -1,19 +1,19 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_document_tag:
-	title: Create Tag
-	key: 
-		id: ''
-	max_height: "250"
-	tabs:
-		details:
-			label: Details
-			edit_mode:
-				on: Yes
-				always_on: Yes
-				enabled: Yes
-			fields:
-				tag_name:
-					label: 'Tag name:'
-					type: text
-					maxlength: "255"
+    title: Create Tag
+    key: 
+        id: ''
+    max_height: "250"
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                on: Yes
+                always_on: Yes
+                enabled: Yes
+            fields:
+                tag_name:
+                    label: 'Tag name:'
+                    type: text
+                    maxlength: "255"

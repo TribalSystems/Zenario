@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@ if (!empty($instance['content_id'])) {
 	}
 }
 
-
+$syncLibraryPluginFiles = array();
 $syncContent = false;
 $pk = array(
 	'instance_id' => $box['key']['instanceId'],
@@ -116,6 +116,20 @@ switch ($path) {
 								//Otherwise save the field in the plugin_settings table.
 								$value = array();
 								$value['value'] = arrayKey($values, $tabName. '/'. $fieldName);
+								
+								
+								//Handle file/image uploaders by adding these files to the system
+								if (!empty($field['upload'])) {
+									$fileIds = array();
+									foreach (explode(',', $value['value']) as $file) {
+										if ($location = getPathOfUploadedFileInCacheDir(trim($file))) {
+											$fileIds[] = addFileToDatabase('inline', $location);
+										} else {
+											$fileIds[] = $file;
+										}
+									}
+									$value['value'] = implode(',', $fileIds);
+								}
 							
 						
 								//The various different types of foreign key should be registered
@@ -161,6 +175,23 @@ switch ($path) {
 								//Work out whether this is a version controlled or synchronized Instance
 								if (!$instance['content_id']) {
 									$value['is_content'] = 'synchronized_setting';
+									
+									switch (arrayKey($field, 'plugin_setting', 'foreign_key_to')) {
+										case 'file':
+											if ($fileId = (int) trim($value['value'])) {
+												$syncLibraryPluginFiles[$fileId] = array('id' => $fileId);
+											}
+											break;
+										
+										case 'multiple_files':
+											foreach (explode(',', $value['value']) as $fileId) {
+												if ($fileId = (int) trim($fileId)) {
+													$syncLibraryPluginFiles[$fileId] = array('id' => $fileId);
+												}
+											}
+											break;
+									}
+											
 						
 								} elseif (engToBooleanArray($field, 'plugin_setting', 'is_searchable_content')) {
 									$value['is_content'] = 'version_controlled_content';
@@ -169,7 +200,7 @@ switch ($path) {
 								} else {
 									$value['is_content'] = 'version_controlled_setting';
 							
-									if (arrayKey($field, 'plugin_setting', 'foreign_key_to') == 'file') {
+									if (in(arrayKey($field, 'plugin_setting', 'foreign_key_to'), 'file', 'multiple_files')) {
 										$syncContent = true;
 									}
 								}
@@ -290,6 +321,9 @@ sqlQuery($sql);
 
 if ($syncContent) {
 	syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
+
+} elseif (!empty($syncLibraryPluginFiles)) {
+	syncInlineFiles($syncLibraryPluginFiles, array('foreign_key_to' => 'reusable_plugin'), false);
 }
 
 if ($instance['content_id']) {

@@ -1,5 +1,6 @@
+
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -63,8 +64,17 @@ zenario.userId = 0;
 zenario.adminId = 0;
 
 //Redirect the user to a URL using JavaScript
-zenario.goToURL = function(URL) {
+zenario.goToURL = function(URL, useChromeFix) {
 	document.location.href = URL;
+	
+	if (useChromeFix) {
+		//Hack to fix a bug with Chrome :(
+		setTimeout(
+			function() {
+				document.location.href = URL;
+			}, 500);
+	}
+	
 	return false;
 };
 
@@ -702,9 +712,7 @@ zenario.addJQueryElements = function(path, adminFacing) {
 		} else {
 			$(el).datepicker({
 				dateFormat: zenario.dpf,
-				showOn: 'button',
-				buttonImage: URLBasePath + 'zenario/admin/images/icons/calendar.gif',
-				buttonImageOnly: true
+				showOn: 'focus'
 			});
 		}
 	});
@@ -1150,6 +1158,20 @@ zenario.fireChangeEvent = function(el) {
 		evt.initEvent('change', false, true);
 		el.dispatchEvent(evt);
 	}
+};
+
+
+//Stop event propigation
+zenario.stop = function(e) {
+	if (e = (e || window.event)) {
+		if (e.stopPropagation) {
+			e.stopPropagation();
+		} else {
+			e.cancelBubble = true;
+		}
+	}
+	
+	return false;
 };
 
 

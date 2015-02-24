@@ -1,26 +1,26 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-	tabs:
-		first_tab:
-			label: Settings
-			fields:
-				destination:
-					label: 'Link Destination:'
-					plugin_setting:
-						name: destination
-					type: radios
-					values:
-						home:
-							label: Link to the Language Home Page.
-						equiv_or_home:
-							label: >
-								Link to the translation of the current Content Item.
-								Otherwise link to the Language Home Page.
-						equiv_only:
-							label: >
-								Link to the translation of the current Content Item.
-								Otherwise do not show a link.
-					value: equiv_or_home
-					post_field_html: '<br/><br/>'
-	module_class_name: zenario_language_picker
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                destination:
+                    label: 'Link Destination:'
+                    plugin_setting:
+                        name: destination
+                    type: radios
+                    values:
+                        home:
+                            label: Link to the Language Home Page.
+                        equiv_or_home:
+                            label: >
+                                Link to the translation of the current Content Item.
+                                Otherwise link to the Language Home Page.
+                        equiv_only:
+                            label: >
+                                Link to the translation of the current Content Item.
+                                Otherwise do not show a link.
+                    value: equiv_or_home
+                    post_field_html: '<br/><br/>'
+    module_class_name: zenario_language_picker

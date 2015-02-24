@@ -1,0 +1,60 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_user__welcome_email:
+    key:
+        id: ""
+    max_height: "250"
+    tabs:
+        details:
+            label: Welcome Email
+            edit_mode:
+                enabled: Yes
+                always_on: Yes
+            fields:
+                plain_text_info:
+                    ord: 1
+                    full_width: 1
+                    snippet:
+                        html: "You are about to send a welcome email the user."
+                    hidden: false
+                non_plain_text_info:
+                    ord: 1.1
+                    full_width: 1
+                    snippet:
+                        html: "You are about to send a welcome email the user. <br> <br>As this site is configured to store only encrypted passwords for users, you will not be able to send the user a reminder of their existing password."
+                    hidden: false
+                email: 
+                    type: text
+                    hidden: true
+                salutation: 
+                    type: text
+                    hidden: true
+                first_name: 
+                    type: text
+                    hidden: true
+                last_name: 
+                    type: text
+                    hidden: true
+                reset_password:
+                    priv: _PRIV_CHANGE_USER_PASSWORD
+                    label: "Reset and send password in welcome email."
+                    type: checkbox
+                    side_note: "If checked, the user's password will be reset and a new one auto-generated."
+                include_password :
+                    label: "Include password in welcome email"
+                    type: checkbox
+                    side_note: 'If not checked then "********* (not shown)" will be sent in the welcome in the welocome email.'
+                email_to_send:
+                    label: 'Email Template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select an Email Template
+                    side_note: >
+                        An email based on the selected Email Template will be sent
+                        to the User.

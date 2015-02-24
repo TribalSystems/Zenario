@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -61,17 +61,17 @@ class zenario_banner extends module_base_class {
 					array('name' => 'title', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
 				exit;
 			}
-		}
 		
-		if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
+			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
 				
-			$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
+				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
 			
-			//Open the editor immediately if it is in the URL
-			if (request('content__edit_container') == $this->containerId) {
-				$this->editing = true;
-				$this->markSlotAsBeingEdited();
-				$this->openEditor();
+				//Open the editor immediately if it is in the URL
+				if (request('content__edit_container') == $this->containerId) {
+					$this->editing = true;
+					$this->markSlotAsBeingEdited();
+					$this->openEditor();
+				}
 			}
 		}
 		
@@ -91,18 +91,22 @@ class zenario_banner extends module_base_class {
 			$request = '';
 			$this->mergeFields['Target_Blank'] = '';
 			
-			if ($cType == 'document' && !$this->setting('use_download_page')) {
+			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
+			
+			if ($downloadFile) {
 				$request = 'download=1';
-				
-				if (inc('zenario_google_analytics_tracker')) {
-					$this->mergeFields['Target_Blank'] .= ' onclick="'. htmlspecialchars(zenario_google_analytics_tracker::trackDownloadNow($cID, $cType)). '"';
-				}
 			}
+			
+			$link = $this->linkToItem($cID, $cType, $fullPath = false, $request);
 			
 			//Use the Theme Section for a Masthead with a link and set the link
 			$this->mergeFields['Link_Href'] =
 			$this->mergeFields['Image_Link_Href'] =
-				'href="'. htmlspecialchars($this->linkToItem($cID, $cType, $fullPath = false, $request)). '"';
+				'href="'. htmlspecialchars($link). '"';
+			
+			if ($downloadFile) {
+				$this->mergeFields['Target_Blank'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
+			}
 			
 			if ($this->setting('target_blank')) {
 				$this->mergeFields['Target_Blank'] .= " target=\"_blank\"";
@@ -166,6 +170,8 @@ class zenario_banner extends module_base_class {
 			}
 		}
 		
+
+		
 		$pictureCID = $pictureCType = $width = $height = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
 		$this->mergeFields['Image_Style'] = '';
 		
@@ -208,7 +214,7 @@ class zenario_banner extends module_base_class {
 							'Image_Width' => $width,
 						);
 					
-					$this->mergeFields['Image_Style'] .= 'id="'. $this->containerId. '_img" ';
+					$this->mergeFields['Image_Style'] .= ' id="'. $this->containerId. '_img" ';
 					
 					$this->mergeFields['Rollover_Images'] =
 						'<img id="'. $this->containerId. '_rollout" alt="rollout '. ++zenario_banner::$bannerNo. '" src="'. htmlspecialchars($url). '" style="width: 1px; height: 1px; visibility: hidden;"/>'.
@@ -238,8 +244,10 @@ class zenario_banner extends module_base_class {
 		
 		$this->subSections['Text'] = (bool) $this->setting('text') || $this->editing;
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
+		$this->subSections['More_Link_Text'] = (bool) $this->setting('more_link_text');
 		
 		//Don't show empty Banners
+		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
 		if (empty($this->subSections['Image'])
 		 && empty($this->subSections['Text'])
 		 && empty($this->subSections['Title'])) {
@@ -247,34 +255,51 @@ class zenario_banner extends module_base_class {
 			return false;
 			
 		} else {
+			//Setup the title, text, and more link.
+			//Title and the more link text will need to be html escaped, and may need translating if this is a library plugin.
+			//The text is html but may need parsing for merge fields.
 			if ($this->subSections['Title']) {
 				$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
 				
-				// To display the title in edit mode if the title is blank, it's set to a space
-				if ($this->editing && !$this->mergeFields['Title']) {
-					$this->mergeFields['Title'] = ' ';
-				}
-				
-				if ($this->setting('use_phrases')) {
-					$this->replacePhraseCodesInString($this->mergeFields['Title']);
+				if (!$this->isVersionControlled) {
+					$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+				} else {
+					if ($this->editing) {
+						// To display the title in edit mode if the title is blank, it's set to a space
+						if (!$this->mergeFields['Title']) {
+							$this->mergeFields['Title'] = ' ';
+						}
+					}
 				}
 			}
 			
 			if ($this->subSections['Text']) {
 				$this->mergeFields['Text'] = $this->setting('text');
 				
-				if ($this->editing) {
-					$html = '<form>'.
-						'<input type="hidden" id="'.$this->containerId.'_save_link" value="'.htmlspecialchars($this->showFloatingBoxLink()).'" />'
-						.'<div id="'. $this->editorId .'">'.$this->mergeFields['Text'].'</div></form>';
-					$this->mergeFields['Text'] = $html;
-						
+				if (!$this->isVersionControlled) {
+					$this->replacePhraseCodesInString($this->mergeFields['Text']);
 				} else {
-					if ($this->setting('use_phrases')) {
-						$this->replacePhraseCodesInString($this->mergeFields['Text']);
+					if ($this->editing) {
+						$this->mergeFields['Text'] =
+							'<form>'.
+								'<input type="hidden" id="'.$this->containerId.'_save_link" value="'.htmlspecialchars($this->showFloatingBoxLink()).'" />'.
+								'<div id="'. $this->editorId .'">'.
+									$this->mergeFields['Text'].
+								'</div>'.
+							'</form>';
 					}
 				}
 			}
+			
+			if ($this->subSections['More_Link_Text']) {
+				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->setting('more_link_text'));
+				
+				if (!$this->isVersionControlled) {
+					$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
+				}
+			}
+			
+			
 			
 			if ($imageId) {
 				$cols = array();
@@ -391,17 +416,12 @@ class zenario_banner extends module_base_class {
 			if (isset($controls['actions']['settings'])) {
 				$controls['actions']['banner_edit_title'] = array(
 					'ord' => 1.1,
-					'label' => adminPhrase('Edit title & HTML'),
+					'label' => adminPhrase('Edit title & HTML (inline)'),
 					'page_modes' => $controls['actions']['settings']['page_modes'],
 					'onclick' => htmlspecialchars_decode($this->editTitleInlineOnClick()));
-				$label = adminPhrase('Add image/hyperlink');
-				if (getRow('plugin_settings', 'value', 
-					array('instance_id' => $this->instanceId, 'name' => 'image', 'nest' => $this->eggId)))
-				{
-					$label = adminPhrase('Edit image/hyperlink');
-				}
-				$controls['actions']['settings']['label'] = $label;
+				$controls['actions']['settings']['label'] = adminPhrase('Edit contents (admin box)');
 			}
+			
 		}
 	}
 

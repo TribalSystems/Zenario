@@ -1,0 +1,34 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            columns:
+                log_user_access:
+                    title: Log user access
+                    db_column: tc.log_user_access
+                    format: yes_or_no
+                    width: xsmall
+            item_buttons:
+                privacy:
+                    parent: property_dropdown
+                    priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
+                    label: Edit permissions
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_privacy
+                    without_traits:
+                        ghost: Yes
+                user_access_log:
+                    parent: view_dropdown
+                    hide_in_select_mode: Yes
+                    css_class: log
+                    label: View access log for this content item
+                    link:
+                        path: zenario__users/panels/access_log
+                        branch: Yes
+                        refiner: content
+                    traits:
+                        log_access: Yes
+                    without_traits:
+                        ghost: Yes

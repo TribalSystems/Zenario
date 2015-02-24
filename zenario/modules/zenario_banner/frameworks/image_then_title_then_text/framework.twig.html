@@ -1,12 +1,14 @@
 <div class="banner_wrap"><div class="banner_wrap_outer"><div class="banner_wrap_inner" {{Wrap}}>
+	{# If an image has been set then show the image. #}
 	{% if Image %}
-		<div class="banner_image" > 
+		<div class="banner_image"> 
 			{% if Image_Link_Href %} 
 				<a {{Image_Link_Href}}{{Target_Blank}}>
 			{% endif %}
 			
-			<img src="{{Image_Src}}" alt="{{Image_Alt}}" title="{{Image_Title}}" {{Image_Style}}/>
-			{{Rollover_Images}}
+				<img src="{{Image_Src}}" alt="{{Image_Alt}}" title="{{Image_Title}}" {{Image_Style}}/>
+				{{Rollover_Images}}
+			
 			{% if Enlarge_Image %}
 				<span class="banner_image_zoom" title="{{'Enlarge this image'|trans}}">{{"Enlarge this image"|trans}}</span>
 			{% endif %}
@@ -16,26 +18,33 @@
 			{% endif %}
 		</div>
 	{% endif %}
-
-	{#
-	 # The following two sections are inserted if you set Title & HTML.
-	 # The section called Title is displayed conditionally on Title being set,
-	 # and if so it merges it into the merge field called Title comes from the Title,
-	 # and Text comes from the HTML.
-	 #}
-	{% if Title %}
-		<div class="banner_title">
-			<h2>
-				{% if Link_Href %}
-					<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
-				{% else %}
-					{{Title}}
-				{% endif %}
-			</h2>
-		</div>
-	{% endif %}
-	{% if Text %}
-		<div class="banner_text">{{Text}}</div>
-	{% endif %}
 	
+
+	<div class="banner_content">
+	
+		{# If a title has been set show the title. #}
+		{% if Title %}
+			<div class="banner_title">
+				<h2>
+					{% if Link_Href %}
+						<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
+					{% else %}
+						{{Title}}
+					{% endif %}
+				</h2>
+			</div>
+		{% endif %}
+	
+		{# If text has been set show the text. #}
+		{% if Text %}
+			<div class="banner_text">{{Text}}</div>
+		{% endif %}
+
+		{# If more link text has been set show the more link. #}
+		{% if More_Link_Text %}
+			<div class="banner_more">
+				<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+			</div>
+		{% endif %}
+	</div>
 </div></div></div>

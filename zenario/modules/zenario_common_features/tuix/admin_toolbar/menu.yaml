@@ -47,9 +47,9 @@ sections:
                 label: Organize menu...
                 organizer_quick:
                     path: ""
-                    target_path: zenario__menu/hidden_nav/menu_nodes/panel
-                    min_path: zenario__menu/hidden_nav/menu_nodes/panel
-                    max_path: zenario__menu/hidden_nav/menu_nodes/panel
+                    target_path: zenario__menu/panels/menu_nodes
+                    min_path: zenario__menu/panels/menu_nodes
+                    max_path: zenario__menu/panels/menu_nodes
                     disallow_refiners_looping_on_min_path: No
                     reload_menu_slots: Yes
                     reload_admin_toolbar: Yes
@@ -111,9 +111,9 @@ sections:
                 label: Organize menu...
                 organizer_quick:
                     path: ""
-                    target_path: zenario__menu/hidden_nav/menu_nodes/panel
-                    min_path: zenario__menu/hidden_nav/menu_nodes/panel
-                    max_path: zenario__menu/hidden_nav/menu_nodes/panel
+                    target_path: zenario__menu/panels/menu_nodes
+                    min_path: zenario__menu/panels/menu_nodes
+                    max_path: zenario__menu/panels/menu_nodes
                     disallow_refiners_looping_on_min_path: No
                     reload_menu_slots: Yes
                     reload_admin_toolbar: Yes

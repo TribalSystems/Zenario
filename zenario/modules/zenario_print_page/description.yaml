@@ -7,10 +7,10 @@ start_running_on_install: true
 license_info: Modified BSD License
 display_name: Print a page
 description: |
-	<p>This Module provides a link that visitors can use to:</p>
-			<ul>
-				<li>print the current page</li>
-			</ul>
+    <p>This Module provides a link that visitors can use to:</p>
+            <ul>
+                <li>print the current page</li>
+            </ul>
 vlp_class_name: zenario_print_page
 css_class_name: zenario_print_page
 is_pluggable: Yes

@@ -1,0 +1,20 @@
+<div class="extranet_wrap">
+    <div class="extranet_outer_wrap">
+        <div class="extranet_inner_wrap">
+            
+            [cms:section name="Message_Display"]
+                <div class="extranet_message">[cms:merge name="Message"/]</div>
+            [/cms:section]
+            
+            [cms:section name="Login"]
+		<h1>[cms:phrase code="_LOGGED_OUT"/]</h1>
+                <div class="extranet_links">
+                    [cms:section name="Login_Link_Section"]
+                        <div><a [cms:merge name='Login_Link'/]>[cms:phrase code="_LOGIN"/]</a></div>
+                    [/cms:section]
+                </div>
+            [/cms:section] 
+            
+        </div>
+    </div>
+</div>

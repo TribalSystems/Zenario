@@ -4,6 +4,7 @@ loading_message:
     hidden: Yes
     panel:
         no_items_message: Loading...
+
 zenario__content:
     ord: 1
     visible_if: >
@@ -15,38 +16,53 @@ zenario__content:
         content_types:
             label: Content types
             tooltip: View content items by type
+            link:
+                path: zenario__content/panels/content_types
         content:
             label: All content items
             tooltip: All content items of all types in a flat view
+            link:
+                path: zenario__content/panels/content
         categories:
             label: Categories
             tooltip: Hierarchical categorization of content items
+            link:
+                path: zenario__content/panels/categories
         languages:
             label: Content by language
             tooltip: View content items by visitor language
+            link:
+                path: zenario__content/panels/languages
         special:
             label: Special pages
             tooltip: Non-trashable HTML pages including the home page, not-found and other essentials
             link:
-                path: zenario__content/nav/content/panel
+                path: zenario__content/panels/content
                 refiner: special_pages
         shared_images:
             label: Shared images
             tooltip: |
                 Version-controlled content items' images that are Shared
             link:
-                path: 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_shared/panel'
+                path: 'zenario__content/panels/inline_images_shared'
         your_work_in_progress:
             label: Work in progress
             tooltip: Content items that you are currently working on
             link:
-                path: zenario__content/nav/content/panel
+                path: zenario__content/panels/content
                 refiner: your_work_in_progress
-        hierarchical_files:
+        documents:
+            priv: _PRIV_MANAGE_DOCUMENTS
             label: Documents
+            link:
+                path: zenario__content/panels/documents
         document_tags:
+            priv: _PRIV_MANAGE_DOCUMENTS
             label: Document tags
+            link:
+                path: zenario__content/panels/document_tags
         document_rules:
+            priv: _PRIV_MANAGE_DOCUMENTS
             label: Document rules
             link:
                 path: 'zenario__content/panels/document_rules'
@@ -67,8 +83,12 @@ zenario__menu:
     label: Menu navigation
     tooltip: View your site in according to its navigation hierarchy, and edit the text and structure of the menu.
     nav:
+        main_section_menu:
+            label: Main
+            #link:
+             #   path: zenario__menu/nav/default_language/panel/item//en-us//item//1//
         default_language:
-            label: Menu navigation
+            label: All menu sections
             tooltip: The menu structure of the site, shown with text in the site's default language
         by_language:
             label: All languages
@@ -85,11 +105,13 @@ zenario__users:
     label: Users
     tooltip: 'Manage administrators - people who can edit this site'
     nav:
-        admins:
+        administrators:
             ord: "99"
             priv: _PRIV_VIEW_ADMIN
             label: Administrators
             tooltip: 'Manage administrators - people who can edit this site'
+            link:
+                path: zenario__users/panels/administrators
 
 zenario__layouts:
     ord: "999996"
@@ -105,9 +127,13 @@ zenario__layouts:
             label: Layouts
             tooltip: |
                 The layouts used to define the layout of your site, and the assignment of plugins in slots
+            link:
+                path: zenario__layouts/panels/layouts
         template_families:
             label: Skins
             tooltip: Skins, the styling and appearance of your site
+            link:
+                path: zenario__layouts/panels/template_families
 zenario__modules:
     ord: "999997"
     css_class: zenario_cms_core_plugins
@@ -117,16 +143,20 @@ zenario__modules:
         modules:
             label: Modules
             tooltip: Software modules that add plugins to front-end pages, and Organizer functionality
-        instances:
+            link:
+                path: zenario__modules/panels/modules
+        plugins:
             label: Plugin library
             tooltip: >
                 Library of plugins that may be used on visitor-facing pages
+            link:
+                path: zenario__modules/panels/plugins
         images:
             label: >
                 Plugins' images
             tooltip: Images used in plugins
             link:
-                path: 'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_reusable_plugins/panel'
+                path: 'zenario__content/panels/inline_images_for_reusable_plugins'
     data-step: 13
     data-position: right
     data-intro: >
@@ -143,9 +173,13 @@ zenario__languages:
         languages:
             label: Languages
             tooltip: The languages in which visitors can use your site
-        vlp:
+            link:
+                path: zenario__languages/panels/languages
+        phrases:
             label: Phrases
             tooltip: Phrases that are displayed to website visitors
+            link:
+                path: zenario__languages/panels/phrases
 zenario__administration:
     ord: 999999
     css_class: zenario_cms_core_administration

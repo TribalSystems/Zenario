@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'zenario__email_template_manager/nav/email_templates/panel':
+	case 'zenario__email_template_manager/panels/email_templates':
 		foreach ($panel['items'] as $K=>$item){
 			$template = self::getTemplateByCode($K);
 			if ($K!=$template['id']) {
@@ -65,7 +65,7 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__email_template_manager/nav/email_log/panel':
+	case 'zenario__email_template_manager/panels/email_log':
 		if ($refinerName=='email_template'){
 			$template =  self::getTemplateById($refinerId);
 			if (!empty($template['template_name'])){

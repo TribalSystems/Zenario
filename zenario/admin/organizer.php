@@ -29,7 +29,7 @@ if (!checkPriv()) {
 		<body>
 			<script type="text/javascript">
 				var hash = encodeURIComponent(("" + document.location.hash).replace("#", ""));
-				document.location.href = "welcome.php?sk=" + (hash? hash : "zenario__content/nav/content/panel");
+				document.location.href = "welcome.php?sk=" + (hash? hash : "zenario__content/panels/content");
 			</script>
 			<p><a href="welcome.php">', adminPhrase('Please log in'), '</a></p>
 		</body>
@@ -38,7 +38,7 @@ if (!checkPriv()) {
 }
 
 
-getCSSJSCodeHash();
+checkForChangesInCssJsAndHtmlFiles();
 $v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
 
 $prefix = '../';

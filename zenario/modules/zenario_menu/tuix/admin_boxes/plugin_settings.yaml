@@ -1,152 +1,152 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-	tabs:
-		first_tab:
-			label: Menu display
-			fields:
-				menu_section:
-					plugin_setting:
-						name: menu_section
-						foreign_key_to: menu_section
-						dangling_cross_references: delete_instance
-					label: 'Menu section:'
-					pick_items:
-						path: zenario__menu/hidden_nav/sections/panel
-						min_path: zenario__menu/hidden_nav/sections/panel
-						max_path: zenario__menu/hidden_nav/sections/panel
-						target_path: zenario__menu/hidden_nav/sections/panel
-						select_phrase: Select menu section...
-						hide_remove_button: Yes
-					value: "1"
-					validation:
-						required: Please select a menu section
-					format_onchange: Yes
-					side_note: >
-						The principal menu navigation is usually in a secton called "Main". To display menu nodes from a different section, choose it here.
-				menu_generation_current_or_specific:
-					plugin_setting:
-						name: menu_generation_current_or_specific
-					label: 'Menu origin:'
-					type: radios
-					value: _CURRENT
-					values:
-						_CURRENT:
-							ord: "1"
-							label: Auto
-						_SPECIFIC:
-							ord: "1"
-							label: Custom
-					format_onchange: Yes
-					side_note: >
-						Select "Auto" to generate the menu around the current content item (recommended). Select "Custom" to show the menu of a different part of the site.
-				specific_menu_node:
-					plugin_setting:
-						name: specific_menu_node
-					label: 'Select custom menu node:'
-					pick_items:
-						path: zenario__menu/hidden_nav/sections/panel
-						min_path: zenario__menu/hidden_nav/menu_nodes/panel
-						max_path: zenario__menu/hidden_nav/menu_nodes/panel
-						target_path: zenario__menu/hidden_nav/menu_nodes/panel
-						select_phrase: Select menu node...
-						hide_remove_button: Yes
-					validation:
-						required_if_not_hidden: Please select a menu node
-					hidden: Yes
-				menu_number_of_levels:
-					plugin_setting:
-						name: menu_number_of_levels
-					label: 'Number of levels:'
-					type: select
-					values:
-						1: "1"
-						2: "2"
-						3: "3"
-						4: "4"
-						5: "5"
-						6: "6"
-					value: "2"
-				menu_start_from:
-					plugin_setting:
-						name: menu_start_from
-					label: 'Starting level:'
-					type: radios
-					value: _MENU_LEVEL_1
-					values:
-						_MENU_LEVEL_1:
-							ord: "1"
-							label: Menu level 1
-						_MENU_LEVEL_2:
-							ord: "2"
-							label: Menu level 2
-						_MENU_LEVEL_3:
-							ord: "3"
-							label: Menu level 3
-						_MENU_LEVEL_4:
-							ord: "4"
-							label: Menu level 4
-						_MENU_LEVEL_5:
-							ord: "5"
-							label: Menu level 5
-						_MENU_LEVEL_ABOVE:
-							ord: "10"
-							label: Menu level above
-						_MENU_CURRENT_LEVEL:
-							ord: "11"
-							label: Current menu level
-					side_note: >
-						To generate the main nav of the site from the top level, choose level 1 (recommended). Use other options to generate only deeper parts of the menu.
-				menu_show_all_branches:
-					plugin_setting:
-						name: menu_show_all_branches
-					label: 'Generate distant branches:'
-					type: checkbox
-					value: "1"
-					side_note: >
-						Generate parts of the menu hierarchy not including the current page. Normally used to support a mouseover effect when all parts of the menu need to be displayed.
-				show_missing_menu_nodes:
-					plugin_setting:
-						name: show_missing_menu_nodes
-					label: 'Show missing menu nodes:'
-					type: checkbox
-					value: ""
-				hide_if_current_item_not_in_menu:
-					plugin_setting:
-						name: hide_if_current_item_not_in_menu
-					label: 'Hide menu on orphans:'
-					type: checkbox
-					side_note: >
-						Hide the entire menu when the current content item is not in the menu hierarchy.
-				menu_show_admin_add_button:
-					plugin_setting:
-						name: menu_show_admin_add_button
-					label: 'Show admin button:'
-					type: checkbox
-					value: "1"
-					side_note: >
-						In admin mode on the Menu tab, show quick-create buttons on the menu to allow rapid addition of content.
-				reverse_order:
-					plugin_setting:
-						name: reverse_order
-					label: 'Reverse order:'
-					type: checkbox
-					value: ""
-					side_note: >
-						Generate from right to left. Use this option for easier float-right styling.
-		author_advice:
-			visible_if: '!zenarioAB.focus.key.isVersionControlled && !zenarioAB.focus.key.nest'
-			label: Author advice
-			fields:
-				author_advice:
-					plugin_setting:
-						name: author_advice
-					label: 'Author advice:'
-					type: textarea
-					rows: "4"
-					cols: "60"
-					style: 'width: auto;'
-					side_note: >
-						Enter advice that you would like to give to Authors. This
-						will appear while in Edit Mode.
-	module_class_name: zenario_menu
+    tabs:
+        first_tab:
+            label: Menu display
+            fields:
+                menu_section:
+                    plugin_setting:
+                        name: menu_section
+                        foreign_key_to: menu_section
+                        dangling_cross_references: delete_instance
+                    label: 'Menu section:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        max_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/sections
+                        select_phrase: Select menu section...
+                        hide_remove_button: Yes
+                    value: "1"
+                    validation:
+                        required: Please select a menu section
+                    format_onchange: Yes
+                    side_note: >
+                        The principal menu navigation is usually in a secton called "Main". To display menu nodes from a different section, choose it here.
+                menu_generation_current_or_specific:
+                    plugin_setting:
+                        name: menu_generation_current_or_specific
+                    label: 'Menu origin:'
+                    type: radios
+                    value: _CURRENT
+                    values:
+                        _CURRENT:
+                            ord: "1"
+                            label: Auto
+                        _SPECIFIC:
+                            ord: "1"
+                            label: Custom
+                    format_onchange: Yes
+                    side_note: >
+                        Select "Auto" to generate the menu around the current content item (recommended). Select "Custom" to show the menu of a different part of the site.
+                specific_menu_node:
+                    plugin_setting:
+                        name: specific_menu_node
+                    label: 'Select custom menu node:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/menu_nodes
+                        max_path: zenario__menu/panels/menu_nodes
+                        target_path: zenario__menu/panels/menu_nodes
+                        select_phrase: Select menu node...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a menu node
+                    hidden: Yes
+                menu_number_of_levels:
+                    plugin_setting:
+                        name: menu_number_of_levels
+                    label: 'Number of levels:'
+                    type: select
+                    values:
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                    value: "2"
+                menu_start_from:
+                    plugin_setting:
+                        name: menu_start_from
+                    label: 'Starting level:'
+                    type: radios
+                    value: _MENU_LEVEL_1
+                    values:
+                        _MENU_LEVEL_1:
+                            ord: "1"
+                            label: Menu level 1
+                        _MENU_LEVEL_2:
+                            ord: "2"
+                            label: Menu level 2
+                        _MENU_LEVEL_3:
+                            ord: "3"
+                            label: Menu level 3
+                        _MENU_LEVEL_4:
+                            ord: "4"
+                            label: Menu level 4
+                        _MENU_LEVEL_5:
+                            ord: "5"
+                            label: Menu level 5
+                        _MENU_LEVEL_ABOVE:
+                            ord: "10"
+                            label: Menu level above
+                        _MENU_CURRENT_LEVEL:
+                            ord: "11"
+                            label: Current menu level
+                    side_note: >
+                        To generate the main nav of the site from the top level, choose level 1 (recommended). Use other options to generate only deeper parts of the menu.
+                menu_show_all_branches:
+                    plugin_setting:
+                        name: menu_show_all_branches
+                    label: 'Generate distant branches:'
+                    type: checkbox
+                    value: "1"
+                    side_note: >
+                        Generate parts of the menu hierarchy not including the current page. Normally used to support a mouseover effect when all parts of the menu need to be displayed.
+                show_missing_menu_nodes:
+                    plugin_setting:
+                        name: show_missing_menu_nodes
+                    label: 'Show missing menu nodes:'
+                    type: checkbox
+                    value: ""
+                hide_if_current_item_not_in_menu:
+                    plugin_setting:
+                        name: hide_if_current_item_not_in_menu
+                    label: 'Hide menu on orphans:'
+                    type: checkbox
+                    side_note: >
+                        Hide the entire menu when the current content item is not in the menu hierarchy.
+                menu_show_admin_add_button:
+                    plugin_setting:
+                        name: menu_show_admin_add_button
+                    label: 'Show admin button:'
+                    type: checkbox
+                    value: "1"
+                    side_note: >
+                        In admin mode on the Menu tab, show quick-create buttons on the menu to allow rapid addition of content.
+                reverse_order:
+                    plugin_setting:
+                        name: reverse_order
+                    label: 'Reverse order:'
+                    type: checkbox
+                    value: ""
+                    side_note: >
+                        Generate from right to left. Use this option for easier float-right styling.
+        author_advice:
+            visible_if: '!zenarioAB.focus.key.isVersionControlled && !zenarioAB.focus.key.nest'
+            label: Author advice
+            fields:
+                author_advice:
+                    plugin_setting:
+                        name: author_advice
+                    label: 'Author advice:'
+                    type: textarea
+                    rows: "4"
+                    cols: "60"
+                    style: 'width: auto;'
+                    side_note: >
+                        Enter advice that you would like to give to Authors. This
+                        will appear while in Edit Mode.
+    module_class_name: zenario_menu

@@ -1,32 +1,35 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_country_manager__region:
-	priv: _PRIV_EDIT_USER
-	title: Creating a Region
-	max_height: "180"
-	key:
-		id: ""
-		country_id: ""
-		parent_id: ""
-	tabs:
-		details:
-			label: Details
-			edit_mode:
-				enabled: Yes
-				on: Yes
-				always_on: Yes
-			fields:
-				code:
-					label: 'Region code:'
-					type: text
-					maxlength: "5"
-					style: width:55px;
-					note_below: >
-						On a multilingual site you can use a Region code to make of
-						a Region name.
-				name:
-					label: 'Region name:'
-					type: text
-				update_phrase:
-					label: 'Copy change to localised Phrases:'
-					type: checkbox
+    priv: _PRIV_EDIT_USER
+    title: Creating a Region
+    max_height: "250"
+    key:
+        id: ""
+        country_id: ""
+        parent_id: ""
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: Yes
+                on: Yes
+                always_on: Yes
+            fields:
+                name:
+                    label: 'Region name:'
+                    type: text
+                region_type:
+                    label: 'Region type:'
+                    type: radios
+                    values:
+                        region: 
+                            label: 'Region'
+                            ord: '1'
+                        state: 
+                            label: 'State'
+                            ord: '2'
+                        city: 
+                            label: 'City'
+                            ord: '3'
+                    value: region

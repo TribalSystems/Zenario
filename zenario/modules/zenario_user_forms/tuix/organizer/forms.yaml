@@ -1,0 +1,183 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+
+zenario__user_forms:
+    panels:
+        zenario_user_forms__forms:
+            title: Forms
+            view_mode: list
+            no_items_message: No Forms have been created.
+            select_mode_title: Select a form...
+            db_items:
+                table: '[[DB_NAME_PREFIX]]user_forms AS f'
+                where_statement: WHERE f.status = 'active'
+                id_column: f.id
+            refiners:
+                archived:
+                    sql: f.status = 'archived'
+            columns:
+                id:
+                    title: ID
+                    db_column: f.id
+                    searchable: false
+                    show_by_default: true
+                    align_right: true
+                    width: xxsmall
+                name:
+                    title: Name
+                    db_column: f.name
+                    show_by_default: true
+                    searchable: true
+                    width: xlarge
+                field_count:
+                    title: Field count
+                    tooltip: Field count
+                    db_column: |
+                        (
+                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]]user_form_fields
+                        WHERE user_form_id=f.id
+                        )
+                    show_by_default: true
+                    searchable: false
+                    disallow_sorting: true
+                    align_right: true
+                    width: xxsmall
+                response_count:
+                    title: Logged responses
+                    tooltip: Logged responses
+                    db_column: |
+                        (
+                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                        WHERE form_id = f.id
+                        )
+                    align_right: true
+                    width: xxsmall
+                    show_by_default: true
+                latest_response:
+                    title: Latest response date/time
+                    tooltip: Latest response date/time
+                    db_column: |
+                        (
+                        SELECT MAX(response_datetime) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response
+                        WHERE form_id = f.id
+                        )
+                    format: datetime
+                    show_by_default: true
+                plugin_usage:
+                    title: Plugin usage
+                    show_by_default: true
+                plugin_module_name:
+                    title: Plugin module names
+                    show_by_default: false
+                plugin_content_items:
+                    title: Content items
+                    show_by_default: true
+                
+            default_sort_column: name
+            item:
+                css_class: form
+                name: Form
+                names: Forms
+                css_class: menu_section
+                tooltip_when_link_is_active: |
+                    Click here to see the fields in the form &quot;[[name]]&quot;.
+                link:
+                    path: zenario__user_forms/panels/zenario_user_forms__form_fields
+                    branch: true
+                    refiner: user_form_id
+
+            collection_buttons:
+                create:
+                    hide_in_select_mode: true
+                    css_class: zenario_create_a_new
+                    label: Create
+                    admin_box:
+                        path: zenario_user_admin_box_form
+                    hide_on_refiner: archived
+            item_buttons:
+                edit:
+                    hide_in_select_mode: true
+                    label: Properties
+                    admin_box:
+                        path: zenario_user_admin_box_form
+                duplicate:
+                    hide_in_select_mode: true
+                    label: Duplicate
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to duplicate the form "[[name]]"?
+                            button_message: 'Yes'
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            duplicate_form: "1"
+                    hide_on_refiner: archived
+                
+                
+                view_dropdown:
+                    label: View
+                    hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
+                view_responses:
+                    label: Responses
+                    parent: view_dropdown
+                    link:
+                        path: zenario__user_forms/panels/zenario_user_forms__user_responses
+                        refiner: form_id
+                view_content_items:
+                    label: Content items this form is used on
+                    parent: view_dropdown
+                    link:
+                        path: zenario__content/panels/content
+                        refiner: form_id
+                    
+                delete:
+                    hide_in_select_mode: true
+                    label: Delete
+                    multiple_select_tooltip: Delete these forms?
+                    multiple_select: true
+                    disabled_if_for_all_selected_items: |
+                        zenario.engToBoolean(item.plugin_content_items) || zenario.engToBoolean(item.plugin_usage);
+                    disabled_tooltip: |
+                        This form is currently in use. Please remove the form from all plugins before attempting to delete the form.
+                    visible_if_for_all_selected_items: item.response_count == 0
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to delete the form "[[name]]"?
+                                This action cannot be undone.
+
+                            multiple_select_message: |
+                                Are you sure you wish to delete these forms?
+                                This action cannot be undone.
+                                
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_form: "1"
+                    hide_on_refiner: archived
+                archive:
+                    hide_in_select_mode: true
+                    label: Archive
+                    multiple_select_tooltip: Archive these forms?
+                    multiple_select: true
+                    visible_if_for_all_selected_items: item.response_count > 0
+                    disabled_if_for_all_selected_items: zenario.engToBoolean(item.plugin_content_items) || zenario.engToBoolean(item.plugin_usage);
+                    disabled_tooltip: |
+                        This form is currently in use. Please remove the form from all plugins before attempting to archive the form.
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to archive the form "[[name]]"?
+                                This action cannot be undone.
+                            multiple_select_message: |
+                                Are you sure you wish to archive these forms?
+                                This action cannot be undone.
+                            button_message: Archive
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            archive_form: "1"
+                    hide_on_refiner: archived

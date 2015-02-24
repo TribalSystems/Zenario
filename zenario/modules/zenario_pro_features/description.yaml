@@ -1,0 +1,97 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: Modified BSD License
+display_name: Pro Features
+description: |
+    <p><b>Menus</b></p>        
+        
+            <p>
+                With the Pro Features Module, you can create new Menu Sections enabling you to improve the
+                navigation of your site by providing quicker access to common pages.
+            </p>
+            
+            <p>
+                The menu system is enhanced so that Menu Nodes can be made Invisible, thereby allowing 
+                a Menu Node to exist in the menu hierarchy but without appearing in every 
+                visitor-facing menu.
+            </p>
+        
+            <p>
+                This allows you to display a complete breadcrumb trail to any Content Item, even if 
+                that Item is normally reached only via a Content Summary List or a Search.
+            </p>
+        
+            <p>
+                This feature is essential on sites with thousands of pages, in which menus might otherwise be very long.
+            </p>
+    
+            
+            <p>
+                Your Menu can be made more attractive through the use of additional functionality made available
+                on the Advanced tab. You can specify a CSS class for the Menu Node as well as some descriptive
+                text.
+            </p>
+    
+            <p><b>Content</b></p>        
+            
+            <p>
+                You can apply changes to multiple Content Items at once including the Layout, 
+                Permissions, and Category assignment.
+            </p>
+            
+            <p>
+                When editing and publishing your Content Items, one archived version will be maintained enabling you
+                to rollback to a previous version.
+            </p>
+    
+            <p><b>Languages</b></p>        
+    
+            <p>
+                The Pro Features Module adds a Translations tab to the Admin Toolbar in the front-end. On this tab
+                you can manage translations of the Content Item you are currently viewing. This tab will only
+                be visible if you have more than one Language enabled.
+            </p>
+            
+            <p><b>Country-based Landing Pages</b></p>
+            
+            <p>The Pro Features Module supports geographical landing pages if you also have the the Geo Landing Pages Module running.</p>
+            
+            <p>This allows you to define a different landing / home page for your visitors, based on their auto-detected location.</p>
+            
+            <p><b>Administration</b></p>        
+            
+            <p>
+                With the Pro Features Module running, each of the adminstrator roles contains a set of administrative
+                privileges enabling you to precisely define what an adminstrator can or cannot do.
+            </p>        
+            
+            <p>
+                Administration of your site can be made more secure by using a site setting to force administrators
+                to log in to your site using SSL.
+            </p>
+dependencies:
+    zenario_common_features: true
+    zenario_email_template_manager: true
+pagination_types:
+    pagSmart:
+        function_name: pagSmart
+        label: Smart page numbers
+    pagSmartWithNPIfNeeded:
+        function_name: pagSmartWithNPIfNeeded
+        label: Smart page numbers with Next/Previous if needed
+    pagSmartWithNP:
+        function_name: pagSmartWithNP
+        label: Smart page numbers with Next/Previous
+is_pluggable: false
+can_be_version_controlled: false
+signals:
+    signal1:
+        name: eventContentDeleted
+        static: true
+    signal2:
+        name: eventContentTrashed
+        static: true

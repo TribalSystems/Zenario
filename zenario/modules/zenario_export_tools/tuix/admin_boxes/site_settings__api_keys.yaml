@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    title: Viewing/Editing Settings for API Keys
+    tabs:
+        translation:
+            label: Translation
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains API keys for translation tools.
+                google_translate_api_key:
+                    site_setting:
+                        name: google_translate_api_key
+                    label: 'Private Key:'
+                    type: text
+                    note_below: |
+                        An application key that can use the Google Translate API.
+                                                        You can obtain a key at
+                                                        <a href="https://code.google.com/apis/console/" target="_blank">
+                                                            https://code.google.com/apis/console/
+                                                        </a>.
+    setting_group: api_keys

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 switch ($path) {
-	case 'zenario__email_template_manager/nav/email_templates/panel':
+	case 'zenario__email_template_manager/panels/email_templates':
 		if ((post('action') == 'delete_template') && checkPriv('_PRIV_MANAGE_EMAIL_TEMPLATE')) {
 			foreach (explode(',',$ids) as $code) {
 				$sql = "

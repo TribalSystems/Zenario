@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ if ($reportDBOutOfDate && checkPriv()) {
 //If you need to enable a language, the "here" link should point to the languages panel
 } elseif (!checkRowExists('languages', array())) {
 	$errorMessage = setting('site_disabled_message');
-	$adminLink = 'zenario/admin/welcome.php?sk=zenario__languages/nav/languages/panel';
+	$adminLink = 'zenario/admin/welcome.php?sk=zenario__languages/panels/languages';
 
 //If you need to enable your site, the "here" link should point to the "Set-up" panel to do that
 } else {

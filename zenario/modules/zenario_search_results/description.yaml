@@ -7,27 +7,27 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Search Results
 description: |
-	<p>
-				This Module allows visitors to search your site's content against entered keywords.
-			</p>
-			<p>
-				When you install this Module it will automatically create a Search page on your site.
-			</p>
-			<p>
-				The default behaviour is to have just one Search page,
-				however you may create a Search page for each Language on your site
-				by creating translations of the original Search page in each Language.
-			</p>
-			<p>
-				Either all or any of the following information sources can be searched: page title, page
-				description, defined keywords, alias, and WYSIWYG Editors or HTML Snippets on 
-				the page. (Only version controlled content is searched. Plugins are not searched.) Each information source can be given its own search weighting enabling you to
-				easily tune your search.
-			</p>
-			<p>
-				Visitors can also filter their search results by Category, if you choose to enable this
-				feature and have created some public Categories.
-			</p>
+    <p>
+                This Module allows visitors to search your site's content against entered keywords.
+            </p>
+            <p>
+                When you install this Module it will automatically create a Search page on your site.
+            </p>
+            <p>
+                The default behaviour is to have just one Search page,
+                however you may create a Search page for each Language on your site
+                by creating translations of the original Search page in each Language.
+            </p>
+            <p>
+                Either all or any of the following information sources can be searched: page title, page
+                description, defined keywords, alias, and WYSIWYG Editors or HTML Snippets on 
+                the page. (Only version controlled content is searched. Plugins are not searched.) Each information source can be given its own search weighting enabling you to
+                easily tune your search.
+            </p>
+            <p>
+                Visitors can also filter their search results by Category, if you choose to enable this
+                feature and have created some public Categories.
+            </p>
 keywords: find, lookup, search
 vlp_class_name: zenario_search_results
 css_class_name: zenario_search_results
@@ -36,10 +36,10 @@ can_be_version_controlled: No
 default_framework: standard
 default_instance_name: Search Results
 special_pages:
-	special_page:
-		page_type: zenario_search
-		default_alias: search
-		default_title: Search
-		footer_menu_title: Search
-		menu_rel_tag: search
-		create_language_equivalent_content: Yes
+    special_page:
+        page_type: zenario_search
+        default_alias: search
+        default_title: Search
+        footer_menu_title: Search
+        menu_rel_tag: search
+        logic: create_and_maintain_in_all_languages

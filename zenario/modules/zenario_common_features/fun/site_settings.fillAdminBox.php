@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -75,11 +75,11 @@ if (isset($box['tabs']['urls']['fields']['mod_rewrite_suffix'])) {
 }
 
 if (isset($box['tabs']['dates']['fields']['vis_date_format_short'])) {
-	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_short']);
+	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_short'], true);
 	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_med']);
 	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_long']);
-	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_datepicker'], true);
-	formatDateFormatSelectList($box['tabs']['dates']['fields']['storekeeper_date_format'], true);
+	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_datepicker'], true, true);
+	formatDateFormatSelectList($box['tabs']['dates']['fields']['storekeeper_date_format'], true, true);
 }
 
 if (isset($box['tabs']['primary_domain']['fields']['primary_domain'])) {

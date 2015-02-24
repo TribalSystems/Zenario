@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -196,7 +196,7 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	
 	
 	var saveLink = zenario.get(containerId + '_save_link').value;
-	var content = $('div#' + editorId).tinymce().getContent();
+	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_wysiwyg_editor.AJAX(
 		saveLink,
@@ -229,18 +229,18 @@ zenario_wysiwyg_editor.SK = function(field_name, url, type, win) {
 	
 	if (type == 'file') {
 		zenarioA.SK('zenario_wysiwyg_editor', 'setLinkURL', false,
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
-						'zenario__content/nav/content/panel',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
+						'zenario__content/panels/content',
 						false, undefined, undefined, undefined, true);
 	
 	} else if (type == 'image') {
 		zenarioA.SK('zenario_wysiwyg_editor', 'setImageURL', false,
-						'zenario__content/nav/content/panel/item_buttons/images//' + zenario_wysiwyg_editor.cType + '_' + zenario_wysiwyg_editor.cID + '//',
-						'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel',
-						'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel',
-						'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel',
+						'zenario__content/panels/content/item_buttons/images//' + zenario_wysiwyg_editor.cType + '_' + zenario_wysiwyg_editor.cID + '//',
+						'zenario__content/panels/inline_images_for_content',
+						'zenario__content/panels/inline_images_for_content',
+						'zenario__content/panels/inline_images_for_content',
 						true, undefined, undefined, undefined, true);
 	}
 }
@@ -308,3 +308,13 @@ zenario_wysiwyg_editor.doClose = function(slotName) {
 
 })(
 	zenario, zenarioA, zenario_wysiwyg_editor);
+	
+
+
+zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, buttonSelector) {
+	$('div#'+containerId).off('dblclick').on('dblclick', function() {
+		if (zenarioA.toolbar == 'edit') {
+			$(buttonSelector).click();
+		}
+	});
+};

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 switch ($path) {
-	case 'zenario__modules/nav/instances/panel':
+	case 'zenario__modules/panels/plugins':
 		$nestablemoduleIds = getNestablemoduleIds();
 		
 		foreach ($panel['items'] as $id => &$item) {

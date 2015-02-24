@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -834,23 +834,30 @@ if (needRevision(23265)) {
 		&& ($result2 = sqlQuery($sql))
 		&& (sqlFetchRow($result2))) continue;
 			
-		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `$characteristic_name` $column_type";
-		$results = sqlSelect($sql);
+		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `". sqlEscape($characteristic_name). "` $column_type";
+		$results = sqlQuery($sql);
 			
 		if($characteristic_type == 'boolean') {
 			//boolean values are true if they exist in characteristic_user_link
-			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a 
-				SET a.`$characteristic_name`=IFNULL(
-					(SELECT 1 FROM " . DB_NAME_PREFIX . "characteristic_user_link as cul
-					WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id
-					), 0)";
+			$sql = "
+				UPDATE " . DB_NAME_PREFIX . "users_custom_data As a 
+				SET a.`". sqlEscape($characteristic_name). "` = IFNULL(
+					(
+						SELECT 1
+						FROM " . DB_NAME_PREFIX . "characteristic_user_link as cul
+						WHERE cul.user_id = a.user_id
+						  AND cul.characteristic_id = ". (int) $characteristic_id. "
+						LIMIT 1
+					),
+					0
+				)";
 		
 		} else {
 			//text and date values
-			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`$characteristic_name`=(
+			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`". sqlEscape($characteristic_name). "`=(
 				SELECT ucv.name FROM " . DB_NAME_PREFIX . "user_characteristic_values AS ucv,"
 				. DB_NAME_PREFIX . "characteristic_user_link as cul
-				WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id
+				WHERE cul.user_id=a.user_id AND cul.characteristic_id=". (int) $characteristic_id. "
 				AND ucv.id = cul.characteristic_value_id)";				
 		}
 		sqlQuery($sql);
@@ -861,7 +868,7 @@ if (needRevision(23265)) {
 			WHERE id IN(
 				SELECT cul.characteristic_value_id FROM " . DB_NAME_PREFIX
 				. "characteristic_user_link as cul
-				WHERE cul.characteristic_id=$characteristic_id)";
+				WHERE cul.characteristic_id=". (int) $characteristic_id. ")";
 			sqlQuery($sql);
 		}
 	}
@@ -880,13 +887,13 @@ if (needRevision(23265)) {
 			continue;
 		}
 		
-		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `$characteristic_name` int(10) NOT NULL DEFAULT 0";
+		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `". sqlEscape($characteristic_name). "` int(10) NOT NULL DEFAULT 0";
 		sqlQuery($sql);
 		
-		$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`$characteristic_name`=(
+		$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`". sqlEscape($characteristic_name). "`=(
 			SELECT cul.characteristic_value_id FROM " . DB_NAME_PREFIX
 			. "characteristic_user_link as cul
-			WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id)";
+			WHERE cul.user_id=a.user_id AND cul.characteristic_id=". (int) $characteristic_id. ")";
 		sqlQuery($sql);			
 	}
 
@@ -1209,21 +1216,7 @@ _sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_system_fields`
 _sql
 
-,/* <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_system_fields` (
-		`dataset_id` int(10) unsigned NOT NULL,
-		`tab_name` varchar(16) CHARACTER SET ascii NOT NULL,
-		`field_name` varchar(64) CHARACTER SET ascii NOT NULL,
-		
-		`ord` int(10) unsigned NOT NULL default 0,
-		`label` varchar(64) NOT NULL default '',
-		`note_below` TEXT,
-		
-		PRIMARY KEY (`dataset_id`, `tab_name`, `field_name`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
-_sql
-
-,*/ <<<_sql
+, <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_field_values`
 _sql
 
@@ -1285,7 +1278,7 @@ _sql
 		'users',
 		'users_custom_data',
 		'zenario_user__details',
-		'zenario__users/nav/users/panel'
+		'zenario__users/panels/users'
 	)
 _sql
 
@@ -1523,31 +1516,6 @@ _sql
 	AFTER `view_priv`
 _sql
 
-
-);	revision(27340
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]users`
-	ADD COLUMN `global_id` int(10) unsigned NOT NULL default 0
-	AFTER `id`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]users`
-	ADD KEY (`global_id`)
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]users`
-	ADD COLUMN `last_updated_timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
-    ON UPDATE CURRENT_TIMESTAMP
-	AFTER `suspended_date`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]users`
-	ADD KEY (`last_updated_timestamp`)
-_sql
-
 ); revision (27342
 
 , <<<_sql
@@ -1731,12 +1699,180 @@ _sql
 	ADD COLUMN `admin_email_use_template` tinyint(1) NOT NULL default 0 AFTER send_email_to_admin
 _sql
 
-); revision(28651
+); revision(28711
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `title` varchar(255) DEFAULT ''
+_sql
+
+); revision(28712
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]user_forms`
+	SET `title` = `name`
+_sql
+
+); revision(28713
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	DROP `duplicate_user_email`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	CHANGE `user_field_id` `user_field_id` int(10) unsigned DEFAULT 0,
+	ADD COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url') DEFAULT NULL
+_sql
+); revision(28714
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	DROP INDEX `user_form_id`,
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url') DEFAULT NULL AFTER `ordinal`
+_sql
+
+); revision(28715
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `captcha` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+); revision(28716
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	CHANGE `captcha` `use_captcha` tinyint(1) NOT NULL DEFAULT 0,
+	ADD COLUMN `captcha_type` enum('word', 'math') DEFAULT 'word',
+	ADD COLUMN `extranet_users_use_captcha` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+//Add a password salt column to the users table
+); revision(28800
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `password_salt` varchar(8) default NULL
+	AFTER `password`
+_sql
+
+); revision(28801
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `reset_password_time` datetime default NULL
+	AFTER `password_needs_changing`
+_sql
+
+
+
+//Up the length of the tab name column in the dataset tables as there are names longer than the current value!
+); revision( 28890
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs`
+	MODIFY COLUMN `name` varchar(64) CHARACTER SET ascii NOT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `tab_name` varchar(64) CHARACTER SET ascii NOT NULL
+_sql
+
+
+//Some sites were missing the global_id and last_updated_timestamp columns from the Users table, possibly due to an incomplete svn up, but we're not sure.
+//This used to be revisions 27340/28651, but I've moved it down and marked it as a later revision to forcibly reapply it
+);	revision(29040
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `global_id` int(10) unsigned NOT NULL default 0
+	AFTER `id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`global_id`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `last_updated_timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP
+	AFTER `suspended_date`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`last_updated_timestamp`)
+_sql
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]users`
 	ADD COLUMN `terms_and_conditions_accepted` tinyint(1) NOT NULL DEFAULT '0'
 	AFTER `last_updated_timestamp`
+_sql
+
+); revision(29043
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	DROP COLUMN `create_new_user`
+_sql
+
+); revision(29044
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url', 'attachment') DEFAULT NULL
+_sql
+
+); revision( 29191
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD COLUMN `screen_name_confirmed` tinyint(1) NOT NULL default 0
+	AFTER `screen_name`
+_sql
+
+); revision( 29231
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms` 
+	ADD COLUMN `log_user_in` tinyint(1) NOT NULL default 0 AFTER `user_status`
+_sql
+
+); revision( 29232
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields` 
+	ADD COLUMN `placeholder` varchar(255) DEFAULT NULL AFTER `size`
+_sql
+
+); revision( 29234
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields` 
+	ADD COLUMN `name` varchar(255) NOT NULL AFTER `is_required`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]user_form_fields`
+	SET `name` = `label`
+_sql
+
+); revision( 29237
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms` 
+	ADD COLUMN `status` enum('active','archived') DEFAULT 'active' AFTER `name`
+_sql
+
+); revision( 29240
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `required_field` int(10) unsigned DEFAULT 0 AFTER `is_required`,
+	ADD COLUMN `required_value` varchar(255) DEFAULT NULL AFTER `required_field`
 _sql
 
 );

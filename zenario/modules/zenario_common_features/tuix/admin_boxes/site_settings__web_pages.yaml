@@ -1,136 +1,137 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-	title: Editing site optimization settings
-	tabs:
-		speed:
-			label: Speed
-			edit_mode:
-				enabled: Yes
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: No
-			fields:
-				description:
-					full_width: Yes
-					snippet:
-						html: >
-							This tab contains settings for making your Web Pages load
-							more quickly for visitors.
-				compress_web_pages:
-					site_setting:
-						name: compress_web_pages
-					label: 'Compress Web Pages:'
-					type: checkbox
-					value: "1"
-					note_below: |
-						Compress web pages, CSS files and JavaScript files to reduce bandwidth and download times;
-														if a visitor's browser supports compression.
-														(Images and animations will always be compressed if compression is possible, even if this setting is switched off.)
-														<br/>
-														If you have the zlib extension installed in php 5.4 or higher, this setting will be ignored and
-														compression will always be done automatically by the server.
-				css_wrappers:
-					site_setting:
-						name: css_wrappers
-						value: visitors_only
-					label: 'CSS File Wrappers:'
-					type: select
-					values:
-						on:
-							label: Always on
-						visitors_only:
-							label: On for visitors only
-						off:
-							label: Always off
-					value: on
-					note_below: |
-						Wrap CSS files together for Plugin Swatches and Skins to reduce download times.
-													(Plugin JavaScript files and CSS files for the core CMS will always be wrapped, even if this setting is switched off.)
-				have_query_cache:
-					label: 'Caching of SQL queries enabled:'
-					type: checkbox
-					read_only: Yes
-					note_below: |
-						Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
-													resulting in faster page-generation times and less load on the server.
-													This feature can be enabled by your server administrator.
-				query_cache_size:
-					label: 'Query cache Size:'
-					type: text
-					style: 'width: 6em;'
-					read_only: Yes
-				use_cookie_free_domain:
-					site_setting:
-						name: use_cookie_free_domain
-					label: 'Use a cookie-free domain for hosting static files:'
-					type: checkbox
-					value: ""
-					format_onchange: Yes
-					note_below: |
-						If you have a second domain name pointing to this site, you may use this as a cookie-free domain
-													from which to serve images, CSS files and JavaScript files.
-				cookie_free_domain:
-					site_setting:
-						name: cookie_free_domain
-					label: 'Domain:'
-					pre_field_html: http://
-					type: text
-					style: 'width: 15em;'
-					post_field_html: ""
-					note_below: |
-						This must be a domain that points to this site, and to be cookie-free it must not share cookies with this domain.
-														For example, if your primary domain was &quot;www.example.com &quot;, you could use  &quot;static.example.com &quot; as a cookie-free domain.
-														However if your primary domain was  &quot;example.com &quot;, you couldn't use  &quot;static.example.com &quot; as a cookie-free domain as this
-														subdomain would share cookies with  &quot;example.com &quot; - but you could set up a whole new domain (e.g.  &quot;yoursite-images.com &quot;)
-														to use as a cookie-free domain.
-		errors:
-			label: Errors
-			edit_mode:
-				enabled: Yes
-				priv: _PRIV_EDIT_SITE_SETTING
-				on: No
-			fields:
-				description:
-					full_width: Yes
-					snippet:
-						html: This tab contains settings for handling errors on Web Pages.
-				show_sql_errors_to_visitors:
-					site_setting:
-						name: show_sql_errors_to_visitors
-					label: 'Show SQL errors to visitors:'
-					type: checkbox
-					value: ""
-					note_below: |
-						If this is enabled, your site will show technical details of error messages to any visitor.
-													This can be helpful while your site is under construction, but should usually be left off for security reasons.
-				show_notices:
-					label: 'Show run-time notices:'
-					type: checkbox
-					read_only: Yes
-					note_below: |
-						If run-time notices are enabled, the CMS and any Modules enabled on your site will show messages whenever they
-														encounter anything that may indicate an error. However these messages may also appear in the normal course of running of your site.
-														<br/>
-														These messages can be useful for websites in development, but should never be enabled for a live site.
-														You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
-														<br/>
-														You must disable the &quot;Compress Web Pages&quot; Site Setting on the &quot;Speed&quot; tab if you use this level of error reporting,
-														as some PHP generated notices will cause Content Encoding Errors when GZip compression is enabled.
-				show_strict:
-					label: 'Show strict errors:'
-					type: checkbox
-					read_only: Yes
-					note_below: |
-						If strict errors are enabled, the CMS and any Modules enabled on your site will show messages whenever they
-														encounter any PHP code that is no longer compatible with the latest version of PHP.
-														<br/>
-														These messages can be useful for websites in development, but should never be enabled for a live site.
-														You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
-				show_all:
-					label: 'Show all other errors:'
-					type: checkbox
-					read_only: Yes
-					note_below: |
-						You should normally leave these messages enabled.
-														You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
-	setting_group: web_pages
+    title: Editing site optimization settings
+    tabs:
+        speed:
+            label: Speed
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            This tab contains settings for making your Web Pages load
+                            more quickly for visitors.
+                compress_web_pages:
+                    site_setting:
+                        name: compress_web_pages
+                    label: 'Compress Web Pages:'
+                    type: checkbox
+                    value: "1"
+                    note_below: |
+                        Compress web pages, CSS files and JavaScript files to reduce bandwidth and download times;
+                        if a visitor's browser supports compression.
+                        (Images and animations will always be compressed if compression is possible, even if this setting is switched off.)
+                        <br/>
+                        If you have the zlib extension installed in php 5.4 or higher, this setting will be ignored and
+                        compression will always be done automatically by the server.
+                css_wrappers:
+                    site_setting:
+                        name: css_wrappers
+                        value: visitors_only
+                    label: 'CSS File Wrappers:'
+                    type: select
+                    values:
+                        on:
+                            label: Always on
+                        visitors_only:
+                            label: On for visitors only
+                        off:
+                            label: Always off
+                    value: on
+                    note_below: |
+                        Reduce the number of downloads by combining multiple CSS files together.
+                        This will make your website load faster, but designers may want to turn this off for easier debugging.
+                        (Core files for the CMS will always be combined.)
+                have_query_cache:
+                    label: 'Caching of SQL queries enabled:'
+                    type: checkbox
+                    read_only: Yes
+                    note_below: |
+                        Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
+                                                    resulting in faster page-generation times and less load on the server.
+                                                    This feature can be enabled by your server administrator.
+                query_cache_size:
+                    label: 'Query cache Size:'
+                    type: text
+                    style: 'width: 6em;'
+                    read_only: Yes
+                use_cookie_free_domain:
+                    site_setting:
+                        name: use_cookie_free_domain
+                    label: 'Use a cookie-free domain for hosting static files:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                    note_below: |
+                        If you have a second domain name pointing to this site, you may use this as a cookie-free domain
+                                                    from which to serve images, CSS files and JavaScript files.
+                cookie_free_domain:
+                    site_setting:
+                        name: cookie_free_domain
+                    label: 'Domain:'
+                    pre_field_html: http://
+                    type: text
+                    style: 'width: 15em;'
+                    post_field_html: ""
+                    note_below: |
+                        This must be a domain that points to this site, and to be cookie-free it must not share cookies with this domain.
+                                                        For example, if your primary domain was &quot;www.example.com &quot;, you could use  &quot;static.example.com &quot; as a cookie-free domain.
+                                                        However if your primary domain was  &quot;example.com &quot;, you couldn't use  &quot;static.example.com &quot; as a cookie-free domain as this
+                                                        subdomain would share cookies with  &quot;example.com &quot; - but you could set up a whole new domain (e.g.  &quot;yoursite-images.com &quot;)
+                                                        to use as a cookie-free domain.
+        errors:
+            label: Errors
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains settings for handling errors on Web Pages.
+                show_sql_errors_to_visitors:
+                    site_setting:
+                        name: show_sql_errors_to_visitors
+                    label: 'Show SQL errors to visitors:'
+                    type: checkbox
+                    value: ""
+                    note_below: |
+                        If this is enabled, your site will show technical details of error messages to any visitor.
+                                                    This can be helpful while your site is under construction, but should usually be left off for security reasons.
+                show_notices:
+                    label: 'Show run-time notices:'
+                    type: checkbox
+                    read_only: Yes
+                    note_below: |
+                        If run-time notices are enabled, the CMS and any Modules enabled on your site will show messages whenever they
+                                                        encounter anything that may indicate an error. However these messages may also appear in the normal course of running of your site.
+                                                        <br/>
+                                                        These messages can be useful for websites in development, but should never be enabled for a live site.
+                                                        You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
+                                                        <br/>
+                                                        You must disable the &quot;Compress Web Pages&quot; Site Setting on the &quot;Speed&quot; tab if you use this level of error reporting,
+                                                        as some PHP generated notices will cause Content Encoding Errors when GZip compression is enabled.
+                show_strict:
+                    label: 'Show strict errors:'
+                    type: checkbox
+                    read_only: Yes
+                    note_below: |
+                        If strict errors are enabled, the CMS and any Modules enabled on your site will show messages whenever they
+                                                        encounter any PHP code that is no longer compatible with the latest version of PHP.
+                                                        <br/>
+                                                        These messages can be useful for websites in development, but should never be enabled for a live site.
+                                                        You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
+                show_all:
+                    label: 'Show all other errors:'
+                    type: checkbox
+                    read_only: Yes
+                    note_below: |
+                        You should normally leave these messages enabled.
+                                                        You can change this setting by editing your <code>zenario_siteconfig.php</code> file.
+    setting_group: web_pages

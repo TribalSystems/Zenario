@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2014, Tribal Limited
+ * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,19 +43,26 @@ if (isset($_GET['refiner__trash']) && !get('refiner__template')) {
 
 } elseif (get('refinerName') == 'find_duplicates') {
 	$panel['title'] = adminPhrase('Items with duplicate file attachments');
+	$panel['no_items_message'] = adminPhrase('No items with duplicate file attachments found');
 	unset($panel['collection_buttons']['diagnostics_dropdown']);
 	
 	//code bellow deal with default columns for a specific refiner, after defining use_different_view_options on the tuix file.
-	$columns = &$panel['columns'];
-	foreach ($columns as &$col) {
-		$col['show_by_default'] = false;
+	foreach ($panel['columns'] as $col_name => &$col) {
+		if (is_array($col_name) && !isInfoTag($col_name)) {
+			$col['show_by_default'] = false;
+		
+			switch ($col_name) {
+				case 'title':
+				case 'file_id':
+				case 'filename':
+				case 'version':
+				case 'status':
+					$col['always_show'] = false;
+			}
+		}
 	}
 
-	foreach (array('title', 'file_id', 'filename', 'version', 'status') as $col_name) {
-		$columns[$col_name]['always_show'] = true;
-	}
-
-} elseif ($path == 'zenario__content/hidden_nav/chained/panel') {
+} elseif ($path == 'zenario__content/panels/chained') {
 	$cID = $cType = false;
 	
 	if ($refinerName == 'zenario_trans__chained_in_link') {
@@ -231,13 +238,11 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 				$item['lock_owner_name'] = $adminDetails['first_name'].' '.$adminDetails['last_name'];
 			}
 			
-			if ($path == 'zenario__content/hidden_nav/chained/panel') {
+			if ($path == 'zenario__content/panels/chained') {
 				$panel['key']['equivId'] = $item['equiv_id'];
 				$panel['key']['cType'] = $item['type'];
 			}
 			
-			$item['description'] = formatNicely($item['description'], 20);
-			$item['keywords'] = formatNicely($item['keywords'], 20);
 			
 			$item['css_class'] = getItemIconClass($item['id'], $item['type'], true, $item['status']);
 	
@@ -318,7 +323,7 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 			
 			if (isset($item['menu_id'])) {
 				//Handle the case where a Content Item has a translation but a Menu Node does not
-				if ($path == 'zenario__content/hidden_nav/chained/panel' && $item['menu'] === null) {
+				if ($path == 'zenario__content/panels/chained' && $item['menu'] === null) {
 					$item['menu'] = adminPhrase('[Menu Text missing]');
 				} else {
 					$item['traits']['linked'] = true;
@@ -354,7 +359,7 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 					$item['name'] .= ' ('. $item['language_id']. ')';
 				}
 				
-				$item['navigation_path'] = 'zenario__content/nav/content/panel//'. $id;
+				$item['navigation_path'] = 'zenario__content/panels/content//'. $id;
 			
 			} elseif (get('refiner__language') && $item['language_id'] != get('refiner__language') && $refinerName == 'language_equivs') {
 				$item['traits']['ghost'] = true;
@@ -401,7 +406,7 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 	//
 	$numLanguages = count($langs = getLanguages());
 	
-	if ($path == 'zenario__content/hidden_nav/chained/panel') {
+	if ($path == 'zenario__content/panels/chained') {
 		$numEquivs = 0;
 		foreach ($panel['items'] as &$item) {
 			$item['cell_css_classes']['tag'] = 'lang_flag_'. $item['language_id'];
