@@ -34,17 +34,18 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc.js.php for step (3).
 */
 
-
-(function(
+zenario.lib(function(
+	undefined,
 	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	get, engToBoolean, htmlspecialchars, ifNull,
-	undefined) {
-		"use strict";
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf
+) {
+	"use strict";
 
 
 zenario.slots = new Object();
@@ -62,6 +63,113 @@ zenario.getEl = false;
 //As with session('extranetUserID'), anything that changes behaviour by Extranet User should not allow the page to be cached.
 zenario.userId = 0;
 zenario.adminId = 0;
+
+
+
+//WiP callback class	
+zenario.callback = function() {
+	this.isWrapper = false;
+	this.results = [undefined];
+	this.completes = [false];
+};
+var methods = methodsOf(zenario.callback);
+
+//Register a function to call afterwards.
+//You can only register one function; calling it a second time overwrites the first time
+//Your function will be called with the result of the callback as its arguement
+//(Or the results of the callbacks as its arguements, if you have chained multiple callbacks together)
+methods.after = function(fun, that) {
+	this.that = that || this;
+	this.fun = fun;
+	
+	return this;
+};
+
+//Complete the callback with a result
+//The result you give will be added as an arguement to the callback function
+methods.call = function(result) {
+	this.completes[0] = true;
+	this.results[0] = result;
+	this.checkComplete();
+	
+	return this;
+};
+
+//Turn this callback into a wrapper for other callbacks
+//Your callback function will be called after all of the callback functions you've added are called,
+//and you'll get multiple arguements passed to your callback function (one per callback).
+methods.add = function(cb) {
+	this.isWrapper = true;
+	this.completes[0] = true;
+	
+	var i = this.results.length;
+	
+	this.results.push(undefined);
+	this.completes.push(false);
+	
+	cb.after(function(result) {
+		this.results[i] = result;
+		this.completes[i] = true;
+		this.checkComplete();
+	}, this);
+	
+	return this;
+};
+
+//Check to see if the callback is complete and trigger the callback function if so.
+//An internal function, no need to call it.
+methods.checkComplete = function() {
+	var i, link;
+	
+	for (i = 0; i < this.completes.length; ++i) {
+		if (!this.completes[i]) {
+			return;
+		}
+	}
+	
+	if (this.fun) {
+		if (this.isWrapper) {
+			this.results.splice(0, 1);
+		}
+		this.fun.apply(this.that, this.results);
+	}
+};
+
+//Some different examples of how to use the callback function above
+//window.test = function() {
+//	var url1 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_1&_limit=1',
+//		url2 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_2&_limit=1',
+//		url3 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_3&_limit=1';
+//	
+//	zenario.ajax(url1, false, true).after(function(data) {
+//		console.log(data.items.html_1.tag);
+//	});
+//	zenario.ajax(url2, false, true).after(function(data) {
+//		console.log(data.items.html_2.tag);
+//	});
+//	zenario.ajax(url3, false, true).after(function(data) {
+//		console.log(data.items.html_3.tag);
+//	});
+//	
+//	var cb = new zenario.callback;
+//	cb.add(zenario.ajax(url1, false, true));
+//	cb.add(zenario.ajax(url2, false, true));
+//	cb.add(zenario.ajax(url3, false, true));
+//	cb.after(function(data1, data2, data3) {
+//		console.log(data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
+//	});
+//
+//	
+//	zenario.ajax(url1, false, true)
+//	.add(zenario.ajax(url2, false, true))
+//	.add(zenario.ajax(url3, false, true))
+//	.after(function(data1, data2, data3) {
+//		console.log(data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
+//	});
+//};
+
+
+
 
 //Redirect the user to a URL using JavaScript
 zenario.goToURL = function(URL, useChromeFix) {
@@ -853,8 +961,8 @@ zenario.formatDate = function(date, showTime, format) {
 		if (format) {
 			out = $.datepicker.formatDate(format, date);
 		
-		} else if (zenarioA.siteSettings && zenarioA.siteSettings.storekeeper_date_format) {
-			out = $.datepicker.formatDate(zenarioA.siteSettings.storekeeper_date_format, date);
+		} else if (zenarioA.siteSettings && zenarioA.siteSettings.organizer_date_format) {
+			out = $.datepicker.formatDate(zenarioA.siteSettings.organizer_date_format, date);
 		
 		} else {
 			out = $.datepicker.formatDate('d M yy', date);
@@ -1263,7 +1371,7 @@ zenario.setLocalStorage = function(merge, url, requests, isObject, session) {
 
 zenario.checkDataRevisionNumber = function(async) {
 	
-	if (zenarioAB.focus && zenarioAB.focus.path == 'install') {
+	if (zenarioAB.tuix && zenarioAB.tuix.path == 'install') {
 		return;
 	}
 	
@@ -1370,10 +1478,13 @@ if (!window.JSON) {
 	$.ajax({url: URLBasePath + 'zenario/libraries/public_domain/json/json2.min.js', dataType: "script", async: false});
 }
 
+//Add the Math.log10() function, if it's not defined natively
+if (!Math.log10) {
+	Math.log10 = function(n) {
+		return Math.log(n) / Math.log(10);
+	};
+}
 
 
-})(
-	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull);
+
+});

@@ -29,14 +29,13 @@ plugin_settings:
         overall_list:
             label: Overall List
             fields:
-                use_phrases:
-                    plugin_setting:
-                        name: use_phrases
-                    label: 'Use visitor phrases'
-                    type: checkbox
-                    note_below: >
-                        When enabled, visitor phrases will be merged into the header fields. For example, use [[_MY_PHRASE]]
-                        to merge a phrase called _MY_PHRASE
+                translate_text:
+                     plugin_setting:
+                         name: translate_text
+                     label: 'Make this plugin multilingual using the phrases system'
+                     type: checkbox
+                     value: 1
+                     format_onchange: true
                 
                 show_headings:
                     plugin_setting:
@@ -53,6 +52,7 @@ plugin_settings:
                 heading_if_items:
                     plugin_setting:
                         name: heading_if_items
+                        translate: true
                     label: Heading
                     type: text
                     value: 'List of Content'
@@ -72,6 +72,7 @@ plugin_settings:
                 heading_if_no_items:
                     plugin_setting:
                         name: heading_if_no_items
+                        translate: true
                     label: No items heading
                     type: text
                     value: 'No content to list'
@@ -99,6 +100,18 @@ plugin_settings:
                         Use this if you wish to show a short list here, and a link
                         to a further page with a longer list.
                     format_onchange: Yes
+                
+                more_link_text:
+                    plugin_setting:
+                        name: more_link_text
+                        is_searchable_content: true
+                        translate: true
+                    label: 'More link text:'
+                    type: text
+                    width: "150"
+                    maxlength: "255"
+                    value: "More..."
+                
                 more_hyperlink_target:
                     plugin_setting:
                         name: more_hyperlink_target
@@ -113,6 +126,7 @@ plugin_settings:
                         disallow_refiners_looping_on_min_path: Yes
                         select_phrase: Select Content Item...
                         hide_remove_button: Yes
+                
                 enable_rss:
                     plugin_setting:
                         name: enable_rss

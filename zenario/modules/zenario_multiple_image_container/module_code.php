@@ -71,7 +71,16 @@ class zenario_multiple_image_container extends zenario_banner {
 		}
 		
 		$this->mergeFields['Text'] = $this->setting('text');
-		$this->mergeFields['Title'] = $this->setting('title');
+		$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
+		
+		if (!$this->isVersionControlled && $this->setting('translate_text')) {
+			if ($this->mergeFields['Text']) {
+				$this->replacePhraseCodesInString($this->mergeFields['Text']);
+			}
+			if ($this->mergeFields['Title']) {
+				$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+			}
+		}
 		
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty

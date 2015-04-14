@@ -85,11 +85,14 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 											'ordinal' => (float) ifNull(arrayKey($field, 'ord'), ++$fieldCount),
 											'type' => 'system_field',
 											'label' => ifNull(arrayKey($field, 'dataset_label'), arrayKey($field, 'label')),
+											'parent_id' => $tabName,
 											'tab_name' => $tabName,
 											'field_name' => $fieldName
 										);
 								
-										$panel['__item_hierarchy__'][$id] = $tabName;
+										//if (isset($panel['items'][$tabName])) {
+											$panel['items'][$tabName]['has_children'] = true;
+										//}
 									}
 								}
 							}
@@ -151,6 +154,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 				
 				$panel['items'][$id] = array(
 					'is_field' => true,
+					'parent_id' => $field['tab_name'],
 					'tab_name' => $field['tab_name'],
 					'db_column' => $field['db_column'],
 					'ordinal' => (float) $field['ord'],
@@ -203,7 +207,9 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 					}
 				}
 				
-				$panel['__item_hierarchy__'][$id] = $field['tab_name'];
+				//if (isset($panel['items'][$field['tab_name']])) {
+					$panel['items'][$field['tab_name']]['has_children'] = true;
+				//}
 			}
 			
 			//Look for customised system fields

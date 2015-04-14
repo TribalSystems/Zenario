@@ -22,13 +22,19 @@ zenario__menu:
                                                   AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mi.id
                 custom_where_statement_if_no_missing_items: WHERE mt.menu_id IS NOT NULL
-                hierarchy_column: mi.parent_id
                 client_side: Yes
+            
+            panel_type: hierarchy_with_lazy_load
             reorder:
                 priv: _PRIV_REORDER_MENU_ITEM
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
+            
+            hierarchy: {}
+                column: parent_id
+                #db_column: mi.parent_id
+            
             disable_periodic_refresh: Yes
             refiners:
                 language:
@@ -54,6 +60,11 @@ zenario__menu:
                     title: Ordinal
                     db_column: mi.ordinal
                     align_right: Yes
+                path:
+                    title: Path
+                    searchable: false
+                    always_show: true
+                    width: xlarge
                 name:
                     title: Menu Node Text
                     searchable: Yes

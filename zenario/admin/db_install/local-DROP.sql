@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_text`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]module_dependencies`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]modules`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]nested_plugins`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]page_preview_sizes`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_instance_cache`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_instances`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]plugin_item_link`;

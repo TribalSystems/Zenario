@@ -13,6 +13,7 @@ description: |
     
     <p>Items which are private (i.e. password-protected for Extranet Users only) may only appear in the Site Map when a User is logged in, according to the Hide setting on each Menu Node.</p>
         <p>Apply your own styling using Skins to make your Site Map display exactly the way you like.</p>
+category: pluggable
 keywords: map, plan, site, structure
 vlp_class_name: zenario_sitemap
 css_class_name: zenario_sitemap

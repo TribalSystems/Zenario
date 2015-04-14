@@ -1414,11 +1414,34 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 		
 		$details = getRow(
 			'layouts',
-			array('css_class', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
+			array('css_class', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only', 'file_base_name'),
 			$sourceTemplateId);
 		
+		$sourceFileBaseName = $details['file_base_name'];
+		unset($details['file_base_name']);
+		
 		updateRow('layouts', $details, $layoutId);
-				
+		
+		// Copy slots to duplicated layout
+		if (isset($values['file_base_name'])) {
+			$slots = getRowsArray('template_slot_link', 
+				array('family_name', 'slot_name'), 
+				array('family_name' => $values['family_name'], 'file_base_name' => $sourceFileBaseName));
+			if ($slots) {
+				$sql = '
+					INSERT IGNORE INTO '.DB_NAME_PREFIX.'template_slot_link (
+						family_name,
+						file_base_name,
+						slot_name
+					) VALUES ';
+				foreach ($slots as $slot) {
+					$sql .= '("'. sqlEscape($slot['family_name']). '","'. sqlEscape($values['file_base_name']). '","'. sqlEscape($slot['slot_name']). '"),';
+				}
+				$sql = trim($sql, ',');
+				sqlQuery($sql);
+			}
+		}
+		
 		$sql = "
 			REPLACE INTO ". DB_NAME_PREFIX. "plugin_layout_link (
 				module_id,
@@ -3007,7 +3030,6 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 		if (loadModuleDescription($moduleName, $desc)) {
 			
 			$foundModules[$moduleName] = true;
-			
 			$sql = "
 				INSERT INTO ". DB_NAME_PREFIX. "modules SET
 					class_name = '". sqlEscape($moduleName). "',
@@ -3016,6 +3038,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					default_framework = '". sqlEscape($desc['default_framework']). "',
 					css_class_name = '". sqlEscape($desc['css_class_name']). "',
 					nestable = ". engToBoolean($desc['nestable']);
+					
 			
 			if ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
 				$sql .= ",
@@ -3023,10 +3046,12 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 			}
 			
 			if (!$dbUpdateSafeMode) {
+				$category = (!empty($desc['category'])) ? ("'".sqlEscape($desc['category'])."'") : "NULL";
 				$sql .= ",
 					is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
 					can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
-					missing = 0";
+					missing = 0,
+					category = ". $category;
 			}
 			
 			$sql .= "
@@ -3036,6 +3061,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					default_framework = VALUES(default_framework),
 					css_class_name = VALUES(css_class_name),
 					nestable = VALUES(nestable)";
+					
 			
 			if ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
 				$sql .= ",
@@ -3046,7 +3072,8 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 				$sql .= ",
 					is_pluggable = VALUES(is_pluggable),
 					can_be_version_controlled = VALUES(can_be_version_controlled),
-					missing = 0";
+					missing = 0,
+					category = VALUES(category)";
 			}
 			
 			sqlQuery($sql);
@@ -3120,7 +3147,7 @@ function uninstallModuleCheckForDependencies($module) {
 	
 	if ($row = sqlFetchAssoc($result)) {
 		echo adminPhrase(
-			'Cannot Reset the module &quot;[[moduleName]]&quot; as the &quot;[[dependencyName]]&quot; module depends on it.',
+			'Cannot uninitialise the module &quot;[[moduleName]]&quot; as the &quot;[[dependencyName]]&quot; module depends on it.',
 			array(
 				'moduleName' => htmlspecialchars(getModuleDisplayNameByClassName($module['class_name'])),
 				'dependencyName' => htmlspecialchars(getModuleDisplayNameByClassName($row['module_class_name'])))
@@ -4118,7 +4145,6 @@ function loadModuleDescription($moduleName, &$tags) {
 	if (!moduleDir($moduleName, '', true)) {
 		return false;
 	}
-	
 	$tags = array();
 	$limit = 20;
 	$modulesWeHaveRead = array();
@@ -4149,7 +4175,6 @@ function loadModuleDescription($moduleName, &$tags) {
 		
 		$settingGroup = 'inherited';
 	}
-	
 	
 	$replaces = array();
 	$replaces['[[MODULE_DIRECTORY_NAME]]'] = $baseModuleName;
@@ -4186,7 +4211,6 @@ function loadModuleDescription($moduleName, &$tags) {
 			$tag = $replaces[$tag];
 		}
 	}
-	
 	return true;
 }
 
@@ -5981,6 +6005,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 				case 'default_sort_desc':
 				case 'default_sort_column':
 				case 'no_return':
+				case 'panel_type':
 				case 'refiner_required':
 				case 'reorder':
 				case 'title':
@@ -6273,8 +6298,8 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 							}
 						}
 						
-						if (!empty($tags['db_items']['hierarchy_column'])) {
-							$db_items['hierarchy_column'] = true;
+						if (!empty($tags['db_items']['hierarchy']['db_column'])) {
+							$db_items['hierarchy']['db_column'] = true;
 						}
 						
 						if (empty($db_items)) {

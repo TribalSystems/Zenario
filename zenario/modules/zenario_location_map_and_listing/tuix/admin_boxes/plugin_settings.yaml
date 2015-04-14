@@ -1,0 +1,119 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_location_map_and_listing
+    tabs:
+        first_tab:
+            label: Filter and Order
+            fields:
+                desc:
+                    ord: 0
+                    snippet:
+                        html: |
+                                This plugin will show a map and a list of all of the
+                                active locations on your site.
+                filter_by_country:
+                    plugin_setting:
+                        name: filter_by_country
+                    type: checkbox
+                    label: 'Filter by country'
+                    note_below: |
+                        Shows a drop-down list of countries. When a visitor selects a country,
+                        only that country's locations will be shown.
+                    redraw_onchange: true
+                default_country:
+                    visible_if: |
+                        zenarioAB.value('filter_by_country')
+                    plugin_setting:
+                        name: default_country
+                    label: 'Default country:'
+                    pick_items:
+                        path: zenario__languages/panels/countries//
+                        max_path: zenario__languages/panels/countries
+                        min_path: zenario__languages/panels/countries
+                        target_path: zenario__languages/panels/countries
+                    validation:
+                        required_if_not_hidden: 'Please select a default country'
+                    note_below: |
+                        If the GeoIP Lookup Module is running and the visitor is in one of the
+                        countries in the list, the country they are in will be used instead
+                        of this default value.
+                list_by_field:
+                    plugin_setting:
+                        name: list_by_field
+                    type: checkbox
+                    label: 'List by checkbox-type field(s)'
+                    note_below: |
+                        You can select up to three checkbox-type fields from the location dataset
+                        to group the listings.
+                        If you select one field, it will act as a filter - only locations with that field set
+                        will be shown.
+                        If you select multiple fields, they will act as filters with OR logic - locations
+                        with one of the fields set will be shown.
+                    redraw_onchange: true
+                field1:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                    plugin_setting:
+                        name: field1
+                    type: select
+                    empty_value: ' -- Select -- '
+                    label: 'First list:'
+                    validation:
+                        required_if_not_hidden: 'Please select a field for the first list'
+                    redraw_onchange: true
+                field1_title:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                    plugin_setting:
+                        name: field1_title
+                    type: text
+                    label: 'Title:'
+                field2:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                        && zenarioAB.value('field1')
+                    plugin_setting:
+                        name: field2
+                    type: select
+                    empty_value: ' -- Select -- '
+                    label: 'Second list (optional):'
+                    redraw_onchange: true
+                field2_title:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                        && zenarioAB.value('field1')
+                        && zenarioAB.value('field2')
+                    plugin_setting:
+                        name: field2_title
+                    type: text
+                    label: 'Title:'
+                field3:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                        && zenarioAB.value('field1')
+                        && zenarioAB.value('field2')
+                    plugin_setting:
+                        name: field3
+                    type: select
+                    empty_value: ' -- Select -- '
+                    label: 'Third list (optional):'
+                    redraw_onchange: true
+                field3_title:
+                    visible_if: |
+                        zenarioAB.value('list_by_field')
+                        && zenarioAB.value('field1')
+                        && zenarioAB.value('field2')
+                        && zenarioAB.value('field3')
+                    plugin_setting:
+                        name: field3_title
+                    type: text
+                    label: 'Title:'
+                allow_scrolling:
+                    plugin_setting:
+                        name: allow_scrolling
+                    type: checkbox
+                    label: 'Allow scrolling'
+                    note_below: |
+                        If this is checked, a visitor will be able to scroll the map using the
+                        scroll-wheel on their mouse.

@@ -28,6 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+$path = false;
 $separator = ' -> ';
 $sectionSeparator = ': ';
 $hierarchalSearch = false;
@@ -79,35 +80,19 @@ if ($panel['key']['parentId']) {
 	$mrg['parent'] = getMenuName($panel['key']['parentId'], $panel['key']['languageId']);
 	$mrg['n'] = getMenuItemLevel($panel['key']['parentId']) + 1;
 	
-	if (!isset($_GET['_search'])) {
-		$panel['title'] = adminPhrase('"[[section]]" Section in [[lang]]: Child Menu Nodes of "[[parent]]" (Level [[n]])', $mrg);
-		$panel['no_items_message'] = adminPhrase('The "[[parent]]" Menu Node has no children.', $mrg);
-		
-		//if (!empty($panel['item_buttons']['move'])) {
-		//	$panel['item_buttons']['move']['combine_items']['path'] =
-		//		getMenuItemStorekeeperDeepLink($panel['key']['parentId'], $panel['key']['languageId'], $panel['key']['sectionId'], true);
-		//}
-		
-	} else {
-		$hierarchalSearch = true;
-		$panel['title'] = adminPhrase('"[[section]]" Section in [[lang]]: Search results for Menu Nodes under "[[parent]]"', $mrg);
+	$panel['title'] = adminPhrase('"[[section]]" Section in [[lang]]: Child Menu Nodes of "[[parent]]" (Level [[n]])', $mrg);
+	$panel['no_items_message'] = adminPhrase('The "[[parent]]" Menu Node has no children.', $mrg);
+	$hierarchalSearch = isset($_GET['_search']);
+	
+	if ($hierarchalSearch) {
+		$path = getMenuPath($panel['key']['parentId'], $panel['key']['languageId'], $separator);
 	}
 
 } elseif ($panel['key']['sectionId']) {
-	if (!isset($_GET['_search'])) {
-		$panel['title'] = adminPhrase('Menu Nodes in the "[[section]]" Section in [[lang]]', $mrg);
-		$panel['no_items_message'] = adminPhrase('There are no Menu Nodes in the "[[section]]" section.', $mrg);
-		$panel['no_items_in_search_message'] = adminPhrase('No Menu Nodes in the "[[section]]" section match your search.', $mrg);
-		
-		//if (!empty($panel['item_buttons']['move'])) {
-		//	$panel['item_buttons']['move']['combine_items']['path'] =
-		//		getMenuItemStorekeeperDeepLink(false, $panel['key']['languageId'], $panel['key']['sectionId'], true);
-		//}
-	
-	} else {
-		$hierarchalSearch = true;
-		$panel['title'] = adminPhrase('"[[section]]" Section in [[lang]]: Search results', $mrg);
-	}
+	$panel['title'] = adminPhrase('Menu Nodes in the "[[section]]" Section in [[lang]]', $mrg);
+	$panel['no_items_message'] = adminPhrase('There are no Menu Nodes in the "[[section]]" section.', $mrg);
+	$panel['no_items_in_search_message'] = adminPhrase('No Menu Nodes in the "[[section]]" section match your search.', $mrg);
+	$hierarchalSearch = isset($_GET['_search']);
 
 } else {
 	unset($panel['reorder']);
@@ -206,8 +191,26 @@ foreach ($panel['items'] as &$item) {
 		$item['name'] = getMenuName($id, $panel['key']['languageId']);
 		
 		$item['name'] = adminPhrase('MISSING [[name]]', array('name' => $item['name']));
+		
+		if ($hierarchalSearch) {
+			if ($path) {
+				$item['path'] = $path. $separator. $item['name'];
+			} else {
+				$item['path'] = getMenuPath($id, $panel['key']['languageId'], $separator);
+			}
+			$item['path'] = adminPhrase('MISSING [[name]]', array('name' => $item['path']));
+		}
 	
 	} else {
+		if ($hierarchalSearch) {
+			if ($path) {
+				$item['path'] = $path. $separator. $item['name'];
+		
+			} else {
+				$item['path'] = getMenuPath($id, $panel['key']['languageId'], $separator);
+			}
+		}
+		
 		//Missing Menu Nodes to Content Items can be created by duplicating the Content Item
 		if (!$item['target_lang'] || $item['target_lang'] != ifNull($item['text_lang'], $panel['key']['languageId'])) {
 			if ($item['internal_target']) {
@@ -248,6 +251,10 @@ foreach ($panel['items'] as &$item) {
 	if ($hierarchalSearch) {
 		$item['ordinal'] = getMenuPath($id, $panel['key']['languageId'], $separator, true);
 	}
+}
+
+if (!$hierarchalSearch) {
+	$panel['columns']['path']['hidden'] = true;
 }
 
 return false;

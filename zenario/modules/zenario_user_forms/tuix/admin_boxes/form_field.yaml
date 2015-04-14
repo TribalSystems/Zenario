@@ -68,7 +68,7 @@ zenario_user_admin_box_form_field:
 						required_if_not_hidden: 'Please enter a name for this form field'
 					side_note: >
 						This is used to identify this field for admins and is not seen by users.
-					onkeyup: if (!zenarioAB.focus.key.id) { get('label').value = get('name').value; }
+					onkeyup: if (!zenarioAB.tuix.key.id) { get('label').value = get('name').value; }
 				label:
 					label: 'Label:'
 					type: text

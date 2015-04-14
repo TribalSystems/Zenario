@@ -31,22 +31,23 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php.
 */
 
 
-window.zenarioNewG = function(formId, gridId, linksId, closeButtonId, change) {
-	(function (
-		zenarioG,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-		undefined) {
-
-
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
+	zenarioG,
+	formId, gridId, linksId, closeButtonId
+) {
+	"use strict";
+	
 
 
 zenarioG.editing = false;
@@ -69,7 +70,7 @@ zenarioG.lastToast = false;
 
 
 
-zenarioG.init = function(data, layoutId, layoutName) {
+zenarioG.init = function(data, layoutId, layoutName, familyName) {
 	if (typeof data == 'object') {
 		zenarioG.data = data;
 	} else {
@@ -83,13 +84,31 @@ zenarioG.init = function(data, layoutId, layoutName) {
 		zenarioG.layoutId = layoutId;
 	}
 	
-	zenarioG.checkData();
+	zenarioG.checkData(layoutName, familyName);
 	zenarioG.checkDataR(zenarioG.data.cells);
 	zenarioG.rememberNames(zenarioG.data.cells);
 	
 	//If nothing has been created yet, start on the editor
 	if (!zenarioG.data.cells.length) {
 		zenarioG.editing = true;
+	}
+
+	//Set up the close button, with a confirm if there are unsaved changes
+	if (closeButtonId) {
+		if (windowParent
+		 && !windowParent.zenarioG
+		 && windowParent.$
+		 && windowParent.$.colorbox) {
+		
+			$('#' + closeButtonId).click(function() {
+				if (zenarioG.savedAtPos == zenarioG.pos
+				 || confirm(phrase.gridConfirmClose)) {
+					windowParent.$.colorbox.close();
+				}
+			});
+		} else {
+			get(closeButtonId).style.display = 'none';
+		}
 	}
 };
 
@@ -296,15 +315,23 @@ zenarioG.rememberNames = function(cells) {
 	}
 };
 
-zenarioG.checkData = function() {
+zenarioG.checkData = function(layoutName, familyName) {
 	var scale,
+		cols,
 		i, j, k;
 	
 	if (!zenarioG.data) {
-		zenarioG.data = {};
-	}
+		zenarioG.data = {cells: []};
 	
-	if (!zenarioG.data.cells) {
+	//Attempt to catch a case where data in an old format is loaded
+	} else if (_.isArray(zenarioG.data) ) {
+		zenarioG.data = {cells: zenarioG.data};
+		
+		if (familyName && (cols = 1*familyName.replace(/\D/g, ''))) {
+			zenarioG.data.cols = cols;
+		}
+	
+	} else if (!zenarioG.data.cells) {
 		zenarioG.data.cells = [];
 	}
 	
@@ -373,9 +400,9 @@ zenarioG.checkData = function() {
 		delete zenarioG.data.gutterRightEdgeFlu;
 	}
 	
-	if (change) {
-		change(zenarioG.data);
-	}
+	//if (change) {
+	//	change(zenarioG.data);
+	//}
 	
 	if (!zenarioG.history.length) {
 		zenarioG.pos = 0;
@@ -1634,12 +1661,12 @@ zenarioG.markAsSaved = function(data, useMessageBoxForSuccessMessage) {
 		}
 	}
 	
-	if (window.parent
-	 && window.parent.zenarioO.init) {
-		switch (window.parent.zenarioO.path) {
+	if (windowParent
+	 && windowParent.zenarioO.init) {
+		switch (windowParent.zenarioO.path) {
 			case 'zenario__layouts/panels/layouts':
 				if (data.layoutId) {
-					window.parent.zenarioO.refreshToShowItem(data.layoutId);
+					windowParent.zenarioO.refreshToShowItem(data.layoutId);
 				}
 				
 				break;
@@ -2061,9 +2088,9 @@ zenarioG.registerNewName = function(name) {
 zenarioG.change = function(historic, doNotRedrawForm) {
 	
 	//Call the onchange function if there is one for this editor
-	if (change) {
-		change(zenarioG.data);
-	}
+	//if (change) {
+	//	change(zenarioG.data);
+	//}
 	
 	//Add this change to the history (unless this change was triggered by going through the history).
 	if (!historic) {
@@ -2125,31 +2152,11 @@ zenarioG.canRedo = function() {
 
 
 
-//Set up the close button, with a confirm if there are unsaved changes
-if (closeButtonId) {
-	if (window.parent
-	 && !window.parent.zenarioG
-	 && window.parent.$
-	 && window.parent.$.colorbox) {
-		$('#' + closeButtonId).click(function() {
-			if (zenarioG.savedAtPos == zenarioG.pos
-			 || confirm(phrase.gridConfirmClose)) {
-				window.parent.$.colorbox.close();
-			}
-		});
-	} else {
-		get(closeButtonId).style.display = 'none';
-	}
-}
 
 
 
 
-
-	})(
-		this,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase);
-};
+},
+	window.zenarioG = function() {},
+	'settings', 'grid', 'download_links', 'close_button'
+);

@@ -25,6 +25,7 @@ description: |
             </ul>
             <p>While this Module only handles logging users in, it will automatically generate links to the Registration, Password Reminder,
                 Change Password and Logout special pages if they are set up.</p>
+category: management
 keywords: base, extranet, login, password, private, user
 vlp_class_name: zenario_extranet
 css_class_name: zenario_extranet

@@ -18,10 +18,10 @@ zenario_admin:
             #       checkbox. This will also add a toggle button to allow the longer list to be hidden.
             
             fields:
-                perm_manage_permissions:
-                    values:
-                        _PRIV_MANAGE_PROTECTED_USER_CHARACTERISTIC:
-                            label: "Protect/deprotect a user characteristic"
+                #perm_manage_permissions:
+                 #   values:
+                  #      _PRIV_MANAGE_PROTECTED_USER_CHARACTERISTIC:
+                  #          label: "Protect/deprotect a user characteristic"
 
                 perm_edit_users:
                     type: checkbox

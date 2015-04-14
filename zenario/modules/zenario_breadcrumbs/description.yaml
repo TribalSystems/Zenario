@@ -16,6 +16,7 @@ description: |
     <p>Each part of the breadcrumb trail is a hyperlink to the relevant page. You may customize the character separator (> in the above example) via the Module's settings.</p>
     
     <p>You can use this Module in connection with Invisible Menu Nodes. When a Menu Node is Invisible it will appear in the breadcrumb trail but not in the regular menu navigation.</p>
+category: pluggable
 keywords: >
     nav, navigation, breadcrumb, crumb, cookie, trail, path,
     location, glyph, hansel, gretel

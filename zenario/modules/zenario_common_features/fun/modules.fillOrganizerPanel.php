@@ -34,22 +34,39 @@ if ($mode == 'select' && $panel['item_buttons']['view_instances']['link']) {
 }
 
 //Don't show the "all_instances" options for Plugin Nests
-if ($refinerName == 'nestable_only') {
-	$panel['collection_buttons']['all_instances'] = false;
-	$panel['title'] = adminPhrase('Modules that can be nested');
-
-} elseif ($refinerName == 'nestable_wireframes_only') {
-	$panel['collection_buttons']['all_instances'] = false;
-	$panel['title'] = adminPhrase('Plugins that can be nested');
-
-} elseif ($refinerName == 'phrases_only') {
-	$panel['title'] = adminPhrase('Modules with phrases');
-
-} elseif ($refinerName == 'slotable_only') {
-	$panel['title'] = adminPhrase('Running modules with library plugins');
-
-} elseif ($refinerName == 'wireframe_only') {
-	$panel['title'] = adminPhrase('Plugins');
+switch ($refinerName) {
+	case 'nestable_only':
+		$panel['collection_buttons']['all_instances'] = false;
+		$panel['title'] = adminPhrase('Modules that can be nested');
+		break;
+	case 'nestable_wireframes_only':
+		$panel['collection_buttons']['all_instances'] = false;
+		$panel['title'] = adminPhrase('Plugins that can be nested');
+		break;
+	case 'phrases_only':
+		$panel['title'] = adminPhrase('Modules with phrases');
+		break;
+	case 'slotable_only':
+		$panel['title'] = adminPhrase('Running modules with library plugins');
+		break;
+	case 'wireframe_only':
+		$panel['title'] = adminPhrase('Plugins');
+		break;
+	case 'custom_modules':
+		$panel['title'] = adminPhrase('Custom modules');
+		break;
+	case 'core_modules':
+		$panel['title'] = adminPhrase('Core modules');
+		break;
+	case 'content_type_modules':
+		$panel['title'] = adminPhrase('Content type defining modules');
+		break;
+	case 'management_modues':
+		$panel['title'] = adminPhrase('Managing modules');
+		break;
+	case 'pluggable_modules':
+		$panel['title'] = adminPhrase('Pluggable modules');
+		break;
 }
 
 //Check which modules can upgrade others

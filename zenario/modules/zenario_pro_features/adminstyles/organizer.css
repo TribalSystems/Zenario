@@ -80,21 +80,26 @@
 }
 
 #zenario_server_time {
-	padding: 13px 0px 0px 2px;
+	height:18px;
+	line-height:20px;
+	padding: 8px 0px 0px 2px;
 	float:left;
 	text-align:left;
 	font-weight: bold;
 	font-family: 'Courier New',Courier,monospace;
 }
 
-#zenario_server_time.jobs_running {
+#zenario_server_time {
 	padding-left: 25px;
-	background: url('images/clock-running.png') no-repeat 2px 11px;
+	background: url('images/clock-icon-grey.png') no-repeat 2px 8px;
+}
+
+#zenario_server_time.jobs_running {
+	background: url('images/clock-icon-green.png') no-repeat 2px 8px;
 }
 
 #zenario_server_time.jobs_not_running {
-	padding-left: 25px;
-	background: url('images/clock-not-running.png') no-repeat 2px 11px;
+	background: url('images/clock-icon-red.png') no-repeat 2px 8px;
 }
 
 #zenario_page_caching {
@@ -102,6 +107,14 @@
 	width: 18px;
 	height: 19px;
 	float:left;
+    opacity: 1;
+    transition: opacity .25s ease-in-out;
+    -moz-transition: opacity .25s ease-in-out;
+    -webkit-transition: opacity .25s ease-in-out;
+}
+
+#zenario_page_caching:hover {
+	opacity:0.7;
 }
 
 #zenario_page_caching.zenario_page_caching_off {

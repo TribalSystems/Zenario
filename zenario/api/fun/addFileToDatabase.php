@@ -34,9 +34,9 @@ $imageMimeTypes = array('image/gif' => true, 'image/jpeg' => true, 'image/jpg' =
 if (!is_readable($location) || !is_file($location) || !($file['size'] = filesize($location)) || !($file['checksum'] = md5_file($location))) {
 	return false;
 }
-
+$basename =  basename($location);
 if ($filename === false) {
-	$filename = preg_replace('/([^.a-z0-9\s]+)/i', '-', basename($location));
+	$filename = preg_replace('/([^.a-z0-9\s]+)/i', '-', $basename);
 }
 
 $file['filename'] = $filename;
@@ -104,8 +104,9 @@ if ($file['mime_type'] == 'image/gif' || $file['mime_type'] == 'image/png' || $f
 			}
 		}
 	}
-	
-	$file['alt_tag'] = $file['filename'];
+	$filenameArray = explode('.', $filename);
+	$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
+	$file['alt_tag'] = $altTag;
 }
 
 if ($mustBeAnImage && !(!empty($file['width']) && !empty($file['height']))) {

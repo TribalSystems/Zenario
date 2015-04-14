@@ -53,6 +53,16 @@ zenario__modules:
                     sql: 'status = "module_running" AND is_pluggable = 1 AND can_be_version_controlled = 1'
                 nestable_wireframes_only:
                     sql: 'status = "module_running" AND is_pluggable = 1 AND nestable = 1 AND can_be_version_controlled = 1'
+                custom_modules:
+                    sql: 'category = "custom" OR category IS NULL'
+                core_modules:
+                    sql: 'category = "core"'
+                content_type_modules:
+                    sql: 'category = "content_type"'
+                management_modues:
+                    sql: 'category = "management"'
+                pluggable_modules:
+                    sql: 'category = "pluggable"'
             
             columns:
                 id:
@@ -105,6 +115,17 @@ zenario__modules:
                     title: Copyright Info
                 author_name:
                     title: Author Name
+                    width: small
+                category:
+                    title: Category
+                    db_column: m.category
+                    format: enum
+                    values:
+                        custom: Custom module
+                        core: Core module
+                        content_type: Content type defining module
+                        management: Management module
+                        pluggable: Pluggable module
                     width: small
                 keywords:
                     title: Keywords
@@ -303,7 +324,7 @@ zenario__modules:
                 uninstall:
                     parent: action_dropdown
                     priv: _PRIV_RESET_MODULE
-                    label: Reset module
+                    label: Uninitialise and delete data
                     without_traits:
                         module_running: true
                         module_not_initialized: true

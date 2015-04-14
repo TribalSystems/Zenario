@@ -1,0 +1,40 @@
+#organizer_leftColumn div.organizer_legend a.Projects_top_level {  
+	background: center -10px no-repeat;
+	background-image: url('images/projects-left-bar-icons.png');
+}
+
+#organizer_leftColumn div.legend_on a.Projects_top_level,
+#organizer_leftColumn div.organizer_legend a.Projects_top_level:hover {  
+        background: center -60px no-repeat;
+        background-image: url('images/projects-left-bar-icons.png');
+}
+
+
+     
+#organizer_rightColumn div.organizer_row div.organizer_cell div.project_locations__projects,
+#organizer_rightColumn #organizer_panelTitle div.project_locations__projects {
+	background: -15px -15px no-repeat;
+	background-image: url('images/projects-list-icon.png');
+}
+
+#organizer_rightColumn .organizer_grid_view div.organizer_item div.project_locations__projects,
+#organizer_rightColumn #organizer_panelTitle div.project_locations__projects {
+	background: -15px -15px no-repeat;
+	background-image: url('images/projects-list-icon.png');
+}
+
+
+
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario__project_locations_sector,
+#organizer_rightColumn #organizer_panelTitle div.zenario__project_locations_sector {
+	background: -15px center no-repeat;
+	background-image: url('images/sectors-list-icon.png');
+}
+
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario__project_locations_service,
+#organizer_rightColumn #organizer_panelTitle div.zenario__project_locations_service {
+	background: -15px center no-repeat;
+	background-image: url('images/services-list-icon.png');
+}

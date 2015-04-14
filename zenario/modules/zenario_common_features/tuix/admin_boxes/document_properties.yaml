@@ -1,65 +1,73 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_document_properties:
-    title: 'Viewing tags for document ""'
-    key: 
-        id: ''
-    tabs:
-        details:
-            label: Document metadata
-            edit_mode:
-                on: Yes
-                always_on: Yes
-                enabled: Yes
-            fields:
-                tags:
-                    label: 'Document tags:'
-                    type: checkboxes
-                    load_values_from_organizer_path: zenario__content/panels/document_tags
-                link_to_add_tags:
-                    full_width: true
-                    snippet:
-                        html: ""
-                    dataset_label: 'Link to add document tags'
-        upload_image:
-            label: Thumbnail image
-            edit_mode:
-                enabled: Yes
-            fields:
-                title:
-                    label: 'Current thumbnail image:'
-                thumbnail_image:
-                    full_width: true
-                    snippet:
-                        html: ''
-                zenario_common_feature__upload:
-                #vws_contract_manager__upload:
-                    label: 'Upload new thumbnail image:'
-                    upload:
-                        multi: false
-                        drag_and_drop: true
-                        accept: "image/png, image/gif, image/jpg, image/jpeg"
-                        #extensions: 
-                        #    - .gif
-                        #    - .png
-                        dropbox: true
-                        dropbox_phrase: 'Upload from dropbox'
-        extract:
-            label: Extract
-            edit_mode:
-                on: false
-            fields:
-                extract:
-                    label: 'Extract text:'
-                    type: textarea
-                    cols: 30
-                    rows: 30
-                    style: >
-                        width: 60em;
-                extract_wordcount:
-                    label: 'Extract wordcount:'
-                    type: text
-                    align_right: true
-                    style: >
-                        width: 13em;
+	title: 'Viewing tags for document ""'
+	key: 
+		id: ''
+	tabs:
+		details:
+			label: Document metadata
+			edit_mode:
+				on: Yes
+				always_on: Yes
+				enabled: Yes
+			fields:
+				document_name:
+					label: 'Filename:'
+					type: text
+					maxlength: "255"
+				date_uploaded:
+					label: 'Date uploaded:'
+					type: text
+					read_only: Yes
+				tags:
+					label: 'Document tags:'
+					type: checkboxes
+					load_values_from_organizer_path: zenario__content/panels/document_tags
+				link_to_add_tags:
+					full_width: true
+					snippet:
+						html: ""
+					dataset_label: 'Link to add document tags'
+		upload_image:
+			label: Thumbnail image
+			edit_mode:
+				enabled: Yes
+			fields:
+				title:
+					label: 'Current thumbnail image:'
+				thumbnail_image:
+					full_width: true
+					snippet:
+						html: ''
+				zenario_common_feature__upload:
+				#vws_contract_manager__upload:
+					label: 'Upload new thumbnail image:'
+					upload:
+						multi: false
+						drag_and_drop: true
+						accept: "image/png, image/gif, image/jpg, image/jpeg"
+						#extensions: 
+						#	- .gif
+						#	- .png
+						dropbox: true
+						dropbox_phrase: 'Upload from dropbox'
+		extract:
+			label: Extract
+			edit_mode:
+				on: false
+			fields:
+				extract:
+					label: 'Extract text:'
+					type: textarea
+					cols: 30
+					rows: 30
+					style: >
+						width: 60em;
+				extract_wordcount:
+					label: 'Extract wordcount:'
+					type: text
+					align_right: true
+					style: >
+						width: 13em;
 

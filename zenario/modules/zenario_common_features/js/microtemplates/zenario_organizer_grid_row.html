@@ -2,7 +2,7 @@
 	id="organizer_item_{{m.id|escape}}"
 	data-id="{{m.id|escape}}"
 	onclick="zenarioO.itemClick('{{m.id|escape}}', event, false, true);"
-	ondblclick="return zenarioO.itemDoubleClick('{{m.id|escape}}', event);"
+	ondblclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);"
 	class="
 		organizer_item
 		{{m.css_class|escape}}
@@ -26,16 +26,6 @@
 	<div class="organizer_legend">
 		{{m.label}}
 	</div>
-	{{zenarioA.microTemplate(m.grid_view_microtemplate, m)}}
+	{{zenarioA.microTemplate(zenarioO.tuix.grid_view_microtemplate, m)}}
 
 </div>
-
-<% if (m.slidedown_view_microtemplate) { %>
-	<% if (m.slidedown_view_open) { %>
-		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_open">
-			{{zenarioA.microTemplate(m.slidedown_view_microtemplate, {id: m.id})}}
-		</div>
-	<% } else { %>
-		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_closed"></div>
-	<% } %>
-<% } %>

@@ -1,13 +1,13 @@
 <table>
 	<tr><th>Size:</th><td>{{zenarioO.columnValue(m.id, 'size')}}</td></tr>
 	<tr><th>Dimensions (w-h):</th><td>{{zenarioO.columnValue(m.id, 'width')}}×{{zenarioO.columnValue(m.id, 'height')}}px</td></tr>
-	<% if (zenarioO.focus.columns.shared) { %>
+	<% if (zenarioO.tuix.columns.shared) { %>
 		<tr><th>Shared:</th><td>{{zenarioO.columnValue(m.id, 'shared')}}</td></tr>
 	<% } %>
-	<% if (zenarioO.focus.columns.usage_content) { %>
+	<% if (zenarioO.tuix.columns.usage_content) { %>
 		<tr><th>Usage (Content Items):</th><td>{{zenarioO.columnValue(m.id, 'usage_content')}}</td></tr>
 	<% } %>
-	<% if (zenarioO.focus.columns.usage_plugins) { %>
+	<% if (zenarioO.tuix.columns.usage_plugins) { %>
 		<tr><th>Usage (Plugins):</th><td>{{zenarioO.columnValue(m.id, 'usage_plugins')}}</td></tr>
 	<% } %>
 </table>

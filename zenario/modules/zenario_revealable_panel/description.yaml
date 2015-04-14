@@ -7,7 +7,7 @@ editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: Modified BSD License
 description: |
-    <p>This Module allows you to create hidden panels on your webpage. Any Plugin that can be placed in a Nest can be placed in a hidden panel.</p>
+                <p>This Module allows you to create hidden panels on your webpage. Any Plugin that can be placed in a Nest can be placed in a hidden panel.</p>
                 
                 <p>Hidden panels are managed using the Quick Admin Panel, which allows you to access Admin controls yet still see some of the page you are working on.</p>
                 
@@ -35,6 +35,7 @@ description: |
                 <p>This Module requires your visitors to have JavaScript enabled to use all of the options and effects.
                     However if a visitor does not have JavaScript enabled then this Module will degrade gracefully and fall back
                     on settings that do work without JavaScript.</p>
+category: pluggable
 keywords: appear, callout, fade, panel, popout, reveal, slide
 vlp_class_name: zenario_plugin_nest
 css_class_name: zenario_plugin_nest

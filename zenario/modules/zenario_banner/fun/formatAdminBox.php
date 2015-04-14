@@ -263,6 +263,43 @@ switch ($path) {
 				unset($box['tabs']['first_tab']['fields']['enlarge_height']['note_below']);
 			}
 		}
+		
+		
+		
+		//Don't show the translations checkbox if this can never be translated
+		$fields['text/translate_text']['hidden'] =
+			$box['key']['isVersionControlled']
+		 || !checkRowExists('languages', array('translate_phrases' => 1));
+		
+		//Don't show notes about translations if this won't be translated
+		if ($fields['text/translate_text']['hidden'] || !$values['text/translate_text']) {
+			$box['tabs']['text']['fields']['text']['show_phrase_icon'] =
+			$box['tabs']['text']['fields']['title']['show_phrase_icon'] =
+			$box['tabs']['text']['fields']['more_link_text']['show_phrase_icon'] = false;
+			
+			$box['tabs']['text']['fields']['text']['note_below'] =
+			$box['tabs']['text']['fields']['title']['side_note'] =
+			$box['tabs']['text']['fields']['more_link_text']['side_note'] = '';
+		
+		} else {
+			
+			$mrg = array(
+				'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+			);
+			
+			$box['tabs']['text']['fields']['text']['show_phrase_icon'] =
+			$box['tabs']['text']['fields']['title']['show_phrase_icon'] =
+			$box['tabs']['text']['fields']['more_link_text']['show_phrase_icon'] = true;
+			
+			$box['tabs']['text']['fields']['text']['note_below'] = 
+				adminPhrase('To use the phrases system, place your text in double square brackes [[like this]]. This must be in [[def_lang_name]], this site\'s default language.', $mrg);
+			
+			$box['tabs']['text']['fields']['title']['side_note'] =
+			$box['tabs']['text']['fields']['more_link_text']['side_note'] =
+				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
+		}
+		
 
 		break;
 }

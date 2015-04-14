@@ -5,6 +5,7 @@ zenario__content:
         email_images_for_email_templates:
             key:
                 usage: email
+            panel_type: grid_or_list
             enable_close_up_view: Yes
             title: ""
             no_items_message: ""

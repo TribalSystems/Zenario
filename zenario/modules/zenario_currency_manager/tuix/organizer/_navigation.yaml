@@ -1,0 +1,19 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+# This file contains a TUIX description of some navigation on Organizer.
+# Note that we have called this file _navigation.yaml, but it can have any name.
+
+
+zenario__administration:
+	#label: Currency manager
+	#css_class: zenario_currency_manager__top_level
+	#tooltip: Manage currencies, keep your currency rates updated.
+	#priv: _PRIV_EXAMPLE_VIEW_ANIMAL
+	#ord: '3.01'
+	nav:
+		currencies:
+			label: Currencies
+			#tooltip: Manage currencies, keep your currency rate updated.
+			link:
+				path: zenario__administration/panels/currencies
+

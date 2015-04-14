@@ -37,7 +37,7 @@ INSERT INTO `[[DB_NAME_PREFIX]]plugin_instances` VALUES
  (4,'Top Menu',6,0,'',0,'','standard',''),
  (5,'Responsive Menu',14,0,'',0,'','standard',''),
  (6,'Recent pages',7,0,'',0,'','standard','content_list_sand_box'),
- (7,'Logo',16,0,'',0,'','standard',''),
+ (7,'Logo',16,0,'',0,'','standard','logo'),
  (8,'Masthead',2,0,'',0,'','image_then_title_then_text','banner_masthead'),
  (9,'Home page banner',2,0,'',0,'','image_then_title_then_text',''),
  (10,'Side banner',2,0,'',0,'','image_then_title_then_text',''),

@@ -1,0 +1,23 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Location Image Editor
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+description: |
+            <p>The Location Image Editor displays sticky image of a User's Location (as managed by the zenario Location Manager in the Admin Back-end).</p>
+    
+            <p>Only Users who have a specified Role in one Location can change see and change Location Image.</p>
+category: pluggable
+keywords: location, place
+vlp_class_name: zenario_location_image_editor
+is_pluggable: Yes
+can_be_version_controlled: Yes
+default_framework: standard
+default_instance_name: Location Image Editor
+nestable: Yes
+dependencies:
+    zenario_location_manager: Yes
+    zenario_organization_manager: Yes

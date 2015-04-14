@@ -71,7 +71,7 @@ if (get('upgrade') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN') && $module['stat
 	if (get('remove')) {
 		echo adminPhrase('Are you sure that you wish to remove the Module "[[display_name]]"?', $module);
 	} else {
-		echo adminPhrase('Are you sure that you wish to Reset the Module "[[display_name]]"?', $module);
+		echo adminPhrase('Are you sure that you wish to uninitialise the Module "[[display_name]]"?', $module);
 	}
 	
 	echo "\n\n";

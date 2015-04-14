@@ -205,14 +205,35 @@ zenario__modules:
                     label: Delete
                     multiple_select: Yes
                     hide_in_select_mode: Yes
-                    traits:
-                        unused: Yes
+                    visible_if_for_all_selected_items: item.usage_item == 0 && item.usage_template == 0
                     ajax:
                         confirm:
                             message: |
                                 Are you sure you wish to delete plugin "[[name]]"?
                                 
                                 Its settings will be deleted but any attached images will be left in the Media panel.
+                            multiple_select_message: Are you sure you wish to delete these plugins?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                delete_used:
+                    priv: _PRIV_MANAGE_REUSABLE_PLUGIN
+                    ord: "99"
+                    label: Delete
+                    hide_in_select_mode: Yes
+                    visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_template > 0
+                    ajax:
+                        confirm:
+                            message: |
+                                This plugin is currently used on [[usage_item]] content item(s) and [[usage_template]] layout(s).
+                                
+                                Deleting it will remove it from these content items and layouts, and this may have an immediate effect on published pages.
+                                
+                                Any attached images will be left in the "Plugins' images" panel.
+                                
+                                Are you still sure you wish to delete plugin "[[name]]"?
                             multiple_select_message: Are you sure you wish to delete these plugins?
                             button_message: Delete
                             cancel_button_message: Cancel

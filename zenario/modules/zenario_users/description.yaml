@@ -6,7 +6,9 @@ copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: true
 license_info: Modified BSD License
-description: '<p>The Users enable the admin user interface to create/edit users.</p>'
+description: >
+    <p>The Users enable the admin user interface to create/edit users.</p>
+category: management
 keywords: user
 vlp_class_name: zenario_users
 is_pluggable: No
@@ -36,4 +38,15 @@ jobs:
         log_on_action: false
         log_on_no_action: false
         email_on_action: false
+        email_on_no_action: false
+    job:
+        name: jobRemoveInactivePendingUsers
+        static: true
+        months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+        days: mon,tue,wed,thr,fri,sat,sun
+        hours: 1h
+        minutes: 0m
+        log_on_action: true
+        log_on_no_action: false
+        email_on_action: true
         email_on_no_action: false

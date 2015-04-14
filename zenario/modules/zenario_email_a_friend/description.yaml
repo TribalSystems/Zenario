@@ -7,9 +7,10 @@ license_info: Modified BSD License
 display_name: Email a friend
 description: |
     <p>This Module provides a link that visitors can use to:</p>
-            <ul>
-                <li>send an email to a friend with a link to the current page</li>
-            </ul>
+    <ul>
+        <li>send an email to a friend with a link to the current page</li>
+    </ul>
+category: pluggable
 vlp_class_name: zenario_email_a_friend
 css_class_name: zenario_email_a_friend
 is_pluggable: Yes

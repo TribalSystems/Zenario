@@ -79,7 +79,7 @@ if (isset($box['tabs']['dates']['fields']['vis_date_format_short'])) {
 	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_med']);
 	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_long']);
 	formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_datepicker'], true, true);
-	formatDateFormatSelectList($box['tabs']['dates']['fields']['storekeeper_date_format'], true, true);
+	formatDateFormatSelectList($box['tabs']['dates']['fields']['organizer_date_format'], true, true);
 }
 
 if (isset($box['tabs']['primary_domain']['fields']['primary_domain'])) {

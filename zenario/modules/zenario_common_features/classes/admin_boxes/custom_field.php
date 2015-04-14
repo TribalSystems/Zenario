@@ -94,6 +94,7 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 			
 			$values['details/type'] = $field['type'];
 			$values['details/values_source'] = $field['values_source'];
+			$values['details/values_source_filter'] = $field['values_source_filter'];
 			$values['details/protected'] = $field['protected'];
 			
 			$values['display/width'] = $field['width'];
@@ -248,6 +249,19 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 			}
 			$this->dynamicallyCreateValueFieldsFromTemplate($box, $fields, $values);
 		}
+		
+		if ($values['details/values_source']
+		 && ($source = explode('::', $values['details/values_source'], 3))
+		 && (!empty($source[0]))
+		 && (!empty($source[1]))
+		 && (!isset($source[2]))
+		 && (inc($source[0]))) {
+			$listInfo = call_user_func($source, ZENARIO_CENTRALISED_LIST_MODE_INFO);
+			$fields['values_source_filter']['hidden'] = !$listInfo['can_filter'];
+			if (isset($listInfo['filter_label']) && !empty($listInfo['filter_label'])) {
+				$fields['values_source_filter']['label'] = $listInfo['filter_label'];
+			}
+		}
 	}
 	
 	
@@ -300,15 +314,14 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		//if (!empty($box['tabs']['details']['edit_mode']['on'])) {
+			$IsCentralised = ($values['details/type'] == 'centralised_radios' || $values['details/type'] == 'centralised_select');
 			$cols = array(
 				'db_column' => $values['details/db_column'],
 				'label' => $values['details/label'],
 			
-			
 				'type' => $values['details/type'],
-				'values_source' => $values['details/type'] == 'centralised_radios' || $values['details/type'] == 'centralised_select'?
-					$values['details/values_source'] : '',
-			
+				'values_source' => $IsCentralised ? $values['details/values_source'] : '',
+				'values_source_filter' => $IsCentralised ? $values['details/values_source_filter'] : '',
 				'width' => $values['display/width'],
 				'height' => $values['display/height'],
 				'parent_id' => $values['display/parent_id'],

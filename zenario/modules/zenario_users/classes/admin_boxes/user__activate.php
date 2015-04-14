@@ -32,7 +32,7 @@ class zenario_users__admin_boxes__user__activate extends zenario_users {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$userDetails = getUserDetails(arrayKey($box,"key","id"));
 	
-		$box['title'] = "Activating the user \"" . arrayKey($userDetails,"screen_name") . "\"";
+		$box['title'] = "Activating the user \"" . arrayKey($userDetails,"identifier") . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	

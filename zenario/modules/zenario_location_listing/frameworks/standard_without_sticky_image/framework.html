@@ -1,0 +1,111 @@
+[cms:section name="Location_List"]
+	<div class="event_listing">
+		[cms:section name="Location_Listing_Title"]
+			<div class="location_listing_title"><h2>[cms:merge name="Title"/]</h2></div>
+		[/cms:section]
+		[cms:section name="Location_Row_On_List"]
+			[cms:section name="Country_Section_Anchor"]
+				<a name="country_[cms:merge name='Country_Code_Section']"></a>
+			[/cms:section]
+			<div class="single_location country_[cms:merge name='Country_Code']" id="location_id_[cms:merge name='Location_Id']">
+				
+				<div class = "single_location_description">
+					<h2>[cms:merge name="Location_Name"/]</h2>
+					[cms:section name="Location_Description"]
+					<div>
+						<span class="single_location_description">[cms:merge name="Location_Description"/]</span>
+					</div>
+					[/cms:section]
+					
+					
+					[cms:section name="Location_Phone"]
+					<div>
+						<span class="single_location_phone_label label">[cms:phrase code="_TELEPHONE:"]</span>
+						<span class="single_location_phone">[cms:merge name="Location_Phone"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Fax"]
+					<div>
+						<span class="single_location_fax_label label">[cms:phrase code="_FAX:"]</span>
+						<span class="single_location_fax">[cms:merge name="Location_Fax"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Email"]
+					<div>
+						<span class="single_location_email_label label">[cms:phrase code="_EMAIL:"]</span>
+						<span class="single_location_email"><a href="mailto:[cms:merge name='Location_Email'/]">[cms:merge name="Location_Email"/]</a></span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_URL"]
+					<div>
+						<span class="single_location_url_label label">[cms:phrase code="_URL:"]</span>
+						<span class="single_location_url"><a href="[cms:merge name='Location_URL'/]" target="_blank">[cms:merge name="Location_URL"/]</a></span>
+					</div>
+					[/cms:section]
+					
+					[cms:section name="Location_Address1"]
+					<div>
+						<span class="single_location_address1_label label">[cms:phrase code="_ADDRESS:"]</span>
+						<span class="single_location_address1">[cms:merge name="Location_Address1"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Address2"]
+					<div>
+						<span class="single_location_address2">[cms:merge name="Location_Address2"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Locality"]
+					<div>
+						<span class="single_location_locality">[cms:merge name="Location_Locality"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_City"]
+					<div>
+						<span class="single_location_city">[cms:merge name="Location_City"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_State"]
+					<div>
+						<span class="single_location_state">[cms:merge name="Location_State"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Postcode"]
+					<div>
+						<span class="single_location_postcode">[cms:merge name="Location_Postcode"/]</span>
+					</div>
+					[/cms:section]
+					[cms:section name="Location_Country"]
+					<div>
+						<span class="single_location_country">[cms:merge name="Location_Country"/]</span>
+					</div>
+					[/cms:section]
+					
+					<div style="clear"></div>
+					
+					[cms:section name="Show_More_Link"]
+						<div class="btn_single_location">
+							<div class="r">
+								<a class="single_location_more_link i" href="[cms:merge name='Link_To_Location'/]" >[cms:phrase code="_MORE"]</a>
+							</div>
+						</div>
+					[/cms:section]
+					[cms:section name="Location_Map"]
+						<div class="btn_single_location">
+							<div class="r">
+								<a onclick="$.colorbox({href: '[cms:merge name='Map_URL']',iframe:true,width: 491,height: 340});return false;" href="[cms:merge name='Map_URL']" class="google_map_link i iframe">[cms:phrase code="_MAP"]</a>
+							</div>
+						</div>
+					[/cms:section]
+					
+				</div>
+			</div>
+		[/cms:section]
+		[cms:merge name="Pagination"/]
+	</div>
+[/cms:section]
+
+[cms:section name="No_Location"]
+		<div class="no_location_to_show" > 
+			[cms:merge name="Msg_Empty_List"/]
+		</div>
+[/cms:section]

@@ -141,10 +141,40 @@ zenario__modules:
     tooltip: Manage modules and their plugins
     nav:
         modules:
-            label: Modules
+            label: All modules
             tooltip: Software modules that add plugins to front-end pages, and Organizer functionality
             link:
                 path: zenario__modules/panels/modules
+        custom_modules:
+            label: Custom modules
+            tooltip: Custom modules made for this site
+            link:
+                path: zenario__modules/panels/modules
+                refiner: custom_modules
+        core_modules:
+            label: Core modules
+            tooltip: Modules that give or extend core functionality
+            link:
+                path: zenario__modules/panels/modules
+                refiner: core_modules
+        content_type_modules:
+            label: Content types
+            tooltip: Modules that allow new types of content to be created
+            link:
+                path: zenario__modules/panels/modules
+                refiner: content_type_modules
+        management_modues:
+            label: Managing modules
+            tooltip: Modules that add additional management to organizer
+            link:
+                path: zenario__modules/panels/modules
+                refiner: management_modues
+        pluggable_modules:
+            label: Pluggable modules
+            tooltip: Pluggable modules that can be placed in a slot on the front end of the site
+            link:
+                path: zenario__modules/panels/modules
+                refiner: pluggable_modules
         plugins:
             label: Plugin library
             tooltip: >
@@ -217,6 +247,11 @@ zenario__administration:
                 Configure spare domain names that redirect to HTML pages
             link:
                 path: zenario__administration/panels/spare_domains
+        page_preview_sizes:
+            name: Page Preview
+            tooltip: Configure page preview sizes
+            link:
+                path: zenario__administration/panels/page_preview_sizes
 
     data-step: 14
     data-position: right

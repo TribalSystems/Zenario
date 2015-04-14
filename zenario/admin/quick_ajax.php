@@ -136,7 +136,7 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 } elseif (isset($_POST['screen_name_suggestion'])) {
 	
 	require '../adminheader.inc.php';
-	echo generateUserScreenName($_POST['first_name'], $_POST['last_name'], $_POST['email']);
+	echo generateUserIdentifier(false, array('first_name' => $_POST['first_name'], 'last_name' => $_POST['last_name'], 'email' => $_POST['email']));
 
 
 } elseif (isset($_POST['_validate_alias'])) {

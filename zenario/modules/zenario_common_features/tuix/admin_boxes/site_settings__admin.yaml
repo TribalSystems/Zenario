@@ -17,9 +17,9 @@ site_settings:
                         html: >
                             The settings below will affect the behaviour of Organizer
                             for all administrators.
-                storekeeper_page_size:
+                organizer_page_size:
                     site_setting:
-                        name: storekeeper_page_size
+                        name: organizer_page_size
                     label: 'Organizer page size:'
                     type: select
                     value: "50"

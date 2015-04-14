@@ -1,0 +1,44 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                user:
+                    plugin_setting:
+                        name: user
+                    label: 'User:'
+                    pick_items:
+                        path: zenario__users/panels/users
+                        target_path: zenario__users/panels/users
+                        min_path: zenario__users/panels/users
+                        max_path: zenario__users/panels/users
+                        select_phrase: Select User...
+                        nothing_selected_phrase: No User selected
+                    note_below: >
+                        Displays the profile of the User selected above. If no User
+                        is selected, and the Plugin is placed on the Descriptive
+                        Page for a User, the Plugin will display the profile of this
+                        User.
+                max_user_image_width:
+                    plugin_setting:
+                        name: max_user_image_width
+                    post_field_html: '&nbsp;pixels'
+                    label: 'Max. Image Width:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+                max_user_image_height:
+                    plugin_setting:
+                        name: max_user_image_height
+                    post_field_html: '&nbsp;pixels'
+                    label: 'Max. Image Height:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+    module_class_name: zenario_extranet_user_profile_view

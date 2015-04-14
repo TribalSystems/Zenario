@@ -18,7 +18,7 @@ zenario_alias:
                     type: text
                     maxlength: "75"
                     onkeyup: zenarioAB.validateAlias();
-                    onchange: zenarioAB.focus.___alias_changed = true;
+                    onchange: zenarioAB.tuix.___alias_changed = true;
                     side_note: |
                         An alias for this content item, and part of its URL.
                         The combination of a content item's alias and its language code is unique.

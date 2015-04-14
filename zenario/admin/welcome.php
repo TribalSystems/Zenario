@@ -167,12 +167,42 @@ require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 
 
 
+
+
+
 if ($installed) {
 	//If the CMS is installed, move on to the login check and then database updates
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
 		define('SHOW_SQL_ERRORS_TO_VISITORS', true);
 	}
 	connectLocalDB();
+	
+	
+	//From version 7.0.4 of the CMS, we'll only support updating from version 7.0.1 onwards.
+	//Check for versions of Tribiq CMS/Zenario before 7.0.1
+	$sql = "
+		SELECT 1
+		FROM ". DB_NAME_PREFIX. "local_revision_numbers
+		WHERE path IN ('admin/db_updates/updater', 'admin/db_updates/core', 'admin/db_updates/data_conversion')
+		  AND patchfile IN ('admin.inc.php', 'local.inc.php', 'user.inc.php')
+		  AND revision_no < ". (26960). "
+		LIMIT 1";
+
+	if (sqlFetchRow(sqlQuery($sql))) {
+		//If this looks like a very old version of the CMS, direct people to update to 7.0.2 first
+		echo '
+			<p>
+				You are seeing this message because your database contains an installation
+				of Tribiq CMS (either version 5 or version 6).
+			</p><p>
+				To update a Tribiq CMS site you must first download
+				Zenario version 7.0.2 from our website at <a href="http://zenar.io">http://zenar.io</a>.
+			</p><p>
+				As soon as you have updated your site to version 7.0.2 you can then update to the
+				latest version of Zenario.
+			</p>';
+		exit;
+	}
 }
 
 
@@ -242,13 +272,17 @@ echo '
 	zenarioAB.getRequest = ', json_encode($_GET), ';
 	
 	$(document).ready(function () {
-		if (zenarioA.loggedOutIframeCheck("', jsEscape('<!--Logged_Out-->'. adminPhrase('You have been logged out.')), '")) {
-			
-		} else if (zenarioA.checkCookiesEnabled()) {
-			zenarioAB.start();
-		} else {
-			get("no_something").style.display = "block";
-			get("no_cookies").style.display = "inline";
+		var msg = "', jsEscape('<!--Logged_Out-->'. adminPhrase('You have been logged out.')), '";
+		
+		if (!zenarioA.loggedOutIframeCheck(msg)) {
+			zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
+				if (cookiesEnabled) {
+					zenarioAB.start();
+				} else {
+					get("no_something").style.display = "block";
+					get("no_cookies").style.display = "inline";
+				}
+			});
 		}
 	});
 </script>';

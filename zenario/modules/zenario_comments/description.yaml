@@ -43,6 +43,7 @@ description: |
                 <li>[[subscriber_screen_name]] - The Screen Name of the subscribing Extranet User.</li>
                 <li>[[subscriber_username]] - The Username of the subscribing Extranet User.</li>
             </ul>
+category: pluggable
 keywords: comment, forum, post, chat, blog, message
 vlp_class_name: zenario_anonymous_comments
 css_class_name: zenario_comments

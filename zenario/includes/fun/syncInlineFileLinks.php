@@ -46,12 +46,12 @@ for ($i=0; $i < $c; $i += 4) {
 	
 	//Does this image have a width/height set?
 	$width = $height = $matches = false;
-	if ((preg_match('@\Wwidth\W+(\d+)(\w*)\W@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-	 || (preg_match('@\Wwidth\W+(\d+)(\w*)\W@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+	if ((preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+	 || (preg_match('@[^\w-]width[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 		$width = $matches[1];
 	}
-	if ((preg_match('@\Wheight\W+(\d+)(\w*)\W@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
-	 || (preg_match('@\Wheight\W+(\d+)(\w*)\W@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
+	if ((preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 1], $matches)) && (!$matches[2] || $matches[2] == 'px')
+	 || (preg_match('@[^\w-]height[^\w-]+(\d+)(\w*)[^\w-]@', $links[$i + 3], $matches)) && (!$matches[2] || $matches[2] == 'px')) {
 		$height = $matches[1];
 	}
 	

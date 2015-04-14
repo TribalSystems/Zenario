@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_form_input_handler__email_submission:
+    priv: _PRIV_PUBLISH_CONTENT_ITEM
+    title: Emailing the submission
+    max_height: "200"
+    key:
+        id: ""
+    tabs:
+        email_details:
+            edit_mode:
+                on: Yes
+                always_on: Yes
+                enabled: Yes
+            label: Email details
+            fields:
+                email_address:
+                    label: 'Email address:'
+                    type: text
+                    note_below: 'Note: Separate multiple email addresses with commas.'
+                    style: width:405px;
+                email_template:
+                    label: 'Email Template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        one_to_one_choose_phrase: Select
+                        select_phrase: Select Email Template...
+                        nothing_selected_phrase: No Email Template selected
+                    note_below: 'Note: Leave this field empty to send raw Submission data.'

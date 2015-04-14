@@ -7,12 +7,13 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: WYSIWYG Editor
 description: |
-    <p>This is an essential Module which displays and allows editing of Content.</p>
+            <p>This is an essential Module which displays and allows editing of Content.</p>
             <p>This Module will render the HTML in the page, and will allow Authors to edit the Content in a Slot.</p>
             <p>Authors may add images, animations, hyperlinks and other regular HTML to their content.</p>
             <p>Any Content entered into a Slot is unique to that Slot; a WYSIWYG Editor placed in a different Slot, or on a different Content Item,
                 will display different Content. The only exception to this rule is if you move a Plugin to a different Slot, in which case the
                 Content will also be moved.</p>
+category: pluggable
 keywords: edit, editor, format, html, page, toolbar, wysiwyg
 css_class_name: zenario_html_snippet
 is_pluggable: Yes

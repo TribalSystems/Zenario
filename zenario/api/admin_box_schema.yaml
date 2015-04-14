@@ -448,6 +448,12 @@ additionalProperties:
                                         Places a piece of text below the field in italics.
                                         Won't be HTML escaped.
                                 
+                                show_phrase_icon:
+                                    type: boolean
+                                    description: >
+                                        This will show a "phrase" icon next to this field.
+                                        You should set this for fields that will be translated.
+                                
                                 type:
                                     enum:
                                         - checkbox

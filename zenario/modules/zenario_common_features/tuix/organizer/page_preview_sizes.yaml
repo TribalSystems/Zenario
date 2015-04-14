@@ -1,0 +1,87 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        page_preview_sizes:
+            title: Page preview sizes
+            no_items_message: |
+                No page preview sizes have been created.
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]]page_preview_sizes AS pps'
+                id_column: pps.id
+            reorder:
+                column: ordinal
+            default_sort_column: ordinal
+            columns:
+                id:
+                    title: ID
+                    db_column: pps.id
+                    width: xxsmall
+                    align_right: true
+                ordinal:
+                    title: Ordinal
+                    db_column: pps.ordinal
+                    width: xxsmall
+                    align_right: true
+                description:
+                    title: Description
+                    db_column: pps.description
+                    show_by_default: true
+                    searchable: true
+                width:
+                    title: Width
+                    db_column: pps.width
+                    show_by_default: true
+                    searchable: true
+                    sortable: true
+                    width: small
+                    align_right: true
+                height:
+                    title: Height
+                    db_column: pps.height
+                    show_by_default: true
+                    searchable: true
+                    sortable: true
+                    width: small
+                    align_right: true
+                default:
+                    title: Default
+                    db_column: pps.is_default
+                    show_by_default: true
+                    format: yes_or_no
+                    width: xxsmall
+                type:
+                    title: Type
+                    db_column: pps.type
+            item:
+                css_class: page_preview_size
+            collection_buttons:
+                create:
+                    css_class: zenario_create_a_new
+                    label: Create
+                    admin_box:
+                        path: zenario_page_preview_size
+            item_buttons:
+                edit:
+                    label: Properties
+                    admin_box:
+                        path: zenario_page_preview_size
+                set_default:
+                    label: Set default
+                    ajax:
+                        request:
+                            set_default: '1'
+                delete:
+                    label: Delete
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you want to delete the page preview size "[[width]] x [[height]] [[description]]"?'
+                            multiple_select_message: 'Are you sure you want to delete these page preview sizes?'
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: '1'

@@ -1,0 +1,28 @@
+<div id="event_slideshow_outer" class="event_slideshow_outer">
+	{% if title %}
+		<h2>{{title|e}}</h2>
+	{% endif %}
+	<div id="event_slideshow_container_{{instanceId}}" 
+		style="position: relative; top: 0px; left: 0px; width: {{maxWidth}}px; height: {{maxHeight}}px; visibility:hidden">
+		<div id="event_slides_container_{{instanceId}}" u="slides" 
+			style="cursor: move; position: absolute; overflow: hidden; left: 0px; top: 0px; width: {{maxWidth}}px; height: {{maxHeight}}px;">
+			{% if events %}
+				{% for event in events %}
+					<div class="slide">
+						<a {% if event.link %}href="{{event.link|e}}"{% endif %}>
+						{% if event.img %}
+							<img src="{{event.img|e}}"/>
+						{% else %}
+							{{event.title|e}}
+						{% endif %}
+						</a>
+					</div>
+				{% endfor %}
+			{% else %}
+				{{'No current or future events found'|trans}}
+			{% endif %}
+			<span u="arrowleft" class="arrowl"></span>
+			<span u="arrowright" class="arrowr"></span>
+		</div>
+	</div>
+</div>

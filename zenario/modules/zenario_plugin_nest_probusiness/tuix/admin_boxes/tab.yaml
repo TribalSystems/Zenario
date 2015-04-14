@@ -1,0 +1,80 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_plugin_nest_probusiness__tab:
+    key:
+        id: ""
+        instanceId: ""
+    title: Tab
+    max_height: "300"
+    hide_tab_bar: true
+    tabs:
+        tab:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                tab:
+                    label: 'Tab:'
+                    type: text
+                    read_only: true
+                name_or_title:
+                    label: 'Title text or phrase code:'
+                    type: text
+                    maxlength: "100"
+                    note_below: |
+                        Tabs will only be visible where a tab-based framework is selected in this nest's properties. If the field above contains phrase codes, visitor phrases will be merged into it. Insert [[_YOUR_PHRASE]] to merge a phrase whose code is _YOUR_PHRASE.
+                tab_visibility:
+                    label: 'Visible to:'
+                    type: select
+                    values:
+                        everyone:
+                            label: Visible to everyone
+                        logged_in:
+                            label: Only show to extranet users who are logged in
+                        logged_out:
+                            label: Only show to visitors who are NOT logged in
+                        logged_in_with_field:
+                            label: 'Only show to extranet users with this field:'
+                        logged_in_without_field:
+                            label: 'Only show to extranet users WITHOUT this field:'
+                        without_field:
+                            label: 'Only show to visitors who are logged out and extranet users WITHOUT this field:'
+                        call_static_method:
+                            label: "Call a module's static method to decide (advanced):"
+                    format_onchange: true
+                    note_below: |
+                        You can restrict the visibility of the plugins following this tab to certain kinds of user.
+                tab__field_id:
+                    hidden: true
+                    tlabel: 'Field:'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    format_onchange: true
+                tab__field_value:
+                    hidden: true
+                    same_row: true
+                    type: select
+                    empty_value: ''
+                tab__module_class_name:
+                    hidden: true
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: "200"
+                tab__method_name:
+                    hidden: true
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: "127"
+                tab__param_1:
+                    hidden: true
+                    label: 'Parameter 1:'
+                    type: text
+                    maxlength: "255"
+                tab__param_2:
+                    hidden: true
+                    label: 'Parameter 2:'
+                    type: text
+                    maxlength: "255"
+    save_button_message: 'Save & close'
+    save_and_continue_button_message: 'Save & continue'

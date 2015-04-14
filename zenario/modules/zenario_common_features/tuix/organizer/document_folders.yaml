@@ -10,14 +10,20 @@ zenario__content:
                 table: |
                     [[DB_NAME_PREFIX]]documents AS d
                     LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
-                hierarchy_column: d.folder_id
                 where_statement: WHERE d.type = 'folder'
                 id_column: d.id
                 client_side: true
+            
+            panel_type: hierarchy
             reorder:
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
+            
+            hierarchy:
+                column: folder_id
+                db_column: d.folder_id
+            
             disable_periodic_refresh: true
             default_sort_column: name
             columns:

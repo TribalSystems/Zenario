@@ -1,0 +1,66 @@
+<div class="headerPanel headerPanelControls">
+
+	<div id="organizer_search_placeholder"></div>
+
+	<div id="organizer_topRightButtons">
+	
+
+		<div
+			style="display: none;"
+			id="organizer_viewOptions"
+			class="viewMode toolbar secondToolbar"
+		>
+			<div
+				id="organizer_listViewOptionsDropdown"
+				data-step="8" data-position="left" data-intro="
+					{{'<p><strong>Adjust view</strong></p><p>This button lets you sort how you wish to view items in the panel, using filters.</p>'|escape}}
+				"
+			> 
+				<a onclick="zenarioO.showViewOptions(event);" title="{{zenarioA.phrase.skAdjustView}}"></a>
+			</div>
+		</div>
+
+
+
+		<div class="viewMode toolbar secondToolbar">
+			<div
+				id="organizer_refreshRightColumn"
+				data-step="7" data-position="left" data-intro="
+					{{'<p><strong>Refresh</strong></p><p>This is a refresh button. Used to refresh a page to ensure changes are applied.</p>'|escape}}
+				"
+			>
+				<a onclick="zenarioO.refresh();" title="{{zenarioA.phrase.skRefreshView}}"></a>
+			</div>
+		</div>
+
+		<div class="viewMode toolbar firstToolbar">
+			<div
+				style="display: none;"
+				id="organizer_switch_to_list_view"
+				data-step="6" data-position="down" data-intro="
+					{{'<p><strong>List view</strong></p><p>This allows you to view items in the panel in a list view, usually used for content items/ pages.</p>'|escape}}
+				"
+			>
+				<a title="{{zenarioA.phrase.skListView}}"></a>
+			</div>
+			
+			<div
+				style="display: none;"
+				id="organizer_switch_to_grid_view"
+				data-step="5" data-position="down" data-intro="
+					{{'<p><strong>Grid view</strong></p><p>This allows you to view items in the panel area in a grid view, usually used for images.</p>'|escape}}
+				"
+			>
+				<a title="{{zenarioA.phrase.skGridView}}"></a>
+			</div>
+		</div>
+		
+		<% if (m.quickFilters && m.quickFilters.length) { %>
+			<div id="organizer_quickFilter">
+				{{zenarioA.microTemplate('zenario_organizer_quick_filter_button', m.quickFilters)}}
+			</div>
+		<% } %>
+	</div>
+
+
+</div>

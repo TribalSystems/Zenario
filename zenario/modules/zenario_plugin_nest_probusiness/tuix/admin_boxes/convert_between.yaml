@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_plugin_nest__convert_between:
+    tabs:
+        convert:
+            fields:
+                zenario_plugin_nest_probusiness_current:
+                    ord: "40"
+                    snippet:
+                        html: Flexible Nest
+                    current_module: zenario_plugin_nest_probusiness
+                zenario_plugin_nest_probusiness:
+                    ord: "140"
+                    type: radio
+                    name: radio
+                    post_field_html: |
+                        <label for="zenario_plugin_nest_probusiness">
+                                                            Flexible Nest
+                                                        </label>
+                    convert_to: zenario_plugin_nest_probusiness
+                    req_only_1_plugin: No
+                    req_only_1_type_of_plugin: No
+                    req_only_banner_plugins: No
+                zenario_plugin_nest_probusiness_note:
+                    ord: "141"
+                    same_row: Yes
+                    note_below: Flexible Nests have no restrictions.
+                    convert_to: zenario_plugin_nest_probusiness

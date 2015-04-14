@@ -21,6 +21,7 @@ description: |
                 <p>If you are placing Banners in a Nest, there is an option to set a size for every Banner in the Nest, so that you do not have to edit them
                     one-by-one to set their size. If you wish most of the Banners in a Nest to be one size but not all, you may still edit each Banners' Settings
                     individually to create exceptions.</p>
+category: pluggable
 keywords: multiple, nest, panel, plugin, slot
 vlp_class_name: zenario_plugin_nest
 css_class_name: zenario_plugin_nest

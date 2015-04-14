@@ -7,8 +7,12 @@ start_running_on_install: true
 license_info: Modified BSD License
 display_name: Google Map Location
 description: |
-    <p>Displays a map view of a specified location, and allows site creator to mark a location on the Map.</p><p>
-                     The size of the map window and a detailed description of the location can be defined in the Module's settings.</p>
+    <p>
+        Displays a map view of a specified location, and allows site creator to mark a location on the Map.
+    </p><p>
+        The size of the map window and a detailed description of the location can be defined in the Module's settings.
+    </p>
+category: pluggable
 vlp_class_name: zenario_google_map
 css_class_name: zenario_google_map
 is_pluggable: Yes

@@ -99,7 +99,7 @@ zenario_content:
                     label: 'Menu node text:'
                     type: text
                     maxlength: 255
-                    onchange: zenarioAB.focus.___menu_title_changed = true;
+                    onchange: zenarioAB.tuix.___menu_title_changed = true;
                     onkeyup: |
                         get('menu_path').value =
                                                         !get('menu_title').value?
@@ -129,7 +129,7 @@ zenario_content:
                         if ($('#alias').val()) {
                                                             $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
                                                         }
-                    onchange: zenarioAB.focus.___alias_changed = true;
+                    onchange: zenarioAB.tuix.___alias_changed = true;
                     note_below: |
                         An alias for this content item, and part of its URL.
                         The combination of the content item's alias and its language code is unique across the site.

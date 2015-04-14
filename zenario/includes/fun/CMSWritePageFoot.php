@@ -88,9 +88,7 @@ if ($isWelcome || checkPriv()) {
 		}
 		
 		echo '
-<script type="text/javascript" src="', $prefix, 'libraries/bsd/javascript_md5/md5.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery.nestable.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'js/admin_organizer.min.js?v=', $v, '"></script>';
+<script type="text/javascript" src="', $prefix, 'js/inc-organizer.js.php?v=', $v, $gz, '"></script>';
 		
 		echo '
 <script type="text/javascript">';
@@ -159,7 +157,8 @@ if (!$isWelcome && checkPriv()) {
 			if ($value
 			 && ($setting == 'cookie_require_consent'
 			  || $setting == 'default_language'
-			  || $setting == 'storekeeper_date_format'
+			  || $setting == 'organizer_title'
+			  || $setting == 'organizer_date_format'
 			  || $setting == 'vis_time_format'
 			  || is_numeric($value))) {
 				$settings[$setting] = cms_core::$siteConfig[$setting];

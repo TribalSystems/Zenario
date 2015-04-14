@@ -38,7 +38,7 @@ description: |
             
             <p>This module creates the ability for you to specify a Registration Code and to link the Code to one or more Groups. When a User, in the process of registering, enters a valid Code, the User will automatically be made a member of the Group(s).</p>
             <p>You can specify that a valid Code is mandatory, in which case the registration process will force new Users to enter a valid Code in order to register.</p>
-            
+category: management
 keywords: extranet, new, register, sign, signup, user
 vlp_class_name: zenario_extranet_registration
 css_class_name: zenario_extranet_registration

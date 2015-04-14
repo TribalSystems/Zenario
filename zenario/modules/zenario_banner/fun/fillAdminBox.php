@@ -73,16 +73,5 @@ switch ($path) {
 				adminPhrase('This setting may be overwritten by the settings of the Nest.');
 		}
 		
-		//Don't show notes about translations if this won't be translated
-		if ($box['key']['isVersionControlled']
-		 || !checkRowExists('languages', array('translate_phrases' => 1))) {
-			unset($box['tabs']['text']['fields']['title']['note_below']);
-			unset($box['tabs']['text']['fields']['title']['show_phrase_icon']);
-			unset($box['tabs']['text']['fields']['text']['note_below']);
-			unset($box['tabs']['text']['fields']['text']['show_phrase_icon']);
-			unset($box['tabs']['text']['fields']['more_link_text']['note_below']);
-			unset($box['tabs']['text']['fields']['more_link_text']['show_phrase_icon']);
-		}
-		
 		break;
 }

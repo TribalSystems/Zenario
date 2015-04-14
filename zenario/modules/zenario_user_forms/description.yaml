@@ -17,6 +17,7 @@ description: |
     </p><p>
         Once a form has been created, to place it on a page a new plugin needs to be created from the Forms module, and a form assigned to it in it's plugin settings
     </p>
+category: management
 keywords: form, forms, profile, user, data view
 vlp_class_name: zenario_user_forms
 css_class_name: zenario_user_forms

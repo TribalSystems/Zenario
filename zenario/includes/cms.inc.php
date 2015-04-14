@@ -2445,7 +2445,10 @@ function isEmtpyVisitorLanguagePack( $languageId ) {
 
 
 
-
+define('ZENARIO_CENTRALISED_LIST_MODE_INFO', 1);
+define('ZENARIO_CENTRALISED_LIST_MODE_LIST', 2);
+define('ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST', 3);
+define('ZENARIO_CENTRALISED_LIST_MODE_VALUE', 4);
 
 function getDatasetDetails($dataset) {
 	if (is_array($dataset)) {
@@ -2598,7 +2601,15 @@ function getDatasetFieldLOV($field, $flat = true) {
 		 && (!empty($source[1]))
 		 && (!isset($source[2]))
 		 && (inc($source[0]))) {
-			$lov = call_user_func($source);
+			$filter = false;
+			$listMode = ZENARIO_CENTRALISED_LIST_MODE_LIST;
+			if (isset($field['values_source_filter'])) {
+				$filter = $field['values_source_filter'];
+				if ($field['values_source_filter'] !== '') {
+					$listMode = ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST;
+				}
+			}
+			$lov = call_user_func($source, $listMode, $filter);
 			
 			if (!$flat) {
 				cms_core::$dbupCurrentRevision = 0;
@@ -2615,7 +2626,6 @@ function getDatasetFieldLOV($field, $flat = true) {
 		
 		$lov = getRowsArray('custom_dataset_field_values', $cols, array('field_id' => $field['id']), array('ord'));
 	}
-	
 	return $lov;
 }
 

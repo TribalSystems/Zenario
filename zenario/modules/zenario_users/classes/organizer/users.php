@@ -31,6 +31,7 @@ class zenario_users__organizer__users extends zenario_users {
 	
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
 		if (!$refinerName) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_refiner'];
 		}
@@ -68,6 +69,11 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		// Add dataset ID to import button
+		$dataset = getDatasetDetails('users');
+		$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
+		$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
+			$dataset['id'];
 		
 		//Change the enum option for user type if this site is a hub or is connected to a hub
 		if (zenario_users::validateUserSyncSiteConfig()) {

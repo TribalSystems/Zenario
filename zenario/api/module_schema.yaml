@@ -109,6 +109,27 @@ properties:
             The directory-name of the default framework for your module.
             
             Required for pluggable modules.
+    category:
+        enum:
+            - custom
+            - core
+            - content_type
+            - management
+            - pluggable
+        description: >
+            The category your module fits into, used to sort modules into seperate organizer panels.
+            
+            <code>custom</code> - All modules in zenario_custom/modules/
+            
+            <code>core</code> - Core features modules, such as zenario_common_features
+            
+            <code>content_type</code> - A module that creates a new content type such as zenario_ctype_event
+            
+            <code>management</code> - A module that adds management into organizer
+            
+            <code>pluggable</code> - A module that has a front end plugin
+            
+            Modules that add both management and a plugin should be added to the management category.
 
     dependencies:
         type: object

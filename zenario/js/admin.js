@@ -33,17 +33,19 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
 */
 
 
-(function(
+zenario.lib(function(
+	undefined,
 	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	undefined) {
-		"use strict";
+	extensionOf, methodsOf
+) {
+	"use strict";
 
 
 zenarioA.init = true;
@@ -1320,7 +1322,7 @@ zenarioA.addJQueryElements = function(path) {
 			$(el).datepicker({
 				changeMonth: changeMonthAndYear,
 				changeYear: changeMonthAndYear,
-				dateFormat: zenarioA.siteSettings.storekeeper_date_format,
+				dateFormat: zenarioA.siteSettings.organizer_date_format,
 				altField: '#_value_for__' + el.id,
 				altFormat: 'yy-mm-dd',
 				showOn: 'focus',
@@ -1425,7 +1427,14 @@ zenarioA.enableDragDropUploadInTinyMCE = function(enableImages, prefix, el) {
 					__path__: 'editor_temp_file',
 					upload: 1};
 			
-			zenarioA.setHTML5UploadFromDragDrop(url, request, function() { zenarioA.addMediaToTinyMCE(prefix); }, el);
+			zenarioA.setHTML5UploadFromDragDrop(
+				url,
+				request,
+				false,
+				function() {
+					zenarioA.addMediaToTinyMCE(prefix);
+				},
+				el);
 		}
 	}
 };
@@ -1481,15 +1490,15 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 				disallow_refiners_looping_on_min_path: false};
 		
 		if (id
-		 && zenarioAB.focus
-		 && zenarioAB.focus.tab
-		 && zenarioAB.focus.tabs
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab]
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id]
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_link_button
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_link_button.pick_items) {
-			pick_items = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_link_button.pick_items;
+		 && zenarioAB.tuix
+		 && zenarioAB.tuix.tab
+		 && zenarioAB.tuix.tabs
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button.pick_items) {
+			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button.pick_items;
 		}
 
 		zenarioA.SK('zenarioA', 'setLinkURL', false,
@@ -1513,15 +1522,15 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 				disallow_refiners_looping_on_min_path: false};
 		
 		if (id
-		 && zenarioAB.focus
-		 && zenarioAB.focus.tab
-		 && zenarioAB.focus.tabs
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab]
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id]
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_image_button
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_image_button.pick_items) {
-			pick_items = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].insert_image_button.pick_items;
+		 && zenarioAB.tuix
+		 && zenarioAB.tuix.tab
+		 && zenarioAB.tuix.tabs
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button.pick_items) {
+			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button.pick_items;
 		}
 
 		zenarioA.SK('zenarioA', 'setImageURL', false,
@@ -1628,6 +1637,55 @@ zenarioA.makeTimeFromParts = function(hours,minutes,seconds) {
 	
 	return outputTime;
 };
+
+
+
+zenarioA.showPagePreview = function(tuix, id) {
+	var width = tuix.custom_width,
+		height = tuix.custom_height,
+		title = '';
+	
+	if (zenarioO.tuix !== undefined) {
+		var item = zenarioO.tuix.items[id];
+		switch (item.admin_version_status) {
+			case 'first_draft':
+			case 'published_with_draft':
+			case 'hidden_with_draft':
+			case 'trashed_with_draft':
+				adminVersionStatus = 'Draft';
+				break;
+			case 'published':
+				adminVersionStatus = 'Published';
+				break;
+			case 'hidden':
+				adminVersionStatus = 'Hidden';
+				break;
+			case 'trashed':
+				adminVersionStatus = 'Trashed';
+				break;
+		}
+		title = item.tag + ' Version ' + item.version + ' [' + adminVersionStatus + '] '+width+' x '+height+' ('+tuix.custom_description+')';
+	} else {
+		title = tuix.custom_description
+	}
+	
+	$.colorbox({
+		innerWidth: width+'px',
+		innerHeight: height+'px',
+		maxWidth: false,
+		maxHeight: false,
+		iframe: true,
+		preloading: false,
+		open: true,
+		title: title,
+		href: URLBasePath + 'index.php?cID=' + id + '&_sk_preview=1',
+		className: 'zenario_page_preview_colorbox'
+	});
+};
+
+
+
+
 
 
 
@@ -1884,12 +1942,6 @@ zenarioA.SK = function(
 	if (!useIframe) {
 		//If we've not currently got an existing full-Storekeeper instance in this frame, set Storekeeper up in a <div>
 		
-		//openOverAdminBox
-		
-		if (!zenarioO.init) {
-			zenarioO = new zenarioNewO('', undefined);
-		}
-		
 		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.8, 50, 10, !skQuick, true, true, {minWidth: 550});
 		//zenarioO.open = function(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
 		
@@ -2014,7 +2066,7 @@ zenarioA.clearHTML5UploadFromDragDrop = function() {
 	delete zenarioA.uploadCallBackFromDragDrop;
 };
 
-zenarioA.setHTML5UploadFromDragDrop = function(path, request, callBack, el) {
+zenarioA.setHTML5UploadFromDragDrop = function(path, request, preCall, callBack, el) {
 	if (!zenarioA.canDoHTML5Upload()) {
 		return false;
 	
@@ -2022,7 +2074,17 @@ zenarioA.setHTML5UploadFromDragDrop = function(path, request, callBack, el) {
 		zenarioA.uploadPathFromDragDrop = path;
 		zenarioA.uploadRequestFromDragDrop = request;
 		zenarioA.uploadCallBackFromDragDrop = callBack;
-		ifNull(el, document.body).addEventListener('drop', zenarioA.doHTML5UploadFromDragDrop, false);
+		
+		ifNull(el, document.body).addEventListener(
+			'drop',
+			function(e) {
+				if (preCall) {
+					preCall();
+				}
+				zenarioA.doHTML5UploadFromDragDrop(e);
+			},
+			false);
+		
 		return true;
 	}
 };
@@ -2248,15 +2310,15 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	
 	//Look for the "create a draft" button on the admin toolbar
 	//If we see it, we know this is a published item and we need to create a draft
-	if (zenarioAT.focus
-	 && zenarioAT.focus.sections
-	 && zenarioAT.focus.sections.edit
-	 && zenarioAT.focus.sections.edit.buttons
-	 && zenarioAT.focus.sections.edit.buttons.start_editing
-	 && !zenarioA.hidden(zenarioAT.focus.sections.edit.buttons.start_editing)) {
+	if (zenarioAT.tuix
+	 && zenarioAT.tuix.sections
+	 && zenarioAT.tuix.sections.edit
+	 && zenarioAT.tuix.sections.edit.buttons
+	 && zenarioAT.tuix.sections.edit.buttons.start_editing
+	 && !zenarioA.hidden(zenarioAT.tuix.sections.edit.buttons.start_editing)) {
 		
 		//Create a copy of it
-		object = $.extend(true, {}, zenarioAT.focus.sections.edit.buttons.start_editing);
+		object = $.extend(true, {}, zenarioAT.tuix.sections.edit.buttons.start_editing);
 		
 		delete object.ajax.request.switch_to_edit_mode;
 		
@@ -2358,6 +2420,7 @@ zenarioA.hidden = function(tuixObject, checkJsFunction) {
 	
 	//Don't show a <call_js_function> button or toolbar that calls a function that does not exist
 	} else if (checkJsFunction && (tuixObject.call_js_function && !zenarioA.checkFunctionExists(tuixObject.call_js_function['function'], tuixObject.call_js_function.encapsulated_object))) {
+		
 		tuixObject._h_js = true;
 		return true;
 	
@@ -2387,7 +2450,6 @@ zenarioA.checkActionUnique = function(object) {
 			'call_js_function',
 			'combine_items',
 			'navigation_path',
-			'do_csv_export',
 			'frontend_link',
 			'help',
 			'link',
@@ -2527,6 +2589,11 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		if (!fallback) {
 			var $input = $(html);
 			$input.change(function() {
+				
+				if (zenarioCallingLibrary.uploadStart) {
+					zenarioCallingLibrary.uploadStart();
+				}
+				
 				zenarioA.doHTML5Upload(this.files, URLBasePath + url, requests, function(responses) {
 					zenarioCallingLibrary.uploadComplete(responses);
 				});
@@ -2580,7 +2647,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			frontend_link = object.frontend_link,
 			sameWindow = false;
 		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.focus.items[id]) && item.frontend_link) {
+		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id]) && item.frontend_link) {
 			frontend_link = item.frontend_link;
 		}
 		
@@ -2605,7 +2672,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		} else if (zenarioCallingLibrary.encapName == 'zenarioAT') {
 			zenario.goToURL(zenario.addBasePath(frontend_link));
 		
-		} else if (window.opener && !window.opener.zenarioO) {
+		} else if (windowOpener && !windowOpener.zenarioO) {
 			window.opener.location = zenario.addBasePath(frontend_link);
 		
 		} else if (window.storekeeperChildWindow && !window.storekeeperChildWindow.closed) {
@@ -2619,7 +2686,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		var id, item, pos,
 			navigation_path = object.navigation_path;
 		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.focus.items[id]) && item.navigation_path) {
+		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id]) && item.navigation_path) {
 			navigation_path = item.navigation_path;
 		}
 		
@@ -2646,7 +2713,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			filename,
 			popout = $.extend(true, {}, object.popout);
 		
-		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.focus.items[id])) {
+		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id])) {
 			if (item.popout) {
 				popout = $.extend(popout, item.popout);
 			}
@@ -2730,7 +2797,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			path = path.replace(/\[\[id\]\]/g, id);
 		}
 		
-		//zenarioA.SKQ = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges) {
+		//zenarioA.SKQ = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass)
 		zenarioA.SKQ(
 			path,
 			
@@ -2841,8 +2908,9 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			//Use the multiple select message if more than one item is selected
 			} else if (itemLevel && zenarioCallingLibrary.itemsSelected > 1) {
-				message = ifNull(object.ajax.confirm.multiple_select_message, object.ajax.confirm.message) + '';
-				message = message.replace(/\[\[item_count\]\]/ig, zenarioCallingLibrary.itemsSelected);
+				if (message = object.ajax.confirm.multiple_select_message || object.ajax.confirm.message) {
+					message = ('' + message).replace(/\[\[item_count\]\]/ig, zenarioCallingLibrary.itemsSelected);
+				}
 			
 			//Apply mergefields to populate the message with information from the selected row
 			//Note that if they're not going to be escaped below then they need to be here.
@@ -2933,10 +3001,6 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		if (object.help.message) {
 			zenarioA.showMessage(object.help.message, true, messageType, false, htmlEscapeMessage);
 		}
-		
-	
-	} else if (engToBoolean(object.do_csv_export)) {
-		zenarioCallingLibrary.doCSVExport();
 	}
 };
 
@@ -3166,9 +3230,25 @@ zenarioA.disableFileDragDrop = function(el) {
 	}
 };
 
+//Check whether cookies are enabled and able to be used.
+//Because of the way PHP/browsers/cookies work, if this is the first access it might take one
+//attempt to initialise, and then only on the second attempt will the result return true.
+//To get round this we'll try up to two times.
 zenarioA.checkCookiesEnabled = function() {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/admin/quick_ajax.php?_check_cookies_enabled=1&no_cache=1')
-		|| zenario.nonAsyncAJAX(URLBasePath + 'zenario/admin/quick_ajax.php?_check_cookies_enabled=1&no_cache=1');
+	var url = URLBasePath + 'zenario/admin/quick_ajax.php?_check_cookies_enabled=1&no_cache=1',
+		cb = new zenario.callback;
+	
+	zenario.ajax(url).after(function(result) {
+		if (result) {
+			cb.call(result);
+		} else {
+			zenario.ajax(url).after(function(result) {
+				cb.call(result);
+			});
+		}
+	});
+	
+	return cb;
 };
 
 $(document).ready(function() {
@@ -3181,8 +3261,4 @@ window.onbeforeunload = zenarioA.onbeforeunload;
 
 
 
-})(
-	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase);
+});

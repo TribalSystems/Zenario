@@ -31,6 +31,8 @@ switch ($path) {
 	case 'zenario__email_template_manager/panels/newsletters':
 		if ($refinerName == 'archive') {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_archive'];
+			$panel['default_sort_column'] = 'date_sent';
+			$panel['bold_columns_in_list_view'] = 'newsletter_name';
 		} elseif ($refinerName == 'outbox') {
 			$panel['db_items']['where_statement'] = '';
 		}

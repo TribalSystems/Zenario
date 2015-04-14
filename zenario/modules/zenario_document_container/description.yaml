@@ -13,7 +13,7 @@ description: |
     <p>The document can be displayed together with an thumbnail and or a description.</p>
 keywords: >
     file, document, download, pdf, doc, docx, xls, xlsx
-
+category: pluggable
 is_pluggable: Yes
 can_be_version_controlled: Yes
 nestable: Yes

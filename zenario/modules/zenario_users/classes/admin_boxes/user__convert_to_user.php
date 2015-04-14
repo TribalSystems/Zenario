@@ -36,7 +36,7 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 		$values['details/first_name'] = $userDetails['first_name'];
 		$values['details/last_name'] = $userDetails['last_name'];
 	
-		$box['title'] = "Converting the contact \"" . arrayKey($userDetails,"screen_name") . "\"";
+		$box['title'] = "Converting the contact \"" . arrayKey($userDetails,"identifier") . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	

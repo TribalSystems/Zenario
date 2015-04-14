@@ -3,7 +3,7 @@
 display_name: Tabbed Nest
 author_name: Zenario
 copyright_info: © Tribal Limited
-editions: Community, Pro, ProBusiness, Enterprise
+editions: ProBusiness, Enterprise
 start_running_on_install: true
 license_info: Modified BSD License
 description: |
@@ -15,6 +15,7 @@ description: |
                 
                 <p>To add a Plugin to a Nest you can either copy an existing plugin, or add a new plugin.</p>
                 <p>Once in a Nest, Plugins can be re-ordered, and can be modified in much the same was as any other Plugin in a Slot.</p>
+category: pluggable
 keywords: nest, panel, tab, tabbed
 vlp_class_name: zenario_plugin_nest
 css_class_name: zenario_plugin_nest

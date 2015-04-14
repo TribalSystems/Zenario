@@ -1,0 +1,23 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Menu Forward Back Navigator
+description: |
+            <p>
+                This plugin generates navigation links which are related to the menu hierarchy, and can 
+                point to the successor, predecessor or parent of currently viewed page. We recommend you
+                use this plugin to navigate though sections of ebooks, courses and other content that 
+                can be split into Menu Nodes.
+            </p>
+category: pluggable
+css_class_name: zenario_menu_forward_back_navigator
+is_pluggable: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Menu Forward Back Navigator
+dependencies:
+    zenario_menu: Yes

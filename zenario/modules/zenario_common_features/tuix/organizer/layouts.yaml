@@ -15,6 +15,8 @@ zenario__layouts:
                       AND l.file_base_name = tf.file_base_name
                     LEFT JOIN [[DB_NAME_PREFIX]]content_types AS ct
                        ON l.layout_id = ct.default_layout_id
+                    LEFT JOIN [[DB_NAME_PREFIX]]skins AS s
+                    ON s.id = l.skin_id
                 id_column: "IFNULL(l.layout_id, CONCAT(tf.family_name, '/', tf.file_base_name))"
                 encode_id_column: true
                 where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
@@ -38,10 +40,14 @@ zenario__layouts:
                     title: Summary
                     show_by_default: true
                     width: xlarge
-                family_name:
+                skin_name:
                     title: Skin
-                    db_column: tf.family_name
+                    db_column: s.display_name
                     searchable: true
+                    show_by_default: true
+                family_name:
+                    title: Template directory
+                    db_column: tf.family_name
                 template_filename:
                     title: Template filename
                     db_column: CONCAT(tf.file_base_name, '.tpl.php')

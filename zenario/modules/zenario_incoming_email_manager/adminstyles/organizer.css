@@ -1,0 +1,16 @@
+#rightColumn .zenario_incoming_email_manager__handlers {
+	background: transparent url(images/incoming_mail_man_collection_list_icon.png) no-repeat scroll 0 0;
+}
+
+#rightColumn .zenario_incoming_email_manager__handler {
+	background: transparent url(images/incoming_mail_man_list_icon.png) no-repeat scroll 0 0;
+}
+
+
+#rightColumn div.item .zenario_incoming_email_manager__handlers {
+	background: transparent url(images/incoming_mail_man_collection_grid_icon.png) no-repeat scroll 0 6px;
+}
+
+#rightColumn div.item .zenario_incoming_email_manager__handler {
+	background: transparent url(images/incoming_mail_man_grid_icon.png) no-repeat scroll 0 6px;
+}

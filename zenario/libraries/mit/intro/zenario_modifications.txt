@@ -1,0 +1,13 @@
+The _cloneObject() function has an infinite recursion bug. We've replaced:
+
+          temp[key] = _cloneObject(object[key]);
+
+...with:
+
+          if (object[key] instanceof jQuery) {
+	          temp[key] = object[key];
+          } else {
+	          temp[key] = _cloneObject(object[key]);
+          }
+
+as a workaround to fix the problem in the case it was occurring for us.

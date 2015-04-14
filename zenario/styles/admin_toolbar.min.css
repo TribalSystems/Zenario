@@ -62,56 +62,8 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_at_menu_tab{bac
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_title{font-family:'Courier New',Courier,monospace;font-size:12px}#zenario_at #zenario_at_lower_section .zenario_at_infobar_version{font-family:Verdana,Arial,Helvetica,sans-serif;font-size:8pt}
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_title,#zenario_at #zenario_at_lower_section .zenario_at_infobar_layout_id_and_name{margin-right:4%;float:left}
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_version,#zenario_at #zenario_at_lower_section .zenario_at_infobar_layout_usage{margin-left:4%;float:right}
-#zenario_at_toolbars .zenario_editor_buttons{text-align:right}#zenario_at_toolbars .zenario_editor_buttons span{font-size:11px;margin:0;padding:2px 10px 1px;padding:2px 10px;border:1px solid #c5c5c5;color:#FFF;cursor:pointer}
-#zenario_at_toolbars .zenario_editor_buttons span.zenario_editor_save_button{background-color:#e51700}#zenario_at_toolbars .zenario_editor_buttons span.zenario_editor_close_button{background-color:#2e778a}
-#zenario_at_toolbars .mceExternalToolbar{top:auto;display:block}#zenario_at_toolbars .mceExternalToolbar .mceIcon{display:block;width:20px;height:20px;background:url(../libraries/lgpl/tinymce_3_5_8/themes/advanced/img/icons.gif) -800px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_bold{background-position:0 0}#zenario_at_toolbars .mceExternalToolbar span.mce_italic{background-position:-60px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_underline{background-position:-140px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_strikethrough{background-position:-120px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_undo{background-position:-160px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_redo{background-position:-100px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_cleanup{background-position:-40px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_bullist{background-position:-20px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_numlist{background-position:-80px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_justifyleft{background-position:-460px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_justifyright{background-position:-480px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_justifycenter{background-position:-420px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_justifyfull{background-position:-440px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_anchor{background-position:-200px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_indent{background-position:-400px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_outdent{background-position:-540px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_link{background-position:-500px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_unlink{background-position:-640px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_sub{background-position:-600px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_sup{background-position:-620px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_removeformat{background-position:-580px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_newdocument{background-position:-520px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_image{background-position:-380px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_help{background-position:-340px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_code{background-position:-260px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_hr{background-position:-360px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_visualaid{background-position:-660px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_charmap{background-position:-240px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_paste{background-position:-560px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_copy{background-position:-700px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_cut{background-position:-680px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_blockquote{background-position:-220px 0}
-#zenario_at_toolbars .mceExternalToolbar .mce_forecolor span.mceAction{background-position:-720px 0}#zenario_at_toolbars .mceExternalToolbar .mce_backcolor span.mceAction{background-position:-760px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_forecolorpicker{background-position:-720px 0}#zenario_at_toolbars .mceExternalToolbar span.mce_backcolorpicker{background-position:-760px 0}
-#zenario_at_toolbars .mceExternalToolbar span.mce_advhr{background-position:-0 -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_ltr{background-position:-20px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_rtl{background-position:-40px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_emotions{background-position:-60px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_fullpage{background-position:-80px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_fullscreen{background-position:-100px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_iespell{background-position:-120px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_insertdate{background-position:-140px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_inserttime{background-position:-160px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_absolute{background-position:-180px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_backward{background-position:-200px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_forward{background-position:-220px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_insert_layer{background-position:-240px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_insertlayer{background-position:-260px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_movebackward{background-position:-280px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_moveforward{background-position:-300px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_media{background-position:-320px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_nonbreaking{background-position:-340px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_pastetext{background-position:-360px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_pasteword{background-position:-380px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_selectall{background-position:-400px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_preview{background-position:-420px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_print{background-position:-440px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_cancel{background-position:-460px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_save{background-position:-480px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_replace{background-position:-500px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_search{background-position:-520px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_styleprops{background-position:-560px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_table{background-position:-580px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_cell_props{background-position:-600px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_delete_table{background-position:-620px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_delete_col{background-position:-640px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_delete_row{background-position:-660px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_col_after{background-position:-680px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_col_before{background-position:-700px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_row_after{background-position:-720px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_row_before{background-position:-740px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_merge_cells{background-position:-760px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_table_props{background-position:-980px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_row_props{background-position:-780px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_split_cells{background-position:-800px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_template{background-position:-820px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_visualchars{background-position:-840px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_abbr{background-position:-860px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_acronym{background-position:-880px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_attribs{background-position:-900px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_cite{background-position:-920px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_del{background-position:-940px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_ins{background-position:-960px -20px}#zenario_at_toolbars .mceExternalToolbar span.mce_pagebreak{background-position:0 -40px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_restoredraft{background-position:-20px -40px}#zenario_at_toolbars .mceExternalToolbar span.mce_spellchecker{background-position:-540px -20px}
-#zenario_at_toolbars .mceExternalToolbar span.mce_visualblocks{background-position:-40px -40px}table#toolbar_admintable td{padding:0 5px;font-size:11px;font-family:'Trebuchet MS',Helvetica,sans-serif;color:#222}
-div#toolbar_admin{background:#ccc;border-top:1px solid #fff;border-bottom:1px solid #999;text-align:left}div#toolbar_admin img{vertical-align:middle;margin:0 2px 0 2px;border:0}
-div#toolbar_admin form{padding:0;margin:0}div#toolbar_admin select{font-size:10px;height:16px;width:100px;font-family:'Trebuchet MS',Helvetica,sans-serif}
+table#toolbar_admintable td{padding:0 5px;font-size:11px;font-family:'Trebuchet MS',Helvetica,sans-serif;color:#222}div#toolbar_admin{background:#ccc;border-top:1px solid #fff;border-bottom:1px solid #999;text-align:left}
+div#toolbar_admin img{vertical-align:middle;margin:0 2px 0 2px;border:0}div#toolbar_admin form{padding:0;margin:0}div#toolbar_admin select{font-size:10px;height:16px;width:100px;font-family:'Trebuchet MS',Helvetica,sans-serif}
 div#toolbar_admin input{vertical-align:middle}table#toolbar_message_t2{font-size:12px}td.toolbar_authoring{height:38px;width:166px;vertical-align:middle;background:url("cms/zenario/admin/images/admin_toolbar/authoring.gif") no-repeat 4px 1px}
 td.toolbar_publishing{width:166px;vertical-align:middle;background:url("cms/zenario/admin/images/admin_toolbar/publishing.gif") no-repeat 4px 1px}input.toolbar_btn_go{height:19px;width:19px}
 div.zenario_admin_toolbar #zenario_topsection{position:relative;z-index:2}div.zenario_admin_toolbar #zenario_middlesection{position:relative;z-index:1;margin-top:-1px}

@@ -54,7 +54,8 @@ switch ($path) {
 		} else {
 			$fields['heading_if_no_items']['hidden'] = false;
 		}
-		$box['tabs']['overall_list']['fields']['more_hyperlink_target']['hidden'] = 
+		$box['tabs']['overall_list']['fields']['more_link_text']['hidden'] =
+		$box['tabs']['overall_list']['fields']['more_hyperlink_target']['hidden'] =
 			!$values['overall_list/show_more_link'];
 		
 		$box['tabs']['each_item']['fields']['canvas']['hidden'] = 
@@ -103,6 +104,40 @@ switch ($path) {
 			} else {
 				unset($box['tabs']['each_item']['fields']['height']['note_below']);
 			}
+		}
+		
+		
+		
+		//Don't show the translations checkbox if this can never be translated
+		$fields['overall_list/translate_text']['hidden'] =
+			$box['key']['isVersionControlled']
+		 || !checkRowExists('languages', array('translate_phrases' => 1));
+		
+		//Don't show notes about translations if this won't be translated
+		if ($fields['overall_list/translate_text']['hidden'] || !$values['overall_list/translate_text']) {
+			$box['tabs']['overall_list']['fields']['heading_if_items']['show_phrase_icon'] =
+			$box['tabs']['overall_list']['fields']['heading_if_no_items']['show_phrase_icon'] =
+			$box['tabs']['overall_list']['fields']['more_link_text']['show_phrase_icon'] = false;
+			
+			$box['tabs']['overall_list']['fields']['heading_if_items']['side_note'] =
+			$box['tabs']['overall_list']['fields']['heading_if_no_items']['side_note'] =
+			$box['tabs']['overall_list']['fields']['more_link_text']['side_note'] = '';
+		
+		} else {
+			
+			$mrg = array(
+				'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+			);
+			
+			$box['tabs']['overall_list']['fields']['heading_if_items']['show_phrase_icon'] =
+			$box['tabs']['overall_list']['fields']['heading_if_no_items']['show_phrase_icon'] =
+			$box['tabs']['overall_list']['fields']['more_link_text']['show_phrase_icon'] = true;
+			
+			$box['tabs']['overall_list']['fields']['heading_if_items']['side_note'] = 
+			$box['tabs']['overall_list']['fields']['heading_if_no_items']['side_note'] =
+			$box['tabs']['overall_list']['fields']['more_link_text']['side_note'] =
+				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
 		}
 		
 		break;

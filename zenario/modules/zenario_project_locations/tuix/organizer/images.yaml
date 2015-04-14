@@ -1,0 +1,120 @@
+zenario__projects: 
+    nav: 
+        images:
+            panel:
+                key:
+                    usage: project_locations
+                enable_close_up_view: Yes
+                title: Images for Project Locations
+                no_items_message: There are no images used in Project Locations
+                grid_view_microtemplate: zenario_grid_view_image
+                slidedown_view_microtemplate: zenario_slidedown_view_image
+                db_items:
+                    table: '[[DB_NAME_PREFIX]]files AS f'
+                    where_statement: |
+                        WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                        AND f.`usage` = 'project_locations'
+                    id_column: f.id
+                columns:
+                    id:
+                        db_column: f.id
+                    filename:
+                        title: Filename
+                        searchable: Yes
+                        db_column: f.filename
+                        show_by_default: Yes
+                    checksum:
+                        db_column: f.checksum
+                    size:
+                        title: Size
+                        format: filesize
+                        db_column: f.size
+                        show_by_default: Yes
+                    width:
+                        title: Width
+                        searchable: Yes
+                        db_column: f.width
+                        show_by_default: Yes
+                    height:
+                        title: Height
+                        searchable: Yes
+                        db_column: f.height
+                        show_by_default: Yes
+                    in_use:
+                        title: In use
+                        format: enum
+                        values:
+                            '': Not used
+                            1: Used
+                        db_column: >
+                            (
+                                SELECT 1
+                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
+                                WHERE l.image_id = f.id
+                                LIMIT 1
+                            )
+                        
+                default_sort_column: filename
+                
+                label_format_for_popouts: |
+                    [[filename]]
+                    [[[width]] × [[height]]]
+                label_format_for_picked_items: |
+                    [[filename]]
+                    [[[width]] × [[height]]]
+                item:
+                    name: Image
+                    names: Images
+                    css_class: media_image
+                collection_buttons:
+                    upload:
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        css_class: create_image
+                        label: Upload one or more images
+                        css_class: zenario_create_a_new
+                        upload:
+                            fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                            fileDesc: Images
+                            multi: Yes
+                            drag_and_drop: Yes
+                            request:
+                                upload: Yes
+                inline_buttons:
+                    view:
+                        css_class: inspect
+                        label: View image
+                        popout:
+                            href: zenario/file.php
+                            options:
+                                type: image
+                item_buttons:
+                
+                    delete:
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        label: Delete
+                        multiple_select: Yes
+                        ajax:
+                            confirm:
+                                message: | 
+                                    Are you sure that you wish to delete the image "[[filename]]"?
+                                                                
+                                multiple_select_message: |
+                                    Are you sure you wish to delete these images?
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                delete: "1"
+                
+                    view_dropdown:
+                        label: View
+                        multiple_select: Yes
+                        hide_when_children_are_not_visible: Yes
+                    view:
+                        parent: view_dropdown
+                        label: Image
+                        popout:
+                            href: zenario/file.php
+                            options:
+                                type: image
+                    

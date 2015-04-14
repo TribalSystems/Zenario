@@ -29,32 +29,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_slideshow_2 extends module_base_class {
 	
-	var $errors = array();
-	
-	public function fillAdminSlotControls(&$controls) {
-		
-		if (isset($controls['actions']['settings'])) {
-			$controls['actions']['slideshow_settings'] = array(
-				'ord' => 1.1,
-				'label' => adminPhrase('Edit images'),
-				'page_modes' => $controls['actions']['settings']['page_modes'],
-				'onclick' => 'zenario_slideshow_2.openImageManager(
-					this, 
-					slotName, 
-					\''. jsEscape($this->pluginAJAXLink()). '\'
-				);'
-			);
-		}
-	}
-	
 	var $slideData = array();
 	
 	public function init() {
 		if ($userId = userId()) {
 			$userDetails = getUserDetails($userId);
 		}
+		$this->slideData['adminId'] = adminId();
 		if ($this->slideData["slides"] = $this->getSlideDetails('main')) {
-			$slideCaptionTransitions = array();
 			$mobileImages = false;
 			$missingMobileImage = false;
 			$mobileImageDetails = array();
@@ -66,50 +48,50 @@ class zenario_slideshow_2 extends module_base_class {
 				if (!is_array($slide)) {
 					continue;
 				}
-				// Hide hidden slides
-				if ($slide['hidden']) {
-					unset($this->slideData["slides"][$index]);
-					continue;
-				}
-				
-				
-				if ($slide['slide_visibility'] == 'call_static_method') {
-					if (!(inc($slide['plugin_class'])
-						&& (method_exists($slide['plugin_class'], $slide['method_name']))
-						&& (call_user_func(array($slide['plugin_class'], $slide['method_name']),$slide['param_1'], $slide['param_2']))))
-					{
+				// Hide hidden slides if no admin is logged in
+				if (!adminId()) { 
+					if ($slide['hidden']) {
 						unset($this->slideData["slides"][$index]);
+						continue;
 					}
-				} elseif ($userId) {
-					switch($slide['slide_visibility']) {
-						case 'logged_in_with_field':
-						case 'logged_in_without_field':
-							$fieldValue = getDatasetFieldValue($userId, $slide['field_id']);
-							$fieldMatches = (bool)$fieldValue;
-							if ($fieldValue != 1) {
-								$fieldMatches = false;
-							}
-							if ($slide['slide_visibility'] != 'logged_in_with_field') {
-								$fieldMatches = !$fieldMatches;
-							}
-							if (!$fieldMatches) {
+					if ($slide['slide_visibility'] == 'call_static_method') {
+						if (!(inc($slide['plugin_class'])
+							&& (method_exists($slide['plugin_class'], $slide['method_name']))
+							&& (call_user_func(array($slide['plugin_class'], $slide['method_name']),$slide['param_1'], $slide['param_2']))))
+						{
+							unset($this->slideData["slides"][$index]);
+						}
+					} elseif ($userId) {
+						switch($slide['slide_visibility']) {
+							case 'logged_in_with_field':
+							case 'logged_in_without_field':
+								$fieldValue = getDatasetFieldValue($userId, $slide['field_id']);
+								$fieldMatches = (bool)$fieldValue;
+								if ($fieldValue != 1) {
+									$fieldMatches = false;
+								}
+								if ($slide['slide_visibility'] != 'logged_in_with_field') {
+									$fieldMatches = !$fieldMatches;
+								}
+								if (!$fieldMatches) {
+									unset($this->slideData["slides"][$index]);
+								}
+								break;
+							case 'logged_out':
 								unset($this->slideData["slides"][$index]);
-							}
-							break;
-						case 'logged_out':
-							unset($this->slideData["slides"][$index]);
-							break;
-					}
-				} else {
-					switch($slide['slide_visibility']) {
-						case 'logged_in_with_field':
-						case 'logged_in_without_field':
-						case 'logged_id':
-							unset($this->slideData["slides"][$index]);
-							break;
+								break;
+						}
+					} else {
+						switch($slide['slide_visibility']) {
+							case 'logged_in_with_field':
+							case 'logged_in_without_field':
+							case 'logged_id':
+								unset($this->slideData["slides"][$index]);
+								break;
+						}
 					}
 				}
-				
+				// Generate slide link if internal
 				if (($slide['target_loc'] == 'internal') && $slide['dest_url']) {
 					$cID = $cType = false;
 					getCIDAndCTypeFromTagId($cID, $cType, $slide['dest_url']);
@@ -118,25 +100,19 @@ class zenario_slideshow_2 extends module_base_class {
 					}
 					$slide['dest_url'] = linkToItem($cID, $cType);
 				}
-				if ($slide['use_title_transition']) {
-					$slideCaptionTransitions[$slide['id']]['title'] = $slide['title_transition'];
-				}
-				if ($slide['use_extra_html_transition']) {
-					$slideCaptionTransitions[$slide['id']]['extra_html'] = $slide['extra_html_transition'];
-				}
-				// Get slides max height and width
-				if ($slide['mobile_image_id']) {
-					$mobileImages = true;
-					if ($slide['m_height'] > $maxMobileHeight) {
-						$maxMobileHeight = $slide['m_height'];
+				
+				// Get slides max mobile width and height
+				if ($this->setting('mobile_options') == 'seperate_fixed' || $this->setting('mobile_options') == 'desktop_fixed') {
+					if ($slide['mobile_image_src']) {
+						$mobileImages = true;
+						$maxMobileWidth = ($slide['m_width'] > $maxMobileWidth) ? $slide['m_width'] : $maxMobileWidth;
+						$maxMobileHeight = ($slide['m_height'] > $maxMobileHeight) ? $slide['m_height'] : $maxMobileHeight;
+					} else {
+						$missingMobileImage = true;
 					}
-					if ($slide['m_width'] > $maxMobileWidth) {
-						$maxMobileWidth = $slide['m_width'];
-					}
-				} else {
-					$missingMobileImage = true;
 				}
 				
+				// Get slides max desktop width and height
 				if (($height = max(array($slide['height'], $slide['r_height']))) > $maxHeight) {
 					$maxHeight = $height;
 				}
@@ -144,7 +120,8 @@ class zenario_slideshow_2 extends module_base_class {
 					$maxWidth = $width;
 				}
 			}
-			if ($mobileImages && $missingMobileImage) {
+			// If a slide has a mobile image, but some do not, display a smaller version of the original image instead
+			if ($mobileImages && $missingMobileImage && ($this->setting('mobile_options') == 'seperate_fixed')) {
 				foreach ($this->slideData["slides"] as $index => &$slide) {
 					if (!$slide['mobile_image_id']) {
 						$width = $height = $url = false;
@@ -153,33 +130,32 @@ class zenario_slideshow_2 extends module_base_class {
 					}
 				}
 			}
-			$this->slideData["maxHeight"] = $maxHeight;
-			$this->slideData["maxWidth"] = $maxWidth;
-			$this->slideData["navigation"] = $this->setting("navigation_style");
-			$this->slideData["arrow_buttons"] = $this->setting("arrow_buttons");
-			$this->slideData["enable_swipe"] = $this->setting("enable_swipe");
+			
+			$settings = array(
+				'desktop_height' => $maxHeight,
+				'desktop_width' => $maxWidth,
+				'mobile_height' => $maxMobileHeight,
+				'mobile_width' => $maxMobileWidth,
+				'slide_transition' => $this->setting("fx"),
+				'mobile_resize_width' => setting('image_mobile_resize_point'),
+				'hover_to_pause' => $this->setting("hover_to_pause"),
+				'enable_swipe' => $this->setting("enable_swipe"),
+				'auto_play' => $this->setting("auto_play"),
+				'slide_duration' => $this->setting("slide_duration"),
+				'enable_arrow_buttons' => $this->setting("arrow_buttons"),
+				'navigation_style' => $this->setting("navigation_style"),
+				'mobile_options' => $this->setting('mobile_options'),
+				'desktop_resize_greater_than_image' => $this->setting('desktop_resize_greater_than_image'),
+				'has_mobile_images' => $mobileImages);
+			
 			$this->callScript(
 				"zenario_slideshow_2", 
 				"initiateSlideshow",
+				$this->slideData["slides"],
 				$this->pluginAJAXLink(),
 				$this->slotName,
-				setting('image_mobile_resize_point'),
-				$this->setting("fx"),
-				$maxWidth,
-				$maxHeight,
-				$maxMobileWidth,
-				$maxMobileHeight,
-				$this->setting("hover_to_pause"),
-				$this->setting("enable_swipe"),
-				$this->setting("auto_play"),
-				$this->setting("slide_duration"),
-				$this->setting("arrow_buttons"),
-				$this->setting("navigation_style"),
-				$slideCaptionTransitions,
 				$this->instanceId,
-				$this->slideData["slides"],
-				$mobileImages);
-			$this->slideData['adminId'] = adminId();
+				$settings);
 		}
 		return true;
 	}
@@ -195,6 +171,7 @@ class zenario_slideshow_2 extends module_base_class {
 				header('Content-Type: text/javascript; charset=UTF-8');
 				$details = array(
 					'tabs' => ($this->setting('navigation_style') == 'thumbnail_navigator'),
+					'mobile_option' => $this->setting('mobile_options'),
 					'slides' => $this->getSlideDetails('admin'),
 					'dataset_fields' => listCustomFields('users', false, 'boolean_and_groups_only', false));
 				echo json_encode($details);
@@ -216,16 +193,15 @@ class zenario_slideshow_2 extends module_base_class {
 				break;
 				
 			case "change_image_from_organizer": 
-				$data = $this->getNewImageDetails(get("new_image_id"));
 				header('Content-Type: text/javascript; charset=UTF-8');
-				echo json_encode($data);
+				echo json_encode($this->getNewImageDetails(get("new_image_id")));
 				break;
 				
 			case "save_slides":
 				
 				$slides = json_decode(post("slides"), true);
 				$ordinals = explode(',', post("ordinals"));
-				
+				$errors = array();
 				// Check for errors
 				foreach ($slides as $key => $value) {
 					// Validation for slides
@@ -233,37 +209,37 @@ class zenario_slideshow_2 extends module_base_class {
 					switch ($value['slide_visibility']) {
 						case 'call_static_method':
 							if (!$value['plugin_class']) {
-								$this->errors[$index][] = adminPhrase('Please enter the Class Name of a Plugin.');
+								$errors[$index][] = adminPhrase('Please enter the Class Name of a Plugin.');
 							} elseif (!inc($value['plugin_class'])) {
-								$this->errors[$index][] = adminPhrase('Please enter the Class Name of a Plugin that you have running on this site.');
+								$errors[$index][] = adminPhrase('Please enter the Class Name of a Plugin that you have running on this site.');
 							} elseif ($value['method_name'] 
 								&& !method_exists(
 									$value['plugin_class'],
 									$value['method_name'])
 							) {
-								$this->errors[$index][] = adminPhrase('Please enter the name of an existing Static Method.');
+								$errors[$index][] = adminPhrase('Please enter the name of an existing Static Method.');
 							}
 							if (!$value['method_name']) {
-								$this->errors[$index][] = adminPhrase('Please enter the name of a Static Method.');
+								$errors[$index][] = adminPhrase('Please enter the name of a Static Method.');
 							}
 							break;
 					}
 					switch($value['target_loc']) {
 						case 'internal':
 							if (empty($value['dest_url'])) {
-								$this->errors[$index][] = adminPhrase('Please select a content item.');
+								$errors[$index][] = adminPhrase('Please select a content item.');
 							}
 							break;
 						case 'external':
 							if (empty($value['dest_url'])) {
-								$this->errors[$index][] = adminPhrase('Please enter a URL.');
+								$errors[$index][] = adminPhrase('Please enter a URL.');
 							}
 							break;
 					}
 				}
 				
 				// Save a new slide if one doesn't exist otherwise update the existing one.
-				if (empty($this->errors)) {
+				if (empty($errors)) {
 					
 					// Delete currently saved slides if not in save data.
 					$ids = getRowsArray(ZENARIO_SLIDESHOW_2_PREFIX. "slides", "id", array('instance_id' => $this->instanceId));
@@ -301,10 +277,8 @@ class zenario_slideshow_2 extends module_base_class {
 									"param_2" => $value["param_2"],
 									'field_id' => (int)$value['field_id'],
 									"link_to_translation_chain" => $value["link_to_translation_chain"],
-									"use_title_transition" => $value["use_title_transition"],
-									"use_extra_html_transition" => $value["use_extra_html_transition"],
-									"title_transition" => $value["title_transition"],
-									"extra_html_transition" => $value["extra_html_transition"],
+									"transition_code" => isset($value["transition_code"]) ? $value["transition_code"] : '',
+									"use_transition_code" => $value["use_transition_code"],
 									"hidden" => $value["hidden"]),
 								array("id" => $key));
 								
@@ -337,10 +311,8 @@ class zenario_slideshow_2 extends module_base_class {
 									"param_2" => $value["param_2"],
 									'field_id' => (int)$value['field_id'],
 									"link_to_translation_chain" => $value["link_to_translation_chain"],
-									"use_title_transition" => $value["use_title_transition"],
-									"use_extra_html_transition" => $value["use_extra_html_transition"],
-									"title_transition" => $value['title_transition'],
-									"extra_html_transition" => $value["extra_html_transition"],
+									"transition_code" => $value["transition_code"],
+									"use_transition_code" => $value["use_transition_code"],
 									"hidden" => $value["hidden"]));
 							
 							$this->saveImageForSlide($newKey, $value, "image_id");
@@ -360,9 +332,8 @@ class zenario_slideshow_2 extends module_base_class {
 						}
 					}
 				}
-				$data = $this->errors;
 				header('Content-Type: text/javascript; charset=UTF-8');
-				echo json_encode($data);
+				echo json_encode($errors);
 				break;
 				
 		}
@@ -412,9 +383,8 @@ class zenario_slideshow_2 extends module_base_class {
 		$mobileMode = ($mode == 'mobile');
 		
 		$data = array();
-		$sql = 'SELECT';
-		// Get mobile columns
-			$sql .= "
+		$sql = "
+			SELECT
 				s.mobile_overwrite_alt_tag, 
 				s.mobile_tab_name, 
 				s.mobile_slide_title, 
@@ -426,18 +396,17 @@ class zenario_slideshow_2 extends module_base_class {
 				s.tab_name, 
 				s.slide_title,
 				s.slide_extra_html, 
+				f.alt_tag,
 				f.filename, 
 				f.width, 
 				f.height,
-				s.use_title_transition, 
-				s.use_extra_html_transition,
-				s.title_transition,
-				s.extra_html_transition,
+				s.transition_code,
+				s.use_transition_code,
 				
 				s.id, 
 				s.ordinal,
 				s.target_loc, 
-				s.open_in_new_window, 
+				s.open_in_new_window,
 				s.dest_url,
 				s.slide_visibility, 
 				s.link_to_translation_chain,
@@ -464,7 +433,7 @@ class zenario_slideshow_2 extends module_base_class {
 			$row1['image_src'] = $url;
 			
 			// Get rollover image details
-			$sql3 = "
+			$sql2 = "
 				SELECT 
 					count(s.rollover_image_id), 
 					s.rollover_image_id, 
@@ -477,17 +446,17 @@ class zenario_slideshow_2 extends module_base_class {
 					ON s.rollover_image_id = f.id
 				WHERE s.instance_id = ". (int)$this->instanceId. "
 					AND s.id = ". (int) $row1['id'];
-			$result3 = sqlQuery($sql3);
-			$row3 = sqlFetchAssoc($result3);
+			$result2 = sqlQuery($sql2);
+			$row2 = sqlFetchAssoc($result2);
 			
-			$url3 = "";
-			$row3['true_r_height'] = $row3['r_height'];
-			$row3['true_r_width'] = $row3['r_width'];
-			imageLink($row3["r_width"], $row3["r_height"], $url3, $row3["rollover_image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'), $this->setting("offset"));
-			$row3['rollover_image_src'] = $url3;
+			$url2 = "";
+			$row2['true_r_height'] = $row2['r_height'];
+			$row2['true_r_width'] = $row2['r_width'];
+			imageLink($row2["r_width"], $row2["r_height"], $url2, $row2["rollover_image_id"], $this->setting("banner_width"), $this->setting("banner_height"), $this->setting('banner_canvas'), $this->setting("offset"));
+			$row2['rollover_image_src'] = $url2;
 
 			// Get mobile image details
-			$sql2 = "
+			$sql3 = "
 				SELECT 
 					count(s.mobile_image_id), 
 					s.mobile_image_id, 
@@ -500,15 +469,19 @@ class zenario_slideshow_2 extends module_base_class {
 					ON s.mobile_image_id = f.id
 				WHERE s.instance_id = ". (int) $this->instanceId. "
 					AND s.id = ". (int) $row1['id'];
-			$result2 = sqlQuery($sql2);
-			$row2 = sqlFetchAssoc($result2);
+			$result3 = sqlQuery($sql3);
+			$row3 = sqlFetchAssoc($result3);
+			$url3 = "";
+			$row3['true_m_width'] = $row3['m_width'];
+			$row3['true_m_height'] = $row3['m_height'];
 			
-			$url2 = "";
-			$row2['true_m_height'] = $row2['m_height'];
-			$row2['true_m_width'] = $row2['m_width'];
-			imageLink($row2["m_width"], $row2["m_height"], $url2, $row2["mobile_image_id"]);
-			$row2['mobile_image_src'] = $url2;
+			if ($this->setting('mobile_options') == 'seperate_fixed') {
+				imageLink($row3["m_width"], $row3["m_height"], $url3, $row3["mobile_image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'), $this->setting('mobile_offset'));
+			} elseif ($this->setting('mobile_options') == 'desktop_fixed') {
+				imageLink($row3['m_width'], $row3['m_height'], $url3, $row1["image_id"], $this->setting('mobile_width'), $this->setting('mobile_height'), $this->setting('mobile_canvas'), $this->setting('mobile_offset'));
+			}
 			
+			$row3['mobile_image_src'] = $url3;
 			if ($adminMode) {
 				// Get main image thumbnails
 				$url = "";
@@ -526,19 +499,19 @@ class zenario_slideshow_2 extends module_base_class {
 				$row1['image_src_thumbnail_2'] = $url;
 				
 				// Get rollover image thumbnails
-				$url3 = "";
-				$width = $row3["r_width"];
-				$height = $row3["r_height"];
+				$url2 = "";
+				$width = $row2["r_width"];
+				$height = $row2["r_height"];
 				
-				imageLink($width, $height, $url3, $row3["rollover_image_id"], 300, 150);
-				$row3['rollover_image_src_thumbnail_1'] = $url3;
+				imageLink($width, $height, $url2, $row2["rollover_image_id"], 300, 150);
+				$row2['rollover_image_src_thumbnail_1'] = $url2;
 				
 				// Get mobile image thumbnails
-				$url2 = "";
-				$width = $row2["m_width"];
-				$height = $row2["m_height"];
-				imageLink($width, $height, $url2, $row2["mobile_image_id"], 300, 150);
-				$row2['mobile_image_src_thumbnail_1'] = $url2;
+				$url3 = "";
+				$width = $row3["m_width"];
+				$height = $row3["m_height"];
+				imageLink($width, $height, $url3, $row3["mobile_image_id"], 300, 150);
+				$row3['mobile_image_src_thumbnail_1'] = $url3;
 				
 				if ($row1['target_loc'] == 'internal' && $row1['dest_url']) {
 					$row1['content_item_link'] = formatTagFromTagId($row1['dest_url']);
@@ -546,7 +519,7 @@ class zenario_slideshow_2 extends module_base_class {
 				
 			}
 			$row = array_merge($row1, $row2, $row3);
-			
+			//var_dump($row['m_width']);
 			$id = $row['id'];
 			if ($mainMode || $mobileMode) {
 				$id = $row['ordinal'];
@@ -579,20 +552,48 @@ class zenario_slideshow_2 extends module_base_class {
 		return $row;
 	}
 	
+	public function fillAdminSlotControls(&$controls) {
+		if (isset($controls['actions']['settings'])) {
+			$controls['actions']['settings']['label'] = adminPhrase('Slideshow properties');
+			$controls['actions']['slideshow_settings'] = array(
+				'ord' => 1.1,
+				'label' => adminPhrase('Choose slideshow images'),
+				'page_modes' => $controls['actions']['settings']['page_modes'],
+				'onclick' => 'zenario_slideshow_2.openImageManager(
+					this, 
+					slotName, 
+					\''. jsEscape($this->pluginAJAXLink()). '\'
+				);'
+			);
+		}
+	}
+	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch($path){
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['banner_width']['hidden'] = 
-					!(in($values['first_tab/banner_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
-				 
-				$box['tabs']['first_tab']['fields']['banner_height']['hidden'] =
-					!(in($values['first_tab/banner_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
-					
-				$box['tabs']['first_tab']['fields']['offset']['hidden'] = 
+			
+				$fields['first_tab/banner_width']['hidden'] = 
+					!in($values['first_tab/banner_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/banner_height']['hidden'] =
+					!in($values['first_tab/banner_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/offset']['hidden'] =
 					!($values['first_tab/banner_canvas'] == 'resize_and_crop');
 				
-				$box['tabs']['first_tab']['fields']['slides_at_a_time']['hidden'] = 
-					!($values['first_tab/fx'] == 'carousel');
+				$fields['mobile/mobile_canvas']['hidden'] = 
+					!in($values['mobile/mobile_options'], 'desktop_fixed', 'seperate_fixed');
+				$fields['mobile/mobile_width']['hidden'] = 
+					!in($values['mobile/mobile_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop') ||
+					$fields['mobile/mobile_canvas']['hidden'];
+				$fields['mobile/mobile_height']['hidden'] =
+					!in($values['mobile/mobile_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop') ||
+					$fields['mobile/mobile_canvas']['hidden'];
+				$fields['mobile/mobile_offset']['hidden'] =
+					!($values['mobile/mobile_canvas'] == 'resize_and_crop') || 
+					$fields['mobile/mobile_canvas']['hidden'];
+				
+				$fields['mobile/desktop_resize_greater_than_image']['hidden'] = 
+					$values['mobile/mobile_options'] != 'desktop_resize';
+				
 				break;
 		}
 	}

@@ -6,7 +6,13 @@ editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: Modified BSD License
 display_name: Font Size
-description: '<p>Displays icons that allow visitors to change the font size of the displayed text.</p><p>The upper and lower bounds of the offered font sizes can be set in Plugin settings.</p>'
+description: >
+    <p>
+        Displays icons that allow visitors to change the font size of the displayed text.
+    </p><p>
+        The upper and lower bounds of the offered font sizes can be set in Plugin settings.
+    </p>
+category: pluggable
 keywords: accessibility, font, text
 vlp_class_name: zenario_font_size
 css_class_name: zenario_font_size

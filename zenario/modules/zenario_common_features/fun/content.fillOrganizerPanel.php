@@ -499,6 +499,7 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 		unset($panel['item_buttons']['zenario_trans__view']);
 		unset($panel['columns']['zenario_trans__links']);
 	}
+	
 }
 
 return false;

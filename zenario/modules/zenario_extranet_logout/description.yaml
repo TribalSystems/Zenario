@@ -13,6 +13,7 @@ description: |
                 however you may create a Logout page for each Language on your site
                 by creating translations of the original Logout page in each Language.</p>
              <p>Users can then log out of the Extranet system by navigating to the Logout page.</p>
+category: pluggable
 keywords: extranet, logout, user
 vlp_class_name: zenario_extranet_logout
 css_class_name: zenario_extranet_logout

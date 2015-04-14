@@ -10,6 +10,7 @@ description: |
     </p><p>
         In the dropdown there can also be a promotional image and text, with this linking to any destination. There is also a small gallery of images (showing all menu nodes under the current level 1 node that have images).
     </p>
+category: pluggable
 keywords: menu, navigation, promotion, link, image
 editions: Community, Pro, ProBusiness, Enterprise
 dependencies:

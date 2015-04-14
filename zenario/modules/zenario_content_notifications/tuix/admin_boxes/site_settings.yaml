@@ -1,0 +1,88 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: zenario_content_notifications
+    title: Viewing/Editing settings for content notifications
+    tabs:
+        content_notification:
+            label: Content notification email templates
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    ord: 1
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            This tab contains default settings for the content notification sent by your site.
+
+                content_notification_email_subject:
+                    site_setting:
+                        name: content_notification_email_subject
+                    label: 'Content notification email subject:'
+                    type: text
+                    value: |
+                      Website2 content notification: Item {{published_drafted_trashed}}
+                    validation:
+                        required: Please enter an email subject for content notification.
+
+                content_notification_email_body:
+                    site_setting:
+                        name: content_notification_email_body
+                    label: 'Content notification email body:'
+                    type: textarea
+                    rows: 10
+                    value: "This is an automated message from the website at {{url}}.\n\nItem {{published_drafted_trashed}}, details:\n\nContent item reference:    {{tag_id}}\nBrowser title: {{title}}\nWho by:        {{admin_name}}\nWhen:          {{datetime_when}}\nLink:          {{hyperlink}}"
+                    validation:
+                        required: Please enter an email body for content notification.
+
+                menu_node_notification_email_subject:
+                    site_setting:
+                        name: menu_node_notification_email_subject
+                    label: 'Menu node notification email subject:'
+                    type: text
+                    validation:
+                        required: Please enter an email subject for menu node notification.
+
+                menu_node_notification_email_body:
+                    site_setting:
+                        name: menu_node_notification_email_body
+                    label: 'Menu node notification email body:'
+                    type: textarea
+                    rows: 10
+                    validation:
+                        required: Please enter an email body for menu node notification.
+
+
+        content_requests:
+            label: Content requests email templates
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: |
+                            This tab contains default settings for the content requests sent by your site.
+
+                content_request_email_subject:
+                    site_setting:
+                        name: content_request_email_subject
+                    label: 'Content request email subject:'
+                    type: text
+                    validation:
+                        required: Please enter an email subject for content request.
+
+                content_request_email_body:
+                    site_setting:
+                        name: content_request_email_body
+                    label: 'Content request email body:'
+                    type: textarea
+                    rows: 10
+                    validation:
+                        required: Please enter an email body for content request.
+

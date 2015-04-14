@@ -132,9 +132,9 @@ site_settings:
                         Used for interactive date-pickers.
                         If you use names for months, these will not be translated.
                 
-                storekeeper_date_format:
+                organizer_date_format:
                     site_setting:
-                        name: storekeeper_date_format
+                        name: organizer_date_format
                     label: 'Organizer date format:'
                     type: select
                     value: 'd M yy'
@@ -255,9 +255,9 @@ site_settings:
                 #            title="jQuery date format">
                 #                jQuery's date specifiers</a>.
                 
-                #storekeeper_date_format:
+                #organizer_date_format:
                 #    site_setting:
-                #        name: storekeeper_date_format
+                #        name: organizer_date_format
                 #    label: 'Date format:'
                 #    type: text
                 #    value: d M yy

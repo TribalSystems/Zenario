@@ -1,0 +1,88 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__form_input_handler:
+    nav:
+        email_rulesets_rules:
+            panel:
+                title: Email rulesets routings
+                view_mode: list
+                db_items:
+                    table: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_FORM_INPUT_HANDLER_PREFIX]]routing_rules AS rr
+                        LEFT JOIN [[DB_NAME_PREFIX]]email_templates AS et ON rr.email_template_number = et.id
+                    id_column: rr.id
+                default_sort_column: rule_type_name
+                
+                refiners:
+                    ruleset_filter:
+                        sql: 'rr.rule_set_id=[[REFINER_ID]]'                    
+                    
+                columns:
+                    object_name:
+                        title: Field name
+                        db_column: rr.object_name
+                        show_by_default: Yes
+                        searchable: Yes
+
+                    rule_type_name:
+                        title: Match type
+                        db_column: rr.rule_type_name
+                        show_by_default: Yes
+                        searchable: Yes
+                        format: enum
+                        values:
+                            equals: 'If value equal to'
+                            not_equals: 'If value not equal to'
+                            starts_with: 'If value starts with'
+                            match_regexp: 'If match regexp'
+
+                    matching_value:
+                        title: Matching value
+                        db_column: rr.matching_value
+                        show_by_default: Yes
+                        searchable: Yes
+
+                    destination_address:
+                        title: Send email to
+                        db_column: rr.destination_address
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+
+                    email_template:
+                        title: With email template
+                        db_column: et.template_name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: xlarge
+
+                item_buttons:
+                    edit_ruleset:
+                        priv: _PRIV_SET_EMAIL_ROUTING
+                        css_class: settings
+                        label: Properties
+                        multiple_select: No
+                        admin_box:
+                            path: zenario_form_input_handler__ruleset_rule
+                    delete_ruleset:
+                        priv: _PRIV_SET_EMAIL_ROUTING
+                        css_class: delete
+                        label: Delete
+                        multiple_select: Yes
+                        multiple_select_tooltip: Delete selected Rulesets
+                        ajax:
+                            confirm:
+                                message: Are you sure you wish to delete selected ruleset?
+                                multiple_select_message: Are you sure you wish to delete the selected rulesets?
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                action: delete_ruleset_rule
+                collection_buttons:
+                    create_ruleset:
+                        priv: _PRIV_SET_EMAIL_ROUTING
+                        css_class: create
+                        label: Create a email routing
+                        admin_box:
+                            path: zenario_form_input_handler__ruleset_rule

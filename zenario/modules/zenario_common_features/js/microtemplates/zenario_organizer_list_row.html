@@ -6,7 +6,7 @@
 		organizer_row
 		{{m.css_class|escape}}
 		{{m.selected? ' organizer_selected' : ''|escape}}
-		{{m.canDoubleClick? 'organizer_doubleclickable' : ''|escape}}
+		{{m.canClickThrough? 'organizer_doubleclickable' : ''|escape}}
 		
 		<% if (zenarioO.chooseButtonActive()) { %>
 			{{zenarioO.checkItemPickable(m.id)? 'organizer_can_choose' : 'organizer_cant_choose'|escape}}
@@ -14,13 +14,13 @@
 	"
 >
 	
-	<% if (m.slidedown_view_microtemplate) { %>
+	<% if (zenarioO.inspectionViewEnabled()) { %>
 		<div
 			id="organizer_slidedown_view_toggle_{{m.id|escape}}"
 			class="organizer_slidedown_view_toggle
-				{{m.slidedown_view_open? 'organizer_slidedown_view_toggle_open' : 'organizer_slidedown_view_toggle_closed'|escape}}
+				{{m.open_in_inspection_view? 'organizer_slidedown_view_toggle_open' : 'organizer_slidedown_view_toggle_closed'|escape}}
 				organizer_cell"
-			onclick="zenarioO.toggleSlidedownView('{{m.id|escape}}', event);"
+			onclick="zenario.stop(event); zenarioO.toggleInspectionView('{{m.id|escape}}');"
 		></div>
 	<% } %>
 	
@@ -36,8 +36,8 @@
 		>
 			{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioA.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}}
 		</div>
-		<% if (m.canDoubleClick) { %>
-			<a class="organizer_doubleclick" onclick="return zenarioO.itemDoubleClick('{{m.id|escape}}', event);" title="{{m.tooltip|escape}}"></a>
+		<% if (m.canClickThrough) { %>
+			<a class="organizer_doubleclick" onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);" title="{{m.tooltip|escape}}"></a>
 		<% } %>
 	</div>
 
@@ -45,10 +45,10 @@
 
 </div>
 
-<% if (m.slidedown_view_microtemplate) { %>
-	<% if (m.slidedown_view_open) { %>
+<% if (zenarioO.inspectionViewEnabled()) { %>
+	<% if (m.open_in_inspection_view) { %>
 		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_open">
-			{{zenarioA.microTemplate(m.slidedown_view_microtemplate, {id: m.id})}}
+			{{zenarioA.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: m.id})}}
 		</div>
 	<% } else { %>
 		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_closed"></div>

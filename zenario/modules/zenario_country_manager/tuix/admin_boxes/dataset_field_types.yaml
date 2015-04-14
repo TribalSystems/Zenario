@@ -7,3 +7,4 @@ zenario_custom_field:
                 values_source:
                     values: 
                         'zenario_country_manager::getActiveCountries': 'Countries (active)'
+                        'zenario_country_manager::getRegionsByCountry': 'Regions'

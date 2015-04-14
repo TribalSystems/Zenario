@@ -2,12 +2,12 @@
 	<div class="organizer_header">
 		<div class="organizer_row">
 			<div id="organizer_non_sortable_resizeable_cols" class="organizer_non_sortable_resizeable_cols">
-				<% if (m.slidedown_view_microtemplate) { %>
+				<% if (zenarioO.inspectionViewEnabled()) { %>
 					<div class="organizer_slidedown_view_toggle_header organizer_cell"></div>
 				<% } %>
 				<div id="organizer_checkbox_col" class="organizer_cell">
 					<% if (zenarioO.multipleSelectEnabled) { %>
-						<div onclick="zenarioO.toggleSelectAll();">
+						<div onclick="zenarioO.toggleAllItems();">
 							<input type="checkbox" {{m.allItemsSelected? ' checked="checked"' : ''}}>
 						</div>
 					<% } %>

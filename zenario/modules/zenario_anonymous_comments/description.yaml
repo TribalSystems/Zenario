@@ -25,6 +25,7 @@ description: |
                 <li>[[poster_screen_name]] or [[poster_username]] - The Name and/or Email
                     (If the option to display either the name and/or the Email was enabled in the Plugin Settings.)</li>
             </ul>
+category: management
 keywords: anonymous, comment, forum, post, chat, blog, message
 vlp_class_name: zenario_anonymous_comments
 css_class_name: zenario_comments

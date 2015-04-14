@@ -917,8 +917,48 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 	}
 }
 
-
-
-
+// Create page preview buttons
+$pagePreviews = getRowsArray('page_preview_sizes', array('width', 'height', 'description', 'ordinal', 'is_default', 'type'), array(), 'ordinal');
+$status = cms_core::$status;
+switch ($status) {
+	case 'first_draft':
+	case 'published_with_draft':
+	case 'hidden_with_draft':
+	case 'trashed_with_draft':
+		$status = 'Draft';
+		break;
+	case 'published':
+		$status = 'Published';
+		break;
+	case 'hidden':
+		$status = 'Hidden';
+		break;
+	case 'trashed':
+		$status = 'Trashed';
+		break;
+}
+$previewLabel = formatTag($cID, $cType, -1). ' Version '.$cVersion. ' ['. $status .']';
+foreach ($pagePreviews as $pagePreview) {
+	$width = $pagePreview['width'];
+	$height = $pagePreview['height'];
+	$description = $pagePreview['description'];
+	$label = $previewLabel. ' '.$width.' x '.$height.' ('.$description.')';
+	
+	$pagePreviewButton = array(
+		'parent' => 'page_preview_sizes',
+		'label' => $width.' x '.$height.', '.$description,
+		'custom_width' => $width,
+		'custom_height' => $height,
+		'custom_description' => $label,
+		'css_class' => 'zenario_small_preview_icon_'.$pagePreview['type'],
+		'call_js_function' => array(
+			'encapsulated_object' => 'zenarioA',
+			'function' => 'showPagePreview'));
+			
+	if ($pagePreview['is_default']) {
+		$pagePreviewButton['label'] .= ' (Default)';
+	}
+	$adminToolbar['sections']['page_preview_sizes']['buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
+}
 
 return false;

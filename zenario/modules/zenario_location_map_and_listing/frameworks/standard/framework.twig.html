@@ -1,0 +1,162 @@
+{% if drawingGoogleMap %}
+	<div id="{{mapId|escape}}" class="zenario_lmal_map zenario_lmal_map_wrap"></div>
+	
+	{% for location in locations %}
+		<script type="text/html" id="{{location.htmlId|escape}}">
+			<div class="zenario_lmal_map_popout">
+				<div class="zenario_lmal_close_map_popout">
+					<a onclick="zenario_location_map_and_listing.closeInfoWindow();">X</a>
+				</div> 
+				<h3>{{location.name|escape}}</h3>
+		
+				{% set addressline = [] %}
+				{% if location.address1 %}
+					{% set addressline = addressline|merge([location.address1]) %}
+				{% endif %}
+				{% if location.address2 %}
+					{% set addressline = addressline|merge([location.address2]) %}
+				{% endif %}
+				{% if location.locality %}
+					{% set addressline = addressline|merge([location.locality]) %}
+				{% endif %}
+				{% if location.city %}
+					{% set addressline = addressline|merge([location.city]) %}
+				{% endif %}
+				{% if location.state %}
+					{% set addressline = addressline|merge([location.state]) %}
+				{% endif %}
+		
+				{% if addressline|length %}
+					<div class="zenario_lmal_addressline">
+						{{addressline|escape|join(', ')}}
+					</div>
+				{% endif %}
+		
+				{% if location.phone %}
+					{% set phone = location.phone|escape %}
+					<div class="zenario_lmal_phone">
+						{% trans %}
+							T: {{phone}}
+						{% endtrans %}
+					</div>
+				{% endif %}
+				{% if location.email %}
+					<div class="zenario_lmal_email">
+						<a href="mailto:{{location.email|escape}}">{{location.email|escape}}</a>
+					</div>
+				{% endif %}		
+				{% if location.url %}
+					<div class="zenario_lmal_url">
+						<a target="_blank" href="{{location.url|escape}}">{{location.url|escape}}</a>
+					</div>
+				{% endif %}
+			</div>
+		</script>
+	{% endfor %}
+
+
+{% else %}
+	<div class="zenario_lmal_map zenario_lmal_map_iframe_wrap">
+		<iframe id="{{mapIframeId|escape}}" src="{{mapIframeSrc|escape}}"></iframe>
+	</div>
+
+	{% if countries %}
+		<div class="zenario_lmal_select_country">
+			{{'Select Country'|trans}}
+		
+			{{openForm}}
+				<select name="country_id" onchange="$(this.form).submit();">
+					{% for key,value in countries %}
+						<option
+							{% if key == country_id %}
+								selected="selected"
+							{% endif %}
+							value="{{key|escape}}"
+						>
+							{{value|escape}}
+						</option>
+					{% endfor %}
+				</select>
+			{{closeForm}}
+		</div>
+	{% endif %}
+
+	<div class="zenario_lmal_key">
+		{% for tab in tabs %}
+			{% if tab.title %}
+				<div class="zenario_lmal_tab_title zenario_lmal_marker {{tab.marker_css_class|escape}}">
+					{{ tab.title | trans | escape }}
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+	
+	<div class="zenario_lmal_tabs">
+		<div class="zenario_lmal_scrollable_area">
+			{% for tab in tabs %}
+				<div class="zenario_lmal_tab {{tab.css_class|escape}}">
+			
+					{% if tab.title %}
+						<div class="zenario_lmal_tab_title">
+							{{ tab.title | trans | escape }}
+						</div>
+					{% endif %}
+			
+					{% for location in tab.locations %}
+						<div class="zenario_lmal_location {{location.htmlId|escape}}" onclick="{{location.listingClick|escape}}">
+							<h3>{{location.name|escape}}</h3>
+					
+							{% set addressline = [] %}
+							{% if location.address1 %}
+								{% set addressline = addressline|merge([location.address1]) %}
+							{% endif %}
+							{% if location.address2 %}
+								{% set addressline = addressline|merge([location.address2]) %}
+							{% endif %}
+							{% if location.locality %}
+								{% set addressline = addressline|merge([location.locality]) %}
+							{% endif %}
+							{% if location.city %}
+								{% set addressline = addressline|merge([location.city]) %}
+							{% endif %}
+							{% if location.state %}
+								{% set addressline = addressline|merge([location.state]) %}
+							{% endif %}
+					
+							{% if addressline|length %}
+								<div class="zenario_lmal_addressline">
+									{{addressline|escape|join(', ')}}
+								</div>
+							{% endif %}
+					
+							{% if location.phone %}
+								{% set phone = location.phone|escape %}
+								<div class="zenario_lmal_phone">
+									{% trans %}
+										T: {{phone}}
+									{% endtrans %}
+								</div>
+							{% endif %}
+							{% if location.email %}
+								<div class="zenario_lmal_email">
+									<a href="mailto:{{location.email|escape}}">{{location.email|escape}}</a>
+								</div>
+							{% endif %}	
+							{% if location.url %}
+								<div class="zenario_lmal_url">
+									<a target="_blank" href="{{location.url|escape}}">{{location.url|escape}}</a>
+								</div>
+							{% endif %}        
+                			{% if location.summary %}
+                				{% set description = location.summary|escape %}
+                    			<div class="zenario_lmal_description">
+                        			{{description}}
+                    			</div>
+                			{% endif %}
+						</div>
+					{% endfor %}
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+{% endif %}

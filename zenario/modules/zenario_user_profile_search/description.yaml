@@ -3,10 +3,12 @@
 display_name: User profile search
 author_name: Zenario
 copyright_info: © Tribal Limited
-editions: Pro, ProBusiness, Enterprise
+editions: ProBusiness, Enterprise
 start_running_on_install: false
 license_info: Modified BSD License
-description: '<p>Allows users to be searched by the content on their profile.</p>'
+description: >
+    <p>Allows users to be searched by the content on their profile.</p>
+category: pluggable
 keywords: user, profile, search
 vlp_class_name: zenario_user_profile_search
 is_pluggable: Yes

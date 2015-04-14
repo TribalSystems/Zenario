@@ -306,6 +306,23 @@ switch ($path) {
 		if ($values['details/folder_name'] == "") {
 			$box['tabs']['details']['errors'][] = adminPhrase('You must give the folder a name.');
 		}
+		$folderId = $box['key']['id'];
+		if(!$folderId ){
+			//create a new folder
+			$folderNameSaved=getRow('documents', 'folder_name', array('folder_name' => $values['details/folder_name'], 'type' => 'folder', 'folder_id' => 0));
+			if ($folderNameSaved){
+				$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $values['details/folder_name']));
+			}
+		}else{
+			//create a subfolder
+			$subFolderNameSaved=getRow('documents', 'folder_name', array('folder_name' => $values['details/folder_name'], 'type' => 'folder','folder_id' => $folderId));
+			//$folderParentName=getRow('documents', 'folder_name', array('type' => 'folder','id' => $folderId));
+			if ($subFolderNameSaved){
+				$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', array('subfolder_name' => $values['details/folder_name']));
+				//$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+			}
+		}
+		
 		break;
 		
 	case 'zenario_migrate_old_documents':
@@ -313,6 +330,8 @@ switch ($path) {
 			$box['tabs']['details']['errors'][] = adminPhrase('You must select a folder for the documents.');
 		}
 		break;
+	
+
 	
 	case 'zenario_document_move':
 		
@@ -323,7 +342,165 @@ switch ($path) {
 		if (in_array($values['details/move_to'], $ids)) {
 			$box['tabs']['details']['errors'][] = adminPhrase('You can not move a folder inside itself.');
 		}
+		
+		//avoid duplicate folder
+		//folder validation
+		$documentId = $box['key']['id'];
+		$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
+		if ($isfolder){
+			$moveToRoot = $values['details/move_to_root'];
+			$moveToFolderId = $values['details/move_to'];
+	
+			$folderId = $box['key']['id'];
+			$folderName=getRow('documents', 'folder_name', array('type' => 'folder','id' => $folderId));
+	
+			if($moveToRoot){
+				$parentfolderId=getRow('documents', 'folder_id', array('type' => 'folder','id' => $folderId));
+				if (!$parentfolderId){
+					$box['tabs']['details']['errors'][] = adminPhrase('The folder “[[folder_name]]” is already in root.', array('folder_name' => $folderName));
+				}else{
+					$folderNameSaved=getRow('documents', 'folder_name', array('folder_name' => $folderName, 'type' => 'folder','folder_id' => 0));
+					if ($folderNameSaved){
+						$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $folderName));
+						//$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+					}
+				}
+			}elseif($moveToFolderId){
+				$parentfolderId=getRow('documents', 'folder_id', array('type' => 'folder','id' => $folderId));
+				if ($moveToFolderId == $parentfolderId){
+					$box['tabs']['details']['errors'][] = adminPhrase('The folder “[[subfolder_name]]” is already in the target folder selected.', array('subfolder_name' => $folderName));
+				}else{
+					$folderNameSaved=getRow('documents', 'folder_name', array('folder_name' => $folderName, 'type' => 'folder','folder_id' => $folderId));
+					if ($folderNameSaved){
+						$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[subfolder_name]]” is already taken. Please choose a different name.', array('subfolder_name' => $folderName));
+						//$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[subfolder_name]]” is already taken in the selected folder "[[folder_parent_name]]". Please choose a different name.', array('subfolder_name' => $values['details/folder_name'],'folder_parent_name'=>$folderParentName));
+					}
+				}
+	
+			}
+		}else{
+			//it is not a folder.
+		}
+	
 		break;
+	
+	case 'zenario_document_upload':
+	
+		if ($values['upload_document/document__upload'] == "") {
+			$box['tabs']['upload_document']['errors'][] = adminPhrase('Select a document');
+		}
+			
+		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
+		$documentNameList=array();
+		$found = false;
+		foreach ($documentsUploaded  as $document) {
+			$filename = basename(getPathOfUploadedFileInCacheDir($document));
+			if ($documentNameList){
+					if (in_array($filename,$documentNameList)){
+						$found=true;
+					}else{
+						$documentNameList[]=$filename;
+					}
+			}else{
+				$documentNameList[]=$filename;
+			}
+		}
+		if ($found){
+			$box['tabs']['upload_document']['errors'][] = adminPhrase('You cannot upload documents with the same name and extension in a directory');
+		}
+		
+		//same name 
+		if ($box['key']['id'] && $box['key']['id']!="id"){
+			$parentfolderId = $box['key']['id'];
+		}else{
+			$parentfolderId = "0";
+		}
+		
+			$sql="
+				SELECT filename
+				FROM ".DB_NAME_PREFIX."documents
+				WHERE folder_id = ".$parentfolderId;
+				
+			$result = sqlQuery($sql);
+			while($row = sqlFetchAssoc($result)) {
+					$fileNameList[] = $row['filename'];
+			}
+			
+			if (isset($fileNameList) && $fileNameList){
+				foreach ($documentNameList as $name){
+					if (array_search($name,$fileNameList)){
+						$nameDetails = explode(".",$name);
+						$box['tabs']['upload_document']['errors'][] = adminPhrase('An item named “[[filename]]” with extension “.[[extension]]” already exists in the files directory!', array('filename' => $nameDetails[0],'extension'=>$nameDetails[1]));
+					}
+			}
+		}
+		break;
+	
+	case 'zenario_document_properties':
+		$documentId = $box['key']['id'];
+		$parentfolderId=getRow('documents', 'folder_id', array('id' => $documentId));
+		$newDocumentName = trim($values['details/document_name']);
+		
+		if (!$newDocumentName ){
+			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a filename.');
+		}
+		
+		//$fileNameAlreadyExists=checkRowExists('documents', array('type' => 'file','folder_id' => $parentfolderId,'filename'=>$newDocumentName));
+		
+		
+		$sql =  "
+			SELECT id
+			FROM ".DB_NAME_PREFIX."documents
+			WHERE type = 'file' 
+			AND folder_id =".$parentfolderId."
+			AND filename = '".$newDocumentName."' 
+			AND id != ". $documentId;
+		
+		$documentIdList = array();
+		$result = sqlSelect($sql);
+		while($row = sqlFetchAssoc($result)) {
+				$documentIdList[] = $row;
+		}
+		$numberOfIds = count($documentIdList);
+		
+		if ($numberOfIds > 0){
+			$box['tabs']['details']['errors'][] = adminPhrase('The filename “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
+		}
+		break;
+		
+		
+	case 'zenario_document_rename':
+	
+		if ($values['details/document_name'] == "") {
+			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a name.');
+		}else{
+			$documentId = $box['key']['id'];
+			$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
+			$parentfolderId=getRow('documents', 'folder_id', array('type' => 'folder','id' => $documentId));
+			$newDocumentName = trim($values['details/document_name']);
+			if ($isfolder){
+				$folderNameAlreadyExists=checkRowExists('documents', array('type' => 'folder','folder_id' => $parentfolderId,'folder_name'=>$newDocumentName));
+				$sql =  "
+					SELECT id
+					FROM ".DB_NAME_PREFIX."documents
+					WHERE type = 'folder' 
+					AND folder_id =".$parentfolderId."
+					AND folder_name = '".$newDocumentName."' 
+					AND id != ". $documentId;
+	
+				$documentIdList = array();
+				$result = sqlSelect($sql);
+				while($row = sqlFetchAssoc($result)) {
+						$documentIdList[] = $row;
+				}
+				$numberOfIds = count($documentIdList);
+	
+				if ($numberOfIds > 0){
+					$box['tabs']['details']['errors'][] = adminPhrase('The folder name “[[folder_name]]” is already taken. Please choose a different name.', array('folder_name' => $newDocumentName));
+				}
+			}
+		}
+	break;
 	
 	case 'zenario_file_type':
 		if (preg_replace('/[a-zA-Z0-9_\\.-]/', '', $values['details/type'])) {

@@ -1,0 +1,370 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_event_listing
+    tabs:
+        first_tab:
+            label: Filter
+            fields:
+                ongoing:
+                    label: 'Show current events:'
+                    plugin_setting:
+                        name: ongoing
+                    type: checkbox
+                    value: "1"
+                future:
+                    label: 'Show future events:'
+                    plugin_setting:
+                        name: future
+                    type: checkbox
+                    value: "1"
+                    note_below: Show events whose start date is in the future.
+                past:
+                    label: 'Show past events:'
+                    plugin_setting:
+                        name: past
+                    type: checkbox
+                    value: "0"
+                    note_below: Show events whose end date is in the past.
+                period_mode:
+                    label: 'Period:'
+                    plugin_setting:
+                        name: period_mode
+                    type: radios
+                    values:
+                        all_time:
+                            ord: "1"
+                            label: Show all Events, irrespective of time period
+                        year_period:
+                            ord: "2"
+                            label: >
+                                Current year, or next year if today is the last day of the
+                                year
+                        month_period:
+                            ord: "3"
+                            label: Month period (use select boxes below to adjust this setting)
+                        week_period:
+                            ord: "4"
+                            label: Current week (Mon-Sun), or next week if today is a Sunday
+                        today_only:
+                            ord: "5"
+                            label: Today
+                    value: all_time
+                    format_onchange: Yes
+                month_period_operator:
+                    label: 'Show event if occurs:'
+                    plugin_setting:
+                        name: month_period_operator
+                    type: select
+                    values:
+                        eq: in
+                        ge: in or after
+                    post_field_html: '&nbsp;'
+                month_period_value:
+                    plugin_setting:
+                        name: month_period_value
+                    same_row: Yes
+                    type: select
+                    values:
+                        - 
+                            label: this month
+                            ord: "1"
+                        - 
+                            label: next month
+                            ord: "2"
+                        - 
+                            label: current month + 2
+                            ord: "3"
+                        - 
+                            label: current month + 3
+                            ord: "4"
+                        - 
+                            label: current month + 4
+                            ord: "5"
+                        - 
+                            label: current month + 5
+                            ord: "6"
+                        - 
+                            label: current month + 6
+                            ord: "7"
+                        - 
+                            label: current month + 7
+                            ord: "8"
+                        - 
+                            label: current month + 8
+                            ord: "9"
+                        - 
+                            label: current month + 9
+                            ord: "10"
+                        - 
+                            label: current month + 10
+                            ord: "11"
+                        - 
+                            label: current month + 11
+                            ord: "12"
+                        - 
+                            label: current month + 12
+                            ord: "13"
+                category_list:
+                    label: 'Category:'
+                    plugin_setting:
+                        name: category_list
+                        foreign_key_to: categories
+                    type: checkboxes
+                    note_below: >
+                        Content Items must be in all the Categories above to appear
+                        in the list.
+                location:
+                    label: 'Show Events in:'
+                    plugin_setting:
+                        name: location
+                        foreign_key_to: categories
+                    type: select
+                    values:
+                        all_locations:
+                            label: Any Location
+                        location_associated_with_content_item:
+                            label: Location associated with the Content Item
+                language_selection:
+                    plugin_setting:
+                        name: language_selection
+                    label: 'Only show Events in:'
+                    type: select
+                    value: visitor
+                    values:
+                        visitor:
+                            ord: "1"
+                            label: "Visitor's language"
+                        all:
+                            ord: "2"
+                            label: All enabled languages
+                        specific_languages:
+                            ord: "3"
+                            label: Specific languages
+                    format_onchange: Yes
+                specific_languages:
+                    label: 'Select languages:'
+                    plugin_setting:
+                        name: specific_languages
+                    type: checkboxes
+                    load_values_from_organizer_path: zenario__languages/panels/languages
+                    validation:
+                        required_if_not_hidden: Please select a language.
+        overall_list:
+            label: Overall list
+            fields:
+                use_phrases:
+                    plugin_setting:
+                        name: use_phrases
+                    label: 'Use visitor phrases:'
+                    type: checkbox
+                    note_below: >
+                        When enabled, visitor phrases will be merged into the header field. For example, use [[_MY_PHRASE]]
+                        to merge a phrase called _MY_PHRASE
+                    value: 1
+                heading:
+                    label: 'Heading:'
+                    plugin_setting:
+                        name: heading
+                    type: radios
+                    values:
+                        dont_show: "Don't show"
+                        show_heading: Show
+                        show_period_name: Show period name
+                    value: show_heading
+                    format_onchange: Yes
+                
+                heading_text:
+                    plugin_setting:
+                        name: heading_text
+                    label: Heading
+                    type: text
+                    value: '[[_HEADING]]'
+                
+                sort_field:
+                    label: 'Sort field:'
+                    plugin_setting:
+                        name: sort_field
+                    type: radios
+                    values:
+                        start_date:
+                            ord: "1"
+                            label: Start date
+                        end_date:
+                            ord: "2"
+                            label: End date
+                    value: start_date
+                sort_order:
+                    label: 'Sort order:'
+                    plugin_setting:
+                        name: sort_order
+                    type: radios
+                    values:
+                        most_recent_first: Most recent/latest first
+                        older_first: Oldest/earliest first
+                    value: most_recent_first
+        each_item:
+            label: Each Item
+            fields:
+                show_event_title:
+                    label: 'Show Title:'
+                    plugin_setting:
+                        name: show_event_title
+                    type: checkbox
+                    value: "1"
+                show_event_summary:
+                    label: 'Show Summary:'
+                    plugin_setting:
+                        name: show_event_summary
+                    type: checkbox
+                    value: "1"
+                excerpt_length:
+                    label: 'Show characters from Description:'
+                    plugin_setting:
+                        name: excerpt_length
+                    type: select
+                    values:
+                        50:
+                            label: "50"
+                        100:
+                            label: "100"
+                        200:
+                            label: "200"
+                        500:
+                            label: "500"
+                    value: "200"
+                show_location:
+                    label: 'Show Location:'
+                    plugin_setting:
+                        name: show_location
+                    type: checkbox
+                    value: "1"
+                date_display:
+                    label: 'Date display:'
+                    plugin_setting:
+                        name: date_display
+                    type: select
+                    values:
+                        dont_show:
+                            label: "Don't show date"
+                        show_start_date_only:
+                            label: Show start date
+                        show_start_and_end_date:
+                            label: Show start and end date
+                    value: show_start_and_end_date
+                time_display:
+                    label: 'Time display:'
+                    plugin_setting:
+                        name: time_display
+                    type: select
+                    values:
+                        dont_show:
+                            label: "Don't show time"
+                        show_start_time_only:
+                            label: Show start time
+                        show_start_and_end_time:
+                            label: Show start and end time
+                    value: show_start_and_end_time
+        pagination:
+            label: Pagination
+            fields:
+                page_size:
+                    plugin_setting:
+                        name: page_size
+                    label: 'Number of results:'
+                    type: select
+                    values:
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        12: "12"
+                        15: "15"
+                        20: "20"
+                        50: "50"
+                        999999:
+                            label: All Possible
+                    value: "5"
+                    note_below: >
+                        If pagination is enabled, this number of summaries will be
+                        shown on each page.
+                show_pagination:
+                    plugin_setting:
+                        name: show_pagination
+                    label: 'Paginate:'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: Yes
+                pagination_style:
+                    plugin_setting:
+                        name: pagination_style
+                    label: 'Pagination style:'
+                    type: select
+                    value: zenario_common_features::pagCloseWithNPIfNeeded
+                page_limit:
+                    plugin_setting:
+                        name: page_limit
+                    label: 'Maximum number of pages:'
+                    type: select
+                    values:
+                        5: "5"
+                        9: "9"
+                        20: "20"
+                        99: "99"
+                    value: "9"
+        image_size:
+            label: Sticky image
+            fields:
+                canvas:
+                    plugin_setting:
+                        name: canvas
+                    label: 'Image canvas'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: "1"
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                    format_onchange: Yes
+                width:
+                    plugin_setting:
+                        name: width
+                    label: 'Width'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em; text-align: right'
+                    align_right: 1
+                    post_field_html: '&nbsp;pixels'
+                height:
+                    plugin_setting:
+                        name: height
+                    label: 'Height'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em; text-align: right'
+                    align_right: 1
+                    post_field_html: '&nbsp;pixels'
+

@@ -1,45 +1,68 @@
-zenario_slideshow_2.initiateSlideshow = function(AJAXLink, slotName, mobile_resize, fx, width, height, m_width, m_height, hover_to_pause, enable_swipe, 
-	auto_play, slide_duration, arrow_buttons, navigation_style, slide_caption_transitions, instanceId, slides, mobileImages) 
-{
-
-	if (mobileImages) {
-		var screenLimit = 720;
+zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, instanceId, settings) {
+	var mobileMode = false;
+	if (settings.has_mobile_images) {
+		var screenLimit = settings.mobile_resize_width;
 		var screenWidth = $(window).width();
 		// Change the slideshow to mobile or main depending on screen size
 		if (screenWidth < screenLimit) {
-			zenario_slideshow_2.mobileMode = 1;
-			width = m_width;
-			height = m_height;
+			mobileMode = true;
+			settings.desktop_width = settings.mobile_width;
+			settings.desktop_height = settings.mobile_height;
 		}
 		$(window).resize(function() {
 			waitForFinalEvent(function() {
-				if (($(window).width() < screenLimit) && (!zenario_slideshow_2.mobileMode)) {
+				if (($(window).width() < screenLimit) && (!mobileMode)) {
 					zenario_slideshow_2.refreshPluginSlot(slotName);
-					zenario_slideshow_2.mobileMode = 1;
-				} else if(($(window).width() >= screenLimit) && zenario_slideshow_2.mobileMode) {
+					mobileMode = true;
+				} else if(($(window).width() >= screenLimit) && mobileMode) {
 					zenario_slideshow_2.refreshPluginSlot(slotName);
-					zenario_slideshow_2.mobileMode = 0;
+					mobileMode = false;
 				}
 			}, 500, instanceId);
 		});
 	}
+	var width = settings.desktop_width;
+	var height = settings.desktop_height;
+	
+	// Get slideshow transition code
+	var slideshowTransition = zenario_slideshow_2.getTransition(settings.slide_transition);
+	
+	// JSSOR slideshow options
+	var options = { 
+		$AutoPlay: settings.auto_play,
+		$FillMode: 4,
+		$AutoPlayInterval: parseInt(settings.slide_duration),
+		$SlideDuration: 500,
+		$PauseOnHover: settings.hover_to_pause,
+		$ArrowKeyNavigation: false,
+		$SlideSpacing: 0,
+		$PlayOrientation: 1,
+		$DragOrientation: 0,
+		$SlideshowOptions: {
+			$Class: $JssorSlideshowRunner$,
+			$Transitions: slideshowTransition
+		}
+	};
 	
 	// Create slide html
 	var cursorStyle = '';
-	if (enable_swipe) {
+	if (settings.enable_swipe) {
 		cursorStyle = 'move';
+		options.$DragOrientation = 1;
 	} else {
 		cursorStyle = 'default';
 	}
+	
 	var html = '';
 	html += '<div id="slider1_container_'+instanceId+'"\
 				class="slideshow_container" style="visibility: hidden; position: relative; top: 0px; left: 0px; width:'+width+'px; height:'+height+'px;">\
-				<div u="loading" style="position: absolute; top: 0px; left: 0px;"></div>\
+				<div u="loading"></div>\
 				<div u="slides" id="slides_container_'+instanceId+'" class="" style="cursor: '+cursorStyle+'; position: absolute; overflow: hidden; left: 0px; top: 0px; width:'+width+'px; height:'+height+'px;">';
 	var count = 1;
+	var _CaptionTransitions = {};
 	$.each(slides, function(key, slide) {
 		var altTag = '';
-		if (mobileImages && (screenWidth < screenLimit)) {
+		if (mobileMode) {
 			slide.image_src = slide.mobile_image_src;
 			slide.overwrite_alt_tag = slide.mobile_overwrite_alt_tag;
 			altTag = slide.mobile_overwrite_alt_tag ? slide.mobile_overwrite_alt_tag : slide.m_alt_tag;
@@ -57,7 +80,7 @@ zenario_slideshow_2.initiateSlideshow = function(AJAXLink, slotName, mobile_resi
 		}
 		html += '>\
 				<img u="image" src="'+slide.image_src+'" alt="'+altTag+'" id="slide_'+slide.id+'"';
-		if (slide.rollover_image_src && (!mobileImages || (screenWidth >= screenLimit))) {
+		if (slide.rollover_image_src && !mobileMode) {
 			html += '\
 				onmouseover="\
 					if (\''+slide.rollover_image_src+'\') {\
@@ -67,121 +90,112 @@ zenario_slideshow_2.initiateSlideshow = function(AJAXLink, slotName, mobile_resi
 		}
 		html += '/>\
 			</a>';
-		if (!mobileImages || (screenWidth >= screenLimit)) {
-			if (navigation_style == 'thumbnail_navigator' && (!mobileImages || (screenWidth >= screenLimit))) {
+		if (!mobileMode) {
+			if (settings.navigation_style == 'thumbnail_navigator') {
 				html += '<div u="thumb">'+slide.tab_name+'</div>';
 			}
 			if (slide.slide_title || slide.slide_extra_html) {
 				html += '<div class="content_container"';
-				if (parseInt(slide.use_title_transition) || parseInt(slide.use_extra_html_transition)) {
-					html += 'style="bottom: 0; height: auto; left: 0; overflow: hidden; padding: 2%; position: absolute; width: 60%;"';
+				if (parseInt(slide.use_transition_code) && slide.transition_code) {
+					try {
+						var transitionCode = eval('('+slide.transition_code+')');
+						_CaptionTransitions['slide_transition_'+ slide.id] = transitionCode;
+					} catch (e) {}
+					html += ' u="caption" t="slide_transition_'+slide.id+'" ';
 				}
 				html += '>';
 				if (slide.slide_title) {
-					if (parseInt(slide.use_title_transition)) {
-						html += '<div class="slide_title_transition" u="caption" t="slide_title_transition_'+slide.id+'">';
-					} else {
-						html += '<div class="slide_title">';
-					}
-					html += slide.slide_title+'</div>';
+					html += '<div class="slide_title">'+slide.slide_title+'</div>';
 				}
 				if (slide.slide_extra_html) {
-					if (parseInt(slide.use_extra_html_transition)) {
-						html += '<div class="slide_extra_html_transition" u="caption" t="slide_extra_html_transition_'+slide.id+'">'
-					} else {
-						html += '<div class="slide_extra_html">';
-					}
-					html += slide.slide_extra_html+'</div>';
+					html += '<div class="slide_extra_html">'+slide.slide_extra_html+'</div>';
 				}
 				html += '</div>';
 			}
-			
+		} else if (slide.mobile_slide_title || slide.mobile_slide_extra_html) {
+			html += '<div class="mobile_content_container">';
+			if (slide.mobile_slide_title) {
+				html += '<div class="mobile_slide_title">'+slide.slide_title+'</div>';
+			}
+			if (slide.mobile_slide_extra_html) {
+				html += '<div class="mobile_slide_extra_html">'+slide.slide_extra_html+'</div>';
+			}
+			html += '</div>';
 		}
 		html += '</div></div>';
 		count++;
 	});
 	html += '</div>'
-	if (arrow_buttons && (!mobileImages || (screenWidth >= screenLimit))) {
-		html += '<span u="arrowleft" class="arrowl"></span>\
-				 <span u="arrowright" class="arrowr"></span>';
-	}
-	if (navigation_style == 'bullet_navigator' && (!mobileImages || (screenWidth >= screenLimit))) {
-		html += '<div u="navigator" class="bullet">\
-					 <div u="prototype"></div>\
-				 </div>';
-	} else if (navigation_style == 'thumbnail_navigator' && (!mobileImages || (screenWidth >= screenLimit))) {
-		html += '<div u="thumbnavigator" class="tab">\
-					<div u="slides" style="cursor: move;">\
-						<div u="prototype">\
-							<thumbnailtemplate></thumbnailtemplate>\
+	
+	if (!mobileMode) {
+		if (settings.enable_arrow_buttons) {
+			html += '<span u="arrowleft" class="arrowl"></span>\
+					 <span u="arrowright" class="arrowr"></span>';
+			options.$ArrowNavigatorOptions = {
+				$Class: $JssorArrowNavigator$,
+				$ChanceToShow: 2
+			}
+		}
+		if (settings.navigation_style == 'bullet_navigator') {
+			html += '<div u="navigator" class="bullet">\
+						 <div u="prototype"></div>\
+					 </div>';
+			options.$BulletNavigatorOptions = {
+				$Class: $JssorBulletNavigator$,
+				$ChanceToShow: 2
+			};
+		} else if (settings.navigation_style == 'thumbnail_navigator') {
+			html += '<div u="thumbnavigator" class="tab">\
+						<div u="slides" style="cursor: move;">\
+							<div u="prototype">\
+								<thumbnailtemplate></thumbnailtemplate>\
+							</div>\
 						</div>\
-					</div>\
-				</div>';
+					</div>';
+			options.$ThumbnailNavigatorOptions = {
+				$Class: $JssorThumbnailNavigator$,
+				$ChanceToShow: 2
+			};
+		}
 	}
 	html += '</div>';
-	$('#slideshow_outer_'+instanceId).html(html);
 	
-	// Get the transition to use
-	var slideshowTransition = zenario_slideshow_2.getTransition(fx);
-    var options = { 
-    	$AutoPlay: auto_play,
-    	$FillMode: 4,
-    	$AutoPlayInterval: parseInt(slide_duration),
-    	$SlideDuration: 500,
-    	$PauseOnHover: hover_to_pause,
-    	$ArrowKeyNavigation: false,
-    	$SlideSpacing: 0,
-    	$PlayOrientation: 1,
-    	$DragOrientation: 1,
-    	$SlideshowOptions: {
-    		$Class: $JssorSlideshowRunner$,
-    		$Transitions: slideshowTransition
-    	}
-    	
-    };
+	// Set HTML
+	$('#slideshow_outer_'+instanceId).html(html);
     
-    if (!enable_swipe) {
-    	options.$DragOrientation = 0;
-    }
-    
-    if (arrow_buttons){
-    	options.$ArrowNavigatorOptions = {
-			$Class: $JssorArrowNavigator$,
-			$ChanceToShow: 2
-		}
-    }
-    if (navigation_style == 'bullet_navigator') {
-    	options.$BulletNavigatorOptions = {
-    		$Class: $JssorBulletNavigator$,
-            $ChanceToShow: 2
-    	};
-    }
-    if (navigation_style == 'thumbnail_navigator') {
-    	options.$ThumbnailNavigatorOptions = {
-    		$Class: $JssorThumbnailNavigator$,
-            $ChanceToShow: 2
-    	};
-    }
-    
-    var _CaptionTransitions = {};
-    for (slide_id in slide_caption_transitions) {
-    	
-    	if (slide_caption_transitions[slide_id].title) {
-    		_CaptionTransitions['slide_title_transition_'+ slide_id] = eval('('+slide_caption_transitions[slide_id].title+')');
-    	}
-    	if (slide_caption_transitions[slide_id].extra_html) {
-    		_CaptionTransitions['slide_extra_html_transition_'+ slide_id] = eval('('+slide_caption_transitions[slide_id].extra_html+')');
-    	}
-    }
-    
+    // Set slideshow caption transitions
     options.$CaptionSliderOptions = {
     	$Class: $JssorCaptionSlider$,
 		$CaptionTransitions: _CaptionTransitions,
 		$PlayInMode: 1,
 		$PlayOutMode: 3
     };
+    
     $('#slider1_container_'+instanceId).css({'visibility': 'visible'});
+    // Declare slideshow
     var jssor_slider1 = new $JssorSlider$('slider1_container_'+instanceId, options);
+    
+    // Responsive code
+    if (settings.mobile_options == 'desktop_resize') {
+    	ScaleSlider = function() {
+			var bodyWidth = $(window).width();
+			var resizeWidth = 0;
+			if (settings.desktop_resize_greater_than_image) {
+				resizeWidth = bodyWidth;
+			} else {
+				resizeWidth = Math.min(bodyWidth, parseInt(width));
+			}
+			if (resizeWidth) {
+				jssor_slider1.$SetScaleWidth(resizeWidth);
+			} else {
+				window.setTimeout(ScaleSlider, 30);
+			}
+		}
+		ScaleSlider();
+		if (!navigator.userAgent.match(/(iPhone|iPod|iPad|BlackBerry|IEMobile)/)) {
+			$(window).bind('resize', ScaleSlider);
+		}
+    }
 };
 
 var waitForFinalEvent = (function() {

@@ -170,7 +170,6 @@ class zenario_banner extends module_base_class {
 			}
 		}
 		
-
 		
 		$pictureCID = $pictureCType = $width = $height = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
 		$this->mergeFields['Image_Style'] = '';
@@ -262,7 +261,9 @@ class zenario_banner extends module_base_class {
 				$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
 				
 				if (!$this->isVersionControlled) {
-					$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+					if ($this->setting('translate_text')) {
+						$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+					}
 				} else {
 					if ($this->editing) {
 						// To display the title in edit mode if the title is blank, it's set to a space
@@ -277,7 +278,9 @@ class zenario_banner extends module_base_class {
 				$this->mergeFields['Text'] = $this->setting('text');
 				
 				if (!$this->isVersionControlled) {
-					$this->replacePhraseCodesInString($this->mergeFields['Text']);
+					if ($this->setting('translate_text')) {
+						$this->replacePhraseCodesInString($this->mergeFields['Text']);
+					}
 				} else {
 					if ($this->editing) {
 						$this->mergeFields['Text'] =
@@ -295,7 +298,9 @@ class zenario_banner extends module_base_class {
 				$this->mergeFields['More_Link_Text'] = htmlspecialchars($this->setting('more_link_text'));
 				
 				if (!$this->isVersionControlled) {
-					$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
+					if ($this->setting('translate_text')) {
+						$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
+					}
 				}
 			}
 			

@@ -94,11 +94,8 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			$values['dates/modified_date'] = $user['modified_date'];
 			$values['dates/suspended_date'] = $user['suspended_date'];
 			
-			if ($user['status'] == 'contact' && !empty($user['email'])) {
-				$box['title'] = adminPhrase('Editing the user "[[email]]"', $user);
-			} else {
-				$box['title'] = adminPhrase('Editing the user "[[screen_name]]"', $user);
-			}
+			
+			$box['title'] = adminPhrase('Editing the user "[[identifier]]"', $user);
 			
 		} else {
 			exitIfNotCheckPriv('_PRIV_CREATE_USER');
@@ -143,14 +140,6 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			
 			if (!($values['details/email'] || $values['details/first_name'] || $values['details/last_name'])) {
 				$box['tabs']['details']['errors'][] = adminPhrase('Please enter an email, a first name or a last name.');
-			}
-			
-			if (setting('user_use_screen_name')
-			 && $values['details/status']
-			 && $values['details/status'] != 'contact') {
-				if (!$values['details/screen_name']) {
-					$box['tabs']['details']['errors'][] = adminPhrase('Please enter a screen name.');
-				}
 			}
 			
 			//Call the isInvalidUser() function to get any errors in the submission

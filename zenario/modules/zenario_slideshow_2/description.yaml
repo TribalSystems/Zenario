@@ -7,7 +7,15 @@ start_running_on_install: true
 license_info: Modified BSD License
 display_name: Slideshow 2
 description: |
-            <p>This Module allows you to create a Slideshow of Banners with images and/or text with links.</p>
+            <p>
+                This Module allows you to create a Slideshow of images with text and links.
+            </p><p>
+                Using the slideshow's interface, you can add new images from your computer or the shared images area for your website. Slides can be moved up or down or just dragged around to change the order. Each images alt tag can be changed, and a title and description set. Slides can be set to only be visible to logged-in users, users with a certain dataset field checked, or anonymous visitors. A slide can also be disabled completely without being deleted. A link can be set for the entire slide which can be to an external URL or a content item.
+            </p><p>
+                A slide can have multiple images associated with it. A rollover image can be set as well as an image for a mobile version of the site.
+            </p><p>
+                The plugin properties of a slideshow contain settings that effect the entire slideshow. Slides can be constrained by width, height or cropped, the transition and transition duration can be changed and a navigation style can be chosen. Other options let the user enable arrow buttons, let the slideshow play automatically, allow the user to drag or swipe the slides manually and hover to pause the slideshow.
+            </p>
             <p><b>Styling arrow buttons</b></p>
             <ul>
             <li>.arrow<b>l</b> + .arrow<b>r</b> -- normal</li>
@@ -25,13 +33,14 @@ description: |
             <li>.tab .pav -- active</li>
             <li>.tab .pdn -- mousedown</li>
             </ul>
+category: pluggable
 keywords: >
     masthead, callout, call-out, document, download, image,
     picture, gif, jpg, jpeg, png, link, hyperlink, url
 vlp_class_name: zenario_slideshow_2
 css_class_name: zenario_slideshow_2
-is_pluggable: true
-can_be_version_controlled: true
+is_pluggable: Yes
+can_be_version_controlled: Yes
 default_framework: standard
 default_instance_name: Untitled Slideshow
 signals:

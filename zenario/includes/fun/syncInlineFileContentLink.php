@@ -113,4 +113,5 @@ syncInlineFiles(
 		'foreign_key_version' => $cVersion));
 
 //Update the Content in the cache table
-setRow('content_cache', array('text' => trim(strip_tags($content))), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+$text = trim(strip_tags($content));
+setRow('content_cache', array('text' => $text, 'text_wordcount' => str_word_count($text)), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));

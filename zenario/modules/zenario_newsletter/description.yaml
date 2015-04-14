@@ -7,7 +7,7 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Newsletter
 description: |
-    <p>Design and send HTML Newsletters to your customers.</p>
+            <p>Design and send HTML Newsletters to your customers.</p>
             <p>You can create an HTML formatted newsletter using the usual zenario WYSIWYG editor.</p>
             <p>You can choose from a number of pre-formatted emails (you'll find these in your Email Templates), or design your own.
                 You can embed hyperlinks and images in your Newsletters.</p>
@@ -29,6 +29,7 @@ description: |
             <p>Unsubscribe functionality is built in, so that recipients can opt out of a given Group of recipients,
                 or can opt to be removed entirely from the database. Also included are merge fields for the recipient's salutation, first and last name,
                 so that each email can be personalized to your taste.</p>
+category: management
 is_pluggable: No
 dependencies:
     zenario_email_template_manager: true

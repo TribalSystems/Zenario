@@ -1,0 +1,137 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__form_input_handler:
+    form_submissions:
+        panel:
+            title: Form Submissions
+            view_mode: list
+            db_items:
+                table: '[[DB_NAME_PREFIX]][[ZENARIO_FORM_INPUT_HANDLER_PREFIX]]form_submissions AS s'
+                id_column: s.id
+            default_sort_column: submission_datetime
+            default_sort_desc: Yes
+            columns:
+                submission_id:
+                    title: Submission ID
+                    db_column: s.id
+                    show_by_default: Yes
+                    searchable: Yes
+                submission_datetime:
+                    title: Submission Date
+                    db_column: s.submission_datetime
+                    show_by_default: Yes
+                    format: datetime
+                    searchable: Yes
+                submission_by_user:
+                    title: Submitted by
+                    db_column: "IFNULL(U.screen_name, IFNULL(U.email,'Anonymous user'))"
+                    table_join: '[[DB_NAME_PREFIX]]users AS U on s.user_id=U.id'
+                    show_by_default: Yes
+                    searchable: Yes
+                submission_ip_address:
+                    title: Ip Address
+                    db_column: ip_address
+                    show_by_default: Yes
+                    searchable: Yes
+                form_instance_name:
+                    title: Plugin
+                    db_column: plugin_instance_name
+                    show_by_default: Yes
+                    searchable: Yes
+                zenario_form_input_handler__sf_1:
+                    title: Special Field 1
+                    db_column: "1"
+                    disallow_sorting: Yes
+                    show_by_default: Yes
+                zenario_form_input_handler__sf_2:
+                    title: Special Field 2
+                    db_column: "1"
+                    disallow_sorting: Yes
+                    show_by_default: Yes
+                zenario_form_input_handler__sf_3:
+                    title: Special Field 3
+                    db_column: "1"
+                    disallow_sorting: Yes
+                    show_by_default: Yes
+                zenario_form_input_handler__sf_4:
+                    title: Special Field 4
+                    db_column: "1"
+                    disallow_sorting: Yes
+                    show_by_default: Yes
+                zenario_form_input_handler__sf_5:
+                    title: Special Field 5
+                    db_column: "1"
+                    disallow_sorting: Yes
+                    show_by_default: Yes
+            item:
+                css_class: zenario_form_input_handler_form_submission
+            refiners:
+                content_item_filter:
+                    sql: |
+                        CONCAT(s.content_type,'_',s.content_id)=[[REFINER_ID]]
+                user_filter:
+                    sql: |
+                        s.user_id = [[REFINER_ID]]
+            collection_buttons:
+                export:
+                    css_class: export
+                    label: Export all form submissions to a CSV file
+                    ajax:
+                        confirm:
+                            message: >
+                                This tool allows you to download data from all form submissions as CSV.
+                            message_type: warning
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            download: true
+                        request:
+                            export_all_data: 1
+            item_buttons:
+                submission_details:
+                    priv: _PRIV_VIEW_USER
+                    ord: "1"
+                    css_class: view_content
+                    label: View
+                    multiple_select: No
+                    admin_box:
+                        path: zenario_form_input_handler__view_email_submission
+                email_submission:
+                    priv: _PRIV_VIEW_USER
+                    css_class: zenario_form_input_handler__email_submission
+                    label: Send by email
+                    multiple_select: Yes
+                    admin_box:
+                        path: zenario_form_input_handler__email_submission
+                delete_submission:
+                    priv: _PRIV_DELETE_FORM_SUBMISSION
+                    css_class: delete
+                    multiple_select: Yes
+                    label: Delete
+                    multiple_select_tooltip: Delete the selected form submissions
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the form submission with the Submission ID "[[submission_id]]"?'
+                            multiple_select_message: >
+                                Are you sure you wish to delete the selected form
+                                submissions?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: delete_form_submission
+                export_selected_data:
+                    priv: _PRIV_VIEW_USER
+                    label: Export to a CSV file
+                    tooltip: Download this submission as csv
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: >
+                                This tool allows you to download data from the selected form submissions as CSV.
+                            message_type: warning
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            download: true
+                        request:
+                            export_selected_data: 1
+                            

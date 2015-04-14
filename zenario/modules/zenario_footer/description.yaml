@@ -16,6 +16,7 @@ description: |
             <p>This Module supports multiple Menu Sections if you have Zenario Pro.
                 For example, instead of the "Footer" Section you could have Footer Pro display from a different Section which you create,
                 such as "Corporate".</p>
+category: pluggable
 keywords: footer, menu, navigation
 css_class_name: zenario_footer
 is_pluggable: Yes

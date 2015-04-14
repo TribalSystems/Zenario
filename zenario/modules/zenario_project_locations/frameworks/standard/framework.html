@@ -1,0 +1,89 @@
+<div class="zenario_project_plocations_search">
+	<h1>Project Locations</h1>
+	<div class="project_plocations_search_criteria">
+		[cms:merge name="Open_Form"/]
+		<h2>[cms:phrase code="_PANEL_INTRO"/]</h2>
+
+		[cms:phrase code="_CHOOSE_COUNTRY:"/] [cms:input type="select" class="input_select"
+		name="country_id" source_method="getCountryOptions"
+		onchange="this.form.region_id &&
+		(this.form.region_id.value=0);this.form.doSearch.click()" /]
+
+		[cms:section name='HasRegions'] [cms:phrase code="_CHOOSE_REGION:"/] [cms:input type="select"
+		class="input_select" name="region_id" source_method="getRegionOptions"
+		onchange="this.form.doSearch.click()" /] [/cms:section] 
+
+		[cms:phrase code="_CHOOSE_SERVICE:"/]
+		[cms:input type="select" class="input_select" name="service_id"
+		source_method="getServicesOptions"
+		onchange="this.form.doSearch.click()" /] [cms:phrase code="_CHOOSE_SECTOR:"/] [cms:input
+		type="select" class="input_select" name="sector_id"
+		source_method="getSectorsOptions"
+		onchange="this.form.doSearch.click()" /]
+		<div class="form_button">
+			<div class="nice_btn">
+				<div class="r">
+					<input type="submit" class="i" name="doSearch" value="Search" />
+				</div>
+			</div>
+		</div>
+		[cms:merge name="Close_Form"/]
+	</div>
+	<div class="project_plocations_search_results">
+		<p>Choose the search criteria: by location, by service or by
+			sector.</p>
+		<div id="project_list" class="search_results_list">
+			[cms:section name='HasResults']
+			<div class="project_search_results_tabs">
+				<ul>
+					<li class="tab_on">[cms:phrase code="_TAB_RESULTS_MAP"/]</li>
+					<!--<li class="tab_map" onclick="showPanel('project_map','project_list');">Results by map</li>-->
+					<li class="tab_map">[cms:phrase code="_TAB_RESULTS_LISTING"/]</li>
+				</ul>
+			</div>
+			<div class="project_search_results_panel">
+				<div id="map_canvas" style="width: 600px; height: 400px;"></div>
+			</div>
+			[/cms:section] [cms:section name='No_Rows']
+			<div class="project_search_results_panel">[cms:phrase code="_NO_PROJECTS_FOUND"/]</div>
+			[/cms:section]
+		</div>
+		<div id="project_map" class="search_results_map">
+			<div class="project_search_results_tabs">
+				<ul>
+					<!--<li class="tab_list" onclick="showPanel('project_list','project_map');">Results by listing</li>-->
+					<li class="tab_list">[cms:phrase code="_TAB_RESULTS_MAP"/]</li>
+					<li class="tab_on">[cms:phrase code="_TAB_RESULTS_LISTING"/]</li>
+				</ul>
+			</div>
+                        <!--ListResults-start-->
+			<div class="project_search_results_panel" id="project_search_results_only_list">
+				<div class="project_search_results_listing">
+					[cms:section name='Results']
+					<div id="[cms:merge name='html_id'/]" class="project_result_item">
+						<h3>
+							    [cms:merge name='location'/]
+						</h3>
+						<h4>[cms:merge name='client_name'/]</h4>
+						<div class="content">[cms:merge
+							name='Sticky_image_HTML_tag'/] [cms:merge
+							name='content_summary'/]</div>
+					</div>
+					[/cms:section]
+				</div>
+				[cms:merge name="Pagination"/]
+			</div>
+                        <!--ListResults-end-->
+		</div>
+	</div>
+</div>
+
+<div id="map-info-window-template" style="display:none;">
+<div class="project_result_item">
+<h3>
+{{location}}
+</h3>
+<h4>{{client_name}}</h4>
+<div class="content">{{Sticky_image_HTML_tag}} {{content_summary}}</div>
+</div>
+</div>

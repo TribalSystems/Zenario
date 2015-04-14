@@ -17,7 +17,7 @@ zenario_setup_language:
                     maxlength: "100"
                     validation:
                         required: Please enter an English name.
-                    note_below: >
+                    side_note: >
                         The name of the language in English. This will be displayed
                         in the CMS to Administrators.
                 language_local_name:
@@ -26,7 +26,7 @@ zenario_setup_language:
                     maxlength: "100"
                     validation:
                         required: Please enter a local name.
-                    note_below: >
+                    side_note: >
                         The name of the language, in its local tongue. This will be
                         displayed to visitors.
                 flag_filename:
@@ -37,7 +37,7 @@ zenario_setup_language:
                         width: 6em;
                     pre_field_html: >
                         lang_
-                    note_below: |
+                    side_note: |
                         Any Language Pickers on your site will use this CSS class name when they wish to show a flag.
                     validation:
                         required: Please enter a class name
@@ -45,14 +45,14 @@ zenario_setup_language:
                     type: checkbox
                     label: 'Use browser language detection:'
                     redraw_onchange: Yes
-                    note_below: |
+                    side_note: |
                         The CMS will redirect a visitor to the home page of this language based on the
                         language requested by their browser.
                 detect_lang_codes:
                     type: text
                     maxlength: "100"
                     label: 'Detected language codes:'
-                    note_below: |
+                    side_note: |
                         When a visitor accesses the site without a specific page set in their URL,
                         they will be directed to the home page of this language if their requested
                         language matches one of the language codes listed here (comparison is case-insensitive).
@@ -61,7 +61,7 @@ zenario_setup_language:
                 translate_phrases:
                     type: checkbox
                     label: 'Translate phrases:'
-                    note_below: |
+                    side_note: |
                         If a phrase that does not start with an underscore is found in a
                         plugin setting or Twig framework and this option is checked,
                         it will search for a translation in the database.
@@ -72,6 +72,10 @@ zenario_setup_language:
                     label: 'Search algorithm:'
                     type: radios
                     values:
-                        full_text: Use MySQL full-text search
-                        simple: Use "LIKE" in searches
+                        full_text:
+                            label: Use MySQL full-text search
+                            note_below: Use individual words to search, e.g. a search for "van" will not match "caravan"
+                        simple:
+                            label: Use "LIKE" in searches
+                            note_below: Search for anything containing the search term, e.g. a search for "van" would match "caravan"
                     value: full_text

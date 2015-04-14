@@ -73,6 +73,7 @@ description: |
                 Administration of your site can be made more secure by using a site setting to force administrators
                 to log in to your site using SSL.
             </p>
+category: core
 dependencies:
     zenario_common_features: true
     zenario_email_template_manager: true

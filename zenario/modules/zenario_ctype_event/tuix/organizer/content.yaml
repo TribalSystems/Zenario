@@ -1,0 +1,48 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            columns:
+                zenario_ctype_event__start_date:
+                    php: Yes
+                    title: 'Event: Start Date'
+                    db_column: zenario_ctype_event__ce.start_date
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                                                ON v.id = zenario_ctype_event__ce.id
+                                                AND v.version = zenario_ctype_event__ce.version
+                                                AND v.type = 'event'
+                    format: date
+                    show_by_default: Yes
+                zenario_ctype_event__start_time:
+                    php: Yes
+                    title: 'Event: Start Time'
+                    db_column: zenario_ctype_event__ce.start_time
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                                                ON v.id = zenario_ctype_event__ce.id
+                                                AND v.version = zenario_ctype_event__ce.version
+                                                AND v.type = 'event'
+                    show_by_default: No
+                zenario_ctype_event__end_date:
+                    php: Yes
+                    title: 'Event: End Date'
+                    db_column: zenario_ctype_event__ce.end_date
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                                                ON v.id = zenario_ctype_event__ce.id
+                                                AND v.version = zenario_ctype_event__ce.version
+                                                AND v.type = 'event'
+                    format: date
+                    show_by_default: Yes
+                zenario_ctype_event__end_time:
+                    php: Yes
+                    title: 'Event: End Time'
+                    db_column: zenario_ctype_event__ce.end_time
+                    table_join: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_CTYPE_EVENT_PREFIX]]content_event AS zenario_ctype_event__ce
+                                                ON v.id = zenario_ctype_event__ce.id
+                                                AND v.version = zenario_ctype_event__ce.version
+                                                AND v.type = 'event'
+                    show_by_default: No

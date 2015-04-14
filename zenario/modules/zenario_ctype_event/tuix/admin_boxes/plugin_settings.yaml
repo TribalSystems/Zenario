@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Event
+            fields:
+                show_details_and_link:
+                    label: 'Show Event details from:'
+                    type: radios
+                    plugin_setting:
+                        name: show_details_and_link
+                    values:
+                        current_content_item:
+                            ord: "1"
+                            label: Current Content Item (this must be an Event Content Item)
+                        another_content_item:
+                            ord: "2"
+                            label: Another Event Content Item
+                    value: current_content_item
+                    format_onchange: Yes
+                another_event:
+                    label: 'Select Event Content Item:'
+                    plugin_setting:
+                        name: another_event
+                        foreign_key_to: content
+                    pick_items:
+                        path: zenario__content/panels/content_types/item_buttons/view_content//event//
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        select_phrase: Select Content Item...
+                    validation:
+                        required_if_not_hidden: Please select Content Item.
+    module_class_name: zenario_ctype_event

@@ -135,7 +135,7 @@ plugin_settings:
                     side_note: >
                         Generate from right to left. Use this option for easier float-right styling.
         author_advice:
-            visible_if: '!zenarioAB.focus.key.isVersionControlled && !zenarioAB.focus.key.nest'
+            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.nest'
             label: Author advice
             fields:
                 author_advice:

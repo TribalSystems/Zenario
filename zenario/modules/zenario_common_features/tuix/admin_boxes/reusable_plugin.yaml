@@ -12,7 +12,7 @@ zenario_reusable_plugin:
                     full_width: true
                     snippet: 
                         html: Use this screen to create a copy of this plugin.
-                    visible_if: zenarioAB.focus.key.duplicate
+                    visible_if: zenarioAB.tuix.key.duplicate
                 name: 
                     label: "Plugin name:"
                     type: text

@@ -96,6 +96,9 @@ function primaryDomain() {
 	} elseif (!empty($_SERVER['HTTP_HOST'])) {
 		return $_SERVER['HTTP_HOST'];
 	
+	} elseif (setting('last_primary_domain')) {
+		return setting('last_primary_domain');
+	
 	} else {
 		return false;
 	}

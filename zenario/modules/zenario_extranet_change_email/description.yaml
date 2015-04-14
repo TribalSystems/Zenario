@@ -20,6 +20,7 @@ description: |
                 <li>[[email_confirmation_link]] - The confirmation link to activate email address change.</li>
             </ul>
             <p>Additionally the following User data fields can be used: [[screen_name]], [[password]], [[status]], [[last_login]], [[title]], [[first_name]], [[middle_name]], [[maiden_name]], [[last_name]], [[birth_date]], [[email]], [[email_verified]], [[alt_email]], [[website]], [[job_title]], [[company_name]], [[bus_address1]], [[bus_address2]], [[bus_address3]], [[bus_town]], [[bus_state]], [[bus_postcode]], [[bus_country_id]], [[res_address1]], [[res_address2]], [[res_address3]], [[res_town]], [[res_state]], [[res_postcode]], [[res_country_id]], [[address_pref]], [[mobile]], [[bus_phone]], [[res_phone]], [[fax]], [[created_date]].</p>
+category: pluggable
 keywords: address, change, email, extranet, user
 vlp_class_name: zenario_extranet_change_email
 css_class_name: zenario_extranet_change_email

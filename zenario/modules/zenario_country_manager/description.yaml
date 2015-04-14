@@ -30,6 +30,7 @@ description: |
                 another Module can make a static method call from its framework to obtain a list of
                 Countries or Regions, for example in a form in which a visitor should select his country and/or region.
             </p>
+category: management
 keywords: country, county, location, place, region, state, world
 vlp_class_name: zenario_country_manager
 is_pluggable: No

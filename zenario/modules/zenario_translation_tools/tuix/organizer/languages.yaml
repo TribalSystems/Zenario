@@ -1,0 +1,11 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__languages:
+    panels:
+        languages:
+            columns:
+                zenario_translation_tools__sync_assist:
+                    title: Synchronization Assistance
+                    db_column: l.sync_assist
+                    format: yes_or_no
+                    show_by_default: No

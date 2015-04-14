@@ -5,6 +5,7 @@ zenario__content:
         inline_images_for_reusable_plugins:
             key:
                 usage: inline
+            panel_type: grid_or_list
             enable_close_up_view: Yes
             title: Images used in plugins from the library
             no_items_message: There are no images used in plugins from the library.

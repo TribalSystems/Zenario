@@ -27,14 +27,22 @@ zenario__menu:
                       AND mi.content_type = c.type
                       AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mp.tag
-                hierarchy_column: mp.parent_tag
                 client_side: Yes
+            
+            panel_type: hierarchy_with_lazy_load
             reorder:
                 column: order_by
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
+            
+            hierarchy:
+                column: parent_id
+                db_column: mp.parent_tag
+            
             disable_periodic_refresh: Yes
             columns:
+                parent_id:
+                    db_column: mp.parent_tag
                 order_by:
                     db_column: IF (mp.is_dummy_child = 1, '~~~~~~~~~', IFNULL(mi.ordinal, ms.section_name))
                 menu_id:

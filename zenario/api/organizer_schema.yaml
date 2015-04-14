@@ -10,7 +10,6 @@ pages:
     - combine_items
     - confirm
     - db_items
-    - do_csv_export
     - format
     - hidden_nav
     - item
@@ -193,26 +192,17 @@ additionalProperties:
                             A different title to display when in select mode with multiple selection enabled.
                         default: (defaults to the select_mode_title property)
                     
-                    view_mode:
-                        enum:
-                            - grid
-                            - list
+                    panel_type:
+                        type: string
+                        static: true
+                        preFillOrganizerPanel: true
                         description: >
-                            The default view mode for this panel.
-                    
-                            This must <strong>not</strong> be a mode that you've disabled.
-                    
-                            This will be ignored if hierarchy view is enabled.
+                            The panel type to use for this panel.
+                            
+                            You must set this property by writing it in your TUIX files.
+                            You cannot define or modify it in your fillOrganizerPanel()
+                            or preFillOrganizerPanel() methods.
                         default: list
-                    
-                    disable_grid_view:
-                        type: boolean
-                        description: >
-                            Set this property to disable grid view.
-                    disable_list_view:
-                        type: boolean
-                        description: >
-                            Set this property to disable list view.
                     
                     slidedown_view_microtemplate:
                         type: string
@@ -260,21 +250,6 @@ additionalProperties:
                                     Note that while the *encoding* will be automatic, the *decoding* is not, and
                                     you'll still need to call decodeItemIdForStorekeeper() manually in the
                                     appropriate places.
-                            hierarchy_column:
-                                type: string
-                                static: true
-                                preFillOrganizerPanel: true
-                                description: >
-                                    This is used for hierarchy view. You can define the column that should be used
-                                    for the parent-child relationships.
-                            
-                                    The column named in <code>hierarchy_column</code> should specify the parent id. If it is
-                                    zero or empty then an item will be a top-level item.
-                                    If the specified parent does not exist in the data then an item will also be
-                                    considered to be a top-level item.
-                            
-                                    Setting this property will completely disable grid and list view. Instead
-                                    Organizer will show in hierarchy view.
                             group_by:
                                 type: string
                                 static: true
@@ -781,12 +756,12 @@ additionalProperties:
                                         Note that if you don't include a http:// in your URL then it will be
                                         automatically prefixed by the URLBasePath.
                                 
-                                disable_reorder:
-                                    type: boolean
-                                    description: >
-                                        New in version 7.0.0
-                                        Setting this for an item will stop an administrator reordering it in
-                                        hierarchy mode.
+                                #disable_reorder:
+                                #    type: boolean
+                                #    description: >
+                                #        New in version 7.0.0
+                                #        Setting this for an item will stop an administrator reordering it in
+                                #        hierarchy mode.
                                 
                                 frontend_link:
                                     type: string
@@ -918,9 +893,6 @@ additionalProperties:
                                 -
                                     required:
                                         - ajax
-                                -
-                                    required:
-                                        - do_csv_export
                                 -
                                     required:
                                         - admin_box
@@ -1105,11 +1077,6 @@ additionalProperties:
                                         
                                                 These will be in the $_GET when seeking confirmation, and in the $_POST
                                                 when performing the action.
-                                do_csv_export:
-                                    type: boolean
-                                    description: >
-                                        Deprecated functionality.
-                                
                                 admin_box: &admin_box
                                     type: object
                                     description: >
@@ -1729,34 +1696,50 @@ additionalProperties:
                                 static: true
                                 description: >
                                     The codename/property name of a column from <code>columns</code> that defines the ordinal.
-                            hierarchy_view_mode:
-                                enum:
-                                    - parent_ids
-                                    - parent_ids_and_ordinals
+                        
+                        description: >
+                            Setting this object enables reordering in the list, hierarchy and hierarchy_with_lazy_load
+                            panel types.
+                    
+                    hierarchy:
+                        type: object
+                        properties:
+                            column:
+                                type: string
+                                static: true
                                 description: >
-                                    If you are using hierarchy view and wish to enable the reorder functionality,
-                                    you must set this property to one of two possible options:
-                                
-                                    • parent_ids lets an Admin change the parent/child relationship between items by dragging them around.
-                                
-                                    • parent_ids_and_ordinals lets an Admin change the parent/child relationship between items and their ordinals
-                                    by dragging them around. The <code>column</code> property must be set to use this option.
-                            hierarchy_depth:
+                                    The codename/property name of a column from <code>columns</code> that defines
+                                    the parent_id.
+                                    
+                                    Defaults to "parent_id" if not set.
+                            
+                            #Note: This used to be reorder.hierarchy_column
+                            db_column:
+                                type: string
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    A column in the database (or a SQL expression) that should specify the parent id.
+                                    If it is zero or empty then an item will be a top-level item.
+                                    
+                                    You do not need to provide this property if you plan to populate the items in
+                                    PHP rather than MySQL.
+                                    
+                                    If you've already defined the SQL under db_items then you don't have to repeat it
+                                    here and can ommit this property.
+                            
+                            #Note: This used to be reorder.hierarchy_depth
+                            max_depth:
                                 type: number
                                 default: 99
                                 description: >
-                                    New in version 7.0.0
-                                    The maximum depth to use in hierachy mode
-                            lazy_load:
-                                type: boolean
-                                static: true
-                                description: >
-                                    New in version 7.0.0
-                                    For hierarchy mode, only load things that are visible.
-                                    Note that every time a new section is opened, this will trigger an AJAX request to reload the panel.
+                                    The maximum depth to use in hierachy mode.
                         
                         description: >
-                            This lets admins rearrange items in Organizer by dragging them around.
+                            New in version 7.0.4.
+                            
+                            This object lets you define a few options that are used the the hierarchy panel type,
+                            and with the hierarchy_with_lazy_load panel type.
                     
                     key:
                         description: >

@@ -149,12 +149,29 @@
 #zenario_fbAdminFloatingBox,
 #zenario_fbAdminImageManager {
     /*height: 96%;*/
-    background:#333;
     padding:2px;
+}
+
+#zenario_fbAdminImageManager {
+    background:#333;
+}
+
+#zenario_fbAdminFloatingBox {
+	background:url("../admin/images/popup-panel-top-lines.png") no-repeat center top #333;
 }
 
 #zenario_fbAdminFloatingBox .zenario_jqmHead {
 	/*margin:20px 15px 20px 10px;*/
+	padding-top:20px;
+	cursor:move;
+}
+
+#zenario_fbAdminFloatingBox .zenario_jqmHead .zenario_jqmClose {
+	cursor:pointer;
+}
+
+#zenario_fbAdminFloatingBox .zenario_jqmHead .zenario_jqmTitle {
+	cursor:auto;
 }
 
 #zenario_fbAdminImageManager_ImageChanger {
@@ -169,7 +186,8 @@
 #zenario_fbAdminFloatingBox .zenario_jqmHead .zenario_jqmClose,
 #zenario_fbAdminInfoBox .zenario_infoBoxHead .zenario_jqmClose,
 #zenario_fbAdminImageManager .zenario_close_image_manager,
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box {
 	display:block;
 	text-indent:-999;
 	font-size:0;
@@ -191,7 +209,8 @@
 
 #zenario_fbAdminInfoBox .zenario_infoBoxHead .zenario_jqmClose,
 #zenario_fbAdminImageManager .zenario_close_image_manager,
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box {
 	width:28px;
 	height:28px;
 	margin-top:6px;
@@ -206,12 +225,14 @@
 }
 
 #zenario_fbAdminImageManager .zenario_close_image_manager,
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box {
 	background-position:-160px -211px;
 }
 
 #zenario_fbAdminImageManager .zenario_close_image_manager:hover,
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer:hover {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer:hover,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box:hover {
 	background-position:-210px -211px;
 }
 
@@ -229,7 +250,8 @@
 	background:#fff;
 	border:1px solid #BABABA;
 	padding:8px;
-	margin:20px 65px 20px 10px;
+	/*margin:20px 65px 20px 10px;*/
+	margin:0 65px 20px 10px;
 }
 
 #zenario_fbAdminFloatingBox .zenario_jqmHead .zenario_jqmTitle #zenario_jqmTitle {
@@ -308,6 +330,10 @@
 #zenario_fbAdminInfoBox .zenario_infoBoxHead {
 	height:41px;
 	cursor:move;
+}
+
+#zenario_fbAdminInfoBox .zenario_infoBoxHead .zenario_jqmClose {
+	cursor:pointer;
 }
 
 #zenario_fbAdminInfoBox .zenario_infoBoxHead p {
@@ -452,7 +478,9 @@
 #zenario_fbAdminInner .submit,
 #zenario_fbAdminInner .submit_selected,
 #zenario_fbAdminInner .submit_disabled,
-#zenario_fbAdminInner .launch_keeper {
+#zenario_fbAdminInner .launch_keeper,
+#zenario_fbAdminInner .launch_keeper,
+#zenario_fbAdminInner .zenario_ab__zenario_import .input_submit {
 	color: #FFFFFF;
 	text-shadow:0 1px 1px #000;
 	padding: 2px 10px 3px;
@@ -469,7 +497,8 @@
 
 .zenario_fbAdmin .zenario_fbButtons input,
 #zenario_fbAdminInner .submit,
-#zenario_fbAdminInner .launch_keeper {
+#zenario_fbAdminInner .launch_keeper,
+#zenario_fbAdminInner .zenario_ab__zenario_import .input_submit {
 	-webkit-border-radius: 2px 3px 3px 2px/3px;
 	-moz-border-radius: 2px 3px 3px 2px/3px;
 	border-radius: 2px 3px 3px 2px/3px;
@@ -480,7 +509,8 @@
 
 .zenario_fbAdmin .zenario_fbButtons input:hover,
 #zenario_fbAdminInner .submit:hover,
-#zenario_fbAdminInner .launch_keeper:hover {
+#zenario_fbAdminInner .launch_keeper:hover,
+#zenario_fbAdminInner .zenario_ab__zenario_import .input_submit:hover {
 	background-color: #007fa3;
 	-webkit-box-shadow: 0 0 4px rgba(0,0,0,.45);
 	-moz-box-shadow: 0 0 4px rgba(0,0,0,.45);
@@ -534,6 +564,13 @@
 .zenario_fbAdmin .zenario_fbButtons input#pickable_css_class_names {
 	margin-left:5px;
 }
+
+/* Hide the save button when the zab_hide_save_button class is set on a tab  */
+
+#zenario_fbAdminFloatingBox.zab_hide_save_button #zenarioAFB_save {
+	visibility: hidden;
+}
+
 
 /*  Styles for inside the boxes  */
 
@@ -776,6 +813,16 @@
 .webkit #zenario_fbAdminInner input[readonly],
 .webkit #zenario_fbAdminInner input[readonly="readonly"] {
 	color:#6F6F6F !important;
+}
+
+#zenario_fbAdminInner input[readonly].zenario_datepicker,
+#zenario_fbAdminInner input[readonly="readonly"].zenario_datepicker,
+.webkit #zenario_fbAdminInner input[readonly].zenario_datepicker,
+.webkit #zenario_fbAdminInner input[readonly="readonly"].zenario_datepicker {
+	background: url("../admin/images/icons/calendar_small.gif") no-repeat scroll 98% 50% white !important;
+	border: 1px solid #c4c4c4 !important;
+	color: #424242 !important;
+	padding:2px;
 }
 
 #zenario_fbAdminInner input.zenario_textbox_noborder,
@@ -1740,6 +1787,36 @@ body.ie6 .zenario_now h1 {
 	top:10px;
 }
 
+/*  Styles for zenario import wizard  */
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .zenario_row_input_button a {
+	color:#007fa3;
+}
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row .div_table_column .title {
+	margin-bottom:5px;
+}
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row .div_table_column .input_text {
+	margin-top:8px !important;
+}
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row.zenario_ab_row__previous,
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row.zenario_ab_row__next {
+	width:50%;
+}
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row.zenario_ab_row__previous {
+	float:left;
+	clear:left;
+}
+
+#zenario_fbAdminInner .zenario_ab__zenario_import .div_table .div_table_row.zenario_ab_row__next {
+	float:right;
+	clear:right;
+	text-align:right;
+}
+
 /*  The CSS Class Picker  */
 
 #cboxOverlay.zenario_css_class_picker {
@@ -1804,7 +1881,8 @@ body.ie6 .zenario_now h1 {
 }
 
 #zenario_fbAdminImageManager .zenario_close_image_manager,
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer .zenario_close_image_changer,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box {
 	cursor:pointer;
 }
 
@@ -1881,6 +1959,12 @@ body.ie6 .zenario_now h1 {
     font-size: 11px;
 }
 
+#zenario_fbAdminImageManager #zenario_slide_attributes #zenario_main_image_details #zenario_show_transition_box {
+	cursor:pointer;
+	text-decoration:underline;
+	font-style:italic;
+}
+
 #zenario_fbAdminImageManager #zenario_slide_attributes #zenario_main_image_details #zenario_change_image,
 #zenario_fbAdminImageManager #zenario_slide_attributes #zenario_mobile_image_details #zenario_change_mobile_image,
 #zenario_fbAdminImageManager #zenario_slide_attributes #zenario_mobile_image_details #zenario_remove_mobile_image,
@@ -1931,13 +2015,41 @@ body.ie6 .zenario_now h1 {
 	color:#b9b9b9;
 }
 
-#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer {
+#zenario_fbAdminImageManager_ImageChanger .zenario_image_changer,
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box {
 	background:#4d4d4d;
 	border:4px solid #000;
 	font-size:11px;
 	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
 	color:#FFF;
 	padding:20px;
+}
+
+#zenario_fbAdminImageManager_TransitionCodes {
+	width:300px !important;
+}
+
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_close_transition_code_box {
+	position:absolute;
+	top:0;
+	right:5px;
+}
+
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_transition_code_wrapper {
+	overflow:hidden;
+}
+
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_transition_code_wrapper a {
+	color:#FFF;
+	text-decoration:underline;
+}
+
+#zenario_fbAdminImageManager_TransitionCodes .zenario_transition_code_box .zenario_transition_code_wrapper textarea {
+	margin-top:10px;
+	width:240px;
+	padding:5px;
+	font-family:Verdana,Tahoma,Arial,Helvetica,sans-serif;
+	font-size:12px;
 }
 
 #zenario_fbAdminImageManager #zenario_slide_settings #zenario_image_type div.current,
@@ -2551,7 +2663,6 @@ body.ie6 .zenario_now h1 {
 	background:url('../admin/images/check-minus-over.png') no-repeat center center;
 }
 
-
 /* ZAB notes
 --------------------------------------------------------------------------------------------------*/
 
@@ -2559,7 +2670,7 @@ body.ie6 .zenario_now h1 {
 #zenario_fbAdminFloatingBox.zab_zenario__pop_up_project_task_note .zenario_jqmHead .zenario_jqmTitle {
 	background:#333;
 	border:0;
-	margin:15px 40px 15px 20px;
+	margin:0 40px 15px 20px;
 	padding:0 5px;
 	color:#FFF;
 }
@@ -2619,6 +2730,13 @@ body.ie6 .zenario_now h1 {
 	color:#666 !important;
 }
 
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_note #name_for_email input[readonly="readonly"],
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_project_task_note #name_for_email input[readonly="readonly"],
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_note #name_for_email input[readonly],
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_project_task_note #name_for_email input[readonly] {
+	background:#E9E9E9 !important;
+}
+
 #row__add_note_option .zenario_input_checkbox input[type=checkbox].input_checkbox {
 	position: absolute; 
 	overflow: hidden; 
@@ -2630,13 +2748,13 @@ body.ie6 .zenario_now h1 {
 	border:0;
 }
 						
-#row__add_note_option .title label {
+#row__add_note_option label {
 	background:url('../admin/images/check-plus-off.png') no-repeat;
 	padding-left:20px;
 	cursor:pointer;
 }
 
-#row__add_note_option .title label:hover {
+#row__add_note_option label:hover {
 	background:url('../admin/images/check-plus-over.png') no-repeat;
 }
 
@@ -2649,10 +2767,12 @@ body.ie6 .zenario_now h1 {
 }
 
 .zenario_ab_row__note textarea#note {
-	width:91% !important;
+	width:96% !important;
+	width:calc(100% - 24px) !important;
 	border:2px solid #4D4D4D;
 	background:#FBF290;
-	padding:15px 30px;
+	padding:10px;
+	margin-top:5px;
 }
 
 #row__view_notes #snippet__view_notes {
@@ -2660,7 +2780,12 @@ body.ie6 .zenario_now h1 {
 	overflow:auto;
 	max-height:300px;
 	padding:10px 15px;
+	margin-top:5px;
 	background:#FBF38A;
+}
+
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_note .zenario_jqmMain #zenario_fbMain .zenario_ab_row__email .zab_picked_item_info {
+	left:-50px;
 }
 
 #row__view_notes #snippet__view_notes strong {
@@ -2698,4 +2823,9 @@ body.ie6 .zenario_now h1 {
 
 #row__view_notes #snippet__view_notes .note_workstream .notes_workstream_description {
 	padding:15px 0 0 20px;
+}
+
+#zenario_fbAdminFloatingBox.zab_zenario__pop_up_note .zenario_input_checkbox {
+	display:inline-block !important;
+	padding-bottom:5px;
 }

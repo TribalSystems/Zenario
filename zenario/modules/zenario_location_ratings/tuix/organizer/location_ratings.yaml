@@ -1,0 +1,109 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__locations:
+    nav:
+        accreditors:
+            name: Accreditors
+            panel:
+                php: Yes
+                title: Accreditors
+                view_mode: list
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditors AS a'
+                    id_column: a.id
+                no_items_message: No Accreditors have been created yet.
+                columns:
+                    id:
+                        title: Id
+                        db_column: a.id
+                        searchable: Yes
+                    name:
+                        title: Name
+                        db_column: a.name
+                        show_by_default: Yes
+                        searchable: Yes
+                    rating_type:
+                        title: Rating Type
+                        db_column: a.score_type
+                        show_by_default: Yes
+                        searchable: Yes
+                        format: enum
+                        values:
+                            numeric: Numeric
+                            alpha: Text
+                            boolean: Yes/No
+                collection_buttons:
+                    create_accreditor:
+                        ord: "1"
+                        css_class: zenario_create_a_new
+                        label: Create a new Accreditor
+                        tooltip: Create a new Accreditor
+                        admin_box:
+                            path: zenario_location_ratings__accreditor
+                item_buttons:
+                    rename_accreditor:
+                        ord: "1"
+                        css_class: settings
+                        label: Settings
+                        tooltip: "View/Edit this Accreditor's settings"
+                        admin_box:
+                            path: zenario_location_ratings__accreditor
+                    delete_accreditor:
+                        ord: "2"
+                        css_class: delete
+                        label: Delete
+                        tooltip: Delete this Accreditor
+                        hide_in_select_mode: Yes
+                        ajax:
+                            confirm:
+                                message: 'Are you sure you wish to delete the Accreditor "[[name]]"?'
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                action: delete_accreditor
+                disable_close_up_view: Yes
+                hidden_nav:
+                    accreditor_scores:
+                        panel:
+                            title: Accreditor Ratings
+                            db_items:
+                                table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_RATINGS_PREFIX]]accreditor_scores AS acs'
+                                id_column: acs.id
+                                where_statement: 'WHERE acs.accreditor_id = [[REFINER__zenario_LOCATION_RATINGS__ACCREDITOR]]'
+                            no_items_message: No Accreditor Ratings have been created yet.
+                            default_sort_column: score
+                            columns:
+                                score:
+                                    title: Rating
+                                    db_column: acs.score
+                            collection_buttons:
+                                create:
+                                    css_class: create
+                                    tooltip: Create a new Accreditor Rating
+                                    admin_box:
+                                        path: zenario_location_ratings__accreditor_rating
+                            item_buttons:
+                                rename_accreditor_score:
+                                    ord: "1"
+                                    css_class: rename
+                                    tooltip: Rename this Accreditor Rating
+                                    admin_box:
+                                        path: zenario_location_ratings__accreditor_rating
+                                delete_accreditor_score:
+                                    ord: "2"
+                                    css_class: delete
+                                    tooltip: Delete this Accreditor Score
+                                    hide_in_select_mode: Yes
+                                    ajax:
+                                        confirm:
+                                            message: 'Are you sure you wish to delete the Accreditor Rating "[[score]]"?'
+                                            button_message: Delete
+                                            cancel_button_message: Cancel
+                                            message_type: warning
+                                        request:
+                                            action: delete_accreditor_score
+                            item:
+                                css_class: zenario_location_manager_rating
+                item:
+                    css_class: zenario_location_manager_ratings

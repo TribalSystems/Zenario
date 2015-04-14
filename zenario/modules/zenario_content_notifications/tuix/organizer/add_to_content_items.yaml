@@ -1,0 +1,48 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            columns:
+                content_has_requests:
+                    title: Has requests
+                    searchable: No
+                    db_column: >
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]][[ZENARIO_CONTENT_NOTIFICATIONS_PREFIX]]versions_mirror AS vm
+                            WHERE c.id = vm.content_id
+                              AND c.type = vm.content_type
+                              AND c.admin_version = vm.content_version
+                            LIMIT 1
+                        )
+                    show_by_default: No
+                    disallow_filtering: Yes
+                    type: checkbox
+    
+            item_buttons:
+                zenario_content_requests:
+                    priv: _PRIV_EDIT_DRAFT
+                    parent: view_dropdown
+                    label: Requests
+                    multiple_select: No
+                    admin_box:
+                        path: zenario_content_requests
+
+            inline_buttons: 
+                view_content_no_requests:
+                    css_class: view_content_no_requests
+                    tooltip: "No requests on this item; click to create a request"
+                    ord: 9
+                    admin_box:
+                        path: zenario_content_requests
+                    without_columns_set:
+                        content_has_requests: true
+                view_content_has_requests:
+                    css_class: view_content_has_requests
+                    tooltip: "View requests on this content item"
+                    ord: 9
+                    admin_box:
+                        path: zenario_content_requests
+                    with_columns_set:
+                        content_has_requests: true

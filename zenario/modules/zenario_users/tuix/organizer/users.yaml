@@ -17,7 +17,7 @@ zenario__users:
     panels:
         users:
             title: 'All users & contacts'
-            enable_close_up_view: Yes
+            enable_close_up_view: true
             view_mode: list
             label_format_for_picked_items: '[[first_name]] [[last_name]]'
             slidedown_view_microtemplate: zenario_slidedown_view_user
@@ -30,7 +30,7 @@ zenario__users:
                 table: '[[DB_NAME_PREFIX]]users AS u'
                 id_column: u.id
                 custom_where_statement_if_no_refiner: "WHERE u.status <> 'suspended'"
-            advanced_search: Yes
+            advanced_search: true
             refiners:
                 group_members: {}
                 #characteristic_value_filter:
@@ -41,20 +41,25 @@ zenario__users:
                 id:
                     title: ID
                     db_column: u.id
-                    searchable: Yes
-                    show_by_default: Yes
-                    align_right: Yes
+                    searchable: true
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
                 parent_id:
-                    server_side_only: Yes
+                    server_side_only: true
                     title: Parent ID
                     db_column: u.parent_id
-                    align_right: Yes
+                    align_right: true
                     width: xsmall
+                identifier:
+                    title: Identifier
+                    db_column: u.identifier
+                    searchable: true
+                    width: small
                 screen_name:
                     title: Screen Name
                     db_column: u.screen_name
-                    searchable: Yes
+                    searchable: true
                     width: small
                 salutation:
                     title: Salutation
@@ -63,20 +68,20 @@ zenario__users:
                 first_name:
                     title: First Name
                     db_column: u.first_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                     width: small
                 last_name:
                     title: Last Name
                     db_column: u.last_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                     width: small
                 email:
                     title: Email
                     db_column: u.email
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                     width: medium
                 email_verified:
                     title: Email Verified
@@ -87,7 +92,7 @@ zenario__users:
                     title: Status
                     db_column: u.status
                     format: enum
-                    show_by_default: Yes
+                    show_by_default: true
                     values:
                         active: Active
                         pending: Pending
@@ -106,11 +111,11 @@ zenario__users:
                     title: Creation method
                     db_column: u.creation_method
                     width: xsmall
-                    show_by_default: No
+                    show_by_default: false
                 created_date:
                     title: Created
                     db_column: u.created_date
-                    show_by_default: Yes
+                    show_by_default: true
                     format: date
                     width: xsmall
                 last_login:
@@ -124,17 +129,17 @@ zenario__users:
                     format: date
                     width: xsmall
                 ip:
-                    server_side_only: Yes
+                    server_side_only: true
                     title: Last IP
                     db_column: u.ip
                     width: xsmall
                 modified_date:
-                    #server_side_only: Yes
+                    #server_side_only: true
                     title: Modified Date
                     db_column: u.modified_date
                     width: xsmall
                 suspended_date:
-                    #server_side_only: Yes
+                    #server_side_only: true
                     title: Suspended Date
                     db_column: u.suspended_date
                     width: xsmall
@@ -180,17 +185,17 @@ zenario__users:
             collection_buttons:
                 add:
                     label: Create a user or contact
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     priv: _PRIV_CREATE_USER
                     css_class: zenario_create_a_new
                     admin_box:
                         path: zenario_user__details
-                export:
-                    label: Export as CSV
-                    hide_in_select_mode: Yes
-                    do_csv_export: Yes
+                #export:
+                #    label: Export as CSV
+                #    hide_in_select_mode: true
+                
                 add_user_to_group:
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
                     label: Add
                     tooltip: Add one or more users to this group
@@ -199,31 +204,54 @@ zenario__users:
                         request:
                             add_user_to_group: "1"
                         one_to_one_choose_phrase: Add user to group
-                        multiple_select: Yes
+                        multiple_select: true
                         one_to_many_choose_phrase: Add users to group
+                
+                # User dataset import buttons
+                import_dropdown:
+                    label: Import
+                    hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
+                    ord: 999999
+                import:
+                    label: Start import wizard
+                    parent: import_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_import
+                        key:
+                            dataset:
+                donwload_sample_file:
+                    label: Download sample file
+                    parent: import_dropdown
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_download_sample_file
+                        key:
+                            dataset:
             item_buttons:
                 edit:
                     label: Edit user/contact
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     priv: _PRIV_VIEW_USER
                     admin_box:
                         path: zenario_user__details
                 impersonate:
                     label: Impersonate user
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     priv: _PRIV_IMPERSONATE_USER
                     admin_box:
                         path: zenario__impersonate
                     without_traits:
-                        is_contact: Yes
+                        is_contact: true
                 view_dropdown:
                     label: View
-                    hide_in_select_mode: Yes
-                    hide_when_children_are_not_visible: Yes
+                    hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
                 action_dropdown:
                     label: Actions
-                    hide_in_select_mode: Yes
-                    hide_when_children_are_not_visible: Yes
+                    hide_in_select_mode: true
+                    hide_when_children_are_not_visible: true
                     multiple_select: true
                 add_users_to_group:
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
@@ -250,11 +278,11 @@ zenario__users:
                 
                 remove_users_from_group:
                     label: Remove
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
                     only_show_on_refiner: group_members
-                    multiple_select: Yes
+                    multiple_select: true
                     ajax:
                         confirm:
                             button_message: Remove
@@ -264,9 +292,9 @@ zenario__users:
                             remove_users_from_group: "1"
                 image_dropdown:
                     label: Image
-                    hide_in_select_mode: Yes
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view_image:
                     label: View image
                     parent: image_dropdown
@@ -274,17 +302,17 @@ zenario__users:
                     popout:
                         href: zenario/file.php?usage=user
                     traits:
-                        has_image: Yes
+                        has_image: true
                 upload_image:
                     label: Upload an image
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: image_dropdown
                     ord: "71"
                     priv: _PRIV_EDIT_USER
                     tooltip: |
                         Upload an image|
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for this User.<br/>
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: |
                         Upload an image|
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for these Users.<br/>
@@ -292,12 +320,12 @@ zenario__users:
                         fileExt: '*.gif;*.jpg;*.jpeg;*.png'
                         fileDesc: Images
                         request:
-                            upload_image: Yes
+                            upload_image: true
                     without_traits:
-                        has_image: Yes
+                        has_image: true
                 replace_image:
                     label: Upload a new image
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: image_dropdown
                     ord: "72"
                     priv: _PRIV_EDIT_USER
@@ -305,7 +333,7 @@ zenario__users:
                         Upload a new image|
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an image for this user.<br/>
                         Your new image will replace the existing one.
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: |
                         Upload a new image|
                         You may upload a .gif, a .jpeg, a .jpg or a .png image to use as an avatar for these Users.<br/>
@@ -314,20 +342,20 @@ zenario__users:
                         fileExt: '*.gif;*.jpg;*.jpeg;*.png'
                         fileDesc: Images
                         request:
-                            upload_image: Yes
+                            upload_image: true
                     traits:
-                        has_image: Yes
+                        has_image: true
                 delete_image:
                     label: Remove image
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: image_dropdown
                     ord: "73"
                     priv: _PRIV_EDIT_USER
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: Remove image
                     ajax:
                         confirm:
-                            message: 'Are you sure you want to remove the image from user "[[screen_name]]"?'
+                            message: 'Are you sure you want to remove the image from user "[[identifier]]"?'
                             multiple_select_message: >
                                 Are you sure you want to remove the images from the selected users?
                             button_message: Remove
@@ -336,32 +364,32 @@ zenario__users:
                         request:
                             delete_image: "1"
                     traits:
-                        has_image: Yes
+                        has_image: true
                 convert_to_user:
                     label: Convert to extranet user
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
                     admin_box:
                         path: zenario_user__convert_to_user
                     traits:
-                        is_contact: Yes
+                        is_contact: true
                 activate:
                     label: Activate user account
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
                     traits:
-                        suspended: Yes
+                        suspended: true
                     admin_box:
                         path: zenario_user__activate
                 suspend:
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
                     label: Suspend
                     traits:
-                        active: Yes
+                        active: true
                     admin_box:
                         path: zenario_user__suspend
                 send_welcome_email:
@@ -375,15 +403,15 @@ zenario__users:
                         path: zenario_user__welcome_email
                 delete:
                     label: Delete user/contact
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     priv: _PRIV_DELETE_USER
                     disabled_if_for_any_selected_items: >
                         item.type == 'from_hub'
                     disabled_tooltip: 'Hub users can only be deleted from the hub site. If the hub record has just been deleted, it should be deleted here within 5 minutes.'
-                    multiple_select: Yes
+                    multiple_select: true
                     ajax:
                         confirm:
-                            message: 'Are you sure you want to delete the user "[[screen_name]]"?'
+                            message: 'Are you sure you want to delete the user "[[identifier]]"?'
                             multiple_select_message: Are you sure you wish to delete the selected users?
                             button_message: Delete
                             cancel_button_message: Cancel
@@ -395,4 +423,4 @@ zenario__users:
                 link: 
                     path: zenario__users/panels/users
                     refiner: suspended_users
-                    branch: Yes
+                    branch: true

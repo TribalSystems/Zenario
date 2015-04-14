@@ -178,7 +178,22 @@ class zenario_country_manager extends module_base_class {
 		
 		return $rv;
 	}
-
+	
+	public static function getRegionsByCountry($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array(
+					'filter_label' => 'Country ID:',
+					'can_filter' => true);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				return getRowsArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', array(), 'name');
+			case ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST:
+				return getRowsArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', array('country_id' => $value), 'name');
+			case ZENARIO_CENTRALISED_LIST_MODE_VALUE:
+				return getRow(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_regions', 'name', array('id' => $value));
+		}
+	}
+	
 	public static function getCountryOfRegion($regionId,$fuse=10){
 		$rv = array();
 		if ($fuse--) {
@@ -268,13 +283,15 @@ class zenario_country_manager extends module_base_class {
 		return sqlQuery($sql);
 	}
 
-	public static function getActiveCountries() {
-		$countries = array();
-		$result = self::getCountryActiveCountries();
-		while ($row = sqlFetchAssoc($result)) {
-			$countries[$row['id']] = $row['name'];
+	public static function getActiveCountries($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array('can_filter' => false);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				return getRowsArray(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', array('active' => 1), 'english_name');
+			case ZENARIO_CENTRALISED_LIST_MODE_VALUE:
+				return getRow(ZENARIO_COUNTRY_MANAGER_PREFIX. 'country_manager_countries', 'english_name', array('id' => $value));
 		}
-		return $countries;
 	}
 	
 	public static function getEnglishCountryName_framework($mergeFields, $attributes) {

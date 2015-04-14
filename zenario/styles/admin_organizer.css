@@ -68,9 +68,9 @@ body.webkit input {
 	opacity:1;
 }
 
-#organizer__box_inner.organizer_changing_hierarchy #organizer_leftColumnOuter,
-#organizer__box_inner.organizer_changing_hierarchy #organizer_header #organizer_backButton,
-#organizer__box_inner.organizer_changing_hierarchy #organizer_header #organizer_viewOptions {
+#organizer__box_inner.organizer_interaction_disabled #organizer_leftColumnOuter,
+#organizer__box_inner.organizer_interaction_disabled #organizer_header #organizer_backButton,
+#organizer__box_inner.organizer_interaction_disabled #organizer_header #organizer_viewOptions {
 	filter: alpha(opacity=60); /* internet explorer */
 	-khtml-opacity: 0.6;      /* khtml, old safari */
 	-moz-opacity: 0.6;       /* mozilla, netscape */
@@ -196,6 +196,7 @@ body.webkit input {
 	height:34px;
 	line-height:34px;
 	background: url("../admin/images/icon-eyeglass.png") no-repeat 4px center;
+	box-sizing: content-box;
 }
 
 #organizer_searchForm input#organizer_search_term,
@@ -538,9 +539,35 @@ body.ie label#search_term_placeholder {
 
 
 
+/*  Temporary styles added by Chris  */
+#organizer_branding_title,
+#organizer_backButton {
+	float: left;
+	width: auto;
+}
+
+#organizer_branding_title {
+	color: white;
+	font-style: italic;
+	line-height: 39px;
+    margin-left: 10px;
+}
+
+#organizer_branding_title span.organizer_name {
+	font-style: normal;
+	font-weight: bold;
+	text-transform: uppercase;
+}
 
 
+#organizer_branding_title span.organizer_name span {
+	font-size: 14px;
+}
 
+.organizer-button-first a,
+.organizer-button-first {
+	/*background: 0!important;*/
+}
 
 #organizer_container {
 	width: auto;
@@ -1259,12 +1286,12 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn,
-#organizer_bottomWrap #organizer_lowerMiddleColumn,
 #organizer_bottomWrap #organizer_lowerRightColumn {
-	width:33%;
+	width:25%;
 }
 
 #organizer_bottomWrap #organizer_lowerMiddleColumn {
+	width:49%;
 	margin:0 0.5%;
 }
 
@@ -1283,15 +1310,20 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 }
 
 .zenario_debugInfo .organizer_info_box,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled,
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box,
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help {
 	width:18px;
 	height:18px;
 	display:block;
-	background-image: url('../admin/images/sprites/org-icons-1.png');
 	float:left;
 	margin-top:8px;
 	cursor:pointer;
+}
+
+.zenario_debugInfo .organizer_info_box,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
+	background-image: url('../admin/images/sprites/org-icons-1.png');
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
@@ -1299,7 +1331,30 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help {
-	background-position:-465px -17px;
+	background-image: url('../admin/images/help-tour-icon.png');
+}
+
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled.site_enabled {
+	background-image: url('../admin/images/enabled-site-icon-green.png');
+}
+
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled.site_disabled {
+	background-image: url('../admin/images/disabled-site-icon-red.png');
+}
+
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled {
+    opacity: 1;
+    transition: opacity .25s ease-in-out;
+    -moz-transition: opacity .25s ease-in-out;
+    -webkit-transition: opacity .25s ease-in-out;
+}
+
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help:hover,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box:hover,
+#organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled:hover {
+	opacity:0.7;
 }
 
 .zenario_debugInfo .organizer_info_box {
@@ -1956,6 +2011,7 @@ body.ie9 #organizer_preloader_circle div {
 .organizer_toolbar .toolbar .toolbarButtons ul li.zenario_create_a_new a,
 .organizer_toolbar .toolbar .toolbarButtons ul li a#organizer_applyButton,
 .organizer_toolbar .toolbar .toolbarButtons ul li a#organizer_cancelButton {
+	cursor: pointer;
 	height:auto;
 	text-shadow:0 1px 1px #000;
 	-webkit-border-radius: 2px;
@@ -2377,64 +2433,48 @@ body.ie9 #organizer_preloader_circle div {
 	margin-top:3px;
 }
 
-
-
-
-
-
-
-
-
-/* Adrian's styles */
-
 #organizer_Outer div.organizer_item {
 	cursor: pointer;
 }
 
+/* Top breadcrumbs > organizer_backButton */
+
 #organizer_backButton {
 	display:inline-block;
-	position:absolute;
-	top:0;
-	right:0;
-	margin:4px 7px 0 0;
-	padding-top:7px;
-	white-space: nowrap;
 	font-size:10px;
 	overflow:hidden;
-	background:url('../admin/images/store_keeper/back-arrow-top.png') no-repeat 5px 0;
-}
-
-#organizer_backButton span.level {
-	display:none;
-}
-
-#organizer_backButton span.organizer_lastBackButton,
-#organizer_backButton span.organizer_lastBackButton a {
-	display:block;
-}
-
-#organizer_backButton span.organizer_lastBackButton a {
-	background:#B0E6FE url('../admin/images/store_keeper/back-icon-folder.png') no-repeat 8px center;
-	padding:3px 12px 3px 35px;
-	max-width:300px;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-}
-
-#organizer_backButton,
-#organizer_backButton a {
-	color:#333;
+	padding-left:30px;
 }
 
 #organizer_backButton span.level a {
+	display:block;
+	float: left;
+	width: 46px;
+	height: 39px;
+	margin-right: -14px;
+	pointer-events: none;
+	color: transparent;
+	background:url('../admin/images/chevron.png') no-repeat 0 0;
+}
+
+#organizer_backButton span.organizer_lastBackButton a {
+	width:auto;
+	max-width:300px;
+	padding: 0 14px 0 60px;
+	line-height:36px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #ffffff;
 	cursor:pointer;
-	line-height:12px;
+	pointer-events:auto;
 }
 
 #organizer_backButton span.organizer_lastBackButton:hover a {
 	text-decoration:underline;
 }
+
+/* end Top breadcrumbs > organizer_backButton */
 
 #organizer_rightColumnContent {
 	/*height: 508px;*/
@@ -3825,6 +3865,110 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 }
 
 
+/*  New pagination (just temporary styles at the moment)  */
+#organizer_item_count {
+	width:auto;
+	height:30px;
+	overflow:hidden;
+	display:inline-block;
+	margin-right: 20px;
+}
+
+#organizer_pagination {
+	overflow:hidden;
+}
+
+#organizer_item_count,
+#organizer_pagination {
+	line-height: 30px;
+}
+
+#organizer_pagination .organizer_page_button {
+	display: inline-block;
+	width: 30px;
+	height: 32px;
+	text-align: center;
+}
+
+#organizer_page_first {
+	background:url('../admin/images/pagination_btn_left_off.gif') no-repeat;
+}
+
+#organizer_page_prev {
+	background:url('../admin/images/pagination_btn_left_on.gif') no-repeat;
+}
+
+#organizer_page_left {
+	background:url('../admin/images/scroll-left-btn.png') no-repeat;
+}
+
+#organizer_page_right {
+	background:url('../admin/images/scroll-right-btn.png') no-repeat;
+}
+
+#organizer_page_next {
+	background:url('../admin/images/pagination_btn_right_on.gif') no-repeat;
+}
+
+#organizer_page_last {
+	background:url('../admin/images/pagination_btn_right_off.gif') no-repeat;
+}
+
+#organizer_pagination .paginator_p_wrap {
+	/*max-width:225px !important;
+	max-width:calc( 100% - 180px ) !important;*/
+	float:none;
+	display:inline-block;
+}
+
+.organizer_page_button {
+	cursor: pointer;
+}
+
+.organizer_page_button_disabled {
+	cursor: default;
+}
+
+
+
+/*
+	Some hacks by Chris to try and get the slider to appear,
+	please remove these two rules and implement it properly!
+*/
+
+.organizer_page_numbers {
+	height: 32px;
+	display: inline-block;
+}
+
+#organizer_pagination .paginator_p_wrap {
+	float: left;
+	height: 20px;
+	line-height: 20px;
+}
+
+#organizer_pagination .paginator_slider {
+	float: left;
+	clear: both;
+}
+/*
+	End of Chris' hacky code
+*/
+
+
+
+
+.paginator_p {
+	background: transparent;
+	color: #000000;
+}
+
+.paginator_p .selected:hover,
+.paginator_p:hover {
+	background: transparent;
+}
+
+/*  Old pagination (can we delete this?)  */
 
 #organizer_itemCountWrap {
 	width: 100%;
@@ -4202,6 +4346,18 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	background-position:center -60px;
 }
 
+/*  Temp styles added by Chris  */
+
+#organizer_rightColumnTitle .zenario_debug {
+	position: absolute;
+	width: 18px;
+	height: 18px;
+	top: 8px;
+	right: 8px;
+}
+
+
+
 /*  Debug info box, appears over/just below the debug button  */
 
 #zenario_fbDebugInfoBox {
@@ -4345,4 +4501,82 @@ table.table-bordered td
 #organizer_rightColumn #organizer_panelTitle div.zenario_document_tag_item,
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_document_tag_item {
 	background:url("../admin/images/document-tag-icon.png") no-repeat center -12px;
+}
+
+/* ---------- Styles for tour intro.js  ------------*/
+
+.introjs-tooltip {
+	min-width:180px;
+}
+
+.introjs-tooltip .introjs-tooltiptext,
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button {
+	font-family:Verdana,Arial,Helvetica,sans-serif;
+}
+
+.introjs-tooltip .introjs-tooltiptext > p strong {
+	font-size:18px;
+	font-weight:normal;
+	color:#333;
+}
+
+.introjs-tooltip .introjs-tooltiptext p {
+	font-size:12px;
+	color:#676767;
+}
+
+.introjs-tooltip .introjs-bullets ul li a.active {
+	background:#0079CE !important;
+}
+
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button {
+	font-size:14px;
+	text-shadow:none;
+	color:#333;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button.introjs-skipbutton {
+	width:12px;
+	height:12px;
+	border:0;
+	text-indent:-999;
+	display:block;
+	font-size:0;
+	line-height:0;
+	position:absolute;
+	top:-3px;
+	right:0;
+	background:url('../admin/images/tooltip-close-off-state.png') no-repeat;
+}
+
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button.introjs-skipbutton:hover {
+	box-shadow:none;
+	background:url('../admin/images/tooltip-close-over-state.png') no-repeat;
+}
+
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button.introjs-prevbutton {
+	float:left;
+	border:1px solid #B3B3B3;
+}
+
+.introjs-tooltip .introjs-tooltipbuttons .introjs-button.introjs-nextbutton {
+	border:1px solid #007FA5;
+	background:#0097C5;
+	color:#FFF;
+}
+
+.introjs-helperNumberLayer {
+	z-index:99999999 !important;
+}
+
+.introjs-showElement.zenario_admin_name,
+.introjs-showElement.logout_button {
+	background:#000;
+}
+
+#organizer_search.introjs-showElement {
+	background:#FFF;
 }

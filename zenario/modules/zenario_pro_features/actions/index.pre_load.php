@@ -144,71 +144,76 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	
 	$chDirAllRequests = pageCacheDir($chAllRequests);
 	$chDirKnownRequests = pageCacheDir($chKnownRequests);
-	
-	for ($chS = 's';; $chS = $chToLoadStatus['s']) {
-			for ($chC = 'c';; $chC = $chToLoadStatus['c']) {
-					for ($chP = 'p';; $chP = $chToLoadStatus['p']) {
-							for ($chG = 'g';; $chG = $chToLoadStatus['g']) {
-									for ($chU = 'u';; $chU = $chToLoadStatus['u']) {
+
+	//Don't allow a page to be served from the cache if an Admin has
+	//set the "remember me" option to show the admin login link
+	if (!isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
+		
+		for ($chS = 's';; $chS = $chToLoadStatus['s']) {
+				for ($chC = 'c';; $chC = $chToLoadStatus['c']) {
+						for ($chP = 'p';; $chP = $chToLoadStatus['p']) {
+								for ($chG = 'g';; $chG = $chToLoadStatus['g']) {
+										for ($chU = 'u';; $chU = $chToLoadStatus['u']) {
 											
-											if ($chG) {
-												$chFile = $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC;
-											} else {
-												$chFile = $chDirAllRequests. $chU. $chG. $chP. $chS. $chC;
-											}
+												if ($chG) {
+													$chFile = $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC;
+												} else {
+													$chFile = $chDirAllRequests. $chU. $chG. $chP. $chS. $chC;
+												}
 											
-											if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). 'page.html')) {
-												zenario_page_caching__logStats(array('hits', 'total'));
-												touch($chPath. 'accessed');
+												if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). 'page.html')) {
+													zenario_page_caching__logStats(array('hits', 'total'));
+													touch($chPath. 'accessed');
 												
 												
-												//If there are cached images on this page, mark that they've been accessed
-												if (file_exists($chPath. 'cached_files')) {
-													foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
-														if (is_dir($cachedImage)) {
-															touch($cachedImage. 'accessed');
-														} else {
-															//Delete the cached copy as its images are missing
-															deleteCacheDir($chPath);
+													//If there are cached images on this page, mark that they've been accessed
+													if (file_exists($chPath. 'cached_files')) {
+														foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
+															if (is_dir($cachedImage)) {
+																touch($cachedImage. 'accessed');
+															} else {
+																//Delete the cached copy as its images are missing
+																deleteCacheDir($chPath);
 															
-															//Continue the loop looking for any more cached copies of this page.
-															//Most likely if any exist they will need deleting because their images will be missing too,
-															//and it's a good idea to clean up.
-															continue 2;
+																//Continue the loop looking for any more cached copies of this page.
+																//Most likely if any exist they will need deleting because their images will be missing too,
+																//and it's a good idea to clean up.
+																continue 2;
+															}
 														}
 													}
-												}
 												
 												
-												useGZIP();
-												$page = file_get_contents($chPath. 'page.html');
-												if (false !== $pos = strpos($page, '<body class="no_js [[%browser%]]')) {
-													echo substr($page, 0, $pos), '<body class="no_js '. browserBodyClass(), substr($page, $pos + 32);
-												} else {
-													echo $page;
-												}
+													useGZIP();
+													$page = file_get_contents($chPath. 'page.html');
+													if (false !== $pos = strpos($page, '<body class="no_js [[%browser%]]')) {
+														echo substr($page, 0, $pos), '<body class="no_js '. browserBodyClass(), substr($page, $pos + 32);
+													} else {
+														echo $page;
+													}
 												
-												if (file_exists($chPath. 'show_cache_info')) {
-													echo '
-														<script type="text/javascript">
-															window.zenarioCD.load = ', json_encode($chToLoadStatus), ';
-															window.zenarioCD.served_from_cache = true;
-														</script>';
+													if (file_exists($chPath. 'show_cache_info')) {
+														echo '
+															<script type="text/javascript">
+																window.zenarioCD.load = ', json_encode($chToLoadStatus), ';
+																window.zenarioCD.served_from_cache = true;
+															</script>';
 													
-													echo "\n</body>\n</html>";
-												}
+														echo "\n</body>\n</html>";
+													}
 												
-												exit;
-											}
+													exit;
+												}
 											
-										if ($chU == $chToLoadStatus['u']) break;
-									}
-								if ($chG == $chToLoadStatus['g']) break;
-							}
-						if ($chP == $chToLoadStatus['p']) break;
-					}
-				if ($chC == $chToLoadStatus['c']) break;
-			}
-		if ($chS == $chToLoadStatus['s']) break;
+											if ($chU == $chToLoadStatus['u']) break;
+										}
+									if ($chG == $chToLoadStatus['g']) break;
+								}
+							if ($chP == $chToLoadStatus['p']) break;
+						}
+					if ($chC == $chToLoadStatus['c']) break;
+				}
+			if ($chS == $chToLoadStatus['s']) break;
+		}
 	}
 }

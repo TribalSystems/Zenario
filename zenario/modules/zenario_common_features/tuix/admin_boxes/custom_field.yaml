@@ -22,7 +22,7 @@ zenario_custom_field:
                     validation:
                         required: 'Please enter a label'
                     onkeyup: |
-                        if (!zenarioAB.focus.key.id) {
+                        if (!zenarioAB.tuix.key.id) {
                             zenario.get('db_column').value =
                                 this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
                         }
@@ -30,6 +30,7 @@ zenario_custom_field:
                         The text of the label that appears before the field.
                         
                 db_column:
+                    visible_if: "zenarioAB.value('protected') == 0"
                     label: 'Code name:'
                     type: text
                     maxlength: 64
@@ -86,9 +87,18 @@ zenario_custom_field:
                     visible_if: "({centralised_radios:1,centralised_select:1})[zenarioAB.value('type', 'details')]"
                     label: 'Source:'
                     type: select
+                    format_onchange: true
                     values: {}
+                    
+                values_source_filter:
+                    label: 'Source filter:'
+                    type: text
+                    hidden: true
+                    style: 'width: 10em;'
+                    note_below: 'Set a filter for the source'
                 
                 protected:
+                    priv: _PRIV_PROTECT_UNPROTECT_DATASET_FIELD
                     label: 'Protected'
                     type: checkbox
                     note_below: 'Protected fields cannot be deleted'

@@ -262,6 +262,18 @@ zenario__content:
 					db_column: v.keywords
 					searchable: Yes
 					length_limit: 250
+				word_count:
+					title: Word count
+					sortable: true
+					table_join: |
+						LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
+							ON v.id = cc.content_id
+						   AND v.type = cc.content_type
+						   AND v.version = cc.content_version
+					db_column: >
+						IFNULL(cc.text_wordcount, 0)
+					align_right: true
+					width: xsmall
 				file_id:
 					title: File ID
 					db_column: f.id
@@ -493,8 +505,12 @@ zenario__content:
 				inspect:
 					css_class: inspect
 					tooltip: Quick-view in floating box
-					popout:
-						iframe: Yes
+					custom_width: 800
+					custom_height: 600
+					custom_description: Preview
+					call_js_function:
+						encapsulated_object: zenarioA
+						function: showPagePreview
 					with_columns_set:
 						frontend_link: Yes
 			item_buttons:
@@ -928,10 +944,38 @@ zenario__content:
 							message_type: warning
 						request:
 							trash: "1"
+				redraft:
+					parent: action_dropdown
+					priv: _PRIV_CREATE_REVISION_DRAFT
+					label: Re-draft
+					css_class: create label_to_the_left
+					multiple_select: Yes
+					visible_if_for_all_selected_items: item.status == 'trashed'
+					tooltip: >
+						Re-draft this content item|This will create a new draft of
+						this content item, which will be available to visitors if
+						you Publish it.
+					ajax:
+						confirm:
+							message: |
+								Do you wish to re-draft "[[tag]]"? This will create
+								a new draft of this content item, which will be available to
+								visitors if you Publish it.
+							multiple_select_message: |
+								Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you Publish them.
+							button_message: Re-draft
+							cancel_button_message: Cancel
+							message_type: question
+						request:
+							create_draft: "1"
 				migrate_old_documents:
 					hide_in_select_mode: true
 					multiple_select: Yes
 					label: Migrate to new documents
 					admin_box:
 						path: zenario_migrate_old_documents
-					visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden') 
+					visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')
+				page_preview_sizes:
+					label: Visitor preview
+					hide_when_children_are_not_visible: true
+					ord: 500

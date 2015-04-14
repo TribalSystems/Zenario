@@ -1,0 +1,32 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin:
+    tabs:
+        permissions:
+            
+            # The fillAdminBox(), formatAdminBox() and saveAdminBox() functions in the Community Features
+            # Module automatically add the <row_class> and <onchange> tags as well as the
+            # loading and saving logic to the fields in this tab so that they work as permission selectors.
+            
+            # You may have:
+            #     - A <type>checkbox</type> field on its own to act as a single permission.
+            #     - A <type>checkboxes</type> field to act as a list of permissions.
+            #     - A <type>checkboxes</type> field with the <checking_child_checks_parents> tag set
+            #       to act as a list of permissions with hierarchal dependencies.
+            #     - A <type>checkbox</type> field immediately followed by a <type>checkboxes</type> field
+            #       to act as a list of permissions that can be quickly turned on or off by the first
+            #       checkbox. This will also add a toggle button to allow the longer list to be hidden.
+            
+            fields:
+                perm_jobs:
+                    type: checkbox
+                    full_width: Yes
+                    post_field_label: Manage Scheduled Tasks
+                perm_jobs_permissions:
+                    type: checkboxes
+                    full_width: Yes
+                    values:
+                        _PRIV_VIEW_SCHEDULED_TASK:
+                            label: "View a Scheduled Task's details"
+                        _PRIV_MANAGE_SCHEDULED_TASK:
+                            label: Manage Scheduled Tasks

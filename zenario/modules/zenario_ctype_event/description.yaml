@@ -1,0 +1,59 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Content Type Event
+description: |
+    <p>
+        This is the base Module for Event Content Items in Zenario.
+    </p>
+    <p>
+        Events are version-controlled Content Items (like HTML Pages and other Content Items), and
+        when this Module is installed it creates a management panel for Events in the Content
+        area of the Admin Back-end. You can then create, edit and publish Events, similar to any other
+        Content Item.
+    </p>
+    <p>
+        Events can have start and end dates and times, an external informational URL, and other information.
+        You can associate a Location (defined within the Location Manager) with an Event,
+        thereby allowing the Event to have an address and Google map for its venue.
+    </p>
+    <p>
+        This Module is pluggable. When you create a Plugin and place it in a Slot on an Event Content Item
+        the default behaviour is for its Plugin to display the details of that Event. 
+        Alternatively, if you have placed the Plugin on an HTML Page (or any other type of Content Item),
+        you can set the Plugin to show details of a different Event (for example, you may wish to
+        highlight several Events on a home page).
+    </p>
+category: content_type
+keywords: event, calendar, conference, diary, meeting
+vlp_class_name: zenario_ctype_event
+css_class_name: zenario_ctype_event
+is_pluggable: Yes
+can_be_version_controlled: Yes
+default_framework: standard
+content_types:
+    content_type:
+        content_type_id: event
+        content_type_name_en: Event
+        default_template_name: Event Layout
+        enable_summary_auto_update: No
+        description_field: optional
+        keywords_field: hidden
+        summary_field: optional
+        release_date_field: hidden
+        writer_field: hidden
+signals:
+    signal1: 
+        name: eventDraftCreated
+        static: Yes
+    
+    signal2: 
+        name: eventContentDeleted
+        static: Yes
+default_instance_name: Event Details Viewer
+dependencies:
+    zenario_location_manager: Yes

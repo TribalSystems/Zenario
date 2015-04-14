@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_extranet_profile_edit
+    tabs:
+        first_tab:
+            label: Editing
+            fields:
+                enable_edit_profile:
+                    plugin_setting:
+                        name: enable_edit_profile
+                    label: 'Allow User to edit their Profile'
+                    type: checkbox
+                    value: "1"
+                show_title_message:
+                    plugin_setting:
+                        name: show_title_message
+                    label: 'Display a title'
+                    type: checkbox
+                    value: "1"
+                    
+                profile_form:
+                    plugin_setting:
+                        name: user_form
+                    label: 'Form:'
+                    pick_items:
+                        path: zenario__user_forms/panels/zenario_user_forms__forms
+                        target_path: zenario__user_forms/panels/zenario_user_forms__forms
+                        min_path: zenario__user_forms/panels/zenario_user_forms__forms
+                        max_path: zenario__user_forms/panels/zenario_user_forms__forms
+                        disallow_refiners_looping_on_min_path: Yes
+                        one_to_one_choose_phrase: Choose this form
+                        select_phrase: Select a form...
+                        hide_remove_button: Yes
+

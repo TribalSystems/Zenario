@@ -36,7 +36,7 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 		$values['details/first_name'] = $userDetails['first_name'];
 		$values['details/last_name'] = $userDetails['last_name'];
 	
-		$box['title'] = "Sending welcome email to the user \"" . arrayKey($userDetails,"screen_name") . "\"";
+		$box['title'] = "Sending welcome email to the user \"" . arrayKey($userDetails,"identifier") . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
 	

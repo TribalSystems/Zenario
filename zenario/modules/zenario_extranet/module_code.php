@@ -420,9 +420,17 @@ class zenario_extranet extends module_base_class {
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
 			} else {
-				//email address not in DB
-				$errorMessage = $this->setting('email_not_in_db_message');
-				$this->errors[] = array('Error' => $this->phrase($errorMessage));
+				//email address or screen name not in DB
+				if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
+					//email
+					$errorMessage = $this->setting('email_not_in_db_message');
+					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+				} else {
+					//screen name
+					$errorMessage = $this->setting('screen_name_not_in_db_message');
+					$this->errors[] = array('Error' => $this->phrase($errorMessage));
+				}
+				
 			}
 		}
 		

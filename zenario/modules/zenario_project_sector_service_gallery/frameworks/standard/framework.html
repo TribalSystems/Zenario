@@ -1,0 +1,30 @@
+<div class="zenario_project_plocations_search">
+	<h1>Related Projects</h1>
+	<div class="project_plocations_search_results">
+		<div id="project_list" class="search_results_list">
+			[cms:section name='No_Rows']
+			<div class="project_search_results_panel">[cms:phrase code="_NO_PROJECTS_FOUND"/]</div>
+			[/cms:section]
+		</div>
+                        <!--ListResults-start-->
+			<div class="project_search_results_panel" id="project_search_results_only_list">
+				<div class="project_search_results_listing">
+					[cms:section name='Results']
+					<div id="[cms:merge name='html_id'/]" class="project_result_item">
+						<h3>
+							[cms:merge name='project_link_start'/]
+							    [cms:merge name='location'/]
+							[cms:merge name='project_link_end'/]
+						</h3>
+						<h4>[cms:merge name='client_name'/]</h4>
+						<div class="content">[cms:merge
+							name='Sticky_image_HTML_tag'/] [cms:merge
+							name='content_summary'/]</div>
+					</div>
+					[/cms:section]
+				</div>
+				[cms:merge name="Pagination"/]
+			</div>
+                        <!--ListResults-end-->
+	</div>
+</div>

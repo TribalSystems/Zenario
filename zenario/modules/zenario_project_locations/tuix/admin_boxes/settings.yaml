@@ -1,0 +1,86 @@
+site_settings:
+    title: Editing settings for Project Locations
+    tabs:
+        zenario_project_locations__site_settings:
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            label: Details
+            fields:
+                description:
+                    snippet: 
+                        html: <b>Please specify mandatory fields:</b>
+                content_item:
+                    label: 'Content type item:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__content_item
+                summary:
+                    label: 'Summary:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__summary                        
+                client_name:
+                    label: 'Client name:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__client        
+                architect_name:
+                    label: 'Architect name:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__architect
+                contractor_name:
+                    label: 'Contractor name:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__contractor
+                address1:
+                    label: 'Address line 1:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__address1
+                locality:
+                    label: 'Locality:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__locality
+                city:
+                    label: 'City/Town:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__city
+                state:
+                    label: 'State:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__state
+                postcode:
+                    label: 'Postcode/ZIP code:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__postcode
+                country:
+                    label: 'Country:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__country
+                region:
+                    label: 'Region:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__region
+                sectors:
+                    label: 'Sectors:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__sectors
+                services:
+                    label: 'Services:'
+                    type: checkbox
+                    site_setting:
+                        name: zenario_project_locations__services
+                
+
+    setting_group: zenario_project_locations__site_settings_group

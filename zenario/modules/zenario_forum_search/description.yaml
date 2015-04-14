@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Forum Search
+description: |
+    <p>
+        This Module allows visitors to search the Forums on your Site for a specific word or phrase.
+    </p><p>
+        Visitors will be shown a list of Forum Threads that match their search, together with an extract from the Post in the Thread
+        that best matches their query.
+    </p>
+category: pluggable
+keywords: >
+    chat, chatroom, community, discuss, discussion, forum,
+    message, post, search, user
+vlp_class_name: zenario_forum
+css_class_name: zenario_comments
+is_pluggable: Yes
+default_framework: standard
+default_instance_name: Forum Search
+dependencies:
+    zenario_comments: Yes
+    zenario_forum: Yes
+inheritance:
+    inherit_frameworks_from_module: zenario_comments

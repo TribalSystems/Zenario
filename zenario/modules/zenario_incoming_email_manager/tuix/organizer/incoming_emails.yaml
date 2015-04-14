@@ -1,0 +1,130 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__email_template_manager:
+    nav:
+zenario__administration:
+    nav:
+        zenario_incoming_email_manager__incoming_emails:
+            priv: _PRIV_VIEW_SCHEDULED_TASK
+            css_class: zenario_incoming_email_manager__handlers
+            label: Incoming Email Handlers
+            tooltip: View and Manage Incoming Email Handlers
+            link:
+                path: zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks
+                refiner: zenario_incoming_email_manager__incoming_emails
+
+    panels:
+        zenario_scheduled_task_manager__scheduled_tasks:
+            refiners:
+                zenario_incoming_email_manager__incoming_emails:
+                    sql: "manager_class_name = 'zenario_incoming_email_manager'"
+            columns:
+                zenario_incoming_email_manager__script_enable:
+                    php: Yes
+                    title: Forward to Script
+                    db_column: tiema.script_enable
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+                                                            ON tiema.job_id = j.id
+                    format: yes_or_no
+                    show_by_default: Yes
+                zenario_incoming_email_manager__script_recipient_username:
+                    php: Yes
+                    title: "Recipient's Username"
+                    db_column: tiema.script_recipient_username
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+                                                            ON tiema.job_id = j.id
+                    show_by_default: Yes
+                zenario_incoming_email_manager__fetch_enable:
+                    php: Yes
+                    title: Fetch from Mailbox
+                    db_column: tiema.fetch_enable
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+                                                            ON tiema.job_id = j.id
+                    format: yes_or_no
+                    show_by_default: Yes
+                zenario_incoming_email_manager__fetch_server:
+                    php: Yes
+                    title: Server
+                    db_column: tiema.fetch_server
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+                                                            ON tiema.job_id = j.id
+                    show_by_default: Yes
+                zenario_incoming_email_manager__fetch_username:
+                    php: Yes
+                    title: Username
+                    db_column: tiema.fetch_username
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]accounts AS tiema
+                                                            ON tiema.job_id = j.id
+                    show_by_default: Yes
+            item_buttons:
+                zenario_incoming_email_manager__edit_enable:
+                    priv: _PRIV_MANAGE_SCHEDULED_TASK
+                    php: Yes
+                    css_class: run
+                    label: Enable
+                    tooltip: Enable Incoming Email Handler
+                    admin_box:
+                        path: zenario_job
+                    traits:
+                        can_enable: Yes
+                    without_traits:
+                        can_suspend: Yes
+                zenario_incoming_email_manager__edit_enabled:
+                    php: Yes
+                    css_class: settings
+                    label: Settings
+                    admin_box:
+                        path: zenario_job
+                    without_traits:
+                        can_enable: Yes
+                zenario_incoming_email_manager__rerun:
+                    ord: "52"
+                    css_class: run_now
+                    label: Rerun
+                    tooltip: Rerun within the next minute
+                    ajax:
+                        request:
+                            rerun: "1"
+                    traits:
+                        can_rerun: Yes
+            hidden_nav:
+                log:
+                    panel:
+                        collection_buttons:
+                            zenario_incoming_email_manager__run_php:
+                                php: Yes
+                                hidden: Yes
+                        columns:
+                            zenario_incoming_email_manager__email_from:
+                                title: From
+                                db_column: tiemal.email_from
+                                table_join: |
+                                    LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+                                                                                       ON tiemal.job_id = jl.job_id
+                                                                                      AND tiemal.log_id = jl.id
+                                php: Yes
+                                show_by_default: Yes
+                            zenario_incoming_email_manager__email_subject:
+                                title: Subject
+                                db_column: tiemal.email_subject
+                                table_join: |
+                                    LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+                                                                                       ON tiemal.job_id = jl.job_id
+                                                                                      AND tiemal.log_id = jl.id
+                                php: Yes
+                                show_by_default: Yes
+                            zenario_incoming_email_manager__email_sent:
+                                title: Sent On
+                                db_column: tiemal.email_sent
+                                format: datetime
+                                table_join: |
+                                    LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX]]account_logs AS tiemal
+                                                                                       ON tiemal.job_id = jl.job_id
+                                                                                      AND tiemal.log_id = jl.id
+                                php: Yes
+                                show_by_default: Yes

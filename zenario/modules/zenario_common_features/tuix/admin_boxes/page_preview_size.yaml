@@ -1,0 +1,54 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_page_preview_size:
+    title: Create a new page preview size
+    key: 
+        id: ''
+    max_height: 300
+    hide_tab_bar: true
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: Yes
+            fields:
+                width:
+                    label: 'Width:'
+                    type: text
+                    style: 'width:5em; text-align:right;'
+                    validation:
+                        required: Please enter a width
+                        numeric: Width must be numeric
+                height:
+                    label: 'Height:'
+                    type: text
+                    style: 'width:5em; text-align:right;'
+                    validation:
+                        required: Please enter a height
+                        numeric: Height must be numeric
+                description:
+                    label: 'Description:'
+                    type: text
+                    maxlength: 255
+                type:
+                    label: 'Type:'
+                    type: radios
+                    values:
+                        desktop:
+                            label: Desktop
+                            ord: 0
+                        laptop:
+                            label: Laptop
+                            ord: 1
+                        tablet:
+                            label: Tablet (portrait)
+                            ord: 2
+                        tablet_landscape:
+                            label: Tablet (landscape)
+                            ord: 3
+                        smartphone:
+                            label: Smartphone
+                            ord: 4
+                    value: desktop
+                        
+                

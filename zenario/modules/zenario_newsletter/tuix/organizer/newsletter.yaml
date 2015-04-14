@@ -21,7 +21,8 @@ zenario__email_template_manager:
                 custom_where_statement_if_archive: |
                     WHERE n.status = '_ARCHIVED'
             view_mode: list
-            default_sort_column: date_created
+            default_sort_column: date_sent
+            bold_columns_in_list_view: newsletter_name
             default_sort_desc: Yes
             refiners:
                 drafts:
@@ -126,7 +127,6 @@ zenario__email_template_manager:
                     searchable: Yes
                     format: datetime
                     show_by_default: Yes
-            default_sort_column: newsletter_name
             item:
                 name: Newsletter
                 names: Newsletters
@@ -302,7 +302,9 @@ zenario__email_template_manager:
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link AS nul
-                id_column: nul.user_id
+                    INNER JOIN [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
+                id_column: "concat(nul.user_id, '_',  nul.newsletter_id)"
+                
             refiners:
                 newsletter:
                     sql: 'nul.newsletter_id = [[REFINER_ID]]'
@@ -310,8 +312,6 @@ zenario__email_template_manager:
                 id:
                     title: id
                     db_column: u.id
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     searchable: Yes
                     align_right: Yes
                 username:
@@ -322,19 +322,13 @@ zenario__email_template_manager:
                 salutation:
                     title: Salutation
                     db_column: u.salutation
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                 first_name:
                     title: First Name
                     db_column: u.first_name
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     searchable: Yes
                 last_name:
                     title: Last Name
                     db_column: u.last_name
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     searchable: Yes
                 email:
                     title: Email
@@ -350,25 +344,17 @@ zenario__email_template_manager:
                 screen_name:
                     title: Screen Name
                     db_column: u.screen_name
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     searchable: Yes
                 status:
                     title: Status
                     db_column: u.status
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                 created_date:
                     title: Joined
                     db_column: u.created_date
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     format: date
                 last_login:
                     title: Last Login
                     db_column: u.last_login
-                    table_join: |
-                        [[DB_NAME_PREFIX]]users AS u ON u.id = nul.user_id
                     format: date
                 email_sent:
                     title: Status

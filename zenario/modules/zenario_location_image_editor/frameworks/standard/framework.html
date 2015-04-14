@@ -1,0 +1,38 @@
+<div class="right_column">
+                                    
+	<div class="existing_image">
+		[cms:section name="Location_Image"]
+			<img alt="Location Image" src="[cms:merge name="Location_image"/]" class="existing_image" style="max-width:260px;">
+		[/cms:section]
+		[cms:section name="Generic_Image"]
+			<img alt="Location Image" src="[cms:merge name="Module_dir"/]images/location_generic_image.gif" class="existing_image" style="max-width:260px;">
+		[/cms:section]
+		
+
+		[cms:section name="Remove_Image"]
+			<div class="extranet_btn">
+				<div class="btn_extranet">
+					<div class="r">
+						<input type="hidden" name="image_id" value="[cms:merge name="Location_image_id"/]" />
+						<input type="submit" name="remove_image" value="[cms:phrase code="_REMOVE_IMAGE"/]" class="remove_image i" />
+					</div>
+				</div>
+			</div>
+		[/cms:section]
+	</div>
+	
+	
+	<div class="new_image">
+		<h2>[cms:phrase code="_NEW_LOCATION_IMAGE"/]</h2>
+		[cms:section name="Errors"]
+			<h3 class="error">[cms:merge name="Error"/]</h3> <br/>
+		[/cms:section]
+		<input type="file" name="new_image" class="upload_image">
+		<div class="extranet_btn">
+			<div class="btn_extranet">
+				<div class="r"><input type="submit" value="[cms:merge name="Replace_or_upload"/]" name="upload_image" class="add_image i">
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

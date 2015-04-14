@@ -1,0 +1,40 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Event Listing
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+description: |
+            <p>
+                This Module displays a list of Events to a visitor.
+            </p>
+            </p>
+                Inserting an Instance of this Module into a Slot on a visitor-facing page will display a
+                list of Events (which may take place on a single or multiple days).
+            <p>
+            </p>
+                The Events in the listing can be filtered by all events in a given time period, events 
+                from a certain Category in a given time period or events associated with a Location's 
+                HTML page that fall within the time period.
+            <p>
+            </p>
+                When filtering using a time period you can choose between the current day, the current 
+                week, the current calendar month, the current year or all time.
+            <p>
+            </p>
+                You can further filter your Event Listing by choosing to display current events, future
+                events and/or past events.
+            <p>
+category: pluggable
+keywords: calendar, event, list
+vlp_class_name: zenario_event_listing
+css_class_name: zenario_event_listing
+default_framework: standard
+is_pluggable: Yes
+default_instance_name: Event Listing
+nestable: Yes
+dependencies:
+    zenario_location_manager: Yes
+    zenario_ctype_event: Yes

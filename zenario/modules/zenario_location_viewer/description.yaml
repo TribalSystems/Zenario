@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Location Viewer
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+description: |
+            <p>The Location Viewer displays details of a Location (as managed by the zenario Location Manager in the Admin Back-end).</p>
+    
+            <p>Details of a Location include its name, website, address, phone and other information. If you have defined a Google Map for this Location, Location Viewer can show a map of the Location. You can define the output format using the Framework HTML for this Module's Plugins.</p>
+    
+            <p>A Location can have a Content Item associated with it (as defined in the Settings for the Location); you can then use that Content Item to hold a richer HTML description of the location. When a Location Viewer Plugin is then placed in a Slot on such a Content Item, it displays the details of the Location to that that Content Item describes.</p>
+    
+            <p>This is powerful because on a website showing many Locations you can create a Layout in which Location Viewer is placed in a Slot on the Layout Layer. That way, whenever you create a new Location and its descriptive HTML Page, you only need to select the correct Layout for the page to make it show the correct details.</p>
+    
+            <p>Alternatively you can define a Plugin that displays the details of a specific Location, and place it on an unrelated HTML Page.</p>
+    
+            <p>Note that Location Viewer always displays a Location's data, regardless of its Active status.</p>
+category: pluggable
+keywords: location, map, place
+vlp_class_name: zenario_location_viewer
+is_pluggable: true
+can_be_version_controlled: true
+default_framework: standard
+default_instance_name: Untitled Location Viewer
+nestable: false
+dependencies:
+    zenario_location_manager: true
+    zenario_google_map: true

@@ -61,7 +61,11 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 		} else {
 			$mrg = array(
 				'language_english_name' => $languages[setting('default_language')]['english_name'],
-				'module_display_name' => getModuleDisplayName($details['module_class_name']));
+				'module_display_name' => getModuleDisplayNameByClassName($details['module_class_name']));
+				
+			if (!$mrg['module_display_name']) {
+				$mrg['module_display_name'] = $box['key']['module_class_name'];
+			}
 			
 			$fields['phrase/code']['label'] = adminPhrase('Phrase / [[language_english_name]]:', $mrg);
 			

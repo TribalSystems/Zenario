@@ -12,6 +12,7 @@ description: >
     <p>You should make this page Private for all Extranet User access.</p>
     <p>Extranet Users will then be able to log in to access the change-password functionality. As a safety check, the Plugin asks the User to enter his current password, then the desired new password twice.</p>
     <p>On a multi-lingual site you may create a Change Password page for each Language. You can do this by creating a translation of the original Change Password page in each Language.</p>
+category: pluggable
 keywords: change, extranet, password, user
 vlp_class_name: zenario_extranet_change_password
 css_class_name: zenario_extranet_change_password

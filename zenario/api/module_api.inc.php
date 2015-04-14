@@ -1116,7 +1116,7 @@ class zenario_api {
 							}
 						
 						//For file uploads - if there has been a submission, move it to the cache/uploads directory and
-						//place the path in the $_POST vaable.
+						//place the path in the $_POST variable.
 						} elseif ($attributes['type'] == 'file' && isset($_POST['cID'])) {
 							if (!empty($_FILES[$attributes['name']]) && is_uploaded_file($_FILES[$attributes['name']]['tmp_name'])) {
 								if (cleanDownloads()) {
@@ -1151,7 +1151,6 @@ class zenario_api {
 							for ($k = 1; $k <= (int) $_POST[$attributes['name']. '__n']; ++$k) {
 								if (isset($_POST[$attributes['name']. '__'. $k])) {
 									$post .= ($post === ''? '' : ','). $_POST[$attributes['name']. '__'. $k];
-									++$k;
 								}
 							}
 							

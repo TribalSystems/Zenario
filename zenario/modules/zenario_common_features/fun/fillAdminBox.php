@@ -734,8 +734,16 @@ switch ($path) {
 			$documentTagsString = '';
 			$documentTags = getRowsArray('document_tag_link', 'tag_id', array('document_id' => $document_id));
 			$documentDetails = getRow('documents',array('file_id', 'thumbnail_id', 'extract', 'extract_wordcount'),  $document_id);
-			$documentName = getRow('files', array('filename'), $documentDetails['file_id']);
-			$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', $documentName);
+			
+			$documentName=getRow('documents', 'filename', array('type' => 'file','id' => $document_id));
+			//$documentName = getRow('files', array('filename'), $documentDetails['file_id']);
+			$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', array("filename"=>$documentName));
+			
+			
+			$fields['details/document_name']['value'] = $documentName;
+			$fileDatetime=getRow('documents', 'file_datetime', array('type' => 'file','id' => $document_id));
+			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
+			
 			foreach ($documentTags as $tag) {
 				$documentTagsString .= $tag . ",";
 			}
@@ -857,6 +865,59 @@ switch ($path) {
 				$box['tabs']['details']['fields']['release_date_field']['hidden'] = true;
 		}
 		
+		break;
+		
+	case 'zenario_reorder_documents':
+		if ($box['key']['id']){
+			$folderId = $box['key']['id'];
+			$folderName = getRow('documents', 'folder_name', array('id' => $folderId));
+			//$box['title'] = adminPhrase('Renaming/adding a title to the image "[[folder_name]]".', $folderName);
+			$box['title'] = "Re-order documents for the folder: '".$folderName."'";
+		}else{
+			$box['title'] = "Re-order documents";
+		}
+	
+		$datasetDetails = getDatasetDetails('documents');
+		$datasetId = $datasetDetails['id'];
+		if ($datasetDetails = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'type' => array('!' => 'other_system_field')))) {
+			foreach ($datasetDetails as $details) {
+				if($details['type'] == 'text' || $details['type'] == 'date') {
+					$datesetFields[]= $details;
+				}
+				
+			}
+			$i = 3;
+			foreach ($datesetFields as $dataset){
+				$box['tabs']['details']['fields']['reorder']['values'][$dataset['id']] = 
+					array('label' => $dataset['label'] . " - (custom dataset field)", 'ord' => $i);
+				$i++;
+			}
+		}
+		
+	break;
+	
+	case 'zenario_document_upload':
+	
+		$folderDetails= getRow('documents', array('id','folder_name'), array('id' => $box['key']['id'],'type'=>'folder'));
+		if ($folderDetails) {
+			$box['title'] = 'Uploading document for the folder "'.$folderDetails['folder_name'].'"';
+			$documentProperties['folder_id'] = $box['key']['id'];
+		}
+		break;
+	
+	case 'zenario_document_rename':
+			$documentId = $box['key']['id'];
+			
+			$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
+			
+			if ($isfolder){
+				$documentName=getRow('documents', 'folder_name', array('type' => 'folder','id' => $documentId));
+				$box['title'] = 'Renaming the folder "'.$documentName.'"';
+			}else{
+				$documentName=getRow('documents', 'filename', array('type' => 'file','id' => $documentId));
+				$box['title'] = 'Renaming the file "'.$documentName.'"';
+			}
+			$values['details/document_name'] = $documentName;
 		break;
 	
 	

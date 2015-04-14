@@ -1091,6 +1091,35 @@ public static function generateDirectory(&$data, $writeToFS = false, $preview = 
 	}
 	
 	if (!$preview) {
+		
+		//If grid maker is writing to the directory first,
+		//check permissions and come up with a friendlier error
+		//message if they are not correct
+		if (zenario_grid_maker::$mode == 'fs') {
+			
+			$tFileIsWritable = 
+				!file_exists(zenario_grid_maker::$tempDir. $tFilePath)
+			 || is_writable(zenario_grid_maker::$tempDir. $tFilePath);
+			$cssFileIsWritable = 
+				!file_exists(zenario_grid_maker::$tempDir. $cssFilePath)
+			 || is_writable(zenario_grid_maker::$tempDir. $cssFilePath);
+			
+			if (!$tFileIsWritable || !$cssFileIsWritable) {
+				$tDir = dirname(zenario_grid_maker::$tempDir. $tFilePath);
+				$tFilename = basename(zenario_grid_maker::$tempDir. $tFilePath);
+				$cssFilename = basename(zenario_grid_maker::$tempDir. $cssFilePath);
+			
+				$msg = adminPhrase('Sorry, the CMS could not write to the following files in the [[dir]] directory:', array('dir' => htmlspecialchars($tDir)));
+				
+				$msg .= '<br/><ul><li>'. htmlspecialchars($tFilename). '</li><li>'. htmlspecialchars($cssFilename). '</li></ul>';
+				
+				$msg .= adminPhrase('Please ensure that the files are writeable by the web server and try again.');
+				
+				return new zenario_error($msg);
+			}
+		}
+		
+		
 		try {
 			zenario_grid_maker::mkdir($tFamilyName);
 			
@@ -1139,30 +1168,32 @@ protected static $tempDir;
 protected static $tempDirR;
 
 
-//Copy a directory and its contents
-//Note that $from needs to be the full path, but $to is relative to the source/target directory
-protected static function copyDirR($from, $to, $excludeFilter = false, $limit = 9) {
-	
-	if (!--$limit) {
-		return;
-	}
-	
-	zenario_grid_maker::mkdir($to);
-	
-	foreach (scandir($from) as $file) {
-		if ($excludeFilter && strpos($file, $excludeFilter) !== false) {
-			continue;
-		}
-		
-		if (substr($file, 0, 1) != '.') {
-			if (is_dir($from. '/'. $file)) {
-				zenario_grid_maker::copyDirR($from. '/'. $file, $to. '/'. $file, $limit);
-			} else {
-				zenario_grid_maker::copy($from. '/'. $file, $to. '/'. $file, $limit);
-			}
-		}
-	}
-}
+
+//I don't think the function below is used...
+////Copy a directory and its contents
+////Note that $from needs to be the full path, but $to is relative to the source/target directory
+//protected static function copyDirR($from, $to, $excludeFilter = false, $limit = 9) {
+//	
+//	if (!--$limit) {
+//		return;
+//	}
+//	
+//	zenario_grid_maker::mkdir($to);
+//	
+//	foreach (scandir($from) as $file) {
+//		if ($excludeFilter && strpos($file, $excludeFilter) !== false) {
+//			continue;
+//		}
+//		
+//		if (substr($file, 0, 1) != '.') {
+//			if (is_dir($from. '/'. $file)) {
+//				zenario_grid_maker::copyDirR($from. '/'. $file, $to. '/'. $file, $limit);
+//			} else {
+//				zenario_grid_maker::copy($from. '/'. $file, $to. '/'. $file, $limit);
+//			}
+//		}
+//	}
+//}
 
 //Make a new directory in the target directory
 protected static function mkdir($path) {

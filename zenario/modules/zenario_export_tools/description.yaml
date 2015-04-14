@@ -18,6 +18,7 @@ description: |
                     this Module can use Google Translate to automatically translate the text of a Content Item.
                     For example, you could take an English page, duplicate it to create a copy in the French area of your site,
                     then use this Module to translate the English text into French.</p>
+category: management
 keywords: export, import, language, multilingual, multi, translate
 dependencies:
     zenario_pro_features: Yes

@@ -1,29 +1,29 @@
-<% if (m.newRow) { %>
-	<br/>
-<% } %>
+<div class="group_field_wrap {{m.newRow? 'group_field_wrap_new_row' : 'group_field_wrap_same_row'}}">
 
-<% if (m.lovField.pre_field_html !== undefined) { %>
-	{{m.lovField.pre_field_html}}
-<% } %>
+	<% if (m.lovField.pre_field_html !== undefined) { %>
+		{{m.lovField.pre_field_html}}
+	<% } %>
 
-<% if (m.lovField.side_note) { %>
-	<div class="zenario_side_note_wrap">
-		<div class="zenario_side_note">
-			<div class="zenario_note_icon"></div>
-			<div class="zenario_note_content">{{m.lovField.side_note}}</div>
+	<% if (m.lovField.side_note) { %>
+		<div class="zenario_side_note_wrap">
+			<div class="zenario_side_note">
+				<div class="zenario_note_icon"></div>
+				<div class="zenario_note_content">{{m.lovField.side_note}}</div>
+			</div>
 		</div>
-	</div>
-<% } %>
+	<% } %>
 
-{{m.lovHTML}}
+	{{m.lovHTML}}
 
-<label for="{{m.lovId|escape}}" id="label_for__{{m.lovId|escape}}">
-	{{m.lovField.label}}
-</label>
+	<label for="{{m.lovId|escape}}" id="label_for__{{m.lovId|escape}}">
+		{{m.lovField.label}}
+	</label>
 
-<% if (m.lovField.post_field_html !== undefined) { %>
-	{{m.lovField.post_field_html}}
-<% } %>
+	<% if (m.lovField.post_field_html !== undefined) { %>
+		{{m.lovField.post_field_html}}
+	<% } %>
+
+</div>
 
 <% if (m.lovField.note_below) { %>
 	<div class="zenario_note_below">{{m.lovField.note_below}}</div>

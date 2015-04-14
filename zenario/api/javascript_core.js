@@ -33,11 +33,16 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc.js.php for step (3).
 */
 
 
-(function(URLBasePath, window, document, zenario, zenarioA, undefined) {
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO
+) {
 	"use strict";
 
 	/**
@@ -45,7 +50,40 @@
 	  * Other functions are tucked away in the /js folder
 	 */
 
-
+	
+	//This is a shortcut function for initialising a new class.
+	//It just uses normal JavaScript class inheritance, but it makes the syntax
+	//a little more readable and friendly when creating a new class
+	window.extensionOf =
+	zenario.extensionOf = function(parent, initFun) {
+		
+		if (!parent) {
+			return initFun || (function() {});
+		}
+	
+		if (!initFun) {
+			initFun = function() {
+				parent.apply(this, arguments);
+			};
+		}
+	
+		initFun.prototype = new parent;
+		initFun.prototype.constructor = parent;
+	
+		return initFun;
+	};
+	
+	//This is a shortcut function for accessing the prototype of a class so you
+	//can then define its methods.
+	//This is more of a longcut than a shortcut function, but it makes the syntax
+	//a little more readable and friendly when setting the methods of a class.
+	window.methodsOf =
+	zenario.methodsOf = function(thisClass) {
+		return thisClass.prototype;
+	};
+	
+	
+	
 	//Shortcut to document.getElementById()
 	window.get = 
 	zenario.get = function(el) {
@@ -196,7 +234,15 @@
 	};
 
 	//Make a non-asyncornous AJAX call.
+	//Note that this is deprecated!
 	zenario.nonAsyncAJAX = function(url, post, json, useCache) {
+		
+		//if (zenario.showDevTools
+		// && window.console
+		// && console.trace) {
+		//	console.trace('Synchronous AJAX request made');
+		//}
+		
 		url = zenario.addBasePath(url);
 		
 		var xmlHttp = {};
@@ -270,121 +316,67 @@
 		}
 	};
 	
-	//Make a asyncornous AJAX call - basically just a wrapper for $.ajax
-	zenario.AJAX = function(url, post, json, callback) {
+	//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
+	//It returns a zenario.callback object.
+		//Note: The useCache variable is not currently implemented!
+	zenario.ajax = function(url, post, json, useCache) {
 		url = zenario.addBasePath(url);
 		
-		var options = {url: url, dataType: 'text'},
-			whenDone = function(data) {
-				
+		var qMark,
+			type = post? 'POST' : 'GET',
+			result = false,
+			parsedResult = false,
+			cb = new zenario.callback;
+			
+		//Check to see if the caller took the time to seperate the two different inputs out,
+		//or if they have dumped them all into the url
+		if (post === true) {
+			//If post has just been set to true, try to check the url for the actual inputs!
+			qMark = url.indexOf('?');
+		
+			if (qMark == -1) {
+				//Case where POST must be used, but there are not actually any requests
+				post = '';
+			} else {
+				//Get variables from the URL and put them in the POST
+				post = url.substr(qMark+1);
+				url = url.substr(0, qMark);
+			}
+		}
+		
+		$.ajax(url, {
+			data: post,
+			type: type,
+			dataType: 'text',
+			success: function(data) {
+				result = data
+			},
+			complete: function() {
+				//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
 				if (json) {
 					try {
-						data = JSON.parse(data);
-		
-						if (typeof data != 'object') {
-							throw 0;
-						}
+						parsedResult = JSON.parse(result);
 					} catch (e) {
-						//Display an error message if the data couldn't be parsed
-						if (zenarioA.init) {
-							zenarioA.showMessage(data, true, 'error', false, true);
-						} else {
-							alert(data);
+						if (result) {
+							if (zenarioA.init) {
+								zenarioA.floatingBox(result, true, 'error');
+							} else {
+								alert(result);
+							}
 						}
-						//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage)
-		
-						data = false;
+						return;
 					}
-				}
-				
-				if (callback) {
-					callback(data);
-				}
-			};
-		
-		if (post) {
-			options.type = 'POST';
-			
-			if (typeof post == 'object'
-			 || typeof post == 'string') {
-				options.data = post;
-			}
-		}
-		
-		$.ajax(options).always(whenDone);
-	};
-	
-	
-	//Make multiple AJAX calls, then do something when done.
-	zenario.multipleAJAX = function(urls, posts, json, callback) {
-		
-		var i,
-			loop,
-			length = 0,
-			isArray,
-			url,
-			post,
-			needToConvertToObject = false,
-			overallData,
-			overallCallback;
-		
-		if (typeof urls == 'object') {
-			isArray = _.isArray(urls);
-			
-			if (typeof posts != 'object') {
-				post = posts;
-				posts = isArray? [] : {};
-				needToConvertToObject = true;
-			}
-			
-			foreach (urls as i) {
-				if (isArray || _.has(urls, i)) {
-					++length;
 					
-					if (needToConvertToObject) {
-						posts[i] = post;
-					}
+					cb.call(parsedResult);
+				} else {
+					cb.call(result);
 				}
 			}
-		
-		} else {
-			isArray = _.isArray(posts);
-			
-			url = urls;
-			urls = isArray? [] : {};
-			
-			foreach (posts as i) {
-				if (isArray || _.has(posts, i)) {
-					++length;
-					urls[i] = url;
-				}
-			}
-		}
-		
-		overallData = isArray? [] : {};
-		overallCallback = _.after(length, function() {
-			callback(overallData);
 		});
 		
-		foreach (urls as i) {
-			if (isArray || _.has(urls, i)) {
-				(function(j) {
-					overallData[j] = false;
-				
-					if (typeof posts == 'object') {
-						post = posts[j];
-					} else {
-						post = posts;
-					}
-				
-					zenario.AJAX(urls[j], post, json, function(data) {
-						overallData[j] = data;
-						overallCallback();
-					})
-				})(i);
-			}
-		}
+		return cb;
 	};
+	
 
 	zenario.phrases = {};
 	zenario.loadPhrases = function(vlpClass, code) {
@@ -802,4 +794,6 @@
 		}
 	};
 
-})(URLBasePath, window, document, zenario, zenarioA);
+
+
+});

@@ -1,0 +1,17 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    icons:
+        buttons:
+            no_request:
+                ord: 8.1
+                css_class: zenario_at_icon_no_request
+                tooltip: 'No request|There is no requested action for this content item'
+                admin_box:
+                    path: zenario_content_requests
+            request:
+                ord: 8.2
+                css_class: zenario_at_icon_request
+                tooltip: 'Requested action|'
+                admin_box:
+                    path: zenario_content_requests

@@ -54,18 +54,8 @@ function incJS($file) {
 }
 
 
-//Create encapsulated objects for all the CMS functions
-echo "
-(function() {
-	var n, e, es = ['', 'A', 'NewAB', 'AB', 'Tab', 'AT', 'NewO', 'O'];
-	for (e in es) {
-		n = 'zenario' + es[e];
-		window[n] = function() {};
-		window[n].encapName = n;
-	}
-})();
-";
 
+incJS('zenario/js/base_definitions');
 
 //Include Modernizr
 incJS('zenario/libraries/bsd/modernizr/modernizr');

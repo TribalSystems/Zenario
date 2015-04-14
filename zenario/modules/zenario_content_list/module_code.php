@@ -376,26 +376,44 @@ class zenario_content_list extends module_base_class {
 			$pagination = false;
 		}
 		
-		// Replace phrase codes with phrases in heading text
-		$heading_if_items = $this->setting('heading_if_items');
-		$heading_if_no_items = $this->setting('heading_if_no_items');
-		if ($this->setting('use_phrases')) {
-			$this->replacePhraseCodesInString($heading_if_items);
-			$this->replacePhraseCodesInString($heading_if_no_items);
+		
+		//Check whether any phrases have been entered into the plugin settings, and translate them
+		//if needed
+		$titleWithContent = '';
+		if ($this->setting('show_headings')) {
+			$titleWithContent = htmlspecialchars($this->setting('heading_if_items'));
+			
+			if (!$this->isVersionControlled && $this->setting('translate_text')) {
+				$titleWithContent = $this->phrase($titleWithContent);
+			}
 		}
-		$titleWithContent = (($this->setting('heading_if_items')) ? $heading_if_items : $this->phrase('List of Content'));
-		$titleWithNoContent = $this->setting('heading_if_no_items')? $heading_if_no_items : $this->phrase('No content to list');
+		$titleWithNoContent = '';
+		if ($this->setting('show_headings_if_no_items')) {
+			$titleWithNoContent = htmlspecialchars($this->setting('heading_if_no_items'));
+			
+			if (!$this->isVersionControlled && $this->setting('translate_text')) {
+				$titleWithNoContent = $this->phrase($titleWithNoContent);
+			}
+		}
+		$moreLinkText = '';
+		if ($moreLink) {
+			$moreLinkText = htmlspecialchars($this->setting('more_link_text'));
+			
+			if (!$this->isVersionControlled && $this->setting('translate_text')) {
+				$moreLinkText = $this->phrase($moreLinkText);
+			}
+		}
 		
 		$this->framework(
 			'Outer', 
 			array(
 				'More_Link' => $moreLink,
-				'More_Link_Title' => $moreLink? $this->phrase('_MORE'): null,
+				'More_Link_Title' => $moreLinkText,
 				'Pagination' => $pagination,
 				'Pagination_Data' => $paginationLinks,
 				'Results' => $this->rows,
 				'RSS_Link' => $this->setting('enable_rss')? $this->escapeAppropriately($this->showRSSLink(true)) : null,
-				'Title_With_Content' => ((bool)$this->setting('show_headings')) ? $titleWithContent: null,
+				'Title_With_Content' => $titleWithContent,
 				'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
 			),
 			array(

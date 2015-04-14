@@ -10,13 +10,19 @@ zenario__content:
                 table: |
                     [[DB_NAME_PREFIX]]documents AS d
                     LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON d.file_id = f.id
-                hierarchy_column: d.folder_id
                 id_column: d.id
                 client_side: true
+            
+            panel_type: hierarchy_with_lazy_load
             reorder:
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
+            
+            hierarchy:
+                column: folder_id
+                #db_column: d.folder_id
+            
             disable_periodic_refresh: true
             default_sort_column: name
             no_items_message: There are no documents or folders
@@ -47,13 +53,21 @@ zenario__content:
                     width: xxsmall
                 name:
                     title: Name
-                    db_column: "concat(ifNull(f.filename, \'\'), ifNull(d.folder_name, \'\'))"
+                    db_column: "concat(ifNull(d.filename, \'\'), ifNull(d.folder_name, \'\'))"
                     show_by_default: true
                     width: xxlarge
+                    searchable: true
                 filesize:
                     title: File size
                     width: small
                     show_by_default: true
+                date_uploaded:
+                    title: Date uploaded
+                    db_column: d.file_datetime
+                    format: datetime
+                    show_by_default: Yes
+                    align_right: true
+                    width: xxsmall
                 folder_file_count:
                     title: Files and folder count
                 has_image:
@@ -70,36 +84,57 @@ zenario__content:
                     width: small
                     format: yes_or_no
             collection_buttons:
+            #    upload:
+            #        hide_in_select_mode: true
+            #        label: Upload a document
+            #        css_class: zenario_create_a_new
+            #        tooltip: |
+            #            <p>Upload one or multiple files to the Dropbox.</p>
+            #            <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
+            #        upload:
+            #            multi: true
+            #            drag_and_drop: true
+            #            request:
+            #                upload: "1"
                 upload:
                     hide_in_select_mode: true
                     label: Upload a document
                     css_class: zenario_create_a_new
-                    tooltip: |
-                        <p>Upload one or multiple files to the Dropbox.</p>
-                        <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
-                    upload:
-                        multi: true
-                        drag_and_drop: true
-                        request:
-                            upload: "1"
+                    admin_box:
+                        path: zenario_document_upload
                 add_folder:
                     label: Create a folder
                     css_class: zenario_create_a_new
                     admin_box:
                         path: zenario_document_folder
+                        
+                reorder_root:
+                    hide_in_select_mode: true
+                    label: Re-order
+                    admin_box:
+                        path: zenario_reorder_documents
+                        
                 
             item_buttons:
+                #upload:
+                #    label: Upload to selected folder
+                #    css_class: zenario_create_a_new
+                #    tooltip: |
+                #        <p>Upload one or multiple files to the Dropbox.</p>
+                #        <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
+                #    upload:
+                #        multi: true
+                #        drag_and_drop: true
+                #        request:
+                #            upload: "1"
+                #    traits:
+                #        is_folder: true
                 upload:
+                    hide_in_select_mode: true
                     label: Upload to selected folder
                     css_class: zenario_create_a_new
-                    tooltip: |
-                        <p>Upload one or multiple files to the Dropbox.</p>
-                        <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
-                    upload:
-                        multi: true
-                        drag_and_drop: true
-                        request:
-                            upload: "1"
+                    admin_box:
+                        path: zenario_document_upload
                     traits:
                         is_folder: true
                 add_folder:
@@ -112,11 +147,18 @@ zenario__content:
                     traits:
                         is_folder: true
                     
-                folder_details:
+                #folder_details:
+                #    hide_in_select_mode: true
+                #    label: Rename
+                #    admin_box:
+                #        path: zenario_document_folder
+                #    traits:
+                #        is_folder: true
+                reorder:
                     hide_in_select_mode: true
-                    label: Rename
+                    label: Re-order
                     admin_box:
-                        path: zenario_document_folder
+                        path: zenario_reorder_documents
                     traits:
                         is_folder: true
                 view_tags:
@@ -127,6 +169,14 @@ zenario__content:
                         is_folder: true
                     admin_box:
                         path: zenario_document_properties
+                rename:
+                    hide_in_select_mode: true
+                    label: Rename
+                    multiple_select: false
+                    admin_box:
+                        path: zenario_document_rename
+                    traits:
+                        is_folder: true
                 download:
                     hide_in_select_mode: true
                     label: Download
@@ -234,7 +284,6 @@ zenario__content:
                     ajax:
                         request: 
                             rescanText: true
-                    
                 move_documents:
                     hide_in_select_mode: true
                     label: Move selected document
@@ -242,6 +291,7 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_document_move
+                        
                 delete_file:
                     hide_in_select_mode: true
                     label: Delete

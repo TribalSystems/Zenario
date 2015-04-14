@@ -48,7 +48,7 @@ zenario_quick_create:
                         if (this.checked) {
                                                         get('alias').disabled = false;
                                                         get('title').disabled = false;
-                                                        if (!zenarioAB.focus.key.lock_language_id) $('#language_id').removeAttr('disabled');
+                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').removeAttr('disabled');
                                                         if (get('menu_title')) get('menu_title').disabled = false;
                                                         $('#row__template_id input').removeAttr('disabled');
                                                         $('#row__template_id input.launch_keeper').removeClass('submit_disabled');
@@ -78,7 +78,7 @@ zenario_quick_create:
                     label: 'Menu Node Text:'
                     type: text
                     maxlength: 255
-                    onchange: zenarioAB.focus.___menu_title_changed = true;
+                    onchange: zenarioAB.tuix.___menu_title_changed = true;
                     onkeyup: |
                         get('menu_path').value =
                                                         !get('menu_title').value?
@@ -105,7 +105,7 @@ zenario_quick_create:
                     type: text
                     maxlength: 75
                     onkeyup: zenarioAB.validateAlias();
-                    onchange: zenarioAB.focus.___alias_changed = true;
+                    onchange: zenarioAB.tuix.___alias_changed = true;
                     note_below: |
                         An alias for this content item, and part of its URL.
                         The combination of a content item's alias and its language code is unique.
@@ -132,7 +132,7 @@ zenario_quick_create:
                         if (this.checked) {
                                                         get('alias').disabled = true;
                                                         get('title').disabled = true;
-                                                        if (!zenarioAB.focus.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
+                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
                                                         if (get('menu_title')) get('menu_title').disabled = true;
                                                         $('#row__template_id input').attr('disabled', 'disabled');
                                                         $('#row__template_id input.launch_keeper').addClass('submit_disabled');
@@ -151,7 +151,7 @@ zenario_quick_create:
                     disabled: disabled
                     class: launch_keeper submit_disabled
                     onclick: |
-                        var key = $.extend(true, {}, zenarioAB.focus.key);
+                        var key = $.extend(true, {}, zenarioAB.tuix.key);
                                                     key.target_alias = zenarioAB.readField('alias');
                                                     key.target_title = zenarioAB.readField('title');
                                                     if (get('menu_title')) key.target_menu_title = zenarioAB.readField('menu_title');
@@ -168,7 +168,7 @@ zenario_quick_create:
                         if (this.checked) {
                                                         get('alias').disabled = true;
                                                         get('title').disabled = true;
-                                                        if (!zenarioAB.focus.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
+                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
                                                         if (get('menu_title')) get('menu_title').disabled = true;
                                                         $('#row__template_id input').attr('disabled', 'disabled');
                                                         $('#row__template_id input.launch_keeper').addClass('submit_disabled');
@@ -187,7 +187,7 @@ zenario_quick_create:
                     class: launch_keeper submit_disabled
                     disabled: disabled
                     onclick: |
-                        var key = $.extend(true, {}, zenarioAB.focus.key);
+                        var key = $.extend(true, {}, zenarioAB.tuix.key);
                                                     key.suggestedName = zenarioAB.readField('menu_title');
                                                     zenarioAB.close();
                                                     zenarioA.openMenuAdminBox(key, true);

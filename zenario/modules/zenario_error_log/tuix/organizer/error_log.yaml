@@ -1,0 +1,55 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        error_log:
+            title: Error log
+            view_mode: list
+            disable_grid_view: true
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log el
+                    LEFT JOIN [[DB_NAME_PREFIX]]spare_aliases sa
+                        ON el.page_alias = sa.alias
+                id_column: el.id
+            default_sort_column: datetime
+            default_sort_desc: true
+            columns:
+                id:
+                    title: ID
+                    db_column: el.id
+                datetime:
+                    title: Logged
+                    db_column: el.logged
+                    show_by_default: true
+                    searchable: true
+                    format: datetime
+                requested_page_alias:
+                    title: Requested page alias
+                    db_column: page_alias
+                    show_by_default: true
+                    searchable: true
+                referrer_url:
+                    title: Referrer URL
+                    db_column: el.referrer_url
+                    show_by_default: true
+                    searchable: true
+                    width: xxlarge
+                    item_link: content_item_or_url
+                connected_spare_alias_destination: 
+                    title: Connected spare alias destination
+                    show_by_default: true
+                    width: large
+                    item_link: content_item_or_url
+            collection_buttons:
+                clear_log:
+                    label: Clear log
+                    ajax:
+                        confirm:
+                            message: Are you sure you want to clear the error log? All logged errors in this panel will be permanently deleted.
+                            message_type: warning
+                            button_message: Clear log
+                            cancel_button_message: Cancel
+                        request:
+                            clear_log: 1
+                            

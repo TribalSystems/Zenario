@@ -27,9 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('LATEST_REVISION_NO', 29240);
-define('LATEST_BIG_CHANGE_REVISION_NO', 29232);
+define('LATEST_REVISION_NO', 30152);
+define('LATEST_BIG_CHANGE_REVISION_NO', 30152);
 define('INSTALLER_REVISION_NO', 26960);
 define('INSTALLER_DEFAULT_THEME', 'duke_street');
-define('ZENARIO_CMS_VERSION', '7.0.3a');
-define('ZENARIO_CMS_NUMERIC_VERSION', '7000003');
+define('ZENARIO_CMS_VERSION', '7.0.4b');
+define('ZENARIO_CMS_NUMERIC_VERSION', '7000004');

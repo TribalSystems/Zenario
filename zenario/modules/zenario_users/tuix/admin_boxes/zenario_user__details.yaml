@@ -36,7 +36,7 @@ zenario_user__details:
                     values: 
                         contact: 
                             ord: 1
-                            label: Contact only
+                            label: Contact
                             tooltip: A user who cannot log in (for data capture or mailing purpose only)
                         pending: 
                             ord: 2
@@ -44,7 +44,7 @@ zenario_user__details:
                             tooltip: A user who needs activation by an administrator before logging in
                         active: 
                             ord: 3
-                            label: Active extranet user
+                            label: Extranet user (active)
                             tooltip: "A user who can immediately log in to the site's extranet area"
                         suspended: 
                             ord: 4
@@ -61,7 +61,7 @@ zenario_user__details:
                 suggest_screen_name:
                     same_row: true
                     visible_if: |
-                        !zenarioAB.focus.key.id
+                        !zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.user_use_screen_name
@@ -78,7 +78,7 @@ zenario_user__details:
                     label: 'Screen Name chosen/ accepted by user'
                     type: checkbox
                     visible_if: |
-                        zenarioAB.focus.key.id
+                        zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     read_only: true 
@@ -89,27 +89,27 @@ zenario_user__details:
                     redraw_onchange: true
                     label: Change password
                     visible_if: |
-                        zenarioAB.focus.key.id
+                        zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                 password:
                     label: "Password:"
                     type: password
                     visible_if: |
-                        (!zenarioAB.focus.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                 reveal_password:
                     same_row: true
                     visible_if: |
-                        (!zenarioAB.focus.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     value: Reveal
                     dataset_label: '[Reveal password button]'
                     type: toggle
                     onclick: |
-                        var fields = zenarioAB.focus.tabs.details.fields,
+                        var fields = zenarioAB.tuix.tabs.details.fields,
                             passwordEl = zenario.get('password'),
                             passwordField = fields.password,
                             revealEl = zenario.get('reveal_password'),
@@ -129,7 +129,7 @@ zenario_user__details:
                 suggest_password:
                     same_row: true
                     visible_if: |
-                        (!zenarioAB.focus.key.id || zenarioAB.value('change_password', 'details') == 1)
+                        (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                     dataset_label: '[Suggest password button]'
@@ -188,7 +188,7 @@ zenario_user__details:
                     hidden: Yes
         dates:
             visible_if: |
-                zenarioAB.focus.key.id
+                zenarioAB.tuix.key.id
             label: Dates
             fields:
                 created_date: 

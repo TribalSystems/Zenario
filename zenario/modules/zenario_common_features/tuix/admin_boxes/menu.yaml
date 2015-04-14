@@ -97,6 +97,7 @@ zenario_menu:
                     ord: 1006.5
                     label: 'Anchor name:'
                     type: text
+                    maxlength: 255
                     side_note: >
                         If you have an anchor on the page, you can specify it here and you'll be taken to its location on navigation.
                 hide_private_item:

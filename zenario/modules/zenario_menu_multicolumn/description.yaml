@@ -3,11 +3,12 @@
 
 display_name: 'Menu with multi-column dropdown'
 description: |
-    <p>
+                <p>
                     Displays a horizontal menu bar, with multi-column dropdown, so that when a visitor hovers over a level 1 menu node, it shows a large dropdown panel with level 2 and level 3 items.
                 </p><p>
                     It is designed to show its content across numerous columns, starting from the left, filling down each column to n menu nodes (irrespective of menu level) before filling the next column. n is defined in the plugin settings.
                 </p>
+category: pluggable
 keywords: menu, navigation, column
 editions: Community, Pro, ProBusiness, Enterprise
 inheritance:

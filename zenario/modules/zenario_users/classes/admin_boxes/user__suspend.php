@@ -32,7 +32,7 @@ class zenario_users__admin_boxes__user__suspend extends zenario_users {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$userDetails = getUserDetails(arrayKey($box,"key","id"));
 	
-		$box['title'] = "Suspending the user \"" . arrayKey($userDetails,"screen_name") . "\"";
+		$box['title'] = "Suspending the user \"" . arrayKey($userDetails,"identifier") . "\"";
 	
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Suspended',false);
 	

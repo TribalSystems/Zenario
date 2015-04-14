@@ -174,5 +174,17 @@ _sql
 	MODIFY COLUMN `slide_visibility` enum('call_static_method','logged_in','logged_out','logged_in_with_field','logged_in_without_field','everyone') DEFAULT 'everyone'
 _sql
 
+); revision( 27
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides
+	DROP COLUMN `use_title_transition`,
+	DROP COLUMN `use_extra_html_transition`,
+	DROP COLUMN `title_transition`,
+	DROP COLUMN `extra_html_transition`,
+	ADD COLUMN `transition_code` text DEFAULT NULL,
+	ADD COLUMN `use_transition_code` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
 );
 

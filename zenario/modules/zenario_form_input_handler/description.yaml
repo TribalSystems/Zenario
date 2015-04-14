@@ -1,0 +1,58 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Form Input Handler
+description: |
+    <p>This is a powerful Module which listens for form submissions anywhere on your site.
+            It can be configured to listen for a Signal from a form (such as the Flexible Form Module).
+            When it hears the Signal, it can send the form contents by email, and save the submission in a database table, according to its configuration.</p>
+        
+            <p><b>Rulesets for Sending Submitted Data</b><br/>
+            You can define Rulesets. Whenever a form is submitted, the Form Input Handler processes the submitted form data against its Rulesets. 
+            A Ruleset contains one or more rules, whereby a data field in the submitted form is matched against certain text patterns. Simple pattern matching is supported, and more advanced matching is possible by using regular expressions.  
+            When a Rule is matched, the form data is merged into an Email Template and sent by email to the specified address.</p>
+        
+            <p><b>Example Usage</b><br/>
+            You might for example have an email reply form in which your site visitor chooses the type of enquiry from a pull-down selector. It might be called "enquiry_type".
+            You may want sales enquiries to be emailed to sales@yoursite.com, while enquiries about job vacancies may be emailed to recruitment@yoursite.com.
+            Therefore "enquiry_type" could have the possible values of "sales" and "vacancies".
+            The Form Input Handler would then be set up to look at the value of "enquiry_type". You would create a Rule to look for a match for this field against the value "sales", and within that Rule you would define the destination email as "sales@yoursite.com". 
+            This is just a simple application. You could similarly process emails by countries, or any other fields which your form may contain.</p>
+        
+            <p><b>Saving Submitted Data</b><br/>
+            Form Input Handler also saves form data in a database table. 
+            Both form data and attachments can be saved. 
+            All submissions are grouped according to the Instance name of the Form plugin which sends the Signal upon form submission. 
+            Therefore administrators will see a Form Submissions panel inside the Form Input Handler administration panel, and inside Form Submissions will be one panel for each of the forms on the website.
+            By saving submitted data, you can be sure that valuable submitted data is not lost when sent by email.</p>
+category: management
+keywords: data, email, form, routing, submission
+vlp_class_name: zenario_form_input_handler
+is_pluggable: No
+admin_floating_box_tabs:
+    tab1:
+        floating_box_name: Submission Details
+        tab_ordinal: "1"
+        tab_label: Details
+        priv: _PRIV_VIEW_USER
+    tab2:
+        floating_box_name: Add Rule
+        tab_ordinal: "1"
+        tab_label: Details
+        tab_js_path: js/admin_floating_box.min.js
+        priv: _PRIV_SET_EMAIL_ROUTING
+    tab3:
+        floating_box_name: Edit Rule
+        tab_ordinal: "1"
+        tab_label: Details
+        tab_js_path: js/admin_floating_box.min.js
+        priv: _PRIV_SET_EMAIL_ROUTING
+signals:
+    signal:
+        name: eventFlexibleFormSubmitted
+dependencies:
+    zenario_email_template_manager: Yes

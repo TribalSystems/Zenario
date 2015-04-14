@@ -1,64 +1,52 @@
 <strong>
-	<% if (m.parent && m.parent.schema && m.parent.schema.additionalProperties) { %>
-		Element
-	<% } else { %>
-		Property
-	<% } %>
+	{{m.tag|escape}}
 </strong>
 
 <br>
-<em>
-	&nbsp; &nbsp;
-	<% if (m.parent && m.parent.schema && m.parent.schema.additionalProperties) { %>
-		Appears in an array and can have any name
-	<% } else { %>
-		Describes its parent and has a specific name
-	<% } %>
-</em>
+&nbsp; &nbsp;
+<% if (m.parent && m.parent.schema && m.parent.schema.additionalProperties) { %>
+	element (appears in an array and can have any name)
+<% } else { %>
+	property (describes its parent and has a specific name)
+<% } %>
 
 <% if (m.schema && m.schema.additionalProperties && m.schema.additionalProperties.properties) { %>
 	<br/>
-	<label>Type:</label>
-	<span>Array of elements</span>
-	<br/>
-	<em>
-		&nbsp; &nbsp;
-		Its children are elements and can have any name
-	</em>
+	&nbsp; &nbsp;
+	
+	<span>array of
+		<em>objects</em>
+		(its children are elements and can have any name)
+	</span>
 
 <% } else if (m.schema && m.schema.additionalProperties && m.schema.additionalProperties.type) { %>
 	<br/>
-	<label>Type:</label>
-	<span>Array of {{m.schema.additionalProperties.type|escape}}</span>
-	<br/>
-	<em>
-		&nbsp; &nbsp;
-		Its children are elements and can have any name
-	</em>
+	&nbsp; &nbsp;
+	
+	<span>
+		array of
+		<em>{{devTools.arrayToList(m.schema.additionalProperties.type)|escape}}</em>
+		(its children are elements and can have any name)
+	</span>
 
 <% } else if (m.schema && m.schema.type) { %>
 	<br/>
-	<label>Type:</label>
-	<span>{{m.schema.type|escape}}</span>
+	&nbsp; &nbsp;
 	
-	<% if (m.schema.type == 'object') { %>
-		<br/>
-		<em>
-			&nbsp; &nbsp;
-			Its children are properties and have specific names
-		</em>
-	<% }  %>
+	<span>
+		<em>{{devTools.arrayToList(m.schema.type)|escape}}</em>
+	
+		<% if (m.schema.type == 'object') { %>
+			(its children are properties and have specific names)
+		<% }  %>
+	</span>
 
 <% } else if (m.schema && m.schema.enum) { %>
 	<br/>
-	<label>Enum:</label>
-	<span>
-		<% if (typeof m.schema.enum == 'string') { %>
-			enum ({{m.schema.enum|escape}})
-		<% } else { %>
-			enum ({{m.schema.enum.join(', ')|escape}})
-		<% } %>
-	</span>
+	&nbsp; &nbsp;
+	<span><em>
+		enum ({{devTools.arrayToList(m.schema.enum)|escape}})
+	</em></span>
 <% } %>
 
 <% if (m.schema.description) { %>

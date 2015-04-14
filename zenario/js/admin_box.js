@@ -33,19 +33,20 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
 */
 
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
+	boxNum
+) {
+	"use strict";
 
-window.zenarioNewAB = function(boxNum) {
-	(function(
-		zenarioAB,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-		undefined) {
-			"use strict";
 
 
 
@@ -61,12 +62,12 @@ zenarioAB.cachedAJAXSnippets = {};
 
 
 zenarioAB.getKey = function(itemLevel) {
-	return zenarioAB.focus.key;
+	return zenarioAB.tuix.key;
 };
 
 zenarioAB.getKeyId = function(limitOfOne) {
-	if (zenarioAB.focus && zenarioAB.focus.key) {
-		return zenarioAB.focus.key.id;
+	if (zenarioAB.tuix && zenarioAB.tuix.key) {
+		return zenarioAB.tuix.key.id;
 	} else {
 		return false;
 	}
@@ -76,6 +77,31 @@ zenarioAB.getLastKeyId = function(limitOfOne) {
 	return zenarioAB.getKeyId(limitOfOne);
 };
 
+
+zenarioAB.openSiteSettings = function(settingGroup, tab) {
+	zenarioAB.open(
+		'site_settings',
+		{
+			id: settingGroup
+		},
+		tab,
+		undefined,
+		function() {
+			zenarioO.reload();
+		}
+	);
+};
+zenarioAB.enableOrDisableSite = function() {
+	zenarioAB.open(
+		'zenario_enable_site',
+		undefined,
+		undefined,
+		undefined,
+		function() {
+			zenarioO.reload();
+		}
+	);
+};
 
 //Open an admin floating box
 zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
@@ -132,7 +158,10 @@ zenarioAB.start = function(path, key, tab, values) {
 	
 	zenarioAB.path = ifNull(path, '');
 	
-	zenarioAB.focus = {};
+	zenarioAB.tuix = {};
+		//Backwards compatability for any old code
+		zenarioAB.focus = zenarioAB.tuix;
+	
 	zenarioAB.key = ifNull(key, {});
 	zenarioAB.tab = tab;
 	zenarioAB.shownTab = false;
@@ -143,7 +172,7 @@ zenarioAB.start = function(path, key, tab, values) {
 		function(data) {
 			if (zenarioAB.load(data)) {
 				if (zenarioAB.tab) {
-					zenarioAB.focus.tab = zenarioAB.tab;
+					zenarioAB.tuix.tab = zenarioAB.tab;
 				}
 				
 				delete zenarioAB.key;
@@ -172,12 +201,14 @@ zenarioAB.load = function(data) {
 	
 	zenarioAB.callFunctionOnEditors('remove');
 	if (zenarioAB.welcome) {
-		zenarioAB.focus = data;
+		zenarioAB.tuix = data;
+			//Backwards compatability for any old code
+			zenarioAB.focus = zenarioAB.tuix;
 	} else {
-		zenarioAB.syncAdminBoxFromServerToClient(data, zenarioAB.focus);
+		zenarioAB.syncAdminBoxFromServerToClient(data, zenarioAB.tuix);
 	}
 	
-	if (!zenarioAB.focus || (!zenarioAB.focus.tabs && zenarioAB.focus._location === undefined)) {
+	if (!zenarioAB.tuix || (!zenarioAB.tuix.tabs && zenarioAB.tuix._location === undefined)) {
 		zenarioA.showMessage(phrase.couldNotOpenBox, true, 'error');
 		return false;
 	}
@@ -190,11 +221,11 @@ zenarioAB.initFields = function() {
 	
 	var tab, id, i, panel, field;
 	
-	if (zenarioAB.focus.tabs) {
-		foreach (zenarioAB.focus.tabs as tab) {
-			if (!zenarioAB.isInfoTag(tab) && zenarioAB.focus.tabs[tab] && zenarioAB.focus.tabs[tab].fields) {
-				foreach (zenarioAB.focus.tabs[tab].fields as id) {
-					if (!zenarioAB.isInfoTag(id) && (field = zenarioAB.focus.tabs[tab].fields[id])) {
+	if (zenarioAB.tuix.tabs) {
+		foreach (zenarioAB.tuix.tabs as tab) {
+			if (!zenarioAB.isInfoTag(tab) && zenarioAB.tuix.tabs[tab] && zenarioAB.tuix.tabs[tab].fields) {
+				foreach (zenarioAB.tuix.tabs[tab].fields as id) {
+					if (!zenarioAB.isInfoTag(id) && (field = zenarioAB.tuix.tabs[tab].fields[id])) {
 						
 						//Ensure that the display values for <use_value_for_plugin_name> fields are always looked up,
 						//even if that field is never actually shown
@@ -233,24 +264,24 @@ zenarioAB.loadValuesFromOrganizerPath = function(field) {
 };
 
 zenarioAB.changeMode = function() {
-	if (zenarioAB.editCancelEnabled(zenarioAB.focus.tab)) {
+	if (zenarioAB.editCancelEnabled(zenarioAB.tuix.tab)) {
 		if (zenarioAB.editModeOn()) {
-			zenarioAB.editCancelOrRevert('cancel', zenarioAB.focus.tab);
+			zenarioAB.editCancelOrRevert('cancel', zenarioAB.tuix.tab);
 		} else {
-			zenarioAB.editCancelOrRevert('edit', zenarioAB.focus.tab);
+			zenarioAB.editCancelOrRevert('edit', zenarioAB.tuix.tab);
 		}
 	}
 };
 
 zenarioAB.revertTab = function() {
-	if (zenarioAB.changes(zenarioAB.focus.tab) && zenarioAB.revertEnabled(zenarioAB.focus.tab)) {
-		zenarioAB.editCancelOrRevert('revert', zenarioAB.focus.tab);
+	if (zenarioAB.changes(zenarioAB.tuix.tab) && zenarioAB.revertEnabled(zenarioAB.tuix.tab)) {
+		zenarioAB.editCancelOrRevert('revert', zenarioAB.tuix.tab);
 	}
 };
 
 zenarioAB.editCancelOrRevert = function(action, tab) {
 	
-	if (!zenarioAB.focus.tabs[tab].edit_mode) {
+	if (!zenarioAB.tuix.tabs[tab].edit_mode) {
 		return;
 	}
 	
@@ -259,39 +290,39 @@ zenarioAB.editCancelOrRevert = function(action, tab) {
 		needToValidate;
 	
 	if (action == 'edit') {
-		needToFormat = engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.format_on_edit);
-		needToValidate = engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.validate_on_edit);
+		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_edit);
+		needToValidate = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_edit);
 	
 	} else if (action == 'cancel') {
-		needToFormat = engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.format_on_cancel_edit);
-		needToValidate = engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.validate_on_cancel_edit);
+		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_cancel_edit);
+		needToValidate = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_cancel_edit);
 	
 	} else if (action == 'revert') {
-		needToFormat = engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.format_on_revert);
-		needToValidate = zenarioAB.errorOnTab(tab) || engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.validate_on_revert);
+		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_revert);
+		needToValidate = zenarioAB.errorOnTab(tab) || engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_revert);
 	}
 	
-	if (zenarioAB.focus.tabs[tab].fields && !needToValidate) {
-		foreach (zenarioAB.focus.tabs[tab].fields as var f) {
+	if (zenarioAB.tuix.tabs[tab].fields && !needToValidate) {
+		foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
 			if (!zenarioAB.isInfoTag(f)) {
-				if (engToBoolean(zenarioAB.focus.tabs[tab].fields[f].validate_onchange)
+				if (engToBoolean(zenarioAB.tuix.tabs[tab].fields[f].validate_onchange)
 				 && ((value = zenarioAB.readField(f)) !== undefined)
-				 && (value != zenarioAB.focus.tabs[tab].fields[f].value)) {
+				 && (value != zenarioAB.tuix.tabs[tab].fields[f].value)) {
 					needToValidate = true;
 					break;
 				
 				} else
 				if (!needToFormat
-				 && engToBoolean(zenarioAB.focus.tabs[tab].fields[f].format_onchange)
+				 && engToBoolean(zenarioAB.tuix.tabs[tab].fields[f].format_onchange)
 				 && ((value = zenarioAB.readField(f)) !== undefined)
-				 && (value != zenarioAB.focus.tabs[tab].fields[f].value)) {
+				 && (value != zenarioAB.tuix.tabs[tab].fields[f].value)) {
 					needToFormat = true;
 				}
 			}
 		}
 	}
 	
-	zenarioAB.focus.tabs[tab].edit_mode.on = action != 'cancel';
+	zenarioAB.tuix.tabs[tab].edit_mode.on = action != 'cancel';
 	zenarioAB.changed[tab] = false;
 	
 	if (needToValidate) {
@@ -305,7 +336,7 @@ zenarioAB.editCancelOrRevert = function(action, tab) {
 		zenarioAB.redrawTab(true);
 	}
 	
-	if (zenarioAB.focus.tab == tab) {
+	if (zenarioAB.tuix.tab == tab) {
 		$('#zenario_abtab').removeClass('zenario_abtab_changed');
 	}
 };
@@ -313,23 +344,23 @@ zenarioAB.editCancelOrRevert = function(action, tab) {
 
 zenarioAB.clickTab = function(tab) {
 	if (zenarioAB.loaded) {
-		zenarioAB.validate(tab != zenarioAB.focus.tab, tab);
+		zenarioAB.validate(tab != zenarioAB.tuix.tab, tab);
 	}
 };
 
 zenarioAB.clickButton = function(el, id) {
-	if (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].type == 'submit') {
-		zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].pressed = true;
+	if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].type == 'submit') {
+		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed = true;
 		zenarioAB.validate(true);
 	
-	} else if (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].type == 'toggle') {
-		if (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].pressed = !engToBoolean(zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].pressed)) {
+	} else if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].type == 'toggle') {
+		if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed = !engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed)) {
 			$('#' + id).removeClass('not_pressed').addClass('pressed');
 		} else {
 			$('#' + id).removeClass('pressed').addClass('not_pressed');
 		}
 		
-		zenarioAB.validateFormatOrRedrawForField(zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id]);
+		zenarioAB.validateFormatOrRedrawForField(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]);
 	}
 };
 
@@ -408,8 +439,8 @@ zenarioAB.validate = function(differentTab, tab, wipeValues, callBack) {
 		function(data) {
 			if (zenarioAB.load(data)) {
 				
-				if (!zenarioAB.errorOnTab(zenarioAB.focus.tab) && tab !== undefined) {
-					zenarioAB.focus.tab = tab;
+				if (!zenarioAB.errorOnTab(zenarioAB.tuix.tab) && tab !== undefined) {
+					zenarioAB.tuix.tab = tab;
 				}
 			}
 			
@@ -427,13 +458,13 @@ zenarioAB.validate = function(differentTab, tab, wipeValues, callBack) {
 };
 
 zenarioAB.switchToATabWithErrors = function() {
-	if (zenarioAB.focus && zenarioAB.focus.tabs) {
-		if (!zenarioAB.errorOnTab(zenarioAB.focus.tab)) {
+	if (zenarioAB.tuix && zenarioAB.tuix.tabs) {
+		if (!zenarioAB.errorOnTab(zenarioAB.tuix.tab)) {
 			foreach (zenarioAB.sortedTabs as var i) {
 				var tab = zenarioAB.sortedTabs[i];
-				if (zenarioAB.focus.tabs[tab] && !zenarioA.hidden(zenarioAB.focus.tabs[tab])) {
+				if (zenarioAB.tuix.tabs[tab] && !zenarioA.hidden(zenarioAB.tuix.tabs[tab])) {
 					if (zenarioAB.errorOnTab(tab)) {
-						zenarioAB.focus.tab = tab;
+						zenarioAB.tuix.tab = tab;
 						return true;
 					}
 				}
@@ -467,7 +498,7 @@ zenarioAB.save = function(confirm, saveAndContinue) {
 		_save_and_continue: saveAndContinue,
 		_box: zenarioAB.syncAdminBoxFromClientToServer()};
 	
-	if (engToBoolean(zenarioAB.focus.download) || (zenarioAB.focus.confirm && engToBoolean(zenarioAB.focus.confirm.download))) {
+	if (engToBoolean(zenarioAB.tuix.download) || (zenarioAB.tuix.confirm && engToBoolean(zenarioAB.tuix.confirm.download))) {
 		zenarioAB.save2(zenario.nonAsyncAJAX(zenarioAB.getURL(), zenario.urlRequest(post)), saveAndContinue);
 	} else {
 		$.post(zenarioAB.getURL(), post, function(data) {
@@ -523,19 +554,19 @@ zenarioAB.save2 = function(data, saveAndContinue) {
 
 
 zenarioAB.showConfirm = function(saveAndContinue) {
-	if (zenarioAB.focus && zenarioAB.focus.confirm && engToBoolean(zenarioAB.focus.confirm.show)) {
+	if (zenarioAB.tuix && zenarioAB.tuix.confirm && engToBoolean(zenarioAB.tuix.confirm.show)) {
 		
-		var message = zenarioAB.focus.confirm.message;
+		var message = zenarioAB.tuix.confirm.message;
 		
-		if (!engToBoolean(zenarioAB.focus.confirm.html)) {
+		if (!engToBoolean(zenarioAB.tuix.confirm.html)) {
 			message = htmlspecialchars(message, true);
 		}
 		
 		var buttons =
-			'<input type="button" class="submit_selected" value="' + zenarioAB.focus.confirm.button_message + '" onclick="zenarioAB.save(true, ' + engToBoolean(saveAndContinue) + ');"/>' +
-			'<input type="button" class="submit" value="' + zenarioAB.focus.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
+			'<input type="button" class="submit_selected" value="' + zenarioAB.tuix.confirm.button_message + '" onclick="zenarioAB.save(true, ' + engToBoolean(saveAndContinue) + ');"/>' +
+			'<input type="button" class="submit" value="' + zenarioAB.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
 		
-		zenarioA.floatingBox(message, buttons, ifNull(zenarioAB.focus.confirm.message_type, 'none'));
+		zenarioA.floatingBox(message, buttons, ifNull(zenarioAB.tuix.confirm.message_type, 'none'));
 	}
 };
 
@@ -555,19 +586,19 @@ zenarioAB.hideTab = function(differentTab) {
 };
 
 zenarioAB.draw = function() {
-	if (zenarioAB.welcome && zenarioAB.focus) {
+	if (zenarioAB.welcome && zenarioAB.tuix) {
 		
-		if (zenarioAB.focus._clear_local_storage) {
-			delete zenarioAB.focus._clear_local_storage;
+		if (zenarioAB.tuix._clear_local_storage) {
+			delete zenarioAB.tuix._clear_local_storage;
 			zenario.sClear(true);
 		}
 		
-		if (zenarioAB.focus._location !== undefined) {
-			document.location.href = zenario.addBasePath(zenarioAB.focus._location);
+		if (zenarioAB.tuix._location !== undefined) {
+			document.location.href = zenario.addBasePath(zenarioAB.tuix._location);
 			return;
-		} else if (zenarioAB.focus._task !== undefined) {
-			zenarioAB.task = zenarioAB.focus._task;
-			delete zenarioAB.focus._task;
+		} else if (zenarioAB.tuix._task !== undefined) {
+			zenarioAB.task = zenarioAB.tuix._task;
+			delete zenarioAB.tuix._task;
 		}
 	}
 	
@@ -585,43 +616,43 @@ zenarioAB.draw2 = function(SKColPicker) {
 		get('zenario_fbAdminFloatingBox').className =
 			zenarioAB.baseCSSClass +
 			' ' +
-			(zenarioAB.focus.css_class || '') + 
+			(zenarioAB.tuix.css_class || '') + 
 			' ' +
-			(engToBoolean(zenarioAB.focus.hide_tab_bar)? 'zenario_admin_box_with_tabs_hidden' : 'zenario_admin_box_with_tabs_shown');
+			(engToBoolean(zenarioAB.tuix.hide_tab_bar)? 'zenario_admin_box_with_tabs_hidden' : 'zenario_admin_box_with_tabs_shown');
 		
 		//Don't show the requested tab if it has been hidden
-		if (zenarioAB.focus.tab && (!zenarioAB.focus.tabs[zenarioAB.focus.tab] || zenarioA.hidden(zenarioAB.focus.tabs[zenarioAB.focus.tab]))) {
-			zenarioAB.focus.tab = false;
+		if (zenarioAB.tuix.tab && (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || zenarioA.hidden(zenarioAB.tuix.tabs[zenarioAB.tuix.tab]))) {
+			zenarioAB.tuix.tab = false;
 		}
 		
 		//Generate the HTML for the tabs
 		var data = [];
 		foreach (zenarioAB.sortedTabs as var i => var tab) {
-			if (zenarioAB.focus.tabs[tab] && !zenarioA.hidden(zenarioAB.focus.tabs[tab])) {
+			if (zenarioAB.tuix.tabs[tab] && !zenarioA.hidden(zenarioAB.tuix.tabs[tab])) {
 				//Show the first tab we find, if a tab has not yet been set
-				if (!zenarioAB.focus.tab) {
-					zenarioAB.focus.tab = tab;
+				if (!zenarioAB.tuix.tab) {
+					zenarioAB.tuix.tab = tab;
 				}
 				
 				data.push({
 					tabId: tab,
-					current: zenarioAB.focus.tab == tab,
-					label: zenarioAB.focus.tabs[tab].label
+					current: zenarioAB.tuix.tab == tab,
+					label: zenarioAB.tuix.tabs[tab].label
 				});
 			}
 		}
 		
 		//Set the HTML for the floating boxes tabs and title
 		get('zenario_jqmTabs').innerHTML = zenarioA.microTemplate(zenarioAB.templatePrefix + '_tab', data);
-		zenarioAB.setTitle(zenarioAB.focus.title);
+		zenarioAB.setTitle(zenarioAB.tuix.title);
 		zenarioAB.showCloseButton();
 		
 		
 		html = '';
 		
 		//Set the html for the save and continue button
-		if (zenarioAB.focus.save_and_continue_button_message) {
-			html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + htmlspecialchars(zenarioAB.focus.save_and_continue_button_message) + '"';
+		if (zenarioAB.tuix.save_and_continue_button_message) {
+			html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + htmlspecialchars(zenarioAB.tuix.save_and_continue_button_message) + '"';
 			
 			if (!zenarioAB.editModeOnBox()) {
 				html += ' class="submit_disabled"/>';
@@ -632,7 +663,7 @@ zenarioAB.draw2 = function(SKColPicker) {
 
 		
 		//Set the html for the save button
-		html += '<input id="zenarioAFB_save"  type="button" value="' + ifNull(htmlspecialchars(zenarioAB.focus.save_button_message), phrase.save) + '"';
+		html += '<input id="zenarioAFB_save"  type="button" value="' + ifNull(htmlspecialchars(zenarioAB.tuix.save_button_message), phrase.save) + '"';
 		
 		if (!zenarioAB.editModeOnBox()) {
 			html += ' class="submit_disabled"/>';
@@ -642,8 +673,8 @@ zenarioAB.draw2 = function(SKColPicker) {
 
 		
 		//Set the html for the cancel button, if enabled
-		if (zenarioAB.focus.cancel_button_message) {
-			html += '<input type="button" value="' + htmlspecialchars(zenarioAB.focus.cancel_button_message) + '" onclick="zenarioAB.close();">';
+		if (zenarioAB.tuix.cancel_button_message) {
+			html += '<input type="button" value="' + htmlspecialchars(zenarioAB.tuix.cancel_button_message) + '" onclick="zenarioAB.close();">';
 		}
 		
 		get('zenario_fbButtons').innerHTML = html;
@@ -676,10 +707,10 @@ zenarioAB.draw2 = function(SKColPicker) {
 		zenario.addJQueryElements('#zenario_abtab ', true);	
 	
 	//If this is the current tab...
-	} else if (zenarioAB.shownTab == zenarioAB.focus.tab) {
+	} else if (zenarioAB.shownTab == zenarioAB.tuix.tab) {
 	
 		//...shake the tab if there are errors...
-		if (zenarioAB.focus.shake === undefined? zenarioAB.differentTab && zenarioAB.errorOnTab(zenarioAB.focus.tab) : engToBoolean(zenarioAB.focus.shake)) {
+		if (zenarioAB.tuix.shake === undefined? zenarioAB.differentTab && zenarioAB.errorOnTab(zenarioAB.tuix.tab) : engToBoolean(zenarioAB.tuix.shake)) {
 			$(zenarioAB.welcome? '#welcome' : '#zenario_abtab').effect({
 				effect: 'bounce',
 				duration: 125,
@@ -728,7 +759,7 @@ zenarioAB.draw2 = function(SKColPicker) {
 			zenarioAB.hideShowFields();
 		}
 		
-		delete zenarioAB.focus.shake;
+		delete zenarioAB.tuix.shake;
 	
 	//A new/different tab - fade it in
 	} else {
@@ -742,7 +773,7 @@ zenarioAB.draw2 = function(SKColPicker) {
 		});
 	}
 
-	zenarioAB.shownTab = zenarioAB.focus.tab;
+	zenarioAB.shownTab = zenarioAB.tuix.tab;
 	delete zenarioAB.lastScrollTop;
 };
 
@@ -754,7 +785,7 @@ zenarioAB.drawFields = function() {
 	zenarioAB.codeEditors = {};
 	zenarioAB.colourPickers = {};
 	
-	var tab = zenarioAB.focus.tab,
+	var tab = zenarioAB.tuix.tab,
 		html = '',
 		buttonHTML = '';
 	
@@ -768,7 +799,7 @@ zenarioAB.drawFields = function() {
 	}
 	
 	
-	var microTemplate = ifNull(zenarioAB.focus.tabs[tab].template, zenarioAB.templatePrefix + '_current_tab'),
+	var microTemplate = ifNull(zenarioAB.tuix.tabs[tab].template, zenarioAB.templatePrefix + '_current_tab'),
 		errorsDrawn = false,
 		data = {
 			fields: {},
@@ -781,37 +812,37 @@ zenarioAB.drawFields = function() {
 		};
 	
 	if (zenarioAB.editModeOn()) {
-		if (zenarioAB.focus.tabs[tab].errors) {
-			foreach (zenarioAB.focus.tabs[tab].errors as var e) {
+		if (zenarioAB.tuix.tabs[tab].errors) {
+			foreach (zenarioAB.tuix.tabs[tab].errors as var e) {
 				if (!zenarioAB.isInfoTag(e)) {
-					data.errors.push({message: zenarioAB.focus.tabs[tab].errors[e]});
+					data.errors.push({message: zenarioAB.tuix.tabs[tab].errors[e]});
 				}
 			}
 		}
 		
 		//Temporary code - for now, we'll just display field errors at the top of the tab with the others
-		if (zenarioAB.focus.tabs[tab].fields) {
-			foreach (zenarioAB.focus.tabs[tab].fields as var f) {
-				if (!zenarioAB.isInfoTag(f) && zenarioAB.focus.tabs[tab].fields[f].error) {
-					data.errors.push({message: zenarioAB.focus.tabs[tab].fields[f].error});
+		if (zenarioAB.tuix.tabs[tab].fields) {
+			foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
+				if (!zenarioAB.isInfoTag(f) && zenarioAB.tuix.tabs[tab].fields[f].error) {
+					data.errors.push({message: zenarioAB.tuix.tabs[tab].fields[f].error});
 				}
 			}
 		}
 	}
 	
-	if (zenarioAB.focus.tabs[tab].notices) {
-		foreach (zenarioAB.focus.tabs[tab].notices as var n) {
+	if (zenarioAB.tuix.tabs[tab].notices) {
+		foreach (zenarioAB.tuix.tabs[tab].notices as var n) {
 			if (!zenarioAB.isInfoTag(n)
-			 && engToBoolean(zenarioAB.focus.tabs[tab].notices[n].show)
-			 && {error: 1, warning: 1, question: 1, success: 1}[zenarioAB.focus.tabs[tab].notices[n].type]) {
-				data.notices[n] = zenarioAB.focus.tabs[tab].notices[n];
+			 && engToBoolean(zenarioAB.tuix.tabs[tab].notices[n].show)
+			 && {error: 1, warning: 1, question: 1, success: 1}[zenarioAB.tuix.tabs[tab].notices[n].type]) {
+				data.notices[n] = zenarioAB.tuix.tabs[tab].notices[n];
 			}
 		}
 	}	
 	
 	foreach (zenarioAB.sortedFields[tab] as var f) {
 		var fieldId = zenarioAB.sortedFields[tab][f],
-			field = zenarioAB.focus.tabs[tab].fields[fieldId];
+			field = zenarioAB.tuix.tabs[tab].fields[fieldId];
 		
 		field._id = fieldId;
 		field._html = zenarioAB.drawField(tab, fieldId, true);
@@ -825,7 +856,7 @@ zenarioAB.drawFields = function() {
 			data.rows.push({fields: []});
 		}
 		
-		if (!errorsDrawn && zenarioAB.focus.tabs[tab].show_errors_after_field == fieldId) {
+		if (!errorsDrawn && zenarioAB.tuix.tabs[tab].show_errors_after_field == fieldId) {
 			data.rows[data.rows.length-1].errors = data.errors;
 			data.rows[data.rows.length-1].notices = data.notices;
 			errorsDrawn = true;
@@ -846,11 +877,11 @@ zenarioAB.drawFields = function() {
 	foreach (zenarioAB.sortedFields[tab] as var f) {
 		var fieldId = zenarioAB.sortedFields[tab][f];
 		
-		delete zenarioAB.focus.tabs[tab].fields[fieldId]._startNewRow;
-		delete zenarioAB.focus.tabs[tab].fields[fieldId]._hideOnOpen;
-		delete zenarioAB.focus.tabs[tab].fields[fieldId]._showOnOpen;
-		delete zenarioAB.focus.tabs[tab].fields[fieldId]._html;
-		delete zenarioAB.focus.tabs[tab].fields[fieldId]._id;
+		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._startNewRow;
+		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._hideOnOpen;
+		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._showOnOpen;
+		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._html;
+		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._id;
 	}
 	
 	return html;
@@ -865,7 +896,7 @@ zenarioAB.insertHTML = function(html) {
 	tab.innerHTML = html;
 	zenarioAB.tabHidden = false;
 	
-	if (zenarioAB.changes(zenarioAB.focus.tab)) {
+	if (zenarioAB.changes(zenarioAB.tuix.tab)) {
 		$(tab).addClass('zenario_abtab_changed');
 	} else {
 		$(tab).removeClass('zenario_abtab_changed');
@@ -981,8 +1012,8 @@ zenarioAB.addJQueryElementsToTabAndFocusFirstField = function() {
 //Focus either the first field, or if the first field is filled in and the second field is a password then focus that instead
 zenarioAB.focusFirstField = function() {
 	
-	if (!zenarioAB.focus
-	 || engToBoolean(zenarioAB.focus.tabs[zenarioAB.focus.tab].disable_autofocus)) {
+	if (!zenarioAB.tuix
+	 || engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].disable_autofocus)) {
 		return;
 	}
 	
@@ -991,9 +1022,9 @@ zenarioAB.focusFirstField = function() {
 		fields = [],
 		focusField = undefined;
 	
-	foreach (zenarioAB.sortedFields[zenarioAB.focus.tab] as var f) {
-		var fieldId = zenarioAB.sortedFields[zenarioAB.focus.tab][f],
-			field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[fieldId];
+	foreach (zenarioAB.sortedFields[zenarioAB.tuix.tab] as var f) {
+		var fieldId = zenarioAB.sortedFields[zenarioAB.tuix.tab][f],
+			field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[fieldId];
 		if (get(fieldId) && $(get(fieldId)).is(':visible')) {
 			fields[++i] = {
 				id: fieldId,
@@ -1045,6 +1076,7 @@ zenarioAB.setTitle = function(title, isHTML) {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').css('display', 'none');
 	} else {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').css('display', 'block');
+		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').addClass(' zenario_no_drag');
 		
 		var showTooltip = title.length > 80;
 		
@@ -1060,7 +1092,7 @@ zenarioAB.setTitle = function(title, isHTML) {
 };
 
 zenarioAB.showCloseButton = function() {
-	if (zenarioAB.focus.cancel_button_message) {
+	if (zenarioAB.tuix.cancel_button_message) {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'none');
 	} else {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'block');
@@ -1068,8 +1100,8 @@ zenarioAB.showCloseButton = function() {
 };
 
 zenarioAB.errorOnBox = function() {
-	if (zenarioAB.focus && zenarioAB.focus.tabs) {
-		foreach (zenarioAB.focus.tabs as tab) {
+	if (zenarioAB.tuix && zenarioAB.tuix.tabs) {
+		foreach (zenarioAB.tuix.tabs as tab) {
 			if (zenarioAB.errorOnTab(tab)) {
 				return true;
 			}
@@ -1080,17 +1112,17 @@ zenarioAB.errorOnBox = function() {
 };
 
 zenarioAB.errorOnTab = function(tab) {
-	if (zenarioAB.focus.tabs[tab] && zenarioAB.editModeOn(tab)) {
-		if (zenarioAB.focus.tabs[tab].errors) {
-			foreach (zenarioAB.focus.tabs[tab].errors as var e) {
+	if (zenarioAB.tuix.tabs[tab] && zenarioAB.editModeOn(tab)) {
+		if (zenarioAB.tuix.tabs[tab].errors) {
+			foreach (zenarioAB.tuix.tabs[tab].errors as var e) {
 				if (!zenarioAB.isInfoTag(e)) {
 					return true;
 				}
 			}
 		}
-		if (zenarioAB.focus.tabs[tab].fields) {
-			foreach (zenarioAB.focus.tabs[tab].fields as var f) {
-				if (!zenarioAB.isInfoTag(f) && zenarioAB.focus.tabs[tab].fields[f].error) {
+		if (zenarioAB.tuix.tabs[tab].fields) {
+			foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
+				if (!zenarioAB.isInfoTag(f) && zenarioAB.tuix.tabs[tab].fields[f].error) {
 					return true;
 				}
 			}
@@ -1106,18 +1138,18 @@ zenarioAB.checkValues = function(wipeValues) {
 		zenarioAB.readTab();
 	}
 	
-	foreach (zenarioAB.focus.tabs as var tab) {
+	foreach (zenarioAB.tuix.tabs as var tab) {
 		if (!zenarioAB.isInfoTag(tab)) {
 			
 			//Workaround for a problem where initial values do not get submitted if a tab is never visited.
 			//This script loops through all of the tabs and all of the fields on this admin boxes, and ensures
 			//that their values are set correctly.
 			var editing = zenarioAB.editModeOn(tab);
-			if (zenarioAB.focus.tabs[tab].fields) {
-				foreach (zenarioAB.focus.tabs[tab].fields as var f) {
+			if (zenarioAB.tuix.tabs[tab].fields) {
+				foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
 					if (!zenarioAB.isInfoTag(f)) {
 						
-						var field = zenarioAB.focus.tabs[tab].fields[f],
+						var field = zenarioAB.tuix.tabs[tab].fields[f],
 							nonFieldType = field.snippet || field.type == 'submit' || field.type == 'toggle',
 							multi = field.pick_items || field.type == 'checkboxes' || field.type == 'radios';
 						
@@ -1201,7 +1233,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		color_picker_options;
 	
 	if (field === undefined) {
-		field = zenarioAB.focus.tabs[tab].fields[id];
+		field = zenarioAB.tuix.tabs[tab].fields[id];
 	}
 	
 	if (readOnly === undefined) {
@@ -1253,33 +1285,33 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		//Include an animation to show newly unhidden fields
 		if (field._startNewRow
 		 && zenarioAB.shownTab !== false
-		 && zenarioAB.shownTab == zenarioAB.focus.tab
+		 && zenarioAB.shownTab == zenarioAB.tuix.tab
 		 && field.type != 'editor'
 		 && field.type != 'code_editor'
-		 && zenarioAB.focus.tabs[tab].fields[id]._h
+		 && zenarioAB.tuix.tabs[tab].fields[id]._h
 		 && !zenarioA.hidden(field)) {
 			field._showOnOpen = true;
-			delete zenarioAB.focus.tabs[tab].fields[id]._h;	
+			delete zenarioAB.tuix.tabs[tab].fields[id]._h;	
 		
 		//Include an animation to hide newly hidden fields
 		} else
 		if (field._startNewRow
 		 && zenarioAB.shownTab !== false
-		 && zenarioAB.shownTab == zenarioAB.focus.tab
+		 && zenarioAB.shownTab == zenarioAB.tuix.tab
 		 && field.type != 'editor'
 		 && field.type != 'code_editor'
-		 && !zenarioAB.focus.tabs[tab].fields[id]._h
+		 && !zenarioAB.tuix.tabs[tab].fields[id]._h
 		 && zenarioA.hidden(field)) {
 			field._hideOnOpen = true;
-			zenarioAB.focus.tabs[tab].fields[id]._h = true;
+			zenarioAB.tuix.tabs[tab].fields[id]._h = true;
 		
 		//Don't show hidden fields
 		} else if (zenarioA.hidden(field)) {
-			zenarioAB.focus.tabs[tab].fields[id]._h = true;
+			zenarioAB.tuix.tabs[tab].fields[id]._h = true;
 			return false;
 		
 		} else {
-			delete zenarioAB.focus.tabs[tab].fields[id]._h;	
+			delete zenarioAB.tuix.tabs[tab].fields[id]._h;	
 		}
 		
 		
@@ -1528,11 +1560,11 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			}
 			
 			if (field.type == 'submit') {
-				zenarioAB.focus.tabs[tab].fields[id].pressed = false;
+				zenarioAB.tuix.tabs[tab].fields[id].pressed = false;
 			}
 			
 			if (field.type == 'toggle') {
-				extraAtt['class'] += zenarioAB.focus.tabs[tab].fields[id].pressed? ' pressed' : ' not_pressed';
+				extraAtt['class'] += zenarioAB.tuix.tabs[tab].fields[id].pressed? ' pressed' : ' not_pressed';
 			}
 		
 		} else if (field.type == 'date' || field.type == 'datetime') {
@@ -1725,8 +1757,8 @@ zenarioAB.chooseFromDropbox = function(id) {
 				
 	var field, options;
 
-	if (!zenarioAB.focus.tabs[zenarioAB.focus.tab]
-	 || !(field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id])
+	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+	 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
 	 || !(field.upload)) {
 		return false;
 	}
@@ -1759,8 +1791,16 @@ zenarioAB.chooseFromDropbox = function(id) {
 		success: function(files) {
 			
 			zenarioA.showAJAXLoader();
-			zenario.multipleAJAX('zenario/ajax.php?method_call=handleAdminBoxAJAX&fetchFromDropbox=1', files, true, function(data) {
-				
+			
+			var f,
+				file,
+				cb = new zenario.callback;
+			
+			foreach (files as f => file) {
+				cb.add(zenario.ajax('zenario/ajax.php?method_call=handleAdminBoxAJAX&fetchFromDropbox=1', file, true));
+			}
+			
+			cb.after(function() {
 				var i,
 					file,
 					field,
@@ -1768,8 +1808,8 @@ zenarioAB.chooseFromDropbox = function(id) {
 					picked_items,
 					multiple_select;
 		
-				if (!zenarioAB.focus.tabs[zenarioAB.focus.tab]
-				 || !(field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id])
+				if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+				 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
 				 || !(field.upload)) {
 					return false;
 				}
@@ -1777,8 +1817,8 @@ zenarioAB.chooseFromDropbox = function(id) {
 				values = (field.current_value === undefined? field.value : field.current_value);
 				multiple_select = engToBoolean(field.upload.multi);
 				
-				foreach (data as i) {
-					file = data[i];
+				foreach (arguments as i) {
+					file = arguments[i];
 					
 					if (file && file.id) {
 						if (!multiple_select || !values) {
@@ -1801,8 +1841,8 @@ zenarioAB.chooseFromDropbox = function(id) {
 
 zenarioAB.upload = function(id, setUpDragDrop) {
 	var field, object;
-	if (!zenarioAB.focus.tabs[zenarioAB.focus.tab]
-	 || !(field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id])
+	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+	 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
 	 || !(field.upload)) {
 		return false;
 	}
@@ -1820,8 +1860,8 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 				values,
 				multiple_select;
 		
-			if (!zenarioAB.focus.tabs[zenarioAB.focus.tab]
-			 || !(field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id])
+			if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+			 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
 			 || !(field.upload)) {
 				return false;
 			}
@@ -1847,7 +1887,15 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 	};
 	
 	if (setUpDragDrop) {
-		zenarioA.setHTML5UploadFromDragDrop(URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX', {fileUpload: 1}, zenarioAB.uploadCallback, get('zenario_fbAdminInner'));
+		zenarioA.setHTML5UploadFromDragDrop(
+			URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX',
+			{
+				fileUpload: 1
+			},
+			false,
+			zenarioAB.uploadCallback,
+			get('zenario_fbAdminInner')
+		);
 	} else {
 		zenarioA.action(zenarioAB, object, undefined, undefined, undefined, {fileUpload: 1});
 	}
@@ -1932,8 +1980,12 @@ zenarioAB.pickedItemsArray = function(field, value) {
 			//then attempt to look up the label from Storekeeper
 			} else
 			if (field.pick_items
-			 && ((field.pick_items.target_path && (panel = zenarioA.getSKItem(field.pick_items.target_path, i)))
-			  || (field.pick_items.path && field.pick_items.path != field.pick_items.target_path && (panel = zenarioA.getSKItem(field.pick_items.path, i)))
+			 && ((field.pick_items.target_path
+			   && (panel = zenarioA.getSKItem(field.pick_items.target_path, i)))
+			  || (field.pick_items.path
+			   && field.pick_items.path != field.pick_items.target_path
+			   && field.pick_items.path.indexOf('//') == -1
+			   && (panel = zenarioA.getSKItem(field.pick_items.path, i)))
 			)) {
 				if (!field.values) {
 					field.values = {};
@@ -2153,10 +2205,10 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 	
 	if (tab === undefined) {
-		tab = zenarioAB.focus.tab;
+		tab = zenarioAB.tuix.tab;
 	}
 	
-	var field = zenarioAB.focus.tabs[tab].fields[id],
+	var field = zenarioAB.tuix.tabs[tab].fields[id],
 		itemSelected = false,
 		panel,
 		m, i,
@@ -2318,11 +2370,11 @@ zenarioAB.showPickedItemInPopout = function(href) {
 };
 
 zenarioAB.pickItems = function(id) {
-	if (!zenarioAB.focus.tabs[zenarioAB.focus.tab] || !zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id]) {
+	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]) {
 		return false;
 	}
 	
-	var field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id],
+	var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id],
 		selectedItem,
 		path;
 	
@@ -2363,8 +2415,8 @@ zenarioAB.pickItems = function(id) {
 
 zenarioAB.setPickedItems = function(path, key, row, panel) {
 	var id = zenarioAB.SKTarget,
-		tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[id],
+		tab = zenarioAB.tuix.tab,
+		field = zenarioAB.tuix.tabs[tab].fields[id],
 		value = (field.current_value === undefined? field.value : field.current_value),
 		picked_items,
 		item, 
@@ -2397,8 +2449,8 @@ zenarioAB.setPickedItems = function(path, key, row, panel) {
 };
 
 zenarioAB.removePickedItem = function(id, item) {
-	var tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[id],
+	var tab = zenarioAB.tuix.tab,
+		field = zenarioAB.tuix.tabs[tab].fields[id],
 		value = (field.current_value === undefined? field.value : field.current_value),
 		values = value.split(',');
 	
@@ -2419,8 +2471,8 @@ zenarioAB.nudge = function(id, i, j) {
 	i *= 1;
 	j *= 1;
 	
-	var tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[id],
+	var tab = zenarioAB.tuix.tab,
+		field = zenarioAB.tuix.tabs[tab].fields[id],
 		value = (field.current_value === undefined? field.value : field.current_value);
 	
 	value = value.split(',');
@@ -2450,11 +2502,11 @@ zenarioAB.redrawPickedItems = function(id, field, value) {
 
 zenarioAB.changed = {};
 zenarioAB.changes = function(tab) {
-	if (!zenarioAB.focus || !zenarioAB.focus.tab) {
+	if (!zenarioAB.tuix || !zenarioAB.tuix.tab) {
 		return false;
 	
 	} else if (tab == undefined) {
-		foreach (zenarioAB.focus.tabs as tab) {
+		foreach (zenarioAB.tuix.tabs as tab) {
 			if (zenarioAB.changed[tab]) {
 				return true;
 			}
@@ -2468,12 +2520,12 @@ zenarioAB.changes = function(tab) {
 };
 
 zenarioAB.markAsChanged = function(tab, dontUpdateButton) {
-	if (!zenarioAB.focus) {
+	if (!zenarioAB.tuix) {
 		return;
 	}
 	
 	if (tab === undefined) {
-		tab = zenarioAB.focus.tab;
+		tab = zenarioAB.tuix.tab;
 	}
 	
 	if (!tab) {
@@ -2485,19 +2537,19 @@ zenarioAB.markAsChanged = function(tab, dontUpdateButton) {
 		
 	}
 	
-	if (zenarioAB.focus.tab == tab) {
+	if (zenarioAB.tuix.tab == tab) {
 		$('#zenario_abtab').addClass('zenario_abtab_changed');
 	}
 };
 
 zenarioAB.fieldChange = function(id) {
 	
-	if (!zenarioAB.focus || !zenarioAB.focus.tab || !zenarioAB.focus.tabs[zenarioAB.focus.tab] || !zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id]) {
+	if (!zenarioAB.tuix || !zenarioAB.tuix.tab || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]) {
 		return;
 	}
 	
-	var tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[id];
+	var tab = zenarioAB.tuix.tab,
+		field = zenarioAB.tuix.tabs[tab].fields[id];
 	
 	zenarioAB.markAsChanged(tab);
 	
@@ -2515,13 +2567,13 @@ zenarioAB.fieldChange = function(id) {
 zenarioAB.validateFormatOrRedrawForField = function(field) {
 	
 	if (typeof field != 'object') {
-		field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field];
+		field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field];
 	}
 	
 	var validate = engToBoolean(field.validate_onchange),
 		format = engToBoolean(field.format_onchange),
 		redraw = engToBoolean(field.redraw_onchange);
-	validate = validate || (zenarioAB.errorOnTab(zenarioAB.focus.tab) && (format || redraw));
+	validate = validate || (zenarioAB.errorOnTab(zenarioAB.tuix.tab) && (format || redraw));
 		
 	if (validate) {
 		zenarioAB.validate();
@@ -2549,7 +2601,7 @@ zenarioAB.meMarkChanged = function(id, current_value, value) {
 		}
 	}
 	
-	zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit._changed = true;
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = true;
 	zenarioAB.meSetCheckbox(id, true);
 };
 
@@ -2566,14 +2618,14 @@ zenarioAB.meChange = function(changed, id, confirm) {
 	
 	//Update its state in the schema
 	if (changed) {
-		zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit._changed = true;
+		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = true;
 	} else {
 		
 		//Require a confirm prompt if this will lose any changes
 		if (!confirm
-		 && engToBoolean(zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit.warn_when_abandoning_changes)
-		 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit.original_value !== undefined
-		 && zenarioAB.readField(id) != zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit.original_value) {
+		 && engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.warn_when_abandoning_changes)
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.original_value !== undefined
+		 && zenarioAB.readField(id) != zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.original_value) {
 		 	
 			var buttonsHTML =
 				'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioAB.meChange(false, \'' + htmlspecialchars(id) + '\', true);"/>' + 
@@ -2584,17 +2636,17 @@ zenarioAB.meChange = function(changed, id, confirm) {
 			return;
 		}
 		
-		zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit._changed = false;
+		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = false;
 		
 		//If it is now off, revert the field's value back to the default.
-		delete zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].current_value;
+		delete zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].current_value;
 		
-		var field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id];
+		var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id];
 		
 		var value = field.value;
 		if (field.multiple_edit.original_value !== undefined) {
 			value =
-			zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].current_value =
+			zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].current_value =
 			field.multiple_edit.original_value;
 		}
 		
@@ -2610,7 +2662,7 @@ zenarioAB.meChange = function(changed, id, confirm) {
 		}
 	}
 	
-	if (engToBoolean(zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[id].multiple_edit.disable_when_unchanged)) {
+	if (engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.disable_when_unchanged)) {
 		if (get(id)) {
 			get(id).disabled = !changed;
 		}
@@ -2635,12 +2687,12 @@ zenarioAB.meChange = function(changed, id, confirm) {
 
 zenarioAB.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	if (!tab) {
-		tab = zenarioAB.focus.tab;
+		tab = zenarioAB.tuix.tab;
 	}
 	
 	var value = '',
 		first = true,
-		field = zenarioAB.focus.tabs[tab].fields[f];
+		field = zenarioAB.tuix.tabs[tab].fields[f];
 	
 	if (readOnly === undefined) {
 		readOnly = !zenarioAB.editModeOn(tab);
@@ -2669,8 +2721,8 @@ zenarioAB.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 
 zenarioAB.readField = function(f) {
 	var value = undefined,
-		tab = zenarioAB.focus.tab,
-		field = zenarioAB.focus.tabs[tab].fields[f],
+		tab = zenarioAB.tuix.tab,
+		field = zenarioAB.tuix.tabs[tab].fields[f],
 		el;
 	
 	//Non-field types
@@ -2679,12 +2731,12 @@ zenarioAB.readField = function(f) {
 	}
 	
 	var readOnly = !zenarioAB.editModeOn() || engToBoolean(field.read_only),
-		hidden = zenarioAB.focus.tabs[tab].fields[f]._h;
+		hidden = zenarioAB.tuix.tabs[tab].fields[f]._h;
 	
 	//Update logic for multiple edit fields
 	if (field.multiple_edit) {
 		if (readOnly) {
-			delete zenarioAB.focus.tabs[tab].fields[f].multiple_edit._changed;
+			delete zenarioAB.tuix.tabs[tab].fields[f].multiple_edit._changed;
 		}
 	}
 	
@@ -2720,7 +2772,7 @@ zenarioAB.readField = function(f) {
 
 	//Fields with seperate values to display values
 	if (get('_value_for__' + f)) {
-		zenarioAB.focus.tabs[tab].fields[f].current_value = value = get('_value_for__' + f).value;
+		zenarioAB.tuix.tabs[tab].fields[f].current_value = value = get('_value_for__' + f).value;
 	
 	//Editors
 	} else if ((field.type == 'editor' || field.type == 'code_editor') && !readOnly) {
@@ -2740,7 +2792,7 @@ zenarioAB.readField = function(f) {
 		}
 		
 		if (content !== undefined && content !== false) {
-			value = zenarioAB.focus.tabs[tab].fields[f].current_value = content;
+			value = zenarioAB.tuix.tabs[tab].fields[f].current_value = content;
 		
 		//If due to some bug we couldn't get the content from the editor,
 		//return the stored value and don't do any further manipulations to the data model.
@@ -2768,10 +2820,10 @@ zenarioAB.readField = function(f) {
 			} else {
 				value = $(el).val();
 			}
-			zenarioAB.focus.tabs[tab].fields[f].current_value = value;
+			zenarioAB.tuix.tabs[tab].fields[f].current_value = value;
 		
 		} else {
-			delete zenarioAB.focus.tabs[tab].fields[f].current_value;
+			delete zenarioAB.tuix.tabs[tab].fields[f].current_value;
 			value = field.value;
 		}
 	}
@@ -2780,7 +2832,7 @@ zenarioAB.readField = function(f) {
 };
 
 zenarioAB.blankField = function(f) {
-	var tab = zenarioAB.focus.tab;
+	var tab = zenarioAB.tuix.tab;
 	
 	if (get(f)) {
 		$(get(f)).val('');
@@ -2790,20 +2842,20 @@ zenarioAB.blankField = function(f) {
 		get('_value_for__' + f).value = '';
 	}
 	
-	zenarioAB.focus.tabs[tab].fields[f].current_value = '';
+	zenarioAB.tuix.tabs[tab].fields[f].current_value = '';
 };
 
 
 //zenarioAB.lastScrollTop = undefined;
 
 zenarioAB.readTab = function() {
-	var tab = zenarioAB.focus.tab,
+	var tab = zenarioAB.tuix.tab,
 		value,
 		values = {};
 	
 	zenarioAB.lastScrollTop = $('#zenario_fbAdminInner').scrollTop();
 	
-	foreach (zenarioAB.focus.tabs[tab].fields as var f) {
+	foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
 		if (!zenarioAB.isInfoTag(f)) {
 			if ((value = zenarioAB.readField(f)) !== undefined) {
 				values[f] = value;
@@ -2815,23 +2867,23 @@ zenarioAB.readTab = function() {
 };
 
 zenarioAB.wipeTab = function() {
-	var tab = zenarioAB.focus.tab,
+	var tab = zenarioAB.tuix.tab,
 		value,
 		values = {};
 	
-	foreach (zenarioAB.focus.tabs[tab].fields as var f) {
+	foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
 		if (!zenarioAB.isInfoTag(f)) {
-			delete zenarioAB.focus.tabs[tab].fields[f].current_value;
+			delete zenarioAB.tuix.tabs[tab].fields[f].current_value;
 			
-			if (zenarioAB.focus.tabs[tab].fields[f].multiple_edit) {
-				delete zenarioAB.focus.tabs[tab].fields[f].multiple_edit._changed;
+			if (zenarioAB.tuix.tabs[tab].fields[f].multiple_edit) {
+				delete zenarioAB.tuix.tabs[tab].fields[f].multiple_edit._changed;
 			}
 		}
 	}
 };
 
 zenarioAB.redrawTab = function() {
-	zenarioAB.focus.shake = false;
+	zenarioAB.tuix.shake = false;
 	zenarioAB.draw2();
 };
 
@@ -2847,7 +2899,7 @@ zenarioAB.size = function() {
 	}
 	
 	if (get('zenario_fbMain')) {
-		if (zenarioAB.focus && engToBoolean(zenarioAB.focus.hide_tab_bar)) {
+		if (zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar)) {
 			get('zenario_fbMain').style.top = '0px';
 			get('zenario_fbButtons').style.paddingBottom = '7px';
 			get('zenario_jqmTabs').style.display = 'none';
@@ -2861,11 +2913,11 @@ zenarioAB.size = function() {
 	if (get('zenario_fbAdminInner')) {
 		var height = Math.floor($(window).height() * 0.96 - (zenario.browserIsIE()? 210 : zenario.browserIsSafari()? 202 : 205));
 		
-		if (zenarioAB.focus.max_height && height > zenarioAB.focus.max_height) {
-			height = zenarioAB.focus.max_height;
+		if (zenarioAB.tuix.max_height && height > zenarioAB.tuix.max_height) {
+			height = zenarioAB.tuix.max_height;
 		}
 		
-		if (zenarioAB.focus && engToBoolean(zenarioAB.focus.hide_tab_bar)) {
+		if (zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar)) {
 			height = 1*height + 24;
 		}
 		
@@ -2894,7 +2946,7 @@ zenarioAB.getURL = function() {
 										'?_json=1&_ab=1' +
 										'&task=' + encodeURIComponent(zenarioAB.task) +
 										'&get=' + encodeURIComponent(JSON.stringify(zenarioAB.getRequest)) +
-										zenario.urlRequest(ifNull(zenarioAB.key, zenarioAB.focus.key));
+										zenario.urlRequest(ifNull(zenarioAB.key, zenarioAB.tuix.key));
 	} else {
 		return URLBasePath + 'zenario/admin/ajax.php' +
 										'?_json=1&_ab=1' +
@@ -2907,18 +2959,18 @@ zenarioAB.getURL = function() {
 //Some shortcuts
 zenarioAB.editModeOn = function(tab) {
 	
-	if (!zenarioAB.focus || !zenarioAB.focus.tabs) {
+	if (!zenarioAB.tuix || !zenarioAB.tuix.tabs) {
 		return false;
 	}
 	
 	if (!tab) {
-		tab = zenarioAB.focus.tab;
+		tab = zenarioAB.tuix.tab;
 	}
 	
-	if (zenarioAB.focus.tabs[tab].edit_mode) {
-		return zenarioAB.focus.tabs[tab].edit_mode.on =
-			engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.enabled)
-		 && (engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.on)
+	if (zenarioAB.tuix.tabs[tab].edit_mode) {
+		return zenarioAB.tuix.tabs[tab].edit_mode.on =
+			engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
+		 && (engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.on)
 		  || zenarioAB.editModeAlwaysOn(tab));
 	
 	} else {
@@ -2927,32 +2979,32 @@ zenarioAB.editModeOn = function(tab) {
 };
 
 zenarioAB.editModeAlwaysOn = function(tab) {
-	return zenarioAB.focus.tabs[tab].edit_mode.always_on === undefined
-		|| engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.always_on)
+	return zenarioAB.tuix.tabs[tab].edit_mode.always_on === undefined
+		|| engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.always_on)
 		|| zenarioAB.savedAndContinued(tab);
 };
 
 zenarioAB.editCancelEnabled = function(tab) {
-	return zenarioAB.focus.tabs[tab].edit_mode
-		&& engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.enabled)
+	return zenarioAB.tuix.tabs[tab].edit_mode
+		&& engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
 		&& !zenarioAB.editModeAlwaysOn(tab);
 };
 
 zenarioAB.revertEnabled = function(tab) {
-	return zenarioAB.focus.tabs[tab].edit_mode
-		&& engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.enabled)
+	return zenarioAB.tuix.tabs[tab].edit_mode
+		&& engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
 		&& zenarioAB.editModeAlwaysOn(tab)
 		&& !zenarioAB.savedAndContinued(tab)
-		&& ((zenarioAB.focus.tabs[tab].edit_mode.enable_revert === undefined && zenarioAB.focus.key && zenarioAB.focus.key.id)
-		 || engToBoolean(zenarioAB.focus.tabs[tab].edit_mode.enable_revert));
+		&& ((zenarioAB.tuix.tabs[tab].edit_mode.enable_revert === undefined && zenarioAB.tuix.key && zenarioAB.tuix.key.id)
+		 || engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enable_revert));
 };
 
 zenarioAB.savedAndContinued = function(tab) {
-	return zenarioAB.focus.tabs[tab]._saved_and_continued;
+	return zenarioAB.tuix.tabs[tab]._saved_and_continued;
 };
 
 zenarioAB.editModeOnBox = function() {
-	if (zenarioAB.focus && zenarioAB.focus.tabs && zenarioAB.sortedTabs) {
+	if (zenarioAB.tuix && zenarioAB.tuix.tabs && zenarioAB.sortedTabs) {
 		foreach (zenarioAB.sortedTabs as var i) {
 			var tab = zenarioAB.sortedTabs[i];
 			
@@ -2981,10 +3033,10 @@ zenarioAB.sortTabs = function() {
 		//0: The item's actual index
 		//1: The value to sort by
 	zenarioAB.sortedTabs = [];
-	if (zenarioAB.focus.tabs) {
-		foreach (zenarioAB.focus.tabs as var i) {
-			if (!zenarioAB.isInfoTag(i) && zenarioAB.focus.tabs[i]) {
-				zenarioAB.sortedTabs.push([i, zenarioAB.focus.tabs[i].ord]);
+	if (zenarioAB.tuix.tabs) {
+		foreach (zenarioAB.tuix.tabs as var i) {
+			if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[i]) {
+				zenarioAB.sortedTabs.push([i, zenarioAB.tuix.tabs[i].ord]);
 			}
 		}
 	}
@@ -3007,10 +3059,10 @@ zenarioAB.sortFields = function(tab) {
 		//0: The item's actual index
 		//1: The value to sort by
 	zenarioAB.sortedFields[tab] = [];
-	if (zenarioAB.focus.tabs[tab].fields) {
-		foreach (zenarioAB.focus.tabs[tab].fields as var i) {
-			if (!zenarioAB.isInfoTag(i) && zenarioAB.focus.tabs[tab].fields[i]) {
-				zenarioAB.sortedFields[tab].push([i, zenarioAB.focus.tabs[tab].fields[i].ord]);
+	if (zenarioAB.tuix.tabs[tab].fields) {
+		foreach (zenarioAB.tuix.tabs[tab].fields as var i) {
+			if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[tab].fields[i]) {
+				zenarioAB.sortedFields[tab].push([i, zenarioAB.tuix.tabs[tab].fields[i].ord]);
 			}
 		}
 	}
@@ -3032,11 +3084,11 @@ zenarioAB.sortFields = function(tab) {
 
 zenarioAB.syncAdminBoxFromClientToServer = function() {
 	if (zenarioAB.welcome) {
-		return JSON.stringify(zenarioAB.focus);
+		return JSON.stringify(zenarioAB.tuix);
 	
 	} else {
 		var $serverTags = {};
-		zenarioAB.syncAdminBoxFromClientToServerR($serverTags, zenarioAB.focus);
+		zenarioAB.syncAdminBoxFromClientToServerR($serverTags, zenarioAB.tuix);
 		
 		return JSON.stringify($serverTags);
 	}
@@ -3136,27 +3188,27 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 	if (zenarioAB.callBack && !saveAndContinue) {
 		var values;
 		if (values = zenarioAB.getValueArrayofArrays()) {
-			zenarioAB.callBack(zenarioAB.focus.key, values);
+			zenarioAB.callBack(zenarioAB.tuix.key, values);
 		}
 		
 	} else if (zenarioO.init && (zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('sk'))) {
 		//Reload the storekeeper if this window is a storekeeper window (new storekeeper)
 		var id = false;
 		
-		if (zenarioAB.focus.key.id !== undefined) {
-			id = zenarioAB.focus.key.id;
+		if (zenarioAB.tuix.key.id !== undefined) {
+			id = zenarioAB.tuix.key.id;
 		} else {
-			foreach (zenarioAB.focus.key as var i) {
-				id = zenarioAB.focus.key[i];
+			foreach (zenarioAB.tuix.key as var i) {
+				id = zenarioAB.tuix.key[i];
 				break;
 			}
 		}
 		
 		zenarioO.refreshToShowItem(id);
 		
-	} else if (zenarioAB.focus.key.slotName) {
+	} else if (zenarioAB.tuix.key.slotName) {
 		//Refresh the slot if this was one of the slot settings thickboxes
-		zenario.refreshPluginSlot(zenarioAB.focus.key.slotName, '');
+		zenario.refreshPluginSlot(zenarioAB.tuix.key.slotName, '');
 		
 		if (zenarioAT.init) {
 			zenarioAT.init();
@@ -3166,9 +3218,9 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 		//Don't allow any of the actions below, as they involve navigation
 	
 	//Otherwise build up a URL from the primary key, if it looks valid
-	} else if (zenarioAB.focus.key.cID) {
+	} else if (zenarioAB.tuix.key.cID) {
 		//Go to a specific content item
-		zenario.goToURL(zenario.linkToItem(zenarioAB.focus.key.cID, zenarioAB.focus.key.cType));
+		zenario.goToURL(zenario.linkToItem(zenarioAB.tuix.key.cID, zenarioAB.tuix.key.cType));
 	
 	//For any other Admin Toolbar changes, reload the page
 	} else if (zenarioAT.init) {
@@ -3176,7 +3228,7 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 		
 	}
 	
-	var popout_message = zenarioAB.focus.popout_message;
+	var popout_message = zenarioAB.tuix.popout_message;
 	
 	if (!saveAndContinue) {
 		zenarioAB.close();
@@ -3189,11 +3241,11 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 	if (saveAndContinue) {
 		zenarioAB.changed = {};
 		
-		if (zenarioAB.focus.tabs) {
-			foreach (zenarioAB.focus.tabs as var i) {
-				if (!zenarioAB.isInfoTag(i) && zenarioAB.focus.tabs[i]) {
+		if (zenarioAB.tuix.tabs) {
+			foreach (zenarioAB.tuix.tabs as var i) {
+				if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[i]) {
 					if (zenarioAB.editModeOn(i)) {
-						zenarioAB.focus.tabs[i]._saved_and_continued = true;
+						zenarioAB.tuix.tabs[i]._saved_and_continued = true;
 					}
 				}
 			}
@@ -3227,7 +3279,7 @@ zenarioAB.close = function(keepMessageWindowOpen) {
 		zenarioAB.documentScrollTop = false;
 	}
 	
-	delete zenarioAB.focus;
+	delete zenarioAB.tuix;
 	
 	return false;
 };
@@ -3247,9 +3299,9 @@ zenarioAB.closeButton = function(onlyCloseIfNoChanges) {
 };
 
 zenarioAB.callFunctionOnEditors = function(action) {
-	if (zenarioAB.focus && zenarioAB.focus.tab && zenarioAB.focus.tabs[zenarioAB.focus.tab] && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields && window.tinyMCE) {
-		foreach (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields as var f) {
-			var field = zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[f];
+	if (zenarioAB.tuix && zenarioAB.tuix.tab && zenarioAB.tuix.tabs[zenarioAB.tuix.tab] && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields && window.tinyMCE) {
+		foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields as var f) {
+			var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[f];
 			
 			if (field.type == 'editor') {
 				if (tinyMCE.get(f)) {
@@ -3283,14 +3335,14 @@ zenarioAB.validateAliasGo = function() {
 		alias: get('alias').value
 	}
 	
-	if (zenarioAB.focus.key.cID) {
-		req.cID = zenarioAB.focus.key.cID;
+	if (zenarioAB.tuix.key.cID) {
+		req.cID = zenarioAB.tuix.key.cID;
 	}
-	if (zenarioAB.focus.key.cType) {
-		req.cType = zenarioAB.focus.key.cType;
+	if (zenarioAB.tuix.key.cType) {
+		req.cType = zenarioAB.tuix.key.cType;
 	}
-	if (zenarioAB.focus.key.equivId) {
-		req.equivId = zenarioAB.focus.key.equivId;
+	if (zenarioAB.tuix.key.equivId) {
+		req.equivId = zenarioAB.tuix.key.equivId;
 	}
 	if (get('language_id')) {
 		req.langId = get('language_id').value;
@@ -3350,12 +3402,12 @@ zenarioAB.generateAlias = function(text) {
 
 zenarioAB.contentTitleChange = function() {
 	
-	if (get('menu_title') && !zenarioAB.focus.___menu_title_changed) {
+	if (get('menu_title') && !zenarioAB.tuix.___menu_title_changed) {
 		get('menu_title').value = get('title').value.replace(/\s+/g, ' ');
 		get('menu_title').onkeyup();
 	}
 	
-	if (get('alias') && !zenarioAB.focus.___alias_changed) {
+	if (get('alias') && !zenarioAB.tuix.___alias_changed) {
 		get('alias').value = zenarioAB.generateAlias(get('title').value);
 		zenarioAB.validateAlias();
 	}
@@ -3368,7 +3420,7 @@ zenarioAB.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +
 		'zenario/admin/organizer.php' +
-		'#zenario__modules/show_frameworks//' + zenarioAB.focus.key.moduleId + '//' + zenario.encodeItemIdForStorekeeper(zenarioAB.readField('framework'));
+		'#zenario__modules/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForStorekeeper(zenarioAB.readField('framework'));
 	window.open(url);
 	
 	return false;
@@ -3401,7 +3453,7 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	}
 	
 	get(parentName).checked =
-	zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[parentName].current_value = parentChecked;
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[parentName].current_value = parentChecked;
 	
 	$(get('row__' + parentName))
 		.removeClass('zenario_permgroup_empty')
@@ -3411,8 +3463,8 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	
 	//Set the "X / Y" display on the toggle
 	get(toggleName).value =
-	zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[toggleName].value =
-	zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[toggleName].current_value = c + '/' + n;
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].value =
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].current_value = c + '/' + n;
 };
 
 //Change the parent checkbox
@@ -3425,7 +3477,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	
 	//Loop through each value for the child checkboxes.
 	//Count them, and either turn them all on or all off, depending on whether the parent was checked
-	foreach (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[childrenName].values as var v) {
+	foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].values as var v) {
 		if (!zenarioAB.isInfoTag(v)) {
 			++n;
 			if (checked) {
@@ -3444,7 +3496,7 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	}
 	
 	//Update them in the data
-	zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[childrenName].current_value = current_value;
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].current_value = current_value;
 	
 	//Call the function above to update the count and the CSS
 	zenarioAB.adminPermChange(parentName, childrenName, toggleName, n, c);
@@ -3477,9 +3529,9 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 	
 	var rowClasses = {};
 	
-	foreach (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields as var field) {
+	foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields as var field) {
 		if (!zenarioAB.isInfoTag(field)) {
-			rowClasses[field] = ifNull(zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field].row_class, '', '');
+			rowClasses[field] = ifNull(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].row_class, '', '');
 		}
 	}
 
@@ -3488,7 +3540,7 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 	
 	$.post(url,
 		{
-			tab: zenarioAB.focus.tab,
+			tab: zenarioAB.tuix.tab,
 			path: zenarioAB.welcome? '' : zenarioAB.path,
 			values: JSON.stringify(zenarioAB.readTab()),
 			row_classes: JSON.stringify(rowClasses)
@@ -3500,8 +3552,8 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 			
 			if (data && data.row_classes) {
 				foreach (data.row_classes as var field) {
-					if (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field] && get('row__' + field)) {
-						zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field].row_class = data.row_classes[field];
+					if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field] && get('row__' + field)) {
+						zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].row_class = data.row_classes[field];
 						get('row__' + field).className = 'zenario_ab_row zenario_ab_row__' + field + ' ' + data.row_classes[field];
 					}
 				}
@@ -3509,10 +3561,10 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 			
 			if (data && data.snippets) {
 				foreach (data.snippets as var field) {
-					if (zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field]
-					 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field].snippet
-					 && zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field].snippet.html && get('snippet__' + field)) {
-						zenarioAB.focus.tabs[zenarioAB.focus.tab].fields[field].snippet.html = data.snippets[field];
+					if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field]
+					 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet
+					 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet.html && get('snippet__' + field)) {
+						zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet.html = data.snippets[field];
 						get('snippet__' + field).innerHTML = data.snippets[field];
 					}
 				}
@@ -3527,13 +3579,7 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 
 
 
-	})(
-		this,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase);
-};
 
-
-window.zenarioAB = new zenarioNewAB('');
+},
+	''
+);

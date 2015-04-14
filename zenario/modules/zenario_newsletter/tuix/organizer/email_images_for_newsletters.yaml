@@ -19,6 +19,7 @@ zenario__content:
         email_images_for_newsletters:
             key:
                 usage: email
+            panel_type: grid_or_list
             enable_close_up_view: Yes
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image

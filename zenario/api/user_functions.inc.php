@@ -272,56 +272,82 @@ function isInvalidUser($values, $id = false) {
 	return saveUser($values, $id, false);
 }
 
-function generateUserScreenName($firstName, $lastName, $email = '') {
-	$firstName = preg_replace('/[^A-Za-z0-9\-]/', '', $firstName);
-	$lastName = preg_replace('/[^A-Za-z0-9\-]/', '', $lastName);
-	if ($firstName || $lastName) {
-		// Remove special characters
-		$simpleScreenName = $firstName. $lastName;
-	} elseif ($email) {
-		$emailArray = explode('@', $email);
-		$simpleScreenName = $emailArray[0];
-	} else {
-		$simpleScreenName = 'User';
+
+function generateUserIdentifier($userId, $details = array()) {
+	
+	$baseScreenName = $firstName = $lastName = $email = '';
+	if (!empty($details['screen_name'])) {
+		$baseScreenName = $details['screen_name'];
+	} elseif ($userId) {
+		$userDetails = getRow('users', array('identifier', 'screen_name', 'first_name', 'last_name', 'email'), $userId);
+		foreach ($userDetails as $col => $value) {
+			if (!isset($detais[$col])) {
+				$details[$col] = $value;
+			}
+		}
+		if ($details['screen_name']) {
+			$baseScreenName = $userDetails['screen_name'];
+		}
 	}
-	$screenNames = array();
+	
+	$firstName = $details['first_name'];
+	$lastName = $details['last_name'];
+	$email = $details['email'];
+	// Remove special characters and get the base screen name
+	if (!$baseScreenName) {
+		$firstName = preg_replace('/[^A-Za-z0-9\-]/', '', $firstName);
+		$lastName = preg_replace('/[^A-Za-z0-9\-]/', '', $lastName);
+		if ($firstName || $lastName) {
+			$baseScreenName = $firstName. $lastName;
+		} elseif (($emailArray = explode('@', $email)) && ($email = preg_replace('/[^A-Za-z0-9\-]/', '', $emailArray[0]))) {
+			$baseScreenName = $email;
+		} else {
+			$baseScreenName = 'User';
+		}
+		if (strlen($baseScreenName) > 50) {
+			$baseScreenName = substr($baseScreenName, 0, 50);
+		}
+	}
+	
 	// Get all current similar screen names from all linked sites
-	if (file_exists(CMS_ROOT. 'zenario_usersync_config.php') && inc('zenario_users')) {
+	$screenNames = array();
+	if (file_exists(CMS_ROOT. 'zenario_usersync_config.php')) {
 		require CMS_ROOT. 'zenario_usersync_config.php';
 		$thisIsHub =
 			$hub['DBHOST'] == DBHOST
 		 && $hub['DBNAME'] == DBNAME;
 		
-		$screenNames = getSimilarScreenNames($simpleScreenName, $thisIsHub, $hub, $satellites);
+		$screenNames = getSimilarScreenNames($baseScreenName, $thisIsHub, $hub, $satellites);
 		connectLocalDB();
 	}
+	
+	// Get similar identifiers from this site
 	$sql = '
-		SELECT screen_name 
+		SELECT id, identifier 
 		FROM '.DB_NAME_PREFIX.'users
-		WHERE screen_name LIKE "'.sqlEscape($simpleScreenName).'%"';
+		WHERE identifier LIKE "'.sqlEscape($baseScreenName).'%"
+		AND id != '.(int)$userId;
 	$result = sqlSelect($sql);
 	while ($user = sqlFetchAssoc($result)) {
-		$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+		$screenNames[strtoupper($user['identifier'])] = $user['id'];
 	}
-	if (!isset($screenNames[strtoupper($simpleScreenName)])) {
-		return $simpleScreenName;
+	
+	// Find a unique screen name
+	$uniqueScreenName = $baseScreenName;
+	if (!isset($screenNames[strtoupper($uniqueScreenName)])) {
+		return $uniqueScreenName;
 	} else {
-		$digits = 1;
-		do {
-		if (strlen($simpleScreenName) >= 50) {
-				$simpleScreenName = substr($simpleScreenName, 0, (50 - $digits));
+		$userId = (string)$userId;
+		for ($i = 1; $i <= strlen($userId); $i++) {
+			$userNumber = substr($userId, -($i));
+			$baseScreenName = substr($baseScreenName, 0, (50 - ($i + 1)));
+			$uniqueScreenName = $baseScreenName . '-' . $userNumber;
+			if (!isset($screenNames[strtoupper($uniqueScreenName)])) {
+				return $uniqueScreenName;
 			}
-			$randomScreenName = $simpleScreenName. str_pad(rand(0, pow(10, $digits)-1), $digits, '0', STR_PAD_LEFT);
-			$unique = true;
-			foreach($screenNames as $screenName) {
-				if (strtoupper($screenName) == strtoupper($randomScreenName)) {
-					$unique = false;
-					break;
-				}
-			}
-			$digits++;
-		} while ($unique == false);
-		return $randomScreenName;
+		}
+		$uniqueScreenName .= rand(0, 99);
+		return $uniqueScreenName;
 	}
 }
 
@@ -338,13 +364,13 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 			cms_core::$lastDBPrefix = $hub['DB_NAME_PREFIX'];
 			
 			$sql = '
-				SELECT screen_name
+				SELECT id, identifier
 				FROM '. $hub['DB_NAME_PREFIX']. 'users
-				WHERE screen_name LIKE "'.sqlEscape($screenName).'%"';
+				WHERE identifier LIKE "'.sqlEscape($screenName).'%"';
 			
 			$result = sqlSelect($sql);
 			while ($user = sqlFetchAssoc($result)) {
-				$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+				$screenNames[strtoupper($user['identifier'])] = $user['id'];
 			}
 		} else {
 			return false;
@@ -363,13 +389,13 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 					cms_core::$lastDBPrefix = $satellite['DB_NAME_PREFIX'];
 					
 					$sql = '
-						SELECT screen_name
+						SELECT id, identifier
 						FROM '. $satellite['DB_NAME_PREFIX']. 'users
-						WHERE screen_name LIKE "'.sqlEscape($screenName).'%"';
+						WHERE identifier LIKE "'.sqlEscape($screenName).'%"';
 					
 					$result = sqlSelect($sql);
 					while ($user = sqlFetchAssoc($result)) {
-						$screenNames[strtoupper($user['screen_name'])] = $user['screen_name'];
+						$screenNames[strtoupper($user['identifier'])] = $user['id'];
 					}
 				}
 			}
@@ -401,26 +427,14 @@ function getNextScreenName() {
 //It will only save it if it passes a validation check; if it is not valid then this
 //function will return an error object.
 function saveUser($values, $id = false, $doSave = true) {
-	//Ensure the screen name is set by default
-	if (!$id && empty($values['screen_name'])) {
-		$firstName = isset($values['first_name']) ? $values['first_name'] : '';
-		$lastName = isset($values['last_name']) ? $values['last_name'] : '';
-		$email = isset($values['email']) ? $values['email'] : '';
-		$values['screen_name'] = generateUserScreenName($values['first_name'], $values['last_name'], $values['email']);
-	}
-	
 	//First, validate the submission.
 	$e = new zenario_error();
 	
 	//Validate the screen_name field if it is set.
 	//(Always validate it when creating a new user.)
-	if (isset($values['screen_name'])) {
-		//Check that a screen_name was entered...
-		if (empty($values['screen_name'])) {
-			$e->add('screen_name', '_ERROR_SCREEN_NAME_INCOMPLETE');
-		
+	if (!empty($values['screen_name'])) {
 		//...has no special characters...
-		} elseif (!validateScreenName($values['screen_name'])) {
+		if (!validateScreenName($values['screen_name'])) {
 			$e->add('screen_name', '_ERROR_SCREEN_NAME_INVALID');
 		
 		//...and is not already taken by a different row.
@@ -463,6 +477,9 @@ function saveUser($values, $id = false, $doSave = true) {
 		
 		//Save the details to the database
 		$newId = setRow('users', $values, $id);
+		
+		$identifier = generateUserIdentifier($newId);
+		updateRow('users', array('identifier' => $identifier), $newId);
 		
 		if ($password !== false) {
 			setUsersPassword($newId, $password);
@@ -564,6 +581,10 @@ function getUsername($userId) {
 
 function getUserScreenName($userId) {
 	return getRow('users', 'screen_name', $userId);
+}
+
+function getUserIdentifier($userId) {
+	return getRow('users', 'identifier', $userId);
 }
 
 function getUserFirstNameSpaceLastName($userId) {

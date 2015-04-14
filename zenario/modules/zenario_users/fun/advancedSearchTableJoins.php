@@ -55,7 +55,7 @@ foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
 							. DB_NAME_PREFIX . $uTable . " AS ". $as . "
 							ON
 									". $as . "." . $uIdColumn . " = u.id
-								AND ". $as . ".`" . $C['name'] . "`= 1 ";
+								AND ". $as . ".`" . $C['db_column'] . "`= 1 ";
 					break;
 					
 				case 'list_single_select':
@@ -66,7 +66,7 @@ foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
 									. DB_NAME_PREFIX . $uTable . " AS ". $as . "
 									ON
 											". $as . "." . $uIdColumn . " = u.id 
-											AND  ". $as . ".`" . $C['name'] . "` IN("
+											AND  ". $as . ".`" . $C['db_column'] . "` IN("
 															. inEscape($CValueIds) . ") ";
 						}
 					}
@@ -119,7 +119,9 @@ foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
 							
 					foreach (explode(',', $groups) as $group) {
 						$G = zenario_users::getCharacteristic( $group );
-						$sql .= " AND ". $as . ".`" . $G['name'] . "`= 1 ";
+						if(isset($G['db_column']) && $G['db_column'] && !$G['is_system_field']) {
+							$sql .= " AND ". $as . ".`" . preg_replace('@\W@', '', $G['db_column']) . "`= 1 ";
+						}
 					}
 					$joins[] = $sql;
 					break;
@@ -129,12 +131,19 @@ foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
 					$sql .= " AND (";
 					$loop_count = 0;
 					foreach (explode(',', $groups) as $group) {
-						$G = zenario_users::getCharacteristic( $group );
-						if($loop_count) {
-							$sql .= " OR ";
+						
+						if ($G = zenario_users::getCharacteristic( $group )) {
+							if($loop_count) {
+								$sql .= " OR ";
+							}
+							if(isset($G['db_column']) && $G['db_column'] && !$G['is_system_field']) {
+								$sql .= " ". $as . ".`" . preg_replace('@\W@', '', $G['db_column']) . "`= 1 ";
+								$loop_count++;
+							}
 						}
-						$sql .= " ". $as . ".`" . $G['name'] . "`= 1 ";
-						$loop_count++;
+						if (!$loop_count) {
+							$sql .= "1=1";
+						}
 					}
 					$joins[] = $sql . ") ";
 			}
@@ -161,7 +170,7 @@ if (arrayKey($values, 'exclude','enable') ) {
 							. DB_NAME_PREFIX . $uTable . " AS ascul_excl_" . $escaped_tablePrefix . "
 							ON
 									ascul_excl_" . $escaped_tablePrefix . "." . $uIdColumn . " = u.id
-								AND ascul_excl_" . $escaped_tablePrefix . ".`" . $C['name'] . "`= 1 ";
+								AND ascul_excl_" . $escaped_tablePrefix . ".`" . $C['db_column'] . "`= 1 ";
 					break;
 					
 				case 'list_single_select':
@@ -172,7 +181,7 @@ if (arrayKey($values, 'exclude','enable') ) {
 								. DB_NAME_PREFIX . $uTable . " AS ascul_excl_" . $postfix . "
 								ON
 										ascul_excl_" . $postfix . "." . $uIdColumn . " = u.id
-									AND ascul_excl_" . $postfix . ".`" . $C['name'] . "` NOT IN("
+									AND ascul_excl_" . $postfix . ".`" . $C['db_column'] . "` NOT IN("
 														. inEscape($CValues) . ") ";
 								break;
 					}
@@ -225,7 +234,9 @@ if (arrayKey($values, 'exclude','enable') ) {
 						
 					foreach (explode(',', $groups) as $group) {
 						$G = zenario_users::getCharacteristic( $group );
-						$sql .= " AND ucdb_excl" . $postfix . ".`" . $G['name'] . "`= 0 ";
+						if(isset($G['db_column']) && $G['db_column'] && !$G['is_system_field']) {
+							$sql .= " AND ucdb_excl" . $postfix . ".`" . preg_replace('@\W@', '', $G['db_column']) . "`= 0 ";
+						}
 					}
 					$joins[] = $sql;
 					break;
@@ -236,11 +247,16 @@ if (arrayKey($values, 'exclude','enable') ) {
 					$loop_count = 0;
 					foreach (explode(',', $groups) as $group) {
 						$G = zenario_users::getCharacteristic( $group );
-						if($loop_count) {
-							$sql .= " OR ";
+						if(isset($G['db_column']) && $G['db_column'] && !$G['is_system_field']) {
+							if($loop_count) {
+								$sql .= " OR ";
+							}
+							$sql .= " ucdb_excl" . $postfix . ".`" . preg_replace('@\W@', '', $G['db_column']) . "`= 1 ";
+							$loop_count++;
 						}
-						$sql .= " ucdb_excl" . $postfix . ".`" . $G['name'] . "`= 1 ";
-						$loop_count++;
+					}
+					if(!$loop_count) {
+						$sql .= "1=2";
 					}
 					$joins[] = $sql . ") ";
 			}

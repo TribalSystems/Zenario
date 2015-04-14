@@ -7,7 +7,7 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Search Results
 description: |
-    <p>
+            <p>
                 This Module allows visitors to search your site's content against entered keywords.
             </p>
             <p>
@@ -28,6 +28,7 @@ description: |
                 Visitors can also filter their search results by Category, if you choose to enable this
                 feature and have created some public Categories.
             </p>
+category: pluggable
 keywords: find, lookup, search
 vlp_class_name: zenario_search_results
 css_class_name: zenario_search_results

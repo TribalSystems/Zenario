@@ -1,0 +1,28 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: User Profile View
+description: |
+    <p>This Module enables you to display the profile of a given User to visitors.</p>
+            <p>The User whose profile you wish to display can be chosen in two ways:</p>
+            <ul>
+                <li>You can chose a specific User by using a Plugin setting</li>
+                <li>The User can be looked up by seeing if the page on which the Plugin is placed is associated with a User. This enables you to place the Plugin in the Layout Layer for a more maintainable solution.</li>
+            </ul>
+category: pluggable
+keywords: >
+    accesskey, disability, access, accessibility, accessible,
+    dda
+vlp_class_name: zenario_extranet_user_profile_view
+css_class_name: zenario_extranet_user_profile_view
+is_pluggable: Yes
+nestable: Yes
+default_framework: standard
+default_instance_name: Untitled Extranet User Characteristic View
+dependencies:
+    zenario_users: Yes
+    zenario_country_manager: Yes

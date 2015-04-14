@@ -102,20 +102,24 @@
 											{% endif %}/>
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
 									</div>
-									{% if nodeExtraProperties[node1.mID]['title'] %}
-										<div class="feature_title">
-											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
-											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
-											{% endif %}
-											<h2>
-												{{nodeExtraProperties[node1.mID]['title']|e}}
-											</h2>
-											{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
-										</div>
-									{% endif %}
-									{% if nodeExtraProperties[node1.mID]['text'] %}
-										<div class="feature_text">
-											{{nodeExtraProperties[node1.mID]['text']}}
+									{% if (nodeExtraProperties[node1.mID]['title']) or (nodeExtraProperties[node1.mID]['text']) %}
+										<div class="feature_content">
+										{% if nodeExtraProperties[node1.mID]['title'] %}
+											<div class="feature_title">
+												{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
+												<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
+												{% endif %}
+												<h2>
+													{{nodeExtraProperties[node1.mID]['title']|e}}
+												</h2>
+												{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}</a>{% endif %}
+											</div>
+										{% endif %}
+										{% if nodeExtraProperties[node1.mID]['text'] %}
+											<div class="feature_text">
+												{{nodeExtraProperties[node1.mID]['text']}}
+											</div>
+										{% endif %}
 										</div>
 									{% endif %}
 								</div>

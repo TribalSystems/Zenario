@@ -1,0 +1,30 @@
+<div class="hide_in_edit_mode">
+	{% if Documents %}
+		{% for item in Documents %}
+			<div class="document_wrap">
+			{% if Thumbnail %}
+				<img src="{{item.Thumbnail}}">
+			{% else %}
+				<div class="no_thumbnail_{{item.Document_Mime}}"></div>
+			{% endif %}
+			{% if item.Document_Type == 'file' %}
+				<div class="level_{{item.Document_Level}}"><a href="{{item.Document_Link}}" title="{{item.Document_Title}}" target="_blank">{{item.Document_Link_Text}}</a></div>
+			{% else %}
+				<div class="level_{{item.Document_Level}}"><h3 title="{{item.Document_Title}}">{{item.Document_Link_Text}}</h3></div>
+			{% endif %}
+			</div>
+		{% endfor %}
+	{% else %}
+		{% if Thumbnail %}
+			<img src="{{Thumbnail}}">
+		{% else %}
+			<div class="no_thumbnail_{{Document_Mime}}"></div>
+		{% endif %}
+		<div id="{{Document_css_id}}"><a href="{{Document_Link}}" title="{{Document_Title}}" target="_blank">{{Document_Link_Text}}</a></div>
+	{% endif %}
+
+
+	{% if Text %}
+		<div class="banner_text">{{Text}}</div>
+	{% endif %}
+</div>

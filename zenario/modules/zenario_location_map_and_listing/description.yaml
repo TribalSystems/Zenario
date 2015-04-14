@@ -1,0 +1,39 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Location Map and Listing
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+description: |
+    <p>
+        This module displays a list of locations to visitors,
+        and also displays each location on a Google Map.
+    </p>
+    <p>
+        There is an option to filter by country; if this is enabled
+        a country selector will appear on the page, and visitors will only
+        see locations that are in the selected country. (Locations that are
+        not associated with a country will not appear.)
+    </p>
+    <p>
+        There are also option to filter by up to three custom fields; if this option is
+        enabled then the visitor will see up to three different lists. (Locations that are
+        in multiple lists will appear multiple times, once on each list.)
+    </p>
+    <p>
+        This module will not work "out of the box". It needs a designer to write
+        CSS code before it will display on the screen.
+    </p>
+category: pluggable
+keywords: list, location, place, map
+vlp_class_name: zenario_location_map_and_listing
+css_class_name: zenario_location_map_and_listing
+default_framework: standard
+is_pluggable: true
+default_instance_name: Untitled Location Map and Listing
+nestable: false
+dependencies:
+    zenario_country_manager: true
+    zenario_location_manager: true

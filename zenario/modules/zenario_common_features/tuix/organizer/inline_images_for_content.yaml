@@ -5,6 +5,7 @@ zenario__content:
         inline_images_for_content:
             key:
                 usage: inline
+            panel_type: grid_or_list
             enable_close_up_view: Yes
             no_items_in_search_message: This content item has no images belonging to it. Click above to upload images from your local machine, or add an image that is already shared.
             grid_view_microtemplate: zenario_grid_view_image

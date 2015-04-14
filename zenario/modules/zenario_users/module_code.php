@@ -623,9 +623,13 @@ class zenario_users extends module_base_class {
 				/*parent_id,*/
 				ip,
 				session_id,
+				identifier,
 				screen_name,
+				screen_name_confirmed,
 				password,
+				password_salt,
 				password_needs_changing,
+				/*reset_password_time,*/
 				status,
 				/*image_id,*/
 				last_login,
@@ -639,6 +643,7 @@ class zenario_users extends module_base_class {
 				modified_date,
 				suspended_date,
 				last_updated_timestamp,
+				terms_and_conditions_accepted,
 				/*equiv_id,
 				content_type,*/
 				hash,
@@ -765,5 +770,34 @@ class zenario_users extends module_base_class {
 		} else {
 			return false;
 		}
+	}
+	
+	public static function jobRemoveInactivePendingUsers() {
+		$interval = '30';
+		$intervalSetting = setting('max_days_user_inactive');
+		if ($intervalSetting && is_numeric($intervalSetting)) {
+			$interval = $intervalSetting;
+		}
+		$sql = '
+			SELECT id, screen_name, first_name, last_name, email, created_date
+			FROM '.DB_NAME_PREFIX.'users
+			WHERE status = "pending"
+			AND email_verified = 0
+			AND created_date < DATE_SUB(NOW(), INTERVAL '.(int)$interval.' DAY)';
+		$result = sqlSelect($sql);
+		$count = 0;
+		$message = '';
+		while ($user = sqlFetchAssoc($result)) {
+			deleteUser($user['id']);
+			$count++;
+			$message .= "\n\n--------------------";
+			$message .= "\nScreen name: ".$user['screen_name'];
+			$message .= "\nFirst name: ".$user['first_name'];
+			$message .= "\nLast name: ".$user['last_name'];
+			$message .= "\nEmail: ".$user['email'];
+			$message .= "\nCreated date: ".formatDateNicely($user['created_date'], '_MEDIUM');
+		}
+		echo 'Users deleted: '.$count . $message;
+		return $count;
 	}
 }

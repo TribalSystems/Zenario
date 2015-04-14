@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__locations:
+    ord: 3
+    css_class: locations_top_level
+    label: Locations
+    tooltip: "Model real-world places, addresses and organizations"
+    nav:
+        locations: 
+            label: Locations
+            link:
+                path: zenario__locations/panel
+        hierarchy:
+            label: Hierarchy
+            visible_if: >
+                zenarioA.siteSettings.zenario_location_manager__hierarchy_levels
+            tooltip: Manage your hierarchy of locations
+            link:
+                path: zenario__locations/panel
+                refiner: parent_locations
+        sectors:
+            label: Sectors
+            tooltip: Business sectors or other classifications of location
+            visible_if: >
+                (!zenarioA.siteSettings.zenario_location_manager__sector_management
+                ||
+                zenarioA.siteSettings.zenario_location_manager__sector_management==2)
+        scores:
+            label: Scores
+            visible_if: >
+                zenarioA.siteSettings.zenario_location_manager__sector_management==2

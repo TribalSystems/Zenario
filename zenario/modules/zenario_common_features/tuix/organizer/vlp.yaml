@@ -98,7 +98,7 @@ zenario__languages:
                     ajax:
                         confirm:
                             html: true
-                            message: 'Are you sure you wish to merge tthe selected phrases?'
+                            message: 'Are you sure you wish to merge the selected phrases?'
                             button_message: Merge
                             cancel_button_message: Cancel
                             message_type: warning

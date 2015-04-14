@@ -65,8 +65,8 @@ _sql
 );
 
 if (needRevision(19)) {
-	// Create form
 	if (!checkRowExists('user_forms', array('name' => 'Simple contact form'))) {
+		// Create form
 		$userFormId = insertRow('user_forms', array(
 			'name' => 'Simple contact form',
 			'send_email_to_admin' => 1,

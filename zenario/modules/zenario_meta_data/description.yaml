@@ -7,7 +7,7 @@ start_running_on_install: true
 license_info: Modified BSD License
 display_name: Meta Data
 description: |
-    <p>
+            <p>
                 Displays the CMS Meta Data of the current Content Item to a visitor.
             </p>
             <p>You can use this Module to display any or all of the following fields on a page:
@@ -57,6 +57,7 @@ description: |
                 Module for that purpose. This Module is intended only to display the information in the
                 viewable &#60;body&#62; areas of the page.
             </p>
+category: pluggable
 vlp_class_name: zenario_meta_data
 css_class_name: zenario_meta_data
 is_pluggable: Yes

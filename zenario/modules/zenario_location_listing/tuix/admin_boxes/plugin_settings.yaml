@@ -1,0 +1,127 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Filter and Order
+            fields:
+                sector:
+                    label: 'Show Locations from Sector:'
+                    plugin_setting:
+                        name: sector
+                    pick_items:
+                        path: zenario__locations/nav/sectors/panel
+                        target_path: zenario__locations/nav/sectors/panel
+                        min_path: zenario__locations/nav/sectors/panel
+                        max_path: zenario__locations/nav/sectors/panel
+                        disallow_refiners_looping_on_min_path: 'false'
+                        nothing_selected_phrase: Show Locations in all Sectors
+                        select_phrase: Select Sector...
+                    format_onchange: Yes
+                country:
+                    label: 'Show Locations from Country:'
+                    plugin_setting:
+                        name: country
+                    pick_items:
+                        path: zenario__languages/panels/countries
+                        target_path: zenario__languages/panels/countries
+                        min_path: zenario__languages/panels/countries
+                        max_path: zenario__languages/panels/countries
+                        disallow_refiners_looping_on_min_path: 'false'
+                        nothing_selected_phrase: Show Locations in all Countries
+                        select_phrase: Select Country...
+                    format_onchange: Yes
+                region:
+                    label: 'Show Locations from Region:'
+                    plugin_setting:
+                        name: region
+                    pick_items:
+                        path: zenario__languages/panels/regions
+                        target_path: zenario__languages/panels/regions
+                        min_path: zenario__languages/panels/regions
+                        max_path: zenario__languages/panels/regions
+                        disallow_refiners_looping_on_min_path: 'false'
+                        nothing_selected_phrase: Show Locations in all Regions
+                        select_phrase: Select Region...
+                order_by_1:
+                    plugin_setting:
+                        name: order_by_1
+                    label: 'Order by 1st:'
+                    type: select
+                    values:
+                        0: '-- Select a field to order by --'
+                        sector_score: Sector Score (descending)
+                        country: Country (ascending)
+                        name: Name (ascending)
+                    value: name
+                order_by_2:
+                    plugin_setting:
+                        name: order_by_2
+                    label: 'Order by 2nd:'
+                    type: select
+                    values:
+                        0: '-- Select a field to order by --'
+                        sector_score: Sector Score (descending)
+                        country: Country (ascending)
+                        name: Name (ascending)
+                    value: name
+                order_by_3:
+                    plugin_setting:
+                        name: order_by_3
+                    label: 'Order by 3rd:'
+                    type: select
+                    values:
+                        0: '-- Select a field to order by --'
+                        sector_score: Sector Score (descending)
+                        country: Country (ascending)
+                        name: Name (ascending)
+                    value: name
+        display:
+            label: Display
+            fields:
+                title:
+                    plugin_setting:
+                        name: title
+                    label: 'Title:'
+                    type: text
+                    maxlength: 255
+                pagination:
+                    plugin_setting:
+                        name: pagination
+                    label: 'Pagination style:'
+                    type: select
+                    value: zenario_common_features::pagCloseWithNPIfNeeded
+                page_size:
+                    plugin_setting:
+                        name: page_size
+                    label: 'Number of Locations on one page:'
+                    type: select
+                    values:
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        12: "12"
+                        15: "15"
+                        20: "20"
+                        50: "50"
+                        999999: All possible
+                    value: "10"
+                excerpt_length:
+                    plugin_setting:
+                        name: excerpt_length
+                    label: 'Number of characters to show from Location Summary:'
+                    type: select
+                    values:
+                        50: "50"
+                        100: "100"
+                        200: "200"
+                        500: "500"
+                    value: "200"
+    module_class_name: zenario_location_listing

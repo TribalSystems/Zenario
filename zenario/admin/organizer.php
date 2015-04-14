@@ -73,7 +73,7 @@ if (!empty($_GET['openedInIframe'])) {
 } else {
 	$topLeftHTML = '
 		<div class="home_page_button top_left_button">
-			<a id="home_page_button_link" data-step="1" data-position="down" data-intro="<p><strong>Back to homepage</strong></p><p>This button takes you back to the ‘front-end’ view of your website’s homepage.</p>"
+			<a id="home_page_button_link" data-step="1" data-position="right" data-highlightClass="step_1" data-intro="<p><strong>Back to homepage</strong></p><p>This button takes you back to the ‘front-end’ view of your website’s homepage.</p>"
 				href="'. htmlspecialchars(ifNull($homeLink = linkToItem($homePageCID, $homePageCType, true, 'zenario_sk_return=navigation_path'), '../../')). '"
 				title="'. adminPhrase('Back to&lt;br/&gt;Home Page'). '"></a>
 		</div>';
@@ -89,7 +89,7 @@ if (!empty($_GET['openedInIframe'])) {
 	
 	$topLeftHTML .= '
 		<div
-			class="zenario_ywip top_left_button" data-step="2" data-position="down" data-intro="<p><strong>Your work in progress</strong></p><p>This button displays pages/content items which are still being worked or edited, and thus not published.</p>"
+			class="zenario_ywip top_left_button" data-step="2" data-position="right" data-intro="<p><strong>Your work in progress</strong></p><p>This button displays pages/content items which are still being worked or edited, and thus not published.</p>"
 			onclick="zenarioO.updateYourWorkInProgress();"
 			onmouseover="zenarioO.updateYourWorkInProgress();"
 		>
@@ -155,11 +155,14 @@ echo '
 		zenarioA.homeLink = "', jsEscape($homeLink), '";
 		zenarioA.backLink = "', jsEscape($backLink), '";
 		
-		zenarioO = new zenarioNewO(\'\', \'', jsEscape($topLeftHTML), '\', \'', jsEscape($topRightHTML), '\');
-		zenarioO.open(zenarioA.getSKBodyClass(), undefined, undefined, undefined, 0, true, true, false, false);
+		zenarioO.topLeftHTML = \'', jsEscape($topLeftHTML), '\';
+		zenarioO.topRightHTML = \'', jsEscape($topRightHTML), '\';
 		
-		$(document).ready(zenarioO.init);
-		$(document).ready(zenarioO.size);
+		$(function() {
+			zenarioO.open(zenarioA.getSKBodyClass(), undefined, undefined, undefined, 0, true, true, false, false);
+			zenarioO.init();
+			zenarioO.size()
+		});
 		
 		zenarioA.storekeeperWindow = true;
 	</script>';

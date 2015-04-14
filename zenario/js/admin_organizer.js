@@ -33,26 +33,99 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
 */
 
 
-window.zenarioNewO = function(skNum, topLeftHTML, topRightHTML) {
-	(function(
-		zenarioO,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-		undefined) {
-			"use strict";
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf
+) {
+	"use strict";
 
 
-zenarioO.encapName = 'zenarioO';
+
+
+//To do: Functions to document in the API directory in javascript_organizer.js:
+/*
+	//getting arrays of merge fields
+	zenarioO.getPanelItems(useLargerThumbnails)
+	zenarioO.getItemButtons()
+	zenarioO.getCollectionButtons()
+
+	zenarioO.disableInteraction()
+	zenarioO.enableInteraction()
+
+	zenarioO.refresh(
+		//Need to tidy up inputs
+	)
+
+	zenarioO.setHash()
+	zenarioO.setPanel()
+		//includes zenarioO.setTrash()
+	zenarioO.setButtons()
+		//includes zenarioO.setChooseButton()
+	zenarioO.setBackButton()
+	zenarioO.setNavigation()
+	zenarioO.setPanelTitle()
+	zenarioO.getCurrentPage()
+	zenarioO.getPageCount()
+
+
+	zenarioO.itemClick(
+		//Need to tidy up inputs
+	)
+	zenarioO.itemClickThrough(
+		//Need to tidy up inputs
+	)
+
+	zenarioO.toggleAllItems()
+	zenarioO.selectAllItems()
+	zenarioO.deselectAllItems()
+	zenarioO.selectSingleItem(
+		//Need to tidy up inputs
+	)
+	zenarioO.selectItemRange(start, stop)
+	
+	//inspection view functions
+	zenarioO.inspectionViewEnabled()
+	zenarioO.inInspectionView(stateChange)
+	zenarioO.inspectionViewItemId(stateChange)
+	zenarioO.openInspectionView()
+	zenarioO.closeInspectionView()
+	zenarioO.toggleInspectionView()
+*/
+
+/*
+	//Things that might become API functions, that I need to review:
+
+	zenarioO.path
+	zenarioO.getKeyId()
+	zenarioO.itemsSelected
+	zenarioO.selectCreatedIds()
+	zenarioO.saveSelection()
+	zenarioO.selectedItems
+	zenarioO.searchedItems
+
+	zenarioO.checkButtonHidden()
+	zenarioO.checkDisabled()
+	zenarioO.isInfoTag()
+
+	//list view stuff
+	zenarioO.resizeColumn()
+	zenarioO.columnWidths
+	zenarioO.resizingColumn
+	zenarioO.sortingColumn
+	zenarioO.switchColumnOrder()
+*/
+
 
 
 //Constants
-zenarioO.pageSize = 50;
 zenarioO.getItemLinkTimeoutTime = 7000;
 
 //(Periodic refresh is now disabled)
@@ -80,6 +153,9 @@ zenarioO.columnWidths = {
 	xlarge: 350,
 	xxlarge: 500
 };
+zenarioO.pi = false;
+zenarioO.panelTypes = {};
+zenarioO.inspectionView = false;
 
 
 
@@ -91,23 +167,74 @@ zenarioO.defaultPathInIframePreload = 'loading_message/panel';
 
 
 
+zenarioO.inInspectionView = function(stateChange) {
+	if (!zenarioO.inspectionViewEnabled()) {
+		zenarioO.inspectionView = false;
+		return false;
+	}
+	
+	if (stateChange === undefined) {
+		return zenarioO.inspectionView;
+	
+	} else if (stateChange === false) {
+		zenarioO.inspectionView =
+		zenarioO.inspectionViewItem = false;
+		zenarioO.setHash();
+	
+	} else {
+		zenarioO.inspectionView = true;
+		zenarioO.inspectionViewItem = stateChange;
+		zenarioO.setHash();
+	}
+};
+
+zenarioO.inspectionViewItemId = function() {
+	if (zenarioO.inInspectionView()) {
+		return zenarioO.inspectionViewItem;
+	}
+	return false;
+};
+
+zenarioO.inspectionViewEnabled = function() {
+	return zenarioO.pi
+		&& zenarioO.pi.returnInspectionViewEnabled();
+};
+
+zenarioO.toggleInspectionView = function(id) {
+	if (zenarioO.inspectionViewEnabled()) {
+		zenarioO.pi.toggleInspectionView(id);
+	}
+};
+
+zenarioO.openInspectionView = function(id) {
+	if (zenarioO.inspectionViewEnabled()) {
+		zenarioO.pi.openInspectionView(id);
+	}
+};
+
+zenarioO.closeInspectionView = function(id) {
+	if (zenarioO.inspectionViewEnabled()) {
+		zenarioO.pi.closeInspectionView(id);
+	}
+};
+
 
 
 
 zenarioO.open = function(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
-	if (!topLeftHTML) {
-		topLeftHTML = '';
+	if (!zenarioO.topLeftHTML) {
+		zenarioO.topLeftHTML = '';
 	}
-	if (!topRightHTML) {
-		topRightHTML =
+	if (!zenarioO.topRightHTML) {
+		zenarioO.topRightHTML =
 			'<div class="organizer_close_button">' +
 				'<a onclick="zenarioO.closeSelectMode();"></a>' +
 			'</div>';
 	}
 	
-	var html = zenarioA.microTemplate('zenario_organizer', {topLeftHTML: topLeftHTML, topRightHTML: topRightHTML});
+	var html = zenarioA.microTemplate('zenario_organizer', {topLeftHTML: zenarioO.topLeftHTML, topRightHTML: zenarioO.topRightHTML});
 	
-	zenarioA.openBox(html, className, 'sk' + skNum, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
+	zenarioA.openBox(html, className, 'sk', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
 };
 
 
@@ -125,12 +252,6 @@ zenarioO.init = function(reload) {
 	//if (window.console && typeof console.groupEnd == 'function') console.group('Loading Storekeeper');
 	
 	zenarioO.pageTitle = document.title;
-	
-	if (!zenario.browserIsIE(7)
-	 && zenarioA.siteSettings.storekeeper_page_size
-	 && zenarioA.siteSettings.storekeeper_page_size == 1*zenarioA.siteSettings.storekeeper_page_size) {
-		zenarioO.pageSize = Math.min(500, 1*zenarioA.siteSettings.storekeeper_page_size);
-	}
 	
 	//(Periodic refresh is now disabled)
 	//if (zenarioA.siteSettings.storekeeper_periodic_refresh_mins
@@ -153,6 +274,9 @@ zenarioO.init = function(reload) {
 	
 	//Load the map
 	try {
+		var map;
+		
+		
 		//If this is a select mode window launched from storekeeper, try to copy the map off of the launching storekeeper
 		if (	   zenarioA.openedInIframe
 				&& self.parent
@@ -166,27 +290,28 @@ zenarioO.init = function(reload) {
 			return;
 		
 		//Check if this window had an opener, which already had Storekeeper loaded
-		} else if (window.opener
-				&& window.opener.zenarioO
-				&& window.opener.zenarioO.map
-				&& window.opener.zenarioA.moduleCodeHash === zenarioA.moduleCodeHash
-				&& window.opener.zenarioCSSJSVersionNumber === window.zenarioCSSJSVersionNumber
+		} else if (windowOpener
+				&& windowOpener.zenarioO
+				&& windowOpener.zenarioO.map
+				&& windowOpener.zenarioA.moduleCodeHash === zenarioA.moduleCodeHash
+				&& windowOpener.zenarioCSSJSVersionNumber === window.zenarioCSSJSVersionNumber
 		) {
-			zenarioO.map = window.opener.zenarioO.map;
+			zenarioO.map = windowOpener.zenarioO.map;
 			zenarioO.init2();
 			return;
 		
-		//Check if this window had an opener, which already had Storekeeper preloaded
-		} else if (window.opener
-				&& window.opener.get
-				&& window.opener.get('zenario_sk_iframe')
-				&& window.opener.get('zenario_sk_iframe').contentWindow
-				&& window.opener.get('zenario_sk_iframe').contentWindow.zenarioO
-				&& window.opener.get('zenario_sk_iframe').contentWindow.zenarioO.map
-				&& window.opener.get('zenario_sk_iframe').contentWindow.zenarioA.moduleCodeHash === zenarioA.moduleCodeHash
-				&& window.opener.get('zenario_sk_iframe').contentWindow.zenarioCSSJSVersionNumber === window.zenarioCSSJSVersionNumber
+		//Check if this window had an windowOpener, which already had Storekeeper preloaded
+		} else if (windowOpener
+				&& windowOpener.zenario
+				&& windowOpener.zenario.get
+				&& windowOpener.zenario.get('zenario_sk_iframe')
+				&& windowOpener.zenario.get('zenario_sk_iframe').contentWindow
+				&& windowOpener.zenario.get('zenario_sk_iframe').contentWindow.zenarioO
+				&& windowOpener.zenario.get('zenario_sk_iframe').contentWindow.zenarioO.map
+				&& windowOpener.zenario.get('zenario_sk_iframe').contentWindow.zenarioA.moduleCodeHash === zenarioA.moduleCodeHash
+				&& windowOpener.zenario.get('zenario_sk_iframe').contentWindow.zenarioCSSJSVersionNumber === window.zenarioCSSJSVersionNumber
 		) {
-			zenarioO.map = window.opener.get('zenario_sk_iframe').contentWindow.zenarioO.map;
+			zenarioO.map = windowOpener.get('zenario_sk_iframe').contentWindow.zenarioO.map;
 			zenarioO.init2();
 			return;
 		}
@@ -232,7 +357,7 @@ zenarioO.init2 = function() {
 	
 	
 	zenarioO.createSortArrayTopLevel('sortedTopLevelItems');
-	zenarioO.setTopLevelItems();
+	zenarioO.setNavigation();
 	
 	if (zenarioA.canDoHTML5Upload()) {
 		get('organizer_rightColumn').addEventListener('dragover', function() {
@@ -242,7 +367,6 @@ zenarioO.init2 = function() {
 			$('#organizer_rightColumn').removeClass('dragover');
 		}, false);
 	}
-	
 	
 	if (zenarioO.checkQueue()) {
 		//if (window.console && typeof console.groupEnd == 'function') console.groupEnd();
@@ -338,25 +462,57 @@ zenarioO.implodeKeys = function(input) {
 
 
 
+zenarioO.initNewPanelInstance = function(path) {
+	var panelType = zenarioO.followPathOnMap(path, 'panel_type');
+	
+	if ((panelType)
+	 && (zenarioO.panelTypes[panelType])) {
+		panelInstance = new zenarioO.panelTypes[panelType]();
+	} else {
+		panelInstance = new zenarioO.panelTypes.list();
+	}
+	
+	return panelInstance;
+};
+
 
 //Go to a series of locations in turn
 zenarioO.checkQueue = function(sameLoad) {
 	var len;
 	if (len = zenarioO.checkQueueLength()) {
 		var ids = '',
+			panelType, panelInstance,
 			queued = window.zenarioOQueue.shift();
 		
+		//Should any items be selected at this point?
 		if (queued.selectedItems) {
 			ids = zenarioO.implodeKeys(queued.selectedItems);
 			
-			zenarioO.selectedItems = queued.selectedItems;
-			zenarioO.saveSelection(true);
+			//Normally we'd wait until the zenarioO.go() function to set up the panel instance,
+			//but if we have any selected items to record then we'll need to initialise it now
+			//in order to record them.
+			//So if the panel instance was not loaded previously, create a new one.
+			if (!zenarioO.pi
+			 || !zenarioO.branches[zenarioO.branches.length-1].panel_instances[zenarioO.path]) {
+				
+				zenarioO.pi =
+				zenarioO.branches[zenarioO.branches.length-1].panel_instances[zenarioO.path] =
+					zenarioO.initNewPanelInstance(zenarioO.path);
+			}
+			
+			//Record the items that were selected on this panel
+			zenarioO.pi.cmsSetsSelectedItems(queued.selectedItems);
+			
+			//zenarioO.pi.selectedItems = queued.selectedItems;
+			//zenarioO.selectedItems = queued.selectedItems;
+			//zenarioO.saveSelection(true);
 		}
 			
 		if (queued.refinerName) {
 			queued.refiner = {name: queued.refinerName, id: ids};
 		}
 		
+		//zenarioO.go(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad) {
 		zenarioO.go(queued.path, queued.branch, queued.refiner, true, !--len, undefined, undefined, undefined, sameLoad);
 		
 		return true;
@@ -389,19 +545,19 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 				hash += '&__zenario_reload_at__=' + ('' + Math.random()).replace('.', '');
 			}
 		
-			if (window.opener && window.opener.zenario) {
+			if (windowOpener && windowOpener.zenario) {
 				window.opener.document.location.hash = hash;
 		
-			} else if (window.parent && window.parent.zenario) {
+			} else if (windowParent && windowParent.zenario) {
 				window.parent.document.location.hash = hash;
 			}
 		}
 	
 		if (window.zenarioOReloadOnChanges == 'zenarioO'
-		 && window.parent
-		 && window.parent.zenarioO
-		 && window.parent.zenarioO.init) {
-			window.parent.zenarioO.refresh();
+		 && windowParent
+		 && windowParent.zenarioO
+		 && windowParent.zenarioO.init) {
+			windowParent.zenarioO.refresh();
 		}
 	}
 };
@@ -417,17 +573,17 @@ zenarioO.pathNotAllowed = function(link) {
 zenarioO.goNum = 0;
 zenarioO.loadNum = 0;
 zenarioO.lastSuccessfulGoNum = 0;
-zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic) {
+zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic, inCloseUpView) {
 	
 	if (!periodic) {
 		zenarioO.lastActivity = Date.now();
 	}
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk' + skNum)) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
 		return;
 	}
 	
-	if (zenarioA.uploading) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
@@ -439,12 +595,21 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		return;
 	}
 	
+	//If there is already a panel being displayed, attempt to call it's onUnload function
+	if (zenarioO.path
+	 && zenarioO.pi
+	 && zenarioO.pi.onUnload) {
+		var $header = $('#organizer_header'),
+			$panel = $('#organizer_rightColumnContent'),
+			$footer = $('#organizer_lowerMiddleColumn');
+		zenarioO.pi.onUnload($header, $panel, $footer);
+	}
+	
 	if (!queued) {
 		window.zenarioOQueue = false;
 	}
 	
-	var itemToSelect, inCloseUpView, specificItemRequested, specificItemsRequested, selectAnItem,
-		requestedPath = path;
+	var requestedPath = path;
 	
 	if (path) {
 		var pathAndItem = path.split('//'),
@@ -452,7 +617,11 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		
 		//Is there any deeplinking in the path?
 		if (len > 2) {
+			//Ignore the itemToSelect parameter if it was set
 			itemToSelect = undefined;
+			inCloseUpView = false;
+			
+			//Try and parse the path to work out where this should be
 			var lastLink;
 			for (var p = 0; p < len-1; p += 2) {
 				
@@ -517,39 +686,29 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		
 		//Is an item requested in the path?
 		} else if (len == 2) {
+			//Ignore the itemToSelect parameter if it was set
 			itemToSelect = undefined;
+			inCloseUpView = false;
+			
+			//Get the tag-path from the item and path
 			path = pathAndItem[0];
 			
-			if (pathAndItem[1].indexOf(',') != -1) {
-				specificItemsRequested = pathAndItem[1];
-				inCloseUpView = false;
-				selectAnItem = false;
-				
-			} else if (itemToSelect = pathAndItem[1]) {
+			//Check there are no commas in the id of the selected item,
+			//and try and get the item id from the item and path
+			if ((pathAndItem[1].indexOf(',') == -1)
+			 && (itemToSelect = pathAndItem[1])) {
+				//Look for a single slash after the item - this should indicate closeup view
 				var len = itemToSelect.length - 1;
 				if (itemToSelect.substr(len) == '/') {
 					itemToSelect = itemToSelect.substr(0, len);
-					selectAnItem = false;
-				} else {
-					selectAnItem = true;
+					inCloseUpView = true;
 				}
-				
-				specificItemRequested = true;
-				inCloseUpView = true;
-			} else {
-				inCloseUpView = false;
-				selectAnItem = false;
 			}
 		
-		//Check the itemToSelect input, and select that item after the jump if possible
+		//Otherwise we'll use the itemToSelect input, and select that item after the jump if possible
 		} else {
-			inCloseUpView = false;
-			
-			if (itemToSelect) {
-				specificItemRequested = true;
-				selectAnItem = true;
-			} else {
-				selectAnItem = false;
+			if (!itemToSelect) {
+				inCloseUpView = false;
 			}
 		}
 		
@@ -560,7 +719,6 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	if (!path) {
 		path = window.zenarioONotFull? zenarioO.defaultPathInIframePreload : zenarioO.defaultPath;
 		inCloseUpView = false;
-		selectAnItem = false;
 	}
 	
 	if (!zenarioO.followPathOnMap(path)) {
@@ -579,10 +737,10 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	
 	
 	var filtersSet = false,
+		panelInstance = false,
 		filters = $.extend(true, {}, zenarioO.loadFromBranches(path, branch, 'filters')),
 		searchTerm = zenarioO.loadFromBranches(path, branch, 'searches'),
 		advancedSearch = zenarioO.loadFromBranches(path, branch, 'adv_searches'),
-		openItemsInHierarchy = zenarioO.loadFromBranches(path, branch, 'open_items'),
 		advancedValues = false,
 		refinerDetails = false,
 		previousRefiner = false,
@@ -604,8 +762,10 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		branches = zenarioO.branches.length - 1,
 		b;
 	
-	//If we're resetting all branches, there will be no previous refiner
+	//If we're resetting all branches, there will be no previous refiner and no need to load the panel instance
 	if (branch !== -1) {
+		//Try to retrieve the panel instance
+		panelInstance = zenarioO.loadFromBranches(path, branch, 'panel_instances');
 		
 		//Get the refiners on each of the branches that we've previously followed
 		for (b = 0; b < branches; ++b) {
@@ -627,6 +787,11 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		if (refiner) {
 			lastRefiners['refiner__' + refiner.name] = refiner.id;
 		}
+	}
+	
+	//If the panel instance was not loaded previously, create a new one.
+	if (!panelInstance) {
+		panelInstance = zenarioO.initNewPanelInstance(path);
 	}
 	
 	//If there is a refiner, try to look it up on the map to see if there is any special logic for it
@@ -662,166 +827,179 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	}
 	
 	//Check if we need to check with the server for updates/changes to this panel using php
-	var db_items = zenarioO.followPathOnMap(path, 'db_items'),
-		reorder = zenarioO.followPathOnMap(path, 'reorder'),
-		server_side = db_items && !engToBoolean(db_items.client_side),
-		thisPageSize = reorder && reorder.column? 999 : zenarioO.pageSize,
-		url = URLBasePath + 'zenario/admin/ajax.php?_json=1&path=' + path,
+	var panel = zenarioO.followPathOnMap(path);
+	
+	panelInstance.cmsSetsPath(path);
+	panelInstance.cmsSetsPanelTUIX(panel);
+	
+	//Could the selected item be stored against the instance..?
+	panelInstance.cmsSetsRequestedItem(itemToSelect);
+	
+	//Come back to this and see if I could do this a different way,
+	//e.g. storing the search term against the instance..?
+	panelInstance.cmsSetsSearchTerm(searchTerm);
+	
+	var db_items = panel.db_items,// zenarioO.followPathOnMap(path, 'db_items'),
+		reorder = panel.reorder,//zenarioO.followPathOnMap(path, 'reorder'),
+		server_side = panelInstance.returnDoSortingAndSearchingOnServer(),
+		thisPageSize = 1*panelInstance.returnPageSize(),
+		url = panelInstance.returnAJAXURL(),
+		devToolsURL = panelInstance.returnDevToolsAJAXURL(),
+		//url = URLBasePath + 'zenario/admin/ajax.php?_json=1&path=' + path + zenario.urlRequest(panelInstance.requests()),
 		requests = {},
 		post = {},
 		postUsed = false,
 		data = false,
 		store,
 		go2 = function(data) {
-			zenarioO.go2(path, url, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, specificItemRequested, inCloseUpView, itemToSelect, selectAnItem, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
+			zenarioO.go2(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
 		};
 	
-	if (window.zenarioONotFull) {
-		if (window.zenarioOSelectMode) {
-			url += '&_select_mode=1';
-		} else if (window.zenarioOQuickMode) {
-			url += '&_quick_mode=1';
+	if (url) {
+		if (window.zenarioONotFull) {
+			if (window.zenarioOSelectMode) {
+				url += '&_select_mode=1';
+			} else if (window.zenarioOQuickMode) {
+				url += '&_quick_mode=1';
+			}
 		}
-	}
 	
-	if (queued && !lastInQueue) {
-		requests._queued = 1;
-	}
-	
-	if (refiner !== undefined) {
-		requests.refinerId = refiner.id;
-		requests.refinerName = refiner.name;
-		
-		if (refiner.languageId) {
-			requests.languageId = refiner.languageId;
+		if (queued && !lastInQueue) {
+			requests._queued = 1;
 		}
-	}
 	
-	if (window.zenarioOCombineItem) {
-		requests._combineItem = window.zenarioOCombineItem;
-	}
-	
-	foreach (lastRefiners as var f) {
-		requests[f] = lastRefiners[f];
-	}
-	
-	if (server_side || zenarioO.CSVExport) {
-		requests._limit = thisPageSize;
+		if (refiner !== undefined) {
+			requests.refinerId = refiner.id;
+			requests.refinerName = refiner.name;
 		
-		if (zenarioO.refreshToPage) {
-			requests._start = (zenarioO.refreshToPage-1) * thisPageSize;
-		} else {
-			requests._start = 0;
+			if (refiner.languageId) {
+				requests.languageId = refiner.languageId;
+			}
+		}
+	
+		if (window.zenarioOCombineItem) {
+			requests._combineItem = window.zenarioOCombineItem;
+		}
+	
+		foreach (lastRefiners as var f) {
+			requests[f] = lastRefiners[f];
+		}
+	
+		//Pagination logic
+		if (server_side || zenarioO.CSVExport) {
+			if (thisPageSize) {
+				requests._limit = thisPageSize;
+		
+				if (zenarioO.refreshToPage) {
+					requests._start = (zenarioO.refreshToPage-1) * thisPageSize;
+				} else {
+					requests._start = 0;
 			
-			if (specificItemsRequested) {
-				requests._item = specificItemsRequested;
+					if (itemToSelect) {
+						requests._item = itemToSelect;
 			
-			} else if (specificItemRequested && itemToSelect) {
-				requests._item = itemToSelect;
-			
-			} else if (specificItemRequested) {
-				requests._item = specificItemRequested;
-			
-			//Try to get the previously selected item from the previous panel, if there was one
-			} else if (backwards) {
-				var requestItem;
+					//Try to get the previously selected item from the previous panel, if there was one
+					} else if (backwards) {
+						var requestItem;
 				
-				if (typeof backwards == 'object' && backwards.selectedItemFromLastPanel) {
-					requests._item = backwards.selectedItemFromLastPanel;
-				} else if (requestItem = zenarioO.getSelectedItemFromLastPanel(path)) {
-					requests._item = requestItem;
+						if (typeof backwards == 'object' && backwards.selectedItemFromLastPanel) {
+							requests._item = backwards.selectedItemFromLastPanel;
+						} else if (requestItem = zenarioO.getSelectedItemFromLastPanel(path)) {
+							requests._item = requestItem;
+						}
+					}
 				}
 			}
-		}
 		
-		//Work out which column to sort on
-		//Sort by the reorder column if we're reordering
-		if (reorder && reorder.column) {
-			requests._sort_col = reorder.column;
+			//Work out which column to sort on
+			//Sort by the reorder column if we're reordering
+			if (reorder && reorder.column) {
+				requests._sort_col = reorder.column;
 		
-		//Look up the user's choice of sort column
-		} else if (zenarioO.prefs[viewOptionsPath] && zenarioO.prefs[viewOptionsPath].sortBy) {
-			requests._sort_col = zenarioO.prefs[viewOptionsPath].sortBy;
-			requests._sort_desc = zenarioO.prefs[viewOptionsPath].sortDesc? 1 : 0;
+			//Look up the user's choice of sort column
+			} else if (zenarioO.prefs[viewOptionsPath] && zenarioO.prefs[viewOptionsPath].sortBy) {
+				requests._sort_col = zenarioO.prefs[viewOptionsPath].sortBy;
+				requests._sort_desc = zenarioO.prefs[viewOptionsPath].sortDesc? 1 : 0;
 		
-		//Otherwise sort by the default sort column
-		} else {
-			requests._sort_col = defaultSortColumn;
-			requests._sort_desc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc'));
-		}
-	}
-	//Send the values of any filters
-	if (filters !== undefined) {
-		//Don't apply hidden filters, or any empty filters
-		foreach (filters as var c) {
-			if (zenarioO.filterSetOnColumn(c, filters)) {
-				filtersSet = true;
+			//Otherwise sort by the default sort column
 			} else {
-				delete filters[c];
+				requests._sort_col = defaultSortColumn;
+				requests._sort_desc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc'));
 			}
 		}
+		//Send the values of any filters
+		if (filters !== undefined) {
+			//Don't apply hidden filters, or any empty filters
+			foreach (filters as var c) {
+				if (zenarioO.filterSetOnColumn(c, filters)) {
+					filtersSet = true;
+				} else {
+					delete filters[c];
+				}
+			}
 		
-		requests._filters = JSON.stringify(filters);
-	}
+			requests._filters = JSON.stringify(filters);
+		}
 	
-	if (server_side || zenarioO.CSVExport) {
-		if (searchTerm !== undefined) {
-			requests._search = searchTerm;
-		}
-		if (advancedSearch) {
-			postUsed = true;
-			post._adv_search = JSON.stringify(advancedSearchValues);
-		}
-	}
-	
-	if (reorder && reorder.lazy_load) {
-		if (itemToSelect && !openItemsInHierarchy) {
-			requests._openItemInHierarchy = itemToSelect;
-		} else {
-			requests._openItemsInHierarchy = openItemsInHierarchy? zenarioO.implodeKeys(openItemsInHierarchy) : '';
-		}
-	}
-	
-	//CSV export ability:
-	//Rather than send data to the server and display it in the client,
-	//send data to the server and download it as a CSV file.
-	if (zenarioO.CSVExport) {
-		zenarioO.CSVExport = undefined;
-		zenarioO.refreshToPage = undefined;
-		
-		delete requests._start;
-		delete requests._limit;
-		
-		if (path === zenarioO.path) {
-			post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.focus.columns);
-		} else {
-			post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.followPathOnMap(path, 'columns'));
-		}
-		
-		if (zenarioO.prefs[zenarioO.voPath] && zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV) {
-			foreach (zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV as var c) {
-				post._shownColumnsInCSV[c] = zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV[c];
+		if (server_side || zenarioO.CSVExport) {
+			if (searchTerm !== undefined) {
+				requests._search = searchTerm;
+			}
+			if (advancedSearch) {
+				postUsed = true;
+				post._adv_search = JSON.stringify(advancedSearchValues);
 			}
 		}
-		
-		post._shownColumnsInCSV = JSON.stringify(post._shownColumnsInCSV);
-		post._sortedColumns = JSON.stringify(ifNull(zenarioO.prefs[zenarioO.voPath].sortedColumns, zenarioO.sortedColumns));
-		
-		
-		//We could just do something like:
-		//	document.location.href = url + zenario.urlRequest(requests) + '&_csv=1';
-		//to download the CSV file, but the URL would probably be too long.
-		//So we'll fake a form submission as a work-around instead.
-		get('zenario_iframe_form').action = url + zenario.urlRequest(requests) + '&_csv=1';
-		
-		var html = '', request;
-		foreach (post as request) {
-			html += '<input type="hidden" name="' + htmlspecialchars(request) + '" value="' + htmlspecialchars(post[request]) + '"/>';
-		}
-		get('zenario_iframe_form').innerHTML = html;
-		
-		get('zenario_iframe_form').submit();
-		return;
+	
+		//if (reorder && reorder.lazy_load) {
+		//	if (itemToSelect && !openItemsInHierarchy) {
+		//		requests._openItemInHierarchy = itemToSelect;
+		//	} else {
+		//		requests._openItemsInHierarchy = openItemsInHierarchy? zenarioO.implodeKeys(openItemsInHierarchy) : '';
+		//	}
+		//}
+	
+		//CSV export ability:
+		//Rather than send data to the server and display it in the client,
+		//send data to the server and download it as a CSV file.
+		//if (zenarioO.CSVExport) {
+		//	zenarioO.CSVExport = undefined;
+		//	zenarioO.refreshToPage = undefined;
+		//	
+		//	delete requests._start;
+		//	delete requests._limit;
+		//	
+		//	if (path === zenarioO.path) {
+		//		post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.tuix.columns);
+		//	} else {
+		//		post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.followPathOnMap(path, 'columns'));
+		//	}
+		//	
+		//	if (zenarioO.prefs[zenarioO.voPath] && zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV) {
+		//		foreach (zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV as var c) {
+		//			post._shownColumnsInCSV[c] = zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV[c];
+		//		}
+		//	}
+		//	
+		//	post._shownColumnsInCSV = JSON.stringify(post._shownColumnsInCSV);
+		//	post._sortedColumns = JSON.stringify(ifNull(zenarioO.prefs[zenarioO.voPath].sortedColumns, zenarioO.sortedColumns));
+		//	
+		//	
+		//	//We could just do something like:
+		//	//	document.location.href = url + zenario.urlRequest(requests) + '&_csv=1';
+		//	//to download the CSV file, but the URL would probably be too long.
+		//	//So we'll fake a form submission as a work-around instead.
+		//	get('zenario_iframe_form').action = url + zenario.urlRequest(requests) + '&_csv=1';
+		//	
+		//	var html = '', request;
+		//	foreach (post as request) {
+		//		html += '<input type="hidden" name="' + htmlspecialchars(request) + '" value="' + htmlspecialchars(post[request]) + '"/>';
+		//	}
+		//	get('zenario_iframe_form').innerHTML = html;
+		//	
+		//	get('zenario_iframe_form').submit();
+		//	return;
+		//}
 	}
 	
 	//Disable the current panel/page from refreshing
@@ -840,8 +1018,13 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		}
 	}
 	
+	
+	//Allow the panel type to disable this AJAX request by returning false for the url
+	if (!url) {
+		go2(panel);
+	
 	//Attempt to get this panel from the local storage, unless there's a post request
-	if (postUsed) {
+	} else if (postUsed) {
 		//Don't use the local storage for post requests
 		zenarioA.keepTrying(function(attempt) {
 			$.ajax({
@@ -898,14 +1081,16 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 
 //Part 2 of the go function, run when we've got the data back from the server
 	//(Or run straight away if the server was never polled)
-zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, specificItemRequested, inCloseUpView, itemToSelect, selectAnItem, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
+zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
 	
 	//For debugging
-	if (data && data.comment !== undefined) {
+	if (data
+	 && data.comment !== undefined
+	 && window.console) {
 		console.log(data.comment);
 	}
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk' + skNum)) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
 		return;
 	}
 	
@@ -916,20 +1101,30 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	
 	zenarioO.stopRefreshing();
 	
-	//If this is a different panel, scroll back up to the top
-	if (zenarioO.voPath != viewOptionsPath || branch === true || branch === -1) {
-		zenarioO.scrollToPageTop = true;
-	}
+	////If this is a different panel, scroll back up to the top
+	//if (zenarioO.voPath != viewOptionsPath || branch === true || branch === -1) {
+	//	zenarioO.scrollToPageTop = true;
+	//}
 	
-	var lastPath = zenarioO.path;
-	var lastTitle, noReturnEnabled;
-	if (zenarioO.focus) {
-		lastTitle = zenarioO.focus.title;
-		noReturnEnabled = engToBoolean(zenarioO.focus.no_return);
+	var lastPath = zenarioO.path,
+		lastTitle,
+		noReturnEnabled;
+	
+	if (zenarioO.tuix) {
+		lastTitle = zenarioO.tuix.title;
+		noReturnEnabled = engToBoolean(zenarioO.tuix.no_return);
 	}
 	
 	//This variable is used by dev tools to load dev information on the last panel
 	zenarioO.url = url + zenario.urlRequest(requests);
+	
+	//If a panel type has overridded the returnAJAXURL() function,
+	//record what the output would have been so that we can still use the dev tools
+	if (devToolsURL != url) {
+		zenarioO.devToolsURL = devToolsURL + zenario.urlRequest(requests);
+	} else {
+		zenarioO.devToolsURL = undefined;
+	}
 	
 	//This variable is used later to launch a second AJAX request, if we need to repeat
 	//the same query with the same search/filters as before
@@ -941,12 +1136,9 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	zenarioO.thisPageSize = thisPageSize;
 	zenarioO.filtersSet = filtersSet;
 	zenarioO.server_side = server_side;
-	zenarioO.inCloseUpView = inCloseUpView;
-	zenarioO.itemToSelect = itemToSelect;
-	zenarioO.selectAnItem = selectAnItem;
+	zenarioO.inspectionView = inCloseUpView;
+	zenarioO.inspectionViewItem = itemToSelect;
 	zenarioO.advancedSearch = advancedSearch;
-	
-	zenarioO.markIfViewIsFiltered();
 	
 	if (!zenarioO.prefs[viewOptionsPath]) {
 		zenarioO.prefs[viewOptionsPath] = {};
@@ -963,31 +1155,39 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	}
 		//Otherwise branch = undefined continues in the current branch
 	
+	
+	//Save the instance to this part of the navigation so it can be loaded again if the admin
+	//ever comes back to the panel.
+	zenarioO.pi =
+	zenarioO.branches[zenarioO.branches.length-1].panel_instances[zenarioO.path] =
+		panelInstance;
+	
+	//Focus on this part of the map
+	delete zenarioO.tuix;
+	zenarioO.tuix = data;
+		//Backwards compatability for any old code
+		zenarioO.focus = zenarioO.tuix;	
+	
+	zenarioO.pi.cmsSetsPanelTUIX(zenarioO.tuix);
+	
+	zenarioO.markIfViewIsFiltered();
+	
+	
+	
 	zenarioO.saveRefiner(refiner);
 	zenarioO.lastRefiners = lastRefiners;
 	
-	//ids -> parent ids
-	zenarioO.itemHierarchy = {};
-	
-	//Focus on this part of the map
-	delete zenarioO.focus;
-	zenarioO.focus = data;
-	
-	if (zenarioO.focus.__item_hierarchy__) {
-		zenarioO.itemHierarchy = zenarioO.focus.__item_hierarchy__;
-	}
-	
 	
 	//Set the format for labels
-	if (!(zenarioO.labelFormat = zenarioO.focus.label_format_for_grid_view)) {
+	if (!(zenarioO.labelFormat = zenarioO.tuix.label_format_for_grid_view)) {
 		zenarioO.labelFormat = '[[' + zenarioO.defaultSortColumn + ']]';
 	}
-	zenarioO.popoutLabelFormat = zenarioO.focus.label_format_for_popouts;
-	zenarioO.boldColsInListView = zenarioO.focus.bold_columns_in_list_view || zenarioO.focus.label_format_for_picked_items || zenarioO.labelFormat;
+	zenarioO.popoutLabelFormat = zenarioO.tuix.label_format_for_popouts;
+	zenarioO.boldColsInListView = zenarioO.tuix.bold_columns_in_list_view || zenarioO.tuix.label_format_for_picked_items || zenarioO.labelFormat;
 	
 	//Check if we have a column description, and set a default one if not
-	if (!zenarioO.focus.columns) {
-		zenarioO.focus.columns = {'name': {'title': 'Name'}};
+	if (!zenarioO.tuix.columns) {
+		zenarioO.tuix.columns = {'name': {'title': 'Name'}};
 	}
 	
 	
@@ -999,7 +1199,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		zenarioO.sortDesc = false;
 	
 	//Look up the user's choice of search column
-	} else if (zenarioO.prefs[viewOptionsPath].sortBy && zenarioO.focus.columns[zenarioO.prefs[viewOptionsPath].sortBy]) {
+	} else if (zenarioO.prefs[viewOptionsPath].sortBy && zenarioO.tuix.columns[zenarioO.prefs[viewOptionsPath].sortBy]) {
 		zenarioO.sortBy = zenarioO.prefs[viewOptionsPath].sortBy;
 		zenarioO.sortDesc = zenarioO.prefs[viewOptionsPath].sortDesc;
 	
@@ -1014,31 +1214,6 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		zenarioO.sortDesc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc'));
 	}
 	
-	//If hierarchy view is being used on a panel, that will disable grid and list view
-	if (zenarioO.focus.__item_hierarchy__) {
-		zenarioO.view_mode = 'hierarchy';
-		
-	} else {
-		//Look for a user's preference for view mode, otherwise look for a default view mode, otherwise default to grid view
-		if (zenarioO.focus.force_view_mode) {
-			zenarioO.view_mode = zenarioO.focus.force_view_mode;
-		
-		} else if (zenarioO.prefs[viewOptionsPath].view_mode) {
-			zenarioO.view_mode = zenarioO.prefs[viewOptionsPath].view_mode;
-		
-		} else if (zenarioO.focus.view_mode) {
-			zenarioO.view_mode = zenarioO.focus.view_mode;
-		
-		} else {
-			zenarioO.view_mode = 'list';
-		}
-		
-		//Check that view_mode is a valid choice
-		if (zenarioO.view_mode !== 'grid' && zenarioO.view_mode !== 'list') {
-			zenarioO.view_mode = 'list';
-		}
-	}
-	
 	zenarioO.createSortArray('sortedColumns', 'columns', 'ord');
 	zenarioO.createSortArray('sortedItemButtons', 'item_buttons', 'ord');
 	zenarioO.createSortArray('sortedInlineButtons', 'inline_buttons', 'ord');
@@ -1046,7 +1221,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	zenarioO.createSortArray('sortedQuickFilterButtons', 'quick_filter_buttons', 'ord');
 	
 	//Work out which columns should be shown
-	zenarioO.shownColumns = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.focus.columns);
+	zenarioO.shownColumns = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.tuix.columns);
 	
 	//Check if the Admin has a customised sort order on this Panel
 	if (zenarioO.prefs[viewOptionsPath].sortedColumns) {
@@ -1096,7 +1271,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	
 	
 	
-	if (zenarioO.focus.items && zenarioO.focus.items.count == 1 && engToBoolean(zenarioO.focus.allow_bypass)) {
+	if (zenarioO.tuix.items && zenarioO.tuix.items.count == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
 		zenarioO.branches[zenarioO.branches.length-1].bypasses[zenarioO.path] = true;
 	} else {
 		delete zenarioO.branches[zenarioO.branches.length-1].bypasses[zenarioO.path];
@@ -1109,7 +1284,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 	}
 	
 	//If there is only one item and "allow_bypass" is enabled, skip right past this panel
-	if (zenarioO.focus.items && zenarioO.focus.items.count == 1 && engToBoolean(zenarioO.focus.allow_bypass)) {
+	if (zenarioO.tuix.items && zenarioO.tuix.items.count == 1 && engToBoolean(zenarioO.tuix.allow_bypass)) {
 		if (backwards) {
 			if (zenarioO.getBackButtonTitle() !== false) {
 				zenarioO.back();
@@ -1117,14 +1292,15 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 			}
 		} else {
 			var link;
-			if (zenarioO.focus.items) {
-				foreach (zenarioO.focus.items as var id) {
+			if (zenarioO.tuix.items) {
+				foreach (zenarioO.tuix.items as var id) {
 					if (!zenarioO.isInfoTag(id)) {
-						zenarioO.selectedItems = {};
-						zenarioO.selectedItems[id] = true;
-						zenarioO.saveSelection();
+						var selectedItems = {};
+						selectedItems[id] = true;
+						zenarioO.pi.cmsSetsSelectedItems(selectedItems);
+						//zenarioO.saveSelection();
 						
-						if (zenarioO.itemDoubleClickAction(id)) {
+						if (zenarioO.itemClickThroughAction(id)) {
 							return;
 						} else {
 							break;
@@ -1135,7 +1311,7 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		}
 	
 	//If there are no items in this Panel and the return_if_empty flag is set, attempt to go back
-	} else if ((!zenarioO.focus.items || !zenarioO.focus.items.count) && engToBoolean(zenarioO.focus.return_if_empty)) {
+	} else if ((!zenarioO.tuix.items || !zenarioO.tuix.items.count) && engToBoolean(zenarioO.tuix.return_if_empty)) {
 		if (zenarioO.getBackButtonTitle() !== false) {
 			zenarioO.back();
 			return;
@@ -1149,13 +1325,13 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 		cTypes = {},
 		value;
 	
-	foreach (zenarioO.focus.columns as var c) {
+	foreach (zenarioO.tuix.columns as var c) {
 		if (zenarioO.isShowableColumn(c)) {
-			if (zenarioO.focus.columns[c].item_link == 'menu_item') {
+			if (zenarioO.tuix.columns[c].item_link == 'menu_item') {
 				
-				foreach (zenarioO.focus.items as var i) {
+				foreach (zenarioO.tuix.items as var i) {
 					if (!zenarioO.isInfoTag(i)
-					 && (value = zenarioO.focus.items[i][c])
+					 && (value = zenarioO.tuix.items[i][c])
 					 && (value == 1*value)) {
 						var lang = zenarioO.itemLanguage(i);
 						
@@ -1169,11 +1345,11 @@ zenarioO.go2 = function(path, url, requests, viewOptionsPath, branch, goNum, def
 					}
 				}
 				
-			} else if (zenarioO.focus.columns[c].item_link == 'content_item' || zenarioO.focus.columns[c].item_link == 'content_item_or_url') {
+			} else if (zenarioO.tuix.columns[c].item_link == 'content_item' || zenarioO.tuix.columns[c].item_link == 'content_item_or_url') {
 				
-				foreach (zenarioO.focus.items as var i) {
+				foreach (zenarioO.tuix.items as var i) {
 					if (!zenarioO.isInfoTag(i)
-					 && (value = zenarioO.focus.items[i][c])) {
+					 && (value = zenarioO.tuix.items[i][c])) {
 						var cTypeAndId = value.split('_');
 						if (cTypeAndId[0]
 						 && cTypeAndId[0] != 'null'
@@ -1304,7 +1480,7 @@ zenarioO.getDataHack = function(url, lang, success) {
 
 zenarioO.go3 = function(goNum, searchTerm, backwards, runFunctionAfter) {
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk' + skNum)) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
 		return;
 	}
 	
@@ -1321,27 +1497,22 @@ zenarioO.go3 = function(goNum, searchTerm, backwards, runFunctionAfter) {
 	
 	get('organizer_preloader_circle').style.display = 'none';
 	
-	zenarioO.setTopLevelItems();
+	zenarioO.setNavigation();
 	
 	//Display a pop-up message, if this is not a refresh and one has been requested
-	if (!backwards && zenarioO.focus.popout_message) {
-		if (zenarioO.refreshToPage === undefined || zenarioO.focus.popout_message != zenarioO.lastPopoutMessage) {
-			zenarioA.showMessage(zenarioO.focus.popout_message, true, false);
+	if (!backwards && zenarioO.tuix.popout_message) {
+		if (zenarioO.refreshToPage === undefined || zenarioO.tuix.popout_message != zenarioO.lastPopoutMessage) {
+			zenarioA.showMessage(zenarioO.tuix.popout_message, true, false);
 		}
 		
-		zenarioO.lastPopoutMessage = zenarioO.focus.popout_message;
+		zenarioO.lastPopoutMessage = zenarioO.tuix.popout_message;
 	}
 	
-	//Show/hide the search box, and set the search term
-		//(Don't do this if this was a page refresh, not a page jump)
-	if (zenarioO.refreshToPage === undefined) {
-		zenarioO.setSearch(searchTerm);
-	}
 	
-	zenarioO.searchAndSortItems();
+	zenarioO.searchAndSortItems(searchTerm);
 	
 	//(Periodic refresh is now disabled)
-	//if (!engToBoolean(zenarioO.focus.disable_periodic_refresh)) {
+	//if (!engToBoolean(zenarioO.tuix.disable_periodic_refresh)) {
 	//	zenarioO.periodicRefresh();
 	//}
 	
@@ -1367,13 +1538,13 @@ zenarioO.setWrapperClass = function(className, active) {
 
 zenarioO.itemLanguage = function(i) {
 	
-	if (i && zenarioO.focus && zenarioO.focus.items && zenarioO.focus.items[i]
-	 && (!zenarioO.focus.items[i].css_class || ('' + zenarioO.focus.items[i].css_class).indexOf('ghost') == -1)
-	 && zenarioO.focus.items[i].language_id) {
-		return zenarioO.focus.items[i].language_id;
+	if (i && zenarioO.tuix && zenarioO.tuix.items && zenarioO.tuix.items[i]
+	 && (!zenarioO.tuix.items[i].css_class || ('' + zenarioO.tuix.items[i].css_class).indexOf('ghost') == -1)
+	 && zenarioO.tuix.items[i].language_id) {
+		return zenarioO.tuix.items[i].language_id;
 	
-	} else if (zenarioO.focus && zenarioO.focus.key) {
-		return ifNull(zenarioO.focus.key.languageId, zenarioO.focus.key.language);
+	} else if (zenarioO.tuix && zenarioO.tuix.key) {
+		return ifNull(zenarioO.tuix.key.languageId, zenarioO.tuix.key.language);
 	
 	} else {
 		return '';
@@ -1381,16 +1552,17 @@ zenarioO.itemLanguage = function(i) {
 };
 
 
+
 zenarioO.itemParent = function(i) {
 	
-	if (i && zenarioO.focus && zenarioO.focus.items && zenarioO.focus.items[i]
-	 && zenarioO.focus.db_items && zenarioO.focus.db_items.hierarchy_column) {
-	
-		return zenarioO.focus.items[i][zenarioO.focus.db_items.hierarchy_column] || '';
-	
-	} else {
+	//if (i && zenarioO.tuix && zenarioO.tuix.items && zenarioO.tuix.items[i]
+	// && zenarioO.tuix.db_items && zenarioO.tuix.db_items.hierarchy_column) {
+	//
+	//	return zenarioO.tuix.items[i][zenarioO.tuix.db_items.hierarchy_column] || '';
+	//
+	//} else {
 		return '';
-	}
+	//}
 };
 
 
@@ -1434,7 +1606,7 @@ zenarioO.getShownColumns = function(viewOptionsPath, defaultSortColumn, columns)
 };
 
 
-zenarioO.scrollToPageTop = false;
+//zenarioO.scrollToPageTop = false;
 zenarioO.nextPage = function() {
 	
 	if (zenarioO.lockPageClicks) {
@@ -1442,7 +1614,7 @@ zenarioO.nextPage = function() {
 	}
 	
 	if (zenarioO.page < zenarioO.pageCount) {
-		zenarioO.scrollToPageTop = true;
+		//zenarioO.scrollToPageTop = true;
 		zenarioO.goToPage(zenarioO.page + 1);
 	}
 };
@@ -1456,24 +1628,37 @@ zenarioO.prevPage = function() {
 	
 	if (zenarioO.page > 1) {
 		//zenarioO.scrollToPageBottom = true;
-		zenarioO.scrollToPageTop = true;
+		//zenarioO.scrollToPageTop = true;
 		zenarioO.goToPage(zenarioO.page - 1);
 	}
 };
 
 zenarioO.goToPage = function(page) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
+	if (zenarioO.page != page) {
+		zenarioO.deselectAllItems();
+		//zenarioO.saveSelection();
+	}
+	
 	zenarioO.lockPageClicks = true;
-	zenarioO.inCloseUpView = false;
+	zenarioO.inspectionView = false;
 	
 	if (zenarioO.server_side) {
 		zenarioO.refreshAndShowPage(page);
 	} else {
 		zenarioO.showPage(page);
 	}
+};
+
+zenarioO.goToLastPage = function() {
+	if (zenarioO.stop) {
+		return false;
+	}
+	
+	zenarioO.goToPage(zenarioO.pageCount);
 };
 
 zenarioO.refreshAndShowPage = function(page) {
@@ -1483,143 +1668,73 @@ zenarioO.refreshAndShowPage = function(page) {
 
 zenarioO.showPage = function(page) {
 	zenarioO.page = page;
-	zenarioO.drawPanel();
+	zenarioO.setPanel();
 };
 
-zenarioO.searchAndSortItems = function() {
+zenarioO.searchAndSortItems = function(searchTerm) {
 	var id,
 		matches,
-		numeric,
-		searchUnused = zenarioO.searchTerm === undefined || get('organizer_search').style.visibility == 'hidden';
-	zenarioO.nonSearchMatches = {};
+		numeric;
+	
+	//Show/hide the search box, and set the search term
+		//(Don't do this if this was a page refresh, not a page jump)
+	if (zenarioO.refreshToPage === undefined) {
+		zenarioO.setSearch(searchTerm);
+	}
+	
+	
+	
+	
 	
 	if (zenarioO.server_side) {
 		//If server side sorting and searching is being used, we can use the sort order from the server as
 		//our searched and sorted list.
 		//(Note that it's not possible to sort on the server but search on the client.)
-		zenarioO.searchedItems = zenarioO.focus.__item_sort_order__;
-		zenarioO.searchMatches = zenarioO.focus.items.count;
+		zenarioO.searchedItems = zenarioO.tuix.__item_sort_order__;
+		zenarioO.searchMatches = zenarioO.tuix.items.count;
 	
 	} else {
-		//Otherwise we need to sort through the items on the client
-		zenarioO.createSortArray('sortedItems', 'items', zenarioO.sortBy, zenarioO.sortDesc);
 		
-		//If they've already been searched on the server, or if there is no searching to do, we can stop here
-		if (zenarioO.server_side || zenarioO.searchTerm === undefined || get('organizer_search').style.visibility == 'hidden') {
-			zenarioO.searchedItems = zenarioO.sortedItems;
-			zenarioO.searchMatches = zenarioO.focus.items? zenarioO.focus.items.count : undefined;
 		
-		//Otherwise, search on the client
+		if (zenarioO.searchTerm === undefined || get('organizer_search').style.visibility == 'hidden') {
+			zenarioO.searchedItems = zenarioO.pi.sortAndSearchItems();
 		} else {
-			//Firstly, work out which items are matched by the search term
-			zenarioO.searchedItems = {};
-			zenarioO.searchMatches = 0;
-			var matchedItemsArray = [],
-				matchedItemsObject = {},
-				lowerCaseSearchTerm = zenarioO.searchTerm.toLowerCase? zenarioO.searchTerm.toLowerCase() : lowerCaseSearchTerm,
-				itemNo;
-			
-			foreach (zenarioO.sortedItems as itemNo) {
-				id = zenarioO.sortedItems[itemNo];
-				
-				matches = false;
-				foreach (zenarioO.focus.columns as var c) {
-					if (!zenarioO.isInfoTag(c) && engToBoolean(zenarioO.focus.columns[c].searchable)) {
-						value = zenarioO.columnValue(id, c, true);
-						
-						if (value == (numeric = 1*value)) {
-							matches = numeric == zenarioO.searchTerm;
-						} else if (value) {
-							matches = value.toLowerCase().indexOf(lowerCaseSearchTerm) !== -1;
-						}
-						
-						if (matches) {
-							matchedItemsArray.push(id);
-							matchedItemsObject[id] = true;
-							break;
-						}
-					}
-				}
-			}
-			
-			//In hierarchy mode, we should also add the parent nodes of any matched items
-			if (zenarioO.focus.__item_hierarchy__) {
-				
-				for (itemNo = 0; itemNo < matchedItemsArray.length; ++itemNo) {
-					id = matchedItemsArray[itemNo];
-					
-					if (zenarioO.itemHierarchy[id] && !matchedItemsObject[zenarioO.itemHierarchy[id]]) {
-						matchedItemsArray.push(zenarioO.itemHierarchy[id]);
-						matchedItemsObject[zenarioO.itemHierarchy[id]] = true;
-						zenarioO.nonSearchMatches[zenarioO.itemHierarchy[id]] = true;
-					}
-				}
-			}
-			
-			//Populate the array of searched items from the array of sorted items
-			foreach (zenarioO.sortedItems as itemNo) {
-				id = zenarioO.sortedItems[itemNo];
-				
-				if (matchedItemsObject[id]) {
-					zenarioO.searchedItems[zenarioO.searchMatches++] = zenarioO.sortedItems[itemNo];
-				}
-			}
+			zenarioO.searchedItems = zenarioO.pi.sortAndSearchItems(searchTerm);
 		}
+		
+		zenarioO.searchMatches = zenarioO.searchedItems.length;
 	}
 	
 	zenarioO.itemsOrder = {};
-	foreach (zenarioO.searchedItems as var itemNo) {
-		if (!zenarioO.isInfoTag(itemNo)) {
-			id = zenarioO.searchedItems[itemNo];
-			zenarioO.itemsOrder[id] = 1*itemNo;
-		}
+	foreach (zenarioO.searchedItems as var itemNo => id) {
+		zenarioO.itemsOrder[id] = 1*itemNo;
 	}
 	
 	var ord, page = 1;
 	
-	//Work out the current page number for server-side searching and sorting
-	if (zenarioO.server_side && zenarioO.server_side) {
-		page = ifNull(zenarioO.focus.__page__, zenarioO.refreshToPage, 1);
+	if (zenarioO.thisPageSize) {
+		//Work out the current page number for server-side searching and sorting
+		if (zenarioO.server_side && zenarioO.server_side) {
+			page = ifNull(zenarioO.tuix.__page__, zenarioO.refreshToPage, 1);
 	
-	//Work out the current page number for client-side sorting
-	} else {
-		if (zenarioO.refreshToPage !== undefined) {
-			page = zenarioO.refreshToPage;
+		//Work out the current page number for client-side sorting
 		} else {
-			//If we've not got a specific target, check if any items were selected here and use the first we find as a target
-			if (!zenarioO.itemToSelect) {
-				zenarioO.itemToSelect = zenarioO.loadSelection();
-			}
-			
-			//If the item we want is in the results, make sure we show that page
-			if (ord = zenarioO.itemsOrder[zenarioO.itemToSelect]) {
-				page = Math.floor(ord / zenarioO.thisPageSize) + 1;
-			}
-		}
-	}
-	
-	
-	
-	//In Hierarchy mode, build the hierarchical arrays in sorted order
-	
-	//An array of parent ids -> ids
-	zenarioO.itemHierarchyArray = {0: []};
-	
-	if (zenarioO.focus.__item_hierarchy__) {
-			
-		zenarioO.itemHierarchy = zenarioO.focus.__item_hierarchy__;
-		
-		var id;
-		foreach (zenarioO.searchedItems as var itemNo) {
-			id = zenarioO.searchedItems[itemNo];
-			
-			if (zenarioO.itemHierarchy[id] !== undefined) {
-				if (!zenarioO.itemHierarchyArray[zenarioO.itemHierarchy[id]]) {
-					zenarioO.itemHierarchyArray[zenarioO.itemHierarchy[id]] = [];
-				}
-				zenarioO.itemHierarchyArray[zenarioO.itemHierarchy[id]].push(id);
+			if (zenarioO.refreshToPage !== undefined) {
+				page = zenarioO.refreshToPage;
 			} else {
-				zenarioO.itemHierarchyArray[0].push(id);
+				//If we've not got a specific target, check if any items were selected here and use the first we find as a target
+				if (!zenarioO.inspectionViewItem) {
+					var selectedItems = zenarioO.pi.returnSelectedItems();
+					foreach (selectedItems as id) {
+						zenarioO.inspectionViewItem = id;
+						break;
+					}
+				}
+			
+				//If the item we want is in the results, make sure we show that page
+				if (ord = zenarioO.itemsOrder[zenarioO.inspectionViewItem]) {
+					page = Math.floor(ord / zenarioO.thisPageSize) + 1;
+				}
 			}
 		}
 	}
@@ -1629,332 +1744,145 @@ zenarioO.searchAndSortItems = function() {
 	zenarioO.showPage(page);
 };
 
-zenarioO.drawPanel = function() {
+zenarioO.stop = false;
+zenarioO.disableInteraction = function() {
+	zenarioO.stop = true;
+	$('#organizer_search_term').prop('disabled', true);
+	zenarioO.setWrapperClass('interaction_disabled', true);
+};
+
+zenarioO.enableInteraction = function() {
+	zenarioO.stop = false;
+	$('#organizer_search_term').prop('disabled', false);
+	zenarioO.setWrapperClass('interaction_disabled', false);
+};
+
+
+zenarioO.setPanel = function() {
 	
 	var i,
-		className = 'disable_grid_view disable_list_view',
-		bespoke = false,
-		$rightColumnContent = $('#organizer_rightColumnContent'),
-		scrollTop = $rightColumnContent.scrollTop(),
-		scrollLeft = $rightColumnContent.scrollLeft();
-		
+		$header = $('#organizer_header'),
+		$panel = $('#organizer_rightColumnContent'),
+		$footer = $('#organizer_lowerMiddleColumn'),
+		n = 0,
+		selectedItem = false;
 	
-	zenarioO.itemButtonsExist = false;
-	zenarioO.changingHierarchy = false;
-	zenarioO.setWrapperClass('changing_hierarchy', zenarioO.changingHierarchy);
+	if (zenarioO.tuix.item_buttons) {
+		foreach (zenarioO.tuix.item_buttons as i) {
+			if (!zenarioO.isInfoTag(i)) {
+				zenarioO.itemButtonsExist = true;
+				break;
+			}
+		}
+	}
 	
-	$('#organizer_applyButton').unbind();
 	
-	//Ability to add custom HTML to the right-side panel, rather than the usual Storekeeper logic
-	if (zenarioO.focus.html || zenarioO.focus.url) {
-		bespoke = 'html';
+	//zenarioO.loadSelection();
 	
-	//Regular Storekeeper behaviour
+	if (window.zenarioOSelectMode) {
+		zenarioO.multipleSelectEnabled = window.zenarioOMultipleSelect;
 	} else {
-		className = zenarioO.view_mode + '_view';
-		if (zenarioO.focus.__item_hierarchy__
-		 || engToBoolean(zenarioO.focus.disable_grid_view)
-		 || (zenarioO.focus.force_view_mode && zenarioO.focus.force_view_mode != 'grid')) {
-			className += ' disable_grid_view';
-		}
-		if (zenarioO.focus.__item_hierarchy__
-		 || engToBoolean(zenarioO.focus.disable_list_view)
-		 || (zenarioO.focus.force_view_mode && zenarioO.focus.force_view_mode != 'list')) {
-			className += ' disable_list_view';
-		}
-		
-		if (zenarioO.reorderingUsingOldMethod) {
-			//Stop reordering from running, if it was running
-			$('#organizer_items_wrapper').sortable('destroy');
-		}
-		zenarioO.reordering = false;
-		zenarioO.reorderingUsingOldMethod = false;
-		zenarioO.reorderingUsingNewMethod = false;
-		zenarioO.changingHierarchyView = false;
-		
-		if (zenarioO.focus.item_buttons) {
-			foreach (zenarioO.focus.item_buttons as i) {
+		//Check to see if any item toolbar buttons allow for multiple selections, and enable multiple select if so
+		zenarioO.multipleSelectEnabled = false;
+		if (zenarioO.tuix.item_buttons) {
+			foreach (zenarioO.tuix.item_buttons as i) {
 				if (!zenarioO.isInfoTag(i)) {
-					zenarioO.itemButtonsExist = true;
-					break;
+					if (engToBoolean(zenarioO.tuix.item_buttons[i].multiple_select)
+					 && !zenarioO.checkButtonHidden(zenarioO.tuix.item_buttons[i])) {
+						zenarioO.multipleSelectEnabled = true;
+						break;
+					}
 				}
 			}
 		}
+	}
+	
+	var selectedItems = _.clone(zenarioO.pi.returnSelectedItems());
+	foreach (selectedItems as var i) {
+		//Remove any items that have disappeared since this panel was last shown
+		if (!zenarioO.tuix.items[i]) {
+			delete selectedItems[i];
 		
-		
-		zenarioO.loadSelection();
-		
-		if (window.zenarioOSelectMode) {
-			zenarioO.multipleSelectEnabled = window.zenarioOMultipleSelect;
 		} else {
-			//Check to see if any item toolbar buttons allow for multiple selections, and enable multiple select if so
-			zenarioO.multipleSelectEnabled = false;
-			if (zenarioO.focus.item_buttons) {
-				foreach (zenarioO.focus.item_buttons as i) {
-					if (!zenarioO.isInfoTag(i)) {
-						if (engToBoolean(zenarioO.focus.item_buttons[i].multiple_select)
-						 && !zenarioO.checkButtonHidden(zenarioO.focus.item_buttons[i])) {
-							zenarioO.multipleSelectEnabled = true;
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		
-		if (zenarioO.inCloseUpView || zenarioO.selectAnItem) {
-			if (zenarioO.itemsOrder[zenarioO.itemToSelect] !== undefined) {
-				zenarioO.selectedItems = {};
-				zenarioO.selectedItems[zenarioO.itemToSelect] = true;
-				
-				//Implement linking to a panel with an item selected using the same logic as linking to close-up view
-				if (zenarioO.selectAnItem) {
-					zenarioO.inCloseUpView = false;
-				}
-			} else {
-				zenarioO.selectedItems = {};
-				zenarioO.inCloseUpView = false;
-			}
-		
-		}
-		
-		if (zenarioO.focus.reorder
-		 && zenarioO.focus.reorder.hierarchy_view_mode
-		 && !window.zenarioOSelectMode
-		 && !zenarioO.filteredView) {
-			zenarioO.changingHierarchyView = true;
-		}
-		
-		if (zenarioO.focus.reorder
-		 && zenarioO.focus.reorder.column
-		 && !window.zenarioOSelectMode
-		 && !zenarioO.filteredView) {
-			
-			if (zenarioO.view_mode == 'hierarchy') {
-				if (zenarioO.focus.reorder.hierarchy_view_mode == 'parent_ids_and_ordinals') {
-					zenarioO.reordering = true;
-					zenarioO.reorderingUsingNewMethod = true;
-				}
-			
-			} else {
-				zenarioO.reordering = true;
-				zenarioO.reorderingUsingOldMethod = true;
-				className += ' reordering ' + zenarioO.view_mode + '_view_reordering';
-			}
-		}
-		
-		//Set the colour of the debug button
-		var debugButton;
-		if (debugButton = get('organizer_debug_button')) {
-			
-			//Grey: normal, where there is a navigation path, no refiner.
-			if (!zenarioO.refiner) {
-				debugButton.className = 'zenario_debug zenario_debug_with_no_refiner';
-			
-			//Yellow: e.g. the Trash, where refiner name is set but refiner ID is not set.
-			} else if (!zenarioO.refiner.id) {
-				debugButton.className = 'zenario_debug zenario_debug_with_refiner_and_no_id';
-			
-			//Orange: e.g. where admin has selected something and views "its" panel, where refiner name is set and there is a refiner ID.
-			} else {
-				debugButton.className = 'zenario_debug zenario_debug_with_refiner_and_id';
+			if (++n == 1) {
+				selectedItem = i;
 			}
 		}
 	}
 	
-	
-	//Show, hide, or highlight the advanced search button depending on whether it is enabled/in use
-	//if (bespoke || !zenarioO.server_side || !engToBoolean(zenarioO.focus.advanced_search)) {
-	//	$('#organizer_advancedSearch').addClass('advancedSearchDisabled').removeClass('advancedSearchEnabled').removeClass('advancedSearchOn');
-	//
-	//} else if (zenarioO.advancedSearch) {
-	//	$('#organizer_advancedSearch').removeClass('advancedSearchDisabled').addClass('advancedSearchEnabled').addClass('advancedSearchOn');
-	//	get('organizer_clearAdvancedSearchA').title = phrase.advancedSearchClear;
-	//	zenarioA.tooltips('#organizer_clearAdvancedSearchA');
-	//
-	//} else {
-	//	$('#organizer_advancedSearch').removeClass('advancedSearchDisabled').addClass('advancedSearchEnabled').removeClass('advancedSearchOn');
-	//	get('organizer_clearAdvancedSearchA').title = phrase.advancedSearchNotOn;
-	//	zenarioA.tooltips('#organizer_clearAdvancedSearchA');
-	//}
-
-	
-	var scrollTo = zenarioO.itemToSelect;
-	zenarioO.selectAnItem = false;
-	zenarioO.lastClicked = false;
-	zenarioO.CSVExportEnabled = false;
-	
-	if (bespoke) {
-		zenarioO.drawBespokePanel();
-		zenarioO.clearUpload();
-	} else {
-		zenarioO.drawRegularPanel();
-		zenarioO.setPanelTitle();
-		zenarioO.setPanelItems();
-		zenarioO.setItemCount();
-		
-		zenarioO.setTrash();
-		
-		zenarioO.saveSelection();
-		
-		zenarioO.setPages();
-		zenarioO.setButtons();
-		zenarioO.setQuickFilters();
-	
-		
-		var $organizer_rightColumnContent = $('#organizer_rightColumnContent'),
-			$organizer_header = $('#organizer_rightColumnContent .organizer_header');
-		
-		if ($organizer_header.length) {
-			$organizer_rightColumnContent.scroll(function() {
-				$organizer_header.css('top', $organizer_rightColumnContent.scrollTop());
-			});
-		}
-		
-		get('organizer_viewModeSelected').className = className;
+	//Set the "last clicked" to the first item that we find as a work-around for not actually knowing what it should be
+	if (!zenarioO.lastItemClicked && selectedItem) {
+		zenarioO.lastItemClicked = selectedItem;
 	}
 	
+	//If multiple-select is not enabled, ensure we've not got too many items selected
+	if (!zenarioO.multipleSelectEnabled && n > 1) {
+		selectedItems = {};
+	}
+	
+	
+	if (zenarioO.inspectionView || zenarioO.inspectionViewItem) {
+		if (zenarioO.itemsOrder[zenarioO.inspectionViewItem] !== undefined) {
+			selectedItems = {};
+			selectedItems[zenarioO.inspectionViewItem] = true;
+		} else {
+			selectedItems = {};
+			zenarioO.inspectionView = false;
+		}
+	
+	}
+	zenarioO.lastItemClicked = zenarioO.inspectionViewItem;
+	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
+	
+	//Set the colour of the debug button
+	var debugButton;
+	if (debugButton = get('organizer_debug_button')) {
+		
+		//Grey: normal, where there is a navigation path, no refiner.
+		if (!zenarioO.refiner) {
+			debugButton.className = 'zenario_debug zenario_debug_with_no_refiner';
+		
+		//Yellow: e.g. the Trash, where refiner name is set but refiner ID is not set.
+		} else if (!zenarioO.refiner.id) {
+			debugButton.className = 'zenario_debug zenario_debug_with_refiner_and_no_id';
+		
+		//Orange: e.g. where admin has selected something and views "its" panel, where refiner name is set and there is a refiner ID.
+		} else {
+			debugButton.className = 'zenario_debug zenario_debug_with_refiner_and_id';
+		}
+	}
+	
+	
+	zenarioO.enableInteraction();
+	
+	
+	zenarioO.setPanelTitle();
 	zenarioO.setBackButton();
+	zenarioO.getPageCount();
 	
-	//Start reordering running, if it is enabled on this panel
-	if (!bespoke && zenarioO.reorderingUsingOldMethod) {
-		$('#organizer_items_wrapper').sortable({
-			opacity: 0.8,
-			start: function() {
-				zenarioO.closeSlidedownView();
-			},
-			stop: function (sorted) {
-				//Handle the results of a reorder
-				
-				//Get a list of item ids in the new order
-				var newOrder = $('#organizer_items_wrapper').sortable('toArray', {attribute: 'data-id'}),
-					oldOrder = [],
-					values = [],
-					items = {},
-					saves = '',
-					itemNo,
-					i;
-				
-				//Remove any bad data; e.g. slide-down view <div>s
-				for (i = newOrder.length; i >= 0; --i) {
-					if (newOrder[i] === ''
-					 || newOrder[i] === undefined) {
-						newOrder.splice(i, 1);
-					}
-				}
-				
-				//Create an array of which items we can see
-				foreach (newOrder as itemNo => i) {
-					items[i] = true;
-				}
-				
-				//Look through the searchedItems array and get their old order, and their value from the items array
-				foreach (zenarioO.searchedItems as itemNo => i) {
-					if (items[i]) {
-						oldOrder.push(i);
-						values.push(zenarioO.focus.items[i][zenarioO.focus.reorder.column]);
-					}
-				}
-				
-				//Look through newOrder and oldOrder for any changes, and update those column
-				var actionRequests = zenarioO.getKey();
-				foreach (newOrder as itemNo => i) {
-					if (i != oldOrder[itemNo]) {
-						saves += (saves? ',' : '') + i;
-						actionRequests['item__' + i] = values[itemNo];
-					}
-				}
-				actionRequests.reorder = true;
-				actionRequests.id = saves;
-				
-				//Send these results via AJAX
-				var actionTarget =
-					'zenario/ajax.php?' +
-						'__pluginClassName__=' + zenarioO.focus.reorder.class_name +
-						'&__path__=' + zenarioO.path +
-						'&method_call=handleOrganizerPanelAJAX';
-				
-				//Clear the local storage, as there have probably just been changes
-				delete zenario.rev;
-				
-				$.post(
-					URLBasePath + actionTarget,
-					actionRequests,
-					//Refresh the panel to show the new order
-					function () {
-						zenarioO.refresh();
-					}
-				);
-			}
-		});
-	}
+	zenarioO.pi.showPanel($header, $panel, $footer);
+	
+	//Add $('#organizer_search') ..?
+	
+	zenarioO.setButtons();
+	zenarioO.setTrash();
+	
 	
 	//Check that Storekeeper/the panel is the right size
 	zenarioO.size(true);
 	
-	if (!bespoke) {
-		$rightColumnContent = $('#organizer_rightColumnContent');
-		
-		if (zenarioO.scrollToPageTop || !scrollTop) {
-			scrollTop = 0;
-		}
-		if (zenarioO.scrollToPageTop || !scrollLeft) {
-			scrollLeft = 0;
-		}
-		
-		$rightColumnContent.scrollTop(scrollTop);
-		$rightColumnContent.scrollLeft(scrollLeft);
-		
-		//If there's an item specified to highlight, attempt to scroll to it
-		if (!zenarioO.refreshIsPeriodic) {
-		
-			if (!scrollTo) {
-				scrollTo = zenarioO.getKeyId(true);
-			}
-		
-			if (scrollTo) {
-				zenarioO.scrollToItem(scrollTo, 500);
-			}
-		}
-	}
 	
-	zenarioO.lockPageClicks = false;
-	zenarioO.scrollToPageTop = false;
-	zenarioO.scrollToPageBottom = false;
+	//zenarioO.scrollToPageTop = false;
+	//zenarioO.scrollToPageBottom = false;
 	zenarioO.refreshIsPeriodic = false;
 	
-	//There seems to be a bug with setting the scrolling height on the latest version of chrome
-	//Making and then removing a random change seems to fix this...
-	if (zenario.browserIsChrome()) {
-		setTimeout(function() {
-			var $rightColumnContent = $('#organizer_rightColumnContent');
-			
-			$rightColumnContent.css('padding-right', '1px');
-			setTimeout(function() {
-				$rightColumnContent.css('padding-right', '0px');
-			}, 1);
-		}, 1);
-	}
-};
-
-
-zenarioO.scrollToItem = function(scrollTo, time) {
-	var offset, 
-		$rightColumnContent = $('#organizer_rightColumnContent');
+	//Is this line needed..?
+	zenarioO.lockPageClicks = false;
 	
-	if (offset = $(get('organizer_item_' + scrollTo)).position()) {
-		
-		offset = offset.top + $rightColumnContent.scrollTop();
-		$rightColumnContent.stop().animate({ scrollTop: Math.max(0, offset - Math.floor($rightColumnContent.height() / 4)) }, time);
-		
-		return true;
-	
-	} else {
-		return false;
-	}
+	//Save the currently selected items and set the hash in the browser bar
+	//zenarioO.saveSelection();
+	zenarioO.setHash();
 };
-
 zenarioO.stripBodyPanelClasses = function() {
 	$('body')
 		.removeClass('zenario_organizer_bespoke_panel')
@@ -1974,13 +1902,13 @@ zenarioO.drawBespokePanel = function() {
 	
 	$('#organizer_quickFilter').hide().html('');
 	
-	if (zenarioO.focus.html) {
+	if (zenarioO.tuix.html) {
 		$('body').addClass('zenario_organizer_bespoke_html_panel');
-		get('organizer_rightColumnInner').innerHTML = zenarioO.focus.html;
+		get('organizer_rightColumnInner').innerHTML = zenarioO.tuix.html;
 	
-	} else if (zenarioO.focus.url) {
+	} else if (zenarioO.tuix.url) {
 		$('body').addClass('zenario_organizer_bespoke_url_panel');
-		get('organizer_rightColumnInner').innerHTML = zenario.nonAsyncAJAX(zenario.addBasePath(zenarioO.focus.url));
+		get('organizer_rightColumnInner').innerHTML = zenario.nonAsyncAJAX(zenario.addBasePath(zenarioO.tuix.url));
 	}
 	
 	zenarioO.setHash();
@@ -1990,7 +1918,7 @@ zenarioO.drawBespokePanel = function() {
 
 //Go backwards, if possible
 zenarioO.back = function(times) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
@@ -2087,13 +2015,12 @@ zenarioO.lookForBranches = function(map, path, panelPath, parentKey) {
 //Remove every branch taken so far from memory
 zenarioO.resetBranches = function() {
 	zenarioO.branches = [{
+		'panel_instances': {},
 		'bypasses': {},
 		'filters': {},
 		'refiners': {},
 		'searches': {},
-		'adv_searches': {},
-		'selected_items': {},
-		'open_items': {}
+		'adv_searches': {}
 	}];
 };
 zenarioO.resetBranches();
@@ -2108,13 +2035,12 @@ zenarioO.branch = function(path, lastPath, lastTitle, noReturnEnabled) {
 		'to': path,
 		'title': lastTitle,
 		'no_return': noReturnEnabled,
+		'panel_instances': {},
 		'bypasses': {},
 		'filters': {},
 		'refiners': {},
 		'searches': {},
-		'adv_searches': {},
-		'selected_items': {},
-		'open_items': {}
+		'adv_searches': {}
 	};
 };
 
@@ -2145,16 +2071,19 @@ zenarioO.setHash = function() {
 
 
 zenarioO.getHash = function(ignoreSelectedItem, firstNBranches) {
+	
 	var hash = '',
 		path = zenarioO.path,
 		b, kb, lastTo, failed = false,
 		oneItemSelected = false,
-		selectedItem = '';
+		selectedItem = '',
+		selectedItems = zenarioO.pi && zenarioO.pi.returnSelectedItems(),
+		prevPanels, prevPanelInstance, prevSelectedItems;
 	
-	if (!ignoreSelectedItem) {
+	if (!ignoreSelectedItem && selectedItems) {
 		//Check if there was only one item selected
-		foreach (zenarioO.selectedItems as var i) {
-			if (zenarioO.selectedItems[i]) {
+		foreach (selectedItems as var i) {
+			if (selectedItems[i]) {
 				if (oneItemSelected === false) {
 					oneItemSelected = i;
 				} else {
@@ -2166,7 +2095,7 @@ zenarioO.getHash = function(ignoreSelectedItem, firstNBranches) {
 		
 		//If there is one item selected, put it in the hash after the path
 		if (oneItemSelected) {
-			if (!zenarioO.inCloseUpView) {
+			if (!zenarioO.inspectionView) {
 				selectedItem = oneItemSelected;
 			} else {
 				selectedItem = oneItemSelected + '/';
@@ -2199,7 +2128,12 @@ zenarioO.getHash = function(ignoreSelectedItem, firstNBranches) {
 				}
 				
 				//Add any selected items to the deep link
-				hash += kb + '//' + zenarioO.implodeKeys(zenarioO.branches[i-1].selected_items[b.from]);
+				hash += kb + '//';
+				
+				prevPanels = zenarioO.branches[i-1];
+				if (prevPanelInstance = prevPanels.panel_instances[b.from]) {
+					hash += zenarioO.implodeKeys(prevPanelInstance.returnSelectedItems());
+				}
 				
 				lastTo = b.to;
 			} else {
@@ -2270,6 +2204,10 @@ zenarioO.markIfViewIsFiltered = function() {
 };
 
 zenarioO.doSearch = function(el) {
+	if (zenarioO.doSearchAfterDelay) {
+		clearTimeout(zenarioO.doSearchAfterDelay);
+	}
+	
 	var searchTerm;
 	if (el.value === '') {
 		searchTerm = undefined;
@@ -2295,265 +2233,45 @@ zenarioO.doSearch = function(el) {
 };
 
 zenarioO.runSearch = function() {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
 	zenarioO.lockPageClicks = true;
-	zenarioO.inCloseUpView = false;
+	zenarioO.inspectionView = false;
 	
-	if (zenarioO.server_side) {
+	//This slightly confusing line tries to allow the panel instance to turn on server side mode on the fly
+	//and not have organizer break!
+	if (zenarioO.server_side || (zenarioO.server_side = zenarioO.pi.returnDoSortingAndSearchingOnServer())) {
 		zenarioO.refreshAndShowPage();
 	} else {
-		zenarioO.searchAndSortItems();
+		zenarioO.searchAndSortItems(zenarioO.searchTerm);
 	}
 };
 
-zenarioO.itemClicked = false;
-zenarioO.lastClicked = false;
-zenarioO.selectedItems = {};
-zenarioO.openItemsInHierarchy = {};
-zenarioO.itemClickTimeout = false;
-zenarioO.itemClick = function(id, e, isCheckbox, useTimeOutIfDoubleClickEnabled) {
-	if (zenarioO.itemClickTimeout) {
-		clearTimeout(zenarioO.itemClickTimeout);
-	}
-	
-	zenarioO.itemClicked = true;
-	
-	if (isCheckbox) {
-		zenario.stop(e);
-	}
-	
-	if (!zenarioO.focus || !zenarioO.focus.items[id]) {
-		return false;
-	}
-	
-	//if (zenarioO.lastClicked == id && zenario.browserIsMobile()) {
-		//return zenarioO.itemDoubleClick(el);
-	//}
-	
-	if (useTimeOutIfDoubleClickEnabled && zenarioO.itemDoubleClickLink(id)) {
-		zenarioO.itemClickTimeout = setTimeout(function() {
-			zenarioO.itemClick(id, e, isCheckbox);
-		}, 300);
-		
-		return false;
-	}
-	
-	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && (e || event).shiftKey && zenarioO.lastClicked) {
-		//...select everything between the current item and the last item that they clicked on
-		zenarioO.selectItemRange(id, zenarioO.lastClicked);
-	
-	//If multiple select is enabled and the checkbox was clicked...
-	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
-		//...toogle the item that they've clicked on
-		zenarioO.selectItem(id, !zenarioO.selectedItems[id]);
-		zenarioO.toggleSelectAllCheckbox();
-		zenarioO.lastClicked = id;
-	
-	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && zenarioO.selectedItems[id]) {
-		//...deselect everything if this row was already selected
-		zenarioO.deselectAllItems();
-		zenarioO.toggleSelectAllCheckbox();
-		zenarioO.lastClicked = id;
-	
-	//Otherwise select the item that they've just clicked on, and nothing else
-	} else {
-		zenarioO.selectSingleItem(id);
-	}
-	
-	//Workaround for a bug where the checkbox can get out of sync when clicking directly on it
-	if (isCheckbox) {
-		setTimeout(function() {
-			$(get('organizer_itemcheckbox_' + id)).prop('checked', !!zenarioO.selectedItems[id]);
-		}, 1);
-	}
-	
-	
-	zenarioO.setButtons(true);
-	zenarioO.saveSelection();
-	
-	return false;
-};
 
-//If the admin clicks on the background
-zenarioO.itemBGClick = function() {
-	zenarioO.itemClicked = false;
-};
+
 
 zenarioO.allItemsSelected = function() {
 	if (zenarioO.shownItemsLength == 0) {
 		return false;
 	}
 	
-	var i, c = 0;
-	foreach (zenarioO.selectedItems as i) {
+	var i,
+		c = 0,
+		selectedItems = zenarioO.pi.returnSelectedItems();
+	
+	foreach (selectedItems as i) {
 		++c;
 	}
 	
 	return c == zenarioO.shownItemsLength;
 };
 
-zenarioO.toggleSelectAll = function() {
-	if (zenarioO.itemClickTimeout) {
-		clearTimeout(zenarioO.itemClickTimeout);
-	}
-	
-	if (zenarioO.allItemsSelected()) {
-		zenarioO.deselectAllItems();
-		zenarioO.setButtons(true);
-		zenarioO.saveSelection();
-	} else {
-		zenarioO.selectAll();
-	}
-};
 
-zenarioO.toggleSelectAllCheckbox = function(dontCloseSlideDownView) {
-	if (zenarioO.allItemsSelected()) {
-		$('#organizer_checkbox_col input').prop('checked', true);
-	} else {
-		$('#organizer_checkbox_col input').prop('checked', false);
-	}
-	
-	if (!dontCloseSlideDownView) {
-		zenarioO.closeSlidedownView();
-	}
-};
 
-zenarioO.selectSingleItem = function(id, dontCloseSlideDownView) {
-	zenarioO.deselectAllItems();
-	zenarioO.selectItem(id, true);
-	zenarioO.toggleSelectAllCheckbox(dontCloseSlideDownView);
-	zenarioO.lastClicked = id;
-};
 
-zenarioO.selectItem = function(id, select) {
-	var handle;
-	if (select) {
-		zenarioO.selectedItems[id] = true;
-		$(get('organizer_itemcheckbox_' + id)).prop('checked', true);
-		$(get('organizer_item_' + id)).addClass('organizer_selected');
-	
-	} else {
-		delete zenarioO.selectedItems[id];
-		$(get('organizer_itemcheckbox_' + id)).prop('checked', false);
-		$(get('organizer_item_' + id)).removeClass('organizer_selected');
-	}
-};
 
-zenarioO.selectItemRange = function(start, stop) {
-	
-	var select = start === undefined;
-	
-	foreach (zenarioO.searchedItems as var itemNo) {
-		if (!zenarioO.isInfoTag(itemNo)) {
-			var id = zenarioO.searchedItems[itemNo];
-			
-			if (zenarioO.shownItems && zenarioO.shownItems[id]) {
-				zenarioO.selectItem(id, select || id === start || id === stop);
-				
-				if ((id === start && id === stop)) {
-					select = false;
-				} else if (id === start || id === stop) {
-					select = !select;
-				}
-			}
-		}
-	}
-	
-	zenarioO.toggleSelectAllCheckbox();
-};
-
-zenarioO.selectAll = function() {
-	zenarioO.selectItemRange();
-	zenarioO.setButtons(true);
-	zenarioO.saveSelection();
-};
-
-zenarioO.deselectAllItems = function() {
-	zenarioO.selectItemRange(-1);
-};
-
-//Remember which items an admin had selected in the current panel
-zenarioO.saveSelection = function(dontSetHash) {
-	zenarioO.recordOpenItems();
-	zenarioO.saveOpenItems();
-	zenarioO.branches[zenarioO.branches.length-1].selected_items[zenarioO.path] = zenarioO.selectedItems;
-	
-	//Set the hash in the URL
-	if (!dontSetHash && !zenarioO.checkQueueLength()) {
-		zenarioO.setHash();
-	}
-};
-
-zenarioO.saveOpenItems = function() {
-	zenarioO.branches[zenarioO.branches.length-1].open_items[zenarioO.path] = zenarioO.openItemsInHierarchy;
-};
-
-zenarioO.recordOpenItems = function() {
-	if (zenarioO.view_mode == 'hierarchy' && zenarioO.itemHierarchyArray) {
-		zenarioO.openItemsInHierarchy = {};
-		
-		var id, parentId;
-		
-		foreach (zenarioO.itemHierarchyArray as parentId) {
-			if (parentId != 0) {
-				
-				id = zenarioO.itemHierarchyArray[parentId][0];
-				
-				if (id !== undefined
-				 && $(get('organizer_item_' + id)).is(':visible')) {
-					zenarioO.openItemsInHierarchy[parentId] = true;
-				}
-			}
-		}
-	}
-};
-
-//Check to see if any items were previously selected in this panel, and select them again if so
-zenarioO.loadSelection = function() {
-	var n = 0,
-		selectedItem = false;
-	
-	if (zenarioO.branches[zenarioO.branches.length-1].selected_items[zenarioO.path]) {
-		zenarioO.selectedItems = zenarioO.branches[zenarioO.branches.length-1].selected_items[zenarioO.path];
-		
-		foreach (zenarioO.selectedItems as var i) {
-			//Remove any items that have disappeared since this panel was last shown
-			if (!zenarioO.focus.items[i]) {
-				delete zenarioO.selectedItems[i];
-			
-			} else {
-				if (++n == 1) {
-					selectedItem = i;
-				}
-			}
-		}
-	} else {
-		zenarioO.selectedItems = {};
-	}
-	
-	if (zenarioO.branches[zenarioO.branches.length-1].open_items[zenarioO.path]) {
-		zenarioO.openItemsInHierarchy = zenarioO.branches[zenarioO.branches.length-1].open_items[zenarioO.path];
-	} else {
-		zenarioO.openItemsInHierarchy = {};
-	}
-	
-	//Set the "last clicked" to the first item that we find as a work-around for not actually knowing what it should be
-	if (!zenarioO.lastClicked && selectedItem) {
-		zenarioO.lastClicked = selectedItem;
-	}
-	
-	//If multiple-select is not enabled, ensure we've not got too many items selected
-	if (!zenarioO.multipleSelectEnabled && n > 1) {
-		zenarioO.selectedItems = {};
-	}
-	
-	return zenarioO.lastClicked = selectedItem;
-};
 
 zenarioO.parseReturnLink = function(url, replace) {
 	
@@ -2595,6 +2313,7 @@ zenarioO.clearRefiner = function() {
 //Remember an admin's search
 zenarioO.saveSearch = function() {
 	zenarioO.branches[zenarioO.branches.length-1].searches[zenarioO.path] = zenarioO.searchTerm;
+	zenarioO.pi.cmsSetsSearchTerm(zenarioO.searchTerm);
 };
 
 zenarioO.saveAdvancedSearch = function(search) {
@@ -2619,24 +2338,17 @@ zenarioO.loadFromBranches = function(path, branch, type) {
 
 zenarioO.setSearch = function(searchTerm) {
 	
-	var visibility = 'hidden';
-	zenarioO.searchTerm = searchTerm;
-	zenarioO.markIfViewIsFiltered();
+	var visibility;
 	
-	if (zenarioO.server_side
-	 && zenarioO.view_mode == 'hierarchy') {
-		//Don't allow searching in hierarchy view if the searching is server-side
-		
+	if (zenarioO.pi && zenarioO.pi.returnSearchingEnabled()) {
+		visibility = 'visible';
+		zenarioO.searchTerm = searchTerm;
 	} else {
-		if (zenarioO.focus && zenarioO.focus.columns) {
-			foreach (zenarioO.focus.columns as var c) {
-				if (!zenarioO.isInfoTag(c) && engToBoolean(zenarioO.focus.columns[c].searchable)) {
-					visibility = 'visible';
-				}
-			}
-		}
+		visibility = 'hidden';
+		zenarioO.searchTerm = undefined;
 	}
 	
+	zenarioO.markIfViewIsFiltered();
 	get('organizer_search').style.visibility = visibility;
 	
 	if (zenarioO.searchTerm === undefined) {
@@ -2655,48 +2367,166 @@ zenarioO.clearSearch = function() {
 	zenarioO.saveSearch();
 };
 
-zenarioO.itemJustDoubleClicked = false;
-zenarioO.itemDoubleClick = function(id, e) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+
+
+
+
+
+zenarioO.toggleAllItems = function() {
+	if (zenarioO.allItemsSelected()) {
+		zenarioO.deselectAllItems();
+		zenarioO.setButtons();
+		//zenarioO.saveSelection();
+		zenarioO.setHash();
+	} else {
+		zenarioO.selectAllItems();
+	}
+};
+
+zenarioO.selectAllItems = function() {
+	zenarioO.selectItemRange();
+	zenarioO.setButtons();
+	//zenarioO.saveSelection();
+	zenarioO.setHash();
+};
+
+zenarioO.deselectAllItems = function() {
+	zenarioO.selectItemRange(-1);
+};
+
+
+
+zenarioO.selectSingleItem = function(id) {
+	zenarioO.deselectAllItems();
+	zenarioO.pi.selectItem(id);
+	zenarioO.lastItemClicked = id;
+};
+
+zenarioO.selectItemRange = function(start, stop) {
+	
+	var select = start === undefined;
+	
+	for (var itemNo in zenarioO.searchedItems) {
+		var id = zenarioO.searchedItems[itemNo];
+		
+		if (zenarioO.shownItems && zenarioO.shownItems[id]) {
+			if (select || id === start || id === stop) {
+				zenarioO.pi.selectItem(id);
+			} else {
+				zenarioO.pi.deselectItem(id);
+			}
+			
+			if ((id === start && id === stop)) {
+				select = false;
+			} else if (id === start || id === stop) {
+				select = !select;
+			}
+		}
+	}
+	
+	zenarioO.closeInspectionView();
+};
+
+
+
+
+zenarioO.lastItemClicked = false;
+zenarioO.itemClick = function(id, e, isCheckbox, useTimeOutIfDoubleClickEnabled) {
+	
+	if (isCheckbox) {
+		zenario.stop(e);
+	}
+	
+	if (!zenarioO.tuix || !zenarioO.tuix.items[id]) {
+		return false;
+	}
+	
+	var selectedItems = zenarioO.pi.returnSelectedItems();
+	
+	//If the admin is holding down the shift key...
+	if (zenarioO.multipleSelectEnabled && (e || event).shiftKey && zenarioO.lastItemClicked) {
+		//...select everything between the current item and the last item that they clicked on
+		zenarioO.selectItemRange(id, zenarioO.lastItemClicked);
+	
+	//If multiple select is enabled and the checkbox was clicked...
+	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
+		//...toogle the item that they've clicked on
+		if (selectedItems[id]) {
+			zenarioO.pi.deselectItem(id);
+		} else {
+			zenarioO.pi.selectItem(id);
+		}
+		zenarioO.closeInspectionView();
+		zenarioO.lastItemClicked = id;
+	
+	//If multiple select is not enabled and the checkbox was clicked
+	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && selectedItems[id]) {
+		//...deselect everything if this row was already selected
+		zenarioO.deselectAllItems();
+		zenarioO.closeInspectionView();
+		zenarioO.lastItemClicked = id;
+	
+	//Otherwise select the item that they've just clicked on, and nothing else
+	} else {
+		zenarioO.closeInspectionView();
+		zenarioO.selectSingleItem(id);
+	}
+	
+	
+	zenarioO.setButtons();
+	//zenarioO.saveSelection();
+	zenarioO.setHash();
+	
+	return false;
+};
+
+zenarioO.itemClickThrough = function(id, e) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
 	zenario.stop(e);
 	
-	//Stop multiple clicks
-	if (zenarioO.itemJustDoubleClicked) {
-		return false;
-	} else {
-		zenarioO.itemJustDoubleClicked = true;
-		setTimeout(
-			function() {
-				zenarioO.itemJustDoubleClicked = false;
-			}, zenarioO.itemDoubleClickTime);
-	}
 	
-	if (zenarioO.itemClickTimeout) {
-		clearTimeout(zenarioO.itemClickTimeout);
-	}
-	zenarioO.itemClicked = true;
-	
-	if (!zenarioO.focus || !zenarioO.focus.items[id]) {
+	if (!zenarioO.tuix
+	 || !zenarioO.tuix.items
+	 || !zenarioO.tuix.items[id]) {
 		return false;
 	}
 	
-	zenarioO.itemDoubleClickAction(id);
+	zenarioO.itemClickThroughAction(id);
 	
 	return false;
 };
 
-zenarioO.itemDoubleClickLink = function(id) {
-	var link = zenarioO.focus.items[id].link,
-		panel = zenarioO.focus.items[id].panel;
+zenarioO.itemClickThroughAction = function(id) {
+	var link = zenarioO.itemClickThroughLink(id),
+		selectedItems;
+	
+	if (link) {
+		if (!engToBoolean(link.unselect_items)) {
+			selectedItems = {};
+			selectedItems[id] = true;
+			zenarioO.pi.cmsSetsSelectedItems(selectedItems);
+			//zenarioO.saveSelection();
+		}
+
+		zenarioA.action(zenarioO, zenarioO.tuix.items[id], true, true, link);
+		return true;
+	} else {
+		return false;
+	}
+};
+
+zenarioO.itemClickThroughLink = function(id) {
+	var link = zenarioO.tuix.items[id].link,
+		panel = zenarioO.tuix.items[id].panel;
 	
 	if (link === undefined
 	 && panel === undefined
-	 && zenarioO.focus.item) {
-		link = zenarioO.focus.item.link;
-		panel = zenarioO.focus.item.panel;
+	 && zenarioO.tuix.item) {
+		link = zenarioO.tuix.item.link;
+		panel = zenarioO.tuix.item.panel;
 	}
 	
 	if (panel) {
@@ -2716,25 +2546,13 @@ zenarioO.itemDoubleClickLink = function(id) {
 	return link;
 };
 
-zenarioO.itemDoubleClickAction = function(id) {
-	var link = zenarioO.itemDoubleClickLink(id);
-	
-	if (link) {
-		if (!engToBoolean(link.unselect_items)) {
-			zenarioO.selectedItems = {};
-			zenarioO.selectedItems[id] = true;
-			zenarioO.saveSelection();
-		}
 
-		zenarioA.action(zenarioO, zenarioO.focus.items[id], true, true, link);
-		return true;
-	} else {
-		return false;
-	}
-};
+
+
+
 
 zenarioO.topLevelClick = function(id, j, first) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
@@ -2752,30 +2570,32 @@ zenarioO.topLevelClick = function(id, j, first) {
 };
 
 zenarioO.viewTrash = function () {
-	if (!window.zenarioOSelectMode && zenarioO.focus && zenarioO.focus.trash && !engToBoolean(zenarioO.focus.trash.empty)) {
-		zenarioA.action(zenarioO, zenarioO.focus.trash, false, true);
+	if (!window.zenarioOSelectMode && zenarioO.tuix && zenarioO.tuix.trash && !engToBoolean(zenarioO.tuix.trash.empty)) {
+		zenarioA.action(zenarioO, zenarioO.tuix.trash, false, true);
 	}
 	
 	return false;
 };
 
 zenarioO.collectionButtonClick = function(id) {
-	if (zenarioO.focus && zenarioO.focus.collection_buttons && zenarioO.focus.collection_buttons[id]) {
-		zenarioA.action(zenarioO, zenarioO.focus.collection_buttons[id], false, true);
+	if (zenarioO.tuix && zenarioO.tuix.collection_buttons && zenarioO.tuix.collection_buttons[id]) {
+		zenarioA.action(zenarioO, zenarioO.tuix.collection_buttons[id], false, true);
 	}
 };
 
 zenarioO.itemButtonClick = function(id) {
-	if (zenarioO.focus && zenarioO.focus.item_buttons && zenarioO.focus.item_buttons[id]) {
-		zenarioA.action(zenarioO, zenarioO.focus.item_buttons[id], true, true);
+	if (zenarioO.tuix && zenarioO.tuix.item_buttons && zenarioO.tuix.item_buttons[id]) {
+		zenarioA.action(zenarioO, zenarioO.tuix.item_buttons[id], true, true);
 	}
 };
 
 zenarioO.inlineButtonClick = function(id, itemId) {
-	if (zenarioO.focus && zenarioO.focus.inline_buttons && zenarioO.focus.inline_buttons[id]) {
+	if (zenarioO.tuix && zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons[id]) {
+		zenarioO.closeInspectionView();
 		zenarioO.selectSingleItem(itemId);
-		zenarioO.saveSelection();
-		zenarioA.action(zenarioO, zenarioO.focus.inline_buttons[id], true, true);
+		//zenarioO.saveSelection();
+		zenarioO.setHash();
+		zenarioA.action(zenarioO, zenarioO.tuix.inline_buttons[id], true, true);
 	}
 };
 
@@ -2785,9 +2605,9 @@ zenarioO.toggleQuickFilter = function(id, turnOn) {
 		c,
 		filterType;
 
-	if (!zenarioO.focus
-	 || !zenarioO.focus.quick_filter_buttons
-	 || !(filter = zenarioO.focus.quick_filter_buttons[id])
+	if (!zenarioO.tuix
+	 || !zenarioO.tuix.quick_filter_buttons
+	 || !(filter = zenarioO.tuix.quick_filter_buttons[id])
 	 || !(c = filter.column)
 	 || !(filterType = zenarioO.getColumnFilterType(c))
 	 || !(zenarioO.checkIfColumnPickerChangesAreAllowed(c))
@@ -2831,7 +2651,7 @@ zenarioO.quickFilterEnabled = function(id) {
 		c,
 		filterType;
 
-	if ((filter = zenarioO.focus.quick_filter_buttons[id])
+	if ((filter = zenarioO.tuix.quick_filter_buttons[id])
 	 && (c = filter.column)
 	 && (filterType = zenarioO.getColumnFilterType(c))) {
 		
@@ -2869,7 +2689,7 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 		i = zenarioO.getKeyId();
 	}
 	
-	foreach (zenarioO.focus.items[i] as var c) {
+	foreach (zenarioO.tuix.items[i] as var c) {
 		if (string.indexOf('[[' + c + ']]') != -1) {
 			var columnValue = zenarioO.columnValue(i, c, !escapeHTML);
 			
@@ -2997,7 +2817,12 @@ zenarioO.action2 = function() {
 	delete zenarioO.actionRequests;
 };
 
+zenarioO.uploadStart = function() {
+	zenarioO.disableInteraction();
+};
+
 zenarioO.uploadComplete = function() {
+	zenarioO.enableInteraction();
 	zenarioO.selectCreatedIds();
 };
 
@@ -3006,15 +2831,16 @@ zenarioO.selectCreatedIds = function() {
 	var newIds;
 	if (newIds = zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?method_call=getNewId', true, true)) {
 		zenarioO.deselectAllItems();
-		zenarioO.selectedItems = newIds;
-		zenarioO.saveSelection();
+		zenarioO.pi.cmsSetsSelectedItems(newIds);
+		//zenarioO.saveSelection();
+		zenarioO.setHash();
 	}
 	
 	get('organizer_preloader_circle').style.display = 'none';
 	
 	
 	var items = '';
-	foreach (zenarioO.selectedItems as var i) {
+	foreach (newIds as var i) {
 		items += (items? ',' : '') + i;
 	}
 	
@@ -3061,18 +2887,24 @@ zenarioO.refresh = function(periodic, allowCache, runFunctionAfter) {
 	zenarioO.stopRefreshing();
 	
 	//In hierarchy mode, remember what was open/closed when refreshing
-	zenarioO.recordOpenItems();
-	zenarioO.saveOpenItems();
+	//zenarioO.recordOpenItems();
+	//zenarioO.saveOpenItems();
 	
-	zenarioO.refreshToPage = zenarioO.page;
+	
+	var path = zenarioO.path,
+		itemToSelect = zenarioO.getKeyId(true),
+		inCloseUpView = zenarioO.inspectionView;
+	
+	if (itemToSelect) {
+		zenarioO.refreshToPage = undefined;
+	} else {
+		zenarioO.refreshToPage = zenarioO.page;
+	}
 	zenarioO.refreshIsPeriodic = periodic;
 	
-	var path = zenarioO.path;
-	if (zenarioO.inCloseUpView) {
-		path += '//' + zenarioO.itemToSelect + '/';
-	}
 	
-	zenarioO.go(path, undefined, undefined, undefined, undefined, undefined, !allowCache, undefined, undefined, runFunctionAfter, periodic);
+	//zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic, inCloseUpView) {
+	zenarioO.go(path, undefined, undefined, undefined, undefined, undefined, !allowCache, itemToSelect, undefined, runFunctionAfter, periodic, inCloseUpView);
 };
 
 //Go to the change password section
@@ -3082,7 +2914,7 @@ zenarioO.changePassword = function() {
 
 //Reload Storekeeper, making sure to go via the admin login page in case a login/db_update is needed
 zenarioO.reload = function(hash, dontAutoDetectMode, task) {
-	if (zenarioA.uploading) {
+	if (zenarioO.stop) {
 		return false;
 	}
 
@@ -3115,7 +2947,7 @@ zenarioO.reload = function(hash, dontAutoDetectMode, task) {
 };
 
 zenarioO.refreshToShowItem = function(itemId) {
-	if (zenarioA.uploading) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
@@ -3126,24 +2958,27 @@ zenarioO.refreshToShowItem = function(itemId) {
 	}
 	
 	//Escape the item id if needed
-	if (zenarioO.focus.db_items && zenarioO.focus.db_items.encode_id_column) {
+	if (zenarioO.tuix.db_items && zenarioO.tuix.db_items.encode_id_column) {
 		itemId = zenario.encodeItemIdForStorekeeper(itemId);
 	}
 	
 	var itemIds = (itemId + '').split(',');
-	zenarioO.selectedItems = {};
+	selectedItems = {};
 	
 	foreach (itemIds as var i) {
-		zenarioO.selectedItems[itemIds[i]] = true;
+		selectedItems[itemIds[i]] = true;
 	}
 	
-	zenarioO.saveSelection();
+	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
+	
+	//zenarioO.saveSelection();
+	zenarioO.setHash();
 	zenarioO.stopRefreshing();
 	
 	//Clear the local storage, as there have probably just been changes
 	delete zenario.rev;
 	
-	if (zenarioO.inCloseUpView) {
+	if (zenarioO.inspectionView) {
 		zenarioO.go(zenarioO.path + '//' + itemId + '/');
 	} else {
 		zenarioO.go(zenarioO.path + '//' + itemId);
@@ -3155,7 +2990,7 @@ zenarioO.refreshing = false;
 
 //(Periodic refresh is now disabled)
 //zenarioO.periodicRefresh = function() {
-//	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+//	if (zenarioO.stop) {
 //		return false;
 //	}
 //	
@@ -3187,10 +3022,10 @@ zenarioO.doCSVExport = function() {
 zenarioO.getKey = function(itemLevel) {
 	
 	var key = {};
-	if (zenarioO.focus.key) {
-		foreach (zenarioO.focus.key as var i) {
+	if (zenarioO.tuix.key) {
+		foreach (zenarioO.tuix.key as var i) {
 			if (!zenarioO.isInfoTag(i)) {
-				key[i] = zenarioO.focus.key[i];
+				key[i] = zenarioO.tuix.key[i];
 			}
 		}
 	}
@@ -3206,20 +3041,21 @@ zenarioO.getKey = function(itemLevel) {
 		}
 	}
 	
-	if (itemLevel && zenarioO.selectedItems) {
+	if (itemLevel) {
 		key.id = zenarioO.getKeyId();
 	}
 	
-	if (zenarioA.openedInIframe && window.parent && window.parent.zenario) {
-		if (window.parent.zenarioO.init) {
-			var parentKey = window.parent.zenarioO.getKey(true);
+	if (zenarioA.openedInIframe && windowParent && windowParent.zenario) {
+		if (windowParent.zenarioO.init
+		 && windowParent.zenarioO.tuix) {
+			var parentKey = windowParent.zenarioO.getKey(true);
 			foreach (parentKey as var i) {
 				key['parent__' + i] = parentKey[i];
 			}
-		} else if (window.parent.zenario.cID) {
-			key.parent__cID = window.parent.zenario.cID;
-			key.parent__cType = window.parent.zenario.cType;
-			key.parent__cVersion = window.parent.zenario.cVersion;
+		} else if (windowParent.zenario.cID) {
+			key.parent__cID = windowParent.zenario.cID;
+			key.parent__cType = windowParent.zenario.cType;
+			key.parent__cVersion = windowParent.zenario.cVersion;
 		}
 	}
 	
@@ -3229,10 +3065,11 @@ zenarioO.getKey = function(itemLevel) {
 zenarioO.getKeyId = function(limitOfOne) {
 	
 	var id = '',
-		comma = '';
+		comma = '',
+		selectedItems = zenarioO.pi && zenarioO.pi.returnSelectedItems();
 	
-	if (zenarioO.selectedItems) {
-		foreach (zenarioO.selectedItems as var i) {
+	if (selectedItems) {
+		foreach (selectedItems as var i) {
 			if (!zenarioO.isInfoTag(i)) {
 				if (limitOfOne) {
 					return i;
@@ -3324,45 +3161,12 @@ zenarioO.getFromToFromLink = function(path) {
 
 //  View Modes  //
 
-zenarioO.changeView = function(mode) {
-	
-	if (zenarioA.uploading
-	 || !zenarioO.focus
-	 || zenarioO.view_mode == 'hierarchy'
-	 || (zenarioO.focus.force_view_mode && zenarioO.focus.force_view_mode != mode)
-	 || (mode == 'grid' && engToBoolean(zenarioO.focus.disable_grid_view))
-	 || (mode == 'list' && engToBoolean(zenarioO.focus.disable_list_view))) {
-		return false;
-	}
-	
-	zenarioO.changeViewMode = mode;
-	
-	//Check if the prefs are up to date. If not, refresh the panel first.
-	if (zenarioO.checkPrefs()) {
-		zenarioO.changeView2();
-	} else {
-		zenarioO.refresh(undefined, undefined, zenarioO.changeView2);
-	}
-};
-
-zenarioO.changeView2 = function() {
-	zenarioO.prefs[zenarioO.voPath].view_mode = zenarioO.changeViewMode;
-	zenarioO.view_mode = zenarioO.changeViewMode;
-	
-	zenarioO.inCloseUpView = false;
-	zenarioO.scrollToPageTop = true;
-	zenarioO.drawPanel();
-	
-	zenarioO.savePrefs();
-	return false;
-};
-
 zenarioO.showViewOptions = function(e) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
-	if (!zenarioO.focus.columns) {
+	if (!zenarioO.tuix.columns) {
 		return false;
 	}
 	
@@ -3387,32 +3191,32 @@ zenarioO.showViewOptions2 = function() {
 
 zenarioO.getColumnFilterType = function(c) {
 	
-	if (!zenarioO.focus
-	 || !zenarioO.focus.columns
-	 || !zenarioO.focus.columns[c]) {
+	if (!zenarioO.tuix
+	 || !zenarioO.tuix.columns
+	 || !zenarioO.tuix.columns[c]) {
 		return false
 	}
 
 	var filterType = false;
 	
-	if (zenarioO.focus.columns[c].format == 'date'
-	 || zenarioO.focus.columns[c].format == 'datetime'
-	 || zenarioO.focus.columns[c].format == 'datetime_with_seconds') {
+	if (zenarioO.tuix.columns[c].format == 'date'
+	 || zenarioO.tuix.columns[c].format == 'datetime'
+	 || zenarioO.tuix.columns[c].format == 'datetime_with_seconds') {
 		filterType = 'date';
 	
-	} else if (zenarioO.focus.columns[c].format == 'yes_or_no') {
+	} else if (zenarioO.tuix.columns[c].format == 'yes_or_no') {
 		filterType = 'yes_or_no';
 	
 	} else if (
-		(zenarioO.focus.columns[c].format == 'enum' && zenarioO.focus.columns[c].values)
-	 || zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_english_name'
-	 || zenarioO.focus.columns[c].format == 'language_local_name_with_id'
-	 || zenarioO.focus.columns[c].format == 'language_local_name'
+		(zenarioO.tuix.columns[c].format == 'enum' && zenarioO.tuix.columns[c].values)
+	 || zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
+	 || zenarioO.tuix.columns[c].format == 'language_english_name'
+	 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id'
+	 || zenarioO.tuix.columns[c].format == 'language_local_name'
 	) {
 		filterType = 'enum';
 	
-	} else if (engToBoolean(zenarioO.focus.columns[c].searchable)) {
+	} else if (engToBoolean(zenarioO.tuix.columns[c].searchable)) {
 		filterType = 'search';
 	}
 	
@@ -3421,15 +3225,11 @@ zenarioO.getColumnFilterType = function(c) {
 
 zenarioO.setViewOptions = function() {
 	
-	if (!zenarioO.CSVExportEnabled) {
-		zenarioO.showCSVInViewOptions = false;
-	}
-	
 	var html = '';
 	
 	zenarioAB.templatePrefix = 'zenario_filters';
 	zenarioAB.shownTab = 'cp';
-	zenarioAB.focus = {
+	zenarioAB.tuix = {
 		tab: 'cp',
 		tabs: {
 			cp: {
@@ -3443,8 +3243,10 @@ zenarioO.setViewOptions = function() {
 			}
 		}
 	};
+		//Backwards compatability for any old code
+		zenarioAB.focus = zenarioAB.tuix;	
 	
-	zenarioAB.focus.tabs.cp.fields.showcol__title_ = {
+	zenarioAB.tuix.tabs.cp.fields.showcol__title_ = {
 		ord: -3,
 		full_width: true,
 		pre_field_html: '<div class="organizer_colPickerTitle_show" style="">',
@@ -3452,17 +3254,7 @@ zenarioO.setViewOptions = function() {
 		post_field_html: '</div>'
 	};
 	
-	if (zenarioO.showCSVInViewOptions) {
-		zenarioAB.focus.tabs.cp.fields.showcsv__title_ = {
-			ord: -2,
-			same_row: true,
-			pre_field_html: '<div class="organizer_colPickerTitle_csv">',
-			snippet: {html: phrase.csv},
-			post_field_html: '</div>'
-		};
-	}
-	
-	zenarioAB.focus.tabs.cp.fields.sortcol__title_ = {
+	zenarioAB.tuix.tabs.cp.fields.sortcol__title_ = {
 		ord: -1,
 		same_row: true,
 		pre_field_html: '<div class="organizer_colPickerTitle_sort">',
@@ -3473,15 +3265,15 @@ zenarioO.setViewOptions = function() {
 	var c, colNo, lastCol = false, lastColName = false;
 	foreach (zenarioO.sortedColumns as colNo => c) {
 		
-		if (zenarioO.isShowableColumn(c, false, zenarioO.showCSVInViewOptions)) {
+		if (zenarioO.isShowableColumn(c, false)) {
 			
-			zenarioAB.focus.tabs.cp.fields['start_of_row__' + c] = {
+			zenarioAB.tuix.tabs.cp.fields['start_of_row__' + c] = {
 				ord: 100 * colNo,
 				full_width: true,
 				snippet: {html: ''}
 			}
 			
-			zenarioAB.focus.tabs.cp.fields['showcol_' + c] = {
+			zenarioAB.tuix.tabs.cp.fields['showcol_' + c] = {
 				ord: 100 * colNo + 4,
 				same_row: true,
 				type: 'toggle',
@@ -3489,17 +3281,17 @@ zenarioO.setViewOptions = function() {
 				value: zenarioO.shownColumns[c]? 'Hide' : 'Show',
 				title: phrase.showCol,
 				'class': (zenarioO.view_mode == 'grid' ||
-						 engToBoolean(zenarioO.focus.columns[c].always_show)?
+						 engToBoolean(zenarioO.tuix.columns[c].always_show)?
 						 	'notused ' : '') + (zenarioO.shownColumns[c]? 'zen_col_hidden' : 'zen_col_shown')
 			};
 			
 			if (zenarioO.showCSVInViewOptions) {
-				delete zenarioAB.focus.tabs.cp.fields['showcol_' + c].onclick;
+				delete zenarioAB.tuix.tabs.cp.fields['showcol_' + c].onclick;
 				
-				if (engToBoolean(engToBoolean(zenarioO.focus.columns[c].server_side_only))) {
-					zenarioAB.focus.tabs.cp.fields['showcol_' + c].style = 'visibility: hidden;';
+				if (engToBoolean(engToBoolean(zenarioO.tuix.columns[c].server_side_only))) {
+					zenarioAB.tuix.tabs.cp.fields['showcol_' + c].style = 'visibility: hidden;';
 				} else {
-					zenarioAB.focus.tabs.cp.fields['showcol_' + c].disabled = 'disabled';
+					zenarioAB.tuix.tabs.cp.fields['showcol_' + c].disabled = 'disabled';
 				}
 				
 				var value = zenarioO.shownColumns[c];
@@ -3509,20 +3301,20 @@ zenarioO.setViewOptions = function() {
 					value = zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV[c];
 				}
 				
-				zenarioAB.focus.tabs.cp.fields['showcsv_' + c] = {
+				zenarioAB.tuix.tabs.cp.fields['showcsv_' + c] = {
 					ord: 100 * colNo + 5,
 					same_row: true,
 					type: 'checkbox',
 					onclick: "zenarioO.showHideColumnInCSV(this, '" + htmlspecialchars(c) + "');",
 					value: value,
 					'class': zenarioO.view_mode == 'grid' ||
-							 engToBoolean(zenarioO.focus.columns[c].always_show)?
+							 engToBoolean(zenarioO.tuix.columns[c].always_show)?
 								'notused' : ''
 				};
 			}
 			
 			//if (zenarioO.reordering) {
-			//	zenarioAB.focus.tabs.cp.fields['sortcol_' + c] = {
+			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
 			//		ord: 100 * colNo + 6,
 			//		same_row: true,
 			//		type: 'toggle',
@@ -3530,11 +3322,11 @@ zenarioO.setViewOptions = function() {
 			//		'class': zenarioO.sortBy == c? (zenarioO.sortDesc? 'sortcol_desc' : 'sortcol_asc') : ' ',
 			//		style: 'cursor: default;',
 			//		pre_field_html: '<span class="organizer_sort_col_wrap">',
-			//		post_field_html: '<label for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.focus.columns[c].title) + '</label></span>'
+			//		post_field_html: '<label for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
 			//	};
 			//
 			//} else if (zenarioO.canSortColumn(c)) {
-			//	zenarioAB.focus.tabs.cp.fields['sortcol_' + c] = {
+			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
 			//		ord: 100 * colNo + 6,
 			//		same_row: true,
 			//		type: 'toggle',
@@ -3542,26 +3334,26 @@ zenarioO.setViewOptions = function() {
 			//		'class': zenarioO.sortBy == c? (zenarioO.sortDesc? 'sortcol_desc' : 'sortcol_asc') : 'sortcol',
 			//		onclick: "zenarioO.changeSortOrder('" + htmlspecialchars(c) + "');",
 			//		pre_field_html: '<span class="organizer_sort_col_wrap" title="' + phrase.sortByCol + '">',
-			//		post_field_html: '<label style="cursor: pointer;" for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.focus.columns[c].title) + '</label></span>'
+			//		post_field_html: '<label style="cursor: pointer;" for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
 			//	};
 			//
 			//} else {
-			//	zenarioAB.focus.tabs.cp.fields['sortcol_' + c] = {
+			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
 			//		ord: 100 * colNo + 6,
 			//		same_row: true,
 			//		type: 'toggle',
 			//		value: ' ',
 			//		style: 'cursor: default;',
 			//		pre_field_html: '<span class="organizer_sort_col_wrap">',
-			//		post_field_html: '<label>' + htmlspecialchars(zenarioO.focus.columns[c].title) + '</label></span>'
+			//		post_field_html: '<label>' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
 			//	};
 			//}
 			
-			zenarioAB.focus.tabs.cp.fields['sortcol_' + c] = {
+			zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
 				ord: 100 * colNo + 6,
 				same_row: true,
 				snippet: {
-					html: '<label class="zenario_filter_column_name" for="showcol_' + c + '">' + htmlspecialchars(zenarioO.focus.columns[c].title) + '</label>'
+					html: '<label class="zenario_filter_column_name" for="showcol_' + c + '">' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label>'
 				}
 			};
 			
@@ -3572,12 +3364,12 @@ zenarioO.setViewOptions = function() {
 				var invertLink =
 					'<a class="' + (zenarioO.getFilterValue('not', c)? 'organizer_inverter organizer_not' : 'organizer_inverter') + '"' +
 						' title="' + phrase.invertFilter + '"' +
-						' onclick="zenarioO.invertFilter(this, \'' + htmlspecialchars(c) + '\', \'' + htmlspecialchars(zenarioO.focus.columns[c].format) + '\');">';
+						' onclick="zenarioO.invertFilter(this, \'' + htmlspecialchars(c) + '\', \'' + htmlspecialchars(zenarioO.tuix.columns[c].format) + '\');">';
 				
-				if (zenarioO.focus.columns[c].format == 'date'
-				 || zenarioO.focus.columns[c].format == 'datetime'
-				 || zenarioO.focus.columns[c].format == 'datetime_with_seconds') {
-					zenarioAB.focus.tabs.cp.fields['date_after_col_' + c] = {
+				if (zenarioO.tuix.columns[c].format == 'date'
+				 || zenarioO.tuix.columns[c].format == 'datetime'
+				 || zenarioO.tuix.columns[c].format == 'datetime_with_seconds') {
+					zenarioAB.tuix.tabs.cp.fields['date_after_col_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_date_filters_for_field',
 						label: phrase.after,
@@ -3587,7 +3379,7 @@ zenarioO.setViewOptions = function() {
 						hidden: hidden,
 						_h: hiddenPreviously
 					};
-					zenarioAB.focus.tabs.cp.fields['date_before_col_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['date_before_col_' + c] = {
 						ord: 100 * colNo + 8,
 						row_class: 'zenario_date_filters_for_field',
 						label: phrase.before,
@@ -3598,15 +3390,15 @@ zenarioO.setViewOptions = function() {
 						_h: hiddenPreviously
 					};
 				
-				} else if (zenarioO.focus.columns[c].format == 'yes_or_no') {
+				} else if (zenarioO.tuix.columns[c].format == 'yes_or_no') {
 					//Attempt to add a colon to the title of the column
-					var label = ('' + zenarioO.focus.columns[c].title);
+					var label = ('' + zenarioO.tuix.columns[c].title);
 					if (label.indexOf(':') == -1) {
 						label += ':';
 						label = label.replace(/\s*:/, ':');
 					}
 					
-					zenarioAB.focus.tabs.cp.fields['yes_or_no_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['yes_or_no_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field yes_or_no',
 						snippet: {
@@ -3617,23 +3409,23 @@ zenarioO.setViewOptions = function() {
 					};
 				
 				} else if (
-					(zenarioO.focus.columns[c].format == 'enum' && zenarioO.focus.columns[c].values)
-				 || zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-				 || zenarioO.focus.columns[c].format == 'language_english_name'
-				 || zenarioO.focus.columns[c].format == 'language_local_name_with_id'
-				 || zenarioO.focus.columns[c].format == 'language_local_name'
+					(zenarioO.tuix.columns[c].format == 'enum' && zenarioO.tuix.columns[c].values)
+				 || zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
+				 || zenarioO.tuix.columns[c].format == 'language_english_name'
+				 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id'
+				 || zenarioO.tuix.columns[c].format == 'language_local_name'
 				) {
 					var values;
 					
-					if (zenarioO.focus.columns[c].format == 'enum') {
+					if (zenarioO.tuix.columns[c].format == 'enum') {
 						//Get the list of values for this column, adding on an empty value if one is not present
-						values = zenarioO.focus.columns[c].values;
+						values = zenarioO.tuix.columns[c].values;
 						if (!values[''] && !values[0]) {
 							values = {};
 							values[''] = phrase.selectListSelect;
 							
-							foreach (zenarioO.focus.columns[c].values as var v) {
-								values[v] = zenarioO.focus.columns[c].values[v];
+							foreach (zenarioO.tuix.columns[c].values as var v) {
+								values[v] = zenarioO.tuix.columns[c].values[v];
 							}
 						}
 					
@@ -3645,15 +3437,15 @@ zenarioO.setViewOptions = function() {
 							if (zenarioA.lang[v].enabled) {
 								values[v] = zenarioA.lang[v].name;
 								
-								if (zenarioO.focus.columns[c].format == 'language_english_name_with_id'
-								 || zenarioO.focus.columns[c].format == 'language_local_name_with_id') {
+								if (zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
+								 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id') {
 									values[v] += ' (' + v + ')';
 								}
 							}
 						}
 					}
 					
-					zenarioAB.focus.tabs.cp.fields['enum_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['enum_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field enum',
 						label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.isnt : phrase.is) + '</a>',
@@ -3665,8 +3457,8 @@ zenarioO.setViewOptions = function() {
 						_h: hiddenPreviously
 					};
 				
-				} else if (engToBoolean(zenarioO.focus.columns[c].searchable)) {
-					zenarioAB.focus.tabs.cp.fields['searchcol_' + c] = {
+				} else if (engToBoolean(zenarioO.tuix.columns[c].searchable)) {
+					zenarioAB.tuix.tabs.cp.fields['searchcol_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field',
 						label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.notLike : phrase.like) + '</a>',
@@ -3679,7 +3471,7 @@ zenarioO.setViewOptions = function() {
 				}
 				
 				if (zenarioO.getColumnFilterType(c)) {
-					zenarioAB.focus.tabs.cp.fields['togglefilter_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['togglefilter_' + c] = {
 						ord: 100 * colNo + 2,
 						same_row: true,
 						pre_field_html: '<div class="organizer_togglefilter">',
@@ -3694,7 +3486,7 @@ zenarioO.setViewOptions = function() {
 			}
 			
 			if (zenarioO.showCSVInViewOptions) {
-				zenarioAB.focus.tabs.cp.fields['up__' + c] = {
+				zenarioAB.tuix.tabs.cp.fields['up__' + c] = {
 					ord: 100 * colNo + 1,
 					same_row: true,
 					pre_field_html: '<div class="organizer_mov_col">',
@@ -3705,7 +3497,7 @@ zenarioO.setViewOptions = function() {
 					title: phrase.moveColForward
 				};
 				
-				zenarioAB.focus.tabs.cp.fields['down__' + c] = {
+				zenarioAB.tuix.tabs.cp.fields['down__' + c] = {
 					ord: 100 * colNo + 2,
 					same_row: true,
 					type: 'toggle',
@@ -3717,11 +3509,11 @@ zenarioO.setViewOptions = function() {
 				};
 				
 				if (lastCol !== false) {
-					zenarioAB.focus.tabs.cp.fields['up__' + c].style = '';
-					zenarioAB.focus.tabs.cp.fields['up__' + c].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
+					zenarioAB.tuix.tabs.cp.fields['up__' + c].style = '';
+					zenarioAB.tuix.tabs.cp.fields['up__' + c].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
 					
-					zenarioAB.focus.tabs.cp.fields['down__' + lastColName].style = '';
-					zenarioAB.focus.tabs.cp.fields['down__' + lastColName].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
+					zenarioAB.tuix.tabs.cp.fields['down__' + lastColName].style = '';
+					zenarioAB.tuix.tabs.cp.fields['down__' + lastColName].onclick = 'zenarioO.switchColumnOrder(' + colNo + ', ' + lastCol + ', true)';
 				}
 			}
 			lastCol = colNo;
@@ -3751,24 +3543,12 @@ zenarioO.setViewOptions = function() {
 	}
 	
 	if (showResetButton) {
-		zenarioAB.focus.tabs.cp.fields.reset = {
+		zenarioAB.tuix.tabs.cp.fields.reset = {
 			ord: 100 * colNo + 11,
 			full_width: true,
 			type: 'toggle',
 			onclick: "zenarioO.resetPrefs();",
 			value: phrase.reset
-		};
-	}
-	
-	if (zenarioO.CSVExportEnabled) {
-		zenarioAB.focus.tabs.cp.fields.toggle_csv = {
-			ord: 100 * colNo + 12,
-			full_width: true,
-			same_row: showResetButton,
-			type: 'toggle',
-			style: 'float: right; width: auto;',
-			onclick: "zenarioO.showCSVInViewOptions = !zenarioO.showCSVInViewOptions; zenarioO.setViewOptions();",
-			value: zenarioO.showCSVInViewOptions? phrase.hideExport : phrase.showExport
 		};
 	}
 	
@@ -3780,39 +3560,10 @@ zenarioO.setViewOptions = function() {
 	zenarioO.size(true);
 };
 
-/*zenarioO.showFilterOptions = function(c) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy || zenarioO.sortingColumn || zenarioO.resizingColumn) {
-		return false;
-	}
-	
-	if (!zenarioO.focus.columns) {
-		return false;
-	}
-	
-	//Check if the prefs are up to date. If not, refresh the panel first.
-	if (zenarioO.checkPrefs()) {
-		zenarioO.showFilterOptions2(c);
-	} else {
-		zenarioO.refresh(undefined, undefined, function() { zenarioO.showFilterOptions2(c) });
-	}
-	
-	return false;
-};
-
-zenarioO.showFilterOptions2 = function(c) {
-	var width = 300,
-		left = 0,
-		top = 0;
-	zenarioA.openBox(false, 'zenario_column_filter', 'AdminColumnFilter', get('organizer_column__' + c), width, left, top, false, true, false, false, undefined, undefined, false, true);
-	
-	zenarioO.setFilterOptions(c);
-	zenarioAB.focusFirstField();
-};*/
-
 zenarioO.canSortColumn = function(c) {
-	if (zenarioO.reordering
-	 || engToBoolean(zenarioO.focus.columns[c].disallow_sorting)
-	 || (zenarioO.server_side && !zenarioO.focus.columns[c].db_column)) {
+	if (zenarioO.stop
+	 || engToBoolean(zenarioO.tuix.columns[c].disallow_sorting)
+	 || (zenarioO.server_side && !zenarioO.tuix.columns[c].db_column)) {
 		return false;
 	}
 	return true;
@@ -3820,18 +3571,18 @@ zenarioO.canSortColumn = function(c) {
 
 zenarioO.canFilterColumn = function(c) {
 	//Only allow filtering for columns in the database
-	if (!zenarioO.focus.columns[c].db_column
-	 || engToBoolean(zenarioO.focus.columns[c].server_side_only)
-	 || engToBoolean(zenarioO.focus.columns[c].disallow_filtering)) {
+	if (!zenarioO.tuix.columns[c].db_column
+	 || engToBoolean(zenarioO.tuix.columns[c].server_side_only)
+	 || engToBoolean(zenarioO.tuix.columns[c].disallow_filtering)) {
 		return false;
 	}
 	
 	//Catch the case where an enum column is missing its values - don't allow filtering here
-	if (zenarioO.focus.columns[c].format == 'enum' && !zenarioO.focus.columns[c].values) {
+	if (zenarioO.tuix.columns[c].format == 'enum' && !zenarioO.tuix.columns[c].values) {
 		return false;
 	}
 	
-	switch (zenarioO.focus.columns[c].format) {
+	switch (zenarioO.tuix.columns[c].format) {
 		//Date and enum type fields are implemented as a drop-down select list or toggle.
 		//They should be filterable if an index has been created on that field.
 		case 'date':
@@ -3843,24 +3594,24 @@ zenarioO.canFilterColumn = function(c) {
 		case 'language_english_name':
 		case 'language_local_name_with_id':
 		case 'language_local_name':
-			return !engToBoolean(zenarioO.focus.columns[c].disallow_sorting);
+			return !engToBoolean(zenarioO.tuix.columns[c].disallow_sorting);
 		
 		//Text type fields are implemented as a search box.
 		//They should be filterable if they are flagged as searchable.
 		default:
-			return engToBoolean(zenarioO.focus.columns[c].searchable);
+			return engToBoolean(zenarioO.tuix.columns[c].searchable);
 	}
 };
 
 zenarioO.showHideColumn = function(show, c) {
 	//Ignore requests to hide columns that are forced on
-	if (engToBoolean(zenarioO.focus.columns[c].always_show)) {
+	if (engToBoolean(zenarioO.tuix.columns[c].always_show)) {
 		show = true;
 	
 	} else {
 		//Ensure someone can never hide the last column!
 		var count = 0;
-		foreach (zenarioO.focus.columns as var i) {
+		foreach (zenarioO.tuix.columns as var i) {
 			if (!zenarioO.isInfoTag(i)) {
 				if (zenarioO.shownColumns[i]) {
 					++count;
@@ -3884,7 +3635,7 @@ zenarioO.showHideColumn = function(show, c) {
 	zenarioO.prefs[zenarioO.voPath].shownColumns = zenarioO.shownColumns;
 	zenarioO.savePrefs();
 	
-	zenarioO.drawPanel();
+	zenarioO.setPanel();
 };
 
 zenarioO.resizeColumn = function(c, size) {
@@ -3899,7 +3650,7 @@ zenarioO.resizeColumn = function(c, size) {
 		zenarioO.savePrefs();
 	}
 	
-	zenarioO.drawPanel();
+	zenarioO.setPanel();
 };
 
 zenarioO.showHideColumnInCSV = function(el, c) {
@@ -3968,7 +3719,7 @@ zenarioO.switchColumnOrder = function(a, b, viewOptions) {
 	zenarioO.checkPrefs();
 	zenarioO.prefs[zenarioO.voPath].sortedColumns = zenarioO.sortedColumns;
 	
-	zenarioO.drawPanel();
+	zenarioO.setPanel();
 	
 	if (viewOptions) {
 		zenarioO.setViewOptions();
@@ -4003,7 +3754,7 @@ zenarioO.resetPrefs = function() {
 
 zenarioO.checkIfColumnPickerChangesAreAllowed = function(c) {
 	//Don't allow the sort order to be changed when reordering
-	if (zenarioO.reordering) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
@@ -4176,14 +3927,14 @@ zenarioAB.changeFiltersAfterDelay = function() {
 zenarioO.changeFilters = function() {
 	
 	//Don't allow the filters to be touched when reordering
-	if (zenarioO.reordering) {
+	if (zenarioO.stop) {
 		zenarioO.setViewOptions();
 		return;
 	}
 	
 	
 	var value;
-	foreach (zenarioO.focus.columns as var c) {
+	foreach (zenarioO.tuix.columns as var c) {
 		if (zenarioO.isShowableColumn(c)) {
 			foreach (zenarioO.possibleFilters as var filter) {
 				if (get(filter + c) || get(filter + c + '___yes')) {
@@ -4211,11 +3962,11 @@ zenarioO.hideViewOptions = function(e) {
 
 
 zenarioO.openAdvancedSearch = function(e) {
-	if (zenarioA.uploading || zenarioO.changingHierarchy) {
+	if (zenarioO.stop) {
 		return false;
 	}
 	
-	if (!zenarioO.focus.columns) {
+	if (!zenarioO.tuix.columns) {
 		return false;
 	}
 	
@@ -4373,11 +4124,11 @@ zenarioO.isInfoTag = function(i) {
 		|| i === 'ord';
 };
 
-zenarioO.isShowableColumn = function(c, shown, allowServerSide) {
+zenarioO.isShowableColumn = function(c, shown) {
 	if (shown) {
 		return zenarioO.shownColumns[c] && zenarioO.isShowableColumn(c);
 	} else {
-		return zenarioO.focus.columns[c] && !zenarioO.isInfoTag(c) && !zenarioA.hidden(zenarioO.focus.columns[c]) && zenarioO.focus.columns[c].title && (allowServerSide || !engToBoolean(zenarioO.focus.columns[c].server_side_only));
+		return zenarioO.tuix.columns[c] && !zenarioO.isInfoTag(c) && !zenarioA.hidden(zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
 	}
 };
 
@@ -4393,16 +4144,16 @@ zenarioO.createSortArray = function(name, toSort, column, desc) {
 		format = false,
 		numeric;
 	
-	if (toSort == 'items' && zenarioO.focus.columns && zenarioO.focus.columns[column]) {
-		format = zenarioO.focus.columns[column].format;
+	if (toSort == 'items' && zenarioO.tuix.columns && zenarioO.tuix.columns[column]) {
+		format = zenarioO.tuix.columns[column].format;
 	}
 	
 	zenarioO[name] = [];
-	if (zenarioO.focus[toSort]) {
-		foreach (zenarioO.focus[toSort] as var i) {
-			if (!zenarioO.isInfoTag(i) && zenarioO.focus[toSort][i]) {
+	if (zenarioO.tuix[toSort]) {
+		foreach (zenarioO.tuix[toSort] as var i) {
+			if (!zenarioO.isInfoTag(i) && zenarioO.tuix[toSort][i]) {
 				//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
-				value = zenarioO.focus[toSort][i][column];
+				value = zenarioO.tuix[toSort][i][column];
 				
 				if (format == 'true_or_false' || format == 'yes_or_no') {
 					zenarioO[name].push([i, engToBoolean(value), true]);
@@ -4524,11 +4275,14 @@ zenarioO.dateMonths = ['January','Feburary','March','April','May','June','July',
 
 
 zenarioO.checkCondition = function(condition) {
-    foreach (zenarioO.selectedItems as var id) {
-    	if (!zenarioO.focus.items[id]) {
+	var id,
+		selectedItems = zenarioO.pi.returnSelectedItems();
+	
+    foreach (selectedItems as var id) {
+    	if (!zenarioO.tuix.items[id]) {
     		return false
     	
-    	} else if (!condition(id, zenarioO.focus.items[id])) {
+    	} else if (!condition(id, zenarioO.tuix.items[id])) {
             return false;
         }
     }
@@ -4549,23 +4303,23 @@ zenarioO.columnNotEqual = function(column, value) {
 
 zenarioO.columnRawValue = function(i, c) {
 	
-	if (!zenarioO.focus
-	 || !zenarioO.focus.columns
-	 || zenarioO.focus.columns[c] === undefined
-	 || zenarioO.focus.items[i] === undefined) {
+	if (!zenarioO.tuix
+	 || !zenarioO.tuix.columns
+	 || zenarioO.tuix.columns[c] === undefined
+	 || zenarioO.tuix.items[i] === undefined) {
 		return '';
 	}
 	
-	return zenarioO.focus.items[i][c];
+	return zenarioO.tuix.items[i][c];
 };
 
 zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 	
-	if (!zenarioO.focus || !zenarioO.focus.columns || zenarioO.focus.columns[c] === undefined) {
+	if (!zenarioO.tuix || !zenarioO.tuix.columns || zenarioO.tuix.columns[c] === undefined) {
 		return '';
 	}
 	
-	var value = zenarioO.focus.items[i][c];
+	var value = zenarioO.tuix.items[i][c];
 	if (value === undefined || value === false || value === null) {
 		value = '';
 	} else {
@@ -4574,7 +4328,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 	
 	
 	//Is this item an item link..?
-	var item_link = zenarioO.focus.columns[c].item_link,
+	var item_link = zenarioO.tuix.columns[c].item_link,
 		isSKLink = true,
 		isURL = false;
 	
@@ -4614,9 +4368,9 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 				
 				var href = '';
 				
-				if (zenarioO.focus.items[i].cell_css_classes
-				 && zenarioO.focus.items[i].cell_css_classes[c]
-				 && ('' + zenarioO.focus.items[i].cell_css_classes[c]).indexOf('ghost') != -1) {
+				if (zenarioO.tuix.items[i].cell_css_classes
+				 && zenarioO.tuix.items[i].cell_css_classes[c]
+				 && ('' + zenarioO.tuix.items[i].cell_css_classes[c]).indexOf('ghost') != -1) {
 					//Don't allow ghosted Item Links to be clickable
 					href = ' style="cursor: default;"';
 					
@@ -4632,8 +4386,11 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 						href =
 							' href="organizer.php#' + htmlspecialchars(ifNull(item.navigation_path, zenarioO.shallowLinks[item_link] + '//' + i)) + '" onclick="' +
 								"zenarioO.deselectAllItems();" +
-								"zenarioO.selectedItems['" + htmlspecialchars(i) + "'] = true;" +
-								"zenarioO.saveSelection();" +
+								"var selectedItems = {};" +
+								"selectedItems['" + htmlspecialchars(i) + "'] = true;" +
+								"zenarioO.pi.cmsSetsSelectedItems(selectedItems);" +
+								//"zenarioO.saveSelection();" +
+								"zenarioO.setHash();" +
 								"zenarioO.go('" + htmlspecialchars(zenarioO.shallowLinks[item_link]) + "', true, {id: '" + htmlspecialchars(value) + "', name: 'following_item_link', languageId: '" + htmlspecialchars(zenarioO.itemLanguage(i)) + "'}, undefined, undefined, undefined, undefined, '" + htmlspecialchars(value) + "');" +
 								"return zenario.stop(event);" +
 							'"';
@@ -4701,18 +4458,18 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 	
 	
 	//Otherwise check to see if this is a formated column
-	if (zenarioO.focus.columns[c].format || zenarioO.focus.columns[c].empty_value) {
-		value = zenarioA.formatSKItemField(value, zenarioO.focus.columns[c]);
+	if (zenarioO.tuix.columns[c].format || zenarioO.tuix.columns[c].empty_value) {
+		value = zenarioA.formatSKItemField(value, zenarioO.tuix.columns[c]);
 	}
 	
 	
 	var applyLengthLimit =
-		zenarioO.focus.columns[c].length_limit
-	 && value.length > zenarioO.focus.columns[c].length_limit;
+		zenarioO.tuix.columns[c].length_limit
+	 && value.length > zenarioO.tuix.columns[c].length_limit;
 	
 	if (dontHTMLEscape) {
 		if (applyLengthLimit) {
-			return value.substr(0, zenarioO.focus.columns[c].length_limit) + '...';
+			return value.substr(0, zenarioO.tuix.columns[c].length_limit) + '...';
 		} else {
 			return value;
 		}
@@ -4720,7 +4477,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 	} else {
 		if (applyLengthLimit) {
 			return '<span class="tooltip" title="' + htmlspecialchars(value) + '">' +
-						htmlspecialchars(value.substr(0, zenarioO.focus.columns[c].length_limit)) +
+						htmlspecialchars(value.substr(0, zenarioO.tuix.columns[c].length_limit)) +
 					'...</span>';
 		
 		} else {
@@ -4730,8 +4487,8 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 };
 
 zenarioO.rowCssClass = function(i) {
-	if (zenarioO.focus.items[i] && zenarioO.focus.items[i].row_css_class) {
-		return ' ' + zenarioO.focus.items[i].row_css_class;
+	if (zenarioO.tuix.items[i] && zenarioO.tuix.items[i].row_css_class) {
+		return ' ' + zenarioO.tuix.items[i].row_css_class;
 	} else {
 		return '';
 	}
@@ -4740,15 +4497,15 @@ zenarioO.rowCssClass = function(i) {
 zenarioO.columnCssClass = function(c, i) {
 	var html = '';
 	
-	if (zenarioO.focus.columns[c] && zenarioO.focus.columns[c]['css_class']) {
-		html += ' ' + zenarioO.focus.columns[c]['css_class'];
+	if (zenarioO.tuix.columns[c] && zenarioO.tuix.columns[c]['css_class']) {
+		html += ' ' + zenarioO.tuix.columns[c]['css_class'];
 	}
 	
 	if (i != undefined
-	 && zenarioO.focus.items[i]
-	 && zenarioO.focus.items[i].cell_css_classes
-	 && zenarioO.focus.items[i].cell_css_classes[c]) {
-		html += ' ' + zenarioO.focus.items[i].cell_css_classes[c];
+	 && zenarioO.tuix.items[i]
+	 && zenarioO.tuix.items[i].cell_css_classes
+	 && zenarioO.tuix.items[i].cell_css_classes[c]) {
+		html += ' ' + zenarioO.tuix.items[i].cell_css_classes[c];
 	}
 	
 	return html;
@@ -4760,7 +4517,7 @@ zenarioO.columnCssClass = function(c, i) {
 //	Display Functions  //
 
 //Warning: the zenarioO.setBackButton() and zenarioO.getBackButtonTitle() functions both
-//rely on the zenarioO.setTopLevelItems() function being called first!
+//rely on the zenarioO.setNavigation() function being called first!
 zenarioO.setBackButton = function() {
 	var i,
 		html = '',
@@ -4770,10 +4527,12 @@ zenarioO.setBackButton = function() {
 		};
 	
 	if (!titles || titles.length == 0) {
-		get('organizer_backButton').style.visibility = 'hidden';
+		get('organizer_branding_title').style.display = 'block';
+		get('organizer_backButton').style.display = 'none';
 	
 	} else {
-		get('organizer_backButton').style.visibility = 'visible';
+		get('organizer_branding_title').style.display = 'none';
+		get('organizer_backButton').style.display = 'block';
 		
 		foreach (titles as i) {
 			data.buttons[i] = {
@@ -4797,22 +4556,26 @@ zenarioO.getBackButtonTitle = function(times, getArray) {
 };
 
 zenarioO.getSelectedItemFromLastPanel = function(path) {
-	var i, selectedItems, selectedItem = false;
-	if (selectedItems = zenarioO.getFromLastPanel(zenarioO.branches.length-1, zenarioO.path, 'selected_items', true)) {
-		if (selectedItems = selectedItems[path]) {
-			foreach (selectedItems as var i) {
-				selectedItem = i;
-				break;
-			}
+	var id,
+		selectedItems = false;
+	
+	if ((panelInstance = zenarioO.getFromLastPanel(zenarioO.branches.length-1, zenarioO.path, 'panel_instances', true))
+	 && (panelInstance = panelInstance[path])) {
+		selectedItems = panelInstance.returnSelectedItems();
+	}
+	
+	if (selectedItems) {
+		foreach (selectedItems as id) {
+			return id;
 		}
 	}
 	
-	return selectedItem;
+	return false;
 };
 
 zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, times, getArray, stats, secondCall) {
 	
-	if (!zenarioO.focus || !zenarioO.path) {
+	if (!zenarioO.tuix || !zenarioO.path) {
 		return false;
 	}
 	
@@ -4846,7 +4609,7 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 		if (engToBoolean(zenarioO.getFromLastPanel(branchLevel, path, 'no_return'))
 			
 			//Don't allow the back button if it has been disabled using <back_link></back_link>
-		 || (branchLevel === 0 && !zenarioO.focus.back_link)
+		 || (branchLevel === 0 && !zenarioO.tuix.back_link)
 			
 			//Don't allow the back button if this is the panel for a second-level nav
 		 || ((branchLevel <= 1)
@@ -4896,7 +4659,7 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 	} else {
 		//Otherwise check to see if there is a panel naturally above the current panel and use the title from there
 		if (!secondCall && path == zenarioO.path) {
-			backLink = zenarioO.focus.back_link;
+			backLink = zenarioO.tuix.back_link;
 		} else {
 			backLink = zenarioO.followPathOnMap(path, 'back_link');
 		}
@@ -4956,8 +4719,8 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 
 
 //Warning: the zenarioO.setBackButton() and zenarioO.getBackButtonTitle() functions both
-//rely on the zenarioO.setTopLevelItems() function being called first!
-zenarioO.setTopLevelItems = function() {
+//rely on the zenarioO.setNavigation() function being called first!
+zenarioO.setNavigation = function() {
 	var i, j,
 		ti = -1,
 		selected1st,
@@ -5197,45 +4960,55 @@ zenarioO.checkButtonHidden = function(button) {
 	return false;
 };
 
-zenarioO.setButtons = function(transition) {
+zenarioO.setButtons = function() {
+	
+	var selectedItems = zenarioO.pi.returnSelectedItems();
 	zenarioO.itemsSelected = 0;
 	
-	foreach (zenarioO.selectedItems as var id) {
+	foreach (selectedItems as var id) {
 		++zenarioO.itemsSelected;
 	}
 	
-	if (!get('organizer_rightColumnOptions')) {
-		return;
-	}
+	zenarioO.pi.showButtons(
+		$('#organizer_buttons'));
 	
-	if (zenarioO.changingHierarchy) {
-		$('#organizer_rightColumnOptions').hide();
-		$('#organizer_rightColumnApplyCancel').show();
-	} else {
-		$('#organizer_rightColumnOptions').show();
-		$('#organizer_rightColumnApplyCancel').hide();
-		
-		delete zenarioO.upload;
-		delete zenarioO.uploadIsItemLevel;
-		if (zenarioO.itemsSelected) {
-			zenarioO.setItemButtons(transition);
-		} else {
-			zenarioO.setCollectionButtons(transition);
-		}
-		zenarioO.setUploads();
-		zenarioO.setChooseButton();
-	}
+	zenarioO.setChooseButton();
+	
+	//if (!get('organizer_rightColumnOptions')) {
+	//	return;
+	//}
+	//
+	//if (zenarioO.changingHierarchy) {
+	//	$('#organizer_rightColumnOptions').hide();
+	//	$('#organizer_rightColumnApplyCancel').show();
+	//} else {
+	//	$('#organizer_rightColumnOptions').show();
+	//	$('#organizer_rightColumnApplyCancel').hide();
+	//	
+	//	delete zenarioO.upload;
+	//	delete zenarioO.uploadIsItemLevel;
+	//	if (zenarioO.itemsSelected) {
+	//		zenarioO.setItemButtons(transition);
+	//	} else {
+	//		zenarioO.setCollectionButtons(transition);
+	//	}
+	//	zenarioO.setUploads();
+	//	zenarioO.setChooseButton();
+	//}
 };
 
-zenarioO.setQuickFilters = function() {
+//This should be documented as an API function!
+zenarioO.getQuickFilters = function() {
 	
 	var bi = -1,
+		button,
 		buttons = [],
-		buttonsPos = {};
+		buttonsPos = {},
+		i, itemNo,
+		pi, parentButton, parentId;
 	
-	foreach (zenarioO.sortedQuickFilterButtons as var itemNo) {
-		var i = zenarioO.sortedQuickFilterButtons[itemNo],
-			button = zenarioO.focus.quick_filter_buttons[i];
+	foreach (zenarioO.sortedQuickFilterButtons as itemNo => i) {
+		button = zenarioO.tuix.quick_filter_buttons[i];
 		
 		//Check if this button is hidden
 		if (zenarioO.checkButtonHidden(button)) {
@@ -5245,9 +5018,9 @@ zenarioO.setQuickFilters = function() {
 		
 		buttons[++bi] = {
 				id: i,
+				tuix: button,
 				css_class: ifNull(button.css_class, '', ''),
-				label: button.label,
-				parent: button.parent
+				label: button.label
 			};
 		buttonsPos[i] = bi;
 		
@@ -5259,50 +5032,60 @@ zenarioO.setQuickFilters = function() {
 	}
 	
 	//Add parent/child relationships
-	var parent;
-	foreach (buttonsPos as var i) {
-		if (parent = zenarioO.focus.quick_filter_buttons[i].parent) {
-			if ((bi = buttonsPos[parent]) !== undefined) {
-				if (!buttons[bi].children) {
-					buttons[bi].children = [];
-					buttons[bi].css_class += ' organiser_button_with_children';
+	foreach (buttons as bi => button) {
+		if (parentId = button.tuix.parent) {
+			pi = buttonsPos[parentId];
+			
+			if (parentButton = buttons[pi]) {
+				
+				if (!parentButton.children) {
+					parentButton.children = [];
+					parentButton.css_class += ' organiser_button_with_children';
 				}
 				
-				if (buttons[buttonsPos[i]].enabled
-				 && !engToBoolean(buttons[buttonsPos[i]].remove_filter)) {
-					buttons[bi].childEnabled = true;
+				if (button.enabled
+				 && !engToBoolean(parentButton.remove_filter)) {
+					parentButton.childEnabled = true;
 				}
 				
-				buttons[bi].children.push(buttons[buttonsPos[i]]);
+				parentButton.children.push(button);
 			}
 		}
 	}
+	
+	//Remove children from the top-level buttons
 	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		if (zenarioO.focus.quick_filter_buttons[buttons[bi].id].parent) {
+		button = buttons[bi];
+		if (button.tuix.parent || (engToBoolean(button.tuix.hide_when_children_are_not_visible) && !button.children)) {
 			buttons.splice(bi, 1);
 		}
 	}
 	
-	if (buttons.length) {
-		$('#organizer_quickFilter').show().html(zenarioA.microTemplate('zenario_organizer_quick_filter_button', buttons));
-		zenarioA.tooltips('#organizer_quickFilter');
-		zenarioA.tooltips('#organizer_quickFilter ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-		
-	} else {
-		$('#organizer_quickFilter').hide().html('');
-	}
+	return buttons;
+	
+	//if (buttons.length) {
+	//	$('#organizer_quickFilter').show().html(zenarioA.microTemplate('zenario_organizer_quick_filter_button', buttons));
+	//	zenarioA.tooltips('#organizer_quickFilter');
+	//	zenarioA.tooltips('#organizer_quickFilter ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
+	//	
+	//} else {
+	//	$('#organizer_quickFilter').hide().html('');
+	//}
 };
 
-zenarioO.setCollectionButtons = function(transition) {
+//zenarioO.setCollectionButtons = function(transition) {
+zenarioO.getCollectionButtons = function() {
 	
 	var bi = -1,
+		button,
 		buttons = [],
 		buttonsPos = {},
-		disabled;
+		disabled,
+		i, itemNo,
+		pi, parentButton, parentId;
 	
-	foreach (zenarioO.sortedCollectionButtons as var itemNo) {
-		var i = zenarioO.sortedCollectionButtons[itemNo],
-			button = zenarioO.focus.collection_buttons[i];
+	foreach (zenarioO.sortedCollectionButtons as itemNo => i) {
+		button = zenarioO.tuix.collection_buttons[i];
 		
 		//Check if this button is hidden
 		if (zenarioO.checkButtonHidden(button)) {
@@ -5319,9 +5102,9 @@ zenarioO.setCollectionButtons = function(transition) {
 		
 		buttons[++bi] = {
 				id: i,
+				tuix: button,
 				css_class: ifNull(button.css_class, 'label_without_icon'),
 				label: ifNull(button.label, button.name),
-				parent: button.parent,
 				disabled: disabled
 			};
 		buttonsPos[i] = bi;
@@ -5348,32 +5131,40 @@ zenarioO.setCollectionButtons = function(transition) {
 	}
 	
 	//Add parent/child relationships
-	var parent;
-	foreach (buttonsPos as var i) {
-		if (parent = zenarioO.focus.collection_buttons[i].parent) {
-			if ((bi = buttonsPos[parent]) !== undefined) {
-				if (!buttons[bi].children) {
-					buttons[bi].children = [];
-					buttons[bi].css_class += ' organiser_button_with_children';
+	foreach (buttons as bi => button) {
+		if (parentId = button.tuix.parent) {
+			pi = buttonsPos[parentId];
+			
+			if (parentButton = buttons[pi]) {
+				
+				if (!parentButton.children) {
+					parentButton.children = [];
+					parentButton.css_class += ' organiser_button_with_children';
 				}
-				buttons[bi].children[buttons[bi].children.length] = buttons[buttonsPos[i]];
+				
+				parentButton.children.push(button);
 			}
 		}
 	}
+	
+	//Remove children from the top-level buttons
 	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		if (zenarioO.focus.collection_buttons[buttons[bi].id].parent) {
+		button = buttons[bi];
+		if (button.tuix.parent || (engToBoolean(button.tuix.hide_when_children_are_not_visible) && !button.children)) {
 			buttons.splice(bi, 1);
 		}
 	}
 	
-	if (buttons.length) {
-		zenarioO.showCollectionButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
-		zenarioA.tooltips('#organizer_collectionToolbarButtons');
-		zenarioA.tooltips('#organizer_collectionToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-		
-	} else {
-		zenarioO.hideCollectionButtons(transition);
-	}
+	return buttons;
+	
+	//if (buttons.length) {
+	//	zenarioO.showCollectionButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
+	//	zenarioA.tooltips('#organizer_collectionToolbarButtons');
+	//	zenarioA.tooltips('#organizer_collectionToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
+	//	
+	//} else {
+	//	zenarioO.hideCollectionButtons(transition);
+	//}
 };
 
 zenarioO.buttonsPrevHTML = '';
@@ -5465,7 +5256,8 @@ zenarioO.hideItemButtons = function(transition) {
 
 
 
-zenarioO.setItemButtons = function(transition) {
+//zenarioO.setItemButtons = function(transition) {
+zenarioO.getItemButtons = function() {
 	
 	var i,
 		bi = -1,
@@ -5473,12 +5265,14 @@ zenarioO.setItemButtons = function(transition) {
 		buttons = [],
 		buttonsPos = {},
 		parent,
-		disabled;
+		disabled,
+		i, itemNo,
+		pi, parentButton, parentId,
+		selectedItems = zenarioO.pi.returnSelectedItems();
 	
 	if (zenarioO.itemsSelected > 0) {
-		foreach (zenarioO.sortedItemButtons as var itemNo) {
-			i = zenarioO.sortedItemButtons[itemNo];
-			button = zenarioO.focus.item_buttons[i];
+		foreach (zenarioO.sortedItemButtons as itemNo => i) {
+			button = zenarioO.tuix.item_buttons[i];
 			
 			//Check if this button is hidden
 			if (zenarioO.checkButtonHidden(button)) {
@@ -5501,18 +5295,18 @@ zenarioO.setItemButtons = function(transition) {
 				continue;
 			}
 			
-			if (!zenarioO.checkTraits(button, zenarioO.selectedItems)) {
+			if (!zenarioO.checkTraits(button, selectedItems)) {
 				continue;
 			}
 			
-			disabled = zenarioO.checkDisabled(button, zenarioO.selectedItems);
+			disabled = zenarioO.checkDisabled(button, selectedItems);
 			
 			
 			buttons[++bi] = {
 				id: i,
+				tuix: button,
 				css_class: ifNull(button.css_class, 'label_without_icon'),
 				label: ifNull(button.label, button.name),
-				parent: button.parent,
 				disabled: disabled
 			};
 			buttonsPos[i] = bi;
@@ -5537,7 +5331,7 @@ zenarioO.setItemButtons = function(transition) {
 				
 			} else if (button.navigation_path) {
 				var id, item;
-				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.focus.items[id]) && (item.navigation_path)) {
+				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.tuix.items[id]) && (item.navigation_path)) {
 					buttons[bi].href = '#/' + item.navigation_path;
 				} else {
 					buttons[bi].href = '#/' + button.navigation_path;
@@ -5545,7 +5339,7 @@ zenarioO.setItemButtons = function(transition) {
 			
 			} else if (button.frontend_link) {
 				var id, item;
-				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.focus.items[id]) && (item.frontend_link)) {
+				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.tuix.items[id]) && (item.frontend_link)) {
 					buttons[bi].href = zenario.addBasePath(item.frontend_link);
 				} else {
 					buttons[bi].href = zenario.addBasePath(button.frontend_link);
@@ -5553,45 +5347,47 @@ zenarioO.setItemButtons = function(transition) {
 			
 			} else {
 				buttons[bi].onclick = "zenarioO.itemButtonClick('" + jsEscape(i) + "'); return false;";
-				
-				//Try to add a HTML 5 drag-and-drop uploader
-				if (button.upload && engToBoolean(button.upload.drag_and_drop) && !zenarioO.upload) {
-					zenarioO.upload = button.upload;
-					zenarioO.uploadIsItemLevel = true;
-				}
 			}
 		}
 	}
 	
 	//Add parent/child relationships
-	foreach (buttonsPos as var i) {
-		if (parent = zenarioO.focus.item_buttons[i].parent) {
-			if ((bi = buttonsPos[parent]) !== undefined) {
-				if (!buttons[bi].children) {
-					buttons[bi].children = [];
-					buttons[bi].css_class += ' organiser_button_with_children';
+	foreach (buttons as bi => button) {
+		if (parentId = button.tuix.parent) {
+			pi = buttonsPos[parentId];
+			
+			if (parentButton = buttons[pi]) {
+				
+				if (!parentButton.children) {
+					parentButton.children = [];
+					parentButton.css_class += ' organiser_button_with_children';
 				}
-				buttons[bi].children[buttons[bi].children.length] = buttons[buttonsPos[i]];
+				
+				parentButton.children.push(button);
 			}
 		}
 	}
+	
+	//Remove children from the top-level buttons
 	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		button = zenarioO.focus.item_buttons[buttons[bi].id];
-		if (button.parent || (engToBoolean(button.hide_when_children_are_not_visible) && !buttons[bi].children)) {
+		button = buttons[bi];
+		if (button.tuix.parent || (engToBoolean(button.tuix.hide_when_children_are_not_visible) && !button.children)) {
 			buttons.splice(bi, 1);
 		}
 	}
 	
-	if (buttons.length) {
-		zenarioO.showItemButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
-		zenarioA.tooltips('#organizer_itemToolbarButtons');
-		zenarioA.tooltips('#organizer_itemToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-		
-	} else {
-		zenarioO.hideItemButtons(transition);
-	}
+	return buttons;
 	
-	zenarioO.setWrapperClass('multiple_items_selected', zenarioO.itemsSelected > 1);
+	//if (buttons.length) {
+	//	zenarioO.showItemButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
+	//	zenarioA.tooltips('#organizer_itemToolbarButtons');
+	//	zenarioA.tooltips('#organizer_itemToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
+	//	
+	//} else {
+	//	zenarioO.hideItemButtons(transition);
+	//}
+	//
+	//zenarioO.setWrapperClass('multiple_items_selected', zenarioO.itemsSelected > 1);
 };
 
 //Check to see whether a button should be disabled
@@ -5612,7 +5408,7 @@ zenarioO.checkDisabled = function(button, items) {
 	//properties should be visible
 	if (items && button.disabled_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.disabled_if_for_any_selected_items, button, zenarioO.focus.items[id], id)) {
+			if (zenarioA.eval(button.disabled_if_for_any_selected_items, button, zenarioO.tuix.items[id], id)) {
 				return true;
 			}
 		}
@@ -5620,7 +5416,7 @@ zenarioO.checkDisabled = function(button, items) {
 	
 	if (items && button.disabled_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, button, zenarioO.focus.items[id], id)) {
+			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, button, zenarioO.tuix.items[id], id)) {
 				return false;
 			}
 		}
@@ -5645,7 +5441,7 @@ zenarioO.checkTraits = function(button, items) {
 	//properties should be visible
 	if (button.visible_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			if (!zenarioA.eval(button.visible_if_for_all_selected_items, button, zenarioO.focus.items[id], id)) {
+			if (!zenarioA.eval(button.visible_if_for_all_selected_items, button, zenarioO.tuix.items[id], id)) {
 				return false;
 			}
 		}
@@ -5654,7 +5450,7 @@ zenarioO.checkTraits = function(button, items) {
 	met = false;
 	if (button.visible_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.visible_if_for_any_selected_items, button, zenarioO.focus.items[id], id)) {
+			if (zenarioA.eval(button.visible_if_for_any_selected_items, button, zenarioO.tuix.items[id], id)) {
 				met = true;
 				break;
 			}
@@ -5667,29 +5463,29 @@ zenarioO.checkTraits = function(button, items) {
 	
 	
 	//Old deprecated traits logic
-	//Check if ths button requires a trait or a column to be set, or not to be set, in order to be shown.
+	//Check if that button requires a trait or a column to be set, or not to be set, in order to be shown.
 	//Note that traits use an engToBoolean() check but columns just use a normal boolean check.
 	//(i.e. 'No' or 'False' as strings would be true).
 	met = true;
 	var checks = {
 			traits: {
 				condition: function(id, trait) {
-					return zenarioO.focus.items[id].traits && engToBoolean(zenarioO.focus.items[id].traits[trait]); 
+					return zenarioO.tuix.items[id].traits && engToBoolean(zenarioO.tuix.items[id].traits[trait]); 
 				}
 			},
 			without_traits: {
 				condition: function(id, trait) {
-					return !zenarioO.focus.items[id].traits || !engToBoolean(zenarioO.focus.items[id].traits[trait]);
+					return !zenarioO.tuix.items[id].traits || !engToBoolean(zenarioO.tuix.items[id].traits[trait]);
 				}
 			},
 			with_columns_set: {
 				condition: function(id, column) {
-					return engToBoolean(zenarioO.focus.items[id][column]);
+					return engToBoolean(zenarioO.tuix.items[id][column]);
 				}
 			},
 			without_columns_set: {
 				condition: function(id, column) {
-					return !engToBoolean(zenarioO.focus.items[id][column]);
+					return !engToBoolean(zenarioO.tuix.items[id][column]);
 				}
 			}
 		};
@@ -5750,17 +5546,17 @@ zenarioO.checkItemPickable = function(id) {
 };
 
 
-zenarioO.setInlineButtons = function(id) {
+zenarioO.getInlineButtons = function(id) {
 	
 	var bi = -1,
 		buttons = [],
 		buttonsPos = {},
-		disabled;
+		disabled,
+		i, itemNo, ids;
 	
-	foreach (zenarioO.sortedInlineButtons as var itemNo) {
-		var i = zenarioO.sortedInlineButtons[itemNo],
-			button = zenarioO.focus.inline_buttons[i],
-			ids = {};
+	foreach (zenarioO.sortedInlineButtons as itemNo => i) {
+		button = zenarioO.tuix.inline_buttons[i],
+		ids = {};
 		ids[id] = true;
 		
 		//Check if this button is hidden
@@ -5777,9 +5573,9 @@ zenarioO.setInlineButtons = function(id) {
 		
 		buttons[++bi] = {
 			id: i,
+			tuix: button,
 			css_class: ifNull(button.css_class, 'label_without_icon'),
 			label: ifNull(button.label, button.name),
-			parent: button.parent,
 			disabled: disabled
 		};
 		buttonsPos[i] = bi;
@@ -5796,7 +5592,7 @@ zenarioO.setInlineButtons = function(id) {
 			
 		} else if (button.navigation_path) {
 			var item;
-			if ((item = zenarioO.focus.items[id]) && (item.navigation_path)) {
+			if ((item = zenarioO.tuix.items[id]) && (item.navigation_path)) {
 				buttons[bi].href = '#/' + item.navigation_path;
 			} else {
 				buttons[bi].href = '#/' + button.navigation_path;
@@ -5804,7 +5600,7 @@ zenarioO.setInlineButtons = function(id) {
 		
 		} else if (button.frontend_link) {
 			var item;
-			if ((item = zenarioO.focus.items[id]) && (item.frontend_link)) {
+			if ((item = zenarioO.tuix.items[id]) && (item.frontend_link)) {
 				buttons[bi].href = zenarioO.parseReturnLink(item.frontend_link);
 			} else {
 				buttons[bi].href = zenarioO.parseReturnLink(button.frontend_link);
@@ -5822,60 +5618,6 @@ zenarioO.setInlineButtons = function(id) {
 	}
 };
 
-zenarioO.setUploads = function(itemLevel) {
-	
-	foreach (zenarioO.sortedCollectionButtons as var itemNo) {
-		var i = zenarioO.sortedCollectionButtons[itemNo],
-			button = zenarioO.focus.collection_buttons[i];
-		
-		//Check if this button is hidden
-		if (zenarioO.checkButtonHidden(button)) {
-			continue;
-		}
-		
-		//If this is an export csv button, remember that CSV exports are available
-		if (engToBoolean(button.do_csv_export)) {
-			zenarioO.CSVExportEnabled = true;
-		}
-		
-		//Try to add a HTML 5 drag-and-drop uploader
-		if (button.upload && engToBoolean(button.upload.drag_and_drop) && !zenarioO.upload) {
-			zenarioO.upload = button.upload;
-			zenarioO.uploadIsItemLevel = false;
-		}
-	}	
-	
-	if (zenarioO.upload && zenarioA.canDoHTML5Upload()) {
-		var request = zenarioO.getKey(zenarioO.uploadIsItemLevel);
-		
-		if (zenarioO.upload.request) {
-			foreach (zenarioO.upload.request as var k) {
-				if (!zenarioO.isInfoTag(k)) {
-					request[k] = zenarioO.upload.request[k];
-				}
-			}
-		}
-		
-		request.__pluginClassName__ = zenarioO.upload.class_name;
-		request.__path__ = zenarioO.path;
-		request.method_call = 'handleOrganizerPanelAJAX';
-		
-		zenarioA.setHTML5UploadFromDragDrop(URLBasePath + 'zenario/ajax.php', request, zenarioO.selectCreatedIds, get('organizer_rightColumn'));
-		
-		$('#organizer_rightColumn').addClass('upload_enabled').removeClass('dragover');
-	
-	} else {
-		zenarioO.clearUpload();
-	}
-};
-
-zenarioO.clearUpload = function() {
-	delete zenarioO.upload;
-	delete zenarioO.uploadIsItemLevel;
-	zenarioA.clearHTML5UploadFromDragDrop();
-	$('#organizer_rightColumn').removeClass('upload_enabled').removeClass('dragover');
-};
-
 
 
 zenarioO.chooseButtonActive = function() {
@@ -5888,11 +5630,12 @@ zenarioO.setChooseButton = function() {
 	if (window.zenarioOSelectMode) {
 		var choosePhrase = ifNull(window.zenarioOChoosePhrase, phrase.choose),
 			disabled = true,
-			className = 'submit_disabled';
+			className = 'submit_disabled',
+			selectedItems = zenarioO.pi.returnSelectedItems();
 		
 		if (zenarioO.chooseButtonActive()
-		 && zenarioO.checkTraits(window.zenarioOSelectObject, zenarioO.selectedItems)
-		 && !zenarioO.checkDisabled(window.zenarioOSelectObject, zenarioO.selectedItems)
+		 && zenarioO.checkTraits(window.zenarioOSelectObject, selectedItems)
+		 && !zenarioO.checkDisabled(window.zenarioOSelectObject, selectedItems)
 		 && (zenarioO.itemsSelected > 0 || window.zenarioOAllowNoSelection)
 		 && (zenarioO.itemsSelected <= 1 || window.zenarioOMultipleSelect)) {
 			disabled = false;
@@ -5917,157 +5660,33 @@ zenarioO.setChooseButton = function() {
 	}
 };
 
+zenarioO.getCurrentPage = function() {
+	return zenarioO.page;
+};
 
-zenarioO.setPages = function() {
-	
-	if (!zenarioO.page) {
-		return;
-	}
-	
-	if (zenarioO.searchMatches !== undefined) {
+zenarioO.getPageCount = function() {
+	if (zenarioO.thisPageSize
+	 && zenarioO.searchMatches !== undefined) {
 		zenarioO.pageCount = Math.ceil(zenarioO.searchMatches / zenarioO.thisPageSize);
 	} else {
 		zenarioO.pageCount = 1;
 	}
 	
-	get('organizer_pagePrev').style.display =
-	get('organizer_pageNext').style.display =
-	get('organizer_pagePrevOff').style.display =
-	get('organizer_pageNextOff').style.display = 'none';
-	
-	if (zenarioO.pageCount == 1) {
-		get('organizer_pages').innerHTML = '';
-	} else {
-		if (zenarioO.page > 1) {
-			get('organizer_pagePrev').style.display = '';
-		} else {
-			get('organizer_pagePrevOff').style.display = '';
-		}
-		
-		if (zenarioO.page < zenarioO.pageCount) {
-			get('organizer_pageNext').style.display = '';
-		} else {
-			get('organizer_pageNextOff').style.display = '';
-		}
-		
-		
-		var positions1 = [
-				-999999,
-				-100000, -70000, -40000, -20000,
-				-10000, -7000, -4000, -2000,
-				-1000, -700, -400, -200,
-				-100, -70, -40, -20,
-				-10, -7, -4, -3, -2,
-				-1, 0,
-				1, 2, 3, 4, 7,
-				10, 20, 40, 70,
-				100, 200, 400, 700,
-				1000, 2000, 4000, 7000,
-				10000, 20000, 40000, 70000,
-				100000,
-				999999
-			],
-			positions2 = {};
-		
-		//Check if each is there, and include it if so
-		foreach (positions1 as var i) {
-			var rel = positions1[i];
-			
-			//Check if the set position is out of range, and replace it with the first/last page in range if needed
-			var pos = zenarioO.page - 1 + rel;
-			if (pos < 0) {
-				pos = 0;
-			} else if (pos >= zenarioO.pageCount) {
-				pos = zenarioO.pageCount-1;
-			} else {
-				//Otherwise if the numbers are in range then round numbers, depending on how far away they are from the current page
-				for (var round = 100000; round > 1; round /= 10) {
-					if (rel < -round || round < rel) {
-						pos = pos - ((zenarioO.page - 1) % round) - 1;
-						break;
-					}
-				}
-				
-				if (pos < 0) {
-					pos = 0;
-				} else if (pos >= zenarioO.pageCount) {
-					pos = zenarioO.pageCount-1;
-				}
-			}
-			
-			positions2[1*pos + 1] = true;
-		}
-		
-		//Count how long the string is
-		var len = '';
-		foreach (positions2 as var p) {
-			len += (len? ' ' : '') + p;
-		}
-		len = len.length;
-		
-		//Work out how much room for page numbers we have
-		var html = '',
-			max = Math.floor(($('#organizer_itemCountWrap').width() - $('#organizer_before_pages').width() - $('#organizer_after_pages').width()) / 10);
-		
-		//If there is barely any room, don't show pagination and just use the forward/back buttons
-		max -= (' ' + zenarioO.page).length;
-		max -= (' ' + zenarioO.pageCount).length;
-		if (max > 0) {
-			
-			//If the pagination is too long, start cutting page numbers to fit it in
-			len -= (' ' + zenarioO.page).length;
-			len -= (' ' + zenarioO.pageCount).length;
-			if (len > max) {
-				
-				var quota = max;
-				foreach (positions2 as var p) {
-					if (p != 1 && p != zenarioO.page && p != zenarioO.pageCount) {
-						if (quota > max) {
-							delete positions2[p];
-						}
-						quota = (quota + max) % len;
-					}
-				}
-			}
-			
-			//Draw all of the chosen page numbers
-			foreach (positions2 as var p) {
-				html += '<a class="' + (p == zenarioO.page? 'currentPage' : 'page') + '" onclick="zenarioO.goToPage(' + p + ');">' + p + '</a> ';
-			}
-		}
-		
-		get('organizer_pages').innerHTML = html;
-	}
+	return zenarioO.pageCount;
 };
 
-
-zenarioO.getPanelTitle = function() {
-	var title = zenarioO.focus.title;
-	
-	if (window.zenarioOSelectMode && (zenarioO.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
-		if (window.zenarioOMultipleSelect && zenarioO.focus.multiple_select_mode_title) {
-			title = zenarioO.focus.multiple_select_mode_title;
-		} else if (zenarioO.focus.select_mode_title) {
-			title = zenarioO.focus.select_mode_title;
-		}
-	}
-	
-	return title;
-};
 
 zenarioO.setPanelTitle = function() {
-	if (zenarioO.focus && get('organizer_rightColumnTitle')) {
+	if (zenarioO.pi
+	 && zenarioO.tuix
+	 && get('organizer_rightColumnTitle')) {
 		get('organizer_rightColumnTitle').style.display = '';
 		
-		var title = zenarioO.getPanelTitle();
+		var title = zenarioO.pi.returnPanelTitle();
 		
-		if (zenarioO.filteredView) {
-			title += phrase.refined;
-		}
-		
-		if (zenarioO.focus.item && zenarioO.focus.item.css_class) {
+		if (zenarioO.tuix.item && zenarioO.tuix.item.css_class) {
 			get('organizer_panelTitle').innerHTML =
-				'<div class="listicon ' + zenarioO.focus.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
+				'<div class="listicon ' + zenarioO.tuix.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
 		} else {
 			get('organizer_panelTitle').innerHTML = htmlspecialchars(title);
 		}
@@ -6087,12 +5706,12 @@ zenarioO.setPanelTitle = function() {
 
 
 zenarioO.setTrash = function () {
-	if (!window.zenarioOSelectMode && zenarioO.focus && zenarioO.focus.trash) {
+	if (!window.zenarioOSelectMode && zenarioO.tuix && zenarioO.tuix.trash) {
 		get('organizer_trash_button').style.display = '';
 		get('organizer_trash_button').className =
-			engToBoolean(zenarioO.focus.trash.empty)?
-				ifNull(zenarioO.focus.trash.empty_css_class, 'trash_button_empty')
-			 :	ifNull(zenarioO.focus.trash.full_css_class, 'trash_button_full');
+			engToBoolean(zenarioO.tuix.trash.empty)?
+				ifNull(zenarioO.tuix.trash.empty_css_class, 'trash_button_empty')
+			 :	ifNull(zenarioO.tuix.trash.full_css_class, 'trash_button_full');
 		
 		zenarioA.tooltips('#organizer_trash_button a', {
 			position: {
@@ -6103,9 +5722,9 @@ zenarioO.setTrash = function () {
 			},
 			items: '*',
 			content:
-				engToBoolean(zenarioO.focus.trash.empty)?
-					ifNull(zenarioO.focus.trash.empty_tooltip, phrase.viewTrash)
-				 :	ifNull(zenarioO.focus.trash.full_tooltip, phrase.viewTrash)
+				engToBoolean(zenarioO.tuix.trash.empty)?
+					ifNull(zenarioO.tuix.trash.empty_tooltip, phrase.viewTrash)
+				 :	ifNull(zenarioO.tuix.trash.full_tooltip, phrase.viewTrash)
 		});
 		
 	} else {
@@ -6113,13 +5732,10 @@ zenarioO.setTrash = function () {
 	}
 };
 
-zenarioO.setPanelItems = function() {
-	if (!get('organizer_rightColumnContent')) {
-		return;
-	}
+//zenarioO.setPanelItems = function() {
+zenarioO.getPanelItems = function(useLargerThumbnails) {
 	
-	var html = '',
-		itemsExist = false,
+	var itemsExist = false,
 		c, colNo,
 		ci = -1,
 		ii = -1,
@@ -6128,15 +5744,13 @@ zenarioO.setPanelItems = function() {
 		columnWidths = {},
 		numberOfInlineButtons = 0,
 		labelColumns = {},
+		selectedItems = _.clone(zenarioO.pi.returnSelectedItems()),
 		data = {
 			items: [],
-			itemsById: {},
 			columns: [],
 			totalWidth: 0,
 			maxNumberOfInlineButtons: 0,
-			allItemsSelected: zenarioO.allItemsSelected(),
-			reordering: zenarioO.reorderingUsingOldMethod? 'organizer_reordering' : '',
-			slidedown_view_microtemplate: zenarioO.focus.slidedown_view_microtemplate
+			allItemsSelected: zenarioO.allItemsSelected()
 		};
 	
 	foreach (zenarioO.sortedColumns as colNo => c) {
@@ -6158,7 +5772,7 @@ zenarioO.setPanelItems = function() {
 			 && zenarioO.prefs[zenarioO.voPath].colSizes[c]) {
 				columnWidths[c] = Math.max(zenarioO.prefs[zenarioO.voPath].colSizes[c], zenarioO.columnWidths.xxsmall);
 			} else {
-				columnWidths[c] = zenarioO.focus.columns[c].width;
+				columnWidths[c] = zenarioO.tuix.columns[c].width;
 			}
 			
 			if (columnWidths[c] && zenarioO.columnWidths[columnWidths[c]]) {
@@ -6175,13 +5789,14 @@ zenarioO.setPanelItems = function() {
 			
 			data.columns[++ci] = {
 				id: c,
+				tuix: zenarioO.tuix.columns[c],
 				htmlId: 'organizer_column__' + c,
 				css_class:
 					firstCell + (lastCol == c? 'lastcell' : '') +
 					(labelColumns[c]? ' label_column' : '') +
 					zenarioO.columnCssClass(c),
-				title: zenarioO.focus.columns[c].title,
-				tooltip: zenarioO.focus.columns[c].tooltip,
+				title: zenarioO.tuix.columns[c].title,
+				tooltip: zenarioO.tuix.columns[c].tooltip,
 				width: columnWidths[c]
 			};
 			firstCell = '';
@@ -6191,14 +5806,20 @@ zenarioO.setPanelItems = function() {
 	
 	zenarioO.shownItems = {};
 	zenarioO.shownItemsLength = 0;
-	if (zenarioO.focus.items) {
+	if (zenarioO.tuix.items) {
 		//Work out which items to display for this page,
-		var pageStop = zenarioO.page * zenarioO.thisPageSize,
+		var pageStop, pageStart;
+		if (zenarioO.thisPageSize) {
+			pageStop = zenarioO.page * zenarioO.thisPageSize,
 			pageStart = pageStop - zenarioO.thisPageSize;
-		pageStop = Math.min(pageStop, zenarioO.searchMatches);
-		
-		get('organizer_pageStart').innerHTML = pageStart + 1;
-		get('organizer_pageStop').innerHTML = pageStop;
+			pageStop = Math.min(pageStop, zenarioO.searchMatches);
+			
+			data.pageStart = pageStart + 1;
+			data.pageStop = pageStop;
+		}
+		data.page = zenarioO.page;
+		data.pageCount = zenarioO.pageCount;
+		data.itemCount = zenarioO.searchMatches;
 		
 		var firstRow = 'firstrow ';
 		foreach (zenarioO.searchedItems as var itemNo) {
@@ -6206,7 +5827,7 @@ zenarioO.setPanelItems = function() {
 				itemsExist = true;
 				var i = zenarioO.searchedItems[itemNo];
 				
-				if (!zenarioO.focus.__item_hierarchy__) {
+				if (zenarioO.thisPageSize) {
 					if (itemNo >= pageStop) {
 						break;
 					} else if (itemNo < pageStart) {
@@ -6214,46 +5835,39 @@ zenarioO.setPanelItems = function() {
 					}
 				}
 				
-				if (!zenarioO.focus.items[i]) {
+				if (!zenarioO.tuix.items[i]) {
 					continue;
-				}
-				
-				var parentId = false;
-				if (zenarioO.itemHierarchy[i]) {
-					parentId = zenarioO.itemHierarchy[i];
 				}
 				
 				data.items[++ii] = {
 					id: i,	//Using "[[id]]" in your microtemplates should both html and js escape this
-					parentId: parentId,
 					cells: [],
-					slidedown_view_open: zenarioO.inCloseUpView && i == zenarioO.itemToSelect,
-					slidedown_view_microtemplate: zenarioO.focus.slidedown_view_microtemplate,
-					grid_view_microtemplate: zenarioO.focus.grid_view_microtemplate,
-					canDoubleClick: !!zenarioO.itemDoubleClickLink(i),
-					canDrag: zenarioO.changingHierarchyView && !engToBoolean(zenarioO.focus.items[i].disable_reorder),
+					tuix: zenarioO.tuix.items[i],
+					open_in_inspection_view: zenarioO.inspectionView && i == zenarioO.inspectionViewItem,
+					canClickThrough: !!zenarioO.itemClickThroughLink(i),
+					//canDrag: zenarioO.changingHierarchyView && !engToBoolean(zenarioO.tuix.items[i].disable_reorder),
 					label: zenarioO.applySmallSpaces($.trim(zenarioO.applyMergeFields(zenarioO.labelFormat, false, i, true))).replace(/\n/g, '<br/>'),
-					selected: !!zenarioO.selectedItems[i],
+					selected: !!selectedItems[i],
 					css_class: zenarioO.rowCssClass(i) + ' ' + firstRow
 				};
 				
 				data.items[ii].image_css_class = zenarioO.getItemCSSClass(i);
 				
-				if (zenarioO.view_mode != 'grid' && zenarioO.focus.items[i].list_image) {
+				if (!useLargerThumbnails && zenarioO.tuix.items[i].list_image) {
 					data.items[ii].image_css_class += ' organiser_item_with_image';
-					data.items[ii].image = zenario.addBasePath(zenarioO.focus.items[i].list_image);
+					data.items[ii].image = zenario.addBasePath(zenarioO.tuix.items[i].list_image);
 				
-				} else if (zenarioO.view_mode == 'grid' && zenarioO.focus.items[i].image) {
+				} else if (useLargerThumbnails && zenarioO.tuix.items[i].image) {
 					data.items[ii].image_css_class += ' organiser_item_with_image';
-					data.items[ii].image = zenario.addBasePath(zenarioO.focus.items[i].image);
+					data.items[ii].image = zenario.addBasePath(zenarioO.tuix.items[i].image);
 				}
 				
-				data.items[ii].tooltip = zenarioO.focus.items[i].tooltip;
-				if (!data.items[ii].tooltip && zenarioO.focus.item) {
-					if (zenarioO.focus.item.tooltip_when_link_is_active && zenarioO.itemDoubleClickLink(i)) {
-						data.items[ii].tooltip = zenarioO.applyMergeFields(zenarioO.focus.item.tooltip_when_link_is_active, true, i);
-					} else if (zenarioO.focus.item.tooltip) {
-						data.items[ii].tooltip = zenarioO.applyMergeFields(zenarioO.focus.item.tooltip, true, i);
+				data.items[ii].tooltip = zenarioO.tuix.items[i].tooltip;
+				if (!data.items[ii].tooltip && zenarioO.tuix.item) {
+					if (zenarioO.tuix.item.tooltip_when_link_is_active && zenarioO.itemClickThroughLink(i)) {
+						data.items[ii].tooltip = zenarioO.applyMergeFields(zenarioO.tuix.item.tooltip_when_link_is_active, true, i);
+					} else if (zenarioO.tuix.item.tooltip) {
+						data.items[ii].tooltip = zenarioO.applyMergeFields(zenarioO.tuix.item.tooltip, true, i);
 					}
 				}
 				
@@ -6276,7 +5890,7 @@ zenarioO.setPanelItems = function() {
 							css_class:
 								'organizer_column__' + c + '__cell ' +
 								firstRow + firstCell + (lastCol == c? 'lastcell' : '') +
-								(engToBoolean(zenarioO.focus.columns[c].align_right)? ' right' : '') +
+								(engToBoolean(zenarioO.tuix.columns[c].align_right)? ' right' : '') +
 								(labelColumns[c]? ' label_column' : '') + 
 								zenarioO.columnCssClass(c, i),
 							value: value,
@@ -6290,15 +5904,13 @@ zenarioO.setPanelItems = function() {
 				}
 				
 				
-				data.items[ii].inline_buttons = zenarioO.setInlineButtons(i);
+				data.items[ii].inline_buttons = zenarioO.getInlineButtons(i);
 				
 				if (data.items[ii].inline_buttons
 				 && (numberOfInlineButtons = data.items[ii].inline_buttons.length)
 				 && (numberOfInlineButtons > data.maxNumberOfInlineButtons)) {
 					data.maxNumberOfInlineButtons = numberOfInlineButtons;
 				}
-				
-				data.itemsById[i] = data.items[ii];
 				
 				firstRow = '';
 				zenarioO.shownItems[i] = true;
@@ -6311,476 +5923,37 @@ zenarioO.setPanelItems = function() {
 		}
 	}
 	
-	foreach (zenarioO.selectedItems as var i) {
+	foreach (selectedItems as var i) {
 		//Remove any items that have disappeared from view
 		if (!zenarioO.shownItems[i]) {
-			delete zenarioO.selectedItems[i];
+			delete selectedItems[i];
 		}
 	}
+	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
 	
 	
 	if (!itemsExist) {
 		//Display a message if there were no items to display
 		if (zenarioO.filteredView) {
-			data.no_items_message = zenarioO.focus.no_items_in_search_message? zenarioO.focus.no_items_in_search_message : phrase.noItemsInSearch;
+			data.no_items_message = zenarioO.tuix.no_items_in_search_message? zenarioO.tuix.no_items_in_search_message : phrase.noItemsInSearch;
 		} else {
-			data.no_items_message = zenarioO.focus.no_items_message? zenarioO.focus.no_items_message : phrase.noItems;
+			data.no_items_message = zenarioO.tuix.no_items_message? zenarioO.tuix.no_items_message : phrase.noItems;
 		}
 	}
 	
-	if (zenarioO.view_mode == 'grid') {
-		html = zenarioA.microTemplate('zenario_organizer_grid', data);
-		
-	} else if (zenarioO.view_mode == 'hierarchy') {
-		html = zenarioA.microTemplate('zenario_organizer_hierarchy', data);
-		
-	} else {
-		html = zenarioA.microTemplate('zenario_organizer_list', data);
-	}
+	return data;
 	
 	
-	get('organizer_rightColumnContent').innerHTML = html;
-	get('organizer_rightColumnContent').className = zenarioO.view_mode + '_view';
-	
-	if (zenarioO.view_mode == 'hierarchy') {
-		var id,
-			progress = true,
-			parentIdsToOpen = {},
-			$li,
-			$dd = $('#organizer_rightColumnContent .dd'),
-			maxDepth = 99;
-		
-		if (zenarioO.focus.reorder
-		 && zenarioO.focus.reorder.hierarchy_depth) {
-			maxDepth = zenarioO.focus.reorder.hierarchy_depth;
-		}
-		
-		$dd.nestable({
-			maxDepth: maxDepth
-		});
-		
-		//If there was a search term, show all of the matches
-		if (zenarioO.searchTerm === undefined) {
-			//If there was no search term, start with everything closed
-			$dd.nestable('collapseAll');
-			
-			//If this is a first load and opened up with an item, open it initially
-			if (zenarioO.focus.__open_item_in_hierarchy__) {
-				parentIdsToOpen[zenarioO.focus.__open_item_in_hierarchy__] = true;
-			}
-			
-			//If this was a refresh, see what was open last time and make sure it is open this time
-			if (zenarioO.openItemsInHierarchy) {
-				foreach (zenarioO.openItemsInHierarchy as id) {
-					parentIdsToOpen[id] = true;
-				}
-			}
-			
-			//If an item is selected, expand to it
-			foreach (zenarioO.selectedItems as id) {
-				if (zenarioO.itemHierarchy[id]) {
-					parentIdsToOpen[zenarioO.itemHierarchy[id]] = true;
-				}
-			}
-			//Also expand any of their parents, and their parents parents, and so on...
-			while (progress) {
-				progress = false;
-				foreach (parentIdsToOpen as id) {
-					if (zenarioO.itemHierarchy[id]
-					 && !parentIdsToOpen[zenarioO.itemHierarchy[id]]) {
-						parentIdsToOpen[zenarioO.itemHierarchy[id]] = true;
-						progress = true;
-					}
-				}
-			}
-			foreach (parentIdsToOpen as id) {
-				$li = $(get('organizer_item_' + id)).parent();
-				if ($li.length) {
-					$dd.nestable('expandItem', $li);
-				}
-			}
-		}
-		
-		if (zenarioO.changingHierarchyView) {
-			
-			var scanNewHier = function(doSave) {
-				var newHierArray = $dd.nestable('serialize_zenario_modified_version'),
-					id,
-					parentId,
-					ordinal,
-					changesMade = false,
-					changes = {},
-					newHier = {};
-				
-				//Loop through the levels of the new hierarchy (which will be structured as parentId -> id)
-				foreach (newHierArray as parentId) {
-					var changesThisLevel = false,
-						ordinalsNotNormalised = false,
-						length = newHierArray[parentId].length;
-					
-					//Loop through each item on this level, in the order they are in
-					for (ordinal = 0; ordinal < length; ++ordinal) {
-						id = newHierArray[parentId][ordinal];
-						newHier[id] = parentId;
-						
-						if (!zenarioO.reorderingUsingNewMethod) {
-							//If we're not reordering, only flag a change if we see an item with a new parent id
-							if (parentId != (zenarioO.itemHierarchy[id] !== undefined? zenarioO.itemHierarchy[id] : 0)) {
-								changes[id] = {parentId: parentId};
-								changesMade = changesThisLevel = true;
-							}
-						} else {
-							//If we're reordering as well, mark anything that's not in exactly its original place as a change
-							if (!zenarioO.itemHierarchyArray
-							 || !zenarioO.itemHierarchyArray[parentId]
-							 || zenarioO.itemHierarchyArray[parentId][ordinal] === undefined
-							 || zenarioO.itemHierarchyArray[parentId][ordinal] != id) {
-								changes[id] = {parentId: parentId, ordinal: ordinal + 1};
-								changesMade = changesThisLevel = true;
-							}
-						}
-					}
-					
-					if (zenarioO.reorderingUsingNewMethod && changesThisLevel) {
-						//If we're reordering, and there were changes, check all unchanged items on this level
-						//to see if all of their ordinals are normalised
-						for (ordinal = 0; ordinal < length; ++ordinal) {
-							id = newHierArray[parentId][ordinal];
-							if (!changes[id] && (ordinal + 1 != zenarioO.focus.items[id][zenarioO.focus.reorder.column])) {
-								ordinalsNotNormalised = true;
-								break;
-							}
-						}
-						
-						//If not, mark everything on this level as changed and normalise all of the ordinals
-						if (ordinalsNotNormalised) {
-							for (ordinal = 0; ordinal < length; ++ordinal) {
-								id = newHierArray[parentId][ordinal];
-								changes[id] = {parentId: parentId, ordinal: ordinal + 1};
-							}
-						}
-					}
-				}
-				
-				if (!doSave) {
-					return changesMade;
-				
-				} else if (changesMade) {
-					//Send an AJAX request to update the parent ids/ordinals
-					var actionRequests = zenarioO.getKey(),
-						saves = '';
-					
-					actionRequests.hierarchy = true;
-						
-					foreach (changes as id) {
-						saves += (saves? ',' : '') + id;
-						actionRequests['parent_id__' + id] = changes[id].parentId;
-						
-						if (zenarioO.reorderingUsingNewMethod) {
-							actionRequests.reorder = true;
-							actionRequests['ordinal__' + id] = changes[id].ordinal;
-							
-							//Backwards compatability
-							actionRequests['item__' + id] = changes[id].ordinal;
-							
-							//Update the current data
-							zenarioO.focus.items[id][zenarioO.focus.reorder.column] = changes[id].ordinal
-						}
-					}
-					actionRequests.id = saves;
-					
-					//Send these results via AJAX
-					var actionTarget =
-						'zenario/ajax.php?' +
-							'__pluginClassName__=' + zenarioO.focus.class_name +
-							'&__path__=' + zenarioO.path +
-							'&method_call=handleOrganizerPanelAJAX';
-					
-					//Clear the local storage, as there have probably just been changes
-					delete zenario.rev;
-					
-					//Save the data
-					var message = zenario.nonAsyncAJAX(
-						URLBasePath + actionTarget,
-						actionRequests
-					);
-					
-					if (message) {
-						zenarioA.showMessage(message);
-					}
-					zenarioO.refresh();
-				}
-			};
-			
-			$dd.on('change', function() {
-				if (zenarioO.changingHierarchy = scanNewHier(false)) {
-					$('#organizer_applyButton')
-						.unbind()
-						.click(function() {
-							scanNewHier(true);
-						});
-				}
-				zenarioO.setWrapperClass('changing_hierarchy', zenarioO.changingHierarchy);
-				zenarioO.setButtons();
-			});
-		
-		}
-		
-		$dd.on('collapseItem', function() {
-			var changes = false;
-			zenarioO.openItemsInHierarchy = {};
-		
-			$('.organizer_row[data-id]:visible').each(function(i, el) {
-				zenarioO.openItemsInHierarchy[$(el).data('id')] = true;
-			});
-			
-			//Check to see if any selected items were just hidden
-			//If so, we need to deselect them
-			foreach (zenarioO.selectedItems as var itemId) {
-				if (zenarioO.selectedItems.hasOwnProperty(itemId)) {
-					if (!zenarioO.openItemsInHierarchy[itemId]) {
-						delete zenarioO.selectedItems[itemId];
-						changes = true;
-					}
-				}
-			}
-			
-			if (changes) {
-				zenarioO.setButtons(true);
-				zenarioO.saveSelection();
-			}
-		});
-			
-		$dd.on('expandItem', function() {
-			/*zenarioO.openItemsInHierarchy = {};
-		
-			$('.organizer_row[data-id]:visible').each(function(i, el) {
-				zenarioO.openItemsInHierarchy[$(el).data('id')] = true;
-			});*/
-			
-			if (zenarioO.focus.reorder
-			 && zenarioO.focus.reorder.lazy_load) {
-				zenario.actAfterDelayIfNotSuperseded('zenario_hierarchy_expand', function() {
-					if (zenarioA.uploading || zenarioO.changingHierarchy) {
-						return false;
-					}
-					zenarioO.saveSelection();
-					zenarioO.refresh();
-				}, 1);
-			}
-		});
-	}
-	
-	//Old code - selective tooltips
-	/*
-	if (zenarioO.view_mode == 'grid') {
-		zenarioA.tooltips('#organizer_rightColumnContent div.item .organizer_image_container[title]');
-	} else {
-		zenarioA.tooltips('#organizer_rightColumnContent .listicon div[title]');
-	}
-	zenarioA.tooltips('#organizer_rightColumnContent span.tooltip[title]');
-	zenarioA.tooltips('#organizer_rightColumnContent a[title]');
-	*/
-	
-	//New code - why can't I just add tooltips wherever they might be needed?
-	zenarioA.tooltips('#organizer_rightColumnContent [title]');
-	
-	
-	var $sortAndResizeWrapper = $('#organizer_rightColumnContent .organizer_sort_and_resize_wrapper'),
-		$sortables = $('#organizer_rightColumnContent .organizer_sort_and_resize_wrapper .organizer_sortable'),
-		$resizables = $('#organizer_rightColumnContent .organizer_sort_and_resize_wrapper .organizer_resizable'),
-		sortAndResizeable$Cols = {},
-		sortableColOrigins = {},
-		sizeListViewColumns = function() {
-			var thisWidth,
-				width = $('#organizer_non_sortable_resizeable_cols').width();
-			
-			$resizables.each(function(i, el) {
-				if (thisWidth = $(el).outerWidth()) {
-					width += thisWidth;
-				}
-			});
-			
-			$('#organizer_list_view').css('min-width', width + 'px');
-			$('#organizer_list_view .organizer_row').css('min-width', width + 'px');
-		},
-		sortHandler = function(event, ui) {
-			$sortables.each(function(i, el) {
-				var id = el.id;
-				if (id) {
-					if (!sortAndResizeable$Cols[id]) {
-						sortAndResizeable$Cols[id] = $('.' + id + '__cell');
-					}
-					
-					var left = 1*$(el).position().left - sortableColOrigins[id];
-					sortAndResizeable$Cols[id].css('left', left + 'px');
-				}
-			});
-		},
-		resizeHandler = function(event, ui, save) {
-			var id = $(ui.element).attr('id');
-			if (id) {
-				if (!sortAndResizeable$Cols[id]) {
-					sortAndResizeable$Cols[id] = $('.' + id + '__cell');
-				}
-				
-				if (save) {
-					zenarioO.resizeColumn(id.replace('organizer_column__', ''), ui.element.width());
-				} else {
-					$sortAndResizeWrapper.css('width', 'auto');
-					sortAndResizeable$Cols[id].width(ui.element.width());
-					sizeListViewColumns();
-				}
-			}
-		};
-	
-	$resizables.resizable({
-		handles: 'e',
-		minWidth: zenarioO.columnWidths.xxsmall,
-		start: function(event, ui) {
-			zenarioO.resizingColumn = true;
-		},
-		resize: resizeHandler,
-		stop: function(event, ui) {
-			resizeHandler(event, ui, true);
-			setTimeout(
-				function() {
-					delete zenarioO.resizingColumn;
-				}, 50
-			);
-		}
-	});
-	
-	$sortAndResizeWrapper.sortable({
-		containment: 'parent',
-		items: '.organizer_sortable',
-		
-		start: function(event, ui) {
-			zenarioO.sortingColumn = true;
-		},
-		sort: sortHandler,
-		stop: function(event, ui) {
-			sortHandler(event, ui);
-			setTimeout(
-				function() {
-					delete zenarioO.sortingColumn;
-				}, 50
-			);
-			
-			var newOrder = $sortAndResizeWrapper.sortable('toArray');
-			
-			foreach (newOrder as var n) {
-				newOrder[n] = newOrder[n].replace('organizer_column__', '');
-			}
-			
-			zenarioO.switchColumnOrder(newOrder);
-		}
-	});
-	
-	sizeListViewColumns();
-	
-	$sortables.each(function(i, el) {
-		if (el.id) {
-			sortableColOrigins[el.id] = 1*$(el).position().left;
-		}
-	});
-};
-
-zenarioO.toggleSlidedownView = function(i, e) {
-	zenario.stop(e);
-	
-	if (zenarioO.inCloseUpView && i == zenarioO.itemToSelect) {
-		zenarioO.closeSlidedownView(i);
-	} else {
-		zenarioO.selectSingleItem(i, true);
-		zenarioO.openSlidedownView(i);
-		zenarioO.setButtons(true);
-		zenarioO.saveSelection();
-	}
-	
-	zenarioO.setHash();
-};
-
-zenarioO.openSlidedownView = function(i) {
-	if (zenarioO.inCloseUpView && zenarioO.itemToSelect) {
-		zenarioO.closeSlidedownView(zenarioO.itemToSelect);
-	}
-	
-	var $toggle = $(get('organizer_slidedown_view_toggle_' + i)),
-		$slide = $(get('organizer_slidedown_' + i));
-	
-	if (!$slide.is(':visible')) {
-		$toggle
-			.removeClass('organizer_slidedown_view_toggle_closed').addClass('organizer_slidedown_view_toggle_open');
-		
-		$slide
-			.clearQueue()
-			.removeClass('organizer_slidedown_view_closed').addClass('organizer_slidedown_view_open')
-			.html(zenarioA.microTemplate(zenarioO.focus.slidedown_view_microtemplate, {id: i}))
-			.slideDown();
-	}
-	
-	zenarioO.inCloseUpView = true;
-	zenarioO.itemToSelect = i;
-};
-
-zenarioO.closeSlidedownView = function(i) {
-	
-	if (i === undefined) {
-		if (zenarioO.inCloseUpView && zenarioO.itemToSelect) {
-			i = zenarioO.itemToSelect;
-		} else {
-			return;
-		}
-	}
-	
-	var $toggle = $(get('organizer_slidedown_view_toggle_' + i)),
-		$slide = $(get('organizer_slidedown_' + i));
-		
-	if ($slide.is(':visible')) {
-		$toggle
-			.removeClass('organizer_slidedown_view_toggle_open').addClass('organizer_slidedown_view_toggle_closed');
-		
-		$slide
-			.clearQueue()
-			.slideUp(400, function() {
-				$slide
-					.removeClass('organizer_slidedown_view_open').addClass('organizer_slidedown_view_closed')
-					.html('');
-			});
-	}
-	
-	zenarioO.inCloseUpView = false;
 };
 
 zenarioO.getItemCSSClass = function (i) {
-	if (zenarioO.focus.items[i].css_class) {
-		return zenarioO.focus.items[i].css_class;
-	} else if (zenarioO.focus.item) {
-		return zenarioO.focus.item.css_class;
+	if (zenarioO.tuix.items[i].css_class) {
+		return zenarioO.tuix.items[i].css_class;
+	} else if (zenarioO.tuix.item) {
+		return zenarioO.tuix.item.css_class;
 	} else {
 		return undefined;
 	}
-};
-
-zenarioO.setItemCount = function() {
-	var count = 0;
-	
-	if (zenarioO.searchMatches !== undefined) {
-		count = zenarioO.searchMatches;
-	}
-	
-	if (count) {
-		get('organizer_itemCount').innerHTML = htmlspecialchars(count);
-		get('organizer_itemCountWrap').style.visibility = 'visible';
-	} else {
-		zenarioO.hideItemCount();
-	}
-};
-
-zenarioO.hideItemCount = function() {
-	get('organizer_itemCount').innerHTML = '';
-	get('organizer_itemCountWrap').style.visibility = 'hidden';
 };
 
 //Send a signal to any Modules on the page to fill the lower-left of Organizer
@@ -6790,7 +5963,7 @@ zenarioO.hideItemCount = function() {
 zenarioO.fillLowerLeft = function() {
 	var i, j,
 		a2 = [],
-		a = zenario.sendSignal('fillStorekeeperLowerLeft');
+		a = zenario.sendSignal('fillOrganizerLowerLeft');
 	
 	a.push([[zenarioA.microTemplate('zenario_organizer_lower_left_column', {}), 0]]);
 	
@@ -6814,7 +5987,7 @@ zenarioO.closeSelectMode = function() {
 	zenarioO.closeInfoBox();
 	
 	if (zenarioA.storekeeperWindow) {
-		window.parent.zenarioA.closeBox('AdminOrganizer', true);
+		windowParent.zenarioA.closeBox('AdminOrganizer', true);
 		zenarioO.go(zenarioO.defaultPathInIframePreload);
 		
 		zenarioA.showAJAXLoader();
@@ -6830,12 +6003,13 @@ zenarioO.closeSelectMode = function() {
 };
 
 zenarioO.choose = function() {
+	
 	//Stop admins making choices on outdated panels
 	if (zenarioO.lastSuccessfulGoNum != zenarioO.goNum) {
 		return;
 	}
 	
-	if (window.parent
+	if (windowParent
 	 && window.zenarioOSelectMode
 	 && (zenarioO.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)
 	 && (zenarioO.itemsSelected > 0 || window.zenarioOAllowNoSelection)
@@ -6846,11 +6020,12 @@ zenarioO.choose = function() {
 		
 		var key = zenarioO.getKey(true),
 			path = zenarioO.path,
-			panel = $.extend(true, {}, zenarioO.focus),
-			row;
+			panel = $.extend(true, {}, zenarioO.tuix),
+			row,
+			selectedItems = zenarioO.pi.returnSelectedItems();
 		
 		key._items = {};
-		foreach (zenarioO.selectedItems as var i) {
+		foreach (selectedItems as var i) {
 			if (!zenarioO.isInfoTag(i)) {
 				key._items[i] = true;
 			}
@@ -6859,7 +6034,7 @@ zenarioO.choose = function() {
 			}
 		}
 		
-		if (!window.zenarioOMultipleSelect && zenarioO.selectedItems && key.id) {
+		if (!window.zenarioOMultipleSelect && key.id) {
 			row = panel.items[key.id];
 			row.__label_tag__ = zenarioO.defaultSortColumn;
 		} else {
@@ -6869,9 +6044,9 @@ zenarioO.choose = function() {
 		zenarioO.closeSelectMode();
 		
 		if (window.zenarioOMultipleSelect) {
-			window.parent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, undefined, panel);
+			windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, undefined, panel);
 		} else {
-			window.parent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, row, panel);
+			windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, row, panel);
 		}
 	}
 };
@@ -6881,26 +6056,6 @@ zenarioO.choose = function() {
 //
 //	Some specific functions
 //
-
-//Edit the settings or view the Layers on the "Slots on the Content Item"
-//These buttons needs specific requests that must be set up, and this function will add them
-zenarioO.setupSlotAdminBox = function(object, id) {
-	object = $.extend(true, {}, object);
-	
-	delete object.call_js_function;
-	object.admin_box = object.custom_admin_box;
-	
-	if (!object.admin_box.key) {
-		object.admin_box.key = {};
-	}
-	
-	object.admin_box.key.slotName = id;
-	object.admin_box.key.moduleId = zenarioO.focus.items[id].module_id;
-	object.admin_box.key.instanceId = zenarioO.focus.items[id].instance_id;
-	
-	zenarioA.action(zenarioO, object, true);
-};
-
 
 //An info box with helpful things for Module Developers
 zenarioO.infoBox = function(el) {
@@ -6967,301 +6122,6 @@ $(document).ready(zenarioO.updateYourWorkInProgress);
 
 
 
-
-/*
-
-//Code for shortcut keys in Storekeeper (currently removed and not implemented)
-
-zenarioO.onKeyDown = function(e) {
-	
-	if (!(e = (e || event))) {
-		return true;
-	}
-	
-	if (!e.keyCode || zenarioA.floatingBoxOpen || zenarioO.searchFocused) {
-		return true;
-	}
-	
-	if (zenarioAB.isOpen) {
-		if (e.keyCode == 27) {
-			zenarioAB.closeButton(true);
-			return false;
-		} else {
-			return true;
-		}
-	}
-	
-	foreach (zenarioA.boxesOpen as var n) {
-		return true;
-	}
-	
-	
-	var bclass, modifier = e.ctrlKey || e.metaKey;
-	
-	switch (e.keyCode) {
-		//escape
-		case 27:
-			zenarioO.deselectAllItems();
-			zenarioO.setButtons(true);
-			zenarioO.saveSelection();
-			return true;
-		
-		//a
-		case 65:
-			bclass = ['select_all'];
-			break;
-		
-		//c, d
-		case 67:
-		case 68:
-			if (modifier) return true;
-			bclass = ['duplicate_content'];
-			break;
-		
-		//e, f
-		case 69:
-		case 70:
-			if ($('#organizer_search_term').is(':visible')) {
-				get('organizer_search_term').focus();
-			}
-			return false;
-		
-		//g, j
-		case 71:
-		case 74:
-			if (modifier) return true;
-			if (get('organizer_viewContentStorekeeper').onclick) {
-				get('organizer_viewContentStorekeeper').onclick();
-				return false;
-			} else {
-				bclass = ['view_fancybox', 'jump_to', 'viewInstances', 'zenario_trans_view_chained'];
-			}
-			break;
-		
-		//o
-		case 79:
-			bclass = ['settings', 'rename'];
-			break;
-		
-		//r
-		case 82:
-			if (modifier) return true;
-			zenarioO.refresh();
-			return false;
-		
-		//v
-		case 86:
-			if (modifier) return true;
-			if (get('organizer_viewContentFrontend').href) {
-				zenario.goToURL(get('organizer_viewContentFrontend').href);
-				return false;
-			} else {
-				bclass = ['view_content'];
-			}
-			break;
-		
-		//Add
-		case 107:
-			if (modifier) return true;
-			bclass = ['add', 'zenario_trans_declare', 'add_to_menu', 'add_egg', 'add_tab'];
-			break;
-		
-		//delete
-		case 46:
-			bclass = ['delete', 'trash', 'suspend'];
-			break;
-		
-		//minus
-		case 109:
-			if (modifier) return true;
-			bclass = ['minus', 'zenario_trans_remove', 'suspend'];
-			break;
-		
-		//star
-		case 56:
-			if (!e.shiftKey) {
-				return true;
-			}
-		case 106:
-			bclass = ['create', 'create_multiple', 'create_image'];
-			break;
-		
-		//Backspace
-		case 8:
-			if ($('#organizer_backButton').is(':visible')) {
-				zenarioO.back();
-			}
-			return false;
-		
-		//Enter
-		case 13:
-			var id;
-			if (id = zenarioO.getKeyId()) && (id = get('organizer_item_' + id)) {
-				zenarioO.itemDoubleClick(id);
-				return false;
-			}
-			break;
-		
-		//Page Up
-		case 33:
-			zenarioO.prevPage();
-			return false;
-		
-		//Page Down
-		case 34:
-			zenarioO.nextPage();
-			return false;
-		
-		//End
-		case 35:
-			zenarioO.arrowKey(e, 'last');
-			return false;
-		
-		//Home
-		case 36:
-			zenarioO.arrowKey(e, 'first');
-			return false;
-		
-		//Left/Up
-		case 37:
-		case 38:
-			if (modifier) return true;
-			zenarioO.arrowKey(e, 'up');
-			return false;
-			break;
-		
-		//Right/Down
-		case 39:
-		case 40:
-			if (modifier) return true;
-			zenarioO.arrowKey(e, 'down');
-			return false;
-			break;
-		
-		default:
-			return true;
-	}
-	
-	zenarioO.onKeyUpFoundButton = false;
-	foreach (bclass as var b) {
-		$('.toolbar .toolbarButtons .' + bclass[b]).each(function(i, el) {
-			if (!zenarioO.onKeyUpFoundButton && $(el).is(':visible')) {
-				$(el).click();
-				zenarioO.onKeyUpFoundButton = true;
-				return false;
-			}
-		});
-	}
-	
-	return true;
-	
-	
-	
-};
-*/
-
-
-	/*
-	
-8 - backspace
-9 - tab
-224 - cmd
-18 - alt
-17 - ctrl
-16 - shift
-27 - escape
-46 - delete
-32 - space
-13 - enter
-
-33 - pageup
-34 - pagedown
-35 - end
-36 - home
-
-37 - left
-38 - up
-39 - right
-40 - down
-
-48,96 - 0
-49,97 - 1
-51,99 - 3
-57,105 - 9
-
-65 - a
-66 - b
-89 - y
-90 - z
-
-190,110 - .
-
-109 - -
-107 - +
-106 (or shift + 56) - *
-61 - =
-	
-	*/
-
-
-/*
-
-zenarioO.arrowKey = function(e, direction) {
-	
-	var previousItem = undefined,
-		itemToSelect = undefined,
-		useNextItem = false,
-		useThisItem = false,
-		itemsSelected = zenarioO.getKeyId(true);
-	
-	foreach (zenarioO.searchedItems as var itemNo) {
-		if (!zenarioO.isInfoTag(itemNo)) {
-			
-			var currentItem = zenarioO.searchedItems[itemNo];
-			if (zenarioO.shownItems && zenarioO.shownItems[currentItem]) {
-				
-				if (useThisItem) {
-					itemToSelect = currentItem;
-				}
-				
-				if (direction == 'first') {
-					itemToSelect = currentItem;
-					break;
-				
-				} else if (!itemsSelected) {
-					if (direction == 'down') {
-						itemToSelect = currentItem;
-						break;
-					}
-				
-				} else if (zenarioO.selectedItems[currentItem]) {
-					if (direction == 'down') {
-						useNextItem = true;
-					
-					} else if (direction == 'up' && previousItem !== undefined) {
-						itemToSelect = previousItem;
-						break;
-					}
-				}
-				
-				useThisItem = useNextItem;
-				useNextItem = false;
-				previousItem = currentItem;
-			}
-		}
-	}
-	
-	if (!itemToSelect && direction == 'last' && previousItem !== undefined) {
-		itemToSelect = previousItem;
-	}
-	
-	if (itemToSelect && zenarioO.scrollToItem(itemToSelect, 300)) {
-		zenarioO.itemClick(itemToSelect, e);
-	}
-};
-*/
-
-
 //Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller
 zenarioO.sizing = false;
 zenarioO.lastSize = false;
@@ -7321,7 +6181,7 @@ zenarioO.size = function(refresh) {
 				Math.floor($zenario_fbsk.height(height));
 			}
 			
-			if (!zenarioO.focus || !zenarioO.focus.banner) {
+			if (!zenarioO.tuix || !zenarioO.tuix.banner) {
 				graphicGap = 0;
 			}
 			
@@ -7374,14 +6234,13 @@ zenarioO.size = function(refresh) {
 				get('organizer_choose_button').style.display = 'none';
 			}
 			
-			zenarioO.setPages();
 			zenarioO.setPanelTitle();
 			
 			zenarioO.lastSize = width + 'x' + height;
 			
 			zenarioO.setTopLevelNavScrollStatus();
 			
-			zenarioO.adjustSlideDownViewInGridMode();
+			//zenarioO.adjustSlideDownViewInGridMode();
 		}
 	}
 	
@@ -7412,74 +6271,6 @@ zenarioO.size = function(refresh) {
 	zenarioO.sizing = setTimeout(zenarioO.size, 500);
 };
 
-//Slide-down views always need to be after a row of items.
-	//In list view, this is easy, as each item takes up one row.
-	//In grid view, we need to shuffle them around a bit depending on the number of items per row...
-zenarioO.adjustSlideDownViewInGridMode = function() {
-	
-	if (zenarioO.view_mode == 'grid' && zenarioO.focus.slidedown_view_microtemplate) {
-		var $el, numberThisRow = 0, maxInRow = 1, lastOffsetTop, offsetTop, slideDownViews = [], shownOrHidden = {};
-		
-		//Temporarily hide slide-down view if it is open
-		$('#organizer_items_wrapper > div.organizer_slidedown_view').each(function(i, el) {
-			shownOrHidden[el.id] = el.style.display;
-			el.style.display = 'none';
-		});
-		
-		//Count how many items are on each row
-		$('#organizer_items_wrapper > div.organizer_item').each(function(i, el) {
-			$el = $(el);
-			offsetTop = $el.offset().top;
-			if (lastOffsetTop !== undefined && lastOffsetTop != offsetTop) {
-				maxInRow = Math.max(maxInRow, numberThisRow);
-				numberThisRow = 1;
-			} else {
-				++numberThisRow;
-			}
-			lastOffsetTop = offsetTop;
-		});
-		maxInRow = Math.max(maxInRow, numberThisRow);
-		
-		//Detach all of the slidedowns, and save the detached slide-downs in an array
-		$('#organizer_items_wrapper > div.organizer_slidedown_view').each(function(i, el) {
-			$el = $(el);
-			el.style.display = shownOrHidden[el.id];
-			slideDownViews.push($el.detach());
-		});
-		
-		//Loop through the items
-		//When we get to the end of a row of items, add some of the slide-downs that we just detached back after that item
-		numberThisRow = 0;
-		$('#organizer_items_wrapper > div.organizer_item').each(function(i, el) {
-			$el = $(el);
-			if (++numberThisRow >= maxInRow) {
-				zenarioO.adjustSlideDownViewInGridMode2(slideDownViews, $el, maxInRow);
-				numberThisRow = 0;
-			}
-		});
-		
-		zenarioO.adjustSlideDownViewInGridMode2(slideDownViews, $el, maxInRow);
-	}
-};
-
-//Add a row of slide-downs back after a row of items
-zenarioO.adjustSlideDownViewInGridMode2 = function(slideDownViews, $lastEl, maxInRow) {
-	var i, $el;
-	for (i = 0; i < maxInRow && slideDownViews[0]; ++i) {
-		$el = slideDownViews.shift();
-		$lastEl.after($el);
-		$lastEl = $el;
-	}
-};
 
 
-
-
-	})(
-		this,
-		URLBasePath,
-		window, document,
-		zenario, zenarioA, zenarioTab, zenarioAT,
-		zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase);
-};
-
+});

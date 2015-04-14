@@ -33,17 +33,21 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
 */
 
 
-(function(
+zenario.lib(function(
+	undefined,
 	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	undefined) {
-		"use strict";
+	extensionOf, methodsOf
+) {
+	"use strict";
+
+
 
 
 zenarioA.toolbar = 'preview';
@@ -61,7 +65,9 @@ zenarioAT.init = function(firstLoad) {
 	zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
 	
 	//Check the local storage, to see if there is an in-date copy of the Admin Toolbar for this item
-	if (zenarioAT.focus = zenario.checkSessionStorage(url, zenarioAT.getKey(), true)) {
+	if (zenarioAT.tuix = zenario.checkSessionStorage(url, zenarioAT.getKey(), true)) {
+			//Backwards compatability for any old code
+			zenarioAT.focus = zenarioAT.tuix;
 		zenarioAT.init2();
 	
 	} else {
@@ -69,7 +75,9 @@ zenarioAT.init = function(firstLoad) {
 		zenarioA.keepTrying(function(attempt) {
 			$.get(zenarioAT.url, function(data) {
 				if (zenarioA.stopTrying(attempt)) {
-					if (zenarioAT.focus = zenarioA.readData(data, url, zenarioAT.getKey())) {
+					if (zenarioAT.tuix = zenarioA.readData(data, url, zenarioAT.getKey())) {
+						//Backwards compatability for any old code
+						zenarioAT.focus = zenarioAT.tuix;
 						zenarioAT.init2();
 					}
 				}
@@ -106,14 +114,14 @@ $(document).ready(function() {
 
 zenarioAT.clickTab = function(toolbar) {
 	if (zenarioA.checkForEdits()) {
-		if (zenarioAT.focus && zenarioAT.focus.toolbars && zenarioAT.focus.toolbars[toolbar]) {
+		if (zenarioAT.tuix && zenarioAT.tuix.toolbars && zenarioAT.tuix.toolbars[toolbar]) {
 			zenarioA.closeSlotControls();
 			zenarioA.cancelMovePlugin();
 			
-			zenarioAT.action(zenarioAT.focus.toolbars[toolbar]);
+			zenarioAT.action(zenarioAT.tuix.toolbars[toolbar]);
 			
-			var oldPageMode = ifNull(zenarioAT.focus.toolbars[zenarioA.toolbar]? zenarioAT.focus.toolbars[zenarioA.toolbar].page_mode : false, zenarioA.toolbar),
-				newPageMode = ifNull(zenarioAT.focus.toolbars[toolbar].page_mode, toolbar),
+			var oldPageMode = ifNull(zenarioAT.tuix.toolbars[zenarioA.toolbar]? zenarioAT.tuix.toolbars[zenarioA.toolbar].page_mode : false, zenarioA.toolbar),
+				newPageMode = ifNull(zenarioAT.tuix.toolbars[toolbar].page_mode, toolbar),
 				toolbarSubstr = toolbar.substr(0, 4);
 			
 			$('body').removeClass('zenario_pageMode_' + oldPageMode).addClass('zenario_pageMode_' + newPageMode);
@@ -202,7 +210,7 @@ zenarioAT.showGridOnOff = function(modeOn) {
 
 zenarioAT.clickButton = function(section, button) {
 	if (zenarioA.checkForEdits()) {
-		zenarioAT.action(zenarioAT.focus.sections[section].buttons[button]);
+		zenarioAT.action(zenarioAT.tuix.sections[section].buttons[button]);
 	}
 };
 
@@ -364,7 +372,7 @@ zenarioAT.draw = function() {
 	//Loop through the toolbars, adding a tab for each
 	foreach (zenarioAT.sortedToolbars as var i) {
 		var id = zenarioAT.sortedToolbars[i],
-			tab = zenarioAT.focus.toolbars[id];
+			tab = zenarioAT.tuix.toolbars[id];
 		if (!zenarioA.hidden(tab, true)) {
 			
 			toolbar.tabs[++ti] = {
@@ -383,17 +391,17 @@ zenarioAT.draw = function() {
 	}
 	
 	//Loop through each section
-	foreach (zenarioAT.focus.sections as var section) {
-		if (!zenarioAT.isInfoTag(section) && zenarioAT.focus.sections[section]) {
+	foreach (zenarioAT.tuix.sections as var section) {
+		if (!zenarioAT.isInfoTag(section) && zenarioAT.tuix.sections[section]) {
 			var bi = -1,
 				buttons = [],
 				buttonsPos = {},
 				parent;
 			
-			if (!zenarioA.hidden(zenarioAT.focus.sections[section]) && zenarioAT.sortedButtons[section]) {
+			if (!zenarioA.hidden(zenarioAT.tuix.sections[section]) && zenarioAT.sortedButtons[section]) {
 				foreach (zenarioAT.sortedButtons[section] as var buttonOrdinal) {
 					var i = zenarioAT.sortedButtons[section][buttonOrdinal],
-						button = zenarioAT.focus.sections[section].buttons[i];
+						button = zenarioAT.tuix.sections[section].buttons[i];
 					
 					if (zenarioA.hidden(button, true)) {
 						continue;
@@ -428,7 +436,7 @@ zenarioAT.draw = function() {
 				
 				//Add parent/child relationships
 				foreach (buttonsPos as var i) {
-					if (parent = zenarioAT.focus.sections[section].buttons[i].parent) {
+					if (parent = zenarioAT.tuix.sections[section].buttons[i].parent) {
 						if ((bi = buttonsPos[parent]) !== undefined) {
 							if (!buttons[bi].children) {
 								buttons[bi].children = [];
@@ -439,7 +447,7 @@ zenarioAT.draw = function() {
 					}
 				}
 				for (bi = buttons.length - 1; bi >= 0; --bi) {
-					var button = zenarioAT.focus.sections[section].buttons[buttons[bi].id];
+					var button = zenarioAT.tuix.sections[section].buttons[buttons[bi].id];
 					if (button.parent || (engToBoolean(button.hide_when_children_are_not_visible) && !buttons[bi].children)) {
 						buttons.splice(bi, 1);
 					}
@@ -482,10 +490,10 @@ zenarioAT.sort = function() {
 		//0: actual index
 		//1: The value to sort by
 	zenarioAT.sortedToolbars = [];
-	if (zenarioAT.focus.toolbars) {
-		foreach (zenarioAT.focus.toolbars as var i) {
-			if (!zenarioAT.isInfoTag(i) && zenarioAT.focus.toolbars[i]) {
-				zenarioAT.sortedToolbars.push([i, zenarioAT.focus.toolbars[i].ord]);
+	if (zenarioAT.tuix.toolbars) {
+		foreach (zenarioAT.tuix.toolbars as var i) {
+			if (!zenarioAT.isInfoTag(i) && zenarioAT.tuix.toolbars[i]) {
+				zenarioAT.sortedToolbars.push([i, zenarioAT.tuix.toolbars[i].ord]);
 			}
 		}
 	}
@@ -499,8 +507,8 @@ zenarioAT.sort = function() {
 	}
 	
 	zenarioAT.sortedButtons = {};
-	foreach (zenarioAT.focus.sections as var section) {
-		if (!zenarioAT.isInfoTag(section) && zenarioAT.focus.sections[section]) {
+	foreach (zenarioAT.tuix.sections as var section) {
+		if (!zenarioAT.isInfoTag(section) && zenarioAT.tuix.sections[section]) {
 			zenarioAT.sortButtons(section);
 		}
 	}
@@ -511,10 +519,10 @@ zenarioAT.sortButtons = function(section) {
 		//0: The item's actual index
 		//1: The value to sort by
 	zenarioAT.sortedButtons[section] = [];
-	if (zenarioAT.focus.sections[section].buttons) {
-		foreach (zenarioAT.focus.sections[section].buttons as var i) {
-			if (!zenarioAT.isInfoTag(i) && zenarioAT.focus.sections[section].buttons[i]) {
-				zenarioAT.sortedButtons[section].push([i, zenarioAT.focus.sections[section].buttons[i].ord]);
+	if (zenarioAT.tuix.sections[section].buttons) {
+		foreach (zenarioAT.tuix.sections[section].buttons as var i) {
+			if (!zenarioAT.isInfoTag(i) && zenarioAT.tuix.sections[section].buttons[i]) {
+				zenarioAT.sortedButtons[section].push([i, zenarioAT.tuix.sections[section].buttons[i].ord]);
 			}
 		}
 	}
@@ -530,8 +538,6 @@ zenarioAT.sortButtons = function(section) {
 
 
 
-})(
-	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase);
+
+
+});

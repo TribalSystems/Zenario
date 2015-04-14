@@ -78,15 +78,15 @@ switch ($path) {
 			} else {
 			
 			/* if one document has public link */
-				$fileId = getRow('documents', 'file_id', $item['id']);
+				$document = getRow('documents', array('file_id', 'filename'), $item['id']);
 				
 				$file = getRow('files', 
 								array('id', 'filename', 'path', 'created_datetime'),
-								$fileId);
-				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+								$document['file_id']);
+				if($document['filename']) {
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $document['filename'];
 					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' . $document['filename'];
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 							if(is_link($symPath)) {
 								$publicLink = true;
@@ -95,12 +95,10 @@ switch ($path) {
 							}
 					}
 				}
-			$item['traits']['public_link'] = $publicLink;
-			//change icon
-			//$item['css_class'] = 'zenario_file_link_item';
-			
-			/* */
-			
+				if (isset($publicLink) && $publicLink){
+					$item['traits']['public_link'] = $publicLink;
+				}
+				//change icon
 				$item['css_class'] = 'zenario_file_item';
 				$sql = "
 					SELECT

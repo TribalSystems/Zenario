@@ -46,6 +46,11 @@ zenario_user_admin_box_form:
                     label: 'Message:'
                     type: text
                     maxlength: 255
+                translate_text:
+                    label: 'Use the phrases system'
+                    type: checkbox
+                    side_note: |
+                        This will cause all displayable text from this form to be translated when used in a forms plugin. This should be disabled if you enter non-english text into the form field admin boxes.
         captcha:
             label: Captcha
             ord: 3

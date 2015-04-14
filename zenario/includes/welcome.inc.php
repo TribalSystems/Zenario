@@ -235,21 +235,22 @@ function getDiamondPath() {
 	return moduleDir('zenario_common_features', 'tuix/organizer/diamond.gif');
 }
 
-function listSampleSites() {
-	$sampleSites = array();
-	
-	foreach (moduleDirs('sample_installations/') as $mdir) {
-		foreach (scandir($path = CMS_ROOT. $mdir) as $dir) {
-			if (substr($dir, 0, 1) != '.'
-			 && is_file($path. $dir. '/description.txt')
-			 && is_file($path. $dir. '/backup.sql.gz')) {
-				$sampleSites[$dir] = $path. $dir. '/';
-			}
-		}
-	}
-	
-	return $sampleSites;
-}
+//Old code for sample sites, commented out as we don't currently use them
+//function listSampleSites() {
+//	$sampleSites = array();
+//	
+//	foreach (moduleDirs('sample_installations/') as $mdir) {
+//		foreach (scandir($path = CMS_ROOT. $mdir) as $dir) {
+//			if (substr($dir, 0, 1) != '.'
+//			 && is_file($path. $dir. '/description.txt')
+//			 && is_file($path. $dir. '/backup.sql.gz')) {
+//				$sampleSites[$dir] = $path. $dir. '/';
+//			}
+//		}
+//	}
+//	
+//	return $sampleSites;
+//}
 
 function listSampleThemes() {
 	$themes = array();
@@ -1044,6 +1045,13 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 				//Was the install successful?
 				if (empty($box['tabs'][7]['errors'])) {
 					
+					//Define the main email address for the remaining run of this script
+					//(This is just needed this once; the next time a script run this should
+					// be defined by the config file.)
+					if (!defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+						define('EMAIL_ADDRESS_GLOBAL_SUPPORT', $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT']);
+					}
+					
 					//Populate the Modules table with all of the Modules in the system,
 					//and install and run any Modules that should running by default.
 					addNewModules($skipIfFilesystemHasNotChanged = false, $runModulesOnInstall = true, $dbUpdateSafeMode = true);
@@ -1096,7 +1104,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					setSetting('vis_date_format_med', $merge['VIS_DATE_FORMAT_MED']);
 					setSetting('vis_date_format_long', $merge['VIS_DATE_FORMAT_LONG']);
 					setSetting('vis_date_format_datepicker', convertMySQLToJqueryDateFormat($merge['VIS_DATE_FORMAT_SHORT']));
-					setSetting('storekeeper_date_format', convertMySQLToJqueryDateFormat($merge['VIS_DATE_FORMAT_MED']));
+					setSetting('organizer_date_format', convertMySQLToJqueryDateFormat($merge['VIS_DATE_FORMAT_MED']));
 					
 					//Set a random key that is linked to the site.
 					setSetting('site_id', generateRandomSiteIdentifierKey());
@@ -1162,6 +1170,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					
 					//Update the special pages, creating new ones if needed
 					addNeededSpecialPages();
+					
+					//Set a value for the organizer_title site setting
+					setSetting('organizer_title', 'Organizer for '. primaryDomain());
 				}
 			}
 			
@@ -1249,6 +1260,9 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 						last_platform = '". sqlEscape($browser->getPlatform()). "'
 					WHERE id = ". (int) $adminIdL;
 				@sqlSelect($sql);
+				
+				// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
+				setRow('site_settings', array('value' => primaryDomain()), array('name' => 'last_primary_domain'));
 				
 				//Don't offically mark the admin as "logged in" until they've passed all of the
 				//checks in the admin login screen

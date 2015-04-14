@@ -1,0 +1,30 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Forum List
+description: |
+    <p>
+        This Module displays a list of Forums.
+    </p><p>
+        This can either be a list of every Forum on your site, or alternatively be a list of every Forum under a specific Category.
+    </p><p>
+        Forum Lists can be helpful as they let visitors to your site quickly see the most recent activity in each Forum,saving them from having to visit each Forum in turn.
+    </p>
+category: pluggable
+keywords: >
+    chat, chatroom, community, discuss, discussion, forum, list,
+    message, post, user
+vlp_class_name: zenario_forum
+css_class_name: zenario_comments
+is_pluggable: Yes
+default_framework: standard
+default_instance_name: Forum List
+dependencies:
+    zenario_forum: Yes
+    zenario_content_list: Yes
+inheritance:
+    inherit_frameworks_from_module: zenario_comments

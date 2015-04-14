@@ -295,6 +295,70 @@ switch ($path) {
 		}
 		break;
 	
+	case 'zenario_reorder_documents':
+	
+		$folderId = $box['key']['id'];
+		$radioOrderBy = $values['details/reorder'];
+		$radioSortBy =  $values['details/sort'];
+		
+		$sql = "
+				SELECT d.id
+				FROM ".DB_NAME_PREFIX."documents AS d
+				LEFT JOIN ".DB_NAME_PREFIX."files as f ON d.file_id = f.id";
+		if($radioOrderBy && $radioSortBy){
+			if ($radioOrderBy=='file_name'){
+				if ($folderId){
+					$sql.=" WHERE d.folder_id = '".sqlEscape($folderId)."'";
+				}else{
+					$sql.=" WHERE d.folder_id = 0";
+				}
+				$sql.= " ORDER BY f.filename";
+			}elseif($radioOrderBy=='uploading_date'){
+				if ($folderId){
+					$sql.=" WHERE d.folder_id = '".sqlEscape($folderId)."'";
+				}else{
+					$sql.=" WHERE d.folder_id = 0";
+				}
+				$sql.= " ORDER BY f.created_datetime";
+			}else{
+			// Custom data set
+				$sql.=' INNER JOIN '.DB_NAME_PREFIX.'documents_custom_data AS zdcd 
+					ON zdcd.document_id = d.id';
+				
+				if ($folderId){
+					$sql.=' WHERE d.folder_id = "'.sqlEscape($folderId).'"';
+				}else{
+					$sql.=" WHERE d.folder_id = 0";
+				}
+				
+				$dbColumn = getRowsArray('custom_dataset_fields',
+									'db_column',
+									array('id' => $radioOrderBy)
+									);
+				$sql.= " ORDER BY zdcd.".$dbColumn[$radioOrderBy];
+			}
+			// Sort order
+			if($radioSortBy == 'ascending'){
+					$sql .= ' ASC';
+				}elseif($radioSortBy == 'descending'){
+					$sql .= ' DESC';
+				}
+			$documentData = array();
+			$result = sqlSelect($sql);
+			while($row = sqlFetchAssoc($result)) {
+				$datasetResult[] = $row;
+			}
+			//update ordinal in the db
+			$i=1;
+			foreach ($datasetResult as $result){
+				setRow('documents', array('ordinal' => $i),array('id' => $result['id']));
+				$i++;
+			}
+		}
+		
+	
+	break;
+	
 	case 'zenario_document_tag':
 		$box['key']['id'] = 
 			setRow(
@@ -305,11 +369,11 @@ switch ($path) {
 		break;
 	
 	case 'zenario_document_properties':
-	
-		//var_dump($values['upload_image/zenario_common_feature__upload']);
-		
 		$id = (int)$box['key']['id'];
-			
+		$documentId = $box['key']['id'];
+		$documentName = trim($values['details/document_name']);
+		updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
+
 		$old_image = getRowsArray('documents',
 									'file_id',  //file_id
 									array('id' => $id)
@@ -367,7 +431,7 @@ switch ($path) {
 			// Get old document details
 			$documentData = array();
 			$sql = '
-				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id
+				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id, v.created_datetime, v.filename
 				FROM '.DB_NAME_PREFIX.'content AS c
 				INNER JOIN '.DB_NAME_PREFIX.'versions AS v
 					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
@@ -384,7 +448,9 @@ switch ($path) {
 				'ordinal' => $ordinal,
 				'type' => 'file', 
 				'file_id' => $documentData['file_id'], 
-				'folder_id' => $values['details/folder']);
+				'folder_id' => $values['details/folder'],
+				'file_datetime' => $documentData['created_datetime'],
+				'filename' => $documentData['filename']);
 			$extraProperties = self::addExtractToDocument($documentProperties['file_id']);
 			
 			$properties = array_merge($documentProperties, $extraProperties);
@@ -532,6 +598,71 @@ switch ($path) {
 			updateRow('content_types', $vals, $box['key']['id']);
 		}
 		
+		break;
+		
+		case 'zenario_document_rename':
+			$documentId = $box['key']['id'];
+			$documentName = trim($values['details/document_name']);
+			$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
+			if ($isfolder){
+				updateRow('documents', array('folder_name' => $documentName), array('id' => $documentId));
+			}else{
+				//file
+				updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
+			}
+		break;
+		
+		
+		case 'zenario_document_upload':
+	
+			$documentsUploaded = explode(',',$values['upload_document/document__upload']);
+			$currentDateTime = date("Y-m-d H:i:s");
+			foreach ($documentsUploaded  as $document) {
+				$filepath = getPathOfUploadedFileInCacheDir($document);
+				$filename = basename(getPathOfUploadedFileInCacheDir($document));
+				
+				if ($filepath && $filename) {
+					$documentId = addFileToDatabase('hierarchial_file', $filepath, $filename,false,false,true);
+					
+				
+				//avoid more than one id.
+				/*	if ($existingFile = getRow('documents', array('id'), array('file_id' => $documentId))) {
+						echo "This file has already been uploaded to the files directory!";
+						$box['key']['id'] = $documentId;
+						return;
+					}
+				*/
+				
+					$documentProperties = array(
+						'type' =>'file',
+						'file_id' => $documentId,
+						'folder_id' => 0,
+						'filename'=>$filename,
+						'file_datetime' => $currentDateTime,
+						'ordinal' => 0);
+					
+					
+					$extraProperties = self::addExtractToDocument($documentId);
+					$documentProperties = array_merge($documentProperties, $extraProperties);
+			
+					$isFolder= getRow('documents', array('id'), array('id' => $box['key']['id'],'type'=>'folder'));
+					if ($isFolder) {
+						$documentProperties['folder_id'] = $box['key']['id'];
+					}
+					
+					if ($documentId = insertRow('documents', $documentProperties)) {
+						self::processDocumentRules($documentId);
+					}
+					
+					//update on document table file document
+					//setRow('documents', array('filename' => $filename), array('id' => $documentId));
+					
+					//$box['key']['id'] = $documentId;
+					//return;
+				}
+			}
+		$box['key']['id'] = $documentId;
+		return;
 		break;
 		
 }

@@ -1,0 +1,31 @@
+required_cms_version: 7.0.4
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Currency manager
+description: |
+	<p>
+				This Module allows you to manage currencies.
+	</p>
+category: management
+keywords: currency, currencies
+vlp_class_name: zenario_currency_manager
+is_pluggable: No
+dependencies:
+	zenario_scheduled_task_manager: true
+jobs:
+	-
+		name: updateCurrencyRate
+		static: true
+		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
+		days: mon,tue,wed,thr,fri,sat,sun
+		hours: >
+			0h,4h,8h,12h,16h,20h
+		minutes: >
+			0m
+		log_on_action: Yes
+		log_on_no_action: No
+		email_on_action: No
+		email_on_no_action: No

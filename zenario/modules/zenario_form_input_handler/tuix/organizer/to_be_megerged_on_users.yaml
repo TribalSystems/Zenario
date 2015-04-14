@@ -1,0 +1,15 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    panels:
+        users:
+            item_buttons:
+                view_form_submissions:
+                    priv: _PRIV_VIEW_USER
+                    label: Form Submissions
+                    parent: view_dropdown
+                    multiple_select: No
+                    link:
+                        path: zenario__form_input_handler/form_submissions/panel
+                        branch: Yes
+                        refiner: user_filter

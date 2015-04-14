@@ -1,0 +1,165 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+	tabs:
+		first_tab:
+			label: Filter
+			fields:
+				hide_private_items:
+					label: 'Hide private Events from public view:'
+					plugin_setting:
+						name: hide_private_items
+					type: checkbox
+					value: "1"
+				language_selection:
+					label: 'Show Events only in:'
+					plugin_setting:
+						name: language_selection
+					type: radios
+					values:
+						visitor: "Visitor's Language"
+						all: All enabled Languages
+					value: visitor
+				category:
+					label: 'Show Events only from Category:'
+					plugin_setting:
+						name: category
+					pick_items:
+						path: zenario__content/panels/categories
+						min_path: zenario__content/panels/categories
+						max_path: zenario__content/panels/categories
+						target_path: zenario__content/panels/categories
+						select_phrase: Select Category...
+		calendar:
+			label: Display
+			fields:
+				view_mode:
+					label: 'View mode:'
+					plugin_setting:
+						name: view_mode
+					type: radios
+					values:
+						month_view: Show days of the month
+						year_view: Show months of the year
+					value: month_view
+					format_onchange: Yes
+				months_format:
+					label: 'Months format:'
+					plugin_setting:
+						name: months_format
+					type: radios
+					values:
+						months_short_name: Short month names
+						months_long_name: Long month names
+					value: months_short_name
+				event_count:
+					label: 'Show event count:'
+					plugin_setting:
+						name: event_count
+					type: radios
+					values:
+						event_count_on: 
+							ord: "1"
+							label: "Yes"
+						event_count_off: 
+							ord: "2"
+							label: "No"
+					value: event_count_off
+				first_day_of_week:
+					label: 'Month view day 1:'
+					plugin_setting:
+						name: first_day_of_week
+					type: select
+					values:
+						Saturday: Saturday
+						Sunday: Sunday
+						Monday: Monday
+					value: Monday
+				show_sticky_images:
+					plugin_setting:
+						name: show_sticky_images
+					label: "Show sticky image"
+					type: checkbox
+					value: ""
+					format_onchange: Yes
+					side_note: |
+						The sticky image attached to the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no sticky image exists.
+				canvas:
+					plugin_setting:
+						name: canvas
+					label: 'Image canvas:'
+					type: select
+					value: unlimited
+					values:
+						unlimited:
+							ord: "1"
+							label: Unlimited size
+						fixed_width:
+							ord: "2"
+							label: Constrain by width
+						fixed_height:
+							ord: "3"
+							label: Constrain by height
+						fixed_width_and_height:
+							ord: "4"
+							label: Constrain by width and height
+						resize_and_crop:
+							ord: "5"
+							label: Resize and crop
+					format_onchange: Yes
+				width:
+					plugin_setting:
+						name: width
+					label: 'Width:'
+					type: text
+					validation:
+						required_if_not_hidden: Please enter a width.
+						numeric: The width must be a number.
+					value: ""
+					maxlength: "5"
+					style: 'width: 5em;'
+					post_field_html: '&nbsp;pixels'
+				height:
+					plugin_setting:
+						name: height
+					label: 'Height:'
+					type: text
+					validation:
+						required_if_not_hidden: Please enter a height.
+						numeric: The height must be a number.
+					value: ""
+					maxlength: "5"
+					style: 'width: 5em;'
+					post_field_html: '&nbsp;pixels'
+		popout:
+			label: Popout
+			fields:
+				show_title:
+					label: 'Show title:'
+					plugin_setting:
+						name: show_title
+					type: checkbox
+					value: "1"
+				show_summary:
+					label: 'Show summary:'
+					plugin_setting:
+						name: show_summary
+					type: checkbox
+					value: "1"
+				date_format:
+					label: 'Date format:'
+					plugin_setting:
+						name: date_format
+					type: radios
+					values:
+						_SHORT:
+							ord: "1"
+							label: Short
+						_MEDIUM:
+							ord: "2"
+							label: Medium
+						_LONG:
+							ord: "3"
+							label: Long
+					value: _SHORT
+	module_class_name: zenario_event_calendar

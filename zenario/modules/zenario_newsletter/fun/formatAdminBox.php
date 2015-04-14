@@ -106,6 +106,9 @@ switch ($path) {
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = true;
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['message'] =
 				adminPhrase('You must select an unsubscribe user characteristic in newsletter configuration settings');
+			if (isset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out'])) {
+				unset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out']);
+			}
 		}
 		$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['hidden'] =
 		$box['tabs']['unsub_exclude']['fields']['example_unsubscribe_url_underlined_and_hidden']['hidden'] =

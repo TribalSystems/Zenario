@@ -1,0 +1,39 @@
+<div class="extranet_wrap">
+{% if View %}
+	<div class="extranet_view_profile">
+	{% if Show_Title %}
+		<h1>{{"_VIEW_PROFILE_TITLE"|trans}}</h1>
+	{% endif %}
+	{{message}}
+	{{form_fields}}
+	{% if Edit_Permission %}
+		<div class="extranet_links">
+			<a {{edit_profile_link}} class="nice_button">{{"_EDIT_PROFILE"|trans}}</a>
+		</div>
+	{% endif %}
+	{% if Screen_Name_Unconfirmed %}
+		{{openForm}}
+			<input type="submit" value="{{'Confirm screen name'|trans}}" name="confirm_screen_name"/>
+		{{closeForm}}
+	{% elseif Screen_Name_Confirmed %}
+		{{'Screen name confirmed!'|trans}}
+	{% endif %}
+	</div>
+{% elseif Edit %}
+	<div class="extranet_edit_profile">
+	{% if Show_Title %}
+		<h1>{{"_EDIT_PROFILE_TITLE"|trans}}</h1>
+	{% endif %}
+	{% if errors %}
+		<div class="extranet_error">{{errors}}</div>
+	{% endif %}
+	{{openForm}}
+		{{form_fields}}
+	<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_update_profile" class="extranet_submit i" value="{{'_UPDATE_PROFILE'|trans}}" /></div></div>
+	<a {{back_link}} class="nice_button">{{"_CANCEL"|trans}}</a>
+	{{closeForm}}	
+	</div>
+{% elseif No_User %}
+	<p>{{'You must be logged in as an Extranet User to see this Plugin.'|trans}}</p>
+{% endif %}
+</div>

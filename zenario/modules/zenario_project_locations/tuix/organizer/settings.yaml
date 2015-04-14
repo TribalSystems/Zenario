@@ -1,0 +1,7 @@
+zenario__administration:
+    panels:
+        site_settings:
+            items:
+                zenario_project_locations__site_settings_group:
+                    name: Project Locations
+                    desc: Settings for the Project Locations

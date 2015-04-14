@@ -103,6 +103,24 @@ switch ($path) {
 	
 					//Update the folder id if it is different, and remember that we've done this
 					if (isset($_POST['parent_id__'. $id]) && $_POST['parent_id__'. $id] != $file['folder_id']) {
+					
+						$parentFolderId = $_POST['parent_id__'. $id];
+						$newChildId = $id;
+						
+						
+						/*
+						
+						 ****** finish this part *****
+						
+						$type = getRow('documents', array('id', 'type', 'folder_name'), $id)
+						$folderParentIdName
+						
+						
+						if ($type == 'folder'){
+						}
+						var_dump($parentFolderId);
+					
+						*/
 						$cols['folder_id'] = $_POST['parent_id__'. $id];
 						$folder = getRow('documents', array('id', 'type'), $_POST['parent_id__'. $id]);
 						if ($folder['type'] == "file") {
@@ -228,17 +246,18 @@ switch ($path) {
 			foreach (explode(',', $ids) as $id) {
 				self::deleteHierarchicalDocument($id);
 			}
-		} elseif (post('generate_public_link')){
+		} elseif (post('generate_public_link')) {
+			$messageType = 'Success';
+			$html = '';
 			foreach (explode(',', $ids) as $id) {
-				echo "<!--Message_Type:Success-->";
-				$fileId = getRow('documents', 'file_id', $id);
+				$document = getRow('documents', array('file_id', 'filename'), $id);
 				$file = getRow('files', 
 								array('id', 'filename', 'path', 'created_datetime'),
-								$fileId);
+								$document['file_id']);
 				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $document['filename'];
 					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' . $document['filename'];
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 						if (!file_exists($symPath)) {
 							if(!file_exists($symFolder)) {
@@ -248,38 +267,49 @@ switch ($path) {
 						}
 				
 						$baseURL = absCMSDirURL();
+						
 						$message="<h3>The hyperlinks to your document are shown below:</h3>";
 						
 						$fullLink = $baseURL.$frontLink;
 						$normalLink =$frontLink;
 				
-						$link = $message."Full hyperlink: <br>" . "<input type='text' style='width: 488px;' value = '".$fullLink."'/><br>Internal hyperlink:<br><input type='text' style='width: 488px;' value = '". $normalLink . "'/>";
-				
-				
-						echo $link;
+						$html .= $message."Full hyperlink: <br>" . "<input type='text' style='width: 488px;' value = '".$fullLink."'/><br>Internal hyperlink:<br><input type='text' style='width: 488px;' value = '". $normalLink . "'/>";
 					}
+				} else {
+					$messageType = 'Error';
+					$html .= 'Could not generate public link because no file exists</br>';
 				}
 			}
+			echo '<!--Message_Type:'.$messageType.'-->';
+			echo $html;
 		}elseif(post('delete_public_link')){
-		
-				foreach (explode(',', $ids) as $id) {
-				echo "<!--Message_Type:Success-->";
-				$fileId = getRow('documents', 'file_id', $id);
+			echo "<!--Message_Type:Success-->";
+			foreach (explode(',', $ids) as $id) {
+				//$fileId = getRow('documents', 'file_id', $id);
+				$document = getRow('documents', array('file_id', 'filename'), $id);
+				
+				$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
+				$numberFileIds =count($fileIdsInDocument);
+				
+				echo $numberFileIds ;
+				
 				$file = getRow('files', 
 								array('id', 'filename', 'path', 'created_datetime'),
-								$fileId);
+								$document['file_id']);
 				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' .  $document['filename'];
 					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' .  $document['filename'];
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 							if(is_link($symPath)) {
 								$target = readlink($symPath);
 								unlink($symPath);
-								rmdir($symFolder);
-								echo "Public link was deleted successfully.";
+								if ($numberFileIds == 1){
+									rmdir($symFolder);
+								}
+								echo " Public link was deleted successfully.";
 							}else{
-							echo 'Does not have public link to delete';
+							echo ' Does not have public link to delete';
 							}
 					}
 				}
@@ -387,9 +417,7 @@ switch ($path) {
 	case 'zenario__modules/panels/plugins':
 		if (post('delete') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
 			foreach (explode(',', $ids) as $id) {
-				if (!checkInstancesUsage($id)) {
-					deletePluginInstance($id);
-				}
+				deletePluginInstance($id);
 			}
 		}
 		

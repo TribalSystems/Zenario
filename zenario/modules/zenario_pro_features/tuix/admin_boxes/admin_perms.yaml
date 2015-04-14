@@ -147,7 +147,7 @@ zenario_admin:
                         _PRIV_SUSPEND_MODULE:
                             label: Suspend a Module
                         _PRIV_RESET_MODULE:
-                            label: Reset a Module
+                            label: Uninitialise a Module
                         _PRIV_VIEW_SITE_SETTING:
                             label: View Site Settings
                         _PRIV_EDIT_SITE_SETTING:
@@ -159,9 +159,9 @@ zenario_admin:
                             label: Manage Spare Domain Names
                         _PRIV_MANAGE_DATASET:
                             label: Manage Datasets
-                        _PRIV_PROTECT_DATASET_FIELD:
-                            parent: _PRIV_MANAGE_DATASET
-                            label: Protect Dataset Field
+                        _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
+                            #parent: _PRIV_MANAGE_DATASET
+                            label: Protect / unprotect dataset fields
                 perm_manage_permissions:
                     type: checkboxes
                     hidden: No

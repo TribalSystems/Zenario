@@ -45,10 +45,12 @@ switch ($path) {
 	case 'zenario__content/panels/chained':
 	case 'zenario__content/panels/language_equivs':
 		$file =  getRow('files', true, getRow('documents', 'file_id', $ids));
+		$fileName = getRow('documents', 'filename', $ids);
 		if ($file['path']) {
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
-			header('Content-Disposition: attachment; filename="'.basename(docstoreFilePath($file['id'])).'"'); //<<< Note the " " surrounding the file name
+			//header('Content-Disposition: attachment; filename="'.basename(docstoreFilePath($file['id'])).'"'); //<<< Note the " " surrounding the file name
+			header('Content-Disposition: attachment; filename="'.$fileName.'"');
 			header("Content-Type: application/force-download");
 			header("Content-Type: application/octet-stream");
 			header("Content-Type: application/download");

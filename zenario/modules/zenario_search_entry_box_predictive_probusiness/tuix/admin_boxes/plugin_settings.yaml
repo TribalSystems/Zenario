@@ -1,0 +1,83 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            fields:
+                data_field:
+                    hidden: Yes
+                    value: description
+                use_pagination:
+                    hidden: Yes
+                    value: "1"
+                pagination_style:
+                    hidden: Yes
+                enable_categories:
+                    hidden: Yes
+                    value: ""
+                page_size:
+                    label: 'Maximum number of entries to show in dropdown panel:'
+                    validation:
+                        required: Please enter the maximum number of entries.
+                        numeric: The maximum number of entries number be a number.
+                dropdown_position:
+                    plugin_setting:
+                        name: dropdown_position
+                    label: 'The position of the dropdown:'
+                    type: select
+                    value: bottom_left
+                    values:
+                        search_bottom_left: Bottom left of search box
+                        search_bottom_right: Bottom right of search box
+                        slot_bottom_left: Bottom left of slot
+                        slot_bottom_right: Bottom right of slot
+                        form_bottom_left: Bottom left of search form
+                        form_bottom_right: Bottom right of search form
+                use_specific_search_results_page:
+                    plugin_setting:
+                        name: use_specific_search_results_page
+                    label: 'Use a specific Search Results Page:'
+                    type: checkbox
+                    value: ""
+                    format_onchange: Yes
+                specific_search_results_page:
+                    plugin_setting:
+                        name: specific_search_results_page
+                        foreign_key_to: content
+                        dangling_cross_references: remove
+                    label: 'Search Results Page:'
+                    pick_items:
+                        equivalence: Yes
+                        path: zenario__content/panels/language_equivs
+                        min_path: zenario__content/panels/language_equivs
+                        max_path: zenario__content/panels/language_equivs
+                        target_path: zenario__content/panels/language_equivs
+                        disallow_refiners_looping_on_min_path: Yes
+                        select_phrase: Select Content Item...
+                        hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a Content Item
+        content_types:
+            ord: "2"
+            label: Content Items to Search
+            fields:
+                search_html:
+                    hidden: Yes
+                search_document:
+                    hidden: Yes
+                search_news:
+                    hidden: Yes
+                search_in_languages:
+                    label: 'Search Content Items in:'
+                    plugin_setting:
+                        name: search_in_languages
+                    type: radios
+                    values:
+                        current:
+                            ord: "1"
+                            label: Current language
+                        all:
+                            ord: "1"
+                            label: All languages
+                    value: current
+    module_class_name: zenario_search_entry_box_predictive_probusiness

@@ -1,0 +1,94 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                location_source_mode:
+                    plugin_setting:
+                        name: location_source_mode
+                    label: 'Location source mode:'
+                    type: select
+                    format_onchange: Yes
+                    note_below: 'If you select Get location from URL (l_id), you pass the location id in the url as parameter l_id'
+                    values:
+                        location_from_url:
+                            label: "Get location from URL (l_id)"
+                            ord: 1
+                        location_from_selector:
+                            label: "Get location from static selector"
+                            ord: 2
+                    value: location_from_selector
+                location_plugin_mode:
+                    plugin_setting:
+                        name: location_plugin_mode
+                    label: 'Plugin mode:'
+                    type: select
+                    values:
+                        location_title:
+                            label: "Location title"
+                            ord: 1
+                        location_info:
+                            label: "Location information"
+                            ord: 2
+                        location_map:
+                            label: "Location map"
+                            ord: 2
+                    value: location_title
+                location_user:
+                    plugin_setting:
+                        name: location_user
+                    label: 'You must be an externet user and have a role at the location to see details?'
+                    type: checkbox
+                location:
+                    label: 'Other Location:'
+                    plugin_setting:
+                        name: location
+                    pick_items:
+                        path: zenario__locations/panel
+                        target_path: zenario__locations/panel
+                        min_path: zenario__locations/panel
+                        max_path: zenario__locations/panel
+                        select_phrase: Select Location...
+                        nothing_selected_phrase: No Location selected
+                    note_below: 'Displays details of the Location selected above. If none selected, and Plugin is placed on a Descriptive Page for a Location, displays details of that Location. Otherwise if Plugin placed on an Event with a Location specified in When & Where, displays that Location.'
+                map_width:
+                    label: 'Map size:'
+                    pre_field_html: 'width:'
+                    plugin_setting:
+                        name: map_width
+                    type: text
+                    value: "500"
+                    style: width:50px;
+                map_height:
+                    pre_field_html: '&nbsp;height:'
+                    post_field_html: '&nbsp;pixels'
+                    same_row: Yes
+                    type: text
+                    plugin_setting:
+                        name: map_height
+                    value: "500"
+                    style: width:50px;
+                max_location_image_width:
+                    plugin_setting:
+                        name: max_location_image_width
+                    pre_field_html: 'width:'
+                    label: 'Max. Image Size:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+                max_location_image_height:
+                    plugin_setting:
+                        name: max_location_image_height
+                    pre_field_html: '&nbsp;height:'
+                    post_field_html: '&nbsp;pixels'
+                    type: text
+                    size: "5"
+                    same_row: Yes
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+    module_class_name: zenario_location_viewer

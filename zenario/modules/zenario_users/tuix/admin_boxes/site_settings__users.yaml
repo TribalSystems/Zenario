@@ -7,12 +7,12 @@ site_settings:
         names:
             label: Sign-in
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
+                on: false
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: "This tab contains settings related to sign-in behaviour."
                 user_use_screen_name:
@@ -37,9 +37,9 @@ site_settings:
         passwords:
             label: Passwords
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
+                on: false
             fields:
                 min_extranet_user_password_length:
                     label: 'Minimum password length:'
@@ -74,10 +74,13 @@ site_settings:
                         _STRONG: Strong
                         _VERY_STRONG: Very strong
                 plaintext_extranet_user_passwords:
-                    label: 'Store user passwords as plain text:'
+                    label: 'Store user passwords as:'
                     site_setting:
                         name: plaintext_extranet_user_passwords
-                    type: checkbox
+                    type: radios
+                    values:
+                        1: Plain text
+                        0: Encrypted
                     value: 1
                     note_below: |
                         Storing passwords as plain text will allow the system to send
@@ -100,12 +103,12 @@ site_settings:
         filesizes:
             label: File Sizes
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
+                on: false
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This tab contains settings for file uploads.
                 max_user_image_filesize:
@@ -120,3 +123,26 @@ site_settings:
                     validation:
                         required: Please enter a Maximum User Image File Size.
                         numeric: The Maximum User Image File Size must be numeric.
+        unconfirmed_users:
+            label: Unconfirmed users
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings concerning pending users who've not confirmed their email address
+                max_days_user_inactive:
+                    site_setting:
+                        name: max_days_user_inactive
+                    label: 'Maximun days a pending user can exist without confirming their email:'
+                    type: text
+                    value: 30
+                    style: 'width: 10em; text-align:right;'
+                    post_field_html: |  
+                         Days
+                    side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers". Default 30.
+                    validation:
+                        numeric: The days a pending user can exist without confirming their email must be numeric.

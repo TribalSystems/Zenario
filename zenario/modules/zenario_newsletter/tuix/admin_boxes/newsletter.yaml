@@ -127,7 +127,7 @@ zenario_newsletter:
                     same_row: true
                     type: submit
                     value: Test Send
-                    visible_if: '!zenarioAB.focus.key.id'
+                    visible_if: '!zenarioAB.tuix.key.id'
                     class: 'submit_disabled'
                     onclick: 'return false;'
                 test_send_button:
@@ -136,7 +136,7 @@ zenario_newsletter:
                     format_onchange: true
                     can_be_pressed_in_view_mode: true
                     value: Test Send
-                    visible_if: 'zenarioAB.focus.key.id'
+                    visible_if: 'zenarioAB.tuix.key.id'
                     class: 'submit_selected'
             notices:
                 test_send_sucesses:
@@ -169,12 +169,19 @@ zenario_newsletter:
                         multiple_select: true
                         select_phrase: "Select recipients' smart group(s)..."
                         nothing_selected_phrase: "No recipients' smart groups selected"
+                exclude_recipients_with_opt_out:
+                    label: Exclude recipients with newsletter opt-out field checked
+                    type: checkbox
+                    side_note: >
+                        Recipients who have previously clicked the Unsubscribe link will not receive this newsletter. There is no need to add a rule to exclude these recipients from your smart group.
+                    value: 1
+                    read_only: true
                 add_unsubscribe_link:
                     label: Add an "Unsubscribe" link
                     type: checkbox
                     side_note: >
                         Recipients who click the unsubscribe link will have
-                        the newsletter opt out characteristic added.
+                        the newsletter opt-out field checked.
                     format_onchange: true
                 unsubscribe_text:
                     label: 'Unsubscribe text:'

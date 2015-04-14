@@ -62,7 +62,7 @@ zenario_user__convert_to_user:
                     dataset_label: '[Reveal password button]'
                     type: toggle
                     onclick: |
-                        var fields = zenarioAB.focus.tabs.details.fields,
+                        var fields = zenarioAB.tuix.tabs.details.fields,
                             passwordEl = zenario.get('password'),
                             passwordField = fields.password,
                             revealEl = zenario.get('reveal_password'),

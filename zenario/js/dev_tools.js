@@ -31,23 +31,25 @@
 	
 		1. Compilation macros are applied (e.g. "foreach" is a macro for "for .. in ... hasOwnProperty").
 		2. It is minified (e.g. using Google Closure Compiler).
-		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php.
 */
 
 
-window.devTools = function() {};
-window.editor = ace.edit('editor');
 
-(function(
+
+
+zenario.lib(function(
+	undefined,
 	URLBasePath,
-	window, document, opener,
-	zenario, zenarioA, devTools, editor,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
 	$toolbar, $editor, $sidebar, $sidebarInner,
-	undefined) {
-		"use strict";
+	devTools, editor
+) {
+	"use strict";
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
@@ -192,13 +194,13 @@ devTools.init = function(mode, schemaName, schema, skMap) {
 			
 			devTools.locatePosition(pos, function(path, data) {
 				var sche = devTools.drillDownIntoSchema(path, data);
+				sche.tag = path.split('/').pop();
 				text = '';
 			
 				if (sche.exact) {
 					text = zenarioA.microTemplate('zenario_dev_tools_tooltip', sche);
 				} else {
-					var tag = path.split('/').pop();
-					if (devTools.internalCMSProperties[tag]) {
+					if (devTools.internalCMSProperties[sche.tag]) {
 						text = '<strong>Internal CMS property</strong>';
 					} else {
 						text = '';
@@ -230,9 +232,9 @@ devTools.load = function() {
 	
 	//Check if there is an opener
 	if (!devTools.mode
-	 || !opener
-	 || !opener[devTools.mode]
-	 || (!devTools.skMap && !opener[devTools.mode].url)) {
+	 || !windowOpener
+	 || !windowOpener[devTools.mode]
+	 || (!devTools.skMap && !windowOpener[devTools.mode].url)) {
 		
 		//It might be nice to use the dev tools to make something from scratch.
 		//But for now, just stop with an error.
@@ -240,67 +242,75 @@ devTools.load = function() {
 		return;
 	}
 	
+	//Work out the full URL to zenario/admin/ajax.php including the appropriate mode and any requests
 	var url;
-	
 	if (devTools.skMap) {
 		url = URLBasePath + 'zenario/admin/ajax.php?_debug=1';
 		devTools.path = '';
+	
 	} else {
-		url = opener[devTools.mode].url + '&_debug=1';
-		devTools.path = opener[devTools.mode].path;
+		if (windowOpener[devTools.mode].devToolsURL) {
+			url = windowOpener[devTools.mode].devToolsURL + '&_debug=1';
+		} else {
+			url = windowOpener[devTools.mode].url + '&_debug=1';
+		}
+		
+		devTools.path = windowOpener[devTools.mode].path;
 	}
 	
-	$.get(url, function(data) {
-		if (data = zenarioA.readData(data)) {
-			devTools.focus = data;
-			devTools.tagPath = ifNull(devTools.focus.tag_path, devTools.path, '');
+	
+	//Attempt to load the data from zenario/admin/ajax.php with the _debug flag set
+	//This gives the data in a slightly different format with more information than usual
+	zenario.ajax(url, false, true).after(function(data) {
 			
-			if (devTools.skMap) {
-				devTools.filterNav(devTools.focus.tuix);
+		devTools.focus = data;
+		devTools.tagPath = ifNull(devTools.focus.tag_path, devTools.path, '');
+		
+		if (devTools.skMap) {
+			devTools.filterNav(devTools.focus.tuix);
+		}
+		
+		//Load information on each of the contributing files
+		devTools.focus.files = {};
+		var module,
+			modules = devTools.focus.modules_files_loaded,
+			paths,
+			files = {},
+			file,
+			url;
+		
+		foreach (modules as module) {
+			if (paths = modules[module].paths) {
+				foreach (paths as file) {
+					files[module + '.' + file] = false;
+				}
 			}
-			
-			//Load information on each of the contributing files
-			devTools.focus.files = {};
-			var module,
-				modules = devTools.focus.modules_files_loaded,
-				paths,
-				files = {},
-				file,
-				url;
-			
+		}
+		
+		url = 'zenario/admin/dev_tools/ajax.php?mode=' + encodeURIComponent(devTools.mode) + '&load_tuix_files=' + encodeURIComponent(JSON.stringify(files));
+		
+		if (data = zenario.nonAsyncAJAX(url, false, true)) {
 			foreach (modules as module) {
 				if (paths = modules[module].paths) {
 					foreach (paths as file) {
-						files[module + '.' + file] = false;
-					}
-				}
-			}
-			
-			url = 'zenario/admin/dev_tools/ajax.php?mode=' + encodeURIComponent(devTools.mode) + '&load_tuix_files=' + encodeURIComponent(JSON.stringify(files));
-			
-			if (data = zenario.nonAsyncAJAX(url, false, true)) {
-				foreach (modules as module) {
-					if (paths = modules[module].paths) {
-						foreach (paths as file) {
-							if (data[module + '.' + file]) {
-								data[module + '.' + file].path = paths[file];
-								devTools.focus.files[module + '.' + file] = data[module + '.' + file];
-							}
+						if (data[module + '.' + file]) {
+							data[module + '.' + file].path = paths[file];
+							devTools.focus.files[module + '.' + file] = data[module + '.' + file];
 						}
 					}
 				}
 			}
-			
-			devTools.draw();
 		}
+		
+		devTools.draw();
 		zenarioA.nowDoingSomething(false);
-	}, 'text');
+	});
 };
 
 devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 	
 	if (topLevel === undefined) {
-		topLevel = opener[devTools.mode].currentTopLevelPath.split('/');
+		topLevel = windowOpener[devTools.mode].currentTopLevelPath.split('/');
 		topLevel = topLevel[0];
 	}
 	
@@ -400,7 +410,7 @@ devTools.updateEditor = function() {
 	
 	//Show the current TUIX
 	if (view == 'current') {
-		editor.setValue(devTools.toFormat(opener[devTools.mode].focus, format));
+		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].focus, format));
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
 	
@@ -534,6 +544,14 @@ devTools.arrayToString = function(array) {
 	return array;
 };
 
+devTools.arrayToList = function(array) {
+	if (typeof array == 'string') {
+		return array.replace(/,/g, ', ');
+	} else {
+		return array.join(', ');
+	}
+};
+
 
 //This function will return true if the object data contains a keys/a tag path of path
 devTools.checkPathIsInData = function(path, data) {
@@ -588,13 +606,13 @@ devTools.highlightFilesContainingSelection = function(path) {
 		}
 		
 		if (view == 'current') {
-			contains = devTools.checkPathIsInData(localPath, opener[devTools.mode].focus);
+			contains = devTools.checkPathIsInData(localPath, windowOpener[devTools.mode].focus);
 		
 		} else if (view == 'combined') {
 			contains = devTools.checkPathIsInData(localPath, devTools.focus.tuix);
 		
 		} else if (view == 'map') {
-			contains = devTools.checkPathIsInData(fullPath, opener[devTools.mode].map);
+			contains = devTools.checkPathIsInData(fullPath, windowOpener[devTools.mode].map);
 
 		} else if (devTools.focus.files[view] && devTools.focus.files[view].tags) {
 			contains = devTools.checkPathIsInData(fullPath, devTools.focus.files[view].tags);
@@ -1134,7 +1152,7 @@ devTools.showSidebar = function(path, data) {
 		}
 		
 		if (devTools.mode == 'zenarioO') {
-			sche.shortPath = opener[devTools.mode].shortenPath(sche.fullPath);
+			sche.shortPath = windowOpener[devTools.mode].shortenPath(sche.fullPath);
 		}
 		
 		var path = '',
@@ -1205,9 +1223,8 @@ editor.on('changeCursor', devTools.editorOnSelect);
 editor.session.setUseSoftTabs(false);
 
 
-})(
-	URLBasePath,
-	window, document, window.opener,
-	zenario, zenarioA, devTools, editor,
-	zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase,
-	$('#toolbar'), $('#editor'), $('#sidebar'), $('#sidebar_inner'));
+},
+	$('#toolbar'), $('#editor'), $('#sidebar'), $('#sidebar_inner'),
+	window.devTools = function() {},
+	window.editor = ace.edit('editor')
+);

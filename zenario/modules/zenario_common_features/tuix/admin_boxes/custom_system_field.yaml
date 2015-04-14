@@ -60,10 +60,11 @@ zenario_custom_system_field:
                             label: 'System field (other)'
                 
                 protected:
+                    priv: _PRIV_PROTECT_UNPROTECT_DATASET_FIELD
                     label: 'Protected'
                     type: checkbox
                     value: 1
-                    read_only: true
+                    #read_only: true
                     note_below: 'System fields cannot be deleted'
                 
         display:

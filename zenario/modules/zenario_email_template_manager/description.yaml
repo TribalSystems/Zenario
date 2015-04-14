@@ -7,7 +7,7 @@ start_running_on_install: false
 license_info: Modified BSD License
 display_name: Email Template Manager
 description: |
-    <p>
+            <p>
                 The Email Template Manager enables you to create pre-formatted Email Templates which are sent by a range of other modules.
             </p>
             <p> 
@@ -22,6 +22,7 @@ description: |
             <p>
                 This Module maintains a log of all emails sent by Zenario.
             </p>
+category: management
 keywords: email, inbox, mail, newsletter, outbox, send, template
 is_pluggable: No
 admin_floating_box_tabs:

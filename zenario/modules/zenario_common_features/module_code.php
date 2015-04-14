@@ -72,7 +72,7 @@ class zenario_common_features extends module_base_class {
 		
 		return sqlQuery($sql);
 	}
-	
+	/*
 	public function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
 		deleteRow('documents', array('id' => $documentId));
@@ -94,6 +94,8 @@ class zenario_common_features extends module_base_class {
 					unlink(setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename']);
 					rmdir(setting('docstore_dir') . '/'. $fileDetails['path']);
 				}
+				
+				//check to see if file used by another document before deleting
 				deleteRow('files', array('id' => $details['file_id']));
 			}
 			if ($details['thumbnail_id']) {
@@ -101,6 +103,63 @@ class zenario_common_features extends module_base_class {
 			}
 		}
 	}
+	
+	*/
+	
+	
+	public function deleteHierarchicalDocument($documentId) {
+		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
+		
+		if ($details && $details['type'] == 'folder') {
+			deleteRow('documents', array('id' => $documentId));
+			$children = getRows('documents', array('id', 'type'), array('folder_id' => $documentId));
+			while ($row = sqlFetchAssoc($children)) {
+				self::deleteHierarchicalDocument($row['id']);
+			}
+		} elseif ($details && $details['type'] == 'file') {
+				$fileDetails = getRow('files', array('path', 'filename', 'location'), $details['file_id']);
+				$document = getRow('documents', array('file_id', 'filename'), array('id'=>$documentId));
+				$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
+				$numberFileIds =count($fileIdsInDocument);
+				
+				$file = getRow('files', 
+								array('id', 'filename', 'path', 'created_datetime'),
+								$document['file_id']);
+				if($file['filename']) {
+					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' .  $document['filename'];
+					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
+					$frontLink = 'public' . '/' . $file['path'] . '/' .  $document['filename'];
+					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+							if(is_link($symPath)) { //file_exists($symPath)
+								$target = readlink($symPath);
+								unlink($symPath);
+								if ($numberFileIds == 1){
+									rmdir($symFolder);
+								}
+					}
+				}
+				//check to see if file used by another document before deleting
+				if ($numberFileIds == 1){
+					deleteRow('files', array('id' => $details['file_id']));
+					if ($details['thumbnail_id']) {
+						deleteRow('files', array('id' => $details['thumbnail_id']));
+					}
+					if ($fileDetails['location'] == 'docstore' &&  $fileDetails['path']) {
+						unlink(setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename']);
+						rmdir(setting('docstore_dir') . '/'. $fileDetails['path']);
+					}
+				}
+			}
+			deleteRow('documents', array('id' => $documentId));
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	public function deleteDocumentTag($tagId) {
 		deleteRow('document_tags', array('id' => $tagId));
@@ -525,7 +584,11 @@ class zenario_common_features extends module_base_class {
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
+			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
+		} else {
+			return require funIncPath(__FILE__, __FUNCTION__);
+		}
 	}
 	
 	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {

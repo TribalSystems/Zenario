@@ -54,7 +54,15 @@ site_settings:
                     full_width: Yes
                     snippet:
                         html: >
-                            Change the favicon used for Organizer.
+                            Change the description and favicon used for Organizer.
+                
+                organizer_title:
+                    site_setting:
+                        name: organizer_title
+                    label: 'Organizer title:'
+                    type: text
+                    # The default value will be set by a db_update as I want to
+                    # put the domain name in it
                 
                 organizer_favicon:
                     site_setting:

@@ -1,0 +1,31 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: Modified BSD License
+display_name: Search Entry Box Predictive ProBusiness
+description: |
+             <p>This Plugin displays a Search Entry Box.</p>
+             <p>Visitors can enter text into the page, and then be taken to a search page in their language to display the results.</p>
+             <p>When entering a search phrase, the plugin displays a small dropdown panel which shows a limited number of matching entries to help you quickly refine your search.</p>
+             <p>The administrator can configure the dropdown panel by using the plugins setting: maximum entries displayed, maximum characters of content title displayed, maximum characters of content body displayed.</p>
+             <p>Note that this Plugin requires an Instance of the "Search Results" Plugin (or a compatible Plugin) placed on the default search page in order to work.</p>
+category: pluggable
+keywords: find, lookup, predictive, search, type, typeahead
+vlp_class_name: zenario_search_results
+css_class_name: zenario_search_entry_box
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Search Entry Box Predictive
+dependencies:
+    zenario_search_results: true
+    zenario_search_entry_box: true
+    zenario_search_results_pro: true
+inheritance:
+    inherit_frameworks_from_module: zenario_search_entry_box
+    inherit_settings_from_module: zenario_search_results_pro
+    allow_upgrades_from_module:
+        zenario_search_entry_box: true

@@ -1,0 +1,18 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        content:
+            columns:
+                zenario_translation_tools__sync_assist:
+                    php: Yes
+                    db_column: |
+                        (
+                                SELECT COUNT(DISTINCT tttsa_l.id)
+                                FROM [[DB_NAME_PREFIX]]content AS tttsa_equivs
+                                INNER JOIN [[DB_NAME_PREFIX]]languages AS tttsa_l
+                                   ON tttsa_l.id = tttsa_equivs.language_id
+                                  AND tttsa_l.sync_assist = 1
+                                WHERE tttsa_equivs.equiv_id = c.equiv_id
+                                  AND tttsa_equivs.type = c.type
+                            )

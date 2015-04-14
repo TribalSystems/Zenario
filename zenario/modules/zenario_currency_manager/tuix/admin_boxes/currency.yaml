@@ -1,0 +1,96 @@
+zenario__currency_manager:
+	title: Creating a currency
+	key:
+		id: ""
+	#max_height: "310"
+	tabs:
+		details:
+			label: Details
+			edit_mode:
+				enabled: Yes
+				on: Yes
+				always_on: Yes
+				enable_revert: Yes
+			fields:
+				desc:
+					full_width: true
+					snippet:
+						html: >
+							<p>Currency rate will be updated from Yahoo currency data by scheduled task when it is enabled.</p> 
+							<br>
+							<p><a href="https://finance.yahoo.com/currency-converter/">https://finance.yahoo.com/currency-converter/</a></p>
+				english_name:
+					label: 'Currency name / Currency code:'
+					type: text
+					style: 'width: 100px'
+				code:
+					same_row: yes
+					label: 'Currency code:'
+					type: text
+					style: 'width: 40px'
+					maxlength: "3"
+				rate:
+					label: 'Currency rate:'
+					type: text
+					style: 'width: 100px'
+					hidden: ""
+					style: >
+						width: 5em;
+						text-align: right
+				symbol_left:
+					label: 'Symbol left / Symbol right:'
+					type: text
+					style: 'width: 70px'
+					maxlength: "3"
+				symbol_right:
+					same_row: yes
+					label: 'Symbol right:'
+					type: text
+					style: 'width: 70px'
+					maxlength: "3"
+				decimal_places:
+					label: 'Decimal Places:'
+					type: select
+					values:
+						- 
+							label: No decimal digits
+						- 
+							label: ".0"
+						- 
+							label: ".00"
+						- 
+							label: ".000"
+						- 
+							label: ".0000"
+					empty_value: '-- Select a number of decimal digits --'
+				decimal_separator:
+					label: 'Decimal separator:'
+					type: text
+					size: "1"
+					maxlength: "1"
+					style: 'width: 10px'
+					side_note: 'The decimal separator must be "." or ","'
+				thousands_separator:
+					label: 'Thousands separator:'
+					type: text
+					size: "1"
+					maxlength: "1"
+					style: 'width: 10px'
+					side_note: 'The thousands separator must be "." or ","'
+				base_currency:
+					label: 'Base currency'
+					type: checkbox
+					format_onchange: Yes
+					read_only: yes
+				last_updated:
+					label: 'Last updated:'
+					type: text
+					size: "1"
+					maxlength: "1"
+					read_only: yes
+				date_rate_last_fetched:
+					label: 'Date rate last fetched:'
+					type: text
+					size: "1"
+					maxlength: "1"
+					read_only: yes

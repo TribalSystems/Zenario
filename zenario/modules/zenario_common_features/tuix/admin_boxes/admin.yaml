@@ -59,7 +59,7 @@ zenario_admin:
                     label: 'Password:'
                     type: password
                     style: 'width: 20em;'
-                    visible_if: '!zenarioAB.focus.key.id'
+                    visible_if: '!zenarioAB.tuix.key.id'
                 suggest_button:
                     same_row: true
                     snippet:
@@ -73,12 +73,12 @@ zenario_admin:
                                 passwordConfirmField.value = suggestedPassword;
                                 passwordConfirmField.type = 'password';
                             " value="Suggest"/>
-                    visible_if: '!zenarioAB.focus.key.id'
+                    visible_if: '!zenarioAB.tuix.key.id'
                 password_confirm:
                     label: 'Re-confirm Password:'
                     type: password
                     style: 'width: 20em;'
-                    visible_if: '!zenarioAB.focus.key.id'
+                    visible_if: '!zenarioAB.tuix.key.id'
                 inform_by_email:
                     label: 'Inform by email:'
                     type: checkbox
@@ -91,10 +91,10 @@ zenario_admin:
                     note_below: >
                         If checked, the Administrator will be prompted to change
                         their password when they next log in.
-                    visible_if: '!zenarioAB.focus.key.id'
+                    visible_if: '!zenarioAB.tuix.key.id'
         password:
             priv: _PRIV_CHANGE_ADMIN_PASSWORD
-            visible_if: zenarioAB.focus.key.id
+            visible_if: zenarioAB.tuix.key.id
             label: Password
             edit_mode:
                 enabled: Yes

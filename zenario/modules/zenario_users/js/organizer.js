@@ -24,9 +24,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function(
-	zenario, zenarioA, zenario_users,
-	undefined) {
+
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
+	zenario_users
+) {
+	"use strict";
+
 
 
 zenario_users.saveAsSmartGroup = function(confirm) {
@@ -37,14 +46,14 @@ zenario_users.saveAsSmartGroup = function(confirm) {
 				json = zenario_users.JSON('', {
 					confirm: confirm,
 					save_smart_group: true,
-					name: zenario.get('name').value,
+					name: get('name').value,
 					values: zenarioAB.getValueArrayofArrays(true)}, true);
 			
 			if (json && json.message) {
 				if (json.confirm_button_message) {
 					buttonsHTML = 
-						'<input type="button" value="' + zenario.htmlspecialchars(json.confirm_button_message) + '" class="submit_selected" onclick="zenario_users.saveAsSmartGroup(true);">' +
-						'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>';
+						'<input type="button" value="' + htmlspecialchars(json.confirm_button_message) + '" class="submit_selected" onclick="zenario_users.saveAsSmartGroup(true);">' +
+						'<input type="button" class="submit" value="' + phrase.cancel + '"/>';
 				}
 					
 				if (json.message) {
@@ -121,5 +130,5 @@ zenario_users.manageSmartGroup = function(itemLevel, values) {
 
 
 
-})(
-	zenario, zenarioA, zenario_users);
+
+}, zenario_users);

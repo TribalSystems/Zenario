@@ -22,6 +22,7 @@ description: |
             <li>[[ip_address]] - The IP address of the computer from which email address change was requested.</li>
             <li>[[cms_url]] - A Website URL.</li>
         </ul>
+category: pluggable
 keywords: extranet, password, recover, remind, reminder, user
 vlp_class_name: zenario_extranet_password_reminder
 css_class_name: zenario_extranet_password_reminder

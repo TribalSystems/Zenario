@@ -32,6 +32,7 @@ description: |
         yet create a publicly visible thumbnail as a preview.</p>
         
     <p>Banners are nestable; this means that by first inserting a Plugin Nest into a Slot, you can then insert multiple Banners to make creative animated effects.</p>
+category: pluggable
 keywords: >
     masthead, callout, call-out, document, download, image,
     picture, gif, jpg, jpeg, png, link, hyperlink, url

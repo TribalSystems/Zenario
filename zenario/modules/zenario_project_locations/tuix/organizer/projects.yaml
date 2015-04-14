@@ -1,0 +1,205 @@
+zenario__projects: 
+    nav: 
+        projects: 
+            panel: 
+                title: Projects
+                view_mode: list
+                db_items: 
+                    table: |
+                        [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_locations AS l
+                        LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                        ON l.image_id = f.id
+                    id_column: l.id
+                item:
+                    css_class: project_locations__projects
+                default_sort_column: name
+                reorder:
+                    priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                    column: sort
+                columns: 
+                    id: 
+                        title: ID
+                        db_column: l.id
+                        show_by_default: No
+                        searchable: Yes
+                        width: xxsmall
+                        align_right: true
+                    name: 
+                        title: Name
+                        db_column: l.name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    summary: 
+                        title: Summary
+                        db_column: l.summary
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: large
+                    client_name: 
+                        title: Client name
+                        db_column: l.client_name
+                        show_by_default: No
+                        searchable: Yes
+                    architect_name: 
+                        title: Architect name
+                        db_column: l.architect_name
+                        show_by_default: No
+                        searchable: Yes
+                    contractor_name: 
+                        title: Contractor name
+                        db_column: l.contractor_name
+                        show_by_default: No
+                        searchable: Yes
+                    address1: 
+                        title: Address 1
+                        db_column: l.address1
+                        show_by_default: No
+                        searchable: Yes
+                    address2: 
+                        title: Address 2
+                        db_column: l.address2
+                        show_by_default: No
+                        searchable: Yes
+                    locality: 
+                        title: Locality
+                        db_column: l.locality
+                        show_by_default: No
+                        searchable: Yes
+                    city: 
+                        title: City
+                        db_column: l.city
+                        show_by_default: Yes
+                        searchable: Yes
+                    state: 
+                        title: State
+                        db_column: l.state
+                        show_by_default: No
+                        searchable: Yes
+                    postcode: 
+                        title: Postcode
+                        db_column: l.postcode
+                        show_by_default: No
+                        searchable: Yes
+                    country_code: 
+                        db_column: l.country_id
+                        show_by_default: No
+                        searchable: Yes
+                    country: 
+                        title: Country
+                        db_column: c.english_name
+                        table_join: >
+                            [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries c
+                            ON l.country_id = c.id
+                        show_by_default: Yes
+                        searchable: Yes
+                    region: 
+                        title: Region
+                        table_join: >
+                            LEFT JOIN [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r
+                            ON l.region_id = r.id
+                        db_column: >
+                            r.name
+                        search_column: r.name
+                        show_by_default: No
+                        searchable: Yes
+                    latitude: 
+                        title: Latitude
+                        db_column: l.latitude
+                        show_by_default: No
+                    longitude: 
+                        title: Longitude
+                        db_column: l.longitude
+                        show_by_default: No
+                    content_item: 
+                        title: Descriptive Content Item
+                        db_column: "CONCAT(l.content_type,'_',l.equiv_id)"
+                        show_by_default: 
+                    sectors: 
+                        title: Sectors
+                        db_column: >
+                            (
+                                SELECT GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ')
+                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sector_link AS lssl
+                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_sectors s
+                                ON lssl.sector_id = s.id
+                                WHERE l.id = lssl.project_location_id
+                            )   
+                        show_by_default: No
+                        searchable: Yes
+                    services: 
+                        title: Services
+                        db_column: >
+                            (
+                                SELECT GROUP_CONCAT(DISTINCT s.name ORDER BY s.name SEPARATOR ', ')
+                                FROM [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_service_link AS lssl
+                                INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_PROJECT_LOCATIONS_PREFIX]]project_location_services s
+                                ON lssl.service_id = s.id
+                                WHERE l.id = lssl.project_location_id
+                            )   
+                        show_by_default: No
+                    sort:
+                        title: Sort
+                        db_column: l.sort
+                        align_right: Yes
+                    last_updated: 
+                        title: Date/Time Last Updated
+                        db_column: l.last_updated
+                        format: datetime
+                        show_by_default: No
+                    last_updated_by: 
+                        title: Last Updated By
+                        db_column: l.last_updated_admin_id
+                        show_by_default: No
+                        searchable: Yes
+                        format: enum
+                    checksum:
+                        db_column: f.checksum
+                item: 
+                    css_class: project_locations__projects
+                collection_buttons: 
+                    create_project: 
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        ord: "1"
+                        label: Create
+                        css_class: zenario_create_a_new
+                        hide_in_select_mode: Yes
+                        admin_box: 
+                            path: zenario_project_locations__project
+                item_buttons: 
+                    rename_location: 
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        ord: "1"
+                        label: Edit
+                        hide_in_select_mode: Yes
+                        admin_box: 
+                            path: zenario_project_locations__project
+                    delete_locations:
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS 
+                        ord: "9998"
+                        label: Delete
+                        multiple_select: Yes
+                        multiple_select_only: Yes
+                        ajax: 
+                            confirm: 
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                                message: "Are you sure you wish to delete the selected Project Locations?"
+                            request: 
+                                action: delete_location
+                        hide_in_select_mode: Yes
+                    delete_location: 
+                        priv: _PRIV_MANAGE_PROJECT_LOCATIONS
+                        ord: "9999"
+                        label: Delete
+                        ajax: 
+                            confirm: 
+                                message: "Are you sure you wish to delete the project location \"[[name]]\"?"
+                                multiple_select_message: "Are you sure you wish to delete the selected project locations?"
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request: 
+                                action: delete_location
+                        hide_in_select_mode: Yes

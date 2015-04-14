@@ -1,0 +1,20 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_document_rename:
+	title: Rename a document
+	key: 
+		id: ''
+		add_folder: ''
+	max_height: "250"
+	tabs:
+		details:
+			label: Details
+			edit_mode:
+				on: Yes
+				always_on: Yes
+				enabled: Yes
+			fields:
+				document_name:
+					label: 'Name:'
+					type: text
+					maxlength: "255"

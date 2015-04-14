@@ -100,7 +100,30 @@ if (get('refiner__content_type')) {
 	}
 }
 
-
-
+// Create page preview buttons
+$pagePreviews = getRowsArray('page_preview_sizes', array('width', 'height', 'description', 'ordinal', 'is_default'), array(), 'ordinal');
+foreach ($pagePreviews as $pagePreview) {
+	$width = $pagePreview['width'];
+	$height = $pagePreview['height'];
+	$description = $pagePreview['description'];
+	
+	$pagePreviewButton = array(
+		'parent' => 'page_preview_sizes',
+		'label' => $width.' x '.$height.', '.$description,
+		'custom_width' => $width,
+		'custom_height' => $height,
+		'custom_description' => $description,
+		'call_js_function' => array(
+			'encapsulated_object' => 'zenarioA',
+			'function' => 'showPagePreview'));
+			
+	if ($pagePreview['is_default']) {
+		$pagePreviewButton['label'] .= ' (Default)';
+		 $panel['inline_buttons']['inspect']['custom_width'] = $width;
+		 $panel['inline_buttons']['inspect']['custom_height'] = $height;
+		 $panel['inline_buttons']['inspect']['custom_description'] = $description;
+	}
+	$panel['item_buttons']['page_preview_'.$pagePreview['ordinal'].'_'.$width.'x'.$height] = $pagePreviewButton;
+}
 
 return false;

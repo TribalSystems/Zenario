@@ -1,0 +1,22 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                role:
+                    label: 'User Role:'
+                    plugin_setting:
+                        name: role
+                    pick_items:
+                        path: zenario__users/nav/roles/panel
+                        target_path: zenario__users/nav/roles/panel
+                        min_path: zenario__users/nav/roles/panel
+                        max_path: zenario__users/nav/roles/panel
+                        select_phrase: Select a Role...
+                        nothing_selected_phrase: No Role selected
+                    note_below: >
+                        Only Users with Role selected will be allowed to change
+                        Location details
+    module_class_name: zenario_location_editor

@@ -1,7 +1,6 @@
 <form id="zenario_slide_settings_form">
 	<div id="zenario_main_image_details" class="zenario_slide_attributes_panel">
-		<div>
-
+	<div>
 		<div class="zenario_main_slide">
 			<img id="zenario_main_image_preview" src="{{m.image_src_thumbnail_1|e}}" alt="{{m.alt_tag|e}}" />
 		</div>
@@ -9,7 +8,7 @@
 		<p id="zenario_main_image_dimensions"></p>
 		
 		<div class="zenario_slide_settings_section zenario_slide_settings_choose_image">
-			<p>Main Image:</p>
+			<p>Desktop Image:</p>
 			<input type="text" name="filename" size="50" readonly/> 
 			<button type="button" id="zenario_change_image">Change Image</button>
 		</div>
@@ -24,16 +23,17 @@
 		
 		<p>Slide title:</p>
 		<input type="text" name="slide_title" id="zenario_slide_title" size="50"/>
-		<input type="hidden" name="title_transition" id="zenario_extra_html_transition" size="50"/>
 		
 		<p>Description (HTML)</p>
 		<textarea name="slide_extra_html" id="zenario_slide_extra_html"></textarea>
-		<input type="hidden" name="extra_html_transition" id="zenario_extra_html_transition" size="50"/>
-		</div>
+		<br />
+		<input type="checkbox" name="use_transition_code" id="zenario_use_transition_code"/>
+		Use text transition <span id="zenario_show_transition_box">Show</span>
+	</div>
 	</div>
 	
 	<div id="zenario_rollover_image_details" class="zenario_slide_attributes_panel" hidden>
-		<div>
+	<div>
 		<div class="zenario_rollover_slide">
 			
 			<img id="zenario_rollover_image_preview" src="{{m.rollover_image_src_thumbnail_1}}" alt="{{m.r_alt_tag}}" />
@@ -50,7 +50,7 @@
 	</div>
 	
 	<div id="zenario_mobile_image_details" class="zenario_slide_attributes_panel" hidden>
-		<div>
+	<div>
 		<div class="zenario_mobile_slide">
 			
 			<img id="zenario_mobile_image_preview" src="{{m.mobile_image_src_thumbnail_1}}" alt="{{m.m_alt_tag}}"/>
@@ -74,13 +74,14 @@
 		
 		<p>Description (HTML)</p>
 		<textarea name="mobile_slide_extra_html" id="zenario_mobile_slide_extra_html"></textarea>
+		
 	</div>
 	</div>
 	
 	<div id="zenario_slide_settings" class="zenario_slide_options_panel">
-		<div>
+	<div>
 			<div id="zenario_image_type">
-				<div id="zenario_edit_main_image" class="slide_tab current">Main Image</div>
+				<div id="zenario_edit_main_image" class="slide_tab current">Desktop Image</div>
 				<div id="zenario_edit_rollover_image" class="slide_tab">Rollover Image</div>
 				<div id="zenario_edit_mobile_image" class="slide_tab">Mobile Image</div>
 			</div>
@@ -156,7 +157,7 @@
 				</div>
 				
 				
-			</div>
+		</div>
 		</div>
 	</div>
 </form>

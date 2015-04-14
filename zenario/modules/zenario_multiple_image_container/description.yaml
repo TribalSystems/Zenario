@@ -16,7 +16,7 @@ description: |
     
     <p>There is the option to show a larger copy of each image when clicked in a floating box
         above the current page. These can also be displayed at a size of your choice.</p>
-
+category: pluggable
 keywords: >
     gallery, image, picture, gif, jpg, jpeg, png
 dependencies:

@@ -33,18 +33,21 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and "inc.js.php" files for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
 */
 
 
-(function(
+zenario.lib(function(
+	undefined,
 	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	get, phrase,
-	undefined
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf
 ) {
 	"use strict";
+	
+	
 
 	/**
 	  * This section lists important JavaScript functions from the core CMS in Admin Mode
@@ -341,7 +344,11 @@
 		});
 	
 		//Open intro.js
-		intro.setOptions({steps: steps});
+		intro.setOptions({
+			steps: steps,
+			nextLabel: zenarioA.phrase.next,
+			prevLabel: zenarioA.phrase.prev
+		});
 		intro.start();
 	
 		intro.onexit(function() {
@@ -419,8 +426,4 @@
 		}
 	};
 
-})(
-	URLBasePath,
-	window, document,
-	zenario, zenarioA, zenarioTab, zenarioAT,
-	zenario.get, zenarioA.phrase);
+});

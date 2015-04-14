@@ -24,9 +24,19 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function(
-	zenario, zenarioA, zenario_wysiwyg_editor,
-	undefined) {
+
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
+	zenario_wysiwyg_editor
+) {
+	"use strict";
+
+
 
 
 zenario_wysiwyg_editor.summaries = {};
@@ -173,19 +183,19 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 		
 		if (zenario_wysiwyg_editor.summaries[containerId].empty) {
 			zenario_wysiwyg_editor.floatingMessage(
-				zenarioA.phrase.saveSyncSummaryPrompt,
-				'<input type="button" class="submit_selected" value="' + zenarioA.phrase.saveSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + zenario.engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="submit_selected" value="' + zenarioA.phrase.saveDontSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + zenario.engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>',
+				phrase.saveSyncSummaryPrompt,
+				'<input type="button" class="submit_selected" value="' + phrase.saveSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
+				'<input type="button" class="submit_selected" value="' + phrase.saveDontSyncSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
+				'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 				true);
 			return;
 		
 		} else if (zenario_wysiwyg_editor.summaries[containerId].matches) {
 			zenario_wysiwyg_editor.floatingMessage(
-				zenarioA.phrase.saveUpdateSummaryPrompt,
-				'<input type="button" class="submit_selected" value="' + zenarioA.phrase.saveUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + zenario.engToBoolean(close) + ', true, true);" />' +
-				'<input type="button" class="submit_selected" value="' + zenarioA.phrase.saveDontUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + zenario.engToBoolean(close) + ', true, false);" />' +
-				'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>',
+				phrase.saveUpdateSummaryPrompt,
+				'<input type="button" class="submit_selected" value="' + phrase.saveUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, true);" />' +
+				'<input type="button" class="submit_selected" value="' + phrase.saveDontUpdateSummary + '" onclick="zenario_wysiwyg_editor.saveViaAJAX(\'' + editorId + '\', ' + engToBoolean(close) + ', true, false);" />' +
+				'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 				true);
 			return;
 		}
@@ -195,13 +205,13 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	}
 	
 	
-	var saveLink = zenario.get(containerId + '_save_link').value;
+	var saveLink = get(containerId + '_save_link').value;
 	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_wysiwyg_editor.AJAX(
 		saveLink,
 			'_zenario_save_content_=1' +
-			'&_sync_summary=' + zenario.engToBoolean(confirm && confirmChoice) +
+			'&_sync_summary=' + engToBoolean(confirm && confirmChoice) +
 			'&content__content=' + encodeURIComponent(content),
 		true);
 	
@@ -210,7 +220,7 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	} else if (close) {
 		zenario_wysiwyg_editor.doClose(slotName);
 	} else {
-		zenarioA.notification(zenarioA.phrase.contentSaved);
+		zenarioA.notification(phrase.contentSaved);
 	}
 }
 
@@ -287,12 +297,12 @@ zenario_wysiwyg_editor.setFlashURL = function(path, key, row) {
 zenario_wysiwyg_editor.close = function(el) {
 
 	var containerId = zenario.getContainerIdFromEl(el);
-	var slotName = zenario.getSlotnameFromEl(zenario.get(containerId));
+	var slotName = zenario.getSlotnameFromEl(get(containerId));
 	
 	zenario_wysiwyg_editor.floatingMessage(
-		zenarioA.phrase.closeEditorWarning,
-		'<input type="button" class="submit_selected" value="' + zenarioA.phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
-		'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>',
+		phrase.closeEditorWarning,
+		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
+		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 		true);
 }
 
@@ -304,10 +314,6 @@ zenario_wysiwyg_editor.doClose = function(slotName) {
 	zenarioAT.init();
 }
 
-
-
-})(
-	zenario, zenarioA, zenario_wysiwyg_editor);
 	
 
 
@@ -318,3 +324,9 @@ zenario_wysiwyg_editor.listenForDoubleClick = function(slotName, containerId, bu
 		}
 	});
 };
+
+
+
+
+
+}, zenario_wysiwyg_editor);

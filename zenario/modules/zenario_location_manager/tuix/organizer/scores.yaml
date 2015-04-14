@@ -1,0 +1,35 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__locations:
+    nav:
+        scores:
+            panel:
+                title: Sector scores
+                view_mode: list
+                db_items:
+                    table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]scores AS s'
+                    id_column: s.id
+                default_sort_column: id
+                columns:
+                    id:
+                        title: ID
+                        db_column: id
+                        show_by_default: Yes
+                        searchable: Yes
+                        align_right: Yes
+                        width: xxsmall
+                    name:
+                        title: Name
+                        db_column: name
+                        show_by_default: Yes
+                        searchable: Yes
+                        width: medium
+                item_buttons:
+                    rename_score:
+                        ord: "1"
+                        label: Rename
+                        admin_box:
+                            path: zenario_location_manager__score
+                disable_close_up_view: Yes
+                item:
+                    css_class: zenario_location_manager__score

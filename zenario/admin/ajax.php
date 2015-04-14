@@ -72,8 +72,6 @@ if (get('_ab')) {
 	//Work out which mode this should be for Storekeeper
 	if (get('_xml') || get('method_call') == 'showSitemap') {
 		define('ORGANIZER_MODE', $mode = 'xml');
-	} elseif (get('_csv')) {
-		define('ORGANIZER_MODE', $mode = 'csv');
 	} elseif (get('_select_mode')) {
 		define('ORGANIZER_MODE', $mode = 'select');
 	} elseif (get('_quick_mode')) {
@@ -777,41 +775,6 @@ if ($requestedPath && $tags['class_name']) {
 			
 			
 			
-			
-			if ($mode == 'csv') {
-				//Create a file in the temp directory to start writing a CSV file to.
-				$filename = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');
-				$f = fopen($filename, 'wb');
-				
-				//Attempt to get the list of shown columns and the column sort order from the request.
-				//This is usually in JSON form, but I've added some fallback logic for comma seperated inputs
-				//to allow for easier hacking via the URL
-				$csvCols = array();
-				$sortedColumns = json_decode(request('_sortedColumns'), true);
-				if (is_array($sortedColumns)) {
-					$sortedColumns = array_flip($sortedColumns);
-				} else {
-					$sortedColumns = false;
-				}
-				
-				$shownColumnsInCSV = json_decode(request('_shownColumnsInCSV'), true);
-				if (is_array($shownColumnsInCSV)) {
-				} else {
-					$shownColumnsInCSV = explode(',', ','. request('_shownColumnsInCSV'));
-					
-					if (!empty($shownColumnsInCSV[1])) {
-						$shownColumnsInCSV = array_flip($shownColumnsInCSV);
-						
-						if ($sortedColumns === false) {
-							$sortedColumns = $shownColumnsInCSV;
-						}
-					} else {
-						$shownColumnsInCSV = false;
-					}
-				}
-			}
-			
-			
 			//Apply a refiners, if this panel has any and one has been selected
 			if (get('refinerName') && !empty($tags['refiners'][get('refinerName')])) {
 				
@@ -884,34 +847,7 @@ if ($requestedPath && $tags['class_name']) {
 							$extraTables[prefixTableJoin($col['table_join'])] = true;
 						}
 					}
-					
-					//Add it to the list of columns for a CSV export
-					if ($mode == 'csv') {
-						if ($shownColumnsInCSV === false || !empty($shownColumnsInCSV[$colName])) {
-							if ($sortedColumns === false) {
-								$csvCols[$colName] = $i++;
-							
-							} elseif (isset($sortedColumns[$colName])) {
-								$csvCols[$colName] = (int) $sortedColumns[$colName];
-							}
-						}
-					}
 				}
-			}
-			
-			if ($mode == 'csv') {
-				//Sort the array by ordinal
-				asort($csvCols);
-				//Then flip the array so the column names are the values
-				$csvCols = array_flip($csvCols);
-				
-				//Give Modules the chance to add extra columns, or change the names
-				foreach ($modules as $className => &$module) {
-					$module->lineStorekeeperCSV($requestedPath, $csvCols, request('refinerName'), request('refinerId'));
-				}
-				
-				//Print the column headers for a CSV export
-				fputcsv($f, $csvCols);
 			}
 			
 			
@@ -1045,11 +981,28 @@ if ($requestedPath && $tags['class_name']) {
 			
 			
 			
-			$idColumn = $tags['db_items']['id_column'];
 			
-			if ($hierarchyColumn = arrayKey($tags['db_items'], 'hierarchy_column')) {
-				$tags['__item_hierarchy__'] = array();
+			//Check to see if a hierarchy column is set
+			$hierarchyColumn = false;
+			if (!empty($tags['hierarchy'])) {
+				//It can be set directly in $tags['hierarchy']['db_column'],
+				//or looked up by checking for the definition of $tags['hierarchy']['column']
+				//in the columns array.
+				if (!empty($tags['hierarchy']['db_column'])) {
+					$hierarchyColumn = $tags['hierarchy']['db_column'];
+				} else {
+					if (!empty($tags['hierarchy']['column'])) {
+						$hierarchyColumnName = $tags['hierarchy']['column'];
+					} else {
+						$hierarchyColumnName = 'parent_id';
+					}
+					
+					if (!empty($tags['columns'][$hierarchyColumnName]['db_column'])) {
+						$hierarchyColumn = $tags['columns'][$hierarchyColumnName]['db_column'];
+					}
+				}
 			}
+			$idColumn = $tags['db_items']['id_column'];
 			
 			if (!empty($tags['db_items']['group_by'])) {
 				$groupBy = $tags['db_items']['group_by'];
@@ -1153,7 +1106,7 @@ if ($requestedPath && $tags['class_name']) {
 					}
 				}
 			
-			} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openItemInHierarchy']))) {
+			} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openToItemInHierarchy']))) {
 				$openItemsInHierarchy = array();
 				
 				//Display every item in the hierarchy that is open, and their parents.
@@ -1166,18 +1119,14 @@ if ($requestedPath && $tags['class_name']) {
 				
 				//Alternately, if this is the first load, we might know an id that we wish to display,
 				//but be unsure as to what its parents are
-				} elseif (!empty($_REQUEST['_openItemInHierarchy'])) {
+				} elseif (!empty($_REQUEST['_openToItemInHierarchy'])) {
 					
 					$limit = 30;
-					$continue = true;
-					$id = $_REQUEST['_openItemInHierarchy'];
+					$id = $_REQUEST['_openToItemInHierarchy'];
 					
 					//Look up the selected item's parent, and that's parent, and so on
 					//until we reach the top
-					while ($continue && --$limit > 0) {
-						$openItemsInHierarchy[$id] = true;
-						$continue = false;
-						
+					do {
 						$sql = "
 							SELECT ". $hierarchyColumn. "
 							FROM ". $tags['db_items']['table']. "
@@ -1194,33 +1143,24 @@ if ($requestedPath && $tags['class_name']) {
 						 && ($row[0])
 						 && (!isset($openItemsInHierarchy[$row[0]]))) {
 							$id = $row[0];
-							$continue = true;
+							$openItemsInHierarchy[$id] = true;
+						} else {
+							break;
 						}
-					}
-					
-					//Send a flag to the browser to open this item initially
-					$tags['__open_item_in_hierarchy__'] = $_REQUEST['_openItemInHierarchy'];
+					} while (--$limit > 0);
 				}
 				
-				//If no items are open (i.e. the first load of the panel with nothing open or selected),
-				//get the top level and second level items
+				//Always fetch the top level items, i.e. things with a 0 or null parent id
 				$whereStatement .= "
 					AND (". $hierarchyColumn. " IS NULL
-					  OR ". $hierarchyColumn. " = 0
-					  OR ". $hierarchyColumn. " IN (
-						SELECT ". $idColumn. "
-						FROM ". $tags['db_items']['table']. "
-						WHERE ". $hierarchyColumn. " IS NULL
-						   OR ". $hierarchyColumn. " IN (0";
+				     OR ". $hierarchyColumn. " IN (0";
 				
-				//If there are items that are open, then they need to be displayed, their children need to be
-				//displayed, and their children's children need to be in the download as well so that we can
-				//tell that they are there.
+				//Also fetch the items that are parents of any item that is open
 				foreach ($openItemsInHierarchy as $id => $dummy) {
 					$whereStatement .= ", ". (is_numeric($id)? (int) $id : "'". sqlEscape($id). "'");
 				}
-			
-				$whereStatement .= ")))";
+				
+				$whereStatement .= "))";
 				
 			
 			} else {
@@ -1269,12 +1209,6 @@ if ($requestedPath && $tags['class_name']) {
 						}
 						
 						$tags['__item_sort_order__'][] = $row[0];
-						
-						if ($hierarchyColumn) {
-							if (!empty($row[1])) {
-								$tags['__item_hierarchy__'][$row[0]] = $row[1];
-							}
-						}
 					}
 					
 					//If "_limit" is in the request, this means that server side sorting/pagination is being used
@@ -1435,9 +1369,9 @@ if ($requestedPath && $tags['class_name']) {
 						". $in. "
 						GROUP BY ". $groupBy;
 				
-					//In XML or CSV mode, we need to make sure we add the order-by logic in when running the query to get the data
+					//In XML mode, we need to make sure we add the order-by logic in when running the query to get the data
 					//In normal mode, we only need to order things when applying pagination logic as there is client-side sorting for the actual data
-					if ($mode == 'csv' || $mode == 'xml') {
+					if ($mode == 'xml') {
 						$sql .= "
 						ORDER BY ". $orderBy;
 					}
@@ -1457,81 +1391,40 @@ if ($requestedPath && $tags['class_name']) {
 							++$count;
 						}
 					
-						if ($mode == 'csv') {
-							$i = 0;
-							$assoc = array();
-						
-							foreach ($tags['columns'] as $colName => &$col) {
-								if (is_array($col) && !empty($col['db_column'])) {
-									$assoc[$colName] = $row[++$i];
-								}
-							}
-
-							//Run the Module's formatStorekeeperCSV() method to add formating, and some other required attributes
-							//If other modules have added columns/refiners, run their fill method to add their own formatting
-							foreach ($modules as $className => &$module) {
-								$module->formatStorekeeperCSV($requestedPath, $assoc, request('refinerName'), request('refinerId'));
-							}
-						
-							$csvLine = array();
-							foreach ($csvCols as $ord => $colName) {
-								$csvLine[$ord] = arrayKey($assoc, $colName);
-							
-								if (arrayKey($tags, 'columns', $colName, 'format') == 'yes_or_no') {
-									$csvLine[$ord] = engToBoolean($csvLine[$ord])? adminPhrase('Yes') : adminPhrase('No');
-							
-								} elseif (arrayKey($tags, 'columns', $colName, 'format') == 'true_or_false') {
-									$csvLine[$ord] = engToBoolean($csvLine[$ord])? adminPhrase('True') : adminPhrase('False');
-								}
-							}
-							unset($assoc);
-
-							fputcsv($f, $csvLine);
-							unset($csvLine);
+						$id = $row[$i = 0];
 					
-						} else {
-							$id = $row[$i = 0];
-						
-							if ($encodeItemIdForStorekeeper) {
-								$id = encodeItemIdForStorekeeper($id);
-							}
-						
-							$tags['items'][$id] = array();
-						
-							foreach ($tags['columns'] as $colName => &$col) {
-								if (is_array($col) && !empty($col['db_column'])) {
-									$tags['items'][$id][$colName] = $row[++$i];
-								}
-							}
-						
-							++$i;
-							if ($hierarchyColumn && !empty($row[$i])) {
-								$tags['__item_hierarchy__'][$id] = $row[$i];
+						if ($encodeItemIdForStorekeeper) {
+							$id = encodeItemIdForStorekeeper($id);
+						}
+					
+						$tags['items'][$id] = array();
+					
+						foreach ($tags['columns'] as $colName => &$col) {
+							if (is_array($col) && !empty($col['db_column'])) {
+								$tags['items'][$id][$colName] = $row[++$i];
 							}
 						}
+						
+						//If we're doing a lazy load, we need to look up whether
+						//an item has children so we know whether to show a "+" next to it or not
+						if ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openToItemInHierarchy']))) {
+							if (!isset($tags['__item_parents__'][$row[0]])) {
+								$csql = "
+									SELECT 1
+									FROM ". $tags['db_items']['table']. "
+									WHERE ". $hierarchyColumn. " = ". (is_numeric($row[0])? (int) $row[0] : "'". sqlEscape($row[0]). "'"). "
+									LIMIT 1";
+							
+								$cresult = sqlQuery(addConstantsToString($csql));
+								$tags['__item_parents__'][$row[0]] = (bool) sqlFetchRow($cresult);
+							}
+						}
+					
+						++$i;
+						if ($hierarchyColumn && !empty($row[$i])) {
+							$tags['__item_parents__'][$row[$i]] = true;
+						}
 					}
-				}
-				
-				//If this is a CSV export, offer it for download without any formatting and then exit
-				if ($mode == 'csv') {
-					fclose($f);
-					
-					//...and finally offer it for download
-					header('Content-Type: text/x-csv');
-					header('Content-Disposition: attachment; filename="'. str_replace('/', '_', $requestedPath). '.csv"');
-					header('Content-Length: '. filesize($filename)); 
-					
-					//Run the Module's rewriteHttpHeaderCSV() 
-					foreach ($modules as $className => &$module) {
-						$module->rewriteHttpHeaderCSV($requestedPath, request('refinerName'), request('refinerId'));
-					}
-					
-					readfile($filename);
-					
-					//Remove the file from the temp directory
-					@unlink($filename);
-					
-					exit;
 				}
 			}
 		

@@ -1,4 +1,43 @@
-(function(zenario, zenarioA, zenario_banner) {
+/*
+ * Copyright (c) 2015, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf,
+	zenario_banner
+) {
+	"use strict";
+
+
+
 
 zenario_banner.open = function(containerId, editorId, delayed) {
 	
@@ -84,14 +123,14 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 	var containerId = zenario.getContainerIdFromEl(el);
 	var slotName = zenario.getSlotnameFromEl(el);
 	
-	var saveLink = zenario.get(containerId + '_save_link').value;
+	var saveLink = get(containerId + '_save_link').value;
 	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_banner.AJAX(
 		saveLink,
 		{
 			_zenario_save_content_: 1,
-			_sync_summary: zenario.engToBoolean(confirm && confirmChoice),
+			_sync_summary: engToBoolean(confirm && confirmChoice),
 			content__content: content,
 			content__title: $('div#'+containerId+' #banner_title_input_box').val()
 		}, true);
@@ -101,7 +140,7 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 	} else if (close) {
 		zenario_banner.doClose(slotName);
 	} else {
-		zenarioA.notification(zenarioA.phrase.contentSaved);
+		zenarioA.notification(phrase.contentSaved);
 	}
 }
 
@@ -153,12 +192,12 @@ zenario_banner.setLinkURL = function(path, key, row) {
 zenario_banner.close = function(el) {
 
 	var containerId = zenario.getContainerIdFromEl(el);
-	var slotName = zenario.getSlotnameFromEl(zenario.get(containerId));
+	var slotName = zenario.getSlotnameFromEl(get(containerId));
 	
 	zenario_banner.floatingMessage(
-		zenarioA.phrase.closeEditorWarning,
-		'<input type="button" class="submit_selected" value="' + zenarioA.phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_banner.doClose(\'' + slotName + '\');" />' +
-		'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>',
+		phrase.closeEditorWarning,
+		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_banner.doClose(\'' + slotName + '\');" />' +
+		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 		true);
 }
 
@@ -172,4 +211,5 @@ zenario_banner.doClose = function(slotName) {
 
 
 
-})(zenario, zenarioA, zenario_banner);
+
+}, zenario_banner);

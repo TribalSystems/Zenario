@@ -27,7 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 $desc = false;
 if (!loadModuleDescription($moduleClassName, $desc)
  || !$moduleId = getModuleId($moduleClassName)) {
@@ -35,8 +34,8 @@ if (!loadModuleDescription($moduleClassName, $desc)
 	
 	return false;
 }
-
 //Update the modules table with the details
+$category = (isset($desc['category']) && !empty($desc['category'])) ? ("'".sqlEscape($desc['category'])."'") : "NULL";
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. "modules SET
 		vlp_class = '". sqlEscape($desc['vlp_class_name']). "',
@@ -45,7 +44,8 @@ $sql = "
 		css_class_name = '". sqlEscape($desc['css_class_name']). "',
 		is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
 		can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
-		nestable = ". engToBoolean($desc['nestable']). "
+		nestable = ". engToBoolean($desc['nestable']). ",
+		category = ". $category . "
 	WHERE id = '". (int) $moduleId. "'";
 sqlQuery($sql);
 

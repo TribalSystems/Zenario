@@ -1,0 +1,16 @@
+
+/*  Placeholder styles for the request icon  */
+
+.view_content_no_requests,
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons div.view_content_requests {
+	background: url('request-icon-list-view.png') no-repeat center -16px;
+	width: 16px;
+	height: 16px;
+}
+
+.view_content_has_requests,
+#organizer_rightColumnContent div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons div.view_content_requests {
+	background: url('request-icon-list-view.png') no-repeat center -66px;
+	width: 16px;
+	height: 16px;
+}

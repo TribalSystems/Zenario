@@ -1,0 +1,161 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_import:
+    key:
+        id: ''
+        blank_lines: ''
+        warning_lines: ''
+        error_lines: ''
+        file_path: ''
+        dataset: ''
+    title: Dataset Import Wizard - Step 1 of 4
+    hide_tab_bar: Yes
+    save_button_message: Import now
+    tab: file
+    tabs:
+        file:
+            label: File
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            <p>
+                                Welcome to the Dataset import wizard.
+                            </p>
+                            <br/>
+                            <p>
+                                Use this wizard to import CSV files or Excel spreadsheets into your datasets.
+                            </p>
+                file:
+                    label: 'Upload import File:'
+                    upload:
+                        drag_and_drop: true
+                        accept: 'text/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                        extensions:
+                            - .csv
+                            - .xls
+                    validation:
+                        required: Please upload a CSV file or Excel spreadsheet to import.
+                    format_onchange: true
+                    side_note: |
+                        Your file must contain a key-line, with a list of the fields contained in the data. The key-line must be in the first five lines of the file.
+                type:
+                    label: 'Import action:'
+                    type: radios
+                    values:
+                        insert_data:
+                            ord: 1
+                            label: 'Insert new data'
+                        update_data:
+                            ord: 2
+                            label: 'Update existing data'
+                    value: insert_data
+                    validation:
+                        required: Please select an import type.
+                next:
+                    value: Next
+                    type: submit
+                    ord: 999999
+        headers:
+            label: Fields
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    ord: 0.5
+                    snippet:
+                        html: |
+                            <p>
+                                Please select the key-line, then for each of the fields please specify which field to import its data into.
+                            </p>
+                key_line:
+                    ord: 1
+                    label: 'Line containing field names:'
+                    type: select
+                    empty_value: -- Select --
+                    values:
+                        1: 1st Line
+                        2: 2nd Line
+                        3: 3rd Line
+                        4: 4th Line
+                        5: 5th Line
+                    format_onchange: true
+                desc2:
+                    ord: 2
+                    snippet:
+                        html: |
+                            <b>Match field names to database columns</b><br/>
+                previous:
+                    value: Previous
+                    type: submit
+                    ord: 999998
+                next:
+                    value: Next
+                    type: submit
+                    ord: 999999
+        preview:
+            label: Preview
+            edit_mode:
+                    enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: Review the data about to be imported and the problems encountered.
+                total_readable_lines:
+                    snippet:
+                        html:
+                csv_preview:
+                    label: 'Preview (up to line 200):'
+                    type: code_editor
+                    read_only: true
+                problems:
+                    label: 'Problems:'
+                    type: code_editor
+                    read_only: true
+                desc2:
+                    snippet:
+                        html: Choose whether to import lines with warnings or skip them. Lines with errors cannot be imported.
+                error_options:
+                    type: radios
+                    values:
+                        skip_warning_lines:
+                            label: 'Skip warning lines'
+                            ord: 1
+                        import_anyway:
+                            label: 'Import anyway'
+                            ord: 2
+                    value: skip_warning_lines
+                previous:
+                    value: Previous
+                    type: submit
+                    ord: 999998
+                next:
+                    value: Next
+                    type: submit
+                    ord: 999999
+        actions:
+            label: Actions
+            edit_mode:
+                    enabled: true
+            fields:
+                records_statement:
+                    snippet:
+                        html: 
+                email_report:
+                    label: Email me a report
+                    type: checkbox
+                line_break:
+                    snippet:
+                        html: |
+                            You can set a value for a field not included in your import. All records will have this value when the import is run.
+                            <br/><br/>
+                previous:
+                    value: Previous
+                    type: submit
+                    ord: 999999
+                refresh:
+                    value: refresh
+                    type: submit
+            

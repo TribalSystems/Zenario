@@ -1,0 +1,132 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__modules:
+    hidden_nav:
+        zenario_plugin_nest:
+            panel:
+                zenario_plugin_nest_probusiness__title_wf: Plugins and Tabs in this Flexible Nest
+                zenario_plugin_nest_probusiness__title_rp: 'Plugins and Tabs in the Flexible Nest "[[nest]]"'
+                zenario_plugin_nest_probusiness__item:
+                    name: Nested plugin/tab
+                    names: Nested plugins/tabs
+                zenario_plugin_nest_probusiness__collection_buttons:
+                    add_tab:
+                        css_class: zenario_create_a_new
+                        label: Create a tab
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: zenario_plugin_nest_probusiness__tab
+                    add_wireframe_and_at_most_one_tab:
+                        css_class: zenario_create_a_new
+                        label: Add a plugin
+                        only_show_on_refiner: nest
+                        pick_items:
+                            path: zenario__modules/panels/modules/refiners/nestable_only////
+                            path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
+                            target_path: zenario__modules/panels/modules
+                            min_path: zenario__modules/panels/modules
+                            disallow_refiners_looping_on_min_path: Yes
+                            one_to_one_choose_phrase: Add to nest
+                            ajax:
+                                request:
+                                    add_wireframe_and_at_most_one_tab: "1"
+                    add_plugin_and_at_most_one_tab:
+                        css_class: add
+                        label: Copy from plugin from library
+                        only_show_on_refiner: nest
+                        pick_items:
+                            path: zenario__modules/panels/modules/refiners/nestable_only////
+                            path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
+                            target_path: zenario__modules/panels/plugins
+                            min_path: zenario__modules/panels/modules
+                            max_path: 'false'
+                            disallow_refiners_looping_on_min_path: Yes
+                            one_to_one_choose_phrase: Add to Nest
+                            ajax:
+                                request:
+                                    add_plugin_and_at_most_one_tab: "1"
+                    nest_settings:
+                        label: Nest properties
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: plugin_settings
+                            key:
+                                instanceId: ""
+                    framework_and_css:
+                        label: 'Framework & CSS'
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: plugin_css_and_framework
+                            key:
+                                instanceId: ""
+                zenario_plugin_nest_probusiness__item_buttons:
+                    view:
+                        label: View image
+                        popout:
+                            href: zenario/file.php
+                            options:
+                                type: image
+                        traits:
+                            has_image: Yes
+                    plugin_settings:
+                        label: Plugin properties
+                        traits:
+                            is_not_tab: Yes
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: plugin_settings
+                    framework_and_css:
+                        label: 'Framework & CSS'
+                        traits:
+                            is_not_tab: Yes
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: plugin_css_and_framework
+                    tab_settings:
+                        label: Tab properties
+                        traits:
+                            is_tab: Yes
+                        only_show_on_refiner: nest
+                        admin_box:
+                            path: zenario_plugin_nest_probusiness__tab
+                    duplicate:
+                        label: Duplicate
+                        traits:
+                            is_not_tab: Yes
+                        only_show_on_refiner: nest
+                        ajax:
+                            confirm:
+                                html: Yes
+                                button_message: Duplicate
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                duplicate_plugin: "1"
+                    remove_plugin:
+                        ord: "99"
+                        label: Delete
+                        traits:
+                            is_not_tab: Yes
+                        only_show_on_refiner: nest
+                        ajax:
+                            confirm:
+                                html: Yes
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove_plugin: "1"
+                    remove_all_but_last_tab:
+                        ord: "100"
+                        label: Delete
+                        traits:
+                            is_tab: Yes
+                        only_show_on_refiner: nest
+                        ajax:
+                            confirm:
+                                html: Yes
+                                button_message: Delete
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                remove_all_but_last_tab: "1"

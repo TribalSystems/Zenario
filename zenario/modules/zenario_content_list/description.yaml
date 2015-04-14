@@ -26,6 +26,7 @@ description: |
                 You can restrict the displayed list to only some items grouped in specified category, or
                 list all of the content items for a given content type.
             </p>
+category: pluggable
 keywords: >
     list, auto, news, documents, pages, latest, category,
     taxonomy, summary, summaries, archive, library

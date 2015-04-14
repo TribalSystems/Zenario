@@ -103,6 +103,9 @@ if ($isWelcome || checkPriv()) {
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
 	
 	if ($includeOrganizer) {
+		echo '
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/inc-organizer.css.php?v=', $v, $gz, '"/>';
+		
 		$cssModuleIds = '';
 		foreach (getRunningModules() as $module) {
 			if (moduleDir($module['class_name'], 'adminstyles/organizer.css', true)
@@ -110,10 +113,6 @@ if ($isWelcome || checkPriv()) {
 				$cssModuleIds .= ($cssModuleIds? ',' : ''). $module['id'];
 			}
 		}
-		
-		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/nestable.min.css?v=', $v, '"/>
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin_organizer.min.css?v=', $v, '"/>';
 		
 		if ($cssModuleIds) {
 			echo '

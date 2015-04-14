@@ -36,11 +36,12 @@ class zenario_document_container extends module_base_class {
 	
 	function showSlot() {
 		if(!($this->setting('container_mode') == 'user_documents')) {
+			//standard documents
 			if (checkPriv()) {
-				if ($this->document_id && $document = getRow('documents', array('file_id', 'type', 'folder_name'), $this->document_id)) {
+				if ($this->document_id && $document = getRow('documents', array('file_id', 'type', 'folder_name','filename'), $this->document_id)) {
 					if ($document['type'] == 'file') {
 						if ($file = getRow('files', array('id', 'filename'), $document['file_id'])) {
-							$showingText = 'Document ' . '"' . $file['filename'] . '"';
+							 $showingText = 'Document ' . '"' . $document['filename'] . '"';
 						} else {
 							$showingText = 'Missing document with file id "' . $document['file_id'] . '"';
 						}
@@ -93,11 +94,11 @@ class zenario_document_container extends module_base_class {
 			}
 			if ($this->document_id) {
 				$link = '';
-				if (!$document = getRow('documents', array('file_id', 'type', 'thumbnail_id', 'folder_name'), $this->document_id)) {
+				if (!$document = getRow('documents', array('file_id', 'type', 'thumbnail_id', 'folder_name','filename'), $this->document_id)) {
 					return false;
 				}
 				if ($document['type'] == 'file') {
-					
+							
 					$documentTagsArray = explode(',', $this->setting('document_tags'));
 					$tagNamesArray = getRowsArray('document_tags', 'tag_name', array('id' => $documentTagsArray));
 					$documentTagText = "";
@@ -106,9 +107,10 @@ class zenario_document_container extends module_base_class {
 					}
 					$documentTagText = rtrim($documentTagText, ",");
 					$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
-					$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $document['file_id']);
-					$link = self::getFileLink($file, $privacyLevel);
-					
+					$file = getRow('files', array('id', 'path', 'created_datetime'), $document['file_id']);
+					$file['filename'] = $document['filename'];
+					$link = $this->getFileLink($file, $privacyLevel);
+					//$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					if ($this->setting('offer_download_as_zip')) {
 						$this->mergeFields['Download_Archive'] = true;
 						if (get('build') == $this->instanceId) {
@@ -123,8 +125,8 @@ class zenario_document_container extends module_base_class {
 						$this->mergeFields['Document_Tags'] = '';
 						$this->mergeFields['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
 						$this->mergeFields['Document_created_datetime'] = $file['created_datetime'];
-						$this->mergeFields['Document_Title'] =  $file['filename'];
-						$this->mergeFields['Document_Link_Text'] =  $file['filename'];
+						$this->mergeFields['Document_Title'] =  $document['filename'];
+						$this->mergeFields['Document_Link_Text'] = $document['filename'];
 						if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
 							$thumbnailHtml= self::createThumbnailHtml($document['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 							$this->mergeFields['Thumbnail'] = $thumbnailHtml;
@@ -166,6 +168,7 @@ class zenario_document_container extends module_base_class {
 					
 
 				} elseif ($document['type'] == 'folder') {
+				
 					$level = 0;
 					$childFiles = array();
 					if ($childFiles = self::getFilesInFolder($this->document_id)) {
@@ -195,6 +198,7 @@ class zenario_document_container extends module_base_class {
 				$this->mergeFields['error'] = 'no_files';
 			}
 		} else {
+			//user documents
 			if (checkPriv()) {
 				$showingText = 'User documents for logged in user';
 				$pluginSettingsForEditView = array("Showing: " => $showingText);
@@ -217,15 +221,18 @@ class zenario_document_container extends module_base_class {
 				} else {
 					$fields = getDatasetFieldsDetails(ZENARIO_USER_DOCUMENTS_PREFIX. 'user_documents');
 					foreach ($documents as &$document) {
+					
 						$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
 						$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $document['file_id']);
-						$link = self::getFileLink($file, 'private');
+						
+						
+						$link = $this->getFileLink($file, 'private');
 						$document['Document_Type'] =  'file';
 						$document['Document_Link'] = $link;
 						$document['Document_created_datetime'] = $file['created_datetime'];
 						$document['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
-						$document['Document_Title'] =  $file['filename'];
-						$document['Document_Link_Text'] =  htmlspecialchars($file['filename']);
+						$document['Document_Title'] = $file['filename'];
+						$document['Document_Link_Text'] = htmlspecialchars($file['filename']);
 						$document['Document_Level'] = 1;
 						
 						if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
@@ -309,7 +316,8 @@ class zenario_document_container extends module_base_class {
 			if ($document['folder_name']) {
 				$archiveName = $document['folder_name'];
 			} else {
-				$archiveName = getRow('files', 'filename', array('id' => $document['file_id']));
+				$archiveName = $document['filename'];
+				//$archiveName = getRow('files', 'filename', array('id' => $document['file_id']));
 			}
 		}
 		$arr = explode('.', $archiveName);
@@ -450,7 +458,7 @@ class zenario_document_container extends module_base_class {
 					
 					$documentDetails = array();
 					$sql = '
-						SELECT d.id, d.file_id, f.filename, f.path
+						SELECT d.id, d.file_id, f.filename, f.path, d.filename as doc_filename
 						FROM '.sqlEscape($sqlTable).' d
 						INNER JOIN '.DB_NAME_PREFIX.'files f
 							ON d.file_id = f.id
@@ -466,9 +474,9 @@ class zenario_document_container extends module_base_class {
 						$randomDir = createRandomDir(15, 'downloads', $onlyForCurrentVisitor = setting('restrict_downloads_by_ip'));
 						if (mkdir($randomDir . '/' . $contentSubdirectory)) {
 							foreach ($documentIDs as $ID) {
-								if (isset($documentDetails[$ID]) && ($filename = $documentDetails[$ID]['filename'])) {
+								if (isset($documentDetails[$ID]) && ($docFilename = $documentDetails[$ID]['doc_filename']) && ($filename = $documentDetails[$ID]['filename'])) {
 									chdir($randomDir);
-									$nextFileName = self::getNextFileName($contentSubdirectory . '/' . $filename);
+									$nextFileName = self::getNextFileName($contentSubdirectory . '/' . $docFilename);
 									if (($fileID = (int)$documentDetails[$ID]['file_id']) && ($path = $documentDetails[$ID]['path'])) {
 										copy(setting("docstore_dir") . "/" . $path . "/" . $filename, $nextFileName);
 										if (($err = self::addToZipArchive($zipArchive,$nextFileName)) == "") {
@@ -654,14 +662,15 @@ class zenario_document_container extends module_base_class {
 		$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
 		foreach ($documents as $key => $childDoc) {
 			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $childDoc['file_id']);
+			$file['filename'] = $childDoc['filename'];
 			$documents[$key]['Document_Type'] =  'file';
 			$documents[$key]['Document_Link'] =  self::getFileLink($file, $privacyLevel);
 			$fileURL = self::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $privacyLevel);
 			$documents[$key]['Google_Analytics_Link'] = trackFileDownload($fileURL);
 			$documents[$key]['Document_Mime'] = str_replace('/', '_', documentMimeType($documents[$key]['Document_Link']));
 			$documents[$key]['Document_created_datetime'] = $file['created_datetime'];
-			$documents[$key]['Document_Title'] = $file['filename'];
-			$documents[$key]['Document_Link_Text'] = $file['filename'];
+			$documents[$key]['Document_Title'] = $childDoc['filename'];
+			$documents[$key]['Document_Link_Text'] = $childDoc['filename'];
 			$documents[$key]['Document_Level'] = $level;
 			
 			if ($childDoc['thumbnail_id'] && $this->setting('show_thumbnails')) {
@@ -717,7 +726,7 @@ class zenario_document_container extends module_base_class {
 	public function getFilesInFolder($folderId) {
 		$childFiles = array();
 		if ($this->setting('document_tags')) {
-			$sql = "SELECT d.id, d.type, d.file_id, d.folder_name, d.thumbnail_id 
+			$sql = "SELECT d.id, d.type, d.file_id, d.folder_name, d.thumbnail_id, d.filename 
 					FROM " . DB_NAME_PREFIX . "documents AS d 
 					LEFT JOIN " . DB_NAME_PREFIX . "document_tag_link AS dtl 
 						ON d.id = dtl.document_id 
@@ -729,12 +738,12 @@ class zenario_document_container extends module_base_class {
 			$result = sqlQuery($sql);
 			
 			while ($row = sqlFetchRow($result)) {
-				$childFiles[] = array('id' => $row[0], 'type' => $row[1], 'file_id' => $row[2], 'folder_name' => $row[3]);
+				$childFiles[] = array('id' => $row[0], 'type' => $row[1], 'file_id' => $row[2], 'folder_name' => $row[3],'filename' =>$row[4]);
 			}
 					
 		} else {
 			$childFiles = getRowsArray('documents', 
-							array('id', 'type', 'file_id', 'folder_name','thumbnail_id'), 
+							array('id', 'type', 'file_id', 'folder_name','thumbnail_id','filename'), 
 							array('folder_id' => $folderId, 'type' => 'file'),
 							'ordinal');
 		}

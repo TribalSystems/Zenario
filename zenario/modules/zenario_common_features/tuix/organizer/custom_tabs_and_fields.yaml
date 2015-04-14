@@ -9,7 +9,6 @@ zenario__administration:
             refiner_required: true
             
             items: {}
-            __item_hierarchy__: {}
             default_sort_column: label
             columns:
                 ordinal:
@@ -57,11 +56,16 @@ zenario__administration:
                     width: xxsmall
                     format: yes_or_no
    
+            panel_type: hierarchy
             reorder:
                 priv: _PRIV_MANAGE_DATASET
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
-                hierarchy_depth: 2
+            
+            hierarchy:
+                column: parent_id
+                depth: 2
+            
             collection_buttons:
                 create_new_tab:
                     priv: _PRIV_MANAGE_DATASET
@@ -122,7 +126,7 @@ zenario__administration:
                     priv: _PRIV_MANAGE_DATASET
                     label: Delete tab
                     visible_if_for_all_selected_items: |
-                        item.is_tab && !item.is_system && !zenarioO.itemHierarchyArray[id]
+                        item.is_tab && !item.is_system && !item.has_children
                     ajax:
                         confirm:
                             message: |

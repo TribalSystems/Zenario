@@ -127,6 +127,13 @@ plugin_settings:
                     type: text
                     value: "This email address is not associated with any account."
                     show_phrase_icon: true
+                screen_name_not_in_db_message:
+                    plugin_setting:
+                        name: screen_name_not_in_db_message
+                    label: 'If screen name is not in the database:'
+                    type: text
+                    value: "This screen name is not associated with any account."
+                    show_phrase_icon: true
                 wrong_password_message:
                     plugin_setting:
                         name: wrong_password_message
