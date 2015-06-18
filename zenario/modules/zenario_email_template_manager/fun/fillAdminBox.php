@@ -59,18 +59,6 @@ switch ($path) {
 			$box['tabs']['meta_data']['fields']['email_name_from']['value'] = setting('email_name_from');
 			
 		}
-
-		if ($box['key']['id']) {
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['path'] = 'zenario__email_template_manager/panels/email_templates/item_buttons/images//'. (int) $box['key']['id']. '//';
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['min_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['max_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/panels/email_images_for_email_templates';
-		} else {
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['min_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['max_path'] =
-			$box['tabs']['body']['fields']['body']['insert_image_button']['pick_items']['target_path'] = 'zenario__content/panels/email_images_shared';
-		}
 		
 		break;
 		

@@ -98,7 +98,7 @@ zenario_users.manageSmartGroup = function(itemLevel, values) {
 	zenarioAB.open(
 		'advanced_search',
 		{
-			storekeeper_path: 'zenario__users/panels/users',
+			organizer_path: 'zenario__users/panels/users',
 			zenario_pro_features__editing_smart_group: true,
 			zenario_pro_features__smart_group_id: id
 		},

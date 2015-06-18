@@ -502,6 +502,11 @@ class zenario_currency_manager extends module_base_class {
 	
 	//Get a specific curency
 	public static function getCurrency($id){
+		if (is_numeric($id)) {
+			$where = array('id' => $id);
+		} else {
+			$where = array('code' => $id);
+		}
 		$currency = getRow(
 							ZENARIO_CURRENCY_MANAGER_PREFIX. 'currencies',
 							array(	'id',
@@ -517,7 +522,7 @@ class zenario_currency_manager extends module_base_class {
 									'last_updated_timestamp',
 									'date_rate_last_fetched'
 									),
-									array('id' => $id)
+									$where
 								);
 		return $currency;
 	}

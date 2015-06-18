@@ -18,6 +18,7 @@ toolbars:
         toolbar_microtemplate: zenario_toolbar_menu_tab
     menu_secondary:
         ord: ""
+        priv: _PRIV_VIEW_MENU_ITEM
         label: ""
         css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
         page_mode: menu
@@ -76,7 +77,8 @@ sections:
                     maxHeight: 100%
                     initialWidth: 100%
                     initialHeight: 100%
-                    iframe: Yes
+                    iframe: true
+                    fixed: true
                     transition: none
                     css_class: zenario_grid_maker
                 traits:

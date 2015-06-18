@@ -84,7 +84,7 @@ class zenario_location_viewer extends module_base_class {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-				<script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
+				<script src="https://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
 		}
 	}
 	
@@ -99,6 +99,12 @@ class zenario_location_viewer extends module_base_class {
 				$this->mergeArray['cID'] = $this->cID;
 		
 				if (!empty($this->locationDetails['description'])) {
+					if ($this->locationDetails['equiv_id'] && $this->locationDetails['content_type']) {
+						langEquivalentItem($this->locationDetails['equiv_id'], $this->locationDetails['content_type']);
+						$locationUrl = linkToItem($this->locationDetails['equiv_id'], $this->locationDetails['content_type']);
+						$this->mergeArray['Link_Start'] = "<a href='" . $locationUrl . "'>";
+						$this->mergeArray['Link_End'] = "</a>";
+					}
 					$this->mergeArray['Description'] = htmlspecialchars($this->locationDetails['description']);
 				}
 	

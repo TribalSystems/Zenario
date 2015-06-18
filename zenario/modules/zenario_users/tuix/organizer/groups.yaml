@@ -1,0 +1,74 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__users:
+    nav:
+        groups:
+            priv: _PRIV_VIEW_USER
+            ord: "1.1"
+            label: Groups
+            tooltip: >
+                View extranet groups
+            link:
+                path: zenario__users/panels/groups
+    
+    panels:
+        groups:
+            title: Groups
+            db_items:
+                table: '[[DB_NAME_PREFIX]]custom_dataset_fields cdf'
+                id_column: cdf.id
+                where_statement: WHERE cdf.type = 'group'
+            no_items_message: No groups are defined.
+            default_sort_column: label
+            item:
+                tooltip_when_link_is_active: 'View users in the Group "[[label]]"'
+                link:
+                    path: zenario__users/panels/users
+                    refiner: group_members
+            columns:
+                id:
+                    title: ID
+                    db_column: cdf.id
+                    width: xxsmall
+                    align_right: true
+                    show_by_default: false
+                label:
+                    title: Name
+                    db_column: cdf.label
+                    searchable: true
+                    width: large
+                    show_by_default: true
+                db_column:
+                    title: Internal name
+                    db_column: cdf.db_column
+                    show_by_default: false
+                members:
+                    title: Members
+                    tooltip: Members
+                    width: xxsmall
+                    show_by_default: true
+                    sortable: true
+                    align_right: true
+                content_items:
+                    title: Content items
+                    tooltip: Content items
+                    width: xxsmall
+                    show_by_default: true
+                    sortable: true
+                    align_right: true
+            item_buttons:
+                view_dropdown:
+                    label: 'View'
+                    hide_when_children_are_not_visible: true
+                users:
+                    label: 'Group members'
+                    parent: view_dropdown
+                    link:
+                        path: zenario__users/panels/users
+                        refiner: group_members
+                content_items:
+                    label: 'Content items shared to Group members'
+                    parent: view_dropdown
+                    link:
+                        path: zenario__content/panels/content
+                        refiner: group_members

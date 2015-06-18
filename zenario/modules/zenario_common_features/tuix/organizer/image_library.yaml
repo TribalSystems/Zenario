@@ -1,0 +1,432 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__content:
+    panels:
+        image_library:
+            title: Image library
+            no_items_message: There are no images in the library.
+            
+            
+            db_items:
+                table: |
+                    [[DB_NAME_PREFIX]]files AS f
+                id_column: f.id
+                where_statement: |
+                    WHERE f.`usage` = 'image'
+                      AND f.archived = 0
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+            panel_type: grid_or_list
+            grid_view_microtemplate: zenario_grid_view_image
+            slidedown_view_microtemplate: zenario_slidedown_view_image
+            
+            refiners:
+                tag:
+                    #n.b. this code needs to be completed by preFillOrganizerPanel() before it can work!
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]image_tag_link AS rtitl
+                           ON rtitl.image_id = f.id
+                          AND rtitl.tag_id = 
+            
+            
+            columns:
+                id:
+                    db_column: f.id
+                filename:
+                    title: Filename
+                    searchable: true
+                    db_column: f.filename
+                    show_by_default: true
+                tags:
+                    title: Tags
+                    db_column: |
+                        (
+                            SELECT GROUP_CONCAT(DISTINCT it.name ORDER BY it.name SEPARATOR ', ')
+                            FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
+                            INNER JOIN [[DB_NAME_PREFIX]]image_tags AS it
+                               ON itl.tag_id = it.id
+                            WHERE itl.image_id = f.id
+                            GROUP BY itl.image_id
+                        )
+                    show_by_default: true
+                    searchable: false
+                    disallow_sorting: true
+                alt_tag:
+                    title: Default alt-tag
+                    searchable: true
+                    db_column: f.alt_tag
+                title:
+                    db_column: f.title
+                checksum:
+                    db_column: f.checksum
+                short_checksum:
+                    db_column: f.short_checksum
+                mime_type:
+                    server_side_only: true
+                    db_column: f.mime_type
+                size:
+                    title: Size
+                    format: filesize
+                    db_column: f.size
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                width:
+                    title: Width
+                    searchable: true
+                    db_column: f.width
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                height:
+                    title: Height
+                    searchable: true
+                    db_column: f.height
+                    show_by_default: true
+                    align_right: true
+                    width: xsmall
+                in_use_anywhere:
+                    title: In use
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS uii
+                            WHERE uii.image_id = f.id
+                              AND uii.in_use = 1
+                              AND uii.archived = 0
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                    show_by_default: true
+                    width: xsmall
+                usage_content:
+                    title: Attached to (content items)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT cii.foreign_key_to, cii.foreign_key_id, cii.foreign_key_char)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS cii
+                            WHERE cii.image_id = f.id
+                              AND cii.foreign_key_to = 'content'
+                              AND cii.archived = 0
+                        )
+                    filter_format: yes_or_no
+                    search_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS cii
+                            WHERE cii.image_id = f.id
+                              AND cii.foreign_key_to = 'content'
+                              AND cii.archived = 0
+                            LIMIT 1
+                        )
+                    show_by_default: false
+                    align_right: true
+                    width: xsmall
+                
+                usage_plugins:
+                    title: Usage (plugins)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT pii.foreign_key_to, pii.foreign_key_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS pii
+                            WHERE pii.image_id = f.id
+                              AND pii.foreign_key_to = 'library_plugin'
+                        )
+                    filter_format: yes_or_no
+                    search_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS pii
+                            WHERE pii.image_id = f.id
+                              AND pii.foreign_key_to = 'library_plugin'
+                            LIMIT 1
+                        )
+                    show_by_default: false
+                    align_right: true
+                    width: xsmall
+                usage_email_templates:
+                    title: Usage (email templates)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'email_template'
+                        )
+                    filter_format: yes_or_no
+                    search_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'email_template'
+                            LIMIT 1
+                        )
+                    show_by_default: false
+                    align_right: true
+                    width: xsmall
+                
+                usage_menu_nodes:
+                    title: Usage (menu nodes)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'menu_node'
+                        )
+                    filter_format: yes_or_no
+                    search_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'menu_node'
+                            LIMIT 1
+                        )
+                    search_column:
+                    show_by_default: false
+                    align_right: true
+                    width: xsmall
+                
+                duplicate_filename:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]files AS df
+                            WHERE df.`usage` = f.`usage`
+                              AND df.filename = f.filename
+                              AND df.archived = 0
+                              AND df.id != f.id
+                            LIMIT 1
+                        )
+                    filter_format: yes_or_no
+            default_sort_column: filename
+            label_format_for_popouts: |
+                [[filename]]
+                [[[width]] × [[height]]]
+            label_format_for_picked_items: |
+                [[filename]]
+                [[[width]] × [[height]]]
+            
+            
+            quick_filter_buttons:
+                usage_dropdown:
+                    label: Usage
+                tags:
+                    label: Tags
+                    hidden: true
+                in_use_anywhere:
+                    parent: usage_dropdown
+                    label: In use
+                    column: in_use_anywhere
+                #not_in_use_anywhere:
+                #    parent: usage_dropdown
+                #    label: Not in use
+                #    column: in_use_anywhere
+                #    invert: true
+                usage_content:
+                    parent: usage_dropdown
+                    label: Attached to a content item
+                    column: usage_content
+                    value: 1
+                #not_usage_content:
+                #    parent: usage_dropdown
+                #    label: Not attached to a content item
+                #    column: usage_content
+                #    value: 1
+                #    invert: true
+                usage_plugins:
+                    parent: usage_dropdown
+                    label: Used by a library plugin
+                    column: usage_plugins
+                    value: 1
+                #not_usage_plugins:
+                #    parent: usage_dropdown
+                #    label: Not used by a library plugin
+                #    column: usage_plugins
+                #    value: 1
+                #    invert: true
+                usage_email_templates:
+                    parent: usage_dropdown
+                    label: Used by an email template
+                    column: usage_email_templates
+                    value: 1
+                
+                usage_menu_node:
+                    parent: usage_dropdown
+                    label: Used by a menu node
+                    column: usage_menu_nodes
+                    value: 1
+                #not_usage_email_templates:
+                #    parent: usage_dropdown
+                #    label: Not used by an email template
+                #    column: usage_email_templates
+                #    value: 1
+                #    invert: true
+                duplicate_filename:
+                    ord: 99
+                    parent: usage_dropdown
+                    label: Duplicate file names
+                    column: duplicate_filename
+                    value: 1
+                
+            #    all:
+            #        ord: 1
+            #        label: "All"
+            #        column: status
+            #        remove_filter: true
+            #    module_not_initialized:
+            #        ord: 2
+            #        label: "Uninitialized"
+            #        column: status
+            #        value: module_not_initialized
+            #    module_running:
+            #        ord: 3
+            #        label: "Running"
+            #        column: status
+            #        value: module_running
+            #        enabled_by_default: true
+            #    module_suspended:
+            #        ord: 4
+            #        label: "Suspended"
+            #        column: status
+            #        value: module_suspended
+            #    admin_dropdown: 
+            #        ord: "10"
+            #        label: Assigned to
+            #        column: assigned_to
+            #        remove_filter: "1"
+            #    admin_anyone: 
+            #        ord: "11"
+            #        parent: admin_dropdown
+            #        label: Anyone
+            #        column: assigned_to
+            #        value: "*"
+            #    admin_noone: 
+            #        ord: "12"
+            #        parent: admin_dropdown
+            #        label: No one
+            #        column: assigned_to
+            #        value: "*"
+            #        invert: "1"
+            #    admin_22: 
+            #        ord: 101
+            #        parent: admin_dropdown
+            #        label: christurnbull (super)
+            #        column: assigned_to
+            #        value: 22
+            #    admin_26: 
+            #        ord: 102
+            #        parent: admin_dropdown
+            #        label: glennj (super)
+            #        column: assigned_to
+            #        value: 26
+            #    admin_34: 
+            #        ord: 103
+            #        parent: admin_dropdown
+            #        label: jacksond (super)
+            #        column: assigned_to
+            #        value: 34
+            #    admin_35: 
+            #        ord: 104
+            #        parent: admin_dropdown
+            #        label: jamesc (super)
+            #        column: assigned_to
+            #        value: 35
+            #    admin_25: 
+            #        ord: 105
+            #        parent: admin_dropdown
+            #        label: lizf (super)
+            #        column: assigned_to
+            #        value: 25
+            #    admin_29: 
+            #        ord: 106
+            #        parent: admin_dropdown
+            #        label: matthewh (super)
+            #        column: assigned_to
+            #        value: 29
+            #    admin_30: 
+            #        ord: 107
+            #        parent: admin_dropdown
+            #        label: robinl (super)
+            #        column: assigned_to
+            #        value: 30
+            #    admin_33: 
+            #        ord: 108
+            #        parent: admin_dropdown
+            #        label: simonc (super)
+            #        column: assigned_to
+            #        value: 33
+            #    admin_23: 
+            #        ord: 109
+            #        parent: admin_dropdown
+            #        label: tonyb (super)
+            #        column: assigned_to
+            #        value: 23
+            
+            
+            item:
+                name: Image
+                names: Images
+                css_class: media_image
+            collection_buttons:
+                upload:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Upload
+                    css_class: zenario_create_a_new
+                    upload:
+                        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
+                        fileDesc: Images
+                        multi: true
+                        drag_and_drop: true
+                        request:
+                            upload: true
+                tags:
+                    label: Manage tags
+                    link:
+                        path: zenario__content/panels/image_tags
+            inline_buttons:
+                view:
+                    css_class: inspect
+                    tooltip: View image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+            item_buttons:
+                edit:
+                    label: Properties
+                    tooltip: Rename image or add a title
+                    admin_box:
+                        path: zenario_image
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                view:
+                    parent: view_dropdown
+                    label: Image
+                    popout:
+                        href: zenario/file.php
+                        options:
+                            type: image
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                delete:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: >
+                        !item.in_use_anywhere
+                    ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
+                            multiple_select_message: Are you sure you wish to delete these unused images?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"

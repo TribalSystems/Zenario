@@ -62,6 +62,40 @@ site_settings:
                     note_below: 'A real name associated with the Email Address &quot;From&quot;.'
                     validation:
                         required: Please enter a Name.
+                warning_email_frequency:
+                    site_setting:
+                        name: warning_email_frequency
+                    label: 'Warning email frequency:'
+                    type: select
+                    values:
+                        no_limit:
+                            ord: 0
+                            label: No limit
+                        5 minutes:
+                            ord: 1
+                            label: 5 minutes
+                        10 minutes:
+                            ord: 2
+                            label: 10 minutes
+                        30 minutes:
+                            ord: 3
+                            label: 30 minutes
+                        1 hour:
+                            ord: 4
+                            label: 1 hour
+                        2 hours:
+                            ord: 5
+                            label: 2 hours
+                        6 hours:
+                            ord: 6
+                            label: 6 hours
+                        12 hours:
+                            ord: 7
+                            label: 12 hours
+                        1 day:
+                            ord: 8
+                            label: 1 day
+                    value: 'no_limit'
         smtp:
             label: SMTP
             edit_mode:

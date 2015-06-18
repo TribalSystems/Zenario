@@ -415,6 +415,7 @@ class zenario_content_list extends module_base_class {
 				'RSS_Link' => $this->setting('enable_rss')? $this->escapeAppropriately($this->showRSSLink(true)) : null,
 				'Title_With_Content' => $titleWithContent,
 				'Title_With_No_Content' => ((bool)$this->setting('show_headings_if_no_items')) ? $titleWithNoContent: null,
+				'Title_Tags' => $this->setting('heading_tags') ? $this->setting('heading_tags') : 'h1'
 			),
 			array(
 				'Slot' => true,

@@ -170,8 +170,13 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 		
 		$t = $this->tableInfo($box);
 		
+		$html = $values['slot/html'];
+		if (trim($html) == '') {
+			$html = null;
+		}
+		
 		$cols = array(
-			$t['html'] => $values['slot/html'],
+			$t['html'] => $html,
 			$t['cc'] => $values['slot/cc'],
 			$t['vis'] => !$values['slot/output_in_admin_mode']);
 		

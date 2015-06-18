@@ -484,12 +484,10 @@ class zenario_forum extends zenario_comments {
 	protected function deleteOneUploadFile($file_id){
 		if($this->allow_uploads){
 			
-			/*Todo make deleteFileFromCmsStorage function availlabel to odules */
-			
 			require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			
 			if(!getRow('user_posts_uploads', 'file_id', array('file_id' => (int)$file_id), false, DB_NAME_PREFIX.ZENARIO_FORUM_PREFIX)){
-				deleteFileFromCmsStorage($file_id);
+				deleteFile($file_id);
 			}
 		}
 	}

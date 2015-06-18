@@ -1,0 +1,54 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: favicon
+    hide_tab_bar: true
+    title: Upload or remove a Favicon or a Home Screen Icon for this site
+    tabs:
+        favicon: 
+            edit_mode: 
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            You may upload an .ico file to use as a Favicon, and a .gif or a .png to use as a Home Screen Icon for mobile devices.
+                favicon: 
+                    site_setting:
+                        name: favicon
+                    label: "Favicon:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .ico
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        You should upload a .ico file for a favicon.
+                        (You can also use a .gif or a .png, however these will not display for visitors
+                         using Internet Explorer 10 or earlier.)
+                        The image should be either 16×16, 32×32, 48×48 or 64×64 pixels in size.
+                    validation:
+                        must_be_gif_ico_or_png: >
+                            The favicon must be a .gif, .ico or a .png file.
+                
+                
+                mobile_icon: 
+                    site_setting:
+                        name: mobile_icon
+                    label: "Home screen icon:"
+                    upload: 
+                        accept: "image/*"
+                        extensions: 
+                            - .gif
+                            - .png
+                        drag_and_drop: false
+                    note_below: >
+                        You should upload a .gif or a .png file for a home-screen icon.
+                        We recommend that the image should be 144×144 pixels in size;
+                        the image will be auto-downsized.
+                    validation:
+                        must_be_gif_or_png: >
+                            The home-screen icon must be a .gif or a .png file.

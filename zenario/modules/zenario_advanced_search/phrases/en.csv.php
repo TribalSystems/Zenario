@@ -7,7 +7,7 @@ Plugin
 zenario_advanced_search
 
 "Phrase Code",Translation
-_CLEAR,"Clear"
+_CLEAR,"Clear search"
 _SEARCH,"Search"
 _SEARCH_RESULTS_FOR,"Search results for [[term]]:"
 _SEARCH_RETURNED_NO_HTML_RESULTS,"Your search returned no results."

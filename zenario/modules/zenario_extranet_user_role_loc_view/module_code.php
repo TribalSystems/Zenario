@@ -12,12 +12,9 @@ class zenario_extranet_user_role_loc_view extends zenario_location_viewer {
 		
 		if ($userId && $this->setting("role")) {
 			if ($locations = zenario_organization_manager::getUserRoleLocations($userId,$this->setting("role"))) {
-				if (sizeof($locations)==1) {
-					$locationId = $locations[0]['id'];
-				}
+				$locationId = $locations[0];
 			}
 		}
-		
 		return $locationId;
 	}
 

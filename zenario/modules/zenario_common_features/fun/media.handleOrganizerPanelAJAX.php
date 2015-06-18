@@ -30,21 +30,35 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Upload a new file
 if (post('upload') && $privCheck) {
+	
+	//Check to see if an identical file has already been uploaded
+	$existingFilename = false;
+	if ($_FILES['Filedata']['tmp_name']
+	 && ($existingChecksum = md5_file($_FILES['Filedata']['tmp_name']))
+	 && ($existingChecksum = base16To64($existingChecksum))) {
+		$existingFilename = getRow('files', 'filename', array('checksum' => $existingChecksum, 'usage' => $usage));
+	}
+	
 	//Try to add the uploaded image to the database
 	$fileId = addFileToDatabase($usage, $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
 	
 	if ($fileId) {
+		
+		//If this was a content item or newsletter, attach the uploaded image to the content item/newsletter
 		if ($key) {
-			$key['file_id'] = $fileId;
-			setRow('inline_file_link', array(), $key);
-		} else {
-			updateRow('files', array('shared' => 1), $fileId);
+			$key['image_id'] = $fileId;
+			setRow('inline_images', array(), $key);
 		}
 		
-		//Look for images with the same name, that are not in use, and remove them
-		deleteUnusedFilesByName($usage, $_FILES['Filedata']['name'], $fileId);
+		if ($existingFilename && $existingFilename != $_FILES['Filedata']['name']) {
+			echo '<!--Message_Type:Warning-->',
+				adminPhrase('This file already existed on the system, but with a different name. "[[old_name]]" has now been renamed to "[[new_name]]".',
+					array('old_name' => $existingFilename, 'new_name' => $_FILES['Filedata']['name']));
+		} else {
+			echo 1;
+		}
 		
-		echo 1;
+		
 		return $fileId;
 	
 	} else {
@@ -52,41 +66,28 @@ if (post('upload') && $privCheck) {
 		return false;
 	}
 
-//Add an image from the shared pool
+//Add an image from the library
 } elseif (post('add') && $key && $privCheck) {
 	foreach (explode(',', $ids) as $id) {
-		$key['file_id'] = $id;
-		setRow('inline_file_link', array(), $key);
+		$key['image_id'] = $id;
+		setRow('inline_images', array(), $key);
 	}
 	return $ids;
 
 //Delete an unused image
-} elseif (post('delete') && !$key && checkPriv('_PRIV_MANAGE_MEDIA')) {
+} elseif (post('delete') && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explode(',', $ids) as $id) {
-		deleteUnusedInlineFile($id, true);
+		deleteUnusedImage($id);
 	}
 
-//Remove an image, and delete it if unused
+//Detach an image from a content item or newsletter
 } elseif (post('remove') && $key && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explode(',', $ids) as $id) {
-		$key['file_id'] = $id;
+		$key['image_id'] = $id;
 		$key['in_use'] = 0;
-		deleteRow('inline_file_link', $key);
-		deleteUnusedInlineFile($id);
+		deleteRow('inline_images', $key);
 	}
-
-//Share an image
-} elseif (post('share') && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
-		updateRow('files', array('shared' => 1), $id);
-	}
-
-//Stop sharing an image
-} elseif (post('unshare') && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
-		updateRow('files', array('shared' => 0), $id);
-		deleteUnusedInlineFile($id);
-	}
+	
 }
 
 return false;

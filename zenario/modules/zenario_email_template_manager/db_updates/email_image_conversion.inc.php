@@ -28,7 +28,8 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //Convert the format of any inline image URLs in Email Templates to use the new email pool
-if (needRevision(67)) {
+//Also resync all of the images used in them.
+if (needRevision(120)) {
 	//Get the body text from the newsletters
 	$sql = "
 		SELECT id, code, body
@@ -39,14 +40,17 @@ if (needRevision(67)) {
 	while ($row = sqlFetchAssoc($result)) {
 		$files = array();
 		$htmlChanged = false;
-		syncInlineFileLinks('email', $files, $row['body'], $htmlChanged);
+		syncInlineFileLinks($files, $row['body'], $htmlChanged);
 		
 		if ($htmlChanged) {
 			updateRow('email_templates', array('body' => $row['body']), array('id' => $row['id']));
 		}
 		
-		syncInlineFiles($files, array('foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']));
+		syncInlineFiles(
+			$files,
+			array('foreign_key_to' => 'email_template', 'foreign_key_id' => $row['id'], 'foreign_key_char' => $row['code']),
+			$keepOldImagesThatAreNotInUse = false);
 	}
 
-	revision(67);
+	revision(120);
 }

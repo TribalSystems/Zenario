@@ -13,7 +13,7 @@ if (get("type")=="section") {
 	$top = "Showing menu tree in menu section \"" . menuSectionName(get("id")) . "\"";
 
 	if ($menuArray = getMenuStructure($cachingRestrictions,get("id"),false,0,0,100,false,false,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, get('sk'), get('language'));
+		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
 	}
 
 } elseif (get("type")=="menu_node") {
@@ -30,15 +30,15 @@ if (get("type")=="section") {
 	$top = "Showing menu tree beneath menu node \"" . $menuNode['name'] . "\"";
 
 	if ($menuArray = getMenuStructure($cachingRestrictions,$sectionId,false,get("id"),0,100,false,false,false,false,true)) {
-		generateMenuForJSON($menuArray, $levelNodesCount, get('sk'), get('language'));
+		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
 	}
 
 } else {
 	exit;
 }
 
-if (get('sk')) {
-	$parameters .= '&sk=1';
+if (get('og')) {
+	$parameters .= '&og=1';
 }
 
 $levelNodeCount = 0;

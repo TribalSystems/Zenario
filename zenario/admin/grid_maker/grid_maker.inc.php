@@ -948,8 +948,14 @@ public static function readCode(&$html, $justCheck = false, $quickCheck = false)
 	return false;
 }
 
+//This old version of hash64, before we changed it.
+//I'm keeping it here because I don't want to break everyone's images.
+public static function oldHash64($text, $len = 28) {
+	return substr(strtr(base64_encode(sha1($text, true)), ' +/=', '~-_,'), 0, $len);
+}
+
 public static function addChecksum(&$html) {
-	$html .= '<?'. 'php //checksum:'. hash64(trim($html)). '// ?'. '>';
+	$html .= '<?'. 'php //checksum:'. zenario_grid_maker::oldHash64(trim($html)). '// ?'. '>';
 }
 
 public static function checkChecksum(&$html) {
@@ -961,7 +967,7 @@ public static function checkChecksum(&$html) {
 	
 	$parts[1] = str_replace(array('//', '?'. '>', ' '), '', $parts[1]);
 	
-	return hash64(trim($parts[0])) == $parts[1];
+	return zenario_grid_maker::oldHash64(trim($parts[0])) == $parts[1];
 }
 
 

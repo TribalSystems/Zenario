@@ -27,7 +27,11 @@
 			[/cms:section]
 			
 			[cms:section name="Registration_Form"]
-				<h1>[cms:phrase code="_REGISTRATION_TITLE"/]</h1>
+				
+				[cms:section name="Registration_Title_Section"]
+					<h2>[cms:merge name="Registration_Title"/]</h2>
+				[/cms:section]
+				
 				<div>
 					[cms:section name="Error_Display"]
 						<div class="extranet_error">[cms:merge name="Error"/]</div>
@@ -73,7 +77,7 @@
 					
 					[cms:section name="Registration_Code_Section"]
 					<div class="extranet_field">
-						<div class="label">[cms:phrase code="Resistration code:"/]</div>
+						<div class="label">[cms:phrase code="Registration code:"/]</div>
 						[cms:input type="text" name="registration_code"/]
 					</div>
 					[/cms:section]

@@ -27,7 +27,7 @@ description: |
                 <li>[[ip_address]] - The IP address of the computer using which new User was registered.</li>
                 <li>[[cms_url]] - A Website URL.
                 <li>[[email_confirmation_link]] - A confirmation link to finish registration process (for use in email verification Templates only).</li>
-                <li>[[storekeeper_link]] - A Storekeeper link to the newly created User (for use in admin notification Templates only).</li>
+                <li>[[organizer_link]] - A link to the newly created User in Organizer (for use in admin notification Templates only).</li>
                 <li>[[user_groups]] - Comma separated list of groups to which user is signed up. Please note, this merge field can be used after User's email address verification.</li>
                 <li>[[*characteristic_name*]] - A value of the User's characteristic. Name of the characteristic should match the merge field name.</li>
             </ul>

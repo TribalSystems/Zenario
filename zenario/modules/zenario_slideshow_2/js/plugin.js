@@ -55,7 +55,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 	
 	var html = '';
 	html += '<div id="slider1_container_'+instanceId+'"\
-				class="slideshow_container" style="visibility: hidden; position: relative; top: 0px; left: 0px; width:'+width+'px; height:'+height+'px;">\
+				class="slideshow_container" style="visibility: hidden; position: relative; top: 0px; left: 0px; width:'+width+'px; height:'+height+'px; overflow: hidden;">\
 				<div u="loading"></div>\
 				<div u="slides" id="slides_container_'+instanceId+'" class="" style="cursor: '+cursorStyle+'; position: absolute; overflow: hidden; left: 0px; top: 0px; width:'+width+'px; height:'+height+'px;">';
 	var count = 1;
@@ -69,8 +69,11 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 		} else {
 			altTag = slide.overwrite_alt_tag ? slide.overwrite_alt_tag : slide.alt_tag;
 		}
-		html += '<div id="slide_'+key+'_'+instanceId+'" class="slide_'+key+'_'+instanceId+' slide_'+count+' slide">\
-					<div class="slide_inner" style="position:relative;">\
+		html += '<div id="slide_'+key+'_'+instanceId+'" class="slide_'+key+'_'+instanceId+' slide_'+count+' slide">';
+		if (!mobileMode && settings.navigation_style == 'thumbnail_navigator') {
+			html += '<div u="thumb" style="display:none;">'+slide.tab_name+'</div>';
+		}
+		html += '<div class="slide_inner" style="position:relative;">\
 						<a ';
 		if (slide.target_loc != 'none') {
 			html += 'href="'+slide.dest_url+'"';
@@ -91,9 +94,6 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 		html += '/>\
 			</a>';
 		if (!mobileMode) {
-			if (settings.navigation_style == 'thumbnail_navigator') {
-				html += '<div u="thumb">'+slide.tab_name+'</div>';
-			}
 			if (slide.slide_title || slide.slide_extra_html) {
 				html += '<div class="content_container"';
 				if (parseInt(slide.use_transition_code) && slide.transition_code) {
@@ -154,7 +154,8 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 					</div>';
 			options.$ThumbnailNavigatorOptions = {
 				$Class: $JssorThumbnailNavigator$,
-				$ChanceToShow: 2
+				$ChanceToShow: 2,
+				$DisplayPieces: count
 			};
 		}
 	}

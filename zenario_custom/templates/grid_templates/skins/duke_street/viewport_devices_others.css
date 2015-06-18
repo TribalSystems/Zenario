@@ -44,7 +44,7 @@
 
 @media all and (min-width : 769px) and (max-width: 1140px) {
 
-	.zenario_image_container a {
+	.Grid_Header .Top_1 .zenario_image_container a {
 		width:100% !important;
 		background-size:100% auto;
 	}

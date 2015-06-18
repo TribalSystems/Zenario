@@ -212,7 +212,7 @@ class zenario_newsletter extends module_base_class {
 	}
 	
 	
-	function checkIfNewsletterIsADraft($id) {
+	public static function checkIfNewsletterIsADraft($id) {
 		return getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'status', $id) == '_DRAFT';
 	}
 	
@@ -404,11 +404,8 @@ class zenario_newsletter extends module_base_class {
 			zenario_newsletter::sendNewsletterToUser($userNewsletter, $hashes['user_id'], $hashes);
 		}
 		
-		$sql = "
-			UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters SET
-				status = '_ARCHIVED'
-			WHERE id = ". (int) $id;
-		sqlQuery($sql);
+		updateRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('status' => '_ARCHIVED'), $id);
+		updateRow('inline_images', array('archived' => 1), array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
 	}
 	
 	
@@ -567,6 +564,24 @@ class zenario_newsletter extends module_base_class {
 
 	public static function eventSmartGroupDeleted($smartGroupId) {
 		return true;			
+	}
+
+	public static function deleteNewsletter($id) {
+		if (zenario_newsletter::checkIfNewsletterIsADraft($id)) {
+			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', $id);
+			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_sent_newsletter_link', array('newsletter_id' => $id));
+			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $id));
+			
+			$key = array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id);
+			deleteRow('inline_images', $key);
+		}
+	}
+
+	public static function deleteNewsletterTemplate($id) {
+		deleteRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $id);
+		
+		$key = array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $id);
+		deleteRow('inline_images', $key);
 	}
 
 }

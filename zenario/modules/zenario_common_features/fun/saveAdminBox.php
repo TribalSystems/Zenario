@@ -223,9 +223,6 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario_admin':
-		return require funIncPath(__FILE__, 'admin.saveAdminBox');
-	
 	case 'zenario_create_vlp':
 		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_CONFIG');
 		
@@ -385,7 +382,7 @@ switch ($path) {
 		foreach ($old_image as $image_id) {
 			if (!in_array($image_id, $new_image)) {
 				deleteRow('documents', array('id' => $id));
-				removeFileFromDocstore($image_id);
+				deleteFile($image_id);
 			}
 		}*/
 		
@@ -483,47 +480,46 @@ switch ($path) {
 			$ordinal++;
 		}
 		// Code to show success messages after migrating documents
-		/*
-		echo '<!--Refresh_Storekeeper-->';
+		$box['popout_message'] = '';
 		
 		if ($failed && !$succeeded) {
-			echo "<!--Message_Type:Error-->";
-			echo '<p>';
-			echo nAdminPhrase(
+			$box['popout_message'] .= "<!--Message_Type:Error-->";
+			$box['popout_message'] .= '<p>';
+			$box['popout_message'] .= nAdminPhrase(
 				'[[failed]] file could not be migrated as a document with this file already exists',
 				'[[failed]] files could not be migrated as a document with this file already exists',
 				$failed,
 				array('failed' => $failed));
-			echo '</p>';
+			$box['popout_message'] .= '</p>';
 		} elseif ($failed && $succeeded) {
-			echo "<!--Message_Type:Warning-->";
-			echo '<p>';
-			echo nAdminPhrase(
+			$box['popout_message'] .= "<!--Message_Type:Warning-->";
+			$box['popout_message'] .= '<p>';
+			$box['popout_message'] .= nAdminPhrase(
 				'[[failed]] file could not be migrated as a document with this file already exists',
 				'[[failed]] files could not be migrated as a document with this file already exists',
 				$failed,
 				array('failed' => $failed));
-			echo '</p>';
+			$box['popout_message'] .= '</p>';
 			
-			echo '<p>';
-			echo nAdminPhrase(
+			$box['popout_message'] .= '<p>';
+			$box['popout_message'] .= nAdminPhrase(
 				'[[succeeded]] file was successfully migrated',
 				'[[succeeded]] files were successfully migrated',
 				$succeeded,
 				array('succeeded' => $succeeded));
-			echo '</p>';
+			$box['popout_message'] .= '</p>';
 			
 		} else {
-			echo "<!--Message_Type:Success-->";
-			echo '<p>';
-			echo nAdminPhrase(
+			$box['popout_message'] .= "<!--Message_Type:Success-->";
+			$box['popout_message'] .= '<p>';
+			$box['popout_message'] .= nAdminPhrase(
 				'[[succeeded]] file was successfully migrated',
 				'[[succeeded]] files were successfully migrated',
 				$succeeded,
 				array('succeeded' => $succeeded));
-			echo '</p>';
+			$box['popout_message'] .= '</p>';
 		}
-		*/
+		
 		break;
 		
 	case 'zenario_document_move':
@@ -540,21 +536,6 @@ switch ($path) {
 		
 		insertRow('document_types', array('type' => $values['details/type'], 'mime_type' => $values['details/mime_type']));
 		$box['key']['id'] = $values['details/type'];
-		
-		break;
-	
-	
-	case 'zenario_image':
-		exitIfNotCheckPriv('_PRIV_MANAGE_MEDIA');
-		
-		updateRow(
-			'files',
-			array(
-				'filename' => $values['details/filename'],
-				'alt_tag' => $values['details/alt_tag'],
-				'title' => $values['details/title'],
-				'floating_box_title' => $values['details/floating_box_title']),
-			$box['key']['id']);
 		
 		break;
 	

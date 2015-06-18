@@ -28,10 +28,22 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+if ($usage == 'email'
+ || $usage == 'inline'
+ || $usage == 'menu') {
+	$usage = 'image';
+}
+
+
 $file = array();
 $imageMimeTypes = array('image/gif' => true, 'image/jpeg' => true, 'image/jpg' => true, 'image/pjpeg' => true, 'image/png' => true);
 
-if (!is_readable($location) || !is_file($location) || !($file['size'] = filesize($location)) || !($file['checksum'] = md5_file($location))) {
+if (!is_readable($location)
+ || !is_file($location)
+ || !($file['size'] = filesize($location))
+ || !($file['checksum'] = md5_file($location))
+ || !($file['checksum'] = base16To64($file['checksum']))) {
 	return false;
 }
 $basename =  basename($location);
@@ -55,7 +67,7 @@ if ($existingFile = getRow('files', array('id', 'filename', 'location', 'path'),
 	//If this file is stored in the database, continue running this function to move it to the docstore dir
 	if (!($addToDocstoreDirIfPossible && $existingFile['location'] == 'db')) {
 		
-		//If this file is already stored, just update the name
+		//If this file is already stored, just update the name and remove the 'archived' flag if it was set
 		$path = false;
 		if ($existingFile['location'] == 'db' || ($path = docstoreFilePath($existingFile['path']))) {
 			//If the name has changed, attempt to rename the file in the filesystem
@@ -63,7 +75,7 @@ if ($existingFile = getRow('files', array('id', 'filename', 'location', 'path'),
 				@rename($path, setting('docstore_dir'). '/'. $existingFile['path']. '/'. $file['filename']);
 			}
 			
-			setRow('files', array('filename' => $filename), $key);
+			updateRow('files', array('filename' => $filename, 'archived' => 0), $key);
 			
 			if ($deleteWhenDone) {
 				unlink($location);
@@ -93,8 +105,8 @@ if ($file['mime_type'] == 'image/gif' || $file['mime_type'] == 'image/png' || $f
 		foreach (array(
 			array('working_copy_data', 'working_copy_width', 'working_copy_height', setting('working_copy_image_size'), setting('working_copy_image_size'), false),
 			array('working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', setting('thumbnail_wc_image_size'), setting('thumbnail_wc_image_size'), false),
-			array('storekeeper_data', 'storekeeper_width', 'storekeeper_height', 180, 130, true),
-			array('storekeeper_list_data', 'storekeeper_list_width', 'storekeeper_list_height', 24, 23, true)
+			array('organizer_data', 'organizer_width', 'organizer_height', 180, 130, true),
+			array('organizer_list_data', 'organizer_list_width', 'organizer_list_height', 24, 23, true)
 		) as $c) {
 			if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
 				$file[$c[1]] = $image[0];
@@ -114,12 +126,13 @@ if ($mustBeAnImage && !(!empty($file['width']) && !empty($file['height']))) {
 }
 
 
+$file['archived'] = 0;
 $file['created_datetime'] = now();
 
 if ($addToDocstoreDirIfPossible
  && is_dir($dir = setting('docstore_dir'). '/')
  && is_writable($dir)
- && ((is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. base_convert($file['checksum'], 16, 36)). '/'))
+ && ((is_dir($dir = $dir. ($path = preg_replace('/\W/', '_', $filename). '_'. $file['checksum']). '/'))
   || (mkdir($dir) && chmod($dir, 0777)))) {
 	
 	if (file_exists($dir. $file['filename'])) {
@@ -146,4 +159,6 @@ if ($addToDocstoreDirIfPossible
 	}
 }
 
-return setRow('files', $file, $key);
+$fileId = setRow('files', $file, $key);
+updateShortChecksums();
+return $fileId;

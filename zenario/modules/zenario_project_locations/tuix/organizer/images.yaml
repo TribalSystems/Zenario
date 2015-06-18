@@ -69,7 +69,6 @@ zenario__projects:
                 collection_buttons:
                     upload:
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
-                        css_class: create_image
                         label: Upload one or more images
                         css_class: zenario_create_a_new
                         upload:

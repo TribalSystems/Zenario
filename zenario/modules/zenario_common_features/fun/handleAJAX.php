@@ -100,7 +100,7 @@ if (checkPriv()) {
 		$infoBox[10]['fields'][20] = array('label' => adminPhrase('License:'), 'value' => '');
 		$infoBox[10]['fields'][30] = array('label' => adminPhrase('Version:'), 'value' => getCMSVersionNumber());
 		
-		if (!windowsServer() && is_dir('zenario/.svn') && is_file('zenario/visitorheader.inc.php') && ($svnversion = @exec('svnversion zenario/'))) {
+		if (!windowsServer() && execEnabled() && is_dir('zenario/.svn') && is_file('zenario/visitorheader.inc.php') && ($svnversion = @exec('svnversion zenario/'))) {
 			$infoBox[10]['fields'][40] = array('label' => adminPhrase('SVN no:'), 'value' => $svnversion);
 		}
 		

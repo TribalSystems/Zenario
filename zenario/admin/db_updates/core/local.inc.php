@@ -67,20 +67,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
-//Give the xml_file_tuix_contents table a more meaningful name to avoid confusion in the future
-	revision( 26950
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
-_sql
-
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
-	RENAME TO `[[DB_NAME_PREFIX]]tuix_file_contents`
-_sql
 
 
 //Add a translate_phrases column to the languages table
-);	revision( 27090
+	revision( 27090
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]languages`
 	ADD COLUMN `translate_phrases` tinyint(1) NOT NULL default 1
@@ -108,14 +98,14 @@ _sql
 	  AND mime_type = 'application/x-shockwave-flash'
 _sql
 
-); revision( 27230
+);	revision( 27230
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]versions`
 	ADD COLUMN `scheduled_publish_datetime` datetime DEFAULT NULL
 _sql
 
-); revision( 27232
+);	revision( 27232
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
@@ -132,7 +122,7 @@ _sql
 	ADD COLUMN `param_2` varchar(255) DEFAULT NULL
 _sql
 
-); revision( 27234
+);	revision( 27234
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
@@ -152,7 +142,7 @@ _sql
 _sql
 
 
-); revision( 27341
+);	revision( 27341
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
@@ -189,7 +179,7 @@ _sql
 _sql
 
 //Create the document rules table
-); revision( 28230
+);	revision( 28230
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
 	ADD COLUMN `do_not_auto_recode` tinyint(1) unsigned NOT NULL default 0
@@ -216,20 +206,20 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-); revision( 28240
+);	revision( 28240
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules`
 	ADD COLUMN `use` enum('filename_without_extension', 'filename_and_extension', 'extension') NOT NULL default 'filename_without_extension'
 	AFTER `ordinal`
 _sql
 
-); revision( 28260
+);	revision( 28260
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
 	CHANGE COLUMN `do_not_auto_recode` `dont_autoset_metadata` tinyint(1) unsigned NOT NULL default 0
 _sql
 
-); revision( 28460
+);	revision( 28460
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]document_rules`
 	ADD COLUMN `apply_second_pass` tinyint(1) unsigned NOT NULL default 0
@@ -255,7 +245,7 @@ _sql
 //everything which work as "child" selectors.
 //Having to make a table for this is a big hack; at some point we should improve or rewrite
 //the selection interface and remove the need for this table.
-); revision( 28550
+);	revision( 28550
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_positions`
 _sql
@@ -274,7 +264,7 @@ _sql
 _sql
 
 //Add some more keys to the files table
-); revision( 28460
+);	revision( 28460
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]files`
 	ADD KEY (`width`)
@@ -422,7 +412,7 @@ _sql
 	NULL default NULL
 	AFTER `bg_position`
 _sql
-); revision ( 29238
+);	revision ( 29238
 
 ,<<<_sql
 	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings`
@@ -430,9 +420,8 @@ _sql
 	WHERE name = 'user_profile_form'
 _sql
 
-); revision( 29239
-
-,<<<_sql
+);	revision( 29239
+, <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
 	DROP COLUMN `image_id`
 _sql
@@ -466,21 +455,369 @@ _sql
 	  AND ps.value LIKE '[[%]]'
 _sql
 
-); revision( 29572
+);	revision( 29572
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]content_cache`
 	ADD COLUMN `text_wordcount` int(10) unsigned NOT NULL DEFAULT 0 AFTER `text`
 _sql
 
-); revision( 29576
+);	revision( 29576
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
 	ADD COLUMN `category` enum('custom', 'core', 'content_type', 'management', 'pluggable') NULL DEFAULT NULL AFTER `display_name`
 _sql
 
-); revision( 29578
+);	revision( 29580
+,  <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]]documents
+	  ADD COLUMN `file_name` varchar(255)
+_sql
+);	revision( 29581
+,  <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]]documents
+	  CHANGE `file_id` `file_id` int(10) unsigned NULL
+_sql
+);	revision( 29582
+,  <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]]documents
+	  DROP INDEX `file_id`
+_sql
+);	revision( 29583
+,  <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]]documents
+	  CHANGE `file_name` `filename` varchar(255)
+_sql
+);	revision( 29584
+,  <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]]documents
+	  ADD COLUMN `file_datetime` datetime default NULL
+_sql
+
+
+
+//Rename the inline_file_link table to inline_images
+);	revision( 30250
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]inline_images`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]inline_file_link`
+	RENAME TO `[[DB_NAME_PREFIX]]inline_images`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]inline_images`
+	CHANGE COLUMN `file_id` `image_id` int(10) unsigned NOT NULL
+_sql
+
+
+//Change the "usage" column of some images
+//Note that this may fail if there is a checksum clash. I'll deal with this by making sure
+//that the inline images will always win the clash, then dealing with email/menu images later
+);	revision( 30260
+, <<<_sql
+	UPDATE IGNORE [[DB_NAME_PREFIX]]files
+	SET `usage` = 'image'
+	WHERE `usage` = 'inline'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE [[DB_NAME_PREFIX]]files
+	SET `usage` = 'image'
+	WHERE `usage` IN ('email', 'inline', 'menu')
+_sql
+
+//Handle the case where there was a clash of images for Menu Nodes
+, <<<_sql
+	UPDATE [[DB_NAME_PREFIX]]menu_nodes AS mn
+	INNER JOIN [[DB_NAME_PREFIX]]files AS of
+	   ON of.id = mn.image_id
+	  AND of.`usage` != 'image'
+	INNER JOIN [[DB_NAME_PREFIX]]files AS nf
+	   ON nf.checksum = of.checksum
+	  AND nf.`usage` = 'image'
+	SET mn.image_id = nf.id
+	WHERE mn.image_id != 0
+_sql
+
+//Handle the case where there was a clash of images for Menu Node roleover images
+, <<<_sql
+	UPDATE [[DB_NAME_PREFIX]]menu_nodes AS mn
+	INNER JOIN [[DB_NAME_PREFIX]]files AS of
+	   ON of.id = mn.rollover_image_id
+	  AND of.`usage` != 'image'
+	INNER JOIN [[DB_NAME_PREFIX]]files AS nf
+	   ON nf.checksum = of.checksum
+	  AND nf.`usage` = 'image'
+	SET mn.rollover_image_id = nf.id
+	WHERE mn.image_id != 0
+_sql
+
+//Handle the case where there was a clash of images for inline images
+, <<<_sql
+	UPDATE [[DB_NAME_PREFIX]]inline_images AS ii
+	INNER JOIN [[DB_NAME_PREFIX]]files AS of
+	   ON of.id = ii.image_id
+	  AND of.`usage` != 'image'
+	INNER JOIN [[DB_NAME_PREFIX]]files AS nf
+	   ON nf.checksum = of.checksum
+	  AND nf.`usage` = 'image'
+	SET ii.image_id = nf.id
+	WHERE ii.image_id != 0
+_sql
+
+//We should have handled all of the clashes now, so we can delete the duplicate that are no longer linked to
+, <<<_sql
+	DELETE FROM [[DB_NAME_PREFIX]]files
+	WHERE `usage` IN ('email', 'inline', 'menu')
+_sql
+
+);	revision( 30275
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]last_sent_warning_emails`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]last_sent_warning_emails` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`timestamp` datetime NOT NULL,
+		`warning_code` enum('document_container__private_file_in_public_folder', 'module_missing') NOT NULL,
+		PRIMARY KEY (`id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+
+
+
+
+//Remove the library_images tables if they were ever created for people running early versions of 7.0.5
+);	revision( 30500
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]library_images`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]library_images_custom_data`
+_sql
+
+
+//Rename reusable_plugin to library_plugin in the inline_images table
+);	revision( 30510
+, <<<_sql
+	UPDATE [[DB_NAME_PREFIX]]inline_images
+	SET foreign_key_to = 'library_plugin'
+	WHERE foreign_key_to = 'reusable_plugin'
+_sql
+
+
+//Set the checksum column in the files table to ascii only
+);	revision( 30600
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	MODIFY COLUMN `checksum` varchar(32) CHARACTER SET ascii NOT NULL
+_sql
+
+//Set the usage column in the files table to ascii only
+);	revision( 30610
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	MODIFY COLUMN `usage` varchar(64) CHARACTER SET ascii NOT NULL
+_sql
+
+//Add a new short-checksum column to the files table
+);	revision( 30620
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `short_checksum` varchar(24) CHARACTER SET ascii NULL default NULL
+	AFTER `checksum`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD UNIQUE KEY `short_checksum` (`short_checksum`,`usage`)
+_sql
+
+
+//Change/simplify how the image pots work for site settings. Rather that lots of different pots,
+//we'll now just use one pot.
+);	revision( 30630
+//Add an index on value to the site settings table
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]site_settings`
+	ADD KEY `value` (`value`(64))
+_sql
+
+//Add/migrate the four existing site settings to the new format
+, <<<_sql
+	REPLACE INTO [[DB_NAME_PREFIX]]site_settings (name, value)
+	SELECT
+		IF (`usage` = 'brand_logo', 'custom_logo',
+		IF (`usage` = 'organizer_favicon', 'custom_organizer_favicon',
+			`usage`)),
+		id
+	FROM [[DB_NAME_PREFIX]]files
+	WHERE `usage` IN ('brand_logo', 'favicon', 'mobile_icon', 'organizer_favicon')
+_sql
+
+//Remove the four old image pots for site settings and migrate them to one new one
+, <<<_sql
+	UPDATE IGNORE [[DB_NAME_PREFIX]]files
+	SET `usage` = 'site_setting'
+	WHERE `usage` IN ('brand_logo', 'favicon', 'mobile_icon', 'organizer_favicon')
+_sql
+
+//Handle the case where there were duplicates.
+//The last statement would leave the duplicates alone so we just need to delete them
+, <<<_sql
+	DELETE FROM [[DB_NAME_PREFIX]]files
+	WHERE `usage` IN ('brand_logo', 'favicon', 'mobile_icon', 'organizer_favicon')
+_sql
+
+//Change how the image library works so that images in Content Items/Newsletters
+//are *always* in the library, unless they are deleted.
+//Add an `archived` column.
+);	revision( 30700
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `archived` tinyint(1) NOT NULL default 0
+	AFTER `usage`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]inline_images`
+	ADD COLUMN `archived` tinyint(1) NOT NULL default 0
+	AFTER `in_use`
+_sql
+
+);	revision( 30720
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`archived`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]inline_images`
+	ADD KEY (`archived`)
+_sql
+
+
+//Temporaily restore the `shared` column in the files table.
+	//If it was previously dropped because this site was updated to the 7.0.5 beta, this line will re-add it
+	//If it still exists, the db_updater will skip this line
+);	revision( 30765
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `shared` tinyint(1) NOT NULL default 0
+_sql
+
+
+
+//Create tables to store tags for images
+);	revision( 30770
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tags`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]image_tags` (
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+		`name` varchar(255) NOT NULL,
+		PRIMARY KEY (`id`),
+		UNIQUE KEY (`name`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tag_link`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]image_tag_link` (
+		`image_id` int(10) unsigned NOT NULL,
+		`tag_id` int(10) unsigned NOT NULL,
+		PRIMARY KEY (`image_id`, `tag_id`),
+		KEY (`tag_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+
+//Create a new tag to remember which images were shared (unless the shared column was already previously dropped)
+);	revision( 30775
+, <<<_sql
+	INSERT INTO [[DB_NAME_PREFIX]]image_tags
+	SELECT 1, 'shared'
+	FROM [[DB_NAME_PREFIX]]files
+	WHERE `usage` = 'image'
+	  AND shared = 1
+	LIMIT 1
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO [[DB_NAME_PREFIX]]image_tag_link
+	SELECT id, 1
+	FROM [[DB_NAME_PREFIX]]files
+	WHERE `usage` = 'image'
+	  AND shared = 1
+_sql
+
+
+
+);	revision( 30780
+//Drop the `in_library` and `shared` columns if they have been created
+//If they've not been created the db updater will skip that line
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP COLUMN `in_library`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP COLUMN `shared`
+_sql
+
+
+//Rename some columns from "storekeeper" to "organizer"
+);	revision( 30830
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_width` `organizer_width` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_height` `organizer_height` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_data` `organizer_data` blob
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_list_width` `organizer_list_width` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_list_height` `organizer_list_height` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `storekeeper_list_data` `organizer_list_data` blob
+_sql
+
+
+
+
+//Create the page_preview_sizes table
+//(Bumped down from above to fix a bug where it wasn't included in CMS backups.)
+);	revision( 30845
 
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]page_preview_sizes`
@@ -494,86 +831,60 @@ _sql
 	  `description` varchar(255) NOT NULL DEFAULT '',
 	  `is_default` tinyint(1) unsigned NOT NULL DEFAULT 0,
 	  `ordinal` int(10) unsigned NOT NULL,
+	  `type` enum('desktop','laptop','tablet', 'tablet_landscape', 'smartphone') NOT NULL default 'desktop',
 	   PRIMARY KEY (`id`),
 	   KEY (`ordinal`)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-); revision( 29579
-
 , <<<_sql
 	INSERT INTO `[[DB_NAME_PREFIX]]page_preview_sizes` 
-	(width, height, description, is_default, ordinal)
+	(width, height, description, is_default, ordinal, type)
 	VALUES 
-	(1680, 1050, 'Current computers', 0, 1),
-	(1280, 1024, 'Not that old computers', 0, 2),
-	(1024, 768, 'Old computers', 0, 3),
-	(1440, 900, 'Other laptops', 0, 4),
-	(1366, 769, 'Laptop 15.7"', 0, 5),
-	(1280, 800, 'Laptop 15.4"', 0, 6),
-	(1024, 600, 'Netbook', 1, 7),
-	(768, 1024, 'iPad portrait', 0, 8),
-	(320, 480, 'HVGA - iPhone, Android, Palm Pre', 0, 9)
+	(1680, 1050, 'Current computers', 0, 1, 'desktop'),
+	(1280, 1024, 'Not that old computers', 0, 2, 'desktop'),
+	(1024, 768, 'Old computers', 0, 3, 'desktop'),
+	(1440, 900, 'Other laptops', 0, 4, 'laptop'),
+	(1366, 769, 'Laptop 15.7"', 0, 5, 'laptop'),
+	(1280, 800, 'Laptop 15.4"', 0, 6, 'laptop'),
+	(1024, 600, 'Netbook', 1, 7, 'laptop'),
+	(768, 1024, 'iPad portrait', 0, 8, 'tablet'),
+	(320, 480, 'HVGA - iPhone, Android, Palm Pre', 0, 9, 'smartphone')
 _sql
 
-);
 
-revision(29580
-,  <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]]documents
-	  ADD COLUMN `file_name` varchar(255)
-_sql
-);
 
-revision(29581
-,  <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]]documents
-	  CHANGE `file_id` `file_id` int(10) unsigned NULL
+//Remake the tuix_file_contents table to start tracking which panel types are used in which files
+//(Technically I could have added the column and truncated the table, but I may as well
+// drop and recreate it.)
+);	revision( 30900
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
 _sql
-);
 
-revision(29582
-,  <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]]documents
-	  DROP INDEX `file_id`
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
 _sql
-);
 
-revision(29583
-,  <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]]documents
-	  CHANGE `file_name` `filename` varchar(255)
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
+		`type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls') NOT NULL,
+		`path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
+		`filename` varchar(255) CHARACTER SET ascii NOT NULL,
+		`last_modified` int(10) unsigned NOT NULL DEFAULT '0',
+		`checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+		PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
+		KEY (`panel_type`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
-);
 
-revision(29584
-,  <<<_sql
-	ALTER TABLE [[DB_NAME_PREFIX]]documents
-	  ADD COLUMN `file_datetime` datetime default NULL
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
+	WHERE name = 'yaml_files_last_changed'
 _sql
-); revision( 30151
 
-,  <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]page_preview_sizes`
-	ADD COLUMN `type` enum('desktop','laptop','tablet', 'tablet_landscape', 'smartphone') NOT NULL default 'desktop'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'laptop' WHERE description = 'Other laptops'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'laptop' WHERE description = 'Laptop 15.7"'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'laptop' WHERE description = 'Laptop 15.4"'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'laptop' WHERE description = 'Netbook'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'tablet' WHERE description = 'iPad portrait'
-_sql
-,  <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]page_preview_sizes` SET type = 'smartphone' WHERE description = 'HVGA - iPhone, Android, Palm Pre'
-_sql
 
 );

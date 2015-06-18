@@ -138,8 +138,8 @@ class zenario_common_features extends module_base_class {
 								}
 					}
 				}
-				//check to see if file used by another document before deleting
-				if ($numberFileIds == 1){
+				//check to see if file used by another document before deleting or used in ctype documents
+				if (($numberFileIds == 1) && !checkRowExists('versions', array('file_id' => $details['file_id']))) {
 					deleteRow('files', array('id' => $details['file_id']));
 					if ($details['thumbnail_id']) {
 						deleteRow('files', array('id' => $details['thumbnail_id']));

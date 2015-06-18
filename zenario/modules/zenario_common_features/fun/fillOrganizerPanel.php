@@ -51,7 +51,7 @@ switch ($path) {
 						'?language='. urlencode(FOCUSED_LANGUAGE_ID__NO_QUOTES).
 						'&type='. urlencode($refinerName).
 						'&id='. urlencode($refinerId).
-						'&sk=1'
+						'&og=1'
 			). '"></iframe>';
 		
 		break;
@@ -473,54 +473,33 @@ switch ($path) {
 	
 	case 'generic_image_panel':
 	case 'zenario__content/panels/background_images':
-	case 'zenario__content/panels/email_images_for_email_templates':
-	case 'zenario__content/panels/email_images_shared':
 	case 'zenario__content/panels/inline_images_for_content':
-	case 'zenario__content/panels/inline_images_for_reusable_plugins':
-	case 'zenario__content/panels/inline_images_shared':
+	case 'zenario__content/panels/image_library':
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
 			$img = 'zenario/file.php?c='. $item['checksum'];
 			
-			if (!empty($panel['key']['usage']) && $panel['key']['usage'] != 'inline') {
+			if (!empty($panel['key']['usage']) && $panel['key']['usage'] != 'image') {
 				$img .= '&usage='. rawurlencode($panel['key']['usage']);
 			}
 			
-			$item['image'] = $img. '&sk=1';
-			$item['list_image'] = $img. '&skl=1';
+			$item['image'] = $img. '&og=1';
+			$item['list_image'] = $img. '&ogl=1';
 			
 			$item['row_css_class'] = '';
 			if (!empty($item['sticky_flag'])) {
 				$item['row_css_class'] .= ' zenario_sticky';
 			}
-			if (!empty($item['shared'])) {
-				$item['row_css_class'] .= ' zenario_shared';
-			}
 			
 			if (!($item['row_css_class'] = trim($item['row_css_class']))) {
 				unset($item['row_css_class']);
 			}
-		}
-		
-		foreach ($panel['items'] as $id => &$item) {
-			$item['traits'] = array();
 			
-			if (!empty($item['shared'])) {
-				$item['traits']['shared'] = true;
-			}
-			
-			if ($refinerName == 'content') {
-				if (!empty($item['sticky_flag'])) {
-					$item['traits']['sticky'] = true;
-					$item['traits']['used'] = true;
-				}
-			}
-			
-			foreach ($item as $colName => &$col) {
-				if (($colName == 'in_use' || substr($colName, 0, 5) == 'usage') && !empty($col)) {
-					$item['traits']['used'] = true;
-					break;
-				}
+			if (!empty($item['filename'])
+			 && !empty($item['short_checksum'])
+			 && !empty($item['duplicate_filename'])) {
+				$item['filename'] .= ' ['. $item['short_checksum']. ']';
 			}
 		}
 		
@@ -547,8 +526,8 @@ switch ($path) {
 			if ($item['checksum']) {
 				$img = '&c='. $item['checksum'];
 				$item['traits']['has_image'] = true;
-				$item['image'] = 'zenario/file.php?sk=1'. $img;
-				$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+				$item['image'] = 'zenario/file.php?og=1'. $img;
+				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 			} else {
 				$item['image'] = getModuleIconURL($item['module_class_name']);
 			}
@@ -681,8 +660,8 @@ switch ($path) {
 				$item['traits']['has_image'] = true;
 				$img = '&usage=admin&c='. $item['checksum'];
 	
-				$item['image'] = 'zenario/file.php?sk=1'. $img;
-				$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+				$item['image'] = 'zenario/file.php?og=1'. $img;
+				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 			}
 			
 		}

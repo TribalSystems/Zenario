@@ -134,7 +134,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 	
 	
 	public static function getServerTime() {
-		if (windowsServer()) {
+		if (windowsServer() || !execEnabled()) {
 			return false;
 		}
 		
@@ -354,21 +354,14 @@ class zenario_scheduled_task_manager extends module_base_class {
 		 || ($log['status'] == 'action_taken' && $emailActions)
 		 || ($log['status'] == 'no_action_taken' && $emailInaction)) {
 		 	
-		 	echo "a\n";
-		 	var_dump($managerClassName);
-		 	
 		 	inc($managerClassName);
-		 	echo "b\n";
 		 	$class = new $managerClassName;
-		 	var_dump($class);
-		 	echo "c\n";
-		 	$headers = $subject = $body = '';
 		 	
+		 	$headers = $subject = $body = '';
 		 	$class->logEmail(
 		 		$subject, $body,
 		 		$serverTime, $jobName, $jobId,
 		 		arrayKey(zenario_scheduled_task_manager::$lastRunStatuses, $log['status']), $log['note']);
-		 	echo "d\n";
 			
 			$emails = array();
 			foreach (explode(',', $emailList) as $email) {
@@ -405,7 +398,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 		$status, &$logMessage
 	) {
 		$subject = 'Scheduled Task '. $jobName. ': '. $status. ' at '. primaryDomain();
-		$body = 'Report from: '. primaryDomain() . "\n";
+		$body = 'Report from: '. primaryDomain(). "\n";
 		$body .= 'Directory: '. CMS_ROOT. "\n";
 		$body .= 'Database Name: '. DBNAME. "\n";
 		$body .= 'Database Host: '. DBHOST. "\n";

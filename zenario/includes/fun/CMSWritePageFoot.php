@@ -87,6 +87,20 @@ if ($isWelcome || checkPriv()) {
 			}
 		}
 		
+		$sql = "
+			SELECT 1
+			FROM ". DB_NAME_PREFIX. "tuix_file_contents AS tfc
+			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+			   ON m.class_name = tfc.module_class_name
+			  AND m.status = 'module_running'
+			WHERE tfc.panel_type IN ('google_map', 'google_map_or_list')
+			LIMIT 1";
+		
+		if (($result = sqlSelect($sql)) && (sqlFetchRow($result))) {
+			echo '
+<script type="text/javascript" src="https://maps.google.com/maps/api/js"></script>';
+		}
+		
 		echo '
 <script type="text/javascript" src="', $prefix, 'js/inc-organizer.js.php?v=', $v, $gz, '"></script>';
 		
@@ -105,7 +119,7 @@ if ($isWelcome || checkPriv()) {
 		
 			echo '
 </script>
-<script type="text/javascript" src="', $prefix, 'js/plugin.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;storekeeper=1"></script>';
+<script type="text/javascript" src="', $prefix, 'js/plugin.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
 }
 if (cms_core::$cID && $includeAdminToolbar && checkPriv()) {
@@ -175,7 +189,7 @@ if (!$isWelcome && checkPriv()) {
 	
 	
 	//Get a list of language names and flags for use in the formatting options
-	//We only need enabled languages if this is not Storekeeper
+	//We only need enabled languages if this is not Organizer
 	$langs = array();
 	$onlyShowEnabledLanguages = (bool) cms_core::$cID;
 	if (!$onlyShowEnabledLanguages) {

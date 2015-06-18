@@ -30,6 +30,9 @@ function checkInstallationCanProceed($zenarioCMSNumericVersion) {
 	if (windowsServer()) {
 		return array(adminPhrase('Sorry, this Module requires a Unix-based server to run.'));
 	
+	} elseif (!execEnabled()) {
+		return array(adminPhrase('Sorry, this Module requires the exec() function enabled on your server.'));
+	
 	} else {
 		return true;
 	}

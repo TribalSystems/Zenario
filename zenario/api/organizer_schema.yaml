@@ -392,14 +392,35 @@ additionalProperties:
                                         - menu_item
                                     description: >
                                         This lets you define a link to a content item or menu node in Organizer.
+                                
                                 format:
                                     type: string
                                     static: true
                                     preFillOrganizerPanel: true
+                                    default: text
                                     description: >
                                         This lets you define the data-format of a column.
                                         
-                                        If you don't set this property, it is assumed to be text.
+                                        
+                                        You must set this property by writing it in your TUIX files
+                                        or your preFillOrganizerPanel() method.
+                                        You cannot define or modify it in your preFillOrganizerPanel() method.
+                                filter_format:
+                                    type: string
+                                    static: true
+                                    preFillOrganizerPanel: true
+                                    default: (defaults to the format property)
+                                    description: >
+                                        New in version 7.0.5.
+                                        
+                                        This property lets you override the format of a column for the
+                                        filter logic. For example, you could have a column that appears as
+                                        a count, but is filtered as a yes_or_no column.
+                                        
+                                        You must set this property by writing it in your TUIX files
+                                        or your preFillOrganizerPanel() method.
+                                        You cannot define or modify it in your preFillOrganizerPanel() method.
+                                
                                 values:
                                     type: object
                                     description: >
@@ -513,6 +534,38 @@ additionalProperties:
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
+                                disabled:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be disabled.
+                                
+                                disabled_if:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated.
+                                        
+                                        If the code provided evaluates to <code>true</code> the button will be disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled_tooltip:
+                                    type: string
+                                    default: (defaults to the tooltip property)
+                                    description: >
+                                        A tooltip for this button if it is disabled.
+                                
+                                enabled_by_default:
+                                    type: boolean
+                                    description: >
+                                        New in version 7.0.5.
+                                        
+                                        Set this property to enable the filter by default when an
+                                        administrator first visits the panel.
+                                        
+                                        You must set this property by writing it in your TUIX files.
+                                        You cannot define or modify it in your fillOrganizerPanel()
+                                        or preFillOrganizerPanel() methods.
+                                
                                 parent:
                                     type: string
                                     description: >
@@ -541,11 +594,6 @@ additionalProperties:
                                     description: >
                                         A quick filter will the "remove_filter" property will turn the filters off for a column
                                         when an administrator clicks it.
-                                
-                                tooltip:
-                                    type: string
-                                    description: >
-                                        A tooltip for this button
                                 
                                 hide_in_select_mode:
                                     type: boolean

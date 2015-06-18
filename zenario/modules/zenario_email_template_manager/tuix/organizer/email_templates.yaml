@@ -52,6 +52,18 @@ zenario__email_template_manager:
                     searchable: Yes
                     show_by_default: Yes
                     width: medium
+                images:
+                    title: Images
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT ii.image_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS ii
+                            WHERE ii.foreign_key_id = T.id
+                              AND ii.foreign_key_to = 'email_template'
+                        )
+                    show_by_default: Yes
+                    align_right: Yes
+                    width: xsmall
                 date_created:
                     title: Created at
                     db_column: date_created
@@ -111,13 +123,6 @@ zenario__email_template_manager:
                     label: View
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
-                images:
-                    parent: view_dropdown
-                    label: Images
-                    link:
-                        path: zenario__content/panels/email_images_for_email_templates
-                        branch: Yes
-                        refiner: email_template
                 view_log:
                     parent: view_dropdown
                     label: Log

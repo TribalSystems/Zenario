@@ -22,3 +22,7 @@ start_running_on_install: true
 is_pluggable: true
 default_framework: standard
 default_instance_name: Promo menu
+signals:
+    signal1:
+        name: eventMenuNodeDeleted
+        static: Yes

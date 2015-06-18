@@ -44,7 +44,7 @@ $type = false;
 $path = false;
 $methodCall = request('method_call');
 if ($methodCall == 'handleOrganizerPanelAJAX') {
-	cms_core::$skType = $type = 'storekeeper';
+	cms_core::$skType = $type = 'organizer';
 	cms_core::$skPath = $path = request('__path__');
 }
 
@@ -214,7 +214,7 @@ if ($methodCall == 'refreshPlugin'
 	
 
 } elseif ($methodCall == 'getNewId') {
-	//Get at the id of the most recently created/uploaded item to Storekeeper
+	//Get at the id of the most recently created/uploaded item to Organizer
 	if (isset($_SESSION['sk_new_ids']) && is_array($_SESSION['sk_new_ids'])) {
 		echo json_encode($_SESSION['sk_new_ids']);
 		unset($_SESSION['sk_new_ids']);
@@ -225,7 +225,7 @@ if ($methodCall == 'refreshPlugin'
 	
 
 } elseif ($methodCall == 'getNewEditorTempFiles') {
-	//Get at the details of the most recently created/uploaded image to Storekeeper
+	//Get at the details of the most recently created/uploaded image to Organizer
 	require 'visitorheader.inc.php';
 	$files = array();
 	if (isset($_SESSION['sk_new_ids']) && is_array($_SESSION['sk_new_ids'])) {
@@ -324,7 +324,7 @@ if ($methodCall == 'showFile') {
 	$module->handleAJAX();
 
 
-//Handle a file download from Storekeeper
+//Handle a file download from Organizer
 } elseif ($methodCall == 'handleOrganizerPanelAJAX' && post('_download')) {
 	
 	//Handle the old name if it's not been changed yet
@@ -337,7 +337,7 @@ if ($methodCall == 'showFile') {
 	exit;
 
 
-//Handle an AJAX request from Storekeeper
+//Handle an AJAX request from Organizer
 } elseif ($methodCall == 'handleOrganizerPanelAJAX' || $methodCall == 'handleAdminToolbarAJAX') {
 	
 	$newIds = false;
@@ -381,7 +381,7 @@ if ($methodCall == 'showFile') {
 			$message = '';
 		}
 		
-		//Send the results to Storekeeper in the parent frame
+		//Send the results to Organizer in the parent frame
 		useGZIP(setting('compress_web_pages'));
 		echo '
 			<html>
@@ -408,10 +408,10 @@ if ($methodCall == 'showFile') {
 				$message = substr($message, 28);
 				$messageType = 'question';
 				
-				//Undocumented trick to refresh the Storekeeper!
+				//Undocumented trick to refresh Organizer!
 			} else if (substr($message, 0, 25) == '<!--Reload_Storekeeper-->') {
 					echo '
-									self.parent.zenarioO.reload();
+									self.parent.zenarioO.reloadPage();
 								</script>
 							</body>
 						</html>';
@@ -436,7 +436,7 @@ if ($methodCall == 'showFile') {
 		}
 		
 		echo '
-						self.parent.zenarioO.refresh();
+						self.parent.zenarioO.reload();
 					</script>
 				</body>
 			</html>';

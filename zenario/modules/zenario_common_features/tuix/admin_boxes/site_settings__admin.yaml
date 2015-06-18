@@ -4,7 +4,7 @@ site_settings:
     setting_group: administration
     title: Editing settings for site administration
     tabs:
-        sk:
+        og:
             label: Organizer
             edit_mode:
                 enabled: Yes
@@ -34,18 +34,7 @@ site_settings:
                     validation:
                         required: Please enter the number of items to show per page.
                         numeric: The number of items per page must be numeric.
-                
-                #(Periodic refresh is now disabled)
-                #storekeeper_periodic_refresh_mins:
-                #    site_setting:
-                #        name: storekeeper_periodic_refresh_mins
-                #    label: 'Periodic Refresh Time:'
-                #    type: text
-                #    value: "2"
-                #    note_below: How often to refresh the view of a Panel, in minutes.
-                #    validation:
-                #        required: Please enter a Refresh Time.
-                #        numeric: The Refresh Time must be numeric.
+        
         content_items:
             label: Content items
             edit_mode:
@@ -62,7 +51,7 @@ site_settings:
                         name: create_draft_warning
                     label: 'Warn me when creating a draft'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 lock_item_upon_draft_creation:
                     site_setting:
                         name: lock_item_upon_draft_creation
@@ -128,5 +117,27 @@ site_settings:
                         hide_remove_button: Yes
                     
                     value: zenario_common_features__notification_to_new_admin
+        fabs:
+            label: Floating Admin Boxes
+            edit_mode:
+                enabled: Yes
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: No
+            fields:
+                description:
+                    full_width: Yes
+                    snippet:
+                        html: This tab contains settings for the floating boxes seen in admin mode.
+                fab_use_cache_dir:
+                    site_setting:
+                        name: fab_use_cache_dir
+                    label: 'Use the cache directory'
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        If enabled, files will be written to the <code>cache/</code> directory to
+                        help speed up the floating admin boxes.
+                        
+                        If you are running on a cloud server you may need to disable this.
                     
                     

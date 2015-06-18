@@ -295,46 +295,15 @@ if (needRevision(46)) {
 	revision(46);
 }
 
-revision(49
+	revision(49
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD COLUMN email_overridden_by varchar(255) DEFAULT '' AFTER email_sent 
 _sql
-);
 
-
-//Convert the format of inline image URLs in Newsletters again.
-//This time we're moving them from the old inline image pool to the new email pool.
-if (needRevision(64)) {
-	//Get the body text from the newsletters
-	$sql = "
-		SELECT id, body
-		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
-		WHERE body LIKE '%file.php%'";
-	$result = sqlQuery($sql);
-	
-	while ($row = sqlFetchAssoc($result)) {
-		$files = array();
-		$htmlChanged = false;
-		syncInlineFileLinks('email', $files, $row['body'], $htmlChanged);
-		
-		if ($htmlChanged) {
-			updateRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('body' => $row['body']), array('id' => $row['id']));
-		}
-		
-		syncInlineFiles($files, array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $row['id']));
-	}
-	
-	
-	//In the 6.0.5 beta, "zenario_newsletter/panel_image" was first used as the pool-name. Convert any images still using this
-	//name then delete the old pool.
-	deleteRow('files', array('usage' => 'zenario_newsletter/panel_image'));
-
-	revision(64);
-}
 
 //Drop a table created in the beta but no longer used, if it exists
-revision( 65
+);	revision( 65
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_image_link`
 _sql
@@ -749,3 +718,70 @@ _html
 _sql
 
 );
+
+
+//Convert the format of inline image URLs in Newsletters again.
+//This time we're moving them from the old inline image pool to the new email pool.
+//Also resync all of the images used in them.
+if (needRevision(159)) {
+	//Get the body text from the newsletters
+	$sql = "
+		SELECT id, body
+		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
+		WHERE body LIKE '%file.php%'";
+	$result = sqlQuery($sql);
+	
+	while ($row = sqlFetchAssoc($result)) {
+		$files = array();
+		$htmlChanged = false;
+		syncInlineFileLinks($files, $row['body'], $htmlChanged);
+		
+		if ($htmlChanged) {
+			updateRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('body' => $row['body']), array('id' => $row['id']));
+		}
+		
+		syncInlineFiles(
+			$files,
+			array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $row['id']),
+			$keepOldImagesThatAreNotInUse = true);
+	}
+
+	revision(159);
+}
+
+//Update and resync images in newsletter templates too
+if (needRevision(160)) {
+	//Get the body text from the newsletters
+	$sql = "
+		SELECT id, body
+		FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_templates
+		WHERE body LIKE '%file.php%'";
+	$result = sqlQuery($sql);
+	
+	while ($row = sqlFetchAssoc($result)) {
+		$files = array();
+		$htmlChanged = false;
+		syncInlineFileLinks($files, $row['body'], $htmlChanged);
+		
+		if ($htmlChanged) {
+			updateRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('body' => $row['body']), array('id' => $row['id']));
+		}
+		
+		syncInlineFiles(
+			$files,
+			array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $row['id']),
+			$keepOldImagesThatAreNotInUse = false);
+	}
+
+	revision(160);
+}
+
+//Flag the links to images in archived newsletters as archived.
+if (needRevision(162)) {
+
+	foreach (getRowsArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', 'id', array('status' => '_ARCHIVED')) as $id) {
+		updateRow('inline_images', array('archived' => 1), array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
+	}
+
+	revision(162);
+}

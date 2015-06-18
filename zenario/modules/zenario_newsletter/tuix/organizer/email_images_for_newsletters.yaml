@@ -2,25 +2,11 @@
 ---
 zenario__content:
     panels:
-        email_images_shared:
-            columns:
-                usage_newsletters:
-                    title: Usage (Newsletters)
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT foreign_key_to, foreign_key_id, foreign_key_char)
-                            FROM [[DB_NAME_PREFIX]]inline_file_link AS nifl
-                            WHERE file_id = f.id
-                              AND foreign_key_to = 'newsletter'
-                        )
-                    show_by_default: Yes
-        
-        
         email_images_for_newsletters:
             key:
-                usage: email
+                usage: image
             panel_type: grid_or_list
-            enable_close_up_view: Yes
+            enable_close_up_view: true
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
             title: ""
@@ -28,61 +14,85 @@ zenario__content:
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]]files AS f
-                    INNER JOIN [[DB_NAME_PREFIX]]inline_file_link AS ifl
-                     ON ifl.file_id = f.id
-                    AND ifl.foreign_key_to = 'newsletter'
-                    AND ifl.foreign_key_id = [[REFINER_ID]]
+                    INNER JOIN [[DB_NAME_PREFIX]]inline_images AS ii
+                     ON ii.image_id = f.id
+                    AND ii.foreign_key_to = 'newsletter'
+                    AND ii.foreign_key_id = [[REFINER_ID]]
+                    AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                    AND f.`usage` = 'image'
                 id_column: f.id
             refiners:
                 newsletter:
-                    sql: |
-                        f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
-                        AND f.`usage` = 'email'
+                    exists: true
             columns:
                 id:
                     db_column: f.id
                 filename:
                     title: Filename
-                    searchable: Yes
+                    searchable: true
                     db_column: f.filename
-                    show_by_default: Yes
+                    show_by_default: true
                 alt_tag:
                     title: Default alt-tag
-                    searchable: Yes
+                    searchable: true
                     db_column: f.alt_tag
                     length_limit: "64"
                 title:
                     db_column: f.title
                 checksum:
                     db_column: f.checksum
+                short_checksum:
+                    db_column: f.short_checksum
                 mime_type:
-                    server_side_only: Yes
+                    server_side_only: true
                     db_column: f.mime_type
                 size:
                     title: Size
                     format: filesize
                     db_column: f.size
-                    show_by_default: Yes
+                    show_by_default: true
                 width:
                     title: Width
-                    searchable: Yes
+                    searchable: true
                     db_column: f.width
-                    show_by_default: Yes
+                    show_by_default: true
                 height:
                     title: Height
-                    searchable: Yes
+                    searchable: true
                     db_column: f.height
-                    show_by_default: Yes
-                shared:
-                    title: Shared
+                    show_by_default: true
+                in_use_here:
+                    title: In use here
+                    db_column: ii.in_use
                     format: yes_or_no
-                    db_column: f.shared
-                    show_by_default: Yes
-                in_use:
-                    title: In use
-                    db_column: ifl.in_use
+                    show_by_default: true
+                in_use_elsewhere:
+                    title: In use elsewhere
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS uii
+                            WHERE uii.image_id = f.id
+                              AND uii.in_use = 1
+                              AND uii.archived = 0
+                              AND (uii.foreign_key_to, uii.foreign_key_id)
+                              NOT IN (('newsletter', [[REFINER_ID]]))
+                            LIMIT 1
+                        )
                     format: yes_or_no
-                    show_by_default: Yes
+                    show_by_default: true
+                    width: xsmall
+                duplicate_filename:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]files AS df
+                            WHERE df.`usage` = f.`usage`
+                              AND df.filename = f.filename
+                              AND df.archived = 0
+                              AND df.id != f.id
+                            LIMIT 1
+                        )
             default_sort_column: filename
             label_format_for_popouts: |
                 [[filename]]
@@ -97,26 +107,26 @@ zenario__content:
             collection_buttons:
                 upload:
                     priv: _PRIV_EDIT_NEWSLETTER
-                    css_class: create_image
+                    css_class: zenario_create_a_new
                     label: Upload one or more images
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                         fileDesc: Images
-                        multi: Yes
-                        drag_and_drop: Yes
+                        multi: true
+                        drag_and_drop: true
                         request:
-                            upload: Yes
+                            upload: true
                 add:
                     priv: _PRIV_EDIT_NEWSLETTER
                     css_class: add
-                    label: Use a shared image here
+                    label: Pick an image from the library
                     pick_items:
-                        path: zenario__content/panels/email_images_shared
-                        target_path: zenario__content/panels/email_images_shared
-                        min_path: zenario__content/panels/email_images_shared
-                        disallow_refiners_looping_on_min_path: Yes
+                        path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Use
-                        multiple_select: Yes
+                        multiple_select: true
                         request:
                             add: "1"
             inline_buttons:
@@ -140,48 +150,40 @@ zenario__content:
                     label: Rename image or add a title
                     admin_box:
                         path: zenario_image
-                share:
+                delete:
                     priv: _PRIV_MANAGE_MEDIA
-                    css_class: share
-                    label: Share this image
-                    multiple_select: Yes
-                    multiple_select_tooltip: Share these images
-                    one_without_traits:
-                        shared: Yes
-                    ajax:
-                        request:
-                            share: Yes
-                unshare:
-                    priv: _PRIV_MANAGE_MEDIA
-                    css_class: unshare
-                    label: Stop sharing this image
-                    multiple_select: Yes
-                    multiple_select_tooltip: Stop sharing these images
-                    traits:
-                        shared: Yes
-                    ajax:
-                        request:
-                            unshare: Yes
-                remove:
-                    priv: _PRIV_EDIT_NEWSLETTER
-                    ord: "99"
-                    css_class: delete
-                    label: Remove image
-                    multiple_select: Yes
-                    multiple_select_tooltip: Remove images
-                    hide_in_select_mode: Yes
-                    without_traits:
-                        used: Yes
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: >
+                        !zenario.engToBoolean(item.in_use_here) && !zenario.engToBoolean(item.in_use_elsewhere)
                     ajax:
                         confirm:
-                            message: |
-                                Are you sure you wish to remove the image "[[filename]]" from use in this Newsletter?
-                                If it is not shared or used elsewhere it will be deleted from the system.
-                            multiple_select_message: |
-                                Are you sure you wish to remove these images from use in this Newsletter?
-                                Any that are not shared or used elsewhere will be deleted from the system.
-                            button_message: Remove
+                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
+                            multiple_select_message: Are you sure you wish to delete these unused images?
+                            button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            remove: "1"
+                            delete: 1
+            
+                remove:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Detach from newsletter
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    disabled_if_for_any_selected_items: |
+                        item.in_use_here
+                    disabled_tooltip: |
+                        You cannot detach an image that is in use.
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to detach the image "[[filename]]" from this newsletter?
+                            multiple_select_message: |
+                                Are you sure you wish to detach these images from this newsletter?
+                            button_message: Detach
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            remove: 1

@@ -73,7 +73,6 @@ zenario_content:
                                                             <span id="snippet__title_counter">[[initial_characters_count]]</span>
                                                         </div>
                                                     </div>
-                    format_onchange: true
                 language_id:
                     ord: 30
                     label: 'Language:'
@@ -172,7 +171,6 @@ zenario_content:
                                                             <span id="snippet__description_counter">[[initial_characters_count]]</span>
                                                         </div>
                                                     </div>
-                    format_onchange: true
                 google_preview:
                     label: 'Search engine results preview:'
                     ord: 75
@@ -459,7 +457,6 @@ zenario_content:
                         drag_and_drop: true
                         accept: ''
                         extensions: []
-                    #format_onchange: Yes
         
         # A placeholder for the Privacy Tab, which the Users Module will add here if it is running!
         privacy:

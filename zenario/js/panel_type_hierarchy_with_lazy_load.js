@@ -156,7 +156,7 @@ methods.expandItem = function() {
 	
 	if ($('#organizer_hierarchy_view .organizer_hierarchy_view_lazy_loading:visible').size()) {
 		//zenarioO.saveSelection();
-		zenarioO.refresh();
+		zenarioO.reload();
 	}
 };
 

@@ -1,0 +1,9 @@
+zenario__user_forms:
+    panels:
+        zenario_user_forms__forms:
+            item_buttons:
+                crm_fields:
+                    label: CRM fields
+                    link:
+                        path: zenario__user_forms/panels/zenario_crm_form_integration__field_names
+                        refiner: form_id

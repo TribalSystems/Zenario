@@ -44,8 +44,8 @@ switch ($path) {
 			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
 			$columns['body'] = $values['body/body'];
 			$htmlChanged = false;
-			addImageDataURIsToDatabase($columns['body'], absCMSDirURL(), 'email');
-			syncInlineFileLinks('email', $files, $columns['body'], $htmlChanged);
+			addImageDataURIsToDatabase($columns['body'], absCMSDirURL());
+			syncInlineFileLinks($files, $columns['body'], $htmlChanged);
 		}
 		
 		if (!empty($columns)) {
@@ -64,17 +64,8 @@ switch ($path) {
 		}
 		
 		//Record the images used in this email template.
-		if (!empty($files)) {
-			$key = array('foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']);
-			syncInlineFiles($files, $key);
-			
-			//Clear out the "Images in this new Email Template" where they've just been used here
-			$key = array('foreign_key_to' => 'email_template', 'foreign_key_id' => 0, 'foreign_key_char' => '0');
-			foreach ($files as $file) {
-				$key['file_id'] = $file['id'];
-				deleteRow('inline_file_link', $key);
-			}
-		}
+		$key = array('foreign_key_to' => 'email_template', 'foreign_key_id' => $box['key']['numeric_id'], 'foreign_key_char' => $box['key']['id']);
+		syncInlineFiles($files, $key, $keepOldImagesThatAreNotInUse = false);
 		
 		break;
 }

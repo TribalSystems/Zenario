@@ -9,20 +9,25 @@ zenario_menu:
                     label: 'Feature image'
                     type: checkbox
                     format_onchange: true
-                zenario_promo_menu__feature_image_thumbnail:
-                    ord: 2
-                    full_width: true
-                    snippet:
-                        html: ""
                 zenario_promo_menu__feature_image:
-                        foreign_key_to: file
+                    foreign_key_to: file
                     label: 'Image'
                     pick_items:
-                        path: zenario__content/panels/inline_images_for_reusable_plugins
-                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
                     value: ""
                     format_onchange: true
                     validation:
@@ -90,19 +95,25 @@ zenario_menu:
                     type: checkbox
                     value: ""
                     format_onchange: Yes
-                zenario_promo_menu__rollover_image_thumbnail:
-                    full_width: Yes
-                    snippet:
-                        html: ""            
                 zenario_promo_menu__rollover_image:
                     foreign_key_to: file
                     label: 'Change image on rollover'
                     pick_items:
-                        path: zenario__content/panels/inline_images_for_reusable_plugins
-                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
                     value: ""
                     format_onchange: true
                 

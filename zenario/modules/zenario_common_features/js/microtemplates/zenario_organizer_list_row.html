@@ -1,7 +1,7 @@
 <div
 	id="organizer_item_{{m.id|escape}}"
 	data-id="{{m.id|escape}}"
-	onclick="zenarioO.itemClick('{{m.id|escape}}', event, false, true);"
+	onclick="zenarioO.pi.itemClick('{{m.id|escape}}', event);"
 	class="
 		organizer_row
 		{{m.css_class|escape}}
@@ -24,7 +24,7 @@
 		></div>
 	<% } %>
 	
-	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.itemClick('{{m.id|escape}}', event, true); return false;" ondblclick="return zenario.stop(event);">
+	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
 		<% if (zenarioO.itemButtonsExist) { %>
 			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
 		<% } %>

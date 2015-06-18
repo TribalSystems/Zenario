@@ -62,7 +62,8 @@ switch ($path) {
 		}
 		
 		//If a favicon is set, change the icon of the favicon to that icon
-		if ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), array('usage' => 'favicon'))) {
+		if (setting('favicon')
+		 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), setting('favicon')))) {
 			if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 				$url = fileLink($icon['id']);
 			} else {
@@ -73,9 +74,9 @@ switch ($path) {
 		}
 		
 		//Same for the site logo and the rebranding
-		if ($icon = getRow('files', array('id'), array('usage' => 'brand_logo'))) {
+		if (setting('brand_logo') == 'custom' && setting('custom_logo')) {
 			$width = $height = $url = false;
-			imageLink($width, $height, $url, $icon['id'], 24, 23);
+			imageLink($width, $height, $url, setting('custom_logo'), 24, 23);
 			$panel['items']['branding']['list_image'] = $url;
 		}
 		
@@ -129,39 +130,41 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario__content/panels/email_images_for_email_templates':
-		if (inc('zenario_email_template_manager')) {
-			if ($refinerId && $details = zenario_email_template_manager::getTemplateByCode($refinerId)) {
-				$panel['title'] = adminPhrase('Images in the Email Template "[[template_name]]"', $details);
-				$panel['no_items_message'] = adminPhrase('There are no images in this Email Template.');
-			} else {
-				$panel['title'] = adminPhrase('Images in this new Email Template');
-				$panel['no_items_message'] = adminPhrase('There are no images in this new Email Template.');
-			}
-		}
-		
 	case 'generic_image_panel':
-	case 'zenario__content/panels/email_images_shared':
 	case 'zenario__content/panels/inline_images_for_content':
-	case 'zenario__content/panels/inline_images_for_reusable_plugins':
-	case 'zenario__content/panels/inline_images_shared':
+	case 'zenario__content/panels/image_library':
 		
-		if (in($path, 'zenario__content/panels/inline_images_for_content')) {
-			$cID = $cType = false;
-			getCIDAndCTypeFromTagId($cID, $cType, get('refiner__content'));
+		switch ($refinerName) {
+			case 'content':
+				$cID = $cType = false;
+				getCIDAndCTypeFromTagId($cID, $cType, get('refiner__content'));
 			
-			if (!checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
-				unset($panel['collection_buttons']['add']);
-				unset($panel['collection_buttons']['upload']);
-			}
-			
-			if ($path == 'zenario__content/panels/inline_images_for_content') {
+				if (!checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
+					unset($panel['collection_buttons']['add']);
+					unset($panel['collection_buttons']['upload']);
+				}
+				
 				$panel['title'] =
 					adminPhrase('Images used on the content item [[tag]], version [[version]]',
 						array(
 							'tag' => formatTagFromTagId(get('refiner__content')),
 							'version' => getRow('content', 'admin_version', array('tag_id' => get('refiner__content')))));
-			}
+				
+				break;
+			
+			
+			case 'tag':
+				if ($tag = getRow('image_tags', true, array('name' => $refinerId))) {
+					$panel['title'] = adminPhrase('Images that use the tag "[[name]]"', $tag);
+					$panel['no_items_message'] = adminPhrase('There are no images that use the tag "[[name]]".', $tag);
+					$panel['refiners']['tag']['table_join'] .=  (int) $tag['id'];
+				} else {
+					echo adminPhrase('Tag not found');
+					exit;
+				}
+				
+				
+				break;
 		}
 		
 		//Don't do anything fancy if we're just looking up a name
@@ -174,7 +177,53 @@ switch ($path) {
 			unset($panel['columns']['usage_menu']);
 			unset($panel['columns']['usage']);
 			unset($panel['columns']['in_use']);
+			unset($panel['columns']['in_use_here']);
+			unset($panel['columns']['in_use_anywhere']);
+			unset($panel['columns']['in_use_elsewhere']);
 			unset($panel['columns']['sticky_flag']);
+		
+		} elseif (!$refinerName && $path == 'zenario__content/panels/image_library') {
+			$ord = 1000;
+			
+			$tags = getRowsArray('image_tags', 'name', array(), 'name');
+			
+			$panel['quick_filter_buttons']['tags']['hidden'] = false;
+			
+			if (empty($tags)) {
+				$panel['quick_filter_buttons']['tags']['disabled'] = true;
+				
+				$panel['quick_filter_buttons']['dummy_child'] = array(
+					'disabled' => true,
+					'ord' => $ord,
+					'parent' => 'tags',
+					'label' => adminPhrase('No tags exist, edit an image to create tags')
+				);
+			
+			} else {
+				foreach ($tags as $tagId => $tagName) {
+					++$ord;
+					$codeName = 'tag_'. (int) $tagId;
+				
+					$panel['columns'][$codeName] = array(
+						'db_column' => 'NULL',
+						'search_column' => 
+							"(
+								SELECT 1
+								FROM [[DB_NAME_PREFIX]]image_tag_link AS ". $codeName. "
+								WHERE ". $codeName. ".image_id = f.id
+								  AND ". $codeName. ".tag_id = ". (int) $tagId. "
+							)",
+						'filter_format' => 'yes_or_no'
+					);
+				
+					$panel['quick_filter_buttons'][$codeName] = array(
+						'ord' => $ord,
+						'parent' => 'tags',
+						'label' => $tagName,
+						'column' => $codeName
+					);
+				}
+			}
 		}
 		
 		break;

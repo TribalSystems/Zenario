@@ -87,7 +87,7 @@ zenario__modules:
                           AND img_ps.foreign_key_to = 'file'
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'inline'
+                          AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                 checksum:
                     db_column: img_f.checksum
@@ -97,7 +97,7 @@ zenario__modules:
                           AND img_ps.foreign_key_to = 'file'
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'inline'
+                          AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                 mime_type:
                     server_side_only: Yes
@@ -108,7 +108,7 @@ zenario__modules:
                           AND img_ps.foreign_key_to = 'file'
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
-                          AND img_f.`usage` = 'inline'
+                          AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
             item:
                 name: Plugin

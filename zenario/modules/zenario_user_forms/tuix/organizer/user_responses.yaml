@@ -12,9 +12,7 @@ zenario__user_forms:
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
-                client_side: true
                 id_column: ur.id
-            label_format_for_grid_view: "[[id]]"
             refiners:
                 form_id:
                     sql: 'ur.form_id = [[REFINER_ID]]'

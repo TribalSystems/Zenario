@@ -43,3 +43,17 @@ plugin_settings:
                         This text will be translated
                     validation:
                         required_if_not_hidden: Please enter text to be used as a link to the form
+                checkbox_columns:
+                    plugin_setting:
+                        name: checkbox_columns
+                    label: 'Checkbox columns:'
+                    type: select
+                    values:
+                        1: 1
+                        2: 2
+                        3: 3
+                        4: 4
+                        5: 5
+                        6: 6
+                    value: 1
+                    side_note: The number of columns that a multiple checkboxes field will be displayed in. If there aren't at least 2x the number of checkboxes as columns, the list will be displayed in a single column.

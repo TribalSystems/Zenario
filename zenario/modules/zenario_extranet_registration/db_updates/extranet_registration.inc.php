@@ -55,8 +55,8 @@ VALUES
 '" . sqlEscape(setting('email_name_from')) . "',
 '<p>Dear Admin,</p>
 <p>A new User has signed up.</p>
-<p>You can see the User\'s details in Storekeeper by clicking the link below:</p>
-<p><a href=\"[[storekeeper_link]]\">[[storekeeper_link]]</a></p>
+<p>You can see the User\'s details in Organizer by clicking the link below:</p>
+<p><a href=\"[[organizer_link]]\">[[organizer_link]]</a></p>
 <p>&nbsp;</p>
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),
@@ -94,8 +94,8 @@ VALUES
 '" . sqlEscape(setting('email_name_from')) . "',
 '<p>Dear Admin,</p>
 <p>The account for the User [[first_name]] [[last_name]] has been activated.</p>
-<p>You can see the User\'s details in Storekeeper by clicking the link below:</p>
-<p><a href=\"[[storekeeper_link]]\">[[storekeeper_link]]</a></p>
+<p>You can see the User\'s details in Organizer by clicking the link below:</p>
+<p><a href=\"[[organizer_link]]\">[[organizer_link]]</a></p>
 <p>&nbsp;</p>
 <p>This is an auto-generated email from [[cms_url]] .</p>',
  NOW(),

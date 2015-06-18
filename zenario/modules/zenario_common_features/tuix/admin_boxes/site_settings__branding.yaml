@@ -30,20 +30,27 @@ site_settings:
                             label: 'Use a custom logo:'
                     redraw_onchange: true
                 
-                logo:
+                custom_logo:
+                    site_setting:
+                        name: custom_logo
                     visible_if: |
                         zenarioAB.value('brand_logo') == 'custom'
-                    upload: 
+                    upload:
                         accept: "image/*"
                         extensions: 
                             - .gif
                             - .jpg
                             - .jpeg
                             - .png
-                        drag_and_drop: false
+                        drag_and_drop: true
                     note_below: >
                         If your image is larger than 500×250 it will be scaled down to fit.
-        sk:
+                    validation:
+                        required_if_not_hidden: >
+                            Please upload an image.
+                        must_be_gif_jpg_or_png: >
+                            The custom logo must be a .gif, .jpg or a .png file.
+        og:
             label: Organizer
             edit_mode:
                 enabled: Yes
@@ -79,18 +86,25 @@ site_settings:
                             label: 'Use a custom favicon:'
                     redraw_onchange: true
                 
-                favicon:
+                custom_organizer_favicon:
+                    site_setting:
+                        name: custom_organizer_favicon
                     visible_if: |
                         zenarioAB.value('organizer_favicon') == 'custom'
-                    upload: 
+                    upload:
                         accept: "image/*"
                         extensions: 
                             - .gif
                             - .ico
                             - .png
-                        drag_and_drop: false
+                        drag_and_drop: true
                     note_below: >
                         You should upload a .ico file for a favicon.
                         (You can also use a .gif or a .png, however these will not display for visitors
                          using Internet Explorer 10 or earlier.)
                         The image should be either 16×16, 32×32, 48×48 or 64×64 pixels in size.
+                    validation:
+                        required_if_not_hidden: >
+                            Please upload a .gif, .ico or a .png file.
+                        must_be_gif_ico_or_png: >
+                            The favicon must be a .gif, .ico or a .png file.

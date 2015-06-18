@@ -13,10 +13,11 @@
 	{% endif %}
 	{% if Screen_Name_Unconfirmed %}
 		{{openForm}}
+			<div class="screen_name_confirmed_info">{{screen_name_confirmed_info}}</div>
 			<input type="submit" value="{{'Confirm screen name'|trans}}" name="confirm_screen_name"/>
 		{{closeForm}}
 	{% elseif Screen_Name_Confirmed %}
-		{{'Screen name confirmed!'|trans}}
+		{{screen_name_confirmed_message}}
 	{% endif %}
 	</div>
 {% elseif Edit %}

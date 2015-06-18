@@ -2,6 +2,7 @@
 ---
 sections:
     no_menu_nodes:
+        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: Yes
@@ -26,6 +27,7 @@ sections:
                     request:
                         mass_add_to_menu: "1"
     primary_menu_node:
+        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: Yes
@@ -93,10 +95,14 @@ sections:
                     request:
                         mass_add_to_menu: "1"
     secondary_menu_node:
+        priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
                 hidden: Yes
                 css_class: ""
+                label: ""
+            menu_section:
+                hidden: Yes
                 label: ""
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM

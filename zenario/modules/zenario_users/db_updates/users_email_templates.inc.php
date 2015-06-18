@@ -64,7 +64,7 @@ revision(6, "
 		 '" . sqlEscape(setting('email_address_from')) . "',
 		 '" . sqlEscape(setting('email_name_from')) . "',
 		'<p>Dear [[first_name]] [[last_name]],</p>
-		<p>Your account has been suspended. You no longer be able to access the extranet area of our website.</p>
+		<p>Your account has been suspended. You will no longer be able to access the extranet area of our website.</p>
 		<p>If you feel this suspension has been made in error, please contact us.</p> 
 		<p>&nbsp;</p>
 		<p>This is an auto-generated email from [[cms_url]] .</p>',

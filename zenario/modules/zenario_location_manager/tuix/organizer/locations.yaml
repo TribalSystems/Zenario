@@ -3,7 +3,6 @@
 zenario__locations:
 	panel:
 		title: Locations
-		view_mode: list
 		no_items_in_search_message: No locations exist, click "Create" to create a location.
 		#grid_view_microtemplate: zenario_grid_view_location
 		slidedown_view_microtemplate: zenario_grid_view_location
@@ -22,6 +21,8 @@ zenario__locations:
 				sql: '(l.parent_id = 0 OR l.parent_id IS NULL) AND l.id IN (SELECT parent_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l2)'
 			sector_locations:
 				sql: 'l.id IN (SELECT location_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE sector_id IN [[REFINER_IDS]])'
+			map:
+				sql: 'l.id = l.id'
 		db_items:
 			table: |
 				[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations AS l
@@ -58,6 +59,7 @@ zenario__locations:
 				show_by_default: Yes
 				searchable: Yes
 				width: large
+				always_show: true
 			address1:
 				title: Address 1
 				db_column: l.address1
@@ -309,7 +311,7 @@ zenario__locations:
 		item_buttons:
 			rename_location:
 				ord: "1"
-				label: Properties
+				label: Edit location
 				hide_in_select_mode: Yes
 				admin_box:
 					path: zenario_location_manager__location

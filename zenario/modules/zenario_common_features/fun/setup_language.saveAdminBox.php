@@ -91,6 +91,6 @@ importPhrasesForModules($langId);
 
 //Go to the language in the enabled languages panel.
 //We should also reload the page if any of the language names were changed, or if this was the first language to be added
-$box['popout_message'] = '<!--Go_To_URL:zenario/admin/welcome.php?task=reload_sk&sk='. rawurlencode('zenario__languages/panels/languages//'. $langId). '-->';
+$box['popout_message'] = '<!--Go_To_URL:zenario/admin/welcome.php?task=reload_sk&og='. rawurlencode('zenario__languages/panels/languages//'. $langId). '-->';
 
 return false;

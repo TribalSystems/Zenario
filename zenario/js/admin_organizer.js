@@ -60,7 +60,8 @@ zenario.lib(function(
 	zenarioO.disableInteraction()
 	zenarioO.enableInteraction()
 
-	zenarioO.refresh(
+	zenarioO.load()
+	zenarioO.reload(
 		//Need to tidy up inputs
 	)
 
@@ -76,7 +77,7 @@ zenario.lib(function(
 	zenarioO.getPageCount()
 
 
-	zenarioO.itemClick(
+	zenarioO.pi.itemClick(
 		//Need to tidy up inputs
 	)
 	zenarioO.itemClickThrough(
@@ -84,12 +85,7 @@ zenario.lib(function(
 	)
 
 	zenarioO.toggleAllItems()
-	zenarioO.selectAllItems()
-	zenarioO.deselectAllItems()
-	zenarioO.selectSingleItem(
-		//Need to tidy up inputs
-	)
-	zenarioO.selectItemRange(start, stop)
+	zenarioO.selectItems()
 	
 	//inspection view functions
 	zenarioO.inspectionViewEnabled()
@@ -234,7 +230,7 @@ zenarioO.open = function(className, e, width, left, top, disablePageBelow, overl
 	
 	var html = zenarioA.microTemplate('zenario_organizer', {topLeftHTML: zenarioO.topLeftHTML, topRightHTML: zenarioO.topRightHTML});
 	
-	zenarioA.openBox(html, className, 'sk', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
+	zenarioA.openBox(html, className, 'og', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
 };
 
 
@@ -252,12 +248,6 @@ zenarioO.init = function(reload) {
 	//if (window.console && typeof console.groupEnd == 'function') console.group('Loading Storekeeper');
 	
 	zenarioO.pageTitle = document.title;
-	
-	//(Periodic refresh is now disabled)
-	//if (zenarioA.siteSettings.storekeeper_periodic_refresh_mins
-	// && zenarioA.siteSettings.storekeeper_periodic_refresh_mins == 1*zenarioA.siteSettings.storekeeper_periodic_refresh_mins) {
-	//	zenarioO.periodicRefreshTime = 60000 * zenarioA.siteSettings.storekeeper_periodic_refresh_mins;
-	//}
 	
 	
 	if (window.zenarioONotFull) {
@@ -472,6 +462,9 @@ zenarioO.initNewPanelInstance = function(path) {
 		panelInstance = new zenarioO.panelTypes.list();
 	}
 	
+	panelInstance.cmsSetsPath(path);
+	panelInstance.init();
+	
 	return panelInstance;
 };
 
@@ -557,12 +550,24 @@ zenarioO.reloadOpeningInstanceIfRelevant = function(path) {
 		 && windowParent
 		 && windowParent.zenarioO
 		 && windowParent.zenarioO.init) {
-			windowParent.zenarioO.refresh();
+			windowParent.zenarioO.reload();
 		}
 	}
 };
 
 
+
+zenarioO.callPanelOnUnload = function() {
+	//If there is already a panel being displayed, attempt to call it's onUnload function
+	if (zenarioO.path
+	 && zenarioO.pi
+	 && zenarioO.pi.onUnload) {
+		var $header = $('#organizer_header'),
+			$panel = $('#organizer_rightColumnContent'),
+			$footer = $('#organizer_lowerMiddleColumn');
+		zenarioO.pi.onUnload($header, $panel, $footer);
+	}
+};
 
 zenarioO.pathNotAllowed = function(link) {
 	return link && window.zenarioONotFull && window.zenarioOMaxPath !== false && zenarioO.path == window.zenarioOMaxPath && link.path != zenarioO.path;
@@ -579,7 +584,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		zenarioO.lastActivity = Date.now();
 	}
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('og')) {
 		return;
 	}
 	
@@ -595,15 +600,8 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		return;
 	}
 	
-	//If there is already a panel being displayed, attempt to call it's onUnload function
-	if (zenarioO.path
-	 && zenarioO.pi
-	 && zenarioO.pi.onUnload) {
-		var $header = $('#organizer_header'),
-			$panel = $('#organizer_rightColumnContent'),
-			$footer = $('#organizer_lowerMiddleColumn');
-		zenarioO.pi.onUnload($header, $panel, $footer);
-	}
+	zenarioO.callPanelOnUnload();
+	
 	
 	if (!queued) {
 		window.zenarioOQueue = false;
@@ -738,13 +736,14 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	
 	var filtersSet = false,
 		panelInstance = false,
-		filters = $.extend(true, {}, zenarioO.loadFromBranches(path, branch, 'filters')),
+		filters = zenarioO.loadFromBranches(path, branch, 'filters'),
 		searchTerm = zenarioO.loadFromBranches(path, branch, 'searches'),
 		advancedSearch = zenarioO.loadFromBranches(path, branch, 'adv_searches'),
 		advancedValues = false,
 		refinerDetails = false,
 		previousRefiner = false,
 		viewOptionsPath = path;
+
 	
 	//Check to see if a refiner is set
 	if (refiner === undefined) {
@@ -792,6 +791,8 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	//If the panel instance was not loaded previously, create a new one.
 	if (!panelInstance) {
 		panelInstance = zenarioO.initNewPanelInstance(path);
+	} else {
+		panelInstance.cmsSetsPath(path);
 	}
 	
 	//If there is a refiner, try to look it up on the map to see if there is any special logic for it
@@ -826,33 +827,85 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		defaultSortColumn = 'name';
 	}
 	
-	//Check if we need to check with the server for updates/changes to this panel using php
+	//Load the TUIX of this panel from the "map". The map is a static version of all of the TUIX files
+	//that make up Organizer.
+	//To keep the inital download size small when first opening Organizer, maybe properties are trimmed
+	//from the map to save space.  The zenarioParseTUIX() function in zenario/includes/admin.inc.php
+	//controls the logic for which tags are not trimmed.
 	var panel = zenarioO.followPathOnMap(path);
 	
-	panelInstance.cmsSetsPath(path);
+	//Let the panel instance know about the TUIX properties from the map
 	panelInstance.cmsSetsPanelTUIX(panel);
 	
-	//Could the selected item be stored against the instance..?
+	//Let the panel instance know which item was selected
 	panelInstance.cmsSetsRequestedItem(itemToSelect);
 	
-	//Come back to this and see if I could do this a different way,
-	//e.g. storing the search term against the instance..?
+	//Let the panel instance know what the search term was
 	panelInstance.cmsSetsSearchTerm(searchTerm);
+ 	
+ 	//Check to see if there were any filters previously set on this panel
+	if (filters && !_.isEmpty(filters)) {
+		//If so, use them
+		filters = $.extend(true, {}, filters);
 	
-	var db_items = panel.db_items,// zenarioO.followPathOnMap(path, 'db_items'),
-		reorder = panel.reorder,//zenarioO.followPathOnMap(path, 'reorder'),
+	} else {
+		//Otherwise start with empty filters, or default filters if any are set by default
+		filters = {};
+		
+		//Check the quick filter buttons to see if any should be set by default
+		var qi,
+			button,
+			value_;
+		
+		if (panel.quick_filter_buttons) {
+			foreach (panel.quick_filter_buttons as qi => button) {
+				if (!zenarioO.isInfoTag(qi)) {
+					if (button.column && engToBoolean(button.enabled_by_default)) {
+					
+						if (button.value !== undefined) {
+							value_ = button.value;
+						} else {
+							value_ = 1;
+						}
+					
+						filters[button.column] = {
+							enabled_by_default: true,
+							shown: true,
+							not: engToBoolean(button.invert),
+							value_: value_
+						};
+					}
+				}
+			}
+		}
+	}
+	
+	//Look through the filters on this page, checking to see if any have been set.
+	//If any are not set them strip them away as we don't need any junk data.
+	//(However we do need to remember if a default filter is turned off, so that it does not default back on again...)
+	foreach (filters as var c => var filter) {
+		if (zenarioO.filterSetOnColumn(c, filters)) {
+			filtersSet = true;
+		
+		} else if (!filter.enabled_by_default) {
+			delete filters[c];
+		}
+	}
+	
+	
+	var db_items = panel.db_items,
+		reorder = panel.reorder,
 		server_side = panelInstance.returnDoSortingAndSearchingOnServer(),
 		thisPageSize = 1*panelInstance.returnPageSize(),
 		url = panelInstance.returnAJAXURL(),
 		devToolsURL = panelInstance.returnDevToolsAJAXURL(),
-		//url = URLBasePath + 'zenario/admin/ajax.php?_json=1&path=' + path + zenario.urlRequest(panelInstance.requests()),
 		requests = {},
 		post = {},
 		postUsed = false,
 		data = false,
 		store,
 		go2 = function(data) {
-			zenarioO.go2(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
+			zenarioO.go2(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
 		};
 	
 	if (url) {
@@ -927,17 +980,9 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 				requests._sort_desc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc'));
 			}
 		}
-		//Send the values of any filters
-		if (filters !== undefined) {
-			//Don't apply hidden filters, or any empty filters
-			foreach (filters as var c) {
-				if (zenarioO.filterSetOnColumn(c, filters)) {
-					filtersSet = true;
-				} else {
-					delete filters[c];
-				}
-			}
 		
+		//Send the values of any filters
+		if (filters && !_.isEmpty(filters)) {
 			requests._filters = JSON.stringify(filters);
 		}
 	
@@ -950,56 +995,6 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 				post._adv_search = JSON.stringify(advancedSearchValues);
 			}
 		}
-	
-		//if (reorder && reorder.lazy_load) {
-		//	if (itemToSelect && !openItemsInHierarchy) {
-		//		requests._openItemInHierarchy = itemToSelect;
-		//	} else {
-		//		requests._openItemsInHierarchy = openItemsInHierarchy? zenarioO.implodeKeys(openItemsInHierarchy) : '';
-		//	}
-		//}
-	
-		//CSV export ability:
-		//Rather than send data to the server and display it in the client,
-		//send data to the server and download it as a CSV file.
-		//if (zenarioO.CSVExport) {
-		//	zenarioO.CSVExport = undefined;
-		//	zenarioO.refreshToPage = undefined;
-		//	
-		//	delete requests._start;
-		//	delete requests._limit;
-		//	
-		//	if (path === zenarioO.path) {
-		//		post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.tuix.columns);
-		//	} else {
-		//		post._shownColumnsInCSV = zenarioO.getShownColumns(viewOptionsPath, defaultSortColumn, zenarioO.followPathOnMap(path, 'columns'));
-		//	}
-		//	
-		//	if (zenarioO.prefs[zenarioO.voPath] && zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV) {
-		//		foreach (zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV as var c) {
-		//			post._shownColumnsInCSV[c] = zenarioO.prefs[zenarioO.voPath].shownColumnsInCSV[c];
-		//		}
-		//	}
-		//	
-		//	post._shownColumnsInCSV = JSON.stringify(post._shownColumnsInCSV);
-		//	post._sortedColumns = JSON.stringify(ifNull(zenarioO.prefs[zenarioO.voPath].sortedColumns, zenarioO.sortedColumns));
-		//	
-		//	
-		//	//We could just do something like:
-		//	//	document.location.href = url + zenario.urlRequest(requests) + '&_csv=1';
-		//	//to download the CSV file, but the URL would probably be too long.
-		//	//So we'll fake a form submission as a work-around instead.
-		//	get('zenario_iframe_form').action = url + zenario.urlRequest(requests) + '&_csv=1';
-		//	
-		//	var html = '', request;
-		//	foreach (post as request) {
-		//		html += '<input type="hidden" name="' + htmlspecialchars(request) + '" value="' + htmlspecialchars(post[request]) + '"/>';
-		//	}
-		//	get('zenario_iframe_form').innerHTML = html;
-		//	
-		//	get('zenario_iframe_form').submit();
-		//	return;
-		//}
 	}
 	
 	//Disable the current panel/page from refreshing
@@ -1081,7 +1076,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 
 //Part 2 of the go function, run when we've got the data back from the server
 	//(Or run straight away if the server was never polled)
-zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
+zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, advancedSearch, filtersSet, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
 	
 	//For debugging
 	if (data
@@ -1090,7 +1085,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branc
 		console.log(data.comment);
 	}
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('og')) {
 		return;
 	}
 	
@@ -1134,7 +1129,6 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branc
 	zenarioO.voPath = viewOptionsPath;
 	zenarioO.defaultSortColumn = defaultSortColumn;
 	zenarioO.thisPageSize = thisPageSize;
-	zenarioO.filtersSet = filtersSet;
 	zenarioO.server_side = server_side;
 	zenarioO.inspectionView = inCloseUpView;
 	zenarioO.inspectionViewItem = itemToSelect;
@@ -1161,6 +1155,10 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, viewOptionsPath, branc
 	zenarioO.pi =
 	zenarioO.branches[zenarioO.branches.length-1].panel_instances[zenarioO.path] =
 		panelInstance;
+	
+	//Save filters
+	zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path] = filters;
+	zenarioO.filtersSet = filtersSet;
 	
 	//Focus on this part of the map
 	delete zenarioO.tuix;
@@ -1480,7 +1478,7 @@ zenarioO.getDataHack = function(url, lang, success) {
 
 zenarioO.go3 = function(goNum, searchTerm, backwards, runFunctionAfter) {
 	
-	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('sk')) {
+	if (!zenarioA.storekeeperWindow && !zenarioA.checkIfBoxIsOpen('og')) {
 		return;
 	}
 	
@@ -1640,7 +1638,6 @@ zenarioO.goToPage = function(page) {
 	
 	if (zenarioO.page != page) {
 		zenarioO.deselectAllItems();
-		//zenarioO.saveSelection();
 	}
 	
 	zenarioO.lockPageClicks = true;
@@ -1663,7 +1660,7 @@ zenarioO.goToLastPage = function() {
 
 zenarioO.refreshAndShowPage = function(page) {
 	zenarioO.page = ifNull(page, 1);
-	zenarioO.refresh(false, true);
+	zenarioO.load()
 };
 
 zenarioO.showPage = function(page) {
@@ -1764,8 +1761,7 @@ zenarioO.setPanel = function() {
 		$header = $('#organizer_header'),
 		$panel = $('#organizer_rightColumnContent'),
 		$footer = $('#organizer_lowerMiddleColumn'),
-		n = 0,
-		selectedItem = false;
+		n = 0;
 	
 	if (zenarioO.tuix.item_buttons) {
 		foreach (zenarioO.tuix.item_buttons as i) {
@@ -1783,18 +1779,7 @@ zenarioO.setPanel = function() {
 		zenarioO.multipleSelectEnabled = window.zenarioOMultipleSelect;
 	} else {
 		//Check to see if any item toolbar buttons allow for multiple selections, and enable multiple select if so
-		zenarioO.multipleSelectEnabled = false;
-		if (zenarioO.tuix.item_buttons) {
-			foreach (zenarioO.tuix.item_buttons as i) {
-				if (!zenarioO.isInfoTag(i)) {
-					if (engToBoolean(zenarioO.tuix.item_buttons[i].multiple_select)
-					 && !zenarioO.checkButtonHidden(zenarioO.tuix.item_buttons[i])) {
-						zenarioO.multipleSelectEnabled = true;
-						break;
-					}
-				}
-			}
-		}
+		zenarioO.multipleSelectEnabled = zenarioO.pi.returnMultipleSelectEnabled();
 	}
 	
 	var selectedItems = _.clone(zenarioO.pi.returnSelectedItems());
@@ -1804,15 +1789,8 @@ zenarioO.setPanel = function() {
 			delete selectedItems[i];
 		
 		} else {
-			if (++n == 1) {
-				selectedItem = i;
-			}
+			++n;
 		}
-	}
-	
-	//Set the "last clicked" to the first item that we find as a work-around for not actually knowing what it should be
-	if (!zenarioO.lastItemClicked && selectedItem) {
-		zenarioO.lastItemClicked = selectedItem;
 	}
 	
 	//If multiple-select is not enabled, ensure we've not got too many items selected
@@ -1831,7 +1809,7 @@ zenarioO.setPanel = function() {
 		}
 	
 	}
-	zenarioO.lastItemClicked = zenarioO.inspectionViewItem;
+	
 	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
 	
 	//Set the colour of the debug button
@@ -1879,8 +1857,7 @@ zenarioO.setPanel = function() {
 	//Is this line needed..?
 	zenarioO.lockPageClicks = false;
 	
-	//Save the currently selected items and set the hash in the browser bar
-	//zenarioO.saveSelection();
+	//Set the hash in the browser bar
 	zenarioO.setHash();
 };
 zenarioO.stripBodyPanelClasses = function() {
@@ -1888,30 +1865,6 @@ zenarioO.stripBodyPanelClasses = function() {
 		.removeClass('zenario_organizer_bespoke_panel')
 		.removeClass('zenario_organizer_bespoke_html_panel')
 		.removeClass('zenario_organizer_bespoke_url_panel');
-};
-
-zenarioO.drawRegularPanel = function() {
-	zenarioO.stripBodyPanelClasses();
-	$('body').addClass('zenario_organizer_regular_panel');
-	get('organizer_rightColumnInner').innerHTML = zenarioA.microTemplate('zenario_organizer_panel', {});
-};
-	
-zenarioO.drawBespokePanel = function() {
-	zenarioO.stripBodyPanelClasses();
-	$('body').addClass('zenario_organizer_bespoke_panel');
-	
-	$('#organizer_quickFilter').hide().html('');
-	
-	if (zenarioO.tuix.html) {
-		$('body').addClass('zenario_organizer_bespoke_html_panel');
-		get('organizer_rightColumnInner').innerHTML = zenarioO.tuix.html;
-	
-	} else if (zenarioO.tuix.url) {
-		$('body').addClass('zenario_organizer_bespoke_url_panel');
-		get('organizer_rightColumnInner').innerHTML = zenario.nonAsyncAJAX(zenario.addBasePath(zenarioO.tuix.url));
-	}
-	
-	zenarioO.setHash();
 };
 
 
@@ -2268,6 +2221,21 @@ zenarioO.allItemsSelected = function() {
 	return c == zenarioO.shownItemsLength;
 };
 
+zenarioO.noItemsSelected = function() {
+	if (zenarioO.shownItemsLength == 0) {
+		return true;
+	}
+	
+	var i,
+		selectedItems = zenarioO.pi.returnSelectedItems();
+	
+	foreach (selectedItems as i) {
+		return false;
+	}
+	
+	return true;
+};
+
 
 
 
@@ -2375,19 +2343,15 @@ zenarioO.clearSearch = function() {
 zenarioO.toggleAllItems = function() {
 	if (zenarioO.allItemsSelected()) {
 		zenarioO.deselectAllItems();
-		zenarioO.setButtons();
-		//zenarioO.saveSelection();
-		zenarioO.setHash();
 	} else {
 		zenarioO.selectAllItems();
 	}
+	zenarioO.setButtons();
+	zenarioO.setHash();
 };
 
 zenarioO.selectAllItems = function() {
 	zenarioO.selectItemRange();
-	zenarioO.setButtons();
-	//zenarioO.saveSelection();
-	zenarioO.setHash();
 };
 
 zenarioO.deselectAllItems = function() {
@@ -2396,89 +2360,85 @@ zenarioO.deselectAllItems = function() {
 
 
 
-zenarioO.selectSingleItem = function(id) {
-	zenarioO.deselectAllItems();
-	zenarioO.pi.selectItem(id);
-	zenarioO.lastItemClicked = id;
-};
-
 zenarioO.selectItemRange = function(start, stop) {
 	
-	var select = start === undefined;
+	var changes = false,
+		selectThisItem,
+		inRange = start === undefined,
+		selectedItems = zenarioO.pi.returnSelectedItems();
 	
 	for (var itemNo in zenarioO.searchedItems) {
 		var id = zenarioO.searchedItems[itemNo];
 		
 		if (zenarioO.shownItems && zenarioO.shownItems[id]) {
-			if (select || id === start || id === stop) {
+			
+			selectThisItem = inRange || id === start || id === stop;
+			
+			if (selectThisItem && !selectedItems[id]) {
 				zenarioO.pi.selectItem(id);
-			} else {
+				changes = true;
+			
+			} else if (!selectThisItem && selectedItems[id]) {
 				zenarioO.pi.deselectItem(id);
+				changes = true;
 			}
 			
 			if ((id === start && id === stop)) {
-				select = false;
+				inRange = false;
 			} else if (id === start || id === stop) {
-				select = !select;
+				inRange = !inRange;
 			}
 		}
 	}
 	
-	zenarioO.closeInspectionView();
+	if (changes) {
+		zenarioO.closeInspectionView();
+	}
 };
 
 
-
-
-zenarioO.lastItemClicked = false;
-zenarioO.itemClick = function(id, e, isCheckbox, useTimeOutIfDoubleClickEnabled) {
+zenarioO.selectItems = function(itemsIn) {
 	
-	if (isCheckbox) {
-		zenario.stop(e);
-	}
+	var i, id, selectItems = {},
+		changes = false,
+		selectThisItem,
+		inRange = start === undefined,
+		selectedItems = zenarioO.pi.returnSelectedItems();
 	
-	if (!zenarioO.tuix || !zenarioO.tuix.items[id]) {
-		return false;
-	}
-	
-	var selectedItems = zenarioO.pi.returnSelectedItems();
-	
-	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && (e || event).shiftKey && zenarioO.lastItemClicked) {
-		//...select everything between the current item and the last item that they clicked on
-		zenarioO.selectItemRange(id, zenarioO.lastItemClicked);
-	
-	//If multiple select is enabled and the checkbox was clicked...
-	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
-		//...toogle the item that they've clicked on
-		if (selectedItems[id]) {
-			zenarioO.pi.deselectItem(id);
-		} else {
-			zenarioO.pi.selectItem(id);
+	if (_.isArray(itemsIn)) {
+		foreach (itemsIn as i => id) {
+			selectItems[id] = true;
 		}
-		zenarioO.closeInspectionView();
-		zenarioO.lastItemClicked = id;
-	
-	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && selectedItems[id]) {
-		//...deselect everything if this row was already selected
-		zenarioO.deselectAllItems();
-		zenarioO.closeInspectionView();
-		zenarioO.lastItemClicked = id;
-	
-	//Otherwise select the item that they've just clicked on, and nothing else
+	} else if (_.isObject(itemsIn)) {
+		selectItems = itemsIn;
 	} else {
-		zenarioO.closeInspectionView();
-		zenarioO.selectSingleItem(id);
+		selectItems[itemsIn] = true;
 	}
 	
+	foreach (zenarioO.shownItems as id) {
+		selectThisItem = selectItems[id];
+		
+		if (selectThisItem && !selectedItems[id]) {
+			zenarioO.pi.selectItem(id);
+			changes = true;
+		
+		} else if (!selectThisItem && selectedItems[id]) {
+			zenarioO.pi.deselectItem(id);
+			changes = true;
+		}
+	}
 	
-	zenarioO.setButtons();
-	//zenarioO.saveSelection();
-	zenarioO.setHash();
-	
-	return false;
+	if (changes) {
+		zenarioO.closeInspectionView();
+		zenarioO.setButtons();
+		zenarioO.setHash();
+	}
 };
+
+
+
+
+
 
 zenarioO.itemClickThrough = function(id, e) {
 	if (zenarioO.stop) {
@@ -2591,10 +2551,7 @@ zenarioO.itemButtonClick = function(id) {
 
 zenarioO.inlineButtonClick = function(id, itemId) {
 	if (zenarioO.tuix && zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons[id]) {
-		zenarioO.closeInspectionView();
-		zenarioO.selectSingleItem(itemId);
-		//zenarioO.saveSelection();
-		zenarioO.setHash();
+		zenarioO.selectItems(itemId);
 		zenarioA.action(zenarioO, zenarioO.tuix.inline_buttons[id], true, true);
 	}
 };
@@ -2630,13 +2587,10 @@ zenarioO.toggleQuickFilter = function(id, turnOn) {
 		zenarioO.setFilterValue('not', c, engToBoolean(filter.invert));
 	
 		if (filterType == 'yes_or_no') {
-			zenarioO.setFilterValue('yes_or_no_', c, 1);
+			zenarioO.setFilterValue('value_', c, 1);
 	
-		} else if (filterType == 'enum' && filter.value !== undefined) {
-			zenarioO.setFilterValue('enum_', c, filter.value);
-	
-		} else if (filterType == 'search' && filter.value !== undefined) {
-			zenarioO.setFilterValue('searchcol_', c, filter.value);
+		} else if (filter.value !== undefined) {
+			zenarioO.setFilterValue('value_', c, filter.value);
 		}
 	}
 
@@ -2665,11 +2619,8 @@ zenarioO.quickFilterEnabled = function(id) {
 				if (filterType == 'yes_or_no') {
 					return true;
 	
-				} else if (filterType == 'enum' && filter.value !== undefined) {
-					return zenarioO.getFilterValue('enum_', c) === filter.value;
-	
-				} else if (filterType == 'search' && filter.value !== undefined) {
-					return zenarioO.getFilterValue('searchcol_', c) === filter.value;
+				} else if (filter.value !== undefined) {
+					return zenarioO.getFilterValue('value_', c) === filter.value;
 				}
 			}
 		}
@@ -2832,7 +2783,6 @@ zenarioO.selectCreatedIds = function() {
 	if (newIds = zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?method_call=getNewId', true, true)) {
 		zenarioO.deselectAllItems();
 		zenarioO.pi.cmsSetsSelectedItems(newIds);
-		//zenarioO.saveSelection();
 		zenarioO.setHash();
 	}
 	
@@ -2852,7 +2802,7 @@ zenarioO.selectCreatedIds = function() {
 		zenarioO.go(zenarioO.path + '//' + items);
 	} else {
 		//Otherwise use a normal refresh.
-		zenarioO.refresh();
+		zenarioO.reload();
 	}
 };
 
@@ -2860,6 +2810,7 @@ zenarioO.selectCreatedIds = function() {
 //Refresh the current view
 zenarioO.lastActivity = false;
 zenarioO.refreshIsPeriodic = false;
+zenarioO.reload =
 zenarioO.refresh = function(periodic, allowCache, runFunctionAfter) {
 	
 	//Stop doing periodic refreshes after 20 minutes if inactivity
@@ -2907,13 +2858,19 @@ zenarioO.refresh = function(periodic, allowCache, runFunctionAfter) {
 	zenarioO.go(path, undefined, undefined, undefined, undefined, undefined, !allowCache, itemToSelect, undefined, runFunctionAfter, periodic, inCloseUpView);
 };
 
+//zenarioO.load() does the same thing as zenarioO.reload(), except it uses the cache if possible
+zenarioO.load = function() {
+	zenarioO.reload(false, true);
+};
+
 //Go to the change password section
 zenarioO.changePassword = function() {
-	zenarioO.reload(undefined, true, 'change_password');
+	zenarioO.reloadPage(undefined, true, 'change_password');
 };
 
 //Reload Storekeeper, making sure to go via the admin login page in case a login/db_update is needed
-zenarioO.reload = function(hash, dontAutoDetectMode, task) {
+zenarioO.reloadPage =
+zenarioO.refreshPage = function(hash, dontAutoDetectMode, task) {
 	if (zenarioO.stop) {
 		return false;
 	}
@@ -2942,7 +2899,7 @@ zenarioO.reload = function(hash, dontAutoDetectMode, task) {
 
 	window.location.href =
 		URLBasePath +
-		'zenario/admin/welcome.php?task=' + task + '&sk=' + encodeURIComponent(hash) +
+		'zenario/admin/welcome.php?task=' + task + '&og=' + encodeURIComponent(hash) +
 		(zenarioA.fromCID? '&fromCID=' + zenarioA.fromCID + '&fromCType=' + zenarioA.fromCType : '');
 };
 
@@ -2953,7 +2910,7 @@ zenarioO.refreshToShowItem = function(itemId) {
 	
 	//If this is the admin or the site settings panel, do a SK reload instead
 	if (zenarioO.path == 'zenario__administration/panels/site_settings') {
-		zenarioO.reload();
+		zenarioO.reloadPage();
 		return;
 	}
 	
@@ -2971,7 +2928,6 @@ zenarioO.refreshToShowItem = function(itemId) {
 	
 	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
 	
-	//zenarioO.saveSelection();
 	zenarioO.setHash();
 	zenarioO.stopRefreshing();
 	
@@ -2998,7 +2954,7 @@ zenarioO.refreshing = false;
 //	zenarioO.refreshing =
 //		setTimeout(
 //			function() {
-//				zenarioO.refresh(true, true);
+//				zenarioO.reload(true, true);
 //			}, zenarioO.periodicRefreshTime);
 //}
 
@@ -3014,7 +2970,7 @@ zenarioO.stopRefreshing = function() {
 //WiP CSV export ability
 zenarioO.doCSVExport = function() {
 	zenarioO.CSVExport = true;
-	zenarioO.refresh();
+	zenarioO.reload();
 };
 
 
@@ -3174,7 +3130,7 @@ zenarioO.showViewOptions = function(e) {
 	if (zenarioO.checkPrefs()) {
 		zenarioO.showViewOptions2();
 	} else {
-		zenarioO.refresh(undefined, undefined, zenarioO.showViewOptions2);
+		zenarioO.reload(undefined, undefined, zenarioO.showViewOptions2);
 	}
 	
 	return false;
@@ -3197,22 +3153,23 @@ zenarioO.getColumnFilterType = function(c) {
 		return false
 	}
 
-	var filterType = false;
+	var filterType = false,
+		filterFormat = zenarioO.tuix.columns[c].filter_format || zenarioO.tuix.columns[c].format;
 	
-	if (zenarioO.tuix.columns[c].format == 'date'
-	 || zenarioO.tuix.columns[c].format == 'datetime'
-	 || zenarioO.tuix.columns[c].format == 'datetime_with_seconds') {
+	if (filterFormat == 'date'
+	 || filterFormat == 'datetime'
+	 || filterFormat == 'datetime_with_seconds') {
 		filterType = 'date';
 	
-	} else if (zenarioO.tuix.columns[c].format == 'yes_or_no') {
+	} else if (filterFormat == 'yes_or_no') {
 		filterType = 'yes_or_no';
 	
 	} else if (
-		(zenarioO.tuix.columns[c].format == 'enum' && zenarioO.tuix.columns[c].values)
-	 || zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
-	 || zenarioO.tuix.columns[c].format == 'language_english_name'
-	 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id'
-	 || zenarioO.tuix.columns[c].format == 'language_local_name'
+		(filterFormat == 'enum' && zenarioO.tuix.columns[c].values)
+	 || filterFormat == 'language_english_name_with_id'
+	 || filterFormat == 'language_english_name'
+	 || filterFormat == 'language_local_name_with_id'
+	 || filterFormat == 'language_local_name'
 	) {
 		filterType = 'enum';
 	
@@ -3313,42 +3270,6 @@ zenarioO.setViewOptions = function() {
 				};
 			}
 			
-			//if (zenarioO.reordering) {
-			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
-			//		ord: 100 * colNo + 6,
-			//		same_row: true,
-			//		type: 'toggle',
-			//		value: ' ',
-			//		'class': zenarioO.sortBy == c? (zenarioO.sortDesc? 'sortcol_desc' : 'sortcol_asc') : ' ',
-			//		style: 'cursor: default;',
-			//		pre_field_html: '<span class="organizer_sort_col_wrap">',
-			//		post_field_html: '<label for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
-			//	};
-			//
-			//} else if (zenarioO.canSortColumn(c)) {
-			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
-			//		ord: 100 * colNo + 6,
-			//		same_row: true,
-			//		type: 'toggle',
-			//		value: ' ',
-			//		'class': zenarioO.sortBy == c? (zenarioO.sortDesc? 'sortcol_desc' : 'sortcol_asc') : 'sortcol',
-			//		onclick: "zenarioO.changeSortOrder('" + htmlspecialchars(c) + "');",
-			//		pre_field_html: '<span class="organizer_sort_col_wrap" title="' + phrase.sortByCol + '">',
-			//		post_field_html: '<label style="cursor: pointer;" for="sortcol_' + c + '">' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
-			//	};
-			//
-			//} else {
-			//	zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
-			//		ord: 100 * colNo + 6,
-			//		same_row: true,
-			//		type: 'toggle',
-			//		value: ' ',
-			//		style: 'cursor: default;',
-			//		pre_field_html: '<span class="organizer_sort_col_wrap">',
-			//		post_field_html: '<label>' + htmlspecialchars(zenarioO.tuix.columns[c].title) + '</label></span>'
-			//	};
-			//}
-			
 			zenarioAB.tuix.tabs.cp.fields['sortcol_' + c] = {
 				ord: 100 * colNo + 6,
 				same_row: true,
@@ -3359,23 +3280,35 @@ zenarioO.setViewOptions = function() {
 			
 			if (zenarioO.canFilterColumn(c)) {
 				
-				var hidden = !zenarioO.getFilterValue('shown', c);
-				var hiddenPreviously = hidden;//?toggledColumn == c? !hidden : hidden;
-				var invertLink =
-					'<a class="' + (zenarioO.getFilterValue('not', c)? 'organizer_inverter organizer_not' : 'organizer_inverter') + '"' +
-						' title="' + phrase.invertFilter + '"' +
-						' onclick="zenarioO.invertFilter(this, \'' + htmlspecialchars(c) + '\', \'' + htmlspecialchars(zenarioO.tuix.columns[c].format) + '\');">';
+				var hidden = !zenarioO.getFilterValue('shown', c),
+					hiddenPreviously = hidden,
+					value_ = zenarioO.getFilterValue('value_', c),
+					dates,
+					dateBefore = '',
+					dateAfter = '',
+					filterFormat = zenarioO.tuix.columns[c].filter_format || zenarioO.tuix.columns[c].format,
+					invertLink =
+						'<a class="' + (zenarioO.getFilterValue('not', c)? 'organizer_inverter organizer_not' : 'organizer_inverter') + '"' +
+							' title="' + phrase.invertFilter + '"' +
+							' onclick="zenarioO.invertFilter(this, \'' + htmlspecialchars(c) + '\', \'' + htmlspecialchars(filterFormat) + '\');">';
 				
-				if (zenarioO.tuix.columns[c].format == 'date'
-				 || zenarioO.tuix.columns[c].format == 'datetime'
-				 || zenarioO.tuix.columns[c].format == 'datetime_with_seconds') {
+				if (filterFormat == 'date'
+				 || filterFormat == 'datetime'
+				 || filterFormat == 'datetime_with_seconds') {
+					
+					if (value_) {
+						dates = value_.split(',');
+						dateBefore = dates[1];
+						dateAfter = dates[0];
+					}
+					
 					zenarioAB.tuix.tabs.cp.fields['date_after_col_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_date_filters_for_field',
 						label: phrase.after,
 						type: 'date',
-						_change_filter_on_change: true,
-						value: zenarioO.getFilterValue('date_after_col_', c),
+						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
+						value: dateAfter,
 						hidden: hidden,
 						_h: hiddenPreviously
 					};
@@ -3384,13 +3317,21 @@ zenarioO.setViewOptions = function() {
 						row_class: 'zenario_date_filters_for_field',
 						label: phrase.before,
 						type: 'date',
-						_change_filter_on_change: true,
-						value: zenarioO.getFilterValue('date_before_col_', c),
+						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
+						value: dateBefore,
+						hidden: hidden,
+						_h: hiddenPreviously
+					};
+					zenarioAB.tuix.tabs.cp.fields['value_' + c] = {
+						ord: 100 * colNo + 9,
+						same_row: true,
+						type: 'hidden',
+						value: value_,
 						hidden: hidden,
 						_h: hiddenPreviously
 					};
 				
-				} else if (zenarioO.tuix.columns[c].format == 'yes_or_no') {
+				} else if (filterFormat == 'yes_or_no') {
 					//Attempt to add a colon to the title of the column
 					var label = ('' + zenarioO.tuix.columns[c].title);
 					if (label.indexOf(':') == -1) {
@@ -3398,7 +3339,7 @@ zenarioO.setViewOptions = function() {
 						label = label.replace(/\s*:/, ':');
 					}
 					
-					zenarioAB.tuix.tabs.cp.fields['yes_or_no_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['value_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field yes_or_no',
 						snippet: {
@@ -3409,15 +3350,15 @@ zenarioO.setViewOptions = function() {
 					};
 				
 				} else if (
-					(zenarioO.tuix.columns[c].format == 'enum' && zenarioO.tuix.columns[c].values)
-				 || zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
-				 || zenarioO.tuix.columns[c].format == 'language_english_name'
-				 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id'
-				 || zenarioO.tuix.columns[c].format == 'language_local_name'
+					(filterFormat == 'enum' && zenarioO.tuix.columns[c].values)
+				 || filterFormat == 'language_english_name_with_id'
+				 || filterFormat == 'language_english_name'
+				 || filterFormat == 'language_local_name_with_id'
+				 || filterFormat == 'language_local_name'
 				) {
 					var values;
 					
-					if (zenarioO.tuix.columns[c].format == 'enum') {
+					if (filterFormat == 'enum') {
 						//Get the list of values for this column, adding on an empty value if one is not present
 						values = zenarioO.tuix.columns[c].values;
 						if (!values[''] && !values[0]) {
@@ -3437,34 +3378,34 @@ zenarioO.setViewOptions = function() {
 							if (zenarioA.lang[v].enabled) {
 								values[v] = zenarioA.lang[v].name;
 								
-								if (zenarioO.tuix.columns[c].format == 'language_english_name_with_id'
-								 || zenarioO.tuix.columns[c].format == 'language_local_name_with_id') {
+								if (filterFormat == 'language_english_name_with_id'
+								 || filterFormat == 'language_local_name_with_id') {
 									values[v] += ' (' + v + ')';
 								}
 							}
 						}
 					}
 					
-					zenarioAB.tuix.tabs.cp.fields['enum_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['value_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field enum',
 						label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.isnt : phrase.is) + '</a>',
 						type: 'select',
-						_change_filter_on_change: true,
+						onchange: 'zenarioO.changeFilters();',
 						values: values,
-						value: zenarioO.getFilterValue('enum_', c),
+						value: value_,
 						hidden: hidden,
 						_h: hiddenPreviously
 					};
 				
 				} else if (engToBoolean(zenarioO.tuix.columns[c].searchable)) {
-					zenarioAB.tuix.tabs.cp.fields['searchcol_' + c] = {
+					zenarioAB.tuix.tabs.cp.fields['value_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_filters_for_field',
 						label: invertLink + (zenarioO.getFilterValue('not', c)? phrase.notLike : phrase.like) + '</a>',
 						type: 'text',
 						onkeyup: 'zenarioAB.changeFiltersAfterDelay();',
-						value: zenarioO.getFilterValue('searchcol_', c),
+						value: value_,
 						hidden: hidden,
 						_h: hiddenPreviously
 					};
@@ -3560,6 +3501,29 @@ zenarioO.setViewOptions = function() {
 	zenarioO.size(true);
 };
 
+zenarioO.updateDateFilters = function(c) {
+	
+	//var getDateFromField = function(id) {
+	//		return $.datepicker.formatDate($.datepicker.ATOM, $(get(id)).datepicker('getDate'));
+	//	},
+	//	dateAfter = getDateFromField('date_after_col_' + c),
+	//	dateBefore = getDateFromField('date_before_col_' + c),
+	
+	var dateAfter = zenarioAB.readField('date_after_col_' + c),
+		dateBefore = zenarioAB.readField('date_before_col_' + c),
+		domValue = get('value_' + c);
+	
+	if (dateAfter || dateBefore) {
+		domValue.value = dateAfter + ',' + dateBefore;
+	} else {
+		domValue.value = '';
+	}
+	
+	console.log(dateAfter, dateBefore, domValue.value);
+	
+	zenarioO.changeFilters();
+};
+
 zenarioO.canSortColumn = function(c) {
 	if (zenarioO.stop
 	 || engToBoolean(zenarioO.tuix.columns[c].disallow_sorting)
@@ -3577,12 +3541,14 @@ zenarioO.canFilterColumn = function(c) {
 		return false;
 	}
 	
+	var filterFormat = zenarioO.tuix.columns[c].filter_format || zenarioO.tuix.columns[c].format;
+	
 	//Catch the case where an enum column is missing its values - don't allow filtering here
-	if (zenarioO.tuix.columns[c].format == 'enum' && !zenarioO.tuix.columns[c].values) {
+	if (filterFormat == 'enum' && !zenarioO.tuix.columns[c].values) {
 		return false;
 	}
 	
-	switch (zenarioO.tuix.columns[c].format) {
+	switch (filterFormat) {
 		//Date and enum type fields are implemented as a drop-down select list or toggle.
 		//They should be filterable if an index has been created on that field.
 		case 'date':
@@ -3786,8 +3752,6 @@ zenarioO.changeSortOrder = function(c) {
 	zenarioO.savePrefs(true);
 };
 
-zenarioO.possibleFilters = {searchcol_: true, enum_: true, date_after_col_: true, date_before_col_: true, yes_or_no_: true};
-
 zenarioO.toggleFilter = function(el, c) {
 	
 	var shown,
@@ -3805,11 +3769,9 @@ zenarioO.toggleFilter = function(el, c) {
 	//Unset values of hidden filters
 	var refreshNeeded = false;
 	if (!shown) {
-		foreach (zenarioO.possibleFilters as var filter) {
-			if (zenarioO.getFilterValue(filter, c)) {
-				zenarioO.setFilterValue(filter, c, '')
-				refreshNeeded = true;
-			}
+		if (zenarioO.getFilterValue('value_', c)) {
+			zenarioO.setFilterValue('value_', c, '')
+			refreshNeeded = true;
 		}
 		zenarioO.setFilterValue('not', c, false);
 	}
@@ -3818,7 +3780,7 @@ zenarioO.toggleFilter = function(el, c) {
 	if (filterType == 'yes_or_no') {
 		if (shown) {
 			refreshNeeded = true;
-			zenarioO.setFilterValue('yes_or_no_', c, 1);
+			zenarioO.setFilterValue('value_', c, 1);
 		}
 	}
 	
@@ -3829,8 +3791,8 @@ zenarioO.toggleFilter = function(el, c) {
 	zenarioAB.hideShowFields(function() {
 		zenarioO.size(true);
 		//Focus a text field straight away if we can
-		if (get('searchcol_' + c) && $(get('searchcol_' + c)).is(':visible')) {
-			get('searchcol_' + c).focus();
+		if (get('value_' + c) && $(get('value_' + c)).is(':visible')) {
+			get('value_' + c).focus();
 		}
 	});
 	
@@ -3860,20 +3822,13 @@ zenarioO.invertFilter = function(el, c, format) {
 };
 
 zenarioO.refreshIfFilterSet = function(c) {
-	foreach (zenarioO.possibleFilters as var filter) {
-		if (zenarioO.getFilterValue(filter, c)) {
-			zenarioO.refreshAndShowPage();
-		}
+	if (zenarioO.getFilterValue('value_', c)) {
+		zenarioO.refreshAndShowPage();
 	}
 };
 
 zenarioO.filterSetOnColumn = function(c, filters) {
-	foreach (zenarioO.possibleFilters as var filter) {
-		if (zenarioO.getFilterValue(filter, c, filters)) {
-			return true;
-		}
-	}
-	return false;
+	return !!zenarioO.getFilterValue('value_', c, filters);
 };
 
 zenarioO.getFilterValue = function(filter, c, filters) {
@@ -3891,31 +3846,32 @@ zenarioO.getFilterValue = function(filter, c, filters) {
 };
 
 zenarioO.setFilterValue = function(filter, c, value) {
-	if (!zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path]) {
-		zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path] = {};
+	
+	var filters = zenarioO.branches[zenarioO.branches.length-1].filters;
+	
+	if (!filters[zenarioO.path]) {
+		filters[zenarioO.path] = {};
 	}
-	if (!zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c]) {
-		zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c] = {};
+	if (!filters[zenarioO.path][c]) {
+		filters[zenarioO.path][c] = {};
 	}
 	
 	if (value === undefined) {
-		delete zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c][filter];
+		delete filters[zenarioO.path][c][filter];
 	} else {
-		zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c][filter] = value;
+		filters[zenarioO.path][c][filter] = value;
 	}
 	
-	if ($.isEmptyObject(zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c])) {
-		delete zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path][c];
+	if (_.isEmpty(filters[zenarioO.path][c])) {
+		delete filters[zenarioO.path][c];
 	}
-	if ($.isEmptyObject(zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path])) {
-		delete zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path];
+	if (_.isEmpty(filters[zenarioO.path])) {
+		delete filters[zenarioO.path];
 	}
 };
 
 zenarioO.clearFilter = function(c) {
-	foreach (zenarioO.possibleFilters as var filter) {
-		zenarioO.setFilterValue(filter, c);
-	}
+	zenarioO.setFilterValue('value_', c);
 	zenarioO.setFilterValue('not', c);
 };
 
@@ -3936,18 +3892,16 @@ zenarioO.changeFilters = function() {
 	var value;
 	foreach (zenarioO.tuix.columns as var c) {
 		if (zenarioO.isShowableColumn(c)) {
-			foreach (zenarioO.possibleFilters as var filter) {
-				if (get(filter + c) || get(filter + c + '___yes')) {
-					if (value = zenarioAB.readField(filter + c)) {
-						zenarioO.setFilterValue(filter, c, value);
-					} else {
-						zenarioO.setFilterValue(filter, c, '');
-					}
+			if (get('value_' + c) || get('value_' + c + '___yes')) {
+				if (value = zenarioAB.readField('value_' + c)) {
+					zenarioO.setFilterValue('value_', c, value);
+				} else {
+					zenarioO.setFilterValue('value_', c, '');
 				}
-				if (get('remove_filter_' + c)) {
-					get('remove_filter_' + c).className =
-						zenarioO.filterSetOnColumn(c)? 'organizer_remove_filter organizer_remove_filter_active' : 'organizer_remove_filter organizer_remove_filter_inactive'
-				}
+			}
+			if (get('remove_filter_' + c)) {
+				get('remove_filter_' + c).className =
+					zenarioO.filterSetOnColumn(c)? 'organizer_remove_filter organizer_remove_filter_active' : 'organizer_remove_filter organizer_remove_filter_inactive'
 			}
 		}
 	}
@@ -3974,7 +3928,7 @@ zenarioO.openAdvancedSearch = function(e) {
 	if (zenarioO.checkPrefs()) {
 		zenarioO.openAdvancedSearch2();
 	} else {
-		zenarioO.refresh(undefined, undefined, zenarioO.openAdvancedSearch2);
+		zenarioO.reload(undefined, undefined, zenarioO.openAdvancedSearch2);
 	}
 	
 	return false;
@@ -4087,7 +4041,7 @@ zenarioO.openAdvancedSearchSettings = function(search) {
 	
 	zenarioAB.open(
 		'advanced_search',
-		{search: search, storekeeper_path: zenarioO.path},
+		{search: search, organizer_path: zenarioO.path},
 		undefined,
 		values,
 		function(key, values) {
@@ -4389,7 +4343,6 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 								"var selectedItems = {};" +
 								"selectedItems['" + htmlspecialchars(i) + "'] = true;" +
 								"zenarioO.pi.cmsSetsSelectedItems(selectedItems);" +
-								//"zenarioO.saveSelection();" +
 								"zenarioO.setHash();" +
 								"zenarioO.go('" + htmlspecialchars(zenarioO.shallowLinks[item_link]) + "', true, {id: '" + htmlspecialchars(value) + "', name: 'following_item_link', languageId: '" + htmlspecialchars(zenarioO.itemLanguage(i)) + "'}, undefined, undefined, undefined, undefined, '" + htmlspecialchars(value) + "');" +
 								"return zenario.stop(event);" +
@@ -5004,6 +4957,7 @@ zenarioO.getQuickFilters = function() {
 		button,
 		buttons = [],
 		buttonsPos = {},
+		disabled,
 		i, itemNo,
 		pi, parentButton, parentId;
 	
@@ -5015,16 +4969,23 @@ zenarioO.getQuickFilters = function() {
 			continue;
 		}
 		
+		disabled = zenarioO.checkDisabled(button);
+		
 		
 		buttons[++bi] = {
 				id: i,
 				tuix: button,
 				css_class: ifNull(button.css_class, '', ''),
-				label: button.label
+				label: button.label,
+				disabled: disabled
 			};
 		buttonsPos[i] = bi;
 		
-		buttons[bi].tooltip = button.tooltip;
+		if (disabled && button.disabled_tooltip) {
+			buttons[bi].tooltip = button.disabled_tooltip;
+		} else {
+			buttons[bi].tooltip = button.tooltip;
+		}
 		
 		buttons[bi].onclick = "zenarioO.toggleQuickFilter('" + jsEscape(i) + "'); return false;";
 		
@@ -5995,7 +5956,7 @@ zenarioO.closeSelectMode = function() {
 	
 	} else {
 		zenarioO.go(zenarioO.defaultPathInIframePreload);
-		zenarioA.closeBox('sk');
+		zenarioA.closeBox('og');
 		zenarioO.firstLoaded = false;
 	}
 	
@@ -6138,7 +6099,7 @@ zenarioO.size = function(refresh) {
 		headerHeight = 35,
 		headerToolbar = 55,
 		leftColAdjustment,
-		$zenario_fbsk = $('#zenario_fbsk');
+		$zenario_fbog = $('#zenario_fbog');
 	
 	
 	if (zenarioO.sizing) {
@@ -6153,8 +6114,8 @@ zenarioO.size = function(refresh) {
 	var width, height;
 	
 	if (!zenarioA.storekeeperWindow) {
-		width = Math.floor($zenario_fbsk.width());
-		height = Math.floor($zenario_fbsk.height());
+		width = Math.floor($zenario_fbog.width());
+		height = Math.floor($zenario_fbog.height());
 	} else {
 		width = Math.floor($(window).width());
 		height = Math.floor($(window).height());
@@ -6171,14 +6132,24 @@ zenarioO.size = function(refresh) {
 		
 		if (refresh || zenarioO.lastSize != width + 'x' + height) {
 			
-			if ($zenario_fbsk.length) {
-				get('zenario_fbsk').className = zenarioA.getSKBodyClass();
+			var domPanel = get('organizer_rightColumnContent'),
+				domIcons = get('organizer_lowerLeftColumn'),
+				domFooter = get('organizer_lowerMiddleColumn'),
+				domChooseButtonWrap = get('organizer_lowerRightColumn'),
+				$header = $('#organizer_header'),
+				$panel = $(domPanel),
+				$footer = $(domFooter),
+				$buttons = $('#organizer_buttons');
+
+			
+			if ($zenario_fbog.length) {
+				get('zenario_fbog').className = zenarioA.getSKBodyClass();
 			}
 			
 			//This line fixes a bug where the height of the floating div keeps changing when Storekeeper is opened
 			//by specifically setting it to what it was read as
 			if (!zenarioA.storekeeperWindow) {
-				Math.floor($zenario_fbsk.height(height));
+				Math.floor($zenario_fbog.height(height));
 			}
 			
 			if (!zenarioO.tuix || !zenarioO.tuix.banner) {
@@ -6202,8 +6173,8 @@ zenarioO.size = function(refresh) {
 			}
 			
 			var rightColumnContentHeight = ((1*height - outerGap - colGap - contentGap - graphicGap - buttonsGap - bordersWidth - zenarioO.columnPadding + titleGap - headerToolbar) - 13);
-			if(get('organizer_rightColumnContent')) {
-				get('organizer_rightColumnContent').style.height = rightColumnContentHeight + 'px';
+			if (domPanel) {
+				domPanel.style.height = rightColumnContentHeight + 'px';
 			}
 			
 			if (zenarioO.showLeftColumn) {
@@ -6225,7 +6196,7 @@ zenarioO.size = function(refresh) {
 			
 			get('organizer_rightColumn').style.width = get('organizer_preloader_circle').style.width = (width - 30 - leftColAdjustment) + 'px';
 			if (get('organizer_rightColumnTitle')) get('organizer_rightColumnTitle').style.width = (width - 30 - leftColAdjustment - 2) + 'px';
-			if (get('organizer_rightColumnContent')) get('organizer_rightColumnContent').style.width = (width - 30 - leftColAdjustment - bordersWidth) + 'px';
+			if (domPanel) domPanel.style.width = (width - 30 - leftColAdjustment - bordersWidth) + 'px';
 			
 			
 			if (window.zenarioOSelectMode) {
@@ -6234,13 +6205,36 @@ zenarioO.size = function(refresh) {
 				get('organizer_choose_button').style.display = 'none';
 			}
 			
+			if (width <= 825) {
+				domIcons.style.width = "40%";
+				domFooter.style.width = "49%";
+				domChooseButtonWrap.style.width = "10%";
+			} else if (width <= 965) {
+				domIcons.style.width = "35%";
+				domFooter.style.width = "49%";
+				domChooseButtonWrap.style.width = "15%";
+			} else if(width <= 1155) {
+				domIcons.style.width = "30%";
+				domFooter.style.width = "49%";
+				domChooseButtonWrap.style.width = "20%";
+			} else if(width >= 1155) {
+				domIcons.style.width = "25%";
+				domFooter.style.width = "49%";
+				domChooseButtonWrap.style.width = "25%";
+			}
+			
 			zenarioO.setPanelTitle();
+			
+			
+			
+			if (zenarioO.pi) {
+				zenarioO.pi.sizePanel($header, $panel, $footer, $buttons);
+			}
+			
 			
 			zenarioO.lastSize = width + 'x' + height;
 			
 			zenarioO.setTopLevelNavScrollStatus();
-			
-			//zenarioO.adjustSlideDownViewInGridMode();
 		}
 	}
 	
@@ -6270,7 +6264,5 @@ zenarioO.size = function(refresh) {
 	
 	zenarioO.sizing = setTimeout(zenarioO.size, 500);
 };
-
-
 
 });

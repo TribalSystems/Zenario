@@ -87,7 +87,7 @@ zenarioAB.openSiteSettings = function(settingGroup, tab) {
 		tab,
 		undefined,
 		function() {
-			zenarioO.reload();
+			zenarioO.reloadPage();
 		}
 	);
 };
@@ -98,7 +98,7 @@ zenarioAB.enableOrDisableSite = function() {
 		undefined,
 		undefined,
 		function() {
-			zenarioO.reload();
+			zenarioO.reloadPage();
 		}
 	);
 };
@@ -106,7 +106,7 @@ zenarioAB.enableOrDisableSite = function() {
 //Open an admin floating box
 zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
 	
-	//Don't allow a box to be opened if Storekeeper is opened and covering the screen
+	//Don't allow a box to be opened if Organizer is opened and covering the screen
 	if (zenarioA.checkIfBoxIsOpen('AdminOrganizer')) {
 		return false;
 	}
@@ -118,7 +118,7 @@ zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
 		zenarioAB.documentScrollTop = $(zenario.browserIsSafari()? 'body' : 'html').scrollTop();
 	}
 	
-	//Allow admin boxes to be opened in a simmilar format to Storekeeper panels; e.g. tag/path//id
+	//Allow admin boxes to be opened in a simmilar format to Organizer panels; e.g. tag/path//id
 	if (!key) {
 		key = {};
 	}
@@ -1230,7 +1230,8 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		hasSlider = false,
 		extraAtt = {'class': ''},
 		extraAttAfter = {},
-		color_picker_options;
+		color_picker_options,
+		isNormalTextField = true;
 	
 	if (field === undefined) {
 		field = zenarioAB.tuix.tabs[tab].fields[id];
@@ -1602,6 +1603,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			
 			html += '<input';
 			extraAtt.type = field.type;
+			isNormalTextField = true;
 		}
 		
 		//Checkboxes/Radiogroups only: If the form has already been submitted, overwrite the "checked" attribute depending on whether the checkbox/radiogroup was chosen
@@ -1711,9 +1713,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			}
 			
 			if (field.values) {
-				foreach (sortOrder as var i) {
-					var v = sortOrder[i];
-					
+				foreach (sortOrder as var i => var v) {
 					html +=
 						'<option value="' + htmlspecialchars(v) + '"' + (v == value? ' selected="selected"' : '') + '>' +
 							htmlspecialchars(field.values[v], false, true) +
@@ -1721,6 +1721,53 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 				}
 			}
 			html += '</select>';
+		
+		} else if (isNormalTextField) {
+			
+			//If any other type of field has values, turn it into a jquery auto-complete
+			if (field.values && !readOnly) {
+				var i, v, source = [];
+				
+				foreach (sortOrder as i => v) {
+					source.push({label: field.values[v], value: v});
+				}
+				
+				setTimeout(function() {
+					
+					if (!get(id)) {
+						return;
+					}
+					
+					var $field = $(get(id)),
+						options = {
+							source: source,
+							minLength: 0,
+							appendTo: $field.parent()
+						};
+					
+					//If the return_key_presses_button option is set for a field, also
+					//honor that choice if someone selects something
+					if (field.return_key_presses_button) {
+						options.select = function() {
+							setTimeout(function() {
+								$('#' + field.return_key_presses_button).click();
+								//$field.autocomplete('widget').hide();
+							}, 0);
+						};
+					}
+					
+					$field.autocomplete(options);
+					
+					//Show the autocomplete when the admin clicks or focuses into the field rather
+					//than waiting for them to type something
+					$field.focus(function() {
+						if (!$field.autocomplete('widget').is(':visible')) {
+							$field.autocomplete('search', '');
+						}
+					});
+				}, 0);
+			}
+			
 		}
 	}
 	
@@ -1976,8 +2023,8 @@ zenarioAB.pickedItemsArray = function(field, value) {
 			if (field.values && field.values[i] && field.values[i].label) {
 				picked_items[i] = field.values[i].label;
 			
-			//If an id was set but no label, and this is a <pick_items> field,
-			//then attempt to look up the label from Storekeeper
+			//If an id was set but no label, and this is a pick_items field,
+			//then attempt to look up the label from Organizer
 			} else
 			if (field.pick_items
 			 && ((field.pick_items.target_path
@@ -2320,7 +2367,7 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 					//For images, display a thumbnail that opens a colorbox when clicked
 					mi.thumbnail = {
 						onclick: "zenarioAB.showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "');",
-						src: src + "&sk=1"
+						src: src + "&og=1"
 					};
 					
 					//Attempt to get the width and height from the label, and work out the correct
@@ -2401,7 +2448,7 @@ zenarioAB.pickItems = function(id) {
 	
 	
 	zenarioAB.SKTarget = id;
-	zenarioA.SK('zenarioAB', 'setPickedItems', field.pick_items.multiple_select,
+	zenarioA.organizerSelect('zenarioAB', 'setPickedItems', field.pick_items.multiple_select,
 				path, field.pick_items.target_path, field.pick_items.min_path, field.pick_items.max_path, field.pick_items.disallow_refiners_looping_on_min_path,
 				undefined, field.pick_items.one_to_one_choose_phrase, field.pick_items.one_to_many_choose_phrase,
 				undefined,
@@ -2415,30 +2462,54 @@ zenarioAB.pickItems = function(id) {
 
 zenarioAB.setPickedItems = function(path, key, row, panel) {
 	var id = zenarioAB.SKTarget,
-		tab = zenarioAB.tuix.tab,
-		field = zenarioAB.tuix.tabs[tab].fields[id],
-		value = (field.current_value === undefined? field.value : field.current_value),
-		picked_items,
 		item, 
 		ditem;
-	
-	if (!engToBoolean(field.pick_items.multiple_select) || !value) {
-		picked_items = {};
-	} else {
-		picked_items = zenarioAB.pickedItemsArray(field, value);
-	}
+		values = {};
 	
 	foreach (key._items as item) {
 		ditem = zenario.decodeItemIdForStorekeeper(item);
 		
+		values[ditem] = zenarioA.formatSKItemName(panel, item);
+	}
+	
+	zenarioAB.addToPickedItems(values, id);
+};
+
+zenarioAB.addToPickedItems = function(values, id, tab) {
+	
+	if (!tab) {
+		tab = zenarioAB.tuix.tab;
+	}
+	
+	var field = zenarioAB.tuix.tabs[tab].fields[id],
+		current_value = (field.current_value === undefined? field.value : field.current_value),
+		i, value, display, arrayOfValues, picked_items;
+	
+	if (_.isString(values)) {
+		arrayOfValues = values.split(',');
+		values = {};
+		
+		foreach (arrayOfValues as i => value) {
+			values[value] = value;
+		}
+	}
+	
+	if (!engToBoolean(field.pick_items.multiple_select) || !current_value) {
+		picked_items = {};
+	} else {
+		picked_items = zenarioAB.pickedItemsArray(field, current_value);
+	}
+	
+	foreach (values as value => display) {
+		
 		if (!field.values) {
 			field.values = {};
 		}
-		if (!field.values[ditem]) {
-			field.values[ditem] = zenarioA.formatSKItemName(panel, item);
+		if (!field.values[value]) {
+			field.values[value] = display;
 		}
 		
-		picked_items[ditem] = true;
+		picked_items[value] = true;
 		
 		if (!engToBoolean(field.pick_items.multiple_select)) {
 			break;
@@ -2558,10 +2629,6 @@ zenarioAB.fieldChange = function(id) {
 	}
 	
 	zenarioAB.validateFormatOrRedrawForField(field);
-	
-	if (zenarioAB.SKColPicker && field._change_filter_on_change) {
-		zenarioO.changeFilters();
-	}
 };
 
 zenarioAB.validateFormatOrRedrawForField = function(field) {
@@ -3191,8 +3258,8 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 			zenarioAB.callBack(zenarioAB.tuix.key, values);
 		}
 		
-	} else if (zenarioO.init && (zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('sk'))) {
-		//Reload the storekeeper if this window is a storekeeper window (new storekeeper)
+	} else if (zenarioO.init && (zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('og'))) {
+		//Reload Organizer if this window is an Organizer window
 		var id = false;
 		
 		if (zenarioAB.tuix.key.id !== undefined) {

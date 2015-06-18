@@ -34,7 +34,11 @@ $v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
 $isWelcome = $mode === true || $mode === 'welcome';
 $isOrganizer = $mode === 'organizer';
 
-if (!$isWelcome && $cookieFreeDomain = cookieFreeDomain()) {
+$oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
+	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
+	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
+
+if (!$isWelcome && !$oldIE && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
 }
 
@@ -67,12 +71,13 @@ if ($isWelcome || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
 } elseif (cms_core::$lastDB) {
 	
 	if ($isOrganizer && setting('organizer_favicon') == 'custom') {
-		$usage = 'organizer_favicon';
+		$faviconId = setting('custom_organizer_favicon');
 	} else {
-		$usage = 'favicon';
+		$faviconId = setting('favicon');
 	}
 	
-	if (($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), array('usage' => $usage)))
+	if ($faviconId
+	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), $faviconId))
 	 && ($link = fileLink($icon['id']))) {
 		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 			echo "\n", '<link rel="shortcut icon" href="', absCMSDirURL(), htmlspecialchars($link), '"/>';
@@ -82,7 +87,8 @@ if ($isWelcome || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
 	}
 
 	if (!$isOrganizer
-	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), array('usage' => 'mobile_icon')))
+	 && setting('mobile_icon')
+	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), setting('mobile_icon')))
 	 && ($link = fileLink($icon['id']))) {
 		echo "\n", '<link rel="apple-touch-icon-precomposed" href="', absCMSDirURL(), htmlspecialchars($link), '"/>';
 	}
@@ -116,7 +122,7 @@ if ($isWelcome || checkPriv()) {
 		
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.css.php?v=', $v, $gz, '&amp;ids=', $cssModuleIds, '&amp;storekeeper=1"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.css.php?v=', $v, $gz, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
 		}
 	}
 }
@@ -322,9 +328,7 @@ if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
 </style>';
 	}
 	
-	if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
-	 || strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
-	 || strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false) {
+	if ($oldIE) {
 	echo '
 <script type="text/javascript" src="', $prefix, 'libraries/mit/respond/respond.js?v=', $v, '"></script>';
 	}

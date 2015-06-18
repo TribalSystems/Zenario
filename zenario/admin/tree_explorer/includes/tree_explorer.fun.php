@@ -1,6 +1,6 @@
 <?php
 
-function generateMenuForJSON (&$array, &$nodesCount, $sk = false, $languageId = false, $recurseCount = 20) {
+function generateMenuForJSON (&$array, &$nodesCount, $og = false, $languageId = false, $recurseCount = 20) {
 	if (--$recurseCount && is_array($array)) {
 		$array = array_values($array);
 		
@@ -21,8 +21,8 @@ function generateMenuForJSON (&$array, &$nodesCount, $sk = false, $languageId = 
 						$menu['visibility'] = $menuNodeAttributes['invisible'] ? "invisible" : "visible";
 						$menu['target_loc'] = $menuNodeAttributes['target_loc'];
 						
-						if ($sk) {
-							$menu['storekeeper_href'] = getMenuItemStorekeeperDeepLink($v, $languageId);
+						if ($og) {
+							$menu['organizer_href'] = getMenuItemStorekeeperDeepLink($v, $languageId);
 						
 						} elseif ($menu['cID']) {
 							$menu['content_href'] = linkToItem($menu['cID'],$menu['cType'],true);
@@ -31,7 +31,7 @@ function generateMenuForJSON (&$array, &$nodesCount, $sk = false, $languageId = 
 						break;
 					case 'children':
 						if (is_array($menu[$k])) {
-							generateMenuForJSON($menu[$k], $nodesCount, $sk, $languageId, $recurseCount);
+							generateMenuForJSON($menu[$k], $nodesCount, $og, $languageId, $recurseCount);
 						} else {
 							unset($menu[$k]);
 						}
@@ -41,7 +41,7 @@ function generateMenuForJSON (&$array, &$nodesCount, $sk = false, $languageId = 
 					case 'name':
 					case 'hide_private_item':
 					case 'content_href':
-					case 'storekeeper_href':
+					case 'organizer_href':
 					case 'redundancy':
 					case 'visibility':
 					case 'target_loc':

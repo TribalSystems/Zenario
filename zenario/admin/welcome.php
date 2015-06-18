@@ -244,7 +244,9 @@ CMSWritePageFoot('../', 'welcome', false, false);
 $logoURL = $logoWidth = $logoHeight = false;
 if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
- && imageLink($logoWidth, $logoHeight, $logoURL, getRow('files', 'id', array('usage' => 'brand_logo')), 500, 250)) {
+ && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'"))
+ && ($dbAtRecentRevision = sqlFetchRow($result))
+ && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = absCMSDirURL(). $logoURL;

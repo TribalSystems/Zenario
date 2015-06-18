@@ -43,6 +43,8 @@ $image = false;
 connectLocalDB();
 $result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "admins WHERE Field = 'image_id'");
 $dbAtRecentRevision = sqlFetchRow($result);
+$result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'");
+$dbAtRecentRevision2 = sqlFetchRow($result);
 
 //Look up the current copy of the Admin's details on the local database
 if ($dbAtRecentRevision) {
@@ -106,7 +108,9 @@ if (connectGlobalDB()) {
 			if ($image) {
 				if (!$adminG['image_id'] = getRow('files', 'id', array('checksum'=> $image['checksum'], 'usage' => 'admin'))) {
 					//If there was no local version, try to add one
-					$adminG['image_id'] = addFileFromString('admin', $image['data'], $image['filename'], true);
+					if ($dbAtRecentRevision2) {
+						$adminG['image_id'] = addFileFromString('admin', $image['data'], $image['filename'], true);
+					}
 				}
 			}
 			

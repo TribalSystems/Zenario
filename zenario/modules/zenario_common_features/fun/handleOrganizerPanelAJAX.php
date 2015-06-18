@@ -274,6 +274,13 @@ switch ($path) {
 						$normalLink =$frontLink;
 				
 						$html .= $message."Full hyperlink: <br>" . "<input type='text' style='width: 488px;' value = '".$fullLink."'/><br>Internal hyperlink:<br><input type='text' style='width: 488px;' value = '". $normalLink . "'/>";
+					} else {
+						$messageType = 'Error';
+						if (windowsServer()) {
+							$html .= 'Could not generate public link because the CMS is installed on a windows server.</br>';
+						} else {
+							$html .= 'Could not generate public link because this document is not stored in the Docstore.</br>Make sure the Docstore directory is correctly setup and re-upload this document.</br>';
+						}
 					}
 				} else {
 					$messageType = 'Error';
@@ -291,7 +298,7 @@ switch ($path) {
 				$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
 				$numberFileIds =count($fileIdsInDocument);
 				
-				echo $numberFileIds ;
+				echo $numberFileIds;
 				
 				$file = getRow('files', 
 								array('id', 'filename', 'path', 'created_datetime'),
@@ -307,18 +314,14 @@ switch ($path) {
 								if ($numberFileIds == 1){
 									rmdir($symFolder);
 								}
-								echo " Public link was deleted successfully.";
-							}else{
-							echo ' Does not have public link to delete';
+								echo ' public link was deleted successfully.';
+							} else {
+								echo ' does not have public link to delete.';
 							}
 					}
 				}
 			}
-		
-		
-		
 		}
-		
 		break;
 		
 	case 'zenario__content/panels/document_tags':
@@ -331,21 +334,18 @@ switch ($path) {
 	
 
 	case 'editor_temp_file':
-	case 'zenario__content/panels/email_images_for_email_templates':
-	case 'zenario__content/panels/email_images_shared':
 	case 'zenario__content/panels/inline_images_for_content':
-	case 'zenario__content/panels/inline_images_for_reusable_plugins':
-	case 'zenario__content/panels/inline_images_shared':
+	case 'zenario__content/panels/image_library':
 		
 		$key = false;
-		$usage = 'inline';
+		$usage = 'image';
 		$privCheck = checkPriv('_PRIV_MANAGE_MEDIA');
 		
 		if ($path == 'editor_temp_file') {
 			$usage = 'editor_temp_file';
 			$privCheck = true;
 			
-		} elseif (in($path, 'zenario__content/panels/inline_images_for_content')) {
+		} elseif ($path == 'zenario__content/panels/inline_images_for_content') {
 			if (!$content = getRow('content', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
 				exit;
 			}
@@ -367,34 +367,6 @@ switch ($path) {
 				'foreign_key_id' => $content['id'],
 				'foreign_key_char' => $content['type'],
 				'foreign_key_version' => $content['admin_version']);
-		
-		} elseif ($path == 'zenario__content/panels/email_images_shared') {
-			$usage = 'email';
-		
-		} elseif ($path == 'zenario__content/panels/email_images_for_email_templates') {
-			$usage = 'email';
-			
-			if (!inc('zenario_email_template_manager')) {
-				exit;
-			}
-		
-			$privCheck = checkPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
-			if ($refinerId && $details = zenario_email_template_manager::getTemplateByCode($refinerId)) {
-				$key = array(
-					'foreign_key_to' => 'email_template',
-					'foreign_key_id' => $details['id'],
-					'foreign_key_char' => $details['code']);
-			
-			} else {
-				$key = array(
-					'foreign_key_to' => 'email_template',
-					'foreign_key_id' => 0,
-					'foreign_key_char' => '0');
-			}
-		
-		} elseif (in($path, 'zenario__content/panels/inline_images_for_reusable_plugins')) {
-			$key = array(
-				'foreign_key_to' => 'reusable_plugin');
 		}
 		
 		return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');

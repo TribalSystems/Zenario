@@ -81,44 +81,36 @@ if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
 	$submission['param_1'] = $hide_by_static_method ? $values['advanced/menu__param_1'] : '';
 	$submission['param_2'] = $hide_by_static_method ? $values['advanced/menu__param_2'] : '';
 	
+	
 	if ($imageId = $values['advanced/image_id']) {
 		if ($path = getPathOfUploadedFileInCacheDir($imageId)) {
-			$imageId = addFileToDatabase('menu', $path);
+			$imageId = addFileToDatabase('image', $path);
 		}
+	}
+	if ($imageId) {
+		setRow('inline_images', array('image_id' => $imageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
+	} else {
+		deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'image'));
 	}
 	$submission['image_id'] = $imageId;
 	
-	if ($values['advanced/use_rollover_image']) {
-		if ($rolloverImageId = $values['advanced/rollover_image_id']) {
-			if ($path = getPathOfUploadedFileInCacheDir($rolloverImageId)) {
-				$rolloverImageId = addFileToDatabase('menu', $path);
-			}
+	if ($rolloverImageId = $values['advanced/rollover_image_id']) {
+		if ($path = getPathOfUploadedFileInCacheDir($rolloverImageId)) {
+			$rolloverImageId = addFileToDatabase('image', $path);
+			
 		}
 		$submission['rollover_image_id'] = $rolloverImageId;
 	} else {
 		$submission['rollover_image_id'] = 0;
 	}
-	
-	
+	if ($rolloverImageId) {
+		setRow('inline_images', array('image_id' => $rolloverImageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+	} else {
+		deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
+	}
 }
 
 $box['key']['id'] = saveMenuDetails($submission, $id);
-
-if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
-	
-	$sql = "
-		DELETE f.*
-		FROM ". DB_NAME_PREFIX. "files AS f
-		LEFT JOIN `". DB_NAME_PREFIX. "menu_nodes` AS l
-		   ON l.`image_id` = f.id
-		   OR l.`rollover_image_id` = f.id
-		WHERE l.image_id IS NULL
-		  AND l.rollover_image_id IS NULL
-		  AND f.location = 'db'
-		  AND f.`usage` = 'menu'";
-	
-	my_mysql_query($sql);
-}
 
 
 $langs = getLanguages();

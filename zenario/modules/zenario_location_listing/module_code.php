@@ -340,7 +340,7 @@ class zenario_location_listing extends module_base_class {
 		echo '
 			<html>
 				<head>
-					<script id="google_api" type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 				</head>
 				<body onload="
 					function initMap(elId,lat,lng,zoom) {

@@ -123,7 +123,7 @@ switch ($path) {
 									$fileIds = array();
 									foreach (explode(',', $value['value']) as $file) {
 										if ($location = getPathOfUploadedFileInCacheDir(trim($file))) {
-											$fileIds[] = addFileToDatabase('inline', $location);
+											$fileIds[] = addFileToDatabase('image', $location);
 										} else {
 											$fileIds[] = $file;
 										}
@@ -171,7 +171,7 @@ switch ($path) {
 										$value['foreign_key_char'] = $value['value'];
 									}
 								}
-						
+								
 								//Work out whether this is a version controlled or synchronized Instance
 								if (!$instance['content_id']) {
 									$value['is_content'] = 'synchronized_setting';
@@ -319,16 +319,20 @@ $sql = "
 	WHERE instance_id = ". (int) $box['key']['instanceId'];
 sqlQuery($sql);
 
-if ($syncContent) {
-	syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
-
-} elseif (!empty($syncLibraryPluginFiles)) {
-	syncInlineFiles($syncLibraryPluginFiles, array('foreign_key_to' => 'reusable_plugin'), false);
-}
 
 if ($instance['content_id']) {
+	if ($syncContent) {
+		syncInlineFileContentLink($instance['content_id'], $instance['content_type'], $instance['content_version']);
+	}
+	
 	//Update the last modified date on the Content Item if this is a Wireframe Plugin
 	updateVersion($instance['content_id'], $instance['content_type'], $instance['content_version']);
+
+} else {
+	syncInlineFiles(
+		$syncLibraryPluginFiles,
+		array('foreign_key_to' => 'library_plugin', 'foreign_key_id' => $box['key']['instanceId']),
+		$keepOldImagesThatAreNotInUse = false);
 }
 
 return false;

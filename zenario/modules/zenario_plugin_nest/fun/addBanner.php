@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Add a new Banner to the nest, placing it in the right-most tab
 if (($moduleId = getModuleIdByClassName('zenario_banner'))
  && ($instance = getPluginInstanceDetails($instanceId))
- && ($image = getRow('files', array('id', 'filename', 'width', 'height'), array('usage' => 'inline', 'id' => $imageId)))) {
+ && ($image = getRow('files', array('id', 'filename', 'width', 'height'), array('usage' => 'image', 'id' => $imageId)))) {
 	
 	if ($addTab) {
 		self::addTab($instanceId);

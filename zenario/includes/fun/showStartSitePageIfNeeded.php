@@ -34,7 +34,9 @@ if (!isset($_SESSION)) {
 $logoURL = $logoWidth = $logoHeight = false;
 if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
- && imageLink($logoWidth, $logoHeight, $logoURL, getRow('files', 'id', array('usage' => 'brand_logo')), 500, 250)) {
+ && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'"))
+ && ($dbAtRecentRevision = sqlFetchRow($result))
+ && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario_logo.png';
@@ -55,12 +57,12 @@ if ($reportDBOutOfDate && checkPriv()) {
 //If you need to enable a language, the "here" link should point to the languages panel
 } elseif (!checkRowExists('languages', array())) {
 	$errorMessage = setting('site_disabled_message');
-	$adminLink = 'zenario/admin/welcome.php?sk=zenario__languages/panels/languages';
+	$adminLink = 'zenario/admin/welcome.php?og=zenario__languages/panels/languages';
 
 //If you need to enable your site, the "here" link should point to the "Set-up" panel to do that
 } else {
 	$errorMessage = setting('site_disabled_message');
-	$adminLink = 'zenario/admin/welcome.php?sk=zenario__administration/panels/site_settings//site_disabled';
+	$adminLink = 'zenario/admin/welcome.php?og=zenario__administration/panels/site_settings//site_disabled';
 }
 
 echo '

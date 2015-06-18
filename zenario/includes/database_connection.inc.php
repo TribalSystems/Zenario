@@ -370,36 +370,35 @@ function checkForChangesInPhpFiles() {
 	//Otherwise, work out the time difference between that time and now
 	} else {
 		
-		try {
-			//Check to see if there are any .xml or .yaml files that have changed on the system
-			$find =
-				' -name "*.php"'.
-				' -not -path "./cache/*"'.
-				' -not -path "./public/*"'.
-				' -not -path "./private/*"'.
-				' -not -path "*/.*"'.
-				' -print'.
-				' | sed 1q';
+		$useFallback = true;
+		if (defined('PHP_OS') && execEnabled()) {
+			try {
+				//Check to see if there are any .php files that have changed on the system
+				//(Note that this logic doesn't include any directories, so it won't catch the case
+				// where a new file is created or a file is deleted.)
+				$find =
+					' -name "*.php"'.
+					' -not -path "./cache/*"'.
+					' -not -path "./public/*"'.
+					' -not -path "./private/*"'.
+					' -not -path "*/.*"'.
+					' -print'.
+					' | sed 1q';
 			
-			//If possble, try to use the UNIX shell
-			switch (PHP_OS) {
-				case 'Linux':
+				//If possble, try to use the UNIX shell
+				if (PHP_OS == 'Linux') {
 					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
 					$useFallback = false;
-					break;
 				
-				case 'Darwin':
+				} elseif (PHP_OS == 'Darwin') {
 					$ago = $time - $lastChanged;
 					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
 					$useFallback = false;
-					break;
-				
-				default:
-					$useFallback = true;
-			}
+				}
 	
-		} catch (Exception $e) {
-			$useFallback = true;
+			} catch (Exception $e) {
+				$useFallback = true;
+			}
 		}
 		
 		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
@@ -455,36 +454,35 @@ function checkForChangesInYamlFiles() {
 	//Otherwise, work out the time difference between that time and now
 	} else {
 		
-		try {
-			//Check to see if there are any .xml or .yaml files that have changed on the system
-			$find =
-				' -path "*modules/*/tuix/*.*ml"'.
-				' -not -path "./cache/*"'.
-				' -not -path "./public/*"'.
-				' -not -path "./private/*"'.
-				' -not -path "*/.*"'.
-				' -print'.
-				' | sed 1q';
+		$useFallback = true;
+		if (defined('PHP_OS') && execEnabled()) {
+			try {
+				//Check to see if there are any .xml or .yaml files that have changed on the system
+				//(This logic also includes any directories, which should catch the case where a new file
+				// is created or a file is deleted.)
+				$find =
+					' -path "*modules/*/tuix*"'.
+					' -not -path "./cache/*"'.
+					' -not -path "./public/*"'.
+					' -not -path "./private/*"'.
+					' -not -path "*/.*"'.
+					' -print'.
+					' | sed 1q';
 			
-			//If possble, try to use the UNIX shell
-			switch (PHP_OS) {
-				case 'Linux':
+				//If possble, try to use the UNIX shell
+				if (PHP_OS == 'Linux') {
 					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
 					$useFallback = false;
-					break;
 				
-				case 'Darwin':
+				} elseif (PHP_OS == 'Darwin') {
 					$ago = $time - $lastChanged;
 					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
 					$useFallback = false;
-					break;
-				
-				default:
-					$useFallback = true;
-			}
+				}
 	
-		} catch (Exception $e) {
-			$useFallback = true;
+			} catch (Exception $e) {
+				$useFallback = true;
+			}
 		}
 		
 		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
@@ -527,10 +525,6 @@ function checkForChangesInYamlFiles() {
 		$contents = array();
 		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer') as $type) {
 			foreach (moduleDirs('tuix/'. $type. '/') as $moduleClassName => $dir) {
-			
-				if ($type == 'organizer') {
-					$type = 'storekeeper';
-				}
 			
 				foreach (scandir($dir) as $file) {
 					if (substr($file, 0, 1) != '.') {
@@ -590,12 +584,11 @@ function checkForChangesInYamlFiles() {
 							}
 						
 							$pathsFound = false;
-							if ($type == 'storekeeper' || $type == 'organizer') {
-								//For Storekeeper, run zenarioAJAXShortenPath() to get their short paths
+							if ($type == 'organizer') {
 								$paths = array();
 								logTUIXFileContentsR($paths, $tags, $type);
 							
-								foreach ($paths as $path => $dummy) {
+								foreach ($paths as $path => $panelType) {
 									$pathsFound = true;
 									$settingGroup = '';
 								
@@ -603,6 +596,7 @@ function checkForChangesInYamlFiles() {
 									$tuixFiles[$key][$key2] = array(
 										'type' => $type,
 										'path' => $path,
+										'panel_type' => $panelType,
 										'setting_group' => $settingGroup,
 										'module_class_name' => $moduleClassName,
 										'filename' => $file,
@@ -615,7 +609,7 @@ function checkForChangesInYamlFiles() {
 						
 							if (!$pathsFound) {
 								//For anything else, just read the top-level path
-								//Note - also do this for Storekeeper if no paths were found above,
+								//Note - also do this for Organizer if no paths were found above,
 								//as logTUIXFileContentsR() will miss files that have navigation definitions but no panel definitions
 								foreach ($tags as $path => &$tag) {
 								
@@ -624,8 +618,8 @@ function checkForChangesInYamlFiles() {
 										if ($path == 'plugin_settings' && !empty($tag['module_class_name'])) {
 											$settingGroup = $tag['module_class_name'];
 									
-										} elseif ($path == 'advanced_search' && !empty($tag['storekeeper_path'])) {
-											$settingGroup = $tag['storekeeper_path'];
+										} elseif ($path == 'advanced_search' && !empty($tag['organizer_path'])) {
+											$settingGroup = $tag['organizer_path'];
 									
 										} elseif ($path == 'site_settings' && !empty($tag['setting_group'])) {
 											$settingGroup = $tag['setting_group'];
@@ -641,6 +635,7 @@ function checkForChangesInYamlFiles() {
 									$tuixFiles[$key][$key2] = array(
 										'type' => $type,
 										'path' => $path,
+										'panel_type' => '',
 										'setting_group' => $settingGroup,
 										'module_class_name' => $moduleClassName,
 										'filename' => $file,
@@ -680,17 +675,18 @@ function checkForChangesInYamlFiles() {
 						INSERT INTO ". DB_NAME_PREFIX. "tuix_file_contents
 						SET type = '". sqlEscape($tf['type']). "',
 							path = '". sqlEscape($tf['path']). "',
+							panel_type = '". sqlEscape($tf['panel_type']). "',
 							setting_group = '". sqlEscape($tf['setting_group']). "',
 							module_class_name = '". sqlEscape($tf['module_class_name']). "',
 							filename = '". sqlEscape($tf['filename']). "',
 							last_modified = ". (int) $tf['last_modified']. ",
 							checksum = '". sqlEscape($tf['checksum']). "'
 						ON DUPLICATE KEY UPDATE
+							panel_type = VALUES(panel_type),
 							last_modified = VALUES(last_modified),
 							checksum = VALUES(checksum)";
 					sqlSelect($sql);
 				}
-			
 			}
 		}
 		
@@ -746,7 +742,9 @@ function setModulePrefix(&$module, $define = true, $oldFormat = false) {
 		
 		$prefix = 'mod'. $id. '_';
 		foreach (explode('_', $className) as $frag) {
-			$prefix .= $frag[0];
+			if ($frag !== '') {
+				$prefix .= $frag[0];
+			}
 		}
 		$prefix .= '_';
 	}
@@ -1042,9 +1040,17 @@ function checkRowExists(
 		}
 		$first = true;
 		foreach ($orderBy as $col) {
-			if ($first) {
+			
+			if ($col == 'DESC'
+			 || $col == 'ASC'
+			 || $col == 'Desc'
+			 || $col == 'Asc') {
+				$sql .= ' '. $col;
+			
+			} elseif ($first) {
 				$sql .= '
 				ORDER BY `'. sqlEscape($col). '`';
+			
 			} else {
 				$sql .= ',
 					`'. sqlEscape($col). '`';

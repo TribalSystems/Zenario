@@ -75,6 +75,14 @@ for ($i=0; $i < $c; $i += 4) {
 	//If we can get the checksum from the filename, look up this file and process it
 	if ($checksum = ifNull(arrayKey($params, 'c'), arrayKey($params, 'checksum'))) {
 		
+		//Catch old checksums in base 16. Convert these to base 64 so the links will be shorter.
+		if (strlen($checksum) == 32
+		 && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
+			$checksum = base16To64($checksum);
+			$doSomething = true;
+		}
+
+		
 		//Get the preferred filename from the URL string, if it is set
 		$filename = ifNull(trim(rawurldecode(arrayKey($params, 'filename'))), null, null);
 		
@@ -87,7 +95,7 @@ for ($i=0; $i < $c; $i += 4) {
 		$file = $foundChecksums[$checksum];
 		
 		//If it is, we've found it and we can continue without any changes
-		if ($file && ifNull(trim(rawurldecode(arrayKey($params, 'usage'))), 'inline') == $usage) {
+		if ($file && ifNull(trim(rawurldecode(arrayKey($params, 'usage'))), 'image') == $usage) {
 		
 		//If not, check to see if it is the checksum of an image that exists somewhere on the filesystem,
 		//and try to copy it over.
@@ -145,7 +153,7 @@ for ($i=0; $i < $c; $i += 4) {
 		if ($doSomething) {
 			$html .= 'zenario/file.php?c='. $checksum;
 			
-			if ($usage != 'inline') {
+			if ($usage != 'image') {
 				$html .= $amp. 'usage='. rawurlencode($usage);
 			}
 			

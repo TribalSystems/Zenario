@@ -227,7 +227,6 @@ class zenario_menu extends module_base_class {
 		}
 	}
 	
-	
 	//Draw the wrapping around a Menu Node, then draw the Menu Node,
 	//then call drawMenu() on its children
 	function drawMenuLink($i, &$row, $recurseCount, $maxI) {
@@ -328,7 +327,7 @@ class zenario_menu extends module_base_class {
 		
 		//A function that can be overwritten to allow extra functionality
 		if ($this->addExtraMergeFields($row, $objects, $recurseCount, $i, $maxI)) {
-		
+			
 			$this->frameworkHead($theme, true, $objects, $sections);
 			
 			if (!empty($row['children']) && is_array($row['children'])) {
@@ -337,6 +336,7 @@ class zenario_menu extends module_base_class {
 			
 			$this->frameworkFoot($theme, true, $objects, $sections);
 		}
+		
 	}
 	
 	//A function that can be overwritten to allow extra functionality

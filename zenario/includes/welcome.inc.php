@@ -1277,6 +1277,13 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 				$box['tabs']['login']['errors']['details_wrong'] =
 					adminPhrase('You cannot use your multi-site account because this site has lost its connection to the global database. Please check that the correct settings have been entered in the zenario_siteconfig.php file.');
 			
+			//checkPasswordAdmin() will return null for Super Admins when they need to log into the control site to change their password.
+				//I want the "password needs changing" and "password not correct" states to be different,
+				//yet still both evaluate to false.
+			} elseif ($adminIdL === null) {
+				$box['tabs']['login']['errors']['details_wrong'] =
+					adminPhrase('Your multi-site account has been flagged for a password change. Please log into the control site to change it.');
+			
 			} else {
 				$box['tabs']['login']['errors']['details_wrong'] =
 					adminPhrase('Your username and password combination was not recognised. Please check and try again.');
@@ -1950,11 +1957,11 @@ function redirectAdmin($getRequest) {
 	$cID = $cType = false;
 	$request = arrayKey($getRequest, 'cID');
 	
-	if (!empty($getRequest['sk']) && checkPriv()) {
+	if (!empty($getRequest['og']) && checkPriv()) {
 		return
 			'zenario/admin/organizer.php'.
 			(isset($getRequest['fromCID']) && isset($getRequest['fromCType'])? '?fromCID='. $getRequest['fromCID']. '&fromCType='. $getRequest['fromCType'] : '').
-			'#'. $getRequest['sk'];
+			'#'. $getRequest['og'];
 		
 	} elseif (!empty($getRequest['desturl']) && checkPriv()) {
 		return httpOrhttps(). primaryDomain(). $getRequest['desturl'];

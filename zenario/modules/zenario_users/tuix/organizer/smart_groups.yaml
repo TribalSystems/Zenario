@@ -115,6 +115,7 @@ zenario__users:
                     title: Members
                     width: small
                     show_by_default: true
+                    align_right: true
                 created_on:
                     title: Date/Time Created
                     db_column: sg.created_on
@@ -127,9 +128,6 @@ zenario__users:
                     title: Description
                     width: xxlarge
                     show_by_default: true
-            
-            label_format_for_grid_view: |
-                [[name]] ([[members]])
             
             item:
                 name: Smart group

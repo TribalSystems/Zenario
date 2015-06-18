@@ -18,7 +18,14 @@ plugin_settings:
                     label: 'Display a title'
                     type: checkbox
                     value: "1"
-                    
+                form_warning:
+                    hidden: true
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: |
+                            Warning, the form you selected does not save user data. Please ensure "Create user/contact record" is set and the "Action" property is set to "Overwrite old record".
+                    post_field_html: "</div>"
+                    full_width: true
                 profile_form:
                     plugin_setting:
                         name: user_form
@@ -32,4 +39,5 @@ plugin_settings:
                         one_to_one_choose_phrase: Choose this form
                         select_phrase: Select a form...
                         hide_remove_button: Yes
+                    format_onchange: true
 

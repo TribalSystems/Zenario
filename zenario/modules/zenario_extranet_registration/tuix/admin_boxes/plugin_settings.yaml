@@ -12,6 +12,12 @@ plugin_settings:
 					full_width: Yes
 					snippet:
 						html: Configure the initial registration form that is used to create the user account.
+				registration_title:
+					label: 'Title:'
+					type: text
+					plugin_setting:
+						name: registration_title
+					value: 'Create an account'
 				initial_email_address_status:
 					label: 'Verify email address:'
 					type: radios

@@ -79,10 +79,13 @@ class zenario_location_manager extends module_base_class {
 	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path=="zenario__locations/nav/sectors/panel" || $path=="zenario__locations/location_sectors/panel") {
-			if ($refinerName != 'location_sectors') {
-				unset($panel['columns']['score']);
-			}
+		switch ($path) {
+			case 'zenario__locations/nav/sectors/panel':
+			case 'zenario__locations/location_sectors/panel':
+				if ($refinerName != 'location_sectors') {
+					unset($panel['columns']['score']);
+				}
+				break;
 		}
 	}
 	
@@ -94,7 +97,7 @@ class zenario_location_manager extends module_base_class {
 				$panel['title'] = 'Content items of the type "HTML page"';
 			}
 			
-		} elseif ($path=="zenario__locations/panel") {
+		} elseif ($path=="zenario__locations/panel" || $path=="zenario__locations/panels/map") {
 			// Add dataset ID to import button
 			$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 			$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
@@ -135,8 +138,8 @@ class zenario_location_manager extends module_base_class {
 				if ($item['checksum']) {
 					$img = '&usage=location&c='. $item['checksum'];
 					
-					$item['image'] = 'zenario/file.php?sk=1'. $img;
-					$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+					$item['image'] = 'zenario/file.php?og=1'. $img;
+					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 				}
 				
 				$locationHierarchyPathAndDeepLinks = self::getLocationHierarchyPathAndDeepLinks($id);
@@ -256,8 +259,10 @@ class zenario_location_manager extends module_base_class {
 					unset($panel['item_buttons']['set_parent']);
 				}
 			} else {
-				unset($panel['item']['link']);
-				
+				if ($panel['item']['link']["path"] == "zenario__locations/panel" && $panel['item']['link']["refiner"] == "children_of_location"){
+					unset($panel['item']['link']);
+				}
+
 				$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
 				if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
 					unset($panel['item_buttons']['set_parent']);

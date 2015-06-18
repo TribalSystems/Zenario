@@ -32,9 +32,13 @@ class zenario_image_container extends zenario_banner {
 	static protected $page_plugin_index_start = 1;
 	static protected $page_plugin_index_end = 0;
 	static protected $all_page_plugin_images = array();
+	protected static $oldIE = false;
 	protected $my_page_plugin_index = 0;
 	
 	public function init(){
+		self::$oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
+					|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
+					|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
 		
 		$result = parent::init();
 		if(!$result) return $result;
@@ -95,10 +99,24 @@ class zenario_image_container extends zenario_banner {
 	}
 	
 	public function addToPageHead() {
-		echo "\n<style type=\"text/css\">\n", $this->generateStyles(), "\n</style>\n";
+		if (self::$oldIE) {
+			//Note: Old versions of IE need media-queries in stylesheets, they won't work inline on the page.
+			echo '
+				<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>';
+		} else {
+			echo '
+				<style type="text/css">', $this->generateStyles(), '</style>';
+		}
 	}
 	
-	public function generateStyles() {
+	public function handlePluginAJAX() {
+		if (get('generateStyles')) {
+			header('Content-Type: text/css; charset=UTF-8');
+			echo $this->generateStyles($fullPath = true);
+		}
+	}
+	
+	public function generateStyles($fullPath = false) {
 		$html = '';
 		
 		//Only the first one will write for all of us
@@ -116,8 +134,15 @@ class zenario_image_container extends zenario_banner {
 						"@media (min-width: {$min_width_px_plus_one}px) {" : false;
 
 					if(isset($plugin_images['image_main'])) {
-						
 						$image = $plugin_images['image_main'];
+						
+						if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+							$image['src_url'] = absCMSDirURL(). $image['src_url'];
+						}
+						
+						//Bugfix - URLs should not be html escaped in CSS code.
+						$image['src_url'] = html_entity_decode($image['src_url']);
+						
 						if($hide_image) {
 							$html .= $hide_image . "\n";
 						}
@@ -126,19 +151,27 @@ class zenario_image_container extends zenario_banner {
  display:block;
  height: {$image['img_height']}px;
  width: {$image['img_width']}px;
- background-image: url({$image['src_url']});
+ background-image: url('{$image['src_url']}');
  background-repeat: no-repeat;
  {$image['custom_css_code']}
 }";
 					
  						if(isset($plugin_images['image_hover'])) {
+						
+							if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+								$image['src_url'] = absCMSDirURL(). $image['src_url'];
+							}
+							
+							//Bugfix - URLs should not be html escaped in CSS code.
+							$image['src_url'] = html_entity_decode($image['src_url']);
+						
 							$image = $plugin_images['image_hover'];
 							$html .= "
 #zenario_image_container_{$i}:hover {
  display:block;
  height: {$image['img_height']}px;
  width: {$image['img_width']}px;
- background-image: url({$image['src_url']});
+ background-image: url('{$image['src_url']}');
  background-repeat: no-repeat;
 }";
  						}
@@ -150,13 +183,21 @@ class zenario_image_container extends zenario_banner {
 					
 					if(isset($plugin_images['image_mobile'])) {
 						$image = $plugin_images['image_mobile'];
+						
+						if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+							$image['src_url'] = absCMSDirURL(). $image['src_url'];
+						}
+						
+						//Bugfix - URLs should not be html escaped in CSS code.
+						$image['src_url'] = html_entity_decode($image['src_url']);
+						
 						$html .= "
 @media (max-width: {$min_width_px}px) {
  #zenario_image_container_{$i} {
   display:block;
   height: {$image['img_height']}px;
   width: {$image['img_width']}px;
-  background-image: url({$image['src_url']});
+  background-image: url('{$image['src_url']}');
   background-repeat: no-repeat;
   {$image['custom_css_code']}
  }
@@ -173,6 +214,8 @@ class zenario_image_container extends zenario_banner {
 		parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
 		switch ($path) {
 			case 'plugin_settings':
+				// Image container has no title
+				unset($box['tabs']['text']['fields']['title_tags']);
 				break;
 		}
 	}
@@ -207,12 +250,6 @@ class zenario_image_container extends zenario_banner {
 				
 				$fields['mobile_show_custom_css_code']['hidden'] = $mobile_canvas_hidden;
 				$fields['mobile_custom_css_code']['hidden'] = !$values['mobile_show_custom_css_code'];
-				
-				if($use_mobile_image) {
-					$this->getImageHtmlSnippet($values['mobile_image'], $fields['mobile_image_thumbnail']['snippet']['html']);
-				} else {
-					$fields['mobile_image_thumbnail']['snippet']['html'] = '';
-				}
 				
 				break;
 			}

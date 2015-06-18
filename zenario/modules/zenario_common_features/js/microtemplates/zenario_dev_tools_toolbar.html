@@ -24,17 +24,17 @@
 	</optgroup>
 	
 	<% if (!devTools.skMap) { %>
-		<% if (m.storekeeper_query_ids || m.storekeeper_query_details) { %>
+		<% if (m.organizer_query_ids || m.organizer_query_details) { %>
 			<optgroup label="{{++i|escape}}. Storekeeper Queries">
-				<% if (m.storekeeper_query_ids && m.storekeeper_query_details) { %>
-					<option value="storekeeper_query_ids" {{'storekeeper_query_ids' == m.selectedFile? ' selected="selected"' : ''}}>Looking for matching ids and sorting them</option>
-					<option value="storekeeper_query_details" {{'storekeeper_query_details' == m.selectedFile? ' selected="selected"' : ''}}>Getting the full details of rows on the current page</option>
+				<% if (m.organizer_query_ids && m.organizer_query_details) { %>
+					<option value="organizer_query_ids" {{'organizer_query_ids' == m.selectedFile? ' selected="selected"' : ''}}>Looking for matching ids and sorting them</option>
+					<option value="organizer_query_details" {{'organizer_query_details' == m.selectedFile? ' selected="selected"' : ''}}>Getting the full details of rows on the current page</option>
 				
-				<% } else if (m.storekeeper_query_ids) { %>
-					<option value="storekeeper_query_ids" {{'storekeeper_query_ids' == m.selectedFile? ' selected="selected"' : ''}}>Looking for matching ids and sorting them (no results were found)</option>
+				<% } else if (m.organizer_query_ids) { %>
+					<option value="organizer_query_ids" {{'organizer_query_ids' == m.selectedFile? ' selected="selected"' : ''}}>Looking for matching ids and sorting them (no results were found)</option>
 				
 				<% } else { %>
-					<option value="storekeeper_query_details" {{'storekeeper_query_details' == m.selectedFile? ' selected="selected"' : ''}}>Getting the full details of all rows in the correctly sorted order</option>
+					<option value="organizer_query_details" {{'organizer_query_details' == m.selectedFile? ' selected="selected"' : ''}}>Getting the full details of all rows in the correctly sorted order</option>
 				<% } %>
 			</optgroup>
 		<% } %>

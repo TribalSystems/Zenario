@@ -335,8 +335,83 @@ function publishContent($cID, $cType, $adminId = false) {
 	sqlQuery($sql);
 
 	hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'published');
+	
+	flagImagesInArchivedVersions($cID, $cType);
 
 	sendSignal("eventContentPublished",array("cID" => $cID,"cType" => $cType, "cVersion" => $cVersion));
+}
+
+//Set the "archived" flag in the inline_images table,
+//and remove links from the inline_images table where the version has been deleted
+function flagImagesInArchivedVersions($cID = false, $cType = false) {
+	
+	$deletedImages = array();
+	$undeletedImages = array();
+	
+	//Look through every image attached to this content item
+	$sql = "
+		SELECT
+			ii.foreign_key_to, ii.foreign_key_id, ii.foreign_key_char, ii.foreign_key_version,
+			ii.image_id, ii.archived,
+			f.archived AS f_archived,
+			v.id IS NULL AS v_deleted,
+			v.version NOT IN (c.visitor_version, c.admin_version) AS v_archived
+		FROM ". DB_NAME_PREFIX. "inline_images AS ii
+		INNER JOIN ". DB_NAME_PREFIX. "files AS f
+		   ON ii.image_id = f.id
+		LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+		   ON ii.foreign_key_id = c.id
+		  AND ii.foreign_key_char = c.type
+		LEFT JOIN ". DB_NAME_PREFIX. "versions AS v
+		   ON ii.foreign_key_id = v.id
+		  AND ii.foreign_key_char = v.type
+		  AND ii.foreign_key_version = v.version
+		WHERE ii.foreign_key_to = 'content'";
+	
+	if ($cID && $cType) {
+		$sql .= "
+		  AND ii.foreign_key_id = ". (int) $cID. "
+		  AND ii.foreign_key_char = '". sqlEscape($cType). "'";
+	}
+	
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		$key = $row;
+		unset($key['f_archived']);
+		unset($key['v_archived']);
+		unset($key['v_deleted']);
+		
+		//If this version is deleted, remove anything from the inline_images table
+		if ($row['v_deleted']) {
+			deleteRow('inline_images', $key);
+			
+			//Look for images that were previously deleted by the admin, but were still in use so had to be marked as
+			//archived instead.
+			if ($row['f_archived']) {
+				$deletedImages[$row['image_id']] = $row['image_id'];
+			}
+		
+		//If the version still exists, update the "archived" flag
+		} else {
+			if ($row['archived'] != $row['v_archived']) {
+				updateRow('inline_images', array('archived' => $row['v_archived']), $key);
+			}
+			
+			//If the file was flagged as archived because it was "deleted" but still in use here,
+			//"undelete" it by removing the flag to add it back to the library
+			if ($row['f_archived'] && !$row['v_archived']) {
+				updateRow('files', array('archived' => 0), $row['image_id']);
+				$undeletedImages[$row['image_id']] = $row['image_id'];
+			}
+		}
+	}
+	
+	//Check to see if we can delete any archived images.
+	foreach ($deletedImages as $imageId) {
+		if (!isset($undeletedImages[$imageId])) {
+			deleteUnusedImage($imageId);
+		}
+	}
 }
 
 
@@ -480,96 +555,63 @@ function syncInlineFileContentLink($cID, $cType, $cVersion) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function syncInlineFileLinks($usage, &$files, &$html, &$htmlChanged) {
+function syncInlineFileLinks(&$files, &$html, &$htmlChanged, $usage = 'image') {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function syncInlineFiles(&$files, $key, $flagOthersAsNotInUse = true) {
+function syncInlineFiles(&$files, $key, $keepOldImagesThatAreNotInUse = true) {
 	
-	if ($flagOthersAsNotInUse) {
-		//Mark all existing images as not in use
-		updateRow('inline_file_link', array('in_use' => 0), $key);
-	}
+	//Mark all existing images as not in use
+	updateRow('inline_images', array('in_use' => 0), $key);
 	
 	//Add in the ones that we actually found, or mark them as in use if they are already there
 	foreach ($files as $file) {
 		$values = array('in_use' => 1);
-		$key['file_id'] = $file['id'];
-		setRow('inline_file_link', $values, $key);
+		$key['image_id'] = $file['id'];
+		setRow('inline_images', $values, $key);
+	}
+	
+	//Depending on the logic, either delete the unused images from the linking table,
+	//or keep them there but flagged as not in use.
+	if (!$keepOldImagesThatAreNotInUse) {
+		$key['in_use'] = 0;
+		unset($key['image_id']);
+		deleteRow('inline_images', $key);
 	}
 }
 
-//Check to see if a file is not used, and delete it
-//Note that any files in the docstore directory are never deleted from the database.
-//Shared files, and files used for cont
-function deleteUnusedInlineFile($fileId, $allowDeleteShared = false) {
+//Check to see if an image is not used, and delete it
+//This is only designed to work for files with their usage set to 'image'
+function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
 	
-	//Check that the file is not used anywhere!
-	if (!checkRowExists('users', array('image_id' => $fileId))
-	 && !checkRowExists('groups', array('image_id' => $fileId))
-	 && !checkRowExists('versions', array('file_id' => $fileId))
-	 && !checkRowExists('inline_file_link', array('file_id' => $fileId, 'foreign_key_to' => array('!' => 'reusable_plugin')))
-	 && !checkRowExists('plugin_settings', array('foreign_key_to' => 'file', 'foreign_key_id' => $fileId))) {
+	$key = array('image_id' => $imageId, 'in_use' => 1, 'archived' => 0);
+	
+	//Check that the file is the correct usage, and is not used anywhere!
+	if (($image = getRow('files', array('archived', 'usage'), $imageId))
+	 && (!$onlyDeleteUnusedArchivedImages || $image['archived'])
+	 && (!checkRowExists('inline_images', $key))) {
 		
-		$sql = "
-			SELECT 1
-			FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-			WHERE ps.foreign_key_to = 'multiple_files'
-			  AND FIND_IN_SET('". (int) $fileId. "', ps.value)
-			LIMIT 1";
-		$result = sqlQuery($sql);
-		
-		if (!sqlFetchRow($result)) {
-			$file = getRow('files', array('usage', 'shared'), $fileId);
-		
-			if (!$allowDeleteShared && $file['shared']) {
-				return;
-			} else if ($file['usage'] == 'favicon' || $file['usage'] == 'mobile_icon') {
-				return;
-			} else {
-				deleteFileFromCmsStorage($fileId);
+		//Check to see if the file is archived anywhere.
+		$key['archived'] = 1;
+		if (checkRowExists('inline_images', $key)) {
+			//If so, we must keep it in the system, so we'll "delete" it by just flagging it as archived
+			if (!$image['archived']) {
+				updateRow('files', array('archived' => 1), $imageId);
 			}
+		
+		} else {
+			//Otherwise delete it straight away
+			deleteFile($imageId);
 		}
+		
+		//Remove the image from the linking table anywhere it is unused
+		$key['in_use'] = 0;
+		unset($key['archived']);
+		deleteRow('inline_images', $key);
 	}
 }
 
-function deleteFileFromCmsStorage($fileId) {
-	if ($docstoreFilePath = docstoreFilePath($fileId, false)) {
-		//unlink the file
-		if (@unlink($docstoreFilePath)) {
-			@rmdir(dirname($docstoreFilePath));
-		}
-	}
-	
-	deleteRow('files', $fileId);
-}
-
-function deleteUnusedFilesByName($usage, $filename, $excludeFileId) {
-	//Look for files with the same name, that are not in use
-	$result = getRows('files', array('id'), array('filename' => $filename, 'usage' => $usage));
-	while ($file = sqlFetchAssoc($result)) {
-		if ($file['id'] != $excludeFileId) {
-			deleteUnusedInlineFile($file['id']);
-		}
-	}
-}
-
-//Delete from the inline_file_link table, and then completely delete anything that is now no longer used
-function deleteUnusedFilesByLinkedKey($key) {
-	$fileIds = array();
-	$result = getRows('inline_file_link', 'file_id', $key);
-	while ($file = sqlFetchAssoc($result)) {
-		$fileIds[$file['file_id']] = $file['file_id'];
-	}
-	
-	deleteRow('inline_file_link', $key);
-	
-	foreach ($fileIds as $fileId) {
-		deleteUnusedInlineFile($fileId);
-	}
-}
-
-//Look for User/Group/Template files that are not in use, and remove them
+//Look for User/Group/Admin files that are not in use, and remove them
 function deleteUnusedImagesByUsage($usage) {
 	
 	if ($usage != 'group' && $usage != 'user' && $usage != 'admin') {
@@ -587,9 +629,20 @@ function deleteUnusedImagesByUsage($usage) {
 	
 	$result = sqlQuery($sql);
 	while ($file = sqlFetchAssoc($result)) {
-		deleteUnusedInlineFile($file['id']);
+		if (!checkRowExists('admins', array('image_id' => $file['id']))
+		 && !checkRowExists('groups', array('image_id' => $file['id']))
+		 && !checkRowExists('users', array('image_id' => $file['id']))) {
+			deleteFile($file['id']);
+		}
 	}
 }
+
+
+
+
+
+
+
 
 function deleteUnusedBackgroundImages() {
 	$sql = "
@@ -648,6 +701,7 @@ function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = fal
 			deleteContentItem($cID, $cType);
 		} else {
 			deleteVersion($cID, $cType, $cVersion);
+			flagImagesInArchivedVersions($cID, $cType);
 			sendSignal("eventContentDeleted",array("cID" => $cID,"cType" => $cType, "cVersion" => $cVersion));
 		}
 	}
@@ -661,14 +715,13 @@ function deleteVersion($cID, $cType, $cVersion) {
 	deleteRow('content_cache', array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
 	
 	deleteVersionControlledPluginSettings($cID, $cType, $cVersion);
-	
-	deleteUnusedFilesByLinkedKey(array('foreign_key_to' => 'content', 'foreign_key_id' => $cID, 'foreign_key_char' => $cType, 'foreign_key_version' => $cVersion));
 }
 
 function deleteArchive($cID, $cType, $cVersion) {
 	for ($v = $cVersion; $v > 0; --$v) {
 		deleteVersion($cID, $cType, $v);
 	}
+	flagImagesInArchivedVersions($cID, $cType);
 }
 
 function deleteContentItem($cID, $cType) {
@@ -682,6 +735,7 @@ function deleteContentItem($cID, $cType) {
 	
 	removeItemFromMenu($cID, $cType);
 	removeEquivalence($cID, $cType);
+	flagImagesInArchivedVersions($cID, $cType);
 	removeItemFromPluginSettings('content', $cID, $cType);
 	setRow('content', array('status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''), $content);
 }
@@ -698,6 +752,7 @@ function trashContent($cID, $cType, $adminId = false) {
 	
 	removeItemFromMenu($cID, $cType);
 	removeEquivalence($cID, $cType);
+	flagImagesInArchivedVersions($cID, $cType);
 	removeItemFromPluginSettings('content', $cID, $cType);
 	
 	sendSignal("eventContentTrashed",array("cID" => $cID,"cType" => $cType));
@@ -724,6 +779,7 @@ function hideContent($cID, $cType, $adminId = false) {
 	updateRow('content', array('visitor_version' => 0, 'status' => 'hidden', 'lock_owner_id' => 0), array('id' => $cID, 'type' => $cType));
 	updateRow('versions', array('concealer_id' => $adminId, 'concealed_datetime' => now()), array('id' => $cID, 'type' => $cType, 'version' => $content['admin_version']));
 	
+	flagImagesInArchivedVersions($cID, $cType);
 	hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
 	
 	sendSignal("eventContentHidden",array("cID" => $cID,"cType" => $cType));
@@ -1099,7 +1155,7 @@ function validateAlias($alias, $cID = false, $cType = false, $equivId = false) {
 		}
 		
 		if ($alias == 'admin' || is_dir(CMS_ROOT. $alias)) {
-			$error[] = adminPhrase("You cannot use an Alias if a directory exists with that name (e.g., 'admin' or 'zenario').");
+			$error[] = adminPhrase("You cannot use the name of a directory as an Alias (e.g. 'admin', 'cache', 'private', 'public', 'zenario', ...)");
 		
 		} elseif (is_numeric($alias)) {
 			$error[] = adminPhrase("You must enter a non-numeric Alias.");
@@ -1107,8 +1163,11 @@ function validateAlias($alias, $cID = false, $cType = false, $equivId = false) {
 		} elseif (preg_match('/[^a-zA-Z 0-9_-]/', $alias)) {
 			$error[] = adminPhrase("An Alias can only contain the letters a-z, numbers, underscores or hyphens.");
 		
+		} elseif (checkRowExists('visitor_phrases', array('language_id' => $alias))) {
+			$error[] = adminPhrase("You cannot use a language code as an Alias (e.g. 'en', 'en-gb', 'en-us', 'es', 'fr', ...)");
+		
 		} elseif (getCIDAndCTypeFromTagId($dummy1, $dummy2, $alias)) {
-			$error[] = adminPhrase("You cannot make an Alias of the format 'html_1', 'document_2', ...");
+			$error[] = adminPhrase("You cannot make an Alias of the format 'html_1', 'news_2', ...");
 		}
 		
 		
@@ -1843,31 +1902,36 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 		
 		//Check to see if there are any .css, .js or .html files that have changed on the system
 		$useFallback = true;
-		try {
-			if (defined('PHP_OS')) {
+		
+		if (defined('PHP_OS') && execEnabled()) {
+			try {
+				//Look for any .css, .js or .html files that have been created or modified since this was last run.
+				//(Unfortunately this won't catch the case where the files are deleted.)
+				//We'll also look for any changes to *anything* in the zenario_custom/templates directory.
+				//(This will catch the case where files are deleted, as the modification times of directories are included.)
 				$find =
-					' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html*" -o -path "*/skins/*/description.yaml" \\)'.
+					' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html" -o -path "./zenario_custom/templates*" \\)'.
 					' -not -path "./cache/*"'.
 					' -not -path "./public/*"'.
 					' -not -path "./private/*"'.
 					' -not -path "*/.*"'.
 					' -print'.
 					' | sed 1q';
-				
+			
 				//If possble, try to use the UNIX shell
 				if (PHP_OS == 'Linux') {
 					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
 					$useFallback = false;
-				
+			
 				} elseif (PHP_OS == 'Darwin') {
 					$ago = $time - $lastChanged;
 					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
 					$useFallback = false;
 				}
-			}
 	
-		} catch (Exception $e) {
-			$useFallback = true;
+			} catch (Exception $e) {
+				$useFallback = true;
+			}
 		}
 		
 		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
@@ -2256,7 +2320,7 @@ function getMenuItemStorekeeperDeepLink($menuId, $langId = false, $sectionId = f
 		$sectionId = $menuDetails['section_id'];
 	}
 	
-	//Build up a link to the current parent in Storekeeper
+	//Build up a link to the current parent in Organizer
 	if ($langId == setting('default_language')) {
 		$path = 'zenario__menu/nav/default_language/panel/item//'. $langId. '//item//'. $sectionId. '//';
 				 
@@ -2444,26 +2508,11 @@ function deleteMenuNode($id, $firstCall = true) {
 	deleteRow('menu_positions', array('menu_id' => $id));
 	deleteRow('menu_hierarchy', array('child_id' => $id));
 	deleteRow('menu_hierarchy', array('ancestor_id' => $id));
+	sendSignal('eventMenuNodeDeleted', array('menuId' => $id));
 	
 	//If this Content Item had any other Menu Nodes, make sure that one of the remaining is a primary
 	if ($content) {
 		ensureContentItemHasPrimaryMenuItem($content['equiv_id'], $content['content_type']);
-	}
-	
-	if ($firstCall) {
-		$sql = "
-			DELETE f.*
-			FROM ". DB_NAME_PREFIX. "files AS f
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_nodes AS mni
-			   ON mni.image_id = f.id
-			LEFT JOIN ". DB_NAME_PREFIX. "menu_nodes AS mnr
-			   ON mnr.rollover_image_id = f.id
-			WHERE mni.image_id IS NULL
-			  AND mnr.rollover_image_id IS NULL
-			  AND f.location = 'db'
-			  AND f.`usage` = 'menu'";
-	
-		sqlUpdate($sql);
 	}
 }
 
@@ -3489,6 +3538,7 @@ function deletePluginInstance($instanceId) {
 	) as $table) {
 		deleteRow($table, array('instance_id' => $instanceId));
 	}
+	deleteRow('inline_images', array('foreign_key_to' => 'library_plugin', 'foreign_key_id' => $instanceId));
 	
 	sendSignal('eventPluginInstanceDeleted', array('instanceId' => $instanceId));
 }
@@ -4999,7 +5049,7 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 			chmod($path, 0666);
 		
 			//Attempt to use wget to fetch the file
-			if (!windowsServer()) {
+			if (!windowsServer() && execEnabled()) {
 				try {
 					//Don't fetch via ssh, as this doesn't work when calling wget from php
 					$httpDropboxLink = str_replace('https://', 'http://', $dropboxLink);
@@ -5337,6 +5387,24 @@ function deleteDatasetField($fieldId) {
 	}
 }
 
+function deleteDataset($dataset) {
+	if ($dataset = getDatasetDetails($dataset)) {
+		$sql = "
+			DELETE cd.*, t.*, f.*, fv.*, vl.*
+			FROM ". DB_NAME_PREFIX. "custom_datasets AS cd
+			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_tabs AS t
+			   ON t.dataset_id = cd.id
+			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS f
+			   ON f.dataset_id = cd.id
+			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
+			   ON fv.field_id = f.id
+			LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_values_link AS vl
+			   ON vl.value_id = fv.id
+			WHERE cd.id = ". (int) $dataset['id'];
+		sqlUpdate($sql);
+	}
+}
+
 function getDatasetFieldDefinition($type) {
 	
 	switch ($type) {
@@ -5626,18 +5694,28 @@ function zenarioAJAXShortenPath($path, $type) {
 
 
 
-//A recursive function that comes up with a list of all of the Storekeeper paths that a TUIX file references
+//A recursive function that comes up with a list of all of the Organizer paths that a TUIX file references
 function logTUIXFileContentsR(&$paths, &$tags, $type, $path = '') {
 	
 	if (is_array($tags)) {
 		if (!empty($tags['panel'])) {
 			$shortPath = zenarioAJAXShortenPath($path. '/panel', $type);
-			$paths[$shortPath] = true;
+			
+			if (!empty($tags['panel']['panel_type'])) {
+				$paths[$shortPath] = $tags['panel']['panel_type'];
+			} else {
+				$paths[$shortPath] = 'list';
+			}
 		}
 		if (!empty($tags['panels']) && is_array($tags['panels'])) {
 			foreach ($tags['panels'] as $panelName => &$panel) {
 				$shortPath = zenarioAJAXShortenPath($path. '/panels/'. $panelName, $type);
-				$paths[$shortPath] = true;
+				
+				if (!empty($panel['panel_type'])) {
+					$paths[$shortPath] = $panel['panel_type'];
+				} else {
+					$paths[$shortPath] = 'list';
+				}
 			}
 		}
 		
@@ -5928,18 +6006,18 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 	$isPanel = $tag == 'panel' || $parent == 'panels';
 	$lastWasPanel = $parent == 'panel' || $parentsParent == 'panels';
 	
-	//Note that I'm stripping the "storekeeper/" from the start of the URL, and the final "/" from the end
+	//Note that I'm stripping the "organizer/" from the start of the URL, and the final "/" from the end
 	$url = substr($path, strlen($type. '/'), -1);
 	
 	//Check to see if we should include this tag and its children
 	$goFurther = true;
 	$includeThisSubTree = false;
-	if ($type == 'storekeeper' || $type == 'organizer') {
+	if ($type == 'organizer') {
 		
 		//If this tag is a panel, then it's valid to link to this tag
 		if ($isPanel) {
 			//Record the link to this panel.
-			//Note that I'm stripping the "storekeeper/" from the start of the URL, and the final "/" from the end
+			//Note that I'm stripping the "organizer/" from the start of the URL, and the final "/" from the end
 			array_unshift($goodURLs, zenarioAJAXShortenPath($url, $type));
 		
 			//If the current tag is a panel, and we have a specific path requested, don't include it if it is not on the requested path
@@ -5970,6 +6048,10 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 		
 		} elseif ($parent == 'columns' && $ord == 1) {
 			//The first column always needs to be sent as it is used as a fallback
+			$includeThisSubTree = true;
+		
+		} elseif ($parentsParent == 'quick_filter_buttons') {
+			//Always include quick filters
 			$includeThisSubTree = true;
 		
 		} else {
@@ -6059,8 +6141,8 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 			//For Advanced Searches, only show fields for the current Storekeepr Path
 			} else
 			if ($requestedPath == 'advanced_search'
-			 && !empty($par['storekeeper_path'])
-			 && $par['storekeeper_path'] != $settingGroup) {
+			 && !empty($par['organizer_path'])
+			 && $par['organizer_path'] != $settingGroup) {
 				$goFurther = false;
 			}
 		}
@@ -6093,12 +6175,11 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 	}
 	
 	
-	//Add an entry for this tag in the sk array, if it doesn't already have one
+	//Note down which module owns this tag
 	$isEmptyArray = false;
 	if (!(isset($tags[$tag]) && is_array($tags[$tag]))) {
 		$isEmptyArray = true;
 		if ($moduleClassName) {
-			//Note down which module owns this tag
 			$tags[$tag] = array('class_name' => $moduleClassName);
 		}
 	}
@@ -6139,8 +6220,8 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 				$tags[$tag] = trim((string) $par);
 			}
 		
-		//If this tag has a Storekeeper Panel...
-		} elseif ($type == 'storekeeper' || $type == 'organizer') {
+		//If this tag has an Organizer Panel...
+		} elseif ($type == 'organizer') {
 			if ($isPanel) {
 				//..note down the path of the panel...
 				$tags[$tag]['_path_here'] = $goodURLs[0];
@@ -6152,7 +6233,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 					//Note that panels defined against a top level item (which is deprecated) should not count as the natural
 					//back-link for a panel defined against a second-level item or in the panels container,
 					//as we've removed the ability to have nav-links there
-				 //&& !(($parentsParent == 'storekeeper' || $parentsParentsParent == 'organizer') && ($parent == 'nav' || $parent == 'panels'))
+				 //&& !($parentsParentsParent == 'organizer' && ($parent == 'nav' || $parent == 'panels'))
 				 ) {
 					$tags[$tag]['back_link'] = $goodURLs[1];
 				}
@@ -6183,7 +6264,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 	if ($mode == 'csv' || $mode == 'xml') {
 		//Don't count or order anything
 		
-	} elseif ($type == 'storekeeper' || $type == 'organizer') {
+	} elseif ($type == 'organizer') {
 		$countItems = $parentKey === false
 					|| $parentKey == 'items'
 					|| $parentKey == 'panels'
@@ -6192,6 +6273,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 					|| $parentKey == 'item_buttons'
 					|| $parentKey == 'inline_buttons'
 					|| $parentKey == 'collection_buttons'
+					|| $parentKey == 'quick_filter_buttons'
 					|| $parentKey == 'nav';
 		
 		$orderItems = $countItems && $parentKey != 'items';
@@ -6255,9 +6337,13 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		}
 		
 		//Strip the class_name tag out except where needed
-		if ($type == 'storekeeper' || $type == 'organizer') {
+		if ($type == 'organizer') {
 			if ($parentKey != 'ajax'
 			 && $parentParentKey != 'columns'
+			 && $parentParentKey != 'collection_buttons'
+			 && $parentParentKey != 'inline_buttons'
+			 && $parentParentKey != 'item_buttons'
+			 && $parentParentKey != 'quick_filter_buttons'
 			 && $parentKey != 'combine_items'
 			 && $parentParentKey != 'refiners'
 			 && $parentKey != 'pick_items'
@@ -6287,7 +6373,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		}
 		
 		//Don't send any SQL to the client
-		if ($type == 'storekeeper' || $type == 'organizer') {
+		if ($type == 'organizer') {
 			if ($parentKey === false || $parentKey == 'panel' || $parentParentKey = 'panels') {
 				if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
 					if (isset($tags['db_items'])) {
@@ -6352,7 +6438,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 				}
 			
 			} elseif (($parentParentKey === false || $parentParentKey == 'panel' || $parentParentParentKey == 'panels') && $parentKey == 'columns') {
-				//If this is a Storekeeper request for a specific panel, get a list of columns for that
+				//If this is a Organizer request for a specific panel, get a list of columns for that
 				//panel that are server side only, so that we can later remove these from the output.
 				if (zenarioAJAXShortenPath($path, $type) == $requestedPath. '/columns') {
 					$removedColumns = array();

@@ -18,6 +18,15 @@ zenario_user_admin_box_form_field:
 					type: text
 					#hidden: true
 					side_note: This is used to identify the field in the CRM.
+				fill_item_labels:
+					type: submit
+					value: Set option label as CRM value
+					hidden: true
+				fill_item_values:
+					type: submit
+					value: Set option value as CRM value
+					same_row: true
+					hidden: true
 				desc:
 					full_width: true
 					snippet:

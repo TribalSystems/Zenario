@@ -26,10 +26,10 @@ zenario_newsletter_template:
                     rows: "30"
                     insert_image_button:
                         pick_items:
-                            path: zenario__content/panels/email_images_shared
-                            target_path: zenario__content/panels/email_images_shared
-                            min_path: zenario__content/panels/email_images_shared
-                            max_path: zenario__content/panels/email_images_shared
+                            path: zenario__content/panels/image_library
+                            target_path: zenario__content/panels/image_library
+                            min_path: zenario__content/panels/image_library
+                            max_path: zenario__content/panels/image_library
                             disallow_refiners_looping_on_min_path: Yes
                     insert_link_button:
                         exists: Yes

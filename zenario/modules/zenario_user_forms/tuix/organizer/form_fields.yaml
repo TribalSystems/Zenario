@@ -14,6 +14,7 @@ zenario__user_forms:
 					ON ff.user_field_id = cdf.id
 				id_column: ff.id
 			default_sort_column: field_name
+			bold_columns_in_list_view: name
 			columns:
 				id:
 					title: ID
@@ -59,6 +60,7 @@ zenario__user_forms:
 						checkboxes: Checkboxes
 						date: Date
 						editor: Editor
+						radios: Radios
 						centralised_radios: Centralised radios
 						select: Select
 						centralised_select: Centralised select
@@ -66,11 +68,14 @@ zenario__user_forms:
 						textarea: Textarea
 						url: URL
 						attachment: Attachment
+						restatement: Mirrored
+						calculated: Calculated
 					show_by_default: true
 					width: medium
 				field_name:
 					title: Machine name
-					db_column: IFNULL(cdf.db_column, CONCAT('unlinked_', ff.field_type, '_', ff.id))
+					db_column: |
+						IF(ff.field_type IN('page_break', 'section_description'),'',IFNULL(cdf.db_column, CONCAT('unlinked_', ff.field_type, '_', ff.id)))
 					searchable: true
 					width: medium
 				is_readonly:
@@ -112,6 +117,22 @@ zenario__user_forms:
 						path: zenario_user_admin_box_form_field
 						key:
 							form_id: ''
+				add_section_description:
+					label: Add section description
+					hide_in_select_mode: true
+					css_class: zenario_create_a_new
+					admin_box:
+						path: zenario_user_admin_box_form_field
+						key:
+							form_id: ''
+							type: 'section_description'
+				add_page_break:
+					label: Add a page break
+					hide_in_select_mode: true
+					css_class: zenario_create_a_new
+					ajax:
+						request:
+							add_page_break: 1
 			item_buttons:
 				edit:
 					hide_in_select_mode: true
@@ -126,7 +147,7 @@ zenario__user_forms:
 					ajax:
 						confirm:
 							message: |
-								Are you sure you wish to delete the form field "[[field_label]]"? 
+								Are you sure you wish to delete the form field "[[name]]"? 
 								This action cannot be undone.
 							multiple_select_message: >
 								Are you sure you want to remove the selected form fields ?
@@ -134,5 +155,5 @@ zenario__user_forms:
 							cancel_button_message: Cancel
 							message_type: warning
 						request:
-							action: delete
+							delete: 1
 					hide_in_select_mode: true

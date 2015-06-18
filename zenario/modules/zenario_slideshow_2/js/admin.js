@@ -347,8 +347,8 @@ zenario_slideshow_2.reverseSerialize = function(selector, data) {
 };
 
 zenario_slideshow_2.organizerChangeImage = function() {
-	var path = 'zenario__content/panels/inline_images_shared';
-	zenarioA.SK(
+	var path = 'zenario__content/panels/image_library';
+	zenarioA.organizerSelect(
 		'zenario_slideshow_2', 'organizerChangeImageCallback', false,
 		path, path, path, path, true);
 };
@@ -410,7 +410,7 @@ zenario_slideshow_2.pickContentItemLinkFromOrganizer = function() {
 		path = 'zenario__content/panels/content//'+$("#zenario_content_item_id").val();
 	}
 	
-	zenarioA.SK(
+	zenarioA.organizerSelect(
 		'zenario_slideshow_2', 'organizerPickContentItemLinkCallback', false,
 		path, 
 		'zenario__content/panels/content',
@@ -426,12 +426,12 @@ zenario_slideshow_2.organizerPickContentItemLinkCallback = function(path, key, r
 
 zenario_slideshow_2.pickImagesFromOrganizer = function() {
 	//console.log("pickImagesFromOrganizer");
-	var path = 'zenario__content/panels/inline_images_shared';
+	var path = 'zenario__content/panels/image_library';
 	
-	//zenarioA.SK(
+	//zenarioA.organizerSelect(
 	//	callbackObject, callbackFunction, enableMultipleSelect,
 	//	path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath,
-	zenarioA.SK(
+	zenarioA.organizerSelect(
 		'zenario_slideshow_2', 'organizerPickImagesCallback', true,
 		path, path, path, path, true);
 };

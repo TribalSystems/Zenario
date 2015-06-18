@@ -32,6 +32,7 @@ if (!checkPriv('_PRIV_EDIT_SITE_SETTING')) {
 	exit;
 }
 
+$changesToFiles = false;
 
 //Loop through each field that would be in the Admin Box, and has the <site_setting> tag set
 foreach ($box['tabs'] as $tabName => &$tab) {
@@ -68,6 +69,14 @@ foreach ($box['tabs'] as $tabName => &$tab) {
 					if (($setting == 'working_copy_image_size' && empty($values['image_sizes/working_copy_image']))
 					 || ($setting == 'thumbnail_wc_image_size' && empty($values['image_sizes/thumbnail_wc']))) {
 						$value = '';
+					}
+					
+					//Handle file pickers
+					if (!empty($field['upload'])) {
+						if ($filepath = getPathOfUploadedFileInCacheDir($value)) {
+							$value = addFileToDatabase('site_setting', $filepath);
+						}
+						$changesToFiles = true;
 					}
 					
 					$settingChanged = $value != setting($setting);
@@ -111,35 +120,20 @@ foreach ($box['tabs'] as $tabName => &$tab) {
 	}
 }
 
-//Save the logo/Organizer favicon
-if (isset($values['logo/brand_logo'])) {
-	if ($values['logo/brand_logo'] != 'custom'
-	 || !$values['logo/logo']) {
-		deleteRow('files', array('usage' => 'brand_logo'));
+//Tidy up any files in the database 
+if ($changesToFiles) {
+	$sql = "
+		SELECT f.id
+		FROM ". DB_NAME_PREFIX. "files AS f
+		LEFT JOIN ". DB_NAME_PREFIX. "site_settings AS s
+		   ON s.value = f.id
+		  AND s.value = CONCAT('', f.id)
+		WHERE f.`usage` = 'site_setting'
+		  AND s.name IS NULL";
 	
-	} elseif ($filepath = getPathOfUploadedFileInCacheDir($values['logo/logo'])) {
-		$mimeType = documentMimeType($filepath);
-	
-		if ($mimeType == 'image/gif' || $mimeType == 'image/png'
-		 || $mimeType == 'image/jpg' || $mimeType == 'image/jpeg') {
-			deleteRow('files', array('usage' => 'brand_logo'));
-			addFileToDatabase('brand_logo', $filepath);
-		}
-	}
-}
-if (isset($values['sk/organizer_favicon'])) {
-	if ($values['sk/organizer_favicon'] != 'custom'
-	 || !$values['sk/favicon']) {
-		deleteRow('files', array('usage' => 'organizer_favicon'));
-	
-	} elseif ($filepath = getPathOfUploadedFileInCacheDir($values['sk/favicon'])) {
-		$mimeType = documentMimeType($filepath);
-	
-		if ($mimeType == 'image/gif' || $mimeType == 'image/png'
-		 || $mimeType == 'image/vnd.microsoft.icon' || $mimeType == 'image/x-icon') {
-			deleteRow('files', array('usage' => 'organizer_favicon'));
-			addFileToDatabase('organizer_favicon', $filepath);
-		}
+	$result = sqlSelect($sql);
+	while ($file = sqlFetchAssoc($result)) {
+		deleteFile($file['id']);
 	}
 }
 

@@ -141,6 +141,7 @@ foreach ($panel['items'] as &$item) {
 	
 	} else {
 		$item['css_class'] = 'zenario_menunode_unlinked';
+		$item['tooltip'] = adminPhrase('This menu node has no link. Unlinked menu nodes are hidden from visitors unless they have a child menu node that is visible.');
 	}
 	
 	if (empty($item['parent_id'])) {

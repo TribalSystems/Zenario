@@ -91,7 +91,8 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		inline_styles: false,
 		allow_events: true,
 		allow_script_urls: false,
-		convert_urls: false,
+		convert_urls: true,
+		relative_urls: true,
 		
 		style_formats: zenarioA.skinDesc.style_formats,
 		file_browser_callback: zenario_banner.SK
@@ -151,7 +152,7 @@ zenario_banner.SK = function(field_name, url, type, win) {
 	zenario_banner.field_name = field_name;
 	
 	if (type == 'file') {
-		zenarioA.SK('zenario_banner', 'setLinkURL', false,
+		zenarioA.organizerSelect('zenario_banner', 'setLinkURL', false,
 						'zenario__content/panels/content',
 						'zenario__content/panels/content',
 						'zenario__content/panels/content',

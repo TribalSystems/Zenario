@@ -31,7 +31,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		//if (isset($box['tabs']['security']['fields']['admin_use_ssl'])) {
+		$scheduledTaskManagerRunning = checkRowExists('modules', array('class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running'));
+		if (!$scheduledTaskManagerRunning 
+			|| !setting('jobs_enabled')
+			|| !inc('zenario_scheduled_task_manager')
+			|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobRemoveInactivePendingUsers')) 
+		{
+			$values['unconfirmed_users/remove_inactive_users'] = false;
+			$fields['unconfirmed_users/remove_inactive_users']['disabled'] = true;
+			$fields['unconfirmed_users/remove_inactive_users']['side_note'] = 
+				'The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users';
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -46,6 +56,8 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 				$fields['passwords/plaintext_extranet_user_passwords']['value']
 			 && !$fields['passwords/plaintext_extranet_user_passwords']['current_value'];
 		}
+		
+		$fields['unconfirmed_users/max_days_user_inactive']['hidden'] = !$values['unconfirmed_users/remove_inactive_users'];
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

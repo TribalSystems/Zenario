@@ -128,8 +128,8 @@
     z-index: 370000;
 }
 
-#zenario_fbsk,
-#zenario_fbsk__overlay {
+#zenario_fbog,
+#zenario_fbog__overlay {
 	z-index: 2000;
 }
 
@@ -138,7 +138,7 @@
 }
 
 /*  Hack to get intro.js working with Organizer  */
-#zenario_fbsk.zenario_introjs_fixPosition {
+#zenario_fbog.zenario_introjs_fixPosition {
 	position: absolute !important;
 }
 
@@ -151,7 +151,7 @@
 	z-index: 2001;
 }
 
-#zenario_fbsk.zenario_organizer_over_admin_box {
+#zenario_fbog.zenario_organizer_over_admin_box {
 	z-index: 350000;
 }
 

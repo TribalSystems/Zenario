@@ -39,12 +39,12 @@ zenario__content:
             link:
                 path: zenario__content/panels/content
                 refiner: special_pages
-        shared_images:
-            label: Shared images
+        image_library:
+            label: Image library
             tooltip: |
-                Version-controlled content items' images that are Shared
+                View the images in your site's image library
             link:
-                path: 'zenario__content/panels/inline_images_shared'
+                path: zenario__content/panels/image_library
         your_work_in_progress:
             label: Work in progress
             tooltip: Content items that you are currently working on
@@ -181,12 +181,6 @@ zenario__modules:
                 Library of plugins that may be used on visitor-facing pages
             link:
                 path: zenario__modules/panels/plugins
-        images:
-            label: >
-                Plugins' images
-            tooltip: Images used in plugins
-            link:
-                path: 'zenario__content/panels/inline_images_for_reusable_plugins'
     data-step: 13
     data-position: right
     data-intro: >

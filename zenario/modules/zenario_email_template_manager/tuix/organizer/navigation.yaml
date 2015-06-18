@@ -17,8 +17,3 @@ zenario__email_template_manager:
             tooltip: "Log of emails sent from your site"
             link:
                 path: zenario__email_template_manager/panels/email_log
-        shared_images:
-            label: Shared images
-            tooltip: "Common images used in your email templates"
-            link:
-                path: 'zenario__content/panels/email_images_shared'

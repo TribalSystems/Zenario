@@ -1,0 +1,104 @@
+/* Portrait and Landscape for iPad 3 and 4 */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPad 1 and 2 */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 1) {
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPad mini */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 1) {
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 6+ */
+@media only screen and (min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3) { 
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 6 */
+@media only screen and (min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) { 
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 5 and 5s */
+@media only screen and (min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 4 and 4s */
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input,
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}

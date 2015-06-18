@@ -34,7 +34,7 @@ switch ($path) {
 			exit;
 		}
 			
-		if (engToBooleanArray($box['tabs']['time_and_day'], 'edit_mode', 'on')) {
+		if (engToBooleanArray($box['tabs']['time_and_day'], 'edit_mode', 'on') && empty($box['tabs']['month']['hidden'])) {
 			
 			$days = '';
 			foreach (array('mon','tue','wed','thr','fri','sat','sun') as $day) {
@@ -75,7 +75,7 @@ switch ($path) {
 		
 		} 
 		
-		if (engToBooleanArray($box['tabs']['month'], 'edit_mode', 'on')) {
+		if (engToBooleanArray($box['tabs']['month'], 'edit_mode', 'on') && empty($box['tabs']['month']['hidden'])) {
 			
 			$months = '';
 			foreach (array('jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec') as $month) {

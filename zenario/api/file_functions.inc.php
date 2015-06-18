@@ -53,13 +53,13 @@ function addFileToDatabase($usage, $location, $filename = false, $mustBeAnImage 
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function removeFileFromDocstore($fileId) {
+function deleteFile($fileId) {
 	$path = getRow("files", 'path', $fileId);
 	$pathForDelete = docstoreFilePath($fileId);
 	$result = deleteRow("files",$fileId);
 	if ($result) {
 		if ($path) {
-			if(checkRowExists("files", array('path' => $filePath) )) {
+			if(checkRowExists("files", array('path' => $path) )) {
 				//file still being used
 				return false;
 			} else {
@@ -83,7 +83,14 @@ function removeFileFromDocstore($fileId) {
 	
 }
 
-function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'inline') {
+function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
+	
+	//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+	if ($usage == 'email'
+	 || $usage == 'inline'
+	 || $usage == 'menu') {
+		$usage = 'image';
+	}
 	
 	foreach (preg_split('@(["\'])data:image/(\w*);base64,([^"\']*)(["\'])@s', $content, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $data) {
 		
@@ -108,7 +115,7 @@ function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'inline') 
 					if ($checksum = getRow('files', 'checksum', $fileId)) {
 						$content .= htmlspecialchars($prefix. 'zenario/file.php?c='. $checksum);
 						
-						if ($usage != 'inline') {
+						if ($usage != 'image') {
 							$content .= htmlspecialchars('&usage='. rawurlencode($usage));
 						}
 						
@@ -143,11 +150,11 @@ function contentFileLink(&$url, $cID, $cType, $cVersion) {
 	
 	if (adminId()) {
 		$onlyForCurrentVisitor = setting('restrict_downloads_by_ip');
-		$hash = sha1('admin_'. session('admin_userid'). '_'. visitorIP(). '_'. $file['checksum']);
+		$hash = hash64('admin_'. session('admin_userid'). '_'. visitorIP(). '_'. $file['checksum']);
 	
 	} elseif (session('extranetUserID')) {
 		$onlyForCurrentVisitor = setting('restrict_downloads_by_ip');
-		$hash = sha1('user_'. session('extranetUserID'). '_'. visitorIP(). '_'. $file['checksum']);
+		$hash = hash64('user_'. session('extranetUserID'). '_'. visitorIP(). '_'. $file['checksum']);
 	
 	} else {
 		$onlyForCurrentVisitor = false;
@@ -160,7 +167,7 @@ function contentFileLink(&$url, $cID, $cType, $cVersion) {
 		return false;
 	
 	//Attempt to add/symlink the file in the cache directory
-	} elseif ($path && (cleanDownloads()) && ($dir = createCacheDir(base_convert($hash, 16, 36), 'downloads', $onlyForCurrentVisitor))) {
+	} elseif ($path && (cleanDownloads()) && ($dir = createCacheDir($hash, 'downloads', $onlyForCurrentVisitor))) {
 		$url = $dir. ifNull($version['filename'], $file['filename']);
 		
 		if (!file_exists(CMS_ROOT. $url)) {
@@ -188,6 +195,13 @@ function contentFileLink(&$url, $cID, $cType, $cVersion) {
 }
 
 function copyFileInDatabase($usage, $existingFileId, $filename = false, $mustBeAnImage = false, $addToDocstoreDirIfPossible = false) {
+	
+	//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+	if ($usage == 'email'
+	 || $usage == 'inline'
+	 || $usage == 'menu') {
+		$usage = 'image';
+	}
 	
 	if ($file = getRow('files', array('usage', 'filename', 'location', 'data', 'path'), array('id' => $existingFileId))) {
 		if ($file['usage'] == $usage) {
@@ -253,7 +267,7 @@ function fileLink($fileId, $hash = false) {
 	
 	//Workout a hash for the file
 	if (!$hash) {
-		$hash = base_convert($file['checksum'], 16, 36);
+		$hash = $file['checksum'];
 	}
 	
 	//Try to get a directory in the cache dir
@@ -310,7 +324,7 @@ function imageLink(
 	
 	//Check that this file exists, and is actually an image
 	if (!$fileId
-	 || !($file = getRow('files', array('mime_type', 'width', 'height', 'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height', 'storekeeper_width', 'storekeeper_height', 'storekeeper_list_width', 'storekeeper_list_height', 'checksum', 'filename', 'location', 'path'), $fileId))
+	 || !($file = getRow('files', array('mime_type', 'width', 'height', 'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height', 'organizer_width', 'organizer_height', 'organizer_list_width', 'organizer_list_height', 'checksum', 'filename', 'location', 'path'), $fileId))
 	 || !(substr($file['mime_type'], 0, 6) == 'image/')) {
 		return false;
 	}
@@ -365,8 +379,8 @@ function imageLink(
 		$wcit = ifNull((int) setting('working_copy_image_threshold'), 66) / 100;
 		
 		foreach (array(
-			array('storekeeper_list_data', 'storekeeper_list_width', 'storekeeper_list_height'),
-			array('storekeeper_data', 'storekeeper_width', 'storekeeper_height'),
+			array('organizer_list_data', 'organizer_list_width', 'organizer_list_height'),
+			array('organizer_data', 'organizer_width', 'organizer_height'),
 			array('working_copy_data', 'working_copy_width', 'working_copy_height'),
 			array('working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height')
 		) as $c) {
@@ -481,7 +495,7 @@ function itemStickyImageLink(&$width, &$height, &$url, $cID, $cType, $cVersion =
 function createPpdfFirstPageScreenshotPng($file) {
 	if (file_exists($file) && is_readable($file)) {
 		if (documentMimeType($file) == 'application/pdf') {
-			if (!windowsServer()) {
+			if (!windowsServer() && execEnabled()) {
 				if ($temp_file = tempnam(sys_get_temp_dir(), 'pdf2png')) {
 					$escaped_file = escapeshellarg($file);
 					//$jpeg_file = basename($file) . '.jpg';
@@ -501,10 +515,10 @@ function createPpdfFirstPageScreenshotPng($file) {
 function addContentItemPdfScreenshotImage($cID, $cType, $cVersion, $file_name, $setAsStickImage=false){
 	if($img_file = createPpdfFirstPageScreenshotPng($file_name)) {
 		$img_base_name = basename($file_name) . '.png';
-		$fileId = addFileToDatabase('inline', $img_file, $img_base_name, true, true);
-		if($fileId) {
-			setRow('inline_file_link', array(), array(
-					'file_id' => $fileId,
+		$fileId = addFileToDatabase('image', $img_file, $img_base_name, true, true);
+		if ($fileId) {
+			setRow('inline_images', array(), array(
+					'image_id' => $fileId,
 					'foreign_key_to' => 'content',
 					'foreign_key_id' => $cID, 'foreign_key_char' => $cType, 'foreign_key_version' => $cVersion
 				));
@@ -525,7 +539,7 @@ function plainTextExtract($file, &$extract) {
 		switch (documentMimeType($file)) {
 			//.doc
 			case 'application/msword':
-				if (!windowsServer()) {
+				if (!windowsServer() && execEnabled()) {
 					$return_var = false;
 					exec(
 						escapeshellarg(ifNull(setting('antiword_path'), 'antiword')).
@@ -563,7 +577,7 @@ function plainTextExtract($file, &$extract) {
 			
 			//.pdf
 			case 'application/pdf':
-				if (!windowsServer()) {
+				if (!windowsServer() && execEnabled()) {
 					if ($temp_file = tempnam(sys_get_temp_dir(), 'p2t')) {
 						$return_var = $output = false;
 						exec(
@@ -633,9 +647,12 @@ function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
 function updateDocumentPlainTextExtract($fileId, &$extract, &$img_file_id) {
 	$errors = array();
 	$extract = array('extract' => '', 'extract_wordcount' => 0);
-	$filePath = CMS_ROOT. fileLink($fileId);
+	
+	$filePath = docstoreFilePath($fileId);
+	
 	plainTextExtract($filePath, $extract['extract']);
 	$extract['extract_wordcount'] = str_word_count($extract['extract']);
+	
 	if ($img_file = createPpdfFirstPageScreenshotPng($filePath)) {
 		$img_base_name = basename($filePath) . '.png';
 		$img_file_id = addFileToDatabase('documents', $img_file, $img_base_name, true, true);

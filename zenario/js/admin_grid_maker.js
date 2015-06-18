@@ -103,7 +103,14 @@ zenarioG.init = function(data, layoutId, layoutName, familyName) {
 			$('#' + closeButtonId).click(function() {
 				if (zenarioG.savedAtPos == zenarioG.pos
 				 || confirm(phrase.gridConfirmClose)) {
-					windowParent.$.colorbox.close();
+					
+					if (windowParent.zenario
+					 && windowParent.zenario.cID) {
+						//If it looks like this is a window opened from the front end, reload the window
+						windowParent.location.reload(true);
+					} else {
+						windowParent.$.colorbox.close();
+					}
 				}
 			});
 		} else {

@@ -22,6 +22,46 @@ zenario_image:
                     label: 'Size:'
                     snippet:
                         html: ""
+                tags:
+                    label: 'Tags:'
+                    pick_items:
+                        path: zenario__content/panels/image_tags
+                        multiple_select: true
+                        hide_select_button: true
+                        nothing_selected_phrase: No tags set
+                new_tag:
+                    type: text
+                    maxlength: 15
+                    full_width: true
+                    return_key_presses_button: zenario_image_add_tag_button
+                    placeholder: Enter the name for a new tag
+                    onkeyup: |
+                        if (this.value) {
+                            var up = ('' + this.value),
+                                low = up.toLowerCase().replace(/[^\w\d\-\_]/g, '');
+                        
+                            if (up != low) {
+                                this.value = low;
+                            }
+                        }
+                add_tag:
+                    same_row: true
+                    snippet:
+                        html: >
+                            <input
+                                type="button"
+                                class="submit"
+                                id="zenario_image_add_tag_button"
+                                onclick="
+                                    if (get('new_tag').value) {
+                                        zenarioAB.addToPickedItems(get('new_tag').value, 'tags');
+                                        get('new_tag').value = '';
+                                        $('.ui-autocomplete').hide();
+                                    }
+                                "
+                                value="Add tag"
+                            />
+                    
                 desc:
                     full_width: Yes
                     snippet:

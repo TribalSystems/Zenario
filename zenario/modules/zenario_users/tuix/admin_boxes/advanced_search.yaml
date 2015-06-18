@@ -1,7 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 advanced_search:
-    storekeeper_path: zenario__users/panels/users
+    organizer_path: zenario__users/panels/users
     key:
         zenario_pro_features__editing_smart_group: ""
         zenario_pro_features__smart_group_id: ""

@@ -110,7 +110,7 @@ class zenario_document_container extends module_base_class {
 					$file = getRow('files', array('id', 'path', 'created_datetime'), $document['file_id']);
 					$file['filename'] = $document['filename'];
 					$link = $this->getFileLink($file, $privacyLevel);
-					//$this->sendErrorReportIfPrivateFilesInPublicFolder();
+					$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					if ($this->setting('offer_download_as_zip')) {
 						$this->mergeFields['Download_Archive'] = true;
 						if (get('build') == $this->instanceId) {
@@ -173,12 +173,14 @@ class zenario_document_container extends module_base_class {
 					$childFiles = array();
 					if ($childFiles = self::getFilesInFolder($this->document_id)) {
 						$childFiles =  $this->addMergeFields($childFiles, $level);
+						/* HERE */
 					}
 					if ($this->setting('show_files_in_folders') != 'folder') {
 						if ($childFolders = self::getFoldersInFolder($this->document_id)) {
 							self::addFilesToDocumentArray($childFiles, $childFolders, $level);
 						}
 					}
+					$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					
 					if ($this->setting('offer_download_as_zip')) {
 						$ids = array_keys($childFiles);
@@ -273,6 +275,7 @@ class zenario_document_container extends module_base_class {
 							$document[$fieldName] = $displayValue;
 						}
 					}
+					$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					$this->mergeFields['Documents'] = $documents;
 				}
 				
@@ -280,6 +283,7 @@ class zenario_document_container extends module_base_class {
 				$this->mergeFields['error'] = 'no_user';
 			}
 		}
+		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h1';
 		
 		if($this->setting('show_folder_name_as_title')) {
 			$this->mergeFields['main_folder_title'] = getRow('documents', 'folder_name', $this->document_id);
@@ -364,6 +368,11 @@ class zenario_document_container extends module_base_class {
 	}
 	
 	private static function canZIP() {
+		
+		if (!windowsServer() && execEnabled()) {
+			return false;
+		}
+		
 		exec(escapeshellarg(self::getZIPExecutable()) .' -v',$arr,$rv);
 		return !(bool)$rv;
 	}
@@ -444,6 +453,8 @@ class zenario_document_container extends module_base_class {
 		$maxUnpackedSize*=1048576;
 		
 		if (self::canZIP()) {
+		
+		
 			if (self::getUnpackedFilesSize(get('ids')) <= $maxUnpackedSize) {
 				if ($documentIDs = explode(",",get('ids'))){
 					
@@ -615,9 +626,13 @@ class zenario_document_container extends module_base_class {
 						unset($fields['height']['note_below']);
 					}
 				}
+				
+				$fields['first_tab/title_tags']['hidden'] = !$values['first_tab/show_folder_name_as_title'];
 				break;
 		}
 	}
+	
+	public $privateFilesInPublicFolder = array();
 	
 	public function getFileLink($file, $privacyLevel) {
 		if($file['filename']) {
@@ -635,26 +650,42 @@ class zenario_document_container extends module_base_class {
 			} else {
 				$link = fileLink($file['id']);
 				if (file_exists($symPath)) {
-					$subject = "Warning at " . $_SERVER['HTTP_HOST'];
-					$body = "Private file found in public folder.\n\n File '" . $file['filename']
-						. "'\n Was found with the public path '" . $frontLink 
-						. "' and also with the private path '" . $link . "'\n\n"
-						. "If you do not want the file to be publicly available remove the symlink from the public folder.";
-					sendEmail($subject, $body, 
-						EMAIL_ADDRESS_GLOBAL_SUPPORT,
-						$addressToOverriddenBy,
-						$nameTo = false,
-						$addressFrom = false,
-						$nameFrom = false,
-						false, false, false,
-						$isHTML = false);
-					//unlink($symPath);
+					$this->privateFilesInPublicFolder[] = $file;
 				}
-				
 				return $link;
 			}
 		} else {
 			return false;
+		}
+	}
+	
+	public function sendErrorReportIfPrivateFilesInPublicFolder() {
+		if (!empty($this->privateFilesInPublicFolder)) {
+			$fileCount = count($this->privateFilesInPublicFolder);
+			$s = '';
+			if ($fileCount != 1) {
+				$s = 's';
+			}
+			$subject = "Warning at " . $_SERVER['HTTP_HOST'];
+			$body = "Private file$s found in public folder.\n\n";
+			foreach ($this->privateFilesInPublicFolder as $file) {
+				$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
+				$link = fileLink($file['id']);
+				$body .= "File '" . $file['filename']
+					. "'\n Was found with the public path '" . $frontLink 
+					. "' and also with the private path '" . $link . "'\n\n";
+			}
+			$body .= "If you do not want the file$s to be publicly available remove the symlink$s from the public folder.\n\n";
+			sendEmail($subject, $body, 
+				EMAIL_ADDRESS_GLOBAL_SUPPORT,
+				$addressToOverriddenBy,
+				$nameTo = false,
+				$addressFrom = false,
+				$nameFrom = false,
+				false, false, false,
+				$isHTML = false,
+				false, false, false,
+				'document_container__private_file_in_public_folder');
 		}
 	}
 	
@@ -664,7 +695,7 @@ class zenario_document_container extends module_base_class {
 			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $childDoc['file_id']);
 			$file['filename'] = $childDoc['filename'];
 			$documents[$key]['Document_Type'] =  'file';
-			$documents[$key]['Document_Link'] =  self::getFileLink($file, $privacyLevel);
+			$documents[$key]['Document_Link'] =  $this->getFileLink($file, $privacyLevel);
 			$fileURL = self::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $privacyLevel);
 			$documents[$key]['Google_Analytics_Link'] = trackFileDownload($fileURL);
 			$documents[$key]['Document_Mime'] = str_replace('/', '_', documentMimeType($documents[$key]['Document_Link']));
@@ -810,4 +841,5 @@ class zenario_document_container extends module_base_class {
 			$childFiles[] = array('id' => $row[0], 'type' => $row[1], 'file_id' => $row[2], 'folder_name' => $row[3]);
 		}
 	}
+	
 }

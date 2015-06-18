@@ -13,7 +13,7 @@
 	<% if (m.isUpload) { %>
 		<% if (m.thumbnail) { %>
 			<img
-				class="zeario_picked_image zeario_picked_image__{{m.extension|e}}"
+				class="zenario_picked_image zenario_picked_image__{{m.extension|e}}"
 				onclick="{{m.thumbnail.onclick|e}}"
 				src="{{m.thumbnail.src|e}}"
 				
@@ -28,7 +28,7 @@
 			<a
 				target="_blank"
 				href="{{m.adminDownload|e}}"
-				class="zeario_picked_file_icon zeario_picked_file_icon__{{m.extension|e}}"
+				class="zenario_picked_file_icon zenario_picked_file_icon__{{m.extension|e}}"
 			>Download</a>
 		<% } %>
 	<% } %>

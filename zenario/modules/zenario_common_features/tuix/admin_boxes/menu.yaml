@@ -164,6 +164,13 @@ zenario_menu:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
+                
                 use_rollover_image:
                     ord: 1.1
                     label: 'Use a rollover image'
@@ -182,6 +189,12 @@ zenario_menu:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
+                    pick_items:
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        select_phrase: Select image...
                 css_class:
                     label: 'CSS class names:'
                     type: text

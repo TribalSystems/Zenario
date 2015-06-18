@@ -5,6 +5,7 @@ zenario_user_admin_box_form_field:
 		id: ''
 		form_id: ''
 		numValues: 2
+		type: ''
 	tabs:
 		details:
 			label: Details
@@ -18,6 +19,10 @@ zenario_user_admin_box_form_field:
 							An unlinked field is not tied to any user dataset field. Therefore any information entered into an unlinked field can only be saved
 							in the submission log, or used in emails.
 					hidden: true
+				dataset_field_description:
+					snippet:
+						html:
+				
 				field_type_picker:
 					label: 'Type:'
 					type: radios
@@ -51,7 +56,13 @@ zenario_user_admin_box_form_field:
 							side_note: A one-line text field that lets you enter a URL.
 						attachment:
 							label: Attachment
-							site_note: Allows the user to add a file.
+							side_note: Allows the user to add a file.
+						restatement:
+							label: Mirrored
+							side_note:
+						calculated:
+							label: Calculated
+							side_note:
 					validation:
 						required_if_not_hidden: Please select a type
 					hidden: true
@@ -69,12 +80,23 @@ zenario_user_admin_box_form_field:
 					side_note: >
 						This is used to identify this field for admins and is not seen by users.
 					onkeyup: if (!zenarioAB.tuix.key.id) { get('label').value = get('name').value; }
+				
 				label:
 					label: 'Label:'
 					type: text
 					maxlength: 255
 					side_note: >
 						This will be the field label as seen by the user. 
+				
+				description:
+					label: 'Description:'
+					type: textarea
+					maxlength: 255
+					side_note: |
+						This is a description of the section placed under the label.
+					visible_if: |
+						(zenarioO.columnEqual('field_type', 'section_description') && zenarioAB.focus.key.id) || (zenarioAB.focus.key.type == 'section_description');
+				
 				readonly_or_mandatory:
 					label: 'Mandatory / Read-only:'
 					type: select
@@ -89,27 +111,26 @@ zenario_user_admin_box_form_field:
 							label: 'Read-only'
 							ord: 3
 						conditional_mandatory:
-							label: 'Conditional mandatory'
+							label: 'Mandatory on condition'
 							ord: 4
 					value: none
 					format_onchange: true
 					side_note: >
 						Choose whether this field is mandatory or read-only.
-				condition_field:
-					label: 'Condition field:'
+				mandatory_condition_field_id:
+					label: 'Mandatory on condition field:'
 					type: select
 					empty_value: '-- Select --'
 					format_onchange: true
 					validation:
-						required_if_not_hidden: 'Please select a conditional form field'
+						required_if_not_hidden: 'Please select a mandatory on condition form field'
 					side_note: >
-						Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select
-				mandatory_if:
+						Select a field that this field will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select)
+				mandatory_condition_field_value:
 					label: 'Mandatory if:'
 					type: select
 					empty_value: '-- Select --'
-					validation:
-						required_if_not_hidden: 'Please select a conditional form field value'
+				
 				required_error_message:
 					label: 'Error message when field is incomplete:'
 					type: text
@@ -118,6 +139,36 @@ zenario_user_admin_box_form_field:
 						Enter an error message when this field is incomplete.
 					validation:
 						required_if_not_hidden: 'Please enter an error message for this field.'
+				
+				visibility:
+					label: 'Visibility:'
+					type: select
+					values:
+						visible:
+							label: 'Visible'
+							ord: 1
+						hidden:
+							ord: 2
+							label: 'Hidden'
+						visible_on_condition:
+							ord: 3
+							label: 'Visible on condition'
+					value: visible
+					format_onchange: true
+				visible_condition_field_id:
+					label: 'Visible on condition field:'
+					type: select
+					empty_value: '-- Select --'
+					format_onchange: true
+					validation:
+						required_if_not_hidden: 'Please select a visible on conditional form field'
+					side_note: >
+						Select a field that this fields visibility will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select)
+				visible_condition_field_value:
+					label: 'Visible if:'
+					type: select
+					empty_value: '-- Select --'
+				
 				validation:
 					label: 'Validation:'
 					type: select
@@ -170,14 +221,6 @@ zenario_user_admin_box_form_field:
 						Enter a value to be displayed as a placeholder until the user enters something.
 					visible_if: |
 						zenarioO.columnEqual('field_type', 'text') || zenarioO.columnEqual('field_type', 'textarea');
-				default_value:
-					label: 'Default value:'
-					type: text
-					maxlength: 255
-					side_note: |
-						Enter a value to pre-populate this field.
-					visible_if: |
-						zenarioO.columnEqual('field_type', 'text');
 				
 				note_to_user:
 					label: 'Note to user:'
@@ -192,8 +235,127 @@ zenario_user_admin_box_form_field:
 					maxlength: 255
 					side_note: |
 						Enter a list of classes separated by spaces that'll be applied to this field.
+					
+				div_wrap_class:
+					label: 'Wrapper div class:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter a class for a wrapper div around this field and all fields below until a page break or a field with a different wrapper div is found.
+					
+				next_button_text:
+					label: 'Next button text:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter the text for the next button used on the form page before this page break.
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'page_break') && zenarioAB.focus.key.id;
+					
+				previous_button_text:
+					label: 'Back button text:'
+					type: text
+					maxlength: 255
+					side_note: |
+						Enter the text for the back button used on the form page before this page break.
+					visible_if: |
+						zenarioO.columnEqual('field_type', 'page_break') && zenarioAB.focus.key.id;
+				
+				numeric_field_1:
+					label: 'Numeric field A:'
+					type: select
+					values:
+					empty_value: '-- Select --'
+					visible_if: |
+						(zenarioAB.focus.key.id && zenarioO.columnEqual('field_type', 'calculated')) || 
+						(!zenarioAB.focus.key.id && zenarioAB.value('field_type_picker') == 'calculated')
+					validation:
+						required_if_not_hidden: 'Please select the first numeric field'
+					
+				numeric_field_2:
+					label: 'Numeric field B:'
+					type: select
+					values:
+					empty_value: '-- Select --'
+					visible_if: |
+						(zenarioAB.focus.key.id && zenarioO.columnEqual('field_type', 'calculated')) || 
+						(!zenarioAB.focus.key.id && zenarioAB.value('field_type_picker') == 'calculated')
+					validation:
+						required_if_not_hidden: 'Please select the second numeric field'
+					
+				calculation_type:
+					label: 'Calculation type:'
+					type: select
+					values:
+						+: '+'
+						'-': '-'
+					empty_value: '-- Select --'
+					visible_if: |
+						(zenarioAB.focus.key.id && zenarioO.columnEqual('field_type', 'calculated')) || 
+						(!zenarioAB.focus.key.id && zenarioAB.value('field_type_picker') == 'calculated')
+					validation:
+						required_if_not_hidden: 'Please select the a calculation type'
+						
+				restatement_field:
+					label: 'Field to mirror:'
+					type: select
+					values:
+					empty_value: '-- Select --'
+					visible_if: |
+						(zenarioAB.focus.key.id && zenarioO.columnEqual('field_type', 'restatement')) || 
+						(!zenarioAB.focus.key.id && zenarioAB.value('field_type_picker') == 'restatement')
+					validation:
+						required_if_not_hidden: 'Please select the field to mirror'
+					
+		advanced:
+			label: Advanced
+			edit_mode:
+				enabled: true
+				always_on: true
+			hidden: false
+			fields:
+				default_value_mode:
+					label: 'Default value options:'
+					type: radios
+					values:
+						none:
+							label: No default value
+							ord: 1
+						value:
+							label: Enter a default value
+							ord: 2
+						method:
+							label: Call a modules static method to get the default value
+							ord: 3
+					value: none
+					format_onchange: true
+				
+				default_value:
+					label: 'Default value:'
+					type: select
+					empty_value: '-- Select --'
+					side_note: |
+						Select a value to pre-populate this field.
+				
+				default_value_class_name:
+					label: 'Module class name:'
+					type: text
+					maxlength: 255
+				default_value_method_name:
+					label: 'Static method name:'
+					type: text
+					maxlength: 255
+				default_value_param_1:
+					label: 'Parameter 1:'
+					type: text
+					maxlength: 255
+				default_value_param_2:
+					label: 'Parameter 2:'
+					type: text
+					maxlength: 255
+				
 		lov:
-			visible_if: "({checkboxes:1,radios:1,select:1})[zenarioAB.value('field_type_picker', 'details')]"
+			visible_if: "({checkboxes:1,radios:1,select:1})[zenarioAB.value('field_type_picker', 'details')] && zenarioO.columnEqual('user_field_id', 0)"
 			label: Values
 			edit_mode:
 				enabled: true

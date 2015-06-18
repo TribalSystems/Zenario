@@ -16,11 +16,10 @@ plugin_settings:
                         
                     label: Images
                     pick_items:
-                        #path: zenario__content/panels/inline_images_for_reusable_plugins
-                        #min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        #max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        #target_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        #select_phrase: Select image...
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         multiple_select: true
                         select_phrase: Select from Organizer...
                     #value: ""

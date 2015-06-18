@@ -1,0 +1,34 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_image_tag:
+    priv: _PRIV_MANAGE_MEDIA
+    key:
+        id: ""
+    hide_tab_bar: true
+    max_height: 100
+    tabs:
+        details:
+            edit_mode:
+                enabled: true
+            fields:
+                name:
+                    label: 'Tag name:'
+                    type: text
+                    maxlength: 15
+                    onkeyup: |
+                        if (this.value) {
+                            var up = ('' + this.value),
+                                low = up.toLowerCase().replace(/[^\w \d\-\_]/g, '');
+                        
+                            if (up != low) {
+                                this.value = low;
+                            }
+                        }
+                        
+                    validation:
+                        required: |
+                            Please enter a name
+                        no_spaces: |
+                            Tag names cannot contain spaces.
+                        screen_name: |
+                            Tag names can contain only alphanumeric characters, underscores or hyphens.

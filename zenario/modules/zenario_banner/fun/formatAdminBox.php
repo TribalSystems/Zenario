@@ -71,15 +71,13 @@ switch ($path) {
 		}
 		
 		/* Force link_type */
+		$box['tabs']['first_tab']['fields']['link_type']['hidden'] = false;
 		if (($values['first_tab/image_source'] == '_NO_IMAGE') || ($values['first_tab/image_source'] == '_STICKY_IMAGE')){
 			
 			//force use link to content item
 			if ($values['first_tab/image_source'] == '_STICKY_IMAGE'){
 				$values['first_tab/link_type'] = '_CONTENT_ITEM';
 				$box['tabs']['first_tab']['fields']['link_type']['hidden'] = true;
-				
-			}else{
-				$box['tabs']['first_tab']['fields']['link_type']['hidden'] = false;
 			}
 			
 		}
@@ -123,9 +121,6 @@ switch ($path) {
 			if ($editModeOn && !$changes['first_tab/floating_box_title']) {
 				$box['tabs']['first_tab']['fields']['floating_box_title']['current_value'] = $image['floating_box_title'];
 			}
-		
-			$this->getImageHtmlSnippet($values['image'], $fields['image_thumbnail']['snippet']['html']);
-			$this->getImageHtmlSnippet($values['rollover_image'], $fields['rollover_image_thumbnail']['snippet']['html']);
 		
 			if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
 				|| $values['first_tab/image_source']  == '_PICTURE' ) {

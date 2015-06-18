@@ -269,12 +269,15 @@
 	margin-right:4px;
 	float:left;
 	font-size:12px;
+	border:1px solid #333;
+	border-bottom:0;
 }
 
 #zenario_fbAdminFloatingBox #zenario_jqmTabs div div {
 	padding:0;
 	float:none;
 	margin:0;
+	border:0;
 }
 
 #zenario_fbAdminFloatingBox #zenario_jqmTabs div.current {
@@ -647,7 +650,7 @@
 #zenario_fbAdminInner .zenario_editCancelButton {
 	overflow:hidden;
 	position:relative;
-	right:5px;
+	right:25px;
 }
 
 #zenario_fbAdminInner .zenario_editCancelButton input {

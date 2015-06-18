@@ -11,13 +11,9 @@
 		<% if (m.pageCount && m.pageCount > 1) { %>
 			<% if (m.page > 1) { %>
 				<div id="organizer_page_first" class="organizer_page_button" onclick="zenarioO.goToPage(1);"></div>
-				<div id="organizer_page_prev" class="organizer_page_button" onclick="zenarioO.prevPage();"></div> 
 			<% } else { %>
-				<div id="organizer_page_first" class="organizer_page_button organizer_page_button_disabled"></div>
-				<div id="organizer_page_prev" class="organizer_page_button organizer_page_button_disabled"></div> 
+				<div id="organizer_page_first" class="organizer_page_button organizer_page_button_disabled pagination_disabled_first"></div>
 			<% } %>
-		
-			<div id="organizer_page_left" class="organizer_page_button"></div> 
 		
 			<div class="organizer_page_numbers">
 				<div class='paginator_p_wrap'> 
@@ -31,14 +27,10 @@
 				</div> 
 			</div> 
 
-			<div id="organizer_page_right" class="organizer_page_button"></div>
-
 			<% if (m.page < m.pageCount) { %>
-				<div id="organizer_page_next" class="organizer_page_button" onclick="zenarioO.nextPage();"></div>
 				<div id="organizer_page_last" class="organizer_page_button" onclick="zenarioO.goToLastPage();"></div> 
 			<% } else { %>
-				<div id="organizer_page_next" class="organizer_page_button organizer_page_button_disabled"></div>
-				<div id="organizer_page_last" class="organizer_page_button organizer_page_button_disabled"></div> 
+				<div id="organizer_page_last" class="organizer_page_button organizer_page_button_disabled pagination_disabled_last"></div> 
 			<% } %>
 		<% } %>
 	</div>

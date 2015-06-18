@@ -10,7 +10,7 @@ class_name: zenario_user_documents
 description: |
     <p>Allows you to upload documents that can be accessed by one user only.</p>
     
-    <p>Its plugin, when placed on a password-protected page, displays a list of the confidential documents of the logged in user.</p>
+    <p>Place a Document Container on a password-protected page. It can then display a list of the confidential documents of the logged in user.</p>
 category: management
 keywords: >
     user, file, document, documents, download, upload, pdf, doc, docx, xls, xlsx, confidential, sharing

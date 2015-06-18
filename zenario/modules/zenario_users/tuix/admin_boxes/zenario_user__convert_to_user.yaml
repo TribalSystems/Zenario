@@ -104,6 +104,7 @@ zenario_user__convert_to_user:
                     label: 'Send activation email to User'
                     type: checkbox
                     side_note: "Send an activation email to the user with there login details on."
+                    format_onchange: Yes
                     visible_if: |
                         zenarioAB.value('email', 'details')
                 email_to_send:

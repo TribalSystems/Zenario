@@ -24,13 +24,13 @@
 		{# If a title has been set show the title. #}
 		{% if Title %}
 			<div class="banner_title">
-				<h2>
+				<{{Title_Tags}}>
 					{% if Link_Href %}
 						<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
 					{% else %}
 						{{Title}}
 					{% endif %}
-				</h2>
+				</{{Title_Tags}}>
 			</div>
 		{% endif %}
 	

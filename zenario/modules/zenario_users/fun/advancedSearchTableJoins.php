@@ -132,18 +132,23 @@ foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
 					$loop_count = 0;
 					foreach (explode(',', $groups) as $group) {
 						
+						if (!$loop_count) {
+							$sql .= "1=1";
+						}
+						
 						if ($G = zenario_users::getCharacteristic( $group )) {
 							if($loop_count) {
 								$sql .= " OR ";
 							}
 							if(isset($G['db_column']) && $G['db_column'] && !$G['is_system_field']) {
+								if (!$loop_count) {
+									$sql .= " AND";
+								}
 								$sql .= " ". $as . ".`" . preg_replace('@\W@', '', $G['db_column']) . "`= 1 ";
 								$loop_count++;
 							}
 						}
-						if (!$loop_count) {
-							$sql .= "1=1";
-						}
+						
 					}
 					$joins[] = $sql . ") ";
 			}

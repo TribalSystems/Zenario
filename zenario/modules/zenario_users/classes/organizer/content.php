@@ -35,5 +35,11 @@ class zenario_users__organizer__content extends zenario_users {
 				$item['traits']['log_access'] = true;
 			}
 		}
+		if ($refinerName == 'group_members') {
+			$group = getGroupLabel($refinerId);
+			$panel['title'] = adminPhrase('Content items protected by the Group "[[group]]"', array('group' => $group));
+			$panel['no_items_message'] = adminPhrase('There are no Content items protected by the Group "[[group]]"', array('group' => $group));
+			unset($panel['collection_buttons']['create']);
+		}
 	}
 }

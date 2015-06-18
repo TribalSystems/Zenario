@@ -389,11 +389,11 @@ zenario__email_template_manager:
                     format: datetime
                     show_by_default: Yes
                     width: medium
-            collection_buttons:
-                export:
-                    label: Export in CSV
-                    css_class: export
-                    do_csv_export: Yes
+            #collection_buttons:
+            #    export:
+            #        label: Export in CSV
+            #        css_class: export
+            #        do_csv_export: Yes
             default_sort_column: username
             item:
                 name: Recipient

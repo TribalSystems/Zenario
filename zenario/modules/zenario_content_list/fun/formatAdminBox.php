@@ -43,17 +43,12 @@ switch ($path) {
 			$fields['each_item/author_canvas']['hidden'] ||
 				$values['each_item/author_canvas'] != 'resize_and_crop';
 		
+		$fields['overall_list/heading_if_items']['hidden'] = 
+		$fields['overall_list/heading_tags']['hidden'] = 
+			($values['show_headings'] != 1);
 		
-		if ($values['show_headings'] != 1) {
-			$fields['heading_if_items']['hidden'] = true;
-		} else {
-			$fields['heading_if_items']['hidden'] = false;
-		}
-		if ($values['show_headings_if_no_items'] != 1) {
-			$fields['heading_if_no_items']['hidden'] = true;
-		} else {
-			$fields['heading_if_no_items']['hidden'] = false;
-		}
+		$fields['heading_if_no_items']['hidden'] = ($values['show_headings_if_no_items'] != 1);
+		
 		$box['tabs']['overall_list']['fields']['more_link_text']['hidden'] =
 		$box['tabs']['overall_list']['fields']['more_hyperlink_target']['hidden'] =
 			!$values['overall_list/show_more_link'];

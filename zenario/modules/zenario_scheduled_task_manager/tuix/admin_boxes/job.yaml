@@ -17,8 +17,8 @@ zenario_job:
                     full_width: true
                     snippet:
                         html: |
-                            Use this Tab to set on which time each day, and on which days of the week, this Task will run.
-                                                            Every condition set must be met for the Task to run.
+                            Use this tab to set on which time each day and on which days of the week this task will run.
+                                                            Every condition set must be met for the task to run.
                 
                 old_format_warning:
                     pre_field_html: <div class="zenario_fbWarning">
@@ -76,8 +76,8 @@ zenario_job:
                     full_width: true
                     snippet:
                         html: |
-                            Use this Tab to set on which months of the year, and on which days of those months, this Task will run.
-                                                            Every condition set must be met for the Task to run.
+                            Use this tab to set on which months of the year, and on which days of those months, this task will run.
+                                                            Every condition set must be met for the task to run.
                 jan:
                     label: 'January:'
                     type: checkbox
@@ -115,11 +115,11 @@ zenario_job:
                     label: 'December:'
                     type: checkbox
                 first_n_days_of_month:
-                    label: 'Days of the Month:'
+                    label: 'Days of the month:'
                     type: select
                     note_below: |
-                        You may use this option in combination with the Days of the Week option on the previous tag;
-                                                    for example to run a task on the first Monday of a Month.
+                        You may use this option in combination with the Time and Day option on the previous tab;
+                                                    for example to run a task on the first Monday of a month.
             show_errors_after_field: desc
         reporting:
             ord: "30"
@@ -132,20 +132,20 @@ zenario_job:
                     full_width: true
                     snippet:
                         html: >
-                            Use this Tab to control when Log entries are made and when
-                            Emails are sent.
+                            Use this tab to control when log entries are made and when
+                            emails are sent.
                 log_on_error:
-                    label: 'On Error write Log entry:'
+                    label: 'On error write log entry:'
                     type: checkbox
                     read_only: true
                     value: "1"
                 email_on_error:
-                    label: 'On Error send Email:'
+                    label: 'On error send email:'
                     type: checkbox
                     read_only: true
                     value: "1"
                 email_address_on_error:
-                    label: 'Email Address:'
+                    label: 'Email eddress:'
                     type: text
                     maxlength: "200"
                     note_below: |
@@ -154,26 +154,26 @@ zenario_job:
                                                         <br/>
                                                         If a different email address is entered above, error notifications will be sent to both addresses.
                 log_on_action:
-                    label: 'On Action write Log entry:'
+                    label: 'On action write log entry:'
                     type: checkbox
                 email_on_action:
-                    label: 'On Action send Email:'
+                    label: 'On action send email:'
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_action:
-                    label: 'Email Address:'
+                    label: 'Email address:'
                     type: text
                     maxlength: "200"
                     visible_if: "zenarioAB.value('email_on_action')"
                 log_on_no_action:
-                    label: 'If no Action write Log entry:'
+                    label: 'If no action write log entry:'
                     type: checkbox
                 email_on_no_action:
-                    label: 'If no Action send Email:'
+                    label: 'If no action send email:'
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_no_action:
-                    label: 'Email Address:'
+                    label: 'Email address:'
                     type: text
                     maxlength: "200"
                     visible_if: "zenarioAB.value('email_on_no_action')"

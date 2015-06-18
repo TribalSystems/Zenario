@@ -421,7 +421,9 @@ if (!empty($missingModules) && EMAIL_ADDRESS_GLOBAL_SUPPORT) {
 		$addressFrom = false,
 		$nameFrom = false,
 		false, false, false,
-		$isHTML = false);
+		$isHTML = false,
+		false, false, false,
+		'module_missing');
 }
 
 return false;

@@ -71,10 +71,10 @@ if (isset($box['tabs']['sitemap']['fields']['sitemap_url'])) {
 	if (!$box['tabs']['sitemap']['fields']['sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
 		if (setting('mod_rewrite_enabled')) {
 			$box['tabs']['sitemap']['fields']['sitemap_url']['value'] =
-			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = 'http://'. primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
+			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
 		} else {
 			$box['tabs']['sitemap']['fields']['sitemap_url']['value'] =
-			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = 'http://'. primaryDomain(). SUBDIRECTORY. indexDotPHP(). '?method_call=showSitemap';
+			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. indexDotPHP(). '?method_call=showSitemap';
 		}
 	}
 }

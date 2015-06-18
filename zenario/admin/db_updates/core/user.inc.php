@@ -489,12 +489,88 @@ _sql
 	ADD KEY (`identifier`)
 _sql
 
-);	revision(30152
+); revision( 30280
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `visibility` enum('visible', 'hidden', 'visible_on_condition') DEFAULT 'visible' AFTER `required_value`,
+	ADD COLUMN `visible_condition_field_id` int(10) unsigned DEFAULT 0 AFTER `visibility`,
+	ADD COLUMN `visible_condition_field_value` varchar(255) DEFAULT NULL AFTER `visible_condition_field_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	CHANGE `required_field` `mandatory_condition_field_id` int(10) unsigned DEFAULT 0,
+	CHANGE `required_value` `mandatory_condition_field_value` varchar(255) DEFAULT NULL
+_sql
+
+); revision( 30660
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `default_value_class_name` varchar(255) DEFAULT NULL AFTER `default_value`,
+	ADD COLUMN `default_value_method_name` varchar(255) DEFAULT NULL AFTER `default_value_class_name`,
+	ADD COLUMN `default_value_param_1` varchar(255) DEFAULT NULL AFTER `default_value_method_name`,
+	ADD COLUMN `default_value_param_2` varchar(255) DEFAULT NULL AFTER `default_value_param_1`
+_sql
+
+);	revision( 30680
 
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms` 
 	ADD COLUMN translate_text tinyint(1) NOT NULL default 1
 _sql
 
-);
+); revision( 30730
 
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url','attachment','page_break') DEFAULT NULL,
+	ADD COLUMN `next_button_text` varchar(255) DEFAULT NULL,
+	ADD COLUMN `previous_button_text` varchar(255) DEFAULT NULL
+_sql
+
+); revision( 30740
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `div_wrap_class` varchar(255) DEFAULT NULL AFTER `css_classes`,
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url','attachment','page_break', 'section_description') DEFAULT NULL,
+	ADD COLUMN `description` varchar(255) DEFAULT NULL
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `submit_button_text` varchar(255) DEFAULT NULL,
+	ADD COLUMN `default_next_button_text` varchar(255) DEFAULT NULL,
+	ADD COLUMN `default_previous_button_text` varchar(255) DEFAULT NULL
+_sql
+
+); revision( 30750
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	MODIFY COLUMN `submit_button_text` varchar(255) DEFAULT 'Submit',
+	MODIFY COLUMN `default_next_button_text` varchar(255) DEFAULT 'Next',
+	MODIFY COLUMN `default_previous_button_text` varchar(255) DEFAULT 'Back'
+_sql
+
+); revision( 30760
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','select','text','textarea','url','attachment','page_break', 'section_description', 'calculated', 'restatement') DEFAULT NULL,
+	ADD COLUMN `numeric_field_1` int(10) unsigned DEFAULT 0,
+	ADD COLUMN `numeric_field_2` int(10) unsigned DEFAULT 0,
+	ADD COLUMN `calculation_type` enum('+', '-') DEFAULT NULL,
+	ADD COLUMN `restatement_field` int(10) unsigned DEFAULT 0
+_sql
+
+); revision (30850
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `log_user_in_cookie` tinyint(1) NOT NULL default 0
+_sql
+
+);

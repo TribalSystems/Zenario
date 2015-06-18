@@ -42,3 +42,15 @@ if (needRevision(30130)) {
 	
 	revision(30130);
 }
+
+// Set the default values for submit, next and back buttons text
+if (needRevision(30752)) {
+	foreach (getRowsArray('user_forms', 'id') as $id) {
+		updateRow('user_forms', 
+			array(
+				'submit_button_text' => 'Submit',
+				'default_next_button_text' => 'Next',
+				'default_previous_button_text' => 'Back'), 
+			$id);
+	}
+}

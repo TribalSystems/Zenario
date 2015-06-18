@@ -1360,6 +1360,31 @@ function cutTitle($title, $max_title_length = 20, $cutText = '...') {
 	}
 }
 
+
+
+function updateShortChecksums($clearAll = false) {
+	
+	if ($clearAll) {
+		updateRow('files', array('short_checksum' => null), array());
+	}
+	
+	//Attempt to fill in any missing short checksums
+	$sql = "
+		UPDATE IGNORE ". DB_NAME_PREFIX. "files
+		SET short_checksum = SUBSTR(checksum, 1, ". (int) setting('short_checksum_length'). ")
+		WHERE short_checksum IS NULL";
+	sqlUpdate($sql);	
+	
+	//Check for a unique key error (i.e. one or more short checksums were left as null)
+	if (checkRowExists('files', array('short_checksum' => null))) {
+		
+		//Handle the problem by increasing the short checksum length and trying again
+		setSetting('short_checksum_length', 1 + (int) setting('short_checksum_length'));
+		updateShortChecksums(true);
+	}
+}
+
+
 //Read a line from admin_phrase_codes/en.txt
 //Either read the next full line after a given position, or if $pos is not specified, the next line from the last position
 function adminPhraseLine($lang, &$f, &$code, &$text, $pos = false) {
@@ -1503,7 +1528,10 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 				//we're just checking if they are there!
 			if ($needsTranslating) {
 				if (is_null($row[0])) {
-					$phrase = $code. ' (untranslated)';
+					$phrase = $code;
+					if (checkPriv()) {
+						$phrase .= ' (untranslated)';
+					}
 				} else {
 					$phrase = $row[0];
 				}
@@ -1517,7 +1545,10 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 		} else {
 			//If we didn't find a translation that we needed, complain about it
 			if ($needsTranslating) {
-				$phrase = $code. ' (untranslated)';
+				$phrase = $code;
+				if (checkPriv()) {
+					$phrase .= ' (untranslated)';
+				}
 			}
 			
 			//For multilingal sites, any phrases that are not in the database need to be noted down
@@ -2173,6 +2204,21 @@ function linkToItem(
 	}
 	
 	
+	//Add important requests to the URL, if the content item being linked to is the current content item
+	$request = addAmp($request);
+	if ($autoAddImportantRequests
+	 && !empty(cms_core::$importantGetRequests)
+	 && is_array(cms_core::$importantGetRequests)
+	 && $cID == cms_core::$cID
+	 && $cType == cms_core::$cType) {
+		foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+			if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+				$request .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
+			}
+		}
+	}
+	
+	
 	//For single-language sites, if there is nothing in the request then links to the homepage
 	//should always use just the domain name
 	$returnFullPath = false;
@@ -2278,22 +2324,6 @@ function linkToItem(
 			return false;
 		} else {
 			return $aliasOrCID;
-		}
-	}
-	
-	
-	//Add important requests to the URL, if the content item being linked to is the current content item
-	$request = addAmp($request);
-	if ($autoAddImportantRequests
-	 && !empty(cms_core::$importantGetRequests)
-	 && is_array(cms_core::$importantGetRequests)
-	 && ($alias == request('cID')
-	  || $aliasOrCID == request('cID')
-	  || ($cID == request('cID') && $cType == ifNull(request('cType'), 'html')))) {
-		foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
-			if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
-				$request .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
-			}
 		}
 	}
 	
@@ -2882,14 +2912,7 @@ function resizeImageString(&$image, $mime_type, &$width, &$height, $maxWidth, $m
 
 
 function createRandomDir($length, $type = 'downloads', $onlyForCurrentVisitor = true, $ip = -1, $prefix = '') {
-	mt_srand((double) microtime() * 100000);
-	
-	$dir = '';
-	for ($r = 0; $r < $length; $r += 3) {
-		$dir .= base_convert(mt_rand(0, 46655), 10, 36);
-	}
-	
-	return createCacheDir($prefix. $dir, $type, $onlyForCurrentVisitor, $ip);
+	return createCacheDir($prefix. randomString($length), $type, $onlyForCurrentVisitor, $ip);
 }
 
 
@@ -3365,6 +3388,15 @@ function randomString($requiredLength = 12) {
 	
 	seedRandomNumberGeneratorIfNeeded();
 	
+	$stringOut = '';
+	//Loop while our output string is still too short
+	while (strlen($stringOut) < $requiredLength) {
+		$stringOut .= base64(pack('I', mt_rand()));
+	}
+	return substr($stringOut, 0, $requiredLength);
+	
+	
+	/*	Old logic:
 	//Only use certain characters. (I've stripped out vowels, just in case a swearword
 	//is randomly generated. Also 1s look too much like ls and 0s look too much like os
 	$lettersToUse = str_split('BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz23456789');
@@ -3382,6 +3414,7 @@ function randomString($requiredLength = 12) {
 	
 	//We might have made out string too long, chop it if needed and return it.
 	return substr($stringOut, 0, $requiredLength);
+	*/
 }
 
 

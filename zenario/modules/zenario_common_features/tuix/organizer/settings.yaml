@@ -36,6 +36,12 @@ zenario__administration:
                     name: API Keys
                     desc: API Keys and settings for third party services.
                     keywords: dropbox google translate translation tools
+                branding:
+                    priv: _PRIV_VIEW_SITE_SETTING
+                    name: Branding
+                    desc: >
+                        Change the favicon used for Organizer and the logo used on the site disabled and
+                        admin login screen.
                 captcha:
                     name: Captcha
                     desc: Settings for the captchas used by some plugins.
@@ -69,6 +75,13 @@ zenario__administration:
                     keywords: >
                         antiword pdftotext pdf-to-text pdf to text ghostscript word document
                         plain text extract plaintext extract image thumbnail
+                favicon:
+                    css_class: favicon
+                    name: Favicon
+                    desc: >
+                        Upload or remove a Favicon or a Home Screen Icon for this site
+                    keywords: >
+                        favicon mobile icon home screen icon
                 files_and_images:
                     name: File and Image Handling
                     desc: Settings for how files and images are managed in the CMS.
@@ -84,12 +97,6 @@ zenario__administration:
                     priv: _PRIV_VIEW_SITE_SETTING
                     name: Primary Domain
                     desc: Set the Primary Domain for your site.
-                branding:
-                    priv: _PRIV_VIEW_SITE_SETTING
-                    name: Branding
-                    desc: >
-                        Change the favicon used for Organizer and the logo used on the site disabled and
-                        admin login screen.
                 urls:
                     name: URLs
                     desc: Settings that affect how URLs for your site are generated.
@@ -128,13 +135,6 @@ zenario__administration:
             
             # These controls don't use the usual Site Settings Admin Box,
             # but we put them here anyway as this is the logical place to look for them
-                favicon:
-                    css_class: favicon
-                    name: Favicon
-                    desc: >
-                        Upload or remove a Favicon or a Home Screen Icon for this site
-                    is_not_site_setting: true
-                
                 site_enabled:
                     css_class: site_enabled
                     name: Site Enabled
@@ -158,15 +158,6 @@ zenario__administration:
                         path: site_settings
                     visible_if_for_all_selected_items: |
                         !item.is_not_site_setting
-                
-                favicon:
-                    label: Properties
-                    tooltip: >
-                        Upload or remove a Favicon or a Home Screen Icon for this site
-                    visible_if_for_all_selected_items: |
-                        id == 'favicon'
-                    admin_box:
-                        path: zenario_favicon
                 site_reset:
                     priv: _PRIV_RESET_SITE
                     label: Site Reset
@@ -217,6 +208,6 @@ zenario__administration:
                 #    parent: action_dropdown
                 #    local_admins_only: Yes
                 #    label: Change Password
-                #    frontend_link: 'zenario/admin/welcome.php?task=change_password&sk=zenario__administration/nav/configure_settings/panel//profile'
+                #    frontend_link: 'zenario/admin/welcome.php?task=change_password&og=zenario__administration/nav/configure_settings/panel//profile'
                 #    visible_if_for_all_selected_items: |
                 #        id == 'profile'

@@ -513,17 +513,6 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario_image':
-		if (!$values['details/filename'] || !guessAltTagFromFilename($values['details/filename'])) {
-			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a filename.');
-		
-		} elseif (documentMimeType($values['details/filename']) != getRow('files', 'mime_type', $box['key']['id'])) {
-			$box['tabs']['details']['errors'][] = adminPhrase("You must not change the file's extension.");
-		}
-		
-		break;
-	
-	
 	case 'zenario_content_type_details':
 		if (!$values['details/default_layout_id'] || !($template = getTemplateDetails($values['details/default_layout_id']))) {
 			$box['tabs']['details']['errors'][] = adminPhrase('Please select a default layout.');

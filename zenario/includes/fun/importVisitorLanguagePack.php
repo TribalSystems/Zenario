@@ -44,7 +44,10 @@ if (in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 	require_once CMS_ROOT. 'zenario/libraries/mit/parsecsv/parsecsv.lib.php';
 	
 	$pCSV = new parseCSV();
-	ini_set('auto_detect_line_endings', true);
+	
+	if (checkFunctionEnabled('ini_set')) {
+		ini_set('auto_detect_line_endings', true);
+	}
 	
 	$f = fopen($file, "r");
 

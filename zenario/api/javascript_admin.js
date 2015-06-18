@@ -211,13 +211,13 @@ zenario.lib(function(
 			zenarioA.uploading = false;
 			zenarioO.setWrapperClass('uploading', zenarioA.uploading);
 		
-			zenarioO.reload();
+			zenarioO.reloadPage();
 		
 			return false;
 	
 		//Refresh Storekeeper
 		} else if (message.substr(0, 26) == '<!--Refresh_Storekeeper-->' && zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode) {
-			zenarioO.refresh();
+			zenarioO.reload();
 			message = message.substr(26);
 			hadCommand = true;
 	
@@ -265,16 +265,18 @@ zenario.lib(function(
 				return;
 			}
 			
-			if (!zenarioO.init) {
+			if (zenarioO.init
+			 && zenarioO.path
+			 && zenarioA.storekeeperWindow) {
+				buttonsHTML =
+					'<input type="button" value="' + phrase.logIn + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">' +
+					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(URLBasePath);"/>';
+			} else {
 				buttonsHTML = 
 					'<input type="button" value="' + phrase.logIn + '" class="submit_selected"' +
 					' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, \'\', true));">' +
 					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType));"/>';
 		
-			} else {
-				buttonsHTML =
-					'<input type="button" value="' + phrase.logIn + '" class="submit_selected" onclick="zenarioO.reload(undefined, true);">' +
-					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(URLBasePath);"/>';
 			}
 			
 			message = message.substr(17);
@@ -319,7 +321,7 @@ zenario.lib(function(
 
 	zenarioA.showHelp = function(selector) {
 		var intro = introJs(),
-			$fbsk = $('#zenario_fbsk'),
+			$fbsk = $('#zenario_fbog'),
 			$els = $(selector),
 			steps = [],
 			data;

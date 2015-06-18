@@ -27,12 +27,19 @@
  */
 
 //Get the checksum and intended usage of this file from the request
-$usage = isset($_GET['usage'])? $_GET['usage'] : 'inline';
+$usage = isset($_GET['usage'])? $_GET['usage'] : 'image';
 $checksum = isset($_GET['checksum'])? $_GET['checksum'] : (isset($_GET['c'])? $_GET['c'] : false);
 $requestedWidth = isset($_GET['width'])? (int) $_GET['width'] : '';
 $requestedHeight = isset($_GET['height'])? (int) $_GET['height'] : '';
 $key = isset($_GET['k'])? $_GET['k'] : '';
 $adminBackend = false;
+
+//Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
+if ($usage == 'email'
+ || $usage == 'inline'
+ || $usage == 'menu') {
+	$usage = 'image';
+}
 
 require 'cacheheader.inc.php';
 
@@ -40,8 +47,8 @@ require 'cacheheader.inc.php';
 if ($checksum) {
 	$ETag =
 		'zenario-file-'. $_SERVER['HTTP_HOST']. '-'. $usage. '-'. $checksum.
-		(isset($_GET['sk'])? '-sk' : '').
-		(isset($_GET['skl'])? '-skl' : '').
+		(isset($_GET['og'])? '-og' : '').
+		(isset($_GET['ogl'])? '-ogl' : '').
 		(isset($_GET['closeup'])? '-closeup' : '').
 		(isset($_GET['popout'])? '-popout' : '').
 		'-'. $requestedWidth. '-'. $requestedHeight. '-'. $key;
@@ -51,15 +58,14 @@ useGZIP();
 
 
 //Storekeeper views should have an admin header; 
-if (isset($_GET['sk'])
- || isset($_GET['skl'])
+if (isset($_GET['og'])
+ || isset($_GET['ogl'])
  || isset($_GET['closeup'])
  || isset($_GET['popout'])
- || isset($_GET['adminDownload'])
- || isset($_GET['getUploadedFileInCacheDir'])) {
+ || isset($_GET['adminDownload'])) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	$adminBackend = true;
-
+	
 //All other usage should use the visitor header
 } else {
 	//For files associated with a Content Item, we'll need to check permissions and so we'll need access to the session
@@ -68,6 +74,14 @@ if (isset($_GET['sk'])
 	}
 	
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
+}
+
+
+//Convert a base 16 checksum to base 64, so any old links still work
+if ($checksum
+ && strlen($checksum) == 32
+ && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
+	$checksum = base16To64($checksum);
 }
 
 
@@ -85,7 +99,18 @@ $file = false;
 $filePath = false;
 $filename = request('filename');
 $useCacheDir = true;
-$getUploadedFileInCacheDir = request('getUploadedFileInCacheDir') && checkPriv();
+$getUploadedFileInCacheDir = 
+		request('getUploadedFileInCacheDir') 
+		&& (
+			checkPriv() 
+			|| (
+					(!$requestedWidth && !$requestedHeight)
+					|| ($requestedWidth == 80 && $requestedHeight == 80)
+					// For slideshow 2 admin images
+					|| ($requestedWidth == 150 && $requestedHeight == 150)
+					|| ($requestedWidth == 300 && $requestedHeight == 150)
+				)
+			);
 
 //Attempt to get the id from the request
 	//(This is only allowed under certain situations, as images may be protected or not public.)
@@ -104,12 +129,12 @@ if ($usage == 'user' && request('user_id')) {
 
 
 //Generate or load a thumbnail for Storekeeper
-if (isset($_GET['sk'])) {
+if (isset($_GET['og'])) {
 	$width = 180;
 	$height = 130;
 
 //Generate or load a small thumbnail for Storekeeper
-} elseif (isset($_GET['skl'])) {
+} elseif (isset($_GET['ogl'])) {
 	$width = 24;
 	$height = 23;
 
@@ -152,7 +177,6 @@ if (isset($_GET['sk'])) {
 	$height = $requestedHeight;
 	$mode = 'resize';
 }
-
 
 //Attempt to output an image in the cache/uploads/ directory
 if ($getUploadedFileInCacheDir) {
@@ -248,12 +272,6 @@ if ($getUploadedFileInCacheDir) {
 			header('HTTP/1.0 404 Not Found');
 			exit;
 		}
-	
-	//Requests for favicons
-	} elseif ($usage == 'favicon') {
-	
-	//Requests for home screen icons
-	} elseif ($usage == 'mobile_icon') {
 
 	//If this wasn't a request for a Content Item file/Favicon/Home screen icon,
 	//and if no id or checksum was requested, exit
@@ -272,11 +290,11 @@ if ($getUploadedFileInCacheDir) {
 			";
 
 	//If this is a Storekeeper thumbnail then we'll grab the image data up straight away.
-	if (isset($_GET['sk'])) {
-		$sql .= "storekeeper_data AS data";
+	if (isset($_GET['og'])) {
+		$sql .= "organizer_data AS data";
 
-	} elseif (isset($_GET['skl'])) {
-		$sql .= "storekeeper_list_data AS data";
+	} elseif (isset($_GET['ogl'])) {
+		$sql .= "organizer_list_data AS data";
 
 	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
 	} elseif ($usage == 'content') {
@@ -293,8 +311,8 @@ if ($getUploadedFileInCacheDir) {
 			mime_type,
 			width,
 			height,
-			storekeeper_list_data, storekeeper_list_width, storekeeper_list_height,
-			storekeeper_data, storekeeper_width, storekeeper_height,
+			organizer_list_data, organizer_list_width, organizer_list_height,
+			organizer_data, organizer_width, organizer_height,
 			working_copy_data, working_copy_width, working_copy_height,
 			working_copy_2_data, working_copy_2_width, working_copy_2_height,
 			size

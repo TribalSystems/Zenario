@@ -29,7 +29,7 @@
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_6');
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_7');
 define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 

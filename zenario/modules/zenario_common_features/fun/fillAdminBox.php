@@ -816,27 +816,6 @@ switch ($path) {
 		}
 		break;
 	
-	case 'zenario_image':
-		if (!$details = getRow('files', array('filename', 'width', 'height', 'size', 'alt_tag', 'title', 'floating_box_title'), $box['key']['id'])) {
-			exit;
-		}
-		
-		$box['title'] = adminPhrase('Renaming/adding a title to the image "[[filename]]".', $details);
-		
-		$this->getImageHtmlSnippet($box['key']['id'], $box['tabs']['details']['fields']['image']['snippet']['html']);
-		
-		$details['filesize'] = formatFilesizeNicely($details['size'], 1, true);
-		
-		$box['tabs']['details']['fields']['size']['snippet']['html'] = 
-			adminPhrase('[[filesize]] [[[width]] × [[height]]]', $details);
-		
-		$box['tabs']['details']['fields']['filename']['value'] = $details['filename'];
-		$box['tabs']['details']['fields']['alt_tag']['value'] = $details['alt_tag'];
-		$box['tabs']['details']['fields']['title']['value'] = $details['title'];
-		$box['tabs']['details']['fields']['floating_box_title']['value'] = $details['floating_box_title'];
-		
-		break;
-	
 	
 	case 'zenario_content_type_details':
 		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =

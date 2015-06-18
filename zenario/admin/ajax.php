@@ -40,8 +40,8 @@ define('ADMIN_ID', (int) session('admin_userid'));
 	that array, and then finally sends them via JSON to the client
 	
 	It's main features are:
-		Generating a complete "Map" of everything in Storekeeper
-		"Focusing" on a specific Panel in Storekeeper, and sending detailed information on that
+		Generating a complete "Map" of everything in Organizer
+		"Focusing" on a specific Panel in Organizer, and sending detailed information on that
 	It's also used in the new Admin Box system for:
 		"Focusing" on a specific Admin Box, and sending detailed information on that
 		Validating and Saving Admin Boxes
@@ -67,9 +67,9 @@ if (get('_ab')) {
 } elseif (get('_at')) {
 	$type = 'admin_toolbar';
 } else {
-	$type = 'storekeeper';
+	$type = 'organizer';
 	
-	//Work out which mode this should be for Storekeeper
+	//Work out which mode this should be for Organizer
 	if (get('_xml') || get('method_call') == 'showSitemap') {
 		define('ORGANIZER_MODE', $mode = 'xml');
 	} elseif (get('_select_mode')) {
@@ -90,8 +90,8 @@ if (get('_ab')) {
 }
 cms_core::$skType = $type;
 
-//Always require Admin Permissions, except for Storekeeper which has a feature where feeds from some panels can be made public
-if ($type != 'storekeeper' && $type != 'organizer' && $mode != 'xml') {
+//Always require Admin Permissions, except for Organizer which has a feature where feeds from some panels can be made public
+if ($type != 'organizer' && $mode != 'xml') {
 	if (!checkPriv()) {
 		echo '<!--Logged_Out-->', adminPhrase('You have been logged out.');
 		exit;
@@ -120,6 +120,10 @@ function zenarioAJAXIncludeModule(&$modules, &$tag, $type, $requestedPath, $sett
 
 function adminBoxSyncStoragePath(&$box) {
 	
+	if (!setting('fab_use_cache_dir')) {
+		return false;
+	}
+	
 	if (empty($box['key'])) {
 		$box['key'] = array();
 	}
@@ -128,16 +132,17 @@ function adminBoxSyncStoragePath(&$box) {
 		$box['_sync'] = array();
 	}
 	
-	if (empty($box['_sync']['cache_dir']) || !is_dir(CMS_ROOT. 'cache/uploads/'. preg_replace('/\\W/', '', $box['_sync']['cache_dir']))) {
+	if (empty($box['_sync']['cache_dir'])
+	 || !is_dir(CMS_ROOT. 'cache/uploads/'. preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']))) {
 		$box['_sync']['cache_dir'] =
 			createRandomDir(
-				5, $type = 'uploads', false, false,
-				$prefix = 'ab_'. substr(base_convert(sha1(json_encode($box)), 16, 36), 0, 16). '_');
+				8, $type = 'uploads', false, false,
+				$prefix = 'ab_'. hash64(json_encode($box), 8). '_');
 	}
 	
 	if (!empty($box['_sync']['cache_dir'])) {
 		$box['_sync']['cache_dir'] = str_replace('cache/uploads/', '', $box['_sync']['cache_dir']);
-		$box['_sync']['cache_dir'] = preg_replace('/\\W/', '', $box['_sync']['cache_dir']);
+		$box['_sync']['cache_dir'] = preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']);
 		touch(CMS_ROOT. 'cache/uploads/'. $box['_sync']['cache_dir']. '/accessed');
 		return CMS_ROOT. 'cache/uploads/'. $box['_sync']['cache_dir']. '/ab.json';
 	
@@ -400,8 +405,8 @@ function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $sto
 		'tag_path' => substr($tagPath, 1),
 		'modules_loaded' => $modules_loaded,
 		'modules_files_loaded' => $moduleFilesLoaded,
-		'storekeeper_query_ids' => $storekeeperQueryIds,
-		'storekeeper_query_details' => $storekeeperQueryDetails
+		'organizer_query_ids' => $storekeeperQueryIds,
+		'organizer_query_details' => $storekeeperQueryDetails
 	);
 	
 	header('Content-Type: text/javascript; charset=UTF-8');
@@ -419,7 +424,7 @@ function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $sto
 if ($type == 'admin_boxes' && !post('_fill') && !$debugMode) {
 	//Load the information that we have from the client
 	if (empty($_POST['_box'])) {
-		echo adminPhrase('Error syncing this Admin Box with the server!');
+		echo adminPhrase('An error occurred when syncing this floating admin box with the server.');
 		exit;
 	}
 	$clientTags = json_decode($_POST['_box'], true);
@@ -440,7 +445,12 @@ if ($type == 'admin_boxes' && !post('_fill') && !$debugMode) {
 		$loadDefinition = false;
 	
 	} else {
-		echo adminPhrase('Error syncing this Admin Box with the server!');
+		if (!empty($clientTags['_sync']['session'])) {
+			echo adminPhrase('An error occurred when syncing this floating admin box with the server. There is a problem with the server\'s $_SESSION variable.');
+		
+		} else {
+			echo adminPhrase('An error occurred when syncing this floating admin box with the server. A file placed in the cache/ directory could not be found.');
+		}
 		exit;
 	}
 	
@@ -460,7 +470,7 @@ if (get('method_call') == 'showSitemap') {
 cms_core::$skPath = $requestedPath;
 
 $filters = array();
-if (($type == 'storekeeper' || $type == 'organizer') && get('_filters')) {
+if ($type == 'organizer' && get('_filters')) {
 	$filters = json_decode(get('_filters'), true);
 }
 
@@ -492,7 +502,7 @@ if ($type == 'admin_boxes') {
 		}
 	
 	} elseif ($requestedPath == 'advanced_search') {
-		$settingGroup = request('storekeeper_path');		
+		$settingGroup = request('organizer_path');		
 	
 	} elseif ($requestedPath == 'site_settings') {
 		$settingGroup = request('id');
@@ -531,6 +541,10 @@ if ($loadDefinition) {
 	}
 }
 
+if ($debugMode) {
+	$staticTags = $tags;
+}
+
 //Check that an admin is logged in, and kick them if not
 	//Note that there's an option to bipass this and allow visitors in!
 if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'xml', 'allow_unauthenticated_xml_access'))) {
@@ -542,7 +556,7 @@ if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'xml', 'allow_u
 if ($requestedPath && $tags['class_name']) {
 	
 	if (isset($tags['priv']) && !checkPriv($tags['priv'])) {
-		if ($type == 'storekeeper' || $type == 'organizer') {
+		if ($type == 'organizer') {
 			echo adminPhrase('You do not have permissions to see this Panel.');
 		
 		} elseif ($type == 'admin_boxes') {
@@ -557,7 +571,7 @@ if ($requestedPath && $tags['class_name']) {
 		exit;
 	}
 	
-	if ($type == 'storekeeper' || $type == 'organizer') {
+	if ($type == 'organizer') {
 		
 		//Add definitions for any refiners supplied in the request
 		$refinersPresent = array('refinerId' => 'REFINER_ID', '_combineItem' => 'COMBINE_ITEM');
@@ -608,7 +622,7 @@ if ($requestedPath && $tags['class_name']) {
 			define('COMBINE_ITEM__NO_QUOTES', request('_combineItem'));
 		}
 		
-		//Start to populate the Storekeeper Panel:
+		//Start to populate the Organizer Panel:
 		//Firstly, see if other modules have added buttons/columns/refiners.
 		//If so, they'll need their own placeholder methods executing as well
 		
@@ -836,12 +850,29 @@ if ($requestedPath && $tags['class_name']) {
 					
 					//If it's from a different table, join to that table
 					if (!empty($col['table_join'])) {
+						
+						//Check whether this column is being filtered, and what
+						//the filter format is
+						$filterFormat = false;
+						if ($isFiltered = !empty($filters[$colName]['value_'])) {
+							if (!empty($col['format'])) {
+								$filterFormat = $col['format'];
+							} elseif (!empty($col['filter_format'])) {
+								$filterFormat = $col['filter_format'];
+							} 
+						}
+						
+						
+						
 						if ($colName == get('_sort_col')
-						 || (engToBooleanArray($col, 'searchable') && (isset($_GET['_search']) || !empty($filters[$colName]['searchcol_'])))
-						 || (in(arrayKey($col, 'format'), 'enum', 'language_english_name', 'language_english_name_with_id', 'language_local_name', 'language_local_name_with_id') && !empty($filters[$colName]['enum_']))
-						 || (arrayKey($col, 'format') == 'yes_or_no' && !empty($filters[$colName]['yes_or_no_']))
-						 || ((!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
-						  && (!empty($filters[$colName]['date_after_col_']) || !empty($filters[$colName]['date_before_col_'])))) {
+						 || (($isFiltered || isset($_GET['_search'])) && engToBooleanArray($col, 'searchable'))
+						 || ($isFiltered && $filterFormat && in(
+								$filterFormat,
+								'enum', 'yes_or_no',
+								'language_english_name', 'language_english_name_with_id',
+								'language_local_name', 'language_local_name_with_id',
+								'date', 'datetime', 'datetime_with_seconds'
+						))) {
 							$sortExtraTables[prefixTableJoin($col['table_join'])] = true;
 						} else {
 							$extraTables[prefixTableJoin($col['table_join'])] = true;
@@ -895,86 +926,110 @@ if ($requestedPath && $tags['class_name']) {
 			
 			//Apply filters
 			foreach ($tags['columns'] as $colName => &$col) {
-				if (is_array($col) && !empty($col['db_column']) && !engToBooleanArray($col, 'disallow_filtering')) {
+				if (is_array($col)
+				 && !empty($col['db_column'])
+				 && !empty($filters[$colName]['value_'])
+				 && !engToBooleanArray($col, 'disallow_filtering')) {
 					
+					$value_ = $filters[$colName]['value_'];
 					$columnName = ifNull(arrayKey($col, 'search_column'), $col['db_column']);
 					
-					//Do a text search for filters on text fields
-					if (!empty($filters[$colName]['searchcol_']) && engToBooleanArray($col, 'searchable')) {
-						
-						$asciiCharactersOnly = engToBooleanArray($col, 'ascii_only');
-						
-						if (empty($filters[$colName]['not'])) {
-							$whereStatement .= "
-								AND ". $columnName. " LIKE '%". likeEscape($filters[$colName]['searchcol_'], true, $asciiCharactersOnly). "%'";
-						
-						} else {
-							$whereStatement .= "
-								AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape($filters[$colName]['searchcol_'], true, $asciiCharactersOnly). "%')";
-						}
-					}
+					$filterFormat = false;
+					if (!empty($col['format'])) {
+						$filterFormat = $col['format'];
+					} elseif (!empty($col['filter_format'])) {
+						$filterFormat = $col['filter_format'];
+					} 
+					$isDateColumn = $filterFormat == 'date' || $filterFormat == 'datetime' || $filterFormat == 'datetime_with_seconds';
 					
-					//enum filters
-					if (!empty($filters[$colName]['enum_']) && in(arrayKey($col, 'format'), 'enum', 'language_english_name', 'language_english_name_with_id', 'language_local_name', 'language_local_name_with_id')) {
+					switch ($filterFormat) {
+						case 'date':
+						case 'datetime':
+						case 'datetime_with_seconds':
+							$dates = explode(',', $value_);
+							
+							if (!empty($dates[0]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[0]) == '') {
+								$whereStatement .= "
+								  AND ". $columnName.
+									  " >= '". sqlEscape($dates[0]). "'";
+							}
+							
+							if (!empty($dates[1]) && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $dates[1]) == '') {
+								$whereStatement .= "
+								  AND ". $columnName.
+									" < DATE_ADD('". sqlEscape($dates[1]). "', INTERVAL 1 DAY)";
+							}
+							
+							break;
 						
-						//A value of "*" should match all values (or all empty values if not is set)
-						if ($filters[$colName]['enum_'] == '*') {
+						//Yes/No type filters on tinyint columns
+						case 'yes_or_no':
+						
 							if (empty($filters[$colName]['not'])) {
 								$whereStatement .= "
-								  AND ". $columnName. " != 0
-								  AND ". $columnName. " != ''";
+								  AND ". $columnName. " != 0";
 						
 							} else {
 								$whereStatement .= "
 								  AND (". $columnName. " = 0
-									OR ". $columnName. " = ''
 									OR ". $columnName. " IS NULL)";
 							}
+							
+							break;
+							
+							
+						//enum filters
+						case 'enum':
+						case 'language_english_name':
+						case 'language_english_name_with_id':
+						case 'language_local_name':
+						case 'language_local_name_with_id':
 						
-						//Otherwise do a normal match
-						} else {
-							if (empty($filters[$colName]['not'])) {
-								$whereStatement .= "
-								  AND ". $columnName. " =  '". sqlEscape($filters[$colName]['enum_']). "'";
+							//A value of "*" should match all values (or all empty values if not is set)
+							if ($filters[$colName]['value_'] == '*') {
+								if (empty($filters[$colName]['not'])) {
+									$whereStatement .= "
+									  AND ". $columnName. " != 0
+									  AND ". $columnName. " != ''";
 						
+								} else {
+									$whereStatement .= "
+									  AND (". $columnName. " = 0
+										OR ". $columnName. " = ''
+										OR ". $columnName. " IS NULL)";
+								}
+						
+							//Otherwise do a normal match
 							} else {
-								$whereStatement .= "
-								  AND (". $columnName. " !=  '". sqlEscape($filters[$colName]['enum_']). "'
-									OR ". $columnName. " IS NULL)";
+								if (empty($filters[$colName]['not'])) {
+									$whereStatement .= "
+									  AND ". $columnName. " =  '". sqlEscape($filters[$colName]['value_']). "'";
+						
+								} else {
+									$whereStatement .= "
+									  AND (". $columnName. " !=  '". sqlEscape($filters[$colName]['value_']). "'
+										OR ". $columnName. " IS NULL)";
+								}
 							}
-						}
-					}
-					
-					//Yes/No type filters on tinyint columns
-					if (!empty($filters[$colName]['yes_or_no_']) && arrayKey($col, 'format') == 'yes_or_no') {
+							
+							break;
+							
+							
+						default:
+							//Do a text search for filters on text fields
+							if (engToBooleanArray($col, 'searchable')) {
 						
-						if (empty($filters[$colName]['not'])) {
-							$whereStatement .= "
-							  AND ". $columnName. " != 0";
+								$asciiCharactersOnly = engToBooleanArray($col, 'ascii_only');
 						
-						} else {
-							$whereStatement .= "
-							  AND (". $columnName. " = 0
-							    OR ". $columnName. " IS NULL)";
-						}
-					}
-					
-					//Search for any dates on or after a certain date
-					if (!empty($filters[$colName]['date_after_col_'])
-					 && (!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
-					 && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $filters[$colName]['date_after_col_']) == '') {
-						$whereStatement .= "
-						  AND ". $columnName.
-							  " >= '". sqlEscape($filters[$colName]['date_after_col_']). "'";
-					}
-					
-					//Search for any dates on or before a certain date
-					if (!empty($filters[$colName]['date_before_col_'])
-					 && (!empty($col['format']) && ($col['format'] == 'date' || $col['format'] == 'datetime' || $col['format'] == 'datetime_with_seconds'))
-					 && preg_replace('/\d{4}-\d{2}-\d{2}/', '', $filters[$colName]['date_before_col_']) == '') {
-						$whereStatement .= "
-						  AND ". $columnName.
-							" < DATE_ADD('". sqlEscape($filters[$colName]['date_before_col_']). "', INTERVAL 1 DAY)";
+								if (empty($filters[$colName]['not'])) {
+									$whereStatement .= "
+										AND ". $columnName. " LIKE '%". likeEscape($filters[$colName]['value_'], true, $asciiCharactersOnly). "%'";
+						
+								} else {
+									$whereStatement .= "
+										AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape($filters[$colName]['value_'], true, $asciiCharactersOnly). "%')";
+								}
+							}
 					}
 				}
 			}
@@ -1380,7 +1435,7 @@ if ($requestedPath && $tags['class_name']) {
 					$storekeeperQueryDetails = addConstantsToString($sql);
 				
 					if ($debugMode) {
-						displayDebugMode($tags, $modules, $moduleFilesLoaded, $tagPath, $storekeeperQueryIds, $storekeeperQueryDetails);
+						displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath, $storekeeperQueryIds, $storekeeperQueryDetails);
 						exit;
 					}
 					$result = sqlSelect($storekeeperQueryDetails);
@@ -1440,7 +1495,7 @@ if ($requestedPath && $tags['class_name']) {
 		
 		//Debug mode - show the TUIX before it's been modified
 		if ($debugMode) {
-			displayDebugMode($tags, $modules, $moduleFilesLoaded, $tagPath, $storekeeperQueryIds);
+			displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath, $storekeeperQueryIds);
 			exit;
 		}
 		
@@ -1488,7 +1543,7 @@ if ($requestedPath && $tags['class_name']) {
 		
 		//Debug mode - show the TUIX before it's been modified
 		if ($debugMode) {
-			displayDebugMode($tags, $modules, $moduleFilesLoaded, $tagPath);
+			displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath);
 			exit;
 		
 		//Special logic for Validating and Saving
@@ -1531,22 +1586,34 @@ if ($requestedPath && $tags['class_name']) {
 				readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true, $preDisplay = false);
 				
 				//Apply standard validation formats
+				
+				//Loop through the tabs that are in edit mode
 				if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
 					foreach ($tags['tabs'] as $tabName => &$tab) {
 						if (engToBooleanArray($tab, 'edit_mode', 'on')) {
 							
+							//Loop through each field, looking for fields with validation set
 							if (isset($tags['tabs'][$tabName]['fields']) && is_array($tags['tabs'][$tabName]['fields'])) {
 								foreach ($tags['tabs'][$tabName]['fields'] as $fieldName => &$field) {
+									if (empty($field['validation'])) {
+										continue;
+									}
 									
-									$notSet = !trim((string) arrayKey($values, $tabName. '/'. $fieldName));
+									if (!isset($values[$tabName. '/'. $fieldName])) {
+										$fieldValue = '';
+										$notSet = true;
+									} else {
+										$fieldValue = (string) $values[$tabName. '/'. $fieldName];
+										$notSet = !trim($fieldValue);
+									}
 									
 									//Check for required fields
-									if (($msg = arrayKey($field, 'validation', 'required')) && $notSet) {
+									if (($msg = arrayKey($field['validation'], 'required')) && $notSet) {
 										$field['error'] = $msg;
 									
 									//Check for fields that are required if not hidden. (Note that it is the user submitted data from the client
 									//which determines whether a field was hidden.)
-									} elseif (($msg = arrayKey($field, 'validation', 'required_if_not_hidden'))
+									} elseif (($msg = arrayKey($field['validation'], 'required_if_not_hidden'))
 										   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($tab, 'fields', $fieldName, 'hidden')
 										   && !engToBooleanArray($tab, '_h_js') && !engToBooleanArray($tab, 'fields', $fieldName, '_h_js')
 										   && $notSet
@@ -1557,20 +1624,78 @@ if ($requestedPath && $tags['class_name']) {
 									} elseif ($notSet) {
 										continue;
 									
-									} elseif (($msg = arrayKey($field, 'validation', 'email')) && !validateEmailAddress(arrayKey($values, $tabName. '/'. $fieldName))) {
+									} elseif (($msg = arrayKey($field['validation'], 'email')) && !validateEmailAddress($fieldValue)) {
 										$field['error'] = $msg;
 									
-									} elseif (($msg = arrayKey($field, 'validation', 'emails')) && !validateEmailAddress(arrayKey($values, $tabName. '/'. $fieldName), true)) {
+									} elseif (($msg = arrayKey($field['validation'], 'emails')) && !validateEmailAddress($fieldValue, true)) {
 										$field['error'] = $msg;
 									
-									} elseif (($msg = arrayKey($field, 'validation', 'no_spaces')) && preg_replace('/\S/', '', arrayKey($values, $tabName. '/'. $fieldName))) {
+									} elseif (($msg = arrayKey($field['validation'], 'no_spaces')) && preg_replace('/\S/', '', $fieldValue)) {
 										$field['error'] = $msg;
 									
-									} elseif (($msg = arrayKey($field, 'validation', 'numeric')) && !empty($values[$tabName. '/'. $fieldName]) && !is_numeric($values[$tabName. '/'. $fieldName])) {
+									} elseif (($msg = arrayKey($field['validation'], 'numeric')) && !is_numeric($fieldValue)) {
 										$field['error'] = $msg;
 									
-									} elseif (($msg = arrayKey($field, 'validation', 'screen_name')) && !empty($values[$tabName. '/'. $fieldName]) && !validateScreenName($values[$tabName. '/'. $fieldName])) {
+									} elseif (($msg = arrayKey($field['validation'], 'screen_name')) && !validateScreenName($fieldValue)) {
 										$field['error'] = $msg;
+									
+									} else {
+										//Check validation rules for file pickers
+										$mbgip = !empty($field['validation']['must_be_gif_ico_or_png']);
+										$mbgjp = !empty($field['validation']['must_be_gif_jpg_or_png']);
+										$mbgp = !empty($field['validation']['must_be_gif_or_png']);
+										$mbi = !empty($field['validation']['must_be_ico']);
+										
+										if ($mbgip || $mbgjp || $mbgp || $mbi) {
+											
+											//These validation rules should work for multiple file pickers, so we'll need to
+											//split by a comma and validate each file separately
+											foreach (explode(',', $fieldValue) as $file) {
+												
+												//If this file has just been picked, we'll need to check it from the disk
+												if ($filepath = getPathOfUploadedFileInCacheDir($file)) {
+													$mimeType = documentMimeType($filepath);
+												
+												//Otherwise look for it in the files table
+												} else {
+													$mimeType = getRow('files', 'mime_type', $file);
+												}
+												
+												//Check all of the possible rules for image validation.
+												//Stop checking image validation rules for this field as soon
+												//as we find one picked file that doesn't match one rule
+												if ($mbgip
+												 && $mimeType != 'image/gif'
+												 && $mimeType != 'image/png'
+												 && $mimeType != 'image/vnd.microsoft.icon'
+												 && $mimeType != 'image/x-icon') {
+													$field['error'] = $field['validation']['must_be_gif_ico_or_png'];
+													break;
+												
+												} else
+												if ($mbgjp
+												 && $mimeType != 'image/gif'
+												 && $mimeType != 'image/jpeg'
+												 && $mimeType != 'image/png') {
+													$field['error'] = $field['validation']['must_be_gif_jpg_or_png'];
+													break;
+												
+												} else
+												if ($mbgp
+												 && $mimeType != 'image/gif'
+												 && $mimeType != 'image/png') {
+													$field['error'] = $field['validation']['must_be_gif_or_png'];
+													break;
+												
+												} else
+												if ($mbi
+												 && $mimeType != 'image/vnd.microsoft.icon'
+												 && $mimeType != 'image/x-icon') {
+													$field['error'] = $field['validation']['must_be_ico'];
+													break;
+												}
+											}
+										}
 									}
 								}
 							}
@@ -2103,7 +2228,7 @@ if ($requestedPath && $tags['class_name']) {
 	
 	//Debug mode - show the TUIX before it's been modified
 	if ($debugMode) {
-		displayDebugMode($tags, $modules, $moduleFilesLoaded, $tagPath);
+		displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath);
 		exit;
 	}
 	
@@ -2115,13 +2240,13 @@ if ($requestedPath && $tags['class_name']) {
 
 //No other debug modes have currently been implemented
 if ($debugMode) {
-	displayDebugMode($tags, $modules, $moduleFilesLoaded, $tagPath);
+	displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath);
 	exit;
 }
 
 
-//Tidy away some Storekeeper tags
-if ($type == 'storekeeper' || $type == 'organizer') {
+//Tidy away some organizer tags
+if ($type == 'organizer') {
 	//Remove anything the current admin has no access to, count each tags' children
 	$removedColumns = false;
 	if ($loadDefinition) {
@@ -2219,7 +2344,7 @@ if ($mode == 'get_item_data') {
 }
 
 
-//Display the output, either as JSON to send to the Storekeeper's JavaScript engine, or as a print_r for debuggers
+//Display the output, either as JSON to send to the Organizer's JavaScript engine, or as a print_r for debuggers
 if ($mode == 'xml') {
 	
 	$xml = new XMLWriter();
@@ -2230,7 +2355,7 @@ if ($mode == 'xml') {
 	$xml->openURI('php://output');
 	$xml->startDocument('1.0', 'UTF-8');
 	$xml->setIndent(4);
-	$xml->startElement(ifNull(arrayKey($tags, 'xml', 'outer_tag'), 'storekeeper'));
+	$xml->startElement(ifNull(arrayKey($tags, 'xml', 'outer_tag'), 'organizer'));
 	
 	
 	if (!empty($tags['xml']['outer_tag_attributes']) && is_array($tags['xml']['outer_tag_attributes'])) {

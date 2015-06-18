@@ -33,17 +33,34 @@ switch ($path) {
 		$record = array(
 			'name' => $values['details/name'],
 			'body' => $values['details/body']);
-		$id = $box['key']['id'];
-		if ($id) {
+		
+		if ($box['key']['id']) {
 			$record['date_modified'] = now();
 			$record['modified_by_id'] = adminId();
 		} else {
 			$record['date_created'] = now();
 			$record['created_by_id'] = adminId();
 		}
-		setRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $record, $id);
+		
+		$box['key']['id'] = setRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $record, $box['key']['id']);
+		
+		$body = $values['details/body'];
+		$files = array();
+		$htmlChanged = false;
+		addImageDataURIsToDatabase($body, absCMSDirURL());
+		syncInlineFileLinks($files, $body, $htmlChanged);
+		syncInlineFiles(
+			$files,
+			array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $box['key']['id']),
+			$keepOldImagesThatAreNotInUse = false);
+		
+		if ($htmlChanged) {
+			setRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('body' => $body), $box['key']['id']);
+		}
+		
 		break;
 		
+	
 	case 'zenario_newsletter':
 		if (!checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 			exit;
@@ -81,9 +98,13 @@ switch ($path) {
 			$body = $values['meta_data/body'];
 			$files = array();
 			$htmlChanged = false;
-			addImageDataURIsToDatabase($body, absCMSDirURL(), 'email');
-			syncInlineFileLinks('email', $files, $body, $htmlChanged);
-			syncInlineFiles($files, array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $box['key']['id']));
+			addImageDataURIsToDatabase($body, absCMSDirURL());
+			syncInlineFileLinks($files, $body, $htmlChanged);
+			syncInlineFiles(
+				$files,
+				array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $box['key']['id']),
+				$keepOldImagesThatAreNotInUse = true);
+			
 			if ($htmlChanged) {
 				setRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletters', array('body' => $body), $box['key']['id']);
 			}

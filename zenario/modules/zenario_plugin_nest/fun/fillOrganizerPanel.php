@@ -66,8 +66,8 @@ switch ($path) {
 				if ($item['checksum']) {
 					$img = '&c='. $item['checksum'];
 					$item['traits']['has_image'] = true;
-					$item['image'] = 'zenario/file.php?sk=1'. $img;
-					$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+					$item['image'] = 'zenario/file.php?og=1'. $img;
+					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 				} else {
 					$item['image'] = getModuleIconURL($item['module_class_name']);
 				}

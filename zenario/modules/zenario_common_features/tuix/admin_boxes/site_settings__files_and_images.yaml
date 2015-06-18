@@ -95,7 +95,7 @@ site_settings:
                         name: jpeg_quality
                     label: 'JPEG Quality:'
                     type: text
-                    value: "85"
+                    value: 99
                     style: 'width: 50px;'
                     slider:
                         range: min

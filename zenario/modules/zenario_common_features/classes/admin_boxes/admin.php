@@ -306,10 +306,12 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 					'last_name' => $values['details/last_name'],
 					'email' => $values['details/email']);
 			
-			$image = $values['details/image'];
-			if ($image && ($filepath = getPathOfUploadedFileInCacheDir($image))) {
+			if ($values['details/image'] && ($filepath = getPathOfUploadedFileInCacheDir($values['details/image']))) {
 				$image_id = addFileToDatabase('admin', $filepath, false, true);
 				$details['image_id'] = $image_id;
+			
+			} else {
+				$details['image_id'] = $values['details/image'];
 			}
 			
 			if ($box['key']['id']) {

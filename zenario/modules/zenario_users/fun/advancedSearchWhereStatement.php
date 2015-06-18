@@ -52,6 +52,8 @@ if (arrayKey($values, 'exclude','enable') && (arrayKey($values, 'exclude','rule_
 
 if (arrayKey($values, 'exclude','enable') && (arrayKey($values, 'exclude','rule_type') == 'characteristic')) {
 	if ($C = zenario_users::getCharacteristic( arrayKey($values, 'exclude','rule_characteristic_picker') )) {
+		// removed because ascul_excl_ was not found in the query and caused an error
+		/*
 		switch ($C['type']) {
 			case 'boolean':
 				$sql = " AND ascul_excl_" . $escaped_tablePrefix . ".user_id IS NULL ";
@@ -74,6 +76,7 @@ if (arrayKey($values, 'exclude','enable') && (arrayKey($values, 'exclude','rule_
 				}
 				break;
 		}
+		*/
 	}
 }
 

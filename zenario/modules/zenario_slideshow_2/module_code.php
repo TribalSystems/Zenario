@@ -29,7 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_slideshow_2 extends module_base_class {
 	
-	var $slideData = array();
+	public $slideData = array();
+	public $placeholderCSS = '';
 	
 	public function init() {
 		if ($userId = userId()) {
@@ -44,12 +45,14 @@ class zenario_slideshow_2 extends module_base_class {
 			$maxHeight = 0;
 			$maxMobileWidth = 0;
 			$maxMobileHeight = 0;
+			$placeholderSlide = false;
 			foreach ($this->slideData["slides"] as $index => &$slide) {
 				if (!is_array($slide)) {
 					continue;
 				}
+				
 				// Hide hidden slides if no admin is logged in
-				if (!adminId()) { 
+				if (!adminId()) {
 					if ($slide['hidden']) {
 						unset($this->slideData["slides"][$index]);
 						continue;
@@ -119,6 +122,32 @@ class zenario_slideshow_2 extends module_base_class {
 				if (($width = max(array($slide['width'], $slide['r_width']))) > $maxWidth) {
 					$maxWidth = $width;
 				}
+				
+				// Add a placeholder image to appear while js loads, or in case of no js
+				if (!$placeholderSlide) {
+					$this->slideData['placeholder'] = array(
+						'image_src' => $slide['image_src'],
+						'mobile_image_src' => $slide['mobile_image_src']);
+					$this->placeholderCSS = "
+						#".$this->containerId."_placeholder_image {
+						 display:block;
+						 height: ".$slide['height']."px;
+						 width: ".$slide['width']."px;
+						 background-image: url(".$slide['image_src'].");
+						 background-repeat: no-repeat;
+						}
+						@media (max-width: ".setting('image_mobile_resize_point')."px) {
+						 #".$this->containerId."_placeholder_image {
+						  display:block;
+						  height: ".$slide['m_height']."px;
+						  width: ".$slide['m_width']."px;
+						  background-image: url(".$slide['mobile_image_src'].");
+						  background-repeat: no-repeat;
+						 }
+						}
+					";
+					$placeholderSlide = true;
+				}
 			}
 			// If a slide has a mobile image, but some do not, display a smaller version of the original image instead
 			if ($mobileImages && $missingMobileImage && ($this->setting('mobile_options') == 'seperate_fixed')) {
@@ -162,6 +191,10 @@ class zenario_slideshow_2 extends module_base_class {
 	
 	public function showSlot() {
 		$this->twigFramework($this->slideData);
+	}
+	
+	public function addToPageHead() {
+		echo "\n<style type=\"text/css\">\n", $this->placeholderCSS, "\n</style>\n";
 	}
 	
 	public function pluginAJAX() {

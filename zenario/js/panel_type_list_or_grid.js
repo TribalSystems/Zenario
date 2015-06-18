@@ -63,57 +63,63 @@ var methods = methodsOf(
 );
 
 
+methods.init = function() {
+	//Check the local storage to check whether grid or list view was last used.
+	this.altView = zenario.sGetItem(true, this.sessionVarName());
+};
+
 
 methods.sessionVarName = function() {
-	return 'view_for_' + zenarioO.path;
+	return 'view_for_' + this.path;
+};
+
+methods.parentMethods = function() {
+	if (this.altView) {
+		return methodsOf(panelTypes.grid);
+	} else {
+		return methodsOf(panelTypes.list);
+	}
 };
 
 
 methods.showPanel = function($header, $panel, $footer) {
-	var panelType,
-		that = this;
-	
-	//Is the first time this panel has been displayed since it was initialised?
-	if (this.view === undefined) {
-		//Check the local storage to check whether grid or list view was last used.
-		this.view = zenario.sGetItem(true, this.sessionVarName());
-	}
-	
-	//Default to list if we can't find anything, or the variable was not set to list or grid
-	if (this.view !== 'grid'
-	 && this.view !== 'list') {
-		this.view = 'list';
-	}
-	
 	//Call the showPanel() method of either grid or list view, depending on what was chosen.
 	//Also display and wire up a button to switch views between the two
-	if (this.view == 'list') {
-		methodsOf(panelTypes.list).showPanel.apply(this, arguments);
-		
-		$header.find('#organizer_switch_to_grid_view').show().click(function() {
-			that.changeViewMode('grid');
-			that.showPanel($header, $panel, $footer);
-		});
-	} else {
-		methodsOf(panelTypes.grid).showPanel.apply(this, arguments);
-		
-		$header.find('#organizer_switch_to_list_view').show().click(function() {
-			that.changeViewMode('list');
-			that.showPanel($header, $panel, $footer);
-		});
-	}
+	this.parentMethods().showPanel.apply(this, arguments);
+
+	this.setSwitchButton($header, $panel, $footer);
 	
 };
 
+methods.setSwitchButton = function($header, $panel, $footer) {
+	var that = this;
+	
+	if (this.altView) {
+		$header.find('#organizer_switch_to_list_view').show().click(function() {
+			that.changeViewMode('');
+			that.updatePanelAfterChangingView($header, $panel, $footer);
+		});
+	} else {
+		$header.find('#organizer_switch_to_grid_view').show().click(function() {
+			that.changeViewMode('1');
+			that.updatePanelAfterChangingView($header, $panel, $footer);
+		});
+	}
+};
+
 methods.returnInspectionViewEnabled = function() {
-	return this.view == 'list';
+	return this.parentMethods().returnInspectionViewEnabled.call(this);
 };
 
 
 //If the view mode is changed, remember the last value in the local storage
-methods.changeViewMode = function(mode) {
+methods.changeViewMode = function(altView) {
 	this.closeInspectionView();
-	zenario.sSetItem(true, this.sessionVarName(), this.view = mode);
+	zenario.sSetItem(true, this.sessionVarName(), this.altView = altView);
+};
+
+methods.updatePanelAfterChangingView = function($header, $panel, $footer) {
+	this.showPanel($header, $panel, $footer);
 };
 
 

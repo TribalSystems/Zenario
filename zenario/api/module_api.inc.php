@@ -1715,7 +1715,7 @@ class zenario_api {
 	////////////
 	
 	//This is intended as a replacement for the old useThisClassInstead() functionality
-	//Rather than put all of your Admin Box/Storekeeper functionality in one module,
+	//Rather than put all of your Admin Box/Organizer functionality in one module,
 	//this lets you divvy it up into different subclasses.
 	public $tAPIrunSubClassSafetyCatch = false;
 	protected final function runSubClass($filePath, $type = false, $path = false) {
@@ -1733,6 +1733,7 @@ class zenario_api {
 			$path = cms_core::$skPath;
 		}
 		
+		//Catch a renamed variable
 		if ($type == 'storekeeper') {
 			$type = 'organizer';
 		}

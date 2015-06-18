@@ -108,7 +108,7 @@ switch ($path) {
 			return self::addBanner($ids, post('refiner__nest'), post('add_banner_and_tab'));
 		
 		} elseif (post('upload_banner') || post('upload_banner_and_tab')) {
-			if ($imageId = addFileToDatabase('inline', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true)) {
+			if ($imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true)) {
 				return self::addBanner($imageId, post('refiner__nest'), post('upload_banner_and_tab'));
 			} else {
 				return false;

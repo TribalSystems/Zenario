@@ -254,7 +254,7 @@ zenarioAT.action = function(object) {
 			});
 		}
 		
-		zenarioA.SKQ(
+		zenarioA.organizerQuick(
 			object.organizer_quick.path, object.organizer_quick.target_path,
 			object.organizer_quick.min_path, object.organizer_quick.max_path,
 			engToBoolean(object.organizer_quick.disallow_refiners_looping_on_min_path),

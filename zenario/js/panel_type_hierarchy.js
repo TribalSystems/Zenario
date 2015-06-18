@@ -85,7 +85,8 @@ methods.parentIdColumn = function() {
 
 methods.showPanel = function($header, $panel, $footer) {
 	var that = this,
-		i, id, item, parentId,
+		ordinals = {},
+		i, id, item, items, parentId,
 		m = zenarioO.getPanelItems(true),
 		ordCol = this.ordinalColumn(),
 		parentIdColumn = this.parentIdColumn();
@@ -121,14 +122,32 @@ methods.showPanel = function($header, $panel, $footer) {
 			parentId = 0;
 		}
 		
-		//Note down the ordinal of everything, indexing by parent id
+		//Note down the ordinal of everything, indexing by parent id.
+		//We'll use two ways of storing, one in an array which we can sort,
+		//and one in an object which we can reach by item id
 		if (ordCol) {
-			if (!this.ordinals[parentId]) {
+			if (!ordinals[parentId]) {
+				ordinals[parentId] = [];
 				this.ordinals[parentId] = {};
 			}
-			this.ordinals[parentId][item.id] = item.tuix[ordCol];
+			ordinals[parentId].push(
+				this.ordinals[parentId][item.id] = {
+					id: item.id,
+					ord: item.tuix[ordCol]
+				}
+			);
 			
 			item.canDrag = true;
+		}
+	}
+	
+	//Sort each array by ordinal to get what the normalised ordinal will be
+	foreach (ordinals as parentId => items) {
+		items.sort(zenarioA.sortArrayByOrd);
+		
+		//loop through the array, writing down what the normalised ordinals were
+		for (i = 0; i < items.length; ++i) {
+			items[i].normOrd = i + 1;
 		}
 	}
 	
@@ -214,6 +233,8 @@ methods.setupHierarchy = function($header, $panel, $footer) {
 		$dd.on('change', function() {
 			if (that.changingHierarchy = that.scanNewHier(false)) {
 				zenarioO.disableInteraction();
+			} else {
+				zenarioO.enableInteraction();
 			}
 			zenarioO.setButtons();
 		});
@@ -261,13 +282,13 @@ methods.showButtons = function($buttons) {
 			.click(function() {
 				that.scanNewHier(true);
 				zenarioO.enableInteraction();
-				zenarioO.refresh();
+				zenarioO.reload();
 			});
 		
 		$buttons.find('#organizer_cancelButton')
 			.click(function() {
 				zenarioO.enableInteraction();
-				zenarioO.refresh();
+				zenarioO.reload();
 			});
 	
 	//Otherwise fall back to the logic in the parent function
@@ -292,8 +313,7 @@ methods.scanNewHier = function(doSave) {
 	
 	//Loop through the levels of the new hierarchy (which will be structured as parentId -> id)
 	foreach (newHierArray as parentId) {
-		var changesThisLevel = false,
-			ordinalsNotNormalised = false,
+		var ordinalsNotNormalised = false,
 			length = newHierArray[parentId].length;
 		
 		//Loop through each item on this level, in the order they are in
@@ -307,34 +327,36 @@ methods.scanNewHier = function(doSave) {
 			
 			newHier[id] = parentId;
 			
-			//Mark anything that's not in exactly its original place as a change
+			//Look for anything that's not in its original place
 			if (!this.ordinals
 			 || !this.ordinals[parentId]
-			 || this.ordinals[parentId][id] === undefined
-			 || this.ordinals[parentId][id] != ordinal) {
+			 || !this.ordinals[parentId][id]
+			 || this.ordinals[parentId][id].normOrd != ordinal) {
 				
-				changes[id] = {parentId: parentId, ordinal: ordinal};
-				changesMade = changesThisLevel = true;
-			}
-		}
-		
-		if (changesThisLevel) {
-			//There were changes, check all unchanged items on this level
-			//to see if all of their ordinals are normalised
-			for (ordinal = 1; ordinal <= length; ++ordinal) {
-				id = newHierArray[parentId][ordinal-1];
-				if (!changes[id] && (ordinal != this.tuix.items[id][ordCol])) {
-					ordinalsNotNormalised = true;
+				changesMade = true;
+				
+				//If the ordinals are not normalised, we'll need to normalise them by changing
+				//everything on this level!
+				if (doSave && ordinalsNotNormalised) {
+					for (ordinal = 1; ordinal <= length; ++ordinal) {
+						id = newHierArray[parentId][ordinal-1];
+						
+						if (id === undefined) {
+							continue;
+						}
+						
+						changes[id] = {parentId: parentId, ordinal: ordinal};
+					}
 					break;
-				}
-			}
-			
-			//If not, mark everything on this level as changed and normalise all of the ordinals
-			if (ordinalsNotNormalised) {
-				for (ordinal = 1; ordinal <= length; ++ordinal) {
-					id = newHierArray[parentId][ordinal-1];
+				
+				//Otherwise if the ordinals are normalised, we only need to save the changes
+				} else {
 					changes[id] = {parentId: parentId, ordinal: ordinal};
 				}
+			
+			//Also look for things that are in their original places, but whose ordinals are not normalised.
+			} else if (this.ordinals[parentId][id].ord != ordinal) {
+				ordinalsNotNormalised = true;
 			}
 		}
 	}

@@ -89,13 +89,18 @@ class zenario_project_locations extends module_base_class {
 		if($this->country_id){	
 
 			$sql = "SELECT
-					R.id, IFNULL(vs.local_text, R.name) as name
-							FROM ". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids "
-										. " INNER JOIN " . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
-								ON ids.region_id = R.id and ids.country_id='" . sqlEscape($this->country_id) . "'
-									LEFT JOIN " . DB_NAME_PREFIX . "visitor_phrases AS vs
-										ON R.name = vs.code
-										AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'";
+						R.id, IFNULL(vs.local_text, R.name) as name
+					FROM 
+						". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids 
+					INNER JOIN 
+						". DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
+					ON 
+						ids.region_id = R.id and ids.country_id='" . sqlEscape($this->country_id) . "'
+					LEFT JOIN 
+						". DB_NAME_PREFIX . "visitor_phrases AS vs
+					ON 
+						R.name = vs.code AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'
+					ORDER BY 2";
 		
 			$result = sqlQuery($sql);
 //			$options = array();
@@ -363,16 +368,16 @@ class zenario_project_locations extends module_base_class {
 				
 				foreach ($panel['items'] as $id => &$item) {
 					
-					$item['image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&sk=1';
-					$item['list_image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&skl=1';
+					$item['image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&og=1';
+					$item['list_image'] = 'zenario/file.php?c='. $item['checksum']. '&usage=project_locations&ogl=1';
 				}
 			case 'zenario__projects/nav/projects/panel':
 				foreach ($panel['items'] as $id => &$item) {
 					if ($item['checksum']) {
 						$img = '&usage=project_locations&c='. $item['checksum'];
 					
-						$item['image'] = 'zenario/file.php?sk=1'. $img;
-						$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+						$item['image'] = 'zenario/file.php?og=1'. $img;
+						$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 					}
 				}
 			break;

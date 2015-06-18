@@ -39,7 +39,6 @@ switch ($path) {
 				sqlQuery($sql);
 				
 				removeItemFromPluginSettings('email_template', 0, $code);
-				deleteUnusedFilesByLinkedKey(array('foreign_key_to' => 'email_template', 'foreign_key_char' => $code));
 			}
 		}
 		

@@ -93,12 +93,12 @@ site_settings:
                     show: false
                     type: warning
                     message: |
-                        All plain text passwords will be cleared from the records and encrypted!
+                        You are about to change from plain text to encrypted passwords when you save this setting. This means that all plain text passwords will be converted to encrypted passwords. This cannot be undone. Users will no longer be able to be reminded of their password (only to have their password reset to a random string).
                 turn_plaintext_on_warning:
                     show: false
                     type: warning
                     message: |
-                        From now on, all passwords for users will be stored as plain text!
+                        From now on, all passwords for users will be stored as plain text.
                 
         filesizes:
             label: File Sizes
@@ -133,16 +133,32 @@ site_settings:
                 description:
                     full_width: true
                     snippet:
-                        html: This tab contains settings concerning pending users who've not confirmed their email address
+                        html: |
+                            <p>
+                                Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
+                            </p>
+                            <br/>
+                            <p>
+                                Only accounts for Pending Users will be deleted, where the "Email verified" flag is set to No.
+                            </p>
+                remove_inactive_users:
+                    site_setting:
+                        name: remove_inactive_users
+                    label: 'Remove inactive pending users'
+                    type: checkbox
+                    format_onchange: true
                 max_days_user_inactive:
                     site_setting:
                         name: max_days_user_inactive
-                    label: 'Maximun days a pending user can exist without confirming their email:'
-                    type: text
-                    value: 30
-                    style: 'width: 10em; text-align:right;'
-                    post_field_html: |  
-                         Days
-                    side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers". Default 30.
-                    validation:
-                        numeric: The days a pending user can exist without confirming their email must be numeric.
+                    label: 'Maximum days a pending user can exist without confirming their email:'
+                    type: select
+                    values:
+                        2: 2
+                        3: 3
+                        7: 7
+                        14: 14
+                        21: 21
+                        28: 28
+                    value: 28
+                    post_field_html: days
+                    side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".

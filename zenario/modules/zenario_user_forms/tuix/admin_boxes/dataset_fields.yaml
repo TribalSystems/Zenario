@@ -1,8 +1,8 @@
 ---
 zenario_user_dataset_field_picker:
     title: "Adding a dataset field"
-    max_height: 100
-    hide_tab_bar: Yes
+    max_height: 120
+    hide_tab_bar: true
     key:
         id: ""
     tabs:
@@ -18,4 +18,6 @@ zenario_user_dataset_field_picker:
                     load_values_from_organizer_path: zenario__users/panels/all_fields
                     empty_value: ' -- Select -- '
                     format_onchange: Yes
+                    validation:
+                        required_if_not_hidden: Please select a dataset field to add to the form
                     ord: "4"

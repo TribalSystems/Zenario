@@ -32,7 +32,7 @@ switch ($path) {
 	case 'zenario__email_template_manager/panels/newsletter_templates':
 		if (post('delete') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 			foreach(explode(',', $ids) as $id) {
-				deleteRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', $id);
+				zenario_newsletter::deleteNewsletterTemplate($id);
 			}
 		}
 		break;
@@ -41,13 +41,7 @@ switch ($path) {
 		if (post('delete') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 			
 			foreach(explode(',', $ids) as $id) {
-				if ($this->checkIfNewsletterIsADraft($id)) {
-					deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', $id);
-					deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_sent_newsletter_link', array('newsletter_id' => $id));
-					deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $id));
-					deleteUnusedFilesByLinkedKey(array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
-					// delete newsletter's hyperlink count 
-				}
+				zenario_newsletter::deleteNewsletter($id);
 			}
 			
 		
@@ -90,7 +84,7 @@ switch ($path) {
 			}
 		
 		//Send the newsletter
-		} elseif (post('send') && checkPriv('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsADraft($ids)) {
+		} elseif (post('send') && checkPriv('_PRIV_SEND_NEWSLETTER') && zenario_newsletter::checkIfNewsletterIsADraft($ids)) {
 			
 			//If the admin is trying to send this newsletter, try to populate its recipients table
 			if (!zenario_newsletter::newsletterRecipients($ids, 'populate')) {
@@ -162,7 +156,7 @@ switch ($path) {
 		$key = array(
 			'foreign_key_to' => 'newsletter',
 			'foreign_key_id' => $refinerId);
-		$usage = 'email';
+		$usage = 'image';
 		$privCheck = checkPriv('_PRIV_EDIT_NEWSLETTER');
 		$movie = false;
 		

@@ -64,7 +64,7 @@ zenario__modules:
                               AND np.is_tab = 0
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'inline'
+                              AND `usage` = 'image'
                               AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                     checksum:
                         db_column: img_f.checksum
@@ -76,7 +76,7 @@ zenario__modules:
                               AND np.is_tab = 0
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'inline'
+                              AND `usage` = 'image'
                               AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                     mime_type:
                         server_side_only: Yes
@@ -89,7 +89,7 @@ zenario__modules:
                               AND np.is_tab = 0
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'inline'
+                              AND `usage` = 'image'
                               AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                 default_sort_column: name_or_title
                 label_format_for_grid_view: |

@@ -4,12 +4,6 @@
 .zenario_skin input,
 .zenario_skin button,
 .zenario_skin select {
-	-webkit-appearance: none; /*Safari/Chrome*/
-    -moz-appearance: none; /*Firefox*/
-    -ms-appearance: none; /*IE*/
-    -o-appearance: none; /*Opera*/
-    appearance: none;
-
     -webkit-border-radius: 0;
 }
 
@@ -35,9 +29,11 @@
 
 .zenario_skin input[type='text'],
 .zenario_skin input[type='password'],
+.zenario_skin input[type='email'],
 .zenario_skin textarea,
 #colorbox input[type='text'],
 #colorbox input[type='password'],
+#colorbox input[type='email'],
 #colorbox textarea {
 	width:80%;
 	padding:0 10px;
@@ -56,9 +52,11 @@
 
 .zenario_skin input[type='text'],
 .zenario_skin input[type='password'],
+.zenario_skin input[type='email'],
 .zenario_skin select,
 #colorbox input[type='text'],
 #colorbox input[type='password'],
+#colorbox input[type='email'],
 #colorbox select {
 	height:30px;
 	line-height:30px;
@@ -110,6 +108,25 @@
    	text-align: center;
    	color:#FFF;
    	padding:0 15px;
+}
+
+.zenario_skin .mce-btn button {
+    background-color: transparent;
+    min-width: 0;
+}
+
+.zenario_skin .mce-btn button:hover {
+    background-color: transparent;
+    border:0;
+    text-decoration:none;
+}
+
+.zenario_skin .mce-splitbtn .mce-open:hover {
+    border-left: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
 }
 
 .zenario_skin input[type='submit'],
@@ -302,7 +319,7 @@
 		font-size:0.867em;
 	}
 	
-/* - Sucess --------------------------------------------------------------------------------------*/
+/* - Success --------------------------------------------------------------------------------------*/
 	
 	.success,
 	.contact_form_message,

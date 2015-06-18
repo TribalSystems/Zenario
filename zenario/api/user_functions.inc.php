@@ -29,10 +29,7 @@
 //Add an extranet user into a group, or out of a group
 function addUserToGroup($userId, $groupId, $remove = false) {
 	if ($col = datasetFieldDBColumn($groupId)) {
-		$sql = "UPDATE ". DB_NAME_PREFIX. "users_custom_data
-					SET `" . $col . "`=" . ($remove ? 0 : 1) 
-				. " WHERE user_id = ". (int) $userId;
-		sqlQuery($sql);
+		setRow('users_custom_data', array($col => ($remove ? 0 : 1)), array('user_id' => $userId));
 	}
 }
 
@@ -295,11 +292,11 @@ function generateUserIdentifier($userId, $details = array()) {
 	$email = $details['email'];
 	// Remove special characters and get the base screen name
 	if (!$baseScreenName) {
-		$firstName = preg_replace('/[^A-Za-z0-9\-]/', '', $firstName);
-		$lastName = preg_replace('/[^A-Za-z0-9\-]/', '', $lastName);
+		$firstName = trimNonWordCharactersUnicode($firstName);
+		$lastName = trimNonWordCharactersUnicode($lastName);
 		if ($firstName || $lastName) {
 			$baseScreenName = $firstName. $lastName;
-		} elseif (($emailArray = explode('@', $email)) && ($email = preg_replace('/[^A-Za-z0-9\-]/', '', $emailArray[0]))) {
+		} elseif (($emailArray = explode('@', $email)) && ($email = trimNonWordCharactersUnicode($emailArray[0]))) {
 			$baseScreenName = $email;
 		} else {
 			$baseScreenName = 'User';
@@ -578,7 +575,6 @@ function getEmail($userId) {
 function getUsername($userId) {
 	return getUserScreenName($userId);
 }
-
 function getUserScreenName($userId) {
 	return getRow('users', 'screen_name', $userId);
 }

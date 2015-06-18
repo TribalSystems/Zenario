@@ -32,7 +32,8 @@ class zenario_location_editor extends module_base_class {
 	var $emailValidationError=false;
 	var $roleConfigurationError="";
 	var $locationDetails = array();
-		
+	var $mergeArray = array();
+	var $sectionArray = array();
 
 
 	function init() {
@@ -56,8 +57,7 @@ class zenario_location_editor extends module_base_class {
 							'city' => post('City'),
 							'state' => post('State'),
 							'postcode' => post('Postcode'),
-							'country_id' => post('Country'),
-							'contact_name' => post('Contact_name')
+							'country_id' => post('Country')
 							)
 						,
 						array(
@@ -91,124 +91,119 @@ class zenario_location_editor extends module_base_class {
 		return true;
 	}
 	
-    function showSlot() {
-   		if ($this->roleConfigurationError) {
+	function showSlot() {
+		if ($this->roleConfigurationError) {
 			$this->modeError();
-   		} elseif (get('edit_location') || $this->emailValidationError) {
+		} elseif (get('edit_location') || $this->emailValidationError) {
 			$this->modeEditLocation();
-   		} else {
+		} else {
 			$this->modeViewLocation();			
-   		}
-    }
-    
-    function modeError() {
-    	if (session('admin_userid')) {
+		}
+	}
+	
+	function modeError() {
+		if (session('admin_userid')) {
 			echo $this->roleConfigurationError;
 		}
-    }
-    
-    function modeViewLocation() {
-    	$mergeArray = array();
-     	$sectionArray = array();
-   
-
+	}
+	
+	function modeViewLocation() {
 		if ($this->locationDetails){
 		
 			if (!empty($this->locationDetails['description'])) {
-				$mergeArray['Description'] = htmlspecialchars($this->locationDetails['description']);
+				$this->mergeArray['Description'] = htmlspecialchars($this->locationDetails['description']);
 			}
 	
 			if (!empty($this->locationDetails['address1'])) {
-				$sectionArray['Address1'] = true;
-				$mergeArray['Address1'] = htmlspecialchars($this->locationDetails['address1']);
+				$this->sectionArray['Address1'] = true;
+				$this->mergeArray['Address1'] = htmlspecialchars($this->locationDetails['address1']);
 			}
 	
 			if (!empty($this->locationDetails['address2'])) {
-				$sectionArray['Address2'] = true;
-				$mergeArray['Address2'] = htmlspecialchars($this->locationDetails['address2']);
+				$this->sectionArray['Address2'] = true;
+				$this->mergeArray['Address2'] = htmlspecialchars($this->locationDetails['address2']);
 			}
 	
 			if (!empty($this->locationDetails['locality'])) {
-				$sectionArray['Locality'] = true;
-				$mergeArray['Locality'] = htmlspecialchars($this->locationDetails['locality']);
+				$this->sectionArray['Locality'] = true;
+				$this->mergeArray['Locality'] = htmlspecialchars($this->locationDetails['locality']);
 			}
 	
 			if (!empty($this->locationDetails['city'])) {
-				$sectionArray['City'] = true;
-				$mergeArray['City'] = htmlspecialchars($this->locationDetails['city']);
+				$this->sectionArray['City'] = true;
+				$this->mergeArray['City'] = htmlspecialchars($this->locationDetails['city']);
 			}
 	
 			if (!empty($this->locationDetails['state'])) {
-				$sectionArray['State'] = true;
-				$mergeArray['State'] = htmlspecialchars($this->locationDetails['state']);
+				$this->sectionArray['State'] = true;
+				$this->mergeArray['State'] = htmlspecialchars($this->locationDetails['state']);
 			}
 	
 			if (!empty($this->locationDetails['postcode'])) {
-				$sectionArray['Postcode'] = true;
-				$mergeArray['Postcode'] = htmlspecialchars($this->locationDetails['postcode']);
+				$this->sectionArray['Postcode'] = true;
+				$this->mergeArray['Postcode'] = htmlspecialchars($this->locationDetails['postcode']);
 			}
 	
 			if (!empty($this->locationDetails['country_id'])) {
 				if (inc("zenario_country_manager")) {
 					if ($country = zenario_country_manager::getCountryNamesInCurrentVisitorLanguage("active",$this->locationDetails['country_id'])) {
-						$sectionArray['Country'] = true;
-						$mergeArray['Country'] = arrayKey($country,"COUNTRY_" . $this->locationDetails['country_id']);
+						$this->sectionArray['Country'] = true;
+						$this->mergeArray['Country'] = arrayKey($country,"COUNTRY_" . $this->locationDetails['country_id']);
 					}
 				}
 			}
 	
 			if ((!empty($this->locationDetails['equiv_id'])  && !empty($this->locationDetails['content_type']))) {
-				$sectionArray['Contact'] = true;
+				$this->sectionArray['Contact'] = true;
 			}
 	
 			if (!empty($this->locationDetails['equiv_id']) && !empty($this->locationDetails['content_type'])) {
-				$sectionArray['More Info'] = true;
+				$this->sectionArray['More Info'] = true;
 				$cID  = $this->locationDetails['equiv_id'];
 				$cType = $this->locationDetails['content_type'];
 				langEquivalentItem($cID, $cType);
-				$mergeArray['More Info'] = $this->linkToItem($cID, $cType, true);
+				$this->mergeArray['More Info'] = $this->linkToItem($cID, $cType, true);
 			}
 	
 			if (!empty($this->locationDetails['country_id']) && !empty($this->locationDetails['region_id'])) {
 				if (inc("zenario_country_manager")) {
 					if ($region = zenario_country_manager::getRegionNamesInCurrentVisitorLanguage("active",$this->locationDetails['country_id'],$this->locationDetails['region_id'])) {
 						foreach ($region as $key => $value) {
-							$sectionArray['Region'] = true;
-							$mergeArray['Region'] = zenario_country_manager::adminPhrase(session('user_lang'),$value);
+							$this->sectionArray['Region'] = true;
+							$this->mergeArray['Region'] = zenario_country_manager::adminPhrase(session('user_lang'),$value);
 						}
 					}
 				}
 			}
 			
-			$mergeArray['Edit_Location_Link'] = $this->refreshPluginSlotAnchor('edit_location=1');
-			$this->framework('View',$mergeArray,$sectionArray);
+			$this->mergeArray['Edit_Location_Link'] = $this->refreshPluginSlotAnchor('edit_location=1');
+			$this->framework('View',$this->mergeArray,$this->sectionArray);
 
-	    }
-    }
+		}
+	}
 
-    function modeEditLocation() {
-    	$mergeArray = array();
-   
+	function modeEditLocation() {
+	
 		if ($this->emailValidationError) {
-			$mergeArray['Error'] = $this->phrase('_ERROR_INVALID_EMAIL_ADDRESS');
+			$this->mergeArray['Error'] = $this->phrase('_ERROR_INVALID_EMAIL_ADDRESS');
 		}
 
-		$mergeArray['Back_Link'] = $this->refreshPluginSlotAnchor('');
+		$this->mergeArray['Back_Link'] = $this->refreshPluginSlotAnchor('');
 
 		if ($this->locationDetails){
-			$mergeArray['location_id'] = htmlspecialchars($this->locationDetails['id']);
-			$mergeArray['Description'] = htmlspecialchars($this->locationDetails['description']);
-			$mergeArray['Address1'] = htmlspecialchars($this->locationDetails['address1']);
-			$mergeArray['Address2'] = htmlspecialchars($this->locationDetails['address2']);
-			$mergeArray['Locality'] = htmlspecialchars($this->locationDetails['locality']);
-			$mergeArray['City'] = htmlspecialchars($this->locationDetails['city']);
-			$mergeArray['State'] = htmlspecialchars($this->locationDetails['state']);
-			$mergeArray['Postcode'] = htmlspecialchars($this->locationDetails['postcode']);
-			$mergeArray['Country'] = htmlspecialchars($this->locationDetails['country_id']);
+			$this->mergeArray['location_id'] = htmlspecialchars($this->locationDetails['id']);
+			$this->mergeArray['Description'] = htmlspecialchars($this->locationDetails['description']);
+			$this->mergeArray['Address1'] = htmlspecialchars($this->locationDetails['address1']);
+			$this->mergeArray['Address2'] = htmlspecialchars($this->locationDetails['address2']);
+			$this->mergeArray['Locality'] = htmlspecialchars($this->locationDetails['locality']);
+			$this->mergeArray['City'] = htmlspecialchars($this->locationDetails['city']);
+			$this->mergeArray['State'] = htmlspecialchars($this->locationDetails['state']);
+			$this->mergeArray['Postcode'] = htmlspecialchars($this->locationDetails['postcode']);
+			$this->mergeArray['Country'] = htmlspecialchars($this->locationDetails['country_id']);
 		}
 		
 		echo $this->openForm();
-			$this->framework('Edit',$mergeArray);
+			$this->framework('Edit',$this->mergeArray);
 		echo $this->closeForm();
 
 	}

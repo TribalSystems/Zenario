@@ -56,6 +56,20 @@
 	border:1px solid #7a8080;
 }
 
+.zenario_skin .extranet_wrap .readonly input[type='text'],
+.zenario_skin .extranet_wrap .readonly input[type='password'],
+.zenario_skin .extranet_wrap .readonly textarea {
+	background-color:#EDEDED;
+	color:#646464;
+	cursor:default;
+}
+
+.zenario_skin .extranet_wrap .readonly input[type='text']:focus,
+.zenario_skin .extranet_wrap .readonly input[type='password']:focus,
+.zenario_skin .extranet_wrap .readonly textarea:focus {
+	border-color:#e5e5de;
+}
+
 .extranet_wrap .extranet_remember_me,
 .extranet_wrap .extranet_log_me_in,
 .extranet_wrap .extranet_links {

@@ -303,7 +303,7 @@ zenarioA.pickNewPlugin = function(el, slotName, level) {
 		path += 'item//' + zenario.slots[slotName].moduleId + '//' + zenario.slots[slotName].instanceId;
 	}
 	
-	zenarioA.SK('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, phrase.insertReusablePlugin);
+	zenarioA.organizerSelect('zenarioA', 'addNewReusablePlugin', false, path, 'zenario__modules/panels/plugins', 'zenario__modules/panels/modules', 'zenario__modules/panels/plugins', true, true, phrase.insertReusablePlugin);
 	
 	return false;
 };
@@ -1292,7 +1292,7 @@ zenarioA.addJQueryElements = function(path) {
 	
 	
 	
-	//Look for fields that IDs from Storekeeper, and look up what the names should be
+	//Look for fields that IDs from Organizer, and look up what the names should be
 	$(path + '.look_value_from_sk').each(function(i, el) {
 		//Requires three fields with ids in the format: "id", "name_for_id" and "target_path_for_id" to work.
 		if (el.id && el.id.substr(0, 9) == 'name_for_') {
@@ -1326,7 +1326,10 @@ zenarioA.addJQueryElements = function(path) {
 				altField: '#_value_for__' + el.id,
 				altFormat: 'yy-mm-dd',
 				showOn: 'focus',
-				onSelect: function(dateText, inst) { zenarioAB.fieldChange(this.name); }
+				onSelect: function(dateText, inst) {
+					$(el).change();
+					//zenarioAB.fieldChange(this.name);
+				}
 			});
 		}
 	});
@@ -1379,7 +1382,15 @@ zenarioA.setTooltipIfTooLarge = function(target, title, sizeThreshold) {
 //A hack to try and remove some of the bad/repeated html that TinyMCE sometimes generates,
 //e.g. duplicate id/style tags
 zenarioA.tinyMCEGetContent = function(editor) {
-	var html = $('<div/>').html(editor.getContent()).html();
+	var html,
+		$html = $('<div/>').html(editor.getContent());
+	
+	//Bugfix for task #9380 "Problem where some of the CMS' <div>s had been entered into a WYSIWYG Editor"
+	$html.find('[id^="plgslt_"]').each(function(i, el) {
+		 $(el).removeAttr('id class style');
+	});
+	
+	html = $html.html();
 	
 	//Fix for request #2908 "Bug with WYSIWYG Editor: You can't delete an empty <h1> tag"
 	if (html == '<h1>&nbsp;</h1>') {
@@ -1501,7 +1512,7 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button.pick_items;
 		}
 
-		zenarioA.SK('zenarioA', 'setLinkURL', false,
+		zenarioA.organizerSelect('zenarioA', 'setLinkURL', false,
 						pick_items.path,
 						pick_items.target_path,
 						pick_items.min_path,
@@ -1515,9 +1526,9 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 	} else if (type == 'image') {
 		var id = tinyMCE.activeEditor.id,
 			pick_items = {
-				path: 'zenario__content/panels/inline_images_shared',
-				target_path: 'zenario__content/panels/inline_images_shared',
-				min_path: 'zenario__content/panels/inline_images_shared',
+				path: 'zenario__content/panels/image_library',
+				target_path: 'zenario__content/panels/image_library',
+				min_path: 'zenario__content/panels/image_library',
 				max_path: false,
 				disallow_refiners_looping_on_min_path: false};
 		
@@ -1533,7 +1544,7 @@ zenarioA.fileBrowser = function(field_name, url, type, win) {
 			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button.pick_items;
 		}
 
-		zenarioA.SK('zenarioA', 'setImageURL', false,
+		zenarioA.organizerSelect('zenarioA', 'setImageURL', false,
 						pick_items.path,
 						pick_items.target_path,
 						pick_items.min_path,
@@ -1583,7 +1594,7 @@ zenarioA.setImageURL = function(path, key, row) {
 
 	var imageURL = URLBasePath + 'zenario/file.php?c=' + row.checksum;
 	
-	if (key.usage && key.usage != 'inline') {
+	if (key.usage && key.usage != 'image') {
 		imageURL += '&usage=' + encodeURIComponent(key.usage);
 	}
 	
@@ -1689,9 +1700,9 @@ zenarioA.showPagePreview = function(tuix, id) {
 
 
 
-/* Storekeeper launch functions */
+/* Organizer launch functions */
 
-//Format the name of an item from Storekeeper appropriately
+//Format the name of an item from Organizer appropriately
 zenarioA.formatSKItemName = function(panel, i) {
 	var string = undefined,
 		string2,
@@ -1805,10 +1816,10 @@ zenarioA.formatSKItemField = function(value, column) {
 	return value;
 };
 
-//Open the storekeeper in quick mode
-zenarioA.SKQ = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass) {
+//Open Organizer in quick mode
+zenarioA.organizerQuick = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass) {
 	
-	zenarioA.SK(
+	zenarioA.organizerSelect(
 		false, false, false,
 		path, false, minPath, maxPath, disallowRefinersLoopingOnMinPath,
 		false, false, false,
@@ -1819,13 +1830,13 @@ zenarioA.SKQ = function(path, targetPath, minPath, maxPath, disallowRefinersLoop
 		reloadOnChanges, wrapperCSSClass);
 };
 
-//Get the correct CSS class name to put around Storekeeper
+//Get the correct CSS class name to put around Organizer
 zenarioA.getSKBodyClass = function(win) {
 	if (win === undefined) {
 		win = window;
 	}
 	
-	return 'zenario_sk ' + (
+	return 'zenario_og ' + (
 		win.zenarioONotFull || win.zenarioA.openedInIframe?
 			(
 				(win.zenarioOQuickMode? 'zenario_organizer_quick' : 'zenario_organizer_select') +
@@ -1836,8 +1847,8 @@ zenarioA.getSKBodyClass = function(win) {
 	) + ' ' + (win.zenarioOWrapperCSSClass || '');
 };
 
-//Open the storekeeper in select mode
-zenarioA.SK = function(
+//Open Organizer in select mode
+zenarioA.organizerSelect = function(
 	callbackObject, callbackFunction, enableMultipleSelect,
 	path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath,
 	chooseButtonActiveClass, choosePhrase, chooseMultiplePhrase,
@@ -1851,7 +1862,7 @@ zenarioA.SK = function(
 ) {
 	
 	var win,
-		useIframe = !skQuick || zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('sk');
+		useIframe = !skQuick || zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('og');
 	
 	if (!object) {
 		object = {};
@@ -1861,7 +1872,7 @@ zenarioA.SK = function(
 		win = window;
 	
 	} else {
-		//If we've already got a Storekeeper, we'll need to load this one new in an iFrame
+		//If we've already got Organizer open, we'll need to load this one new in an iFrame
 		
 		//Initialise it if it's not been preloaded yet
 		zenarioA.SKInit();
@@ -1869,7 +1880,7 @@ zenarioA.SK = function(
 		win = get('zenario_sk_iframe').contentWindow;
 		
 		//The "openOverAdminBox" variable should be false if we're opening an iframe,
-		//as this new Storekeeper will be the first on the page and won't need to open over anything.
+		//as this new Organizer will be the first on the page and won't need to open over anything.
 		openOverAdminBox = false;
 	}
 	
@@ -1940,7 +1951,7 @@ zenarioA.SK = function(
 	win.zenarioOFirstLoad = true;
 	
 	if (!useIframe) {
-		//If we've not currently got an existing full-Storekeeper instance in this frame, set Storekeeper up in a <div>
+		//If we've not currently got an existing full-Organizer instance in this frame, set Organizer up in a <div>
 		
 		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.8, 50, 10, !skQuick, true, true, {minWidth: 550});
 		//zenarioO.open = function(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
@@ -1948,14 +1959,14 @@ zenarioA.SK = function(
 		zenarioO.init();
 	}
 	
-	//If Storekeeper has been already pre-loaded, we can use the navigation functions to go to the correct path
+	//If Organizer has been already pre-loaded, we can use the navigation functions to go to the correct path
 	if (win.zenarioO) {
 		win.zenarioO.go(path, -1);
 	}
 	//Otherwise store the requested path in zenarioOGoToPathWhenLoaded and wait for the it to catch up
 		
 	if (useIframe) {
-		//Show the storekeeper window
+		//Show the Organizer window
 		zenarioA.openBox(false, zenarioA.getSKBodyClass(win), 'AdminOrganizer', false, false, 50, 2, !skQuick, true, false, false);
 		
 		get('zenario_sk_iframe').style.width = zenario.browserIsIE(6)? '600px' : '96%';
@@ -1985,7 +1996,7 @@ zenarioA.SKInit = function() {
 	zenarioA.SKInitted = true;
 };
 
-//Attempt to preload the Storekeeper ten seconds after the current page has finished loading
+//Attempt to preload Organizer ten seconds after the current page has finished loading
 zenarioA.SKStartInit = function() {
 	
 	//Don't do anything for IE 6 and 7
@@ -2001,7 +2012,7 @@ zenarioA.SKStartInit = function() {
 
 zenarioA.getCustomFromSK = function(field, path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath) {
 	zenarioA.SKTarget = field;
-	zenarioA.SK('zenarioA', 'setCustom', false, path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath);
+	zenarioA.organizerSelect('zenarioA', 'setCustom', false, path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath);
 };
 
 //Handle callback for custom things
@@ -2053,7 +2064,7 @@ zenarioA.multipleLanguagesEnabled = function() {
 
 
 
-//Functions for enabling HTML 5 file-uploads in WYSIWYG Editors and in Storekeeper Panels
+//Functions for enabling HTML 5 file-uploads in WYSIWYG Editors and in Organizer Panels
 
 zenarioA.uploading = false;
 zenarioA.canDoHTML5Upload = function() {
@@ -2236,7 +2247,7 @@ zenarioA.openProfile = function() {
 
 //Functionality for clicking on Menu Nodes. They should:
 	//Follow their hyperlinks in preview mode
-	//Open Storekeeper Quick in menu mode if the menu wand is on
+	//Open Organizer Quick in menu mode if the menu wand is on
 		//Or show the create a menu node admin box for the create buttons
 	//Do nothing otherwise
 zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
@@ -2264,7 +2275,7 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 	}
 	
 	if (key.id) {
-		//If this is an existing Menu Item, open it in Storekeeper Quick
+		//If this is an existing Menu Item, open it in Organizer Quick
 		var path = zenario.pluginClassAJAX('zenario_common_features', {getMenuItemStorekeeperDeepLink: key.id, languageId: key.languageId}, true);
 		
 		if (zenarioA.loggedOut(path)) {
@@ -2479,7 +2490,7 @@ zenarioA.checkActionUnique = function(object) {
 	}
 };
 
-//Handle what happens when an admin clicks on something that will cause an action; e.g. a button on the admin toolbar or a button on a Storekeeper Panel's Toolbar
+//Handle what happens when an admin clicks on something that will cause an action; e.g. a button on the admin toolbar or a button on a Organizer Panel's Toolbar
 zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, link, extraRequests, specificItemRequested) {
 	if (zenarioCallingLibrary.uploading) {
 		return false;
@@ -2651,7 +2662,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			frontend_link = item.frontend_link;
 		}
 		
-		//For Storekeeper, attempt to insert the return link,
+		//For Organizer, attempt to insert the return link,
 		//and then open it in the same window if we successfully inserted it
 		if (zenarioCallingLibrary.encapName == 'zenarioO') {
 			frontend_link = zenarioO.parseReturnLink(frontend_link);
@@ -2710,7 +2721,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	
 	} else if (object.popout) {
 		var id, item, title, usage,
-			filename,
+			filename, match,
 			popout = $.extend(true, {}, object.popout);
 		
 		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id])) {
@@ -2753,6 +2764,13 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		if (popout.href) {
 			if (filename = (item && item.filename) || (popout.options && popout.options.filename) || popout.filename) {
+				
+				//If the short checksum has been added to the end of the filename, we need to strip it off
+				//as colorbox uses the filename to detect the mimetype of the object
+				if (match = filename.match(/(.*) \[.*\]/)) {
+					filename = match[1];
+				}
+				
 				popout.href += '&filename=' + encodeURIComponent(filename);
 			}
 			
@@ -2797,8 +2815,8 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			path = path.replace(/\[\[id\]\]/g, id);
 		}
 		
-		//zenarioA.SKQ = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass)
-		zenarioA.SKQ(
+		//zenarioA.organizerQuick = function(path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath, slotName, instanceId, reloadOnChanges, wrapperCSSClass)
+		zenarioA.organizerQuick(
 			path,
 			
 			//We don't need the target path variable when opening like this, but as a little hack I'll
@@ -2815,7 +2833,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			zenarioCallingLibrary.postPickItemsObject = object.pick_items;
 		}
 		
-		//Use storekeeper in select mode to combine two items
+		//Use Organizer in select mode to combine two items
 		zenarioCallingLibrary.actionTarget =
 			'zenario/ajax.php?' +
 				'__pluginClassName__=' + object.pick_items.class_name +
@@ -2827,7 +2845,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			$.extend(zenarioCallingLibrary.actionRequests, object.pick_items.request);
 		}
 		
-		zenarioA.SK(
+		zenarioA.organizerSelect(
 			zenarioCallingLibrary.encapName, 'pickItems',
 			object.pick_items.multiple_select,
 			object.pick_items.path,
@@ -2851,7 +2869,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			zenarioCallingLibrary.postPickItemsObject = object.combine_items;
 		}
 		
-		//Use storekeeper in select mode to combine two items
+		//Use Organizer in select mode to combine two items
 		zenarioCallingLibrary.actionTarget =
 			'zenario/ajax.php?' +
 				'__pluginClassName__=' + object.combine_items.class_name +
@@ -2863,7 +2881,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			$.extend(zenarioCallingLibrary.actionRequests, object.combine_items.request);
 		}
 		
-		zenarioA.SK(
+		zenarioA.organizerSelect(
 			zenarioCallingLibrary.encapName, 'pickItems',
 			object.combine_items.multiple_select,
 			object.combine_items.path,
@@ -3051,18 +3069,26 @@ zenarioA.resizeImage = function(image_width, image_height, constraint_width, con
 //Utility function for the zenarioXX.sortYYY() series of function
 //Given two arrays (each of which represents an element), say which should be first
 zenarioA.sortArray = function(a, b) {
+	return zenarioA.sortLogic(a, b, 1);
+};
+
+zenarioA.sortArrayByOrd = function(a, b) {
+	return zenarioA.sortLogic(a, b, 'ord');
+};
+
+zenarioA.sortLogic = function(a, b, prop) {
 	
 	//Check to see if they're identical
-	if (a[1] === b[1]) {
+	if (a[prop] === b[prop]) {
 		return 0;
 	
 	} else {
-		var aNumeric = a[1] == 1*a[1],
-			bNumeric = b[1] == 1*b[1];
+		var aNumeric = a[prop] == 1*a[prop],
+			bNumeric = b[prop] == 1*b[prop];
 	
 		//Try a numeric comparision
 		if (aNumeric && bNumeric) {
-			return 1*a[1] < 1*b[1]? -1 : 1;
+			return 1*a[prop] < 1*b[prop]? -1 : 1;
 	
 		//Put any numeric values before strings
 		} else if (aNumeric || bNumeric) {
@@ -3070,7 +3096,7 @@ zenarioA.sortArray = function(a, b) {
 		
 		//Otherwise try a string comparision
 		} else {
-			return ('' + a[1]).toUpperCase() < ('' + b[1]).toUpperCase()? -1 : 1;
+			return ('' + a[prop]).toUpperCase() < ('' + b[prop]).toUpperCase()? -1 : 1;
 		}
 	}
 };

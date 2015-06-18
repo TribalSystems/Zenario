@@ -72,6 +72,7 @@ class zenario_multiple_image_container extends zenario_banner {
 		
 		$this->mergeFields['Text'] = $this->setting('text');
 		$this->mergeFields['Title'] = htmlspecialchars($this->setting('title'));
+		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
 		
 		if (!$this->isVersionControlled && $this->setting('translate_text')) {
 			if ($this->mergeFields['Text']) {
@@ -125,7 +126,6 @@ class zenario_multiple_image_container extends zenario_banner {
 				$fields['first_tab/canvas']['hidden'] = false;
 				
 				$fields['first_tab/use_rollover']['hidden'] =
-				$fields['first_tab/rollover_image_thumbnail']['hidden'] =
 				$fields['first_tab/rollover_image']['hidden'] =
 				$fields['first_tab/alt_tag']['hidden'] =
 				$fields['first_tab/image_title']['hidden'] =

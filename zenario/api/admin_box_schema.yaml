@@ -747,7 +747,7 @@ additionalProperties:
                                                 Like <code>required</code>, but is not checked if the field was hidden using the <code>hidden</code>
                                                 or <code>visible_if</code> properties.
                                                 Note that <code>visible_if</code> is a client-side check; you should not rely on <code>required_if_not_hidden</code>
-                                                for security decisions as in theory it could be manipulated on the client end.
+                                                for security decisions as it can be manipulated by the client.
                                         email:
                                             type: string
                                             description: >
@@ -769,9 +769,34 @@ additionalProperties:
                                         screen_name:
                                             type: string
                                             description: >
-                                                An error message to display if a a valid Screen Name is not entered for this
+                                                An error message to display if a valid Screen Name is not entered for this
                                                 field.
-                                
+                                        
+                                        #New rules for image validation in 7.0.5
+                                        must_be_gif_ico_or_png:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .gif, .ico or .png file is not chosen.
+                                                This works from version 7.0.5 onwards.
+                                        
+                                        must_be_gif_jpg_or_png:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .gif, .jpg or .png file is not chosen.
+                                                This works from version 7.0.5 onwards.
+                                        
+                                        must_be_gif_or_png:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .gif or .png file is not chosen.
+                                                This works from version 7.0.5 onwards.
+                                        
+                                        must_be_ico:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .ico file is not chosen.
+                                                This works from version 7.0.5 onwards.
+                                        
                                 multiple_edit:
                                     type: object
                                     description: >
@@ -998,6 +1023,8 @@ additionalProperties:
                                     type: object
                                     description: >
                                         Use this property to define a List of Values for <code>checkboxes</code>, <code>radios</code> or <code>select</code>-type fields.
+                                        
+                                        From 7.0.5 onwards, you can use this property for a text field to add a jQuery auto-complete.
                                     additionalProperties:
                                         #This needs to be changed if using docson as it glitches out here
                                         type:

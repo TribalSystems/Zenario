@@ -23,7 +23,6 @@ zenario__users:
 
         access_log:
             title: Access Log
-            view_mode: list
             db_items:
                 table: '[[DB_NAME_PREFIX]]user_content_accesslog AS uca'
                 #id_column: "CONCAT(uca.hit_datetime, '_', uca.user_id, '_', uca.content_id, '_', uca.content_type)"
@@ -107,11 +106,11 @@ zenario__users:
                 name: Log
                 names: Logs
                 css_class: log
-            collection_buttons:
-                export:
-                    css_class: export
-                    label: Export Access Log in CSV format
-                    do_csv_export: Yes
+            #collection_buttons:
+            #    export:
+            #        css_class: export
+            #        label: Export Access Log in CSV format
+            #        do_csv_export: Yes
             no_items_message: |
                 No accesses have been logged.
                                         You can turn on User Access logging by going to a private Content Item's settings,

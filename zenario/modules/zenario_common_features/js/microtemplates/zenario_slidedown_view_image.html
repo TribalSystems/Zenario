@@ -6,9 +6,23 @@
 			height="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'height'), Math.min(zenarioO.columnRawValue(m.id, 'height') / zenarioO.columnRawValue(m.id, 'width') * 400, 400)))|escape}}"
 		/>
 	</td><td>
+		<div>Filename: {{zenarioO.columnValue(m.id, 'filename')|escape}}</div>
 		<div>Alt tag: {{zenarioO.columnValue(m.id, 'alt_tag')|escape}}</div>
 		<div>Size: {{zenarioO.columnValue(m.id, 'size')|escape}}</div>
 		<div>Height: {{zenarioO.columnValue(m.id, 'height')|escape}}px</div>
 		<div>Width: {{zenarioO.columnValue(m.id, 'width')|escape}}px</div>
+		<% if (zenarioO.tuix.columns.in_use_anywhere) { %>
+			<div>In use: {{zenarioO.columnValue(m.id, 'in_use_anywhere')|escape}}</div>
+		<% } else { %>
+			<% if (zenarioO.tuix.columns.in_use_here) { %>
+				<div>In use here: {{zenarioO.columnValue(m.id, 'in_use_here')|escape}}</div>
+			<% } %>
+			<% if (zenarioO.tuix.columns.in_use_elsewhere) { %>
+				<div>In use elsewhere: {{zenarioO.columnValue(m.id, 'in_use_elsewhere')|escape}}</div>
+			<% } %>
+		<% } %>
+		<% if (zenarioO.tuix.columns.tags) { %>
+			<div>Tags: {{zenarioO.columnValue(m.id, 'tags')|escape}}</div>
+		<% } %>
 	</td></tr>
 </table>

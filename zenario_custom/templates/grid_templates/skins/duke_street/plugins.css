@@ -236,12 +236,14 @@
 
 .zenario_skin .zenario_contact_form__default_style input[type='text'],
 .zenario_skin .zenario_contact_form__default_style input[type='password'],
+.zenario_skin .zenario_contact_form__default_style input[type='email'],
 .zenario_skin .zenario_contact_form__default_style textarea {
 	border-color:#e5e5de;
 }
 
 .zenario_skin .zenario_contact_form__default_style input[type='text']:focus,
 .zenario_skin .zenario_contact_form__default_style input[type='password']:focus,
+.zenario_skin .zenario_contact_form__default_style input[type='email']:focus,
 .zenario_skin .zenario_contact_form__default_style textarea:focus {
 	border:1px solid #7a8080;
 }
@@ -337,6 +339,7 @@
 }
 
 #colorbox.zenario_email_a_friend__default_style .email_friend_popup form input[type='text'],
+#colorbox.zenario_email_a_friend__default_style .email_friend_popup form input[type='email'],
 #colorbox.zenario_email_a_friend__default_style .email_friend_popup form textarea {
 	display:block;
 	margin:5px 0 10px;
@@ -349,6 +352,7 @@
 
 #colorbox.zenario_email_a_friend__default_style .errors_in_floating_box,
 #colorbox.zenario_email_a_friend__default_style .email_friend_popup form input[type='text'],
+#colorbox.zenario_email_a_friend__default_style .email_friend_popup form input[type='email'],
 #colorbox.zenario_email_a_friend__default_style .email_friend_popup form textarea {
 	width:95%;
 }
@@ -447,10 +451,10 @@
 	margin:auto;
 }
 
-/* Image container
+/* Image container for header slot
 --------------------------------------------------------------------------------------------------*/
 
-.zenario_image_container__default_style a {
+.Grid_Header .Top_1 .zenario_image_container__default_style a {
 	height:100% !important;
 	margin:auto;
 	background-position:center center !important;
@@ -1517,12 +1521,14 @@ body.ie .zenario_promo_menu__default_style ul li:hover .columns_wrap {
 
 .zenario_skin .zenario_user_forms__default_style input[type='text'],
 .zenario_skin .zenario_user_forms__default_style input[type='password'],
+.zenario_skin .zenario_user_forms__default_style input[type='email'],
 .zenario_skin .zenario_user_forms__default_style textarea {
 	border-color:#e5e5de;
 }
 
 .zenario_skin .zenario_user_forms__default_style input[type='text']:focus,
 .zenario_skin .zenario_user_forms__default_style input[type='password']:focus,
+.zenario_skin .zenario_user_forms__default_style input[type='email']:focus,
 .zenario_skin .zenario_user_forms__default_style textarea:focus {
 	border:1px solid #7a8080;
 }

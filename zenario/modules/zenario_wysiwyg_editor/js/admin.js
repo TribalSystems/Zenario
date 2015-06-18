@@ -127,7 +127,8 @@ directionality	ltr rtl
 		inline_styles: false,
 		allow_events: true,
 		allow_script_urls: true,
-		convert_urls: false,
+		convert_urls: true,
+		relative_urls: true,
 		
 		
 		style_formats: zenarioA.skinDesc.style_formats,
@@ -238,7 +239,7 @@ zenario_wysiwyg_editor.SK = function(field_name, url, type, win) {
 	zenario_wysiwyg_editor.field_name = field_name;
 	
 	if (type == 'file') {
-		zenarioA.SK('zenario_wysiwyg_editor', 'setLinkURL', false,
+		zenarioA.organizerSelect('zenario_wysiwyg_editor', 'setLinkURL', false,
 						'zenario__content/panels/content',
 						'zenario__content/panels/content',
 						'zenario__content/panels/content',
@@ -246,7 +247,7 @@ zenario_wysiwyg_editor.SK = function(field_name, url, type, win) {
 						false, undefined, undefined, undefined, true);
 	
 	} else if (type == 'image') {
-		zenarioA.SK('zenario_wysiwyg_editor', 'setImageURL', false,
+		zenarioA.organizerSelect('zenario_wysiwyg_editor', 'setImageURL', false,
 						'zenario__content/panels/content/item_buttons/images//' + zenario_wysiwyg_editor.cType + '_' + zenario_wysiwyg_editor.cID + '//',
 						'zenario__content/panels/inline_images_for_content',
 						'zenario__content/panels/inline_images_for_content',

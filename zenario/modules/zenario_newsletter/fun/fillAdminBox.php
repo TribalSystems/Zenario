@@ -128,14 +128,14 @@ switch ($path) {
 		$pick_items = &$box['tabs']['meta_data']['fields']['body']['insert_image_button']['pick_items'];
 		if ($box['key']['id']) {
 			$pick_items['path'] = 'zenario__email_template_manager/panels/newsletters/item_buttons/images//'. (int) $box['key']['id']. '//';
-			    $pick_items['min_path'] =
-			    $pick_items['max_path'] =
-			    $pick_items['target_path'] = 'zenario__content/panels/email_images_for_newsletters';
+			$pick_items['min_path'] =
+			$pick_items['max_path'] =
+			$pick_items['target_path'] = 'zenario__content/panels/email_images_for_newsletters';
 		} else {
 			$pick_items['path'] =
-			    $pick_items['min_path'] =
-			    $pick_items['max_path'] =
-			    $pick_items['target_path'] = 'zenario__content/panels/email_images_shared';
+			$pick_items['min_path'] =
+			$pick_items['max_path'] =
+			$pick_items['target_path'] = 'zenario__content/panels/image_library';
 		}
 		
 		

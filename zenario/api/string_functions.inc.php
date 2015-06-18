@@ -34,6 +34,14 @@ function addAmp($request) {
 	}
 }
 
+function base64($text) {
+	return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
+}
+
+function base16To64($hex) {
+	return base64(pack('H*', $hex));
+}
+
 function chopPrefixOffOfString($string, $prefix) {
 	$len = strlen($prefix);
 	
@@ -182,6 +190,17 @@ function validateScreenName($screenName) {
 	}
 	
 	return !$invalid;
+}
+
+function trimNonWordCharactersUnicode($string) {
+	$out = @preg_replace('/[^\p{L}\p{M}\d\-]/u', '', $string);
+	
+	//Fall back to traditional pattern matching if that fails
+	if ($out === null) {
+		$out = preg_replace('/[^A-Za-z0-9\-]/', '', $string);
+	}
+	
+	return $out;
 }
 
 

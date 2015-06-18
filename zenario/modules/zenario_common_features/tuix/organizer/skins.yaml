@@ -117,9 +117,9 @@ zenario__layouts:
                     ajax:
                         confirm:
                             message: |
-                                Warning! You are about to change the default skin for the template "[[display_name]]".
+                                You are about to change the default skin for the "[[display_name]]" layout.
                                 
-                                When you do this, any content items that sue this layout will immediately change their appearance to use the new skin you specify.
+                                When you do this, any content items that use this layout will immediately change their appearance to use the new default skin.
                                 
                                 Are you sure you wish to proceed?
                             button_message: Make default

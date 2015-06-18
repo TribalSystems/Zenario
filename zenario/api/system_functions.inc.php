@@ -106,7 +106,27 @@ function requireCookieConsent() {
 
 function sendEmail($subject, $body, $addressTo, &$addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, 
 		$attachments = array(), $attachmentFilenameMappings = array(), $precedence = 'bulk', $isHTML = true, $exceptions = false,
-		$addressReplyTo = false, $nameReplyTo = false) {
+		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false) {
+	
+	// If this is a warning email only send it as oftern as the site setting "warning_email_frequency" allows
+	if (setting('warning_email_frequency') && (setting('warning_email_frequency') != 'no_limit') && $warningEmailCode) {
+		// If no record is set create one
+		if (!checkRowExists('last_sent_warning_emails', array('warning_code' => $warningEmailCode))) {
+			insertRow('last_sent_warning_emails', array('timestamp' => now(), 'warning_code' => $warningEmailCode));
+		// If a record is found check when it was last sent
+		} else {
+			$lastSent = getRow('last_sent_warning_emails', 'timestamp', array('warning_code' => $warningEmailCode));
+			$lastSent = strtotime($lastSent);
+			// If email was sent within the frequency time, return false
+			if (strtotime('+ '.setting('warning_email_frequency'), $lastSent) > time()) {
+				return false;
+			}
+			// Otherwise send email and update last sent time
+			updateRow('last_sent_warning_emails', array('timestamp' => now()), array('warning_code' => $warningEmailCode));
+		}
+	}
+	
+	
 	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPMailer_5_2_2/class.phpmailer.php';
 	
 	if ($addressFrom === false) {
@@ -129,6 +149,7 @@ function sendEmail($subject, $body, $addressTo, &$addressToOverriddenBy, $nameTo
 	$mail->Subject = $subject;
 	$mail->Body = $body;
 	$mail->CharSet = 'UTF-8';
+	$mail->Encoding = 'base64';
 	
 	if ($addressFrom) {
 		$mail->Sender = $addressFrom;

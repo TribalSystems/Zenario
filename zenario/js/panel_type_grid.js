@@ -89,12 +89,12 @@ methods.showPanel = function($header, $panel, $footer) {
 	//Show the view "options" button if in grid view
 	$header.find('#organizer_viewOptions').show();
 	
-	var m = zenarioO.getPanelItems(true);
-	$panel.html(zenarioA.microTemplate('zenario_organizer_grid', m));
+	this.items = zenarioO.getPanelItems(true);
+	$panel.html(zenarioA.microTemplate('zenario_organizer_grid', this.items));
 	$panel.show();
 	this.setScroll($panel);
 	
-	this.drawPagination($footer, m);
+	this.drawPagination($footer, this.items);
 	this.setTooltips($header, $panel, $footer);
 };
 
@@ -128,12 +128,7 @@ methods.showButtons = function($buttons) {
 };
 
 methods.setScroll = function($panel) {
-	//If this panel has been displayed before, try to restore the admin's previous scroll
-	//Otherwise show the top left (i.e. (0, 0))
-	$panel
-		.scrollTop(this.scrollTop)
-		.scrollLeft(this.scrollLeft)
-		.trigger('scroll');
+	methods.restoreScrollPosition($panel);
 	
 	//If there's an item selected, attempt to find it's element on the page,
 	//get where it is compared to its parent, and then scroll to it
@@ -268,10 +263,17 @@ methods.setHeader = function($header) {
 	$header.show();
 };
 
+methods.sizePanel = function($header, $panel, $footer, $buttons) {
+	if (this.items) {
+		this.drawPagination($footer);
+	}
+};
+
+
 //Draw some pagination
-methods.drawPagination = function($footer, m) {
+methods.drawPagination = function($footer) {
 	
-	$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', m)).show();
+	$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', this.items)).show();
 	
 	var pageCount = zenarioO.getPageCount(),
 		$pagination = $footer.find('#organizer_pagination');
@@ -283,13 +285,21 @@ methods.drawPagination = function($footer, m) {
 		//This setTimeout is to fix a bug that sometimes occurs in Firefox
 		setTimeout(function() {
 			
+			if($( window ).width() <= 890) {
+				var numberPaginationPages = 5;
+			} else {
+				var numberPaginationPages = 10;
+			}
+			
 			//Call the jPaginator jQuery plugin to set up some page buttons
 			$pagination.jPaginator({ 
+				
 				nbPages: zenarioO.getPageCount(), 
 				selectedPage: zenarioO.getCurrentPage(),
-		
-				nbVisible: 10,
-				widthPx: Math.max(20, 10 * (1 + Math.ceil(Math.log10(zenarioO.getPageCount())))),
+				
+				nbVisible: numberPaginationPages,
+				//widthPx: Math.max(20, 10 * (1 + Math.ceil(Math.log10(zenarioO.getPageCount())))),
+				widthPx: 24,
 				marginPx: 1,
 		
 				overBtnLeft:'#organizer_page_left', 

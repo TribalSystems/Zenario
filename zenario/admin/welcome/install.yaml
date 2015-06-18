@@ -380,32 +380,36 @@ install:
                     type: select
                     value: '%e/%c/%Y'
                     values:
-                        '%c/%d/%y':
+                        '%e/%c/%y':
                             label: ''
+                        '%e/%c/%Y':
+                            label: ''
+                        '%d/%m/%y':
+                            label: ''
+                        '%d/%m/%Y':
+                            label: ''
+#                       '%e.%c.%Y':
+#                           label: ''
+                        '%d.%m.%Y':
+                            label: ''
+#                       '%d-%m-%y':
+#                           label: ''
+#                       '%d-%m-%Y':
+#                           label: ''
+                        '%c/%e/%y':
+                            label: ''
+                        '%c/%e/%Y':
+                            label: ''
+#                       '%c/%d/%y':
+#                           label: ''
                         '%m/%d/%y':
                             label: ''
                         '%m/%d/%Y':
                             label: ''
-                        '%e/%c/%y':
-                            label: ''
-                        '%d/%m/%y':
-                            label: ''
-                        '%e/%c/%Y':
-                            label: ''
-                        '%d/%m/%Y':
-                            label: ''
-                        '%e.%c.%Y':
-                            label: ''
-                        '%d.%m.%Y':
-                            label: ''
-                        '%d-%m-%y':
-                            label: ''
-                        '%d-%m-%Y':
-                            label: ''
-                        '%Y/%m/%d':
-                            label: ''
-                        '%Y.%m.%d':
-                            label: ''
+#                       '%Y/%m/%d':
+#                           label: ''
+#                       '%Y.%m.%d':
+#                           label: ''
                         '%Y-%m-%d':
                             label: ''
                     validation:

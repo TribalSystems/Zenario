@@ -116,8 +116,8 @@ foreach ($moduleDetails as $module) {
 		//Add the Plugins's Admin Frontent library
 		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'admin_frontend');
 	
-	} elseif (!empty($_GET['storekeeper'])) {
-		//Add the Plugins's Storekeeper Admin library
+	} elseif (!empty($_GET['organizer'])) {
+		//Add the any JavaScript needed for Organizer
 		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'organizer');
 		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'storekeeper');
 	
@@ -132,7 +132,7 @@ foreach ($moduleDetails as $module) {
 	}
 }
 
-if (!empty($_GET['storekeeper'])) {
+if (!empty($_GET['organizer'])) {
 	//Get a list of Module names for use in the formatting options
 	$pluginNames = array();
 	foreach (getModules() as $module) {

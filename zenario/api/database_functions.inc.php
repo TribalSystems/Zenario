@@ -66,9 +66,12 @@ function inEscape($csv, $escaping = 'sql', $prefix = false) {
 	}
 	$sql = '';
 	foreach ($csv as $var) {
+		$var = trim($var);
+		
 		if ($sql !== '') {
 			$sql .= ',';
 		}
+		
 		if ($escaping === 'numeric' || $escaping === true) {
 			$sql .= (int) $var;
 		

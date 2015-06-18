@@ -383,12 +383,12 @@ zenario__content:
 					title: Images and animations
 					db_column: |
 						(
-							SELECT COUNT(DISTINCT ifl.file_id)
-							FROM [[DB_NAME_PREFIX]]inline_file_link AS ifl
-							WHERE ifl.foreign_key_to = 'content'
-							  AND ifl.foreign_key_id = v.id
-							  AND ifl.foreign_key_char = v.type
-							  AND ifl.foreign_key_version = v.version
+							SELECT COUNT(DISTINCT ii.image_id)
+							FROM [[DB_NAME_PREFIX]]inline_images AS ii
+							WHERE ii.foreign_key_to = 'content'
+							  AND ii.foreign_key_id = v.id
+							  AND ii.foreign_key_char = v.type
+							  AND ii.foreign_key_version = v.version
 						)
 					align_right: Yes
 					width: xsmall
@@ -483,10 +483,10 @@ zenario__content:
 						branch: Yes
 						path: zenario__content/panels/content
 						refiner: find_duplicates
-				export:
-					tooltip: Export in CSV
-					label: Export
-					do_csv_export: Yes
+				#export:
+				#	tooltip: Export in CSV
+				#	label: Export
+				#	do_csv_export: Yes
 				help:
 					label: Help
 					help:

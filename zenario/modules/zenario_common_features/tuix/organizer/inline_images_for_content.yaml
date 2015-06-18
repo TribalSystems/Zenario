@@ -3,11 +3,8 @@
 zenario__content:
     panels:
         inline_images_for_content:
-            key:
-                usage: inline
             panel_type: grid_or_list
-            enable_close_up_view: Yes
-            no_items_in_search_message: This content item has no images belonging to it. Click above to upload images from your local machine, or add an image that is already shared.
+            no_items_in_search_message: This content item has no images belonging to it. Click above to upload images from your local machine, or add an image from the library.
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
             db_items:
@@ -19,14 +16,14 @@ zenario__content:
                        ON v.id = c.id
                       AND v.type = c.type
                       AND v.version = c.admin_version
-                    INNER JOIN [[DB_NAME_PREFIX]]inline_file_link AS ifl
-                       ON ifl.foreign_key_to = 'content'
-                      AND ifl.foreign_key_id = c.id
-                      AND ifl.foreign_key_char = c.type
-                      AND ifl.foreign_key_version = c.admin_version
+                    INNER JOIN [[DB_NAME_PREFIX]]inline_images AS ii
+                       ON ii.foreign_key_to = 'content'
+                      AND ii.foreign_key_id = c.id
+                      AND ii.foreign_key_char = c.type
+                      AND ii.foreign_key_version = c.admin_version
                     INNER JOIN [[DB_NAME_PREFIX]]files AS f
-                       ON f.id = ifl.file_id
-                      AND f.`usage` = 'inline'
+                       ON f.id = ii.image_id
+                      AND f.`usage` = 'image'
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                 id_column: f.id
             
@@ -40,50 +37,74 @@ zenario__content:
                     db_column: f.id
                 filename:
                     title: Filename
-                    searchable: Yes
+                    searchable: true
                     db_column: f.filename
-                    show_by_default: Yes
+                    show_by_default: true
                 alt_tag:
                     title: Default alt-tag
-                    searchable: Yes
+                    searchable: true
                     db_column: f.alt_tag
                     length_limit: "64"
                 title:
                     db_column: f.title
                 checksum:
                     db_column: f.checksum
+                short_checksum:
+                    db_column: f.short_checksum
                 mime_type:
-                    server_side_only: Yes
+                    server_side_only: true
                     db_column: f.mime_type
                 size:
                     title: Size
                     format: filesize
                     db_column: f.size
-                    show_by_default: Yes
+                    show_by_default: true
                 width:
                     title: Width
-                    searchable: Yes
+                    searchable: true
                     db_column: f.width
-                    show_by_default: Yes
+                    show_by_default: true
                 height:
                     title: Height
-                    searchable: Yes
+                    searchable: true
                     db_column: f.height
-                    show_by_default: Yes
-                shared:
-                    title: Shared
+                    show_by_default: true
+                in_use_here:
+                    title: In use here
+                    db_column: ii.in_use
                     format: yes_or_no
-                    db_column: f.shared
-                    show_by_default: Yes
-                in_use:
-                    title: In use
-                    db_column: ifl.in_use
+                    show_by_default: true
+                in_use_elsewhere:
+                    title: In use elsewhere
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS uii
+                            WHERE uii.image_id = f.id
+                              AND uii.in_use = 1
+                              AND uii.archived = 0
+                              AND (uii.foreign_key_to, uii.foreign_key_id, uii.foreign_key_char, uii.foreign_key_version)
+                              NOT IN (('content', c.id, c.type, c.admin_version))
+                            LIMIT 1
+                        )
                     format: yes_or_no
-                    show_by_default: Yes
+                    show_by_default: true
+                    width: xsmall
+                duplicate_filename:
+                    db_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]files AS df
+                            WHERE df.`usage` = f.`usage`
+                              AND df.filename = f.filename
+                              AND df.archived = 0
+                              AND df.id != f.id
+                            LIMIT 1
+                        )
                 sticky_flag:
                     title: Sticky
                     db_column: v.sticky_image_id = f.id
-                    show_by_default: Yes
+                    show_by_default: true
                     format: yes_or_no
             default_sort_column: filename
             label_format_for_popouts: |
@@ -103,19 +124,19 @@ zenario__content:
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                         fileDesc: Images
-                        multi: Yes
-                        drag_and_drop: Yes
+                        multi: true
+                        drag_and_drop: true
                         request:
-                            upload: Yes
+                            upload: true
                 add:
-                    label: Add from shared images
+                    label: Add image from image library
                     pick_items:
-                        path: zenario__content/panels/inline_images_shared
-                        target_path: zenario__content/panels/inline_images_shared
-                        min_path: zenario__content/panels/inline_images_shared
-                        disallow_refiners_looping_on_min_path: Yes
+                        path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Use
-                        multiple_select: Yes
+                        multiple_select: true
                         request:
                             add: "1"
             inline_buttons:
@@ -135,8 +156,8 @@ zenario__content:
                         path: zenario_image
                 view_dropdown:
                     label: View
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view:
                     label: View image
                     popout:
@@ -145,35 +166,35 @@ zenario__content:
                             type: image
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 make_sticky:
                     parent: action_dropdown
                     priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
                     label: Make sticky
-                    hide_in_select_mode: No
-                    without_traits:
-                        sticky: Yes
+                    hide_in_select_mode: false
+                    visible_if_for_all_selected_items: |
+                        !zenario.engToBoolean(item.sticky_flag)
                     ajax:
                         confirm:
                             message: |
                                 When an image is sticky, it can appear automatically in banners, content summary lists and other managed links to its content item.
-                                                                                
-                                                                                Only one of the images of a content item can be sticky.
-                                                                                
-                                                                                Make the image "[[filename]]" sticky?
+                                
+                                Only one of the images of a content item can be sticky.
+                                
+                                Make the image "[[filename]]" sticky?
                             button_message: Make sticky
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            make_sticky: Yes
+                            make_sticky: true
                 make_unsticky:
                     parent: action_dropdown
                     priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
                     label: Remove stickyness
-                    hide_in_select_mode: No
-                    traits:
-                        sticky: Yes
+                    hide_in_select_mode: false
+                    visible_if_for_all_selected_items: |
+                        item.sticky_flag
                     ajax:
                         confirm:
                             message: 'Are you sure you wish to stop the image "[[filename]]" being sticky?'
@@ -181,38 +202,31 @@ zenario__content:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            make_unsticky: Yes
-                share:
-                    parent: action_dropdown
+                            make_unsticky: true
+                delete:
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Share
-                    multiple_select: Yes
-                    one_without_traits:
-                        shared: Yes
+                    label: Delete
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: >
+                        !zenario.engToBoolean(item.in_use_here) && !zenario.engToBoolean(item.in_use_elsewhere)
                     ajax:
+                        confirm:
+                            message: 'Are you sure you wish to delete the unused image "[[filename]]"?'
+                            multiple_select_message: Are you sure you wish to delete these unused images?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
                         request:
-                            share: Yes
-                unshare:
-                    parent: action_dropdown
-                    priv: _PRIV_MANAGE_MEDIA
-                    label: Unshare
-                    multiple_select: Yes
-                    traits:
-                        shared: Yes
-                    ajax:
-                        request:
-                            unshare: Yes
+                            delete: "1"
+                
                 remove:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Detach from content item
-                    multiple_select: Yes
-                    hide_in_select_mode: Yes
-                    #without_traits:
-                    #    used: Yes
-                    #without_columns_set:
-                    #    sticky_flag: Yes
+                    multiple_select: true
+                    hide_in_select_mode: true
                     disabled_if_for_any_selected_items: |
-                        item.traits.used || item.sticky_flag
+                        item.in_use_here || item.sticky_flag
                     disabled_tooltip: |
                         You cannot detach an image that is in use.
                         
@@ -221,14 +235,10 @@ zenario__content:
                         confirm:
                             message: |
                                 Are you sure you wish to detach the image "[[filename]]" from this content item?
-                                
-                                If it is not shared or used elsewhere it will be deleted.
                             multiple_select_message: |
                                 Are you sure you wish to detach these images from this content item?
-                                
-                                Any that are not shared or used elsewhere will be deleted.
                             button_message: Detach
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            remove: "1"
+                            remove: 1

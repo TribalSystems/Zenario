@@ -119,36 +119,4 @@ foreach (array('backup_dir', 'docstore_dir', 'template_dir') as $dir) {
 	}
 }
 
-//Validate the logo/Organizer favicon
-if (!empty($values['logo/brand_logo'])
- && $values['logo/brand_logo'] == 'custom') {
-	if ($filepath = getPathOfUploadedFileInCacheDir($values['logo/logo'])) {
-		$mimeType = documentMimeType($filepath);
-		
-		if ($mimeType == 'image/gif' || $mimeType == 'image/png'
-		 || $mimeType == 'image/vnd.microsoft.icon' || $mimeType == 'image/x-icon') {
-		} else {
-			$fields['logo/logo']['error'] = adminPhrase('The favicon must be a .gif, .ico or a .png file.');
-		}
-	
-	} elseif (!$values['logo/logo']) {
-		$fields['logo/logo']['error'] = adminPhrase('Please upload a .gif, .ico or a .png file.');
-	}
-}
-if (!empty($values['sk/organizer_favicon'])
- && $values['sk/organizer_favicon'] == 'custom') {
-	if ($filepath = getPathOfUploadedFileInCacheDir($values['sk/favicon'])) {
-		$mimeType = documentMimeType($filepath);
-		
-		if ($mimeType == 'image/gif' || $mimeType == 'image/png'
-		 || $mimeType == 'image/vnd.microsoft.icon' || $mimeType == 'image/x-icon') {
-		} else {
-			$fields['sk/favicon']['error'] = adminPhrase('The favicon must be a .gif, .ico or a .png file.');
-		}
-	
-	} elseif (!$values['sk/favicon']) {
-		$fields['sk/favicon']['error'] = adminPhrase('Please upload a .gif, .ico or a .png file.');
-	}
-}
-
 return false;

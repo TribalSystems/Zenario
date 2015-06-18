@@ -19,7 +19,6 @@ zenario__users:
             title: 'All users & contacts'
             enable_close_up_view: true
             view_mode: list
-            label_format_for_picked_items: '[[first_name]] [[last_name]]'
             slidedown_view_microtemplate: zenario_slidedown_view_user
             no_items_message: >
                 No users/contacts. Click "Create" to create users and
@@ -33,8 +32,6 @@ zenario__users:
             advanced_search: true
             refiners:
                 group_members: {}
-                #characteristic_value_filter:
-                #    sql: '(SELECT 1 FROM [[DB_NAME_PREFIX]]custom_dataset_field_values WHERE value_id=[[REFINER_ID]] AND link_id=u.id LIMIT 1)'
                 suspended_users:
                     sql: "u.status='suspended'"
             columns:
@@ -55,7 +52,8 @@ zenario__users:
                     title: Identifier
                     db_column: u.identifier
                     searchable: true
-                    width: small
+                    width: medium
+                    show_by_default: true
                 screen_name:
                     title: Screen Name
                     db_column: u.screen_name
@@ -99,6 +97,10 @@ zenario__users:
                         suspended: Suspended
                         contact: Contact
                     width: xsmall
+                groups:
+                    title: Groups
+                    width: xlarge
+                    show_by_default: true
                 type:
                     title: Sync type
                     db_column: "IF (u.global_id = 0, 'local', 'from_hub')"
@@ -157,8 +159,7 @@ zenario__users:
                     width: xxsmall
             
             default_sort_column: screen_name
-            label_format_for_grid_view: '[[screen_name]]'
-            label_format_for_picked_items: '[[screen_name]]'
+            label_format_for_picked_items: '[[identifier]]'
             
             quick_filter_buttons:
                 all:
@@ -197,15 +198,14 @@ zenario__users:
                 add_user_to_group:
                     hide_in_select_mode: true
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
-                    label: Add
-                    tooltip: Add one or more users to this group
+                    label: Add users to this Group
                     pick_items:
                         path: zenario__users/panels/users
                         request:
                             add_user_to_group: "1"
-                        one_to_one_choose_phrase: Add user to group
+                        one_to_one_choose_phrase: Add user to Group
                         multiple_select: true
-                        one_to_many_choose_phrase: Add users to group
+                        one_to_many_choose_phrase: Add users to Group
                 
                 # User dataset import buttons
                 import_dropdown:
@@ -256,10 +256,10 @@ zenario__users:
                 add_users_to_group:
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
                     parent: action_dropdown
-                    label: Add to group...
-                    tooltip: Add this user to one or more groups
+                    label: Add to Group...
+                    tooltip: Add this user to one or more Groups
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more groups
+                    multiple_select_tooltip: Add selected users to one or more Groups
                     multiple_select: true
                     combine_items:
                         path: zenario__users/panels/groups_only
@@ -270,14 +270,14 @@ zenario__users:
                         request:
                             add_users_to_group:1
                         
-                        one_to_one_choose_phrase: Add user to group
-                        many_to_one_choose_phrase: Add users to group
+                        one_to_one_choose_phrase: Add user to Group
+                        many_to_one_choose_phrase: Add users to Group
                         multiple_select: true
-                        one_to_many_choose_phrase: Add user to groups
-                        many_to_many_choose_phrase: Add users to groups
+                        one_to_many_choose_phrase: Add user to Groups
+                        many_to_many_choose_phrase: Add users to Groups
                 
                 remove_users_from_group:
-                    label: Remove
+                    label: Remove user from this Group
                     hide_in_select_mode: true
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP

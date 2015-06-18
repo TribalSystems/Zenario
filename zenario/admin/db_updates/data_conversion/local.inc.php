@@ -161,24 +161,6 @@ if (needRevision(29570)) {
 }
 
 
-//Scan anything related to a Content Item and sync the inline_file_link table properly
-if (needRevision(29574)) {
-	
-	$result = getRows('content', array('id', 'type', 'visitor_version', 'admin_version'), array(), array('type', 'id'));
-	while ($row = sqlFetchAssoc($result)) {
-		
-		if ($row['visitor_version']) {
-			syncInlineFileContentLink($row['id'], $row['type'], $row['visitor_version']);
-		}
-		if ($row['admin_version'] && $row['admin_version'] != $row['visitor_version']) {
-			syncInlineFileContentLink($row['id'], $row['type'], $row['admin_version']);
-		}
-	}
-	
-	revision(29574);
-}
-
-
 if (needRevision(30130)) {
 	foreach (getRowsArray(
 		'documents',
@@ -213,4 +195,145 @@ if (needRevision(30150)) {
 	}
 	
 	revision(30150);
+}
+
+
+//Remove the library_images tables if they were ever created for people running early versions of 7.0.5
+if (needRevision(30500)) {
+	deleteDataset('library_images');
+	
+	revision(30500);
+}
+
+
+//Change the checksum column in the files table to use base 64 rather than base 16.
+if (needRevision(30600)) {
+	$sql = "
+		SELECT id, checksum
+		FROM ". DB_NAME_PREFIX. "files
+		WHERE LENGTH(checksum) = 32";
+
+	$result = sqlQuery($sql);
+	while ($file = sqlFetchAssoc($result)) {
+		updateRow('files', array('checksum' => base16To64($file['checksum'])), $file['id']);
+	}
+	
+	revision(30600);
+}
+
+//Populate the short checksum field
+if (needRevision(30625)) {
+	setSetting('short_checksum_length', 6);
+	updateShortChecksums(true);
+	
+	revision(30625);
+}
+
+//Set the "archived" flag in the inline_images table
+if (needRevision(30700)) {
+	flagImagesInArchivedVersions();
+	
+	revision(30700);
+}
+
+
+//Scan anything related to a Content Item and sync the inline_images table properly
+if (needRevision(30731)) {
+	
+	$result = getRows('content', array('id', 'type', 'visitor_version', 'admin_version'), array(), array('type', 'id'));
+	while ($row = sqlFetchAssoc($result)) {
+		
+		if ($row['visitor_version']) {
+			syncInlineFileContentLink($row['id'], $row['type'], $row['visitor_version']);
+		}
+		if ($row['admin_version'] && $row['admin_version'] != $row['visitor_version']) {
+			syncInlineFileContentLink($row['id'], $row['type'], $row['admin_version']);
+		}
+	}
+	
+	revision(30731);
+}
+
+//Update the copie
+if (needRevision(30840)) {
+	$docstoreDir = setting('docstore_dir');
+
+	$skWidth = 180;
+	$skHeight = 130;
+	$skListWidth = 24;
+	$skListHeight = 23;
+
+	$sql = "
+		SELECT id, location, path, filename, data, mime_type, width, height
+		FROM ". DB_NAME_PREFIX. "files
+		WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')
+		  AND width != 0
+		  AND height != 0
+		  AND (organizer_data IS NULL
+			OR organizer_width > ". (int) $skWidth. "
+			OR organizer_height > ". (int) $skHeight. "
+			OR (	width > ". (int) $skWidth. "
+				AND height > ". (int) $skHeight. "
+				AND organizer_width < ". (int) $skWidth. "
+				AND organizer_height < ". (int) $skHeight. "
+		))";
+	$result = sqlQuery($sql);
+
+	while($img = sqlFetchAssoc($result)) {
+		if ($img['location'] == 'docstore') {
+			if ($docstoreDir && is_file($docstoreDir. '/'. $img['path'])) {
+				$img['data'] = file_get_contents($docstoreDir. '/'. $img['path']. '/'. $img['filename']);
+			} else {
+				continue;
+			}
+		}
+	
+		resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $skWidth, $skHeight);
+		$img['data'] = "
+			UPDATE ". DB_NAME_PREFIX. "files SET
+				organizer_data = '". sqlEscape($img['data']). "',
+				organizer_width = ". (int) $img['width']. ",
+				organizer_height = ". (int) $img['height']. "
+			WHERE id = ". (int) $img['id'];
+		sqlUpdate($img['data']);
+		unset($img);
+	}
+
+	$sql = "
+		SELECT id, location, path, filename, data, mime_type, width, height
+		FROM ". DB_NAME_PREFIX. "files
+		WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')
+		  AND width != 0
+		  AND height != 0
+		  AND (organizer_list_data IS NULL
+			OR organizer_list_width > ". (int) $skListWidth. "
+			OR organizer_list_height > ". (int) $skListHeight. "
+			OR (	width > ". (int) $skListWidth. "
+				AND height > ". (int) $skListHeight. "
+				AND organizer_list_width < ". (int) $skListWidth. "
+				AND organizer_list_height < ". (int) $skListHeight. "
+		))";
+	$result = sqlQuery($sql);
+
+	while($img = sqlFetchAssoc($result)) {
+		if ($img['location'] == 'docstore') {
+			if ($docstoreDir && is_file($docstoreDir. '/'. $img['path'])) {
+				$img['data'] = file_get_contents($docstoreDir. '/'. $img['path']. '/'. $img['filename']);
+			} else {
+				continue;
+			}
+		}
+	
+		resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $skListWidth, $skListHeight);
+		$img['data'] = "
+			UPDATE ". DB_NAME_PREFIX. "files SET
+				organizer_list_data = '". sqlEscape($img['data']). "',
+				organizer_list_width = ". (int) $img['width']. ",
+				organizer_list_height = ". (int) $img['height']. "
+			WHERE id = ". (int) $img['id'];
+		sqlUpdate($img['data']);
+		unset($img);
+	}
+	
+	revision(30840);
 }

@@ -151,12 +151,13 @@ if (globalDBDefined() && !session('admin_global_id')) {
 	}
 }
 
-//Load the value of the logo/favicon if it is set
-if (isset($box['tabs']['logo']['fields']['logo'])) {
-	$values['logo/logo'] = getRow('files', 'id', array('usage' => 'brand_logo'));
-}
-if (isset($box['tabs']['sk']['fields']['favicon'])) {
-	$values['sk/favicon'] = getRow('files', 'id', array('usage' => 'organizer_favicon'));
+//Hack to stop a buggy error message from appearing if the admin never opens the second tab on the branding FAB,
+//as the _h_js property was never set by the JavaScript on the client side.
+//Fix this problem by setting the _h_js property for the field.
+if (isset($box['tabs']['og']['fields']['organizer_favicon'])) {
+	if ($values['og/organizer_favicon'] != 'custom') {
+		$fields['og/custom_organizer_favicon']['_h_js'] = true;
+	}
 }
 
 

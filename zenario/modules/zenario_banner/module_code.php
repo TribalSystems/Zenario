@@ -245,6 +245,8 @@ class zenario_banner extends module_base_class {
 		$this->subSections['Title'] = (bool) $this->setting('title') || $this->editing;
 		$this->subSections['More_Link_Text'] = (bool) $this->setting('more_link_text');
 		
+		$this->mergeFields['Title_Tags'] = $this->setting('title_tags') ? $this->setting('title_tags') : 'h2';
+		
 		//Don't show empty Banners
 		//Note: If there is some more link text set, but no Image/Text/Title, then I'll still consider the Banner to be empty
 		if (empty($this->subSections['Image'])

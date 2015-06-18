@@ -57,5 +57,11 @@ incJS('zenario/api/panel_type_base_class');
 incJS('zenario/js/panel_type_grid');
 incJS('zenario/js/panel_type_list');
 incJS('zenario/js/panel_type_list_or_grid');
+incJS('zenario/js/panel_type_list_with_totals');
 incJS('zenario/js/panel_type_hierarchy');
 incJS('zenario/js/panel_type_hierarchy_with_lazy_load');
+
+incJS('zenario/js/panel_type_calendar');
+
+incJS('zenario/js/panel_type_google_map');
+incJS('zenario/js/panel_type_google_map_or_list');

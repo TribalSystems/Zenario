@@ -3,6 +3,13 @@
 zenario__content:
     panels:
         content:
+            refiners:
+                group_members:
+                    table_join: |
+                        [[DB_NAME_PREFIX]]group_content_link gcl
+                            ON c.equiv_id = gcl.equiv_id
+                            AND c.type = gcl.content_type
+                    sql: gcl.group_id = [[REFINER_ID]]
             columns:
                 log_user_access:
                     title: Log user access

@@ -36,7 +36,7 @@ zenario_forum.moveThread = function(slotName, choosePhrase, forumId, threadId, k
 	zenario_forum.threadId = threadId;
 	zenario_forum.key = key;
 	
-	zenarioA.SK('zenario_forum', 'doMoveThread', false, 'zenario__social/nav/forums/panel/refiners/exclude_forum//' + forumId + '//', 'zenario__social/nav/forums/panel', 'zenario__social/nav/forums/panel', 'zenario__social/nav/forums/panel', true, true, choosePhrase);
+	zenarioA.organizerSelect('zenario_forum', 'doMoveThread', false, 'zenario__social/nav/forums/panel/refiners/exclude_forum//' + forumId + '//', 'zenario__social/nav/forums/panel', 'zenario__social/nav/forums/panel', 'zenario__social/nav/forums/panel', true, true, choosePhrase);
 }
 
 zenario_forum.doMoveThread = function(path, key, row) {

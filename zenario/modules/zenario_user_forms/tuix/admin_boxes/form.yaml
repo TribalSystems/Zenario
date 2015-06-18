@@ -46,11 +46,34 @@ zenario_user_admin_box_form:
                     label: 'Message:'
                     type: text
                     maxlength: 255
+                    
+                submit_button_text:
+                    label: 'Submit button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the submit button.
+                default_next_button_text:
+                    label: 'Default next button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the next button.
+                    side_note: |
+                        This option only applies to multi-page forms.
+                default_previous_button_text:
+                    label: 'Default back button text:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter default text for the back button.
+                    side_note: |
+                        This option only applies to multi-page forms.
                 translate_text:
                     label: 'Use the phrases system'
                     type: checkbox
-                    side_note: |
-                        This will cause all displayable text from this form to be translated when used in a forms plugin. This should be disabled if you enter non-english text into the form field admin boxes.
+                    format_onchange: true
+                        
         captcha:
             label: Captcha
             ord: 3
@@ -116,6 +139,10 @@ zenario_user_admin_box_form:
                     format_onchange: true
                 log_user_in:
                     label: 'Log user in after form submission'
+                    type: checkbox
+                    format_onchange: true
+                log_user_in_cookie:
+                    label: 'Set "keep me logged in" cookie'
                     type: checkbox
                 add_user_to_group:
                     label: 'Add user/contact to group:'
@@ -231,3 +258,9 @@ zenario_user_admin_box_form:
                         Broadcast the submitted form data to other modules for them to process (advanced)
                     note_below: |
                         Signal name: eventUserFormSubmitted
+        translations:
+            label: Translations
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:

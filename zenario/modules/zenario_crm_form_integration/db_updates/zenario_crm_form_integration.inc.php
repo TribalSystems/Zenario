@@ -140,3 +140,54 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 );
+
+revision(15
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields
+	ADD COLUMN `ordinal` int(10) unsigned NOT NULL DEFAULT 1
+_sql
+
+);
+
+// Update existing ordinals
+if (needRevision(16)) {
+	// Get forms
+	$forms = getRowsArray('user_forms', 'id');
+	foreach($forms as $formId) {
+		// Get form fields
+		$formFields = getRowsArray('user_form_fields', 'id', array('user_form_id' => $formId));
+		// Set correct ordinal for form fields
+		$fieldNameCount = array();
+		foreach ($formFields as $formFieldId) {
+			// Get crm name
+			if ($CRMField = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('field_crm_name', 'ordinal'), $formFieldId)) {
+				if (!isset($fieldNameCount[$CRMField['field_crm_name']])) {
+					$fieldNameCount[$CRMField['field_crm_name']] = 1;
+				} else {
+					$ord = ++$fieldNameCount[$CRMField['field_crm_name']];
+					updateRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('ordinal' => $ord), array('form_field_id' => $formFieldId));
+				}
+			}
+		}
+	}
+	revision(16);
+}
+
+revision(18
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_field_values
+	ADD COLUMN form_field_value_centralised_key varchar(255) AFTER form_field_value_unlinked_id
+_sql
+
+);
+
+revision(19
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_field_values
+	ADD COLUMN form_field_value_checkbox_state tinyint(1) DEFAULT NULL AFTER form_field_value_centralised_key
+_sql
+
+);

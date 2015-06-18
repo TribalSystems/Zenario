@@ -167,7 +167,7 @@ zenario__administration:
                         can_suspend: Yes
                 edit:
                     css_class: settings
-                    label: Settings
+                    label: Run times and reporting
                     admin_box:
                         path: zenario_job
                 view_log:

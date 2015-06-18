@@ -29,7 +29,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__admin_boxes__custom_field extends module_base_class {
 	
-	
 	protected function dynamicallyCreateValueFieldsFromTemplate(&$box, &$fields, &$values) {
 		$numValues = (int) $box['key']['numValues'];
 		
@@ -163,6 +162,9 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 				}
 			}
 		
+		
+
+		
 		} else {
 			if (!$box['key']['dataset_id'] = request('refiner__dataset_id')) {
 				exit;
@@ -200,12 +202,20 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 			$fields['display/parent_id']['empty_value'] = adminPhrase(' -- No fields of the right type exist -- ');
 		}
 		
-		if (!checkPriv('_PRIV_PROTECT_DATASET_FIELD')) {
+		if($values['details/protected']){
+			$fields['details/db_column']['read_only']=true;
+			$fields['details/type']['read_only']=true;
+		}
+			
+		if (!checkPriv('_PRIV_PROTECT_UNPROTECT_DATASET_FIELD')){
 			$fields['details/protected']['read_only'] = true;
 		}
+		
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+	
+		
 		if (in($values['details/type'], 'checkboxes', 'radios', 'select')) {
 			$numValues = (int) $box['key']['numValues'];
 		
@@ -262,21 +272,42 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 				$fields['values_source_filter']['label'] = $listInfo['filter_label'];
 			}
 		}
+		
+		if (is_numeric($box['key']['id'])) {
+			if($values['details/protected']){
+				$fields['details/db_column']['read_only']=true;
+				$fields['details/type']['read_only']=true;
+			}else{
+				$fields['details/db_column']['read_only']=false;
+				$fields['details/type']['read_only']=false;
+			}
+		}
+		
 	}
 	
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		$dataset = getDatasetDetails($box['key']['dataset_id']);
 		
-		if (!$box['key']['id']
-		 || $fields['details/db_column']['current_value'] != $fields['details/db_column']['value']) {
-			if (checkColumnExistsInDB($dataset['table'], $fields['details/db_column']['current_value'])
-			 || checkColumnExistsInDB($dataset['system_table'], $fields['details/db_column']['current_value'])) {
-				$fields['details/db_column']['error'] =
-					adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', 
-						array('db_column' => $fields['details/db_column']['current_value']));
+		
+		if (isset($fields['details/db_column']['current_value'])){
+			if (!$box['key']['id']
+			 || $fields['details/db_column']['current_value'] != $fields['details/db_column']['value']) {
+				if (checkColumnExistsInDB($dataset['table'], $fields['details/db_column']['current_value'])
+				 || checkColumnExistsInDB($dataset['system_table'], $fields['details/db_column']['current_value'])) {
+					$fields['details/db_column']['error'] =
+						adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', 
+							array('db_column' => $fields['details/db_column']['current_value']));
+				}
 			}
 		}
+		
+		
+		
+		
+		
+		
+		
 		
 		if ($values['validation/required']
 		 && !$values['validation/required_message']) {
@@ -344,9 +375,9 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 				
 				'label' => $values['details/label']);
 			
-			if (checkPriv('_PRIV_PROTECT_DATASET_FIELD')) {
+			//if (checkPriv('_PRIV_PROTECT_DATASET_FIELD')) {
 				$cols['protected'] = $values['details/protected'];
-			}
+			//}
 			
 			$oldName = false;
 			if (!$box['key']['id']) {

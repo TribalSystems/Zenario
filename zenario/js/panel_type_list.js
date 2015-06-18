@@ -62,6 +62,28 @@ var methods = methodsOf(
 );
 
 
+
+
+
+methods.showPanel = function($header, $panel, $footer) {
+	this.setHeader($header);
+	
+	//Show the view "options" button if in list view
+	$header.find('#organizer_viewOptions').show();
+	
+	this.items = zenarioO.getPanelItems(false);
+	$panel.html(zenarioA.microTemplate('zenario_organizer_list', this.items));
+	$panel.show();
+	this.setupListViewColumns($panel);
+	this.setScroll($panel);
+	
+	
+	this.setTooltips($header, $panel, $footer);
+	
+	this.setupReordering($panel);
+};
+
+
 //Disable pagination if we're reordering items
 methods.returnPageSize = function() {
 	if (this.ordinalColumn()) {
@@ -72,31 +94,14 @@ methods.returnPageSize = function() {
 };
 
 
-
-methods.showPanel = function($header, $panel, $footer) {
-	this.setHeader($header);
-	
-	//Show the view "options" button if in list view
-	$header.find('#organizer_viewOptions').show();
-	
-	var m = zenarioO.getPanelItems(false);
-	$panel.html(zenarioA.microTemplate('zenario_organizer_list', m));
-	$panel.show();
-	this.setupListViewColumns($panel);
-	this.setScroll($panel);
-	
-	//Disable pagination if we're reordering items
+//Disable pagination if we're reordering items
+methods.drawPagination = function($footer) {
 	if (this.ordinalColumn()) {
-		$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', m)).show();
+		$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', this.items)).show();
 	} else {
-		this.drawPagination($footer, m);
+		methodsOf(panelTypes.grid).drawPagination.apply(this, arguments);
 	}
-	
-	this.setTooltips($header, $panel, $footer);
-	
-	this.setupReordering($panel);
 };
-
 
 
 
@@ -117,7 +122,7 @@ methods.openInspectionView = function(id) {
 	}
 	
 	//Select the item we're opening inspection mode for
-	zenarioO.selectSingleItem(id);
+	zenarioO.selectItems(id);
 	zenarioO.setButtons();
 	
 	var $toggle = $(get('organizer_slidedown_view_toggle_' + id)),
@@ -183,7 +188,8 @@ methods.setupListViewColumns = function($panel) {
 		});
 	}
 
-	var $sortAndResizeWrapper = $panel.find('.organizer_sort_and_resize_wrapper'),
+	var that = this,
+		$sortAndResizeWrapper = $panel.find('.organizer_sort_and_resize_wrapper'),
 		$sortables = $panel.find('.organizer_sort_and_resize_wrapper .organizer_sortable'),
 		$resizables = $panel.find('.organizer_sort_and_resize_wrapper .organizer_resizable'),
 		sortAndResizeable$Cols = {},
@@ -202,6 +208,8 @@ methods.setupListViewColumns = function($panel) {
 			$('#organizer_list_view .organizer_row').css('min-width', width + 'px');
 		},
 		sortHandler = function(event, ui) {
+			that.saveScrollPosition($panel);
+			
 			$sortables.each(function(i, el) {
 				var id = el.id;
 				if (id) {
@@ -213,8 +221,12 @@ methods.setupListViewColumns = function($panel) {
 					sortAndResizeable$Cols[id].css('left', left + 'px');
 				}
 			});
+			
+			that.restoreScrollPosition($panel);
 		},
 		resizeHandler = function(event, ui, save) {
+			that.saveScrollPosition($panel);
+			
 			var id = $(ui.element).attr('id');
 			if (id) {
 				if (!sortAndResizeable$Cols[id]) {
@@ -229,6 +241,8 @@ methods.setupListViewColumns = function($panel) {
 					sizeListViewColumns();
 				}
 			}
+			
+			that.restoreScrollPosition($panel);
 		};
 	
 	$resizables.resizable({
@@ -257,6 +271,8 @@ methods.setupListViewColumns = function($panel) {
 		},
 		sort: sortHandler,
 		stop: function(event, ui) {
+			that.saveScrollPosition($panel);
+			
 			sortHandler(event, ui);
 			setTimeout(
 				function() {
@@ -271,6 +287,8 @@ methods.setupListViewColumns = function($panel) {
 			}
 			
 			zenarioO.switchColumnOrder(newOrder);
+			
+			that.restoreScrollPosition($panel);
 		}
 	});
 	
@@ -298,7 +316,7 @@ methods.setupReordering = function($panel) {
 					that.closeInspectionView();
 					zenarioO.disableInteraction();
 				},
-				stop: function (sorted) {
+				stop: function (sorted, ui) {
 					zenarioO.enableInteraction();
 					
 					//Handle the results of a reorder:
@@ -344,7 +362,10 @@ methods.setupReordering = function($panel) {
 					}
 					actionRequests.reorder = true;
 					actionRequests.id = saves;
-				
+					
+					// Get ID of dropped item
+					actionRequests.dropped_item = $(ui.item).data('id');
+					
 					//Send these results via AJAX
 					var actionTarget =
 						'zenario/ajax.php?' +
@@ -360,7 +381,7 @@ methods.setupReordering = function($panel) {
 						actionRequests,
 						//Refresh the panel to show the new order
 						function () {
-							zenarioO.refresh();
+							zenarioO.reload();
 						}
 					);
 				}

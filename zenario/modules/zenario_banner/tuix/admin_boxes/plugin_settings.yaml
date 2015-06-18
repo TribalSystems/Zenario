@@ -25,10 +25,6 @@ plugin_settings:
                     format_onchange: true
                     note_below: |
                         If you choose auto-show, then an image marked as "sticky" on the destination content item will be used.
-                image_thumbnail:
-                    full_width: true
-                    snippet:
-                        html: ""
 
                 image:
                     plugin_setting:
@@ -38,13 +34,23 @@ plugin_settings:
                         
                     label: Image
                     pick_items:
-                        path: zenario__content/panels/inline_images_for_reusable_plugins
-                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
                     value: ""
                     format_onchange: true
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
                     validation:
                         required_if_not_hidden: Please select an image.
                 canvas:
@@ -116,22 +122,28 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                rollover_image_thumbnail:
-                    full_width: true
-                    snippet:
-                        html: ""            
                 rollover_image:
                     plugin_setting:
                         name: rollover_image
                         foreign_key_to: file
                     label: 'Change image on rollover'
                     pick_items:
-                        path: zenario__content/panels/inline_images_for_reusable_plugins
-                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         select_phrase: Select image...
                     value: ""
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: false
+                        reorder_items: false
                 alt_tag:
                     plugin_setting:
                         name: alt_tag
@@ -316,6 +328,24 @@ plugin_settings:
                     width: "150"
                     maxlength: "255"
                     value: ""
+                
+                title_tags:
+                    plugin_setting:
+                        name: title_tags
+                    label: 'Title heading tags'
+                    type: select
+                    values:
+                        h1: Heading 1
+                        h2: Heading 2
+                        h3: Heading 3
+                        h4: Heading 4
+                        h5: Heading 5
+                        h6: Heading 6
+                        p: Paragraph
+                    value: h2
+                    side_note: |
+                        Choose which HTML tags the title will be displayed in.
+                
                 text:
                     plugin_setting:
                         name: text

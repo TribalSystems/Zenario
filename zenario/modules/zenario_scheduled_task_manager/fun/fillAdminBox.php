@@ -110,7 +110,7 @@ switch ($path) {
 		
 		if ($box['key']['manager_class_name'] == 'zenario_scheduled_task_manager') {
 			$details['module_display_name'] = getModuleDisplayName($details['module_id']);
-			$box['title'] = adminPhrase('Viewing/Editing Scheduled Task "[[job_name]]" for the Module [[module_display_name]]', $details);
+			$box['title'] = adminPhrase('Editing scheduled task "[[job_name]]" for the module [[module_display_name]]', $details);
 		}
 		
 		break;

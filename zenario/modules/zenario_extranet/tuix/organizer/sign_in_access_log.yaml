@@ -76,11 +76,11 @@ zenario__users:
 					name: sign-in Log
 					names: sign-in Logs
 					css_class: log
-				collection_buttons:
-					export:
-						css_class: export
-						label: Export Sign-in Log in CSV format
-						do_csv_export: Yes
+				#collection_buttons:
+				#	export:
+				#		css_class: export
+				#		label: Export Sign-in Log in CSV format
+				#		do_csv_export: Yes
 				no_items_message: |
 					No user sign-ins have been logged. To log sign-ins, please ensure you have enabled sign-in logging in Site Settings.
 		

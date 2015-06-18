@@ -750,6 +750,10 @@ zenario.lib(function(
 		return /Firefox/.test(navigator.userAgent);
 	};
 
+	zenario.browserIsRetina = function() {
+		return window.devicePixelRatio > 1;
+	};
+
 	zenario.browserIsSafari = function() {
 		return /Safari/.test(navigator.userAgent);
 	};
@@ -773,6 +777,17 @@ zenario.lib(function(
 	zenario.browserIsMobile = function() {
 		return zenario.browserIsiPad() || zenario.browserIsiPhone();
 	};
+
+	zenario.ishttps = function() {
+		return window.location
+			&& window.location.protocol === 'https:';
+	};
+
+	zenario.httpOrhttps = function() {
+		return zenario.ishttps()? 'https://' : 'http://';
+	};
+	
+	
 	zenario.actAfterDelayIfNotSuperseded = function(type, fun, delay) {
 		if (!delay) {
 			delay = 900;

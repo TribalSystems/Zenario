@@ -209,9 +209,9 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 		
 		if (!$this->editing && checkPriv() && !trim($this->setting('html'))) {
 			if (cms_core::$isDraft) {
-				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click the button in the corner of this panel to edit.</p><p>This slot is [[slotName]].</p>', array('slotName' => $this->slotName)), '</div>';
+				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>Double-click in this panel to edit.</p>', array('slotName' => $this->slotName)), '</div>';
 			} else {
-				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p><p>This slot is [[slotName]].</p>', array('slotName' => $this->slotName)), '</div>';
+				echo '<div class="zenario_editor_placeholder_text">', adminPhrase('<h2>Write something here</h2><p>This is a WYSIWYG editor, but it\'s empty.</p><p>With the Edit tab selected, click &quot;Start editing&quot; to edit.</p>', array('slotName' => $this->slotName)), '</div>';
 			}
 		}
 		

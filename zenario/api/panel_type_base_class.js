@@ -60,11 +60,17 @@ var methods = methodsOf(
 		this.scrollLeft = 0;
 		this.searchTerm = '';
 		this.selectedItems = {};
+		this.lastItemClicked = false;
 	})
 );
 
 
 //Methods
+
+//Called by Organizer upon the first initialisation of this panel.
+//It is not recalled if Organizer's refresh button is pressed, or the administrator changes page
+methods.init = function() {
+};
 
 //Called by Organizer whenever it needs to set the panel data.
 methods.cmsSetsPanelTUIX = function(tuix) {
@@ -78,6 +84,7 @@ methods.cmsSetsPath = function(path) {
 
 //Called by Organizer whenever a panel is first loaded with a specific item requested
 methods.cmsSetsRequestedItem = function(requestedItem) {
+	this.lastItemClicked =
 	this.requestedItem = requestedItem;
 };
 
@@ -127,6 +134,24 @@ methods.returnPanelTitle = function() {
 	return '';
 };
 
+//Return whether you are allowing multiple items to be selected in full and quick mode.
+//(In select mode the opening picker will determine whether multiple select is allowed.)
+methods.returnMultipleSelectEnabled = function() {
+	if (this.tuix && this.tuix.item_buttons) {
+		foreach (this.tuix.item_buttons as i) {
+			if (!zenarioO.isInfoTag(i)) {
+				if (engToBoolean(this.tuix.item_buttons[i].multiple_select)
+				 && !zenarioO.checkButtonHidden(this.tuix.item_buttons[i])) {
+					return true;
+				}
+			}
+		}
+	}
+	
+	return false;
+};
+
+
 //Whether to enable searching on a panel
 methods.returnSearchingEnabled = function() {
 	
@@ -140,31 +165,6 @@ methods.returnSearchingEnabled = function() {
 	}
 	
 	return false;
-};
-
-//Return whether you want to enable inspection view
-methods.returnInspectionViewEnabled = function() {
-	return false;
-};
-
-//Toggle inspection view
-methods.toggleInspectionView = function(id) {
-	if (id == zenarioO.inspectionViewItemId()) {
-		this.closeInspectionView(id);
-	
-	} else {
-		this.openInspectionView(id);
-	}
-};
-
-//This method should open inspection view
-methods.openInspectionView = function(id) {
-	//...
-};
-
-//This method should close inspection view
-methods.closeInspectionView = function(id) {
-	//...
 };
 
 //Return whether you want searching/sorting/pagination to be done server-side.
@@ -239,12 +239,89 @@ methods.showButtons = function($buttons) {
 	//...
 };
 
+//Called whenever Organizer is resized - i.e. when the administrator resizes their window.
+//It's also called on the first load of your panel after your showPanel() and setButtons() methods have been called.
+methods.sizePanel = function($header, $panel, $footer, $buttons) {
+	//...
+};
+
 //This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
 methods.onUnload = function($header, $panel, $footer) {
-	//Remember where the admin had scrolled to.
-	//If we ever draw this panel again it would be nice to restore this to how it was
+	this.saveScrollPosition($panel);
+};
+
+//Remember where the admin had scrolled to.
+//If we ever draw this panel again it would be nice to restore this to how it was
+methods.saveScrollPosition = function($panel) {
 	this.scrollTop = $panel.scrollTop();
 	this.scrollLeft = $panel.scrollLeft();
+};
+
+//If this panel has been displayed before, try to restore the admin's previous scroll
+//Otherwise show the top left (i.e. (0, 0))
+methods.restoreScrollPosition = function($panel) {
+	$panel
+		.scrollTop(this.scrollTop || 0)
+		.scrollLeft(this.scrollLeft || 0)
+		.trigger('scroll');
+};
+
+
+
+
+
+methods.checkboxClick = function(id, e) {
+	zenario.stop(e);
+	
+	var that = this;
+	
+	setTimeout(function() {
+		that.itemClick(id, undefined, true);
+	}, 0);
+};
+
+
+methods.itemClick = function(id, e, isCheckbox) {
+	if (!this.tuix || !this.tuix.items[id]) {
+		return false;
+	}
+	
+	//If the admin is holding down the shift key...
+	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && this.lastItemClicked) {
+		//...select everything between the current item and the last item that they clicked on
+		zenarioO.selectItemRange(id, this.lastItemClicked);
+	
+	//If multiple select is enabled and the checkbox was clicked...
+	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
+		//...toogle the item that they've clicked on
+		if (this.selectedItems[id]) {
+			this.deselectItem(id);
+		} else {
+			this.selectItem(id);
+		}
+		zenarioO.closeInspectionView();
+		this.lastItemClicked = id;
+	
+	//If multiple select is not enabled and the checkbox was clicked
+	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && this.selectedItems[id]) {
+		//...deselect everything if this row was already selected
+		zenarioO.deselectAllItems();
+		zenarioO.closeInspectionView();
+		this.lastItemClicked = id;
+	
+	//Otherwise select the item that they've just clicked on, and nothing else
+	} else {
+		zenarioO.closeInspectionView();
+		zenarioO.deselectAllItems();
+		this.selectItem(id);
+		this.lastItemClicked = id;
+	}
+	
+	
+	zenarioO.setButtons();
+	zenarioO.setHash();
+	
+	return false;
 };
 
 
@@ -289,25 +366,43 @@ methods.deselectItem = function(id) {
 methods.updateItemCheckbox = function(id, checked) {
 	
 	//Check to see if there is a checkbox next to this item first.
-	var $checkbox,
-		checkbox = get('organizer_itemcheckbox_' + id);
+	var checkbox = get('organizer_itemcheckbox_' + id);
 	
 	if (checkbox) {
-		$checkbox = $(get('organizer_itemcheckbox_' + id));
-	
-		//setTimeout() is used as a workaround for a bug where a checkbox's checked
-		//property can get out of sync when clicking directly on it
-		setTimeout(function() {
-			$checkbox.prop('checked', checked);
-		}, 1);
+		$(get('organizer_itemcheckbox_' + id)).prop('checked', checked);
 	}
 	
 	//Change the "all items selected" checkbox, if it is on the page.
 	if (zenarioO.allItemsSelected()) {
-		$('#organizer_checkbox_col input').prop('checked', true);
+		$('#organizer_toggle_all_items_checkbox').prop('checked', true);
 	} else {
-		$('#organizer_checkbox_col input').prop('checked', false);
+		$('#organizer_toggle_all_items_checkbox').prop('checked', false);
 	}
+};
+
+//Return whether you want to enable inspection view
+methods.returnInspectionViewEnabled = function() {
+	return false;
+};
+
+//Toggle inspection view
+methods.toggleInspectionView = function(id) {
+	if (id == zenarioO.inspectionViewItemId()) {
+		this.closeInspectionView(id);
+	
+	} else {
+		this.openInspectionView(id);
+	}
+};
+
+//This method should open inspection view
+methods.openInspectionView = function(id) {
+	//...
+};
+
+//This method should close inspection view
+methods.closeInspectionView = function(id) {
+	//...
 };
 
 

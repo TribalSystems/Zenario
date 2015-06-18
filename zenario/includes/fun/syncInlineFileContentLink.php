@@ -89,7 +89,7 @@ $result = sqlQuery($sql);
 
 while ($row = sqlFetchAssoc($result)) {
 	$htmlChanged = false;
-	syncInlineFileLinks('inline', $files, $row['value'], $htmlChanged);
+	syncInlineFileLinks($files, $row['value'], $htmlChanged);
 	
 	//Keep a block of all of the content to put into the cache table
 	$content .= $row['value']. "\n";
@@ -110,7 +110,8 @@ syncInlineFiles(
 		'foreign_key_to' => 'content',
 		'foreign_key_id' => $cID,
 		'foreign_key_char' => $cType,
-		'foreign_key_version' => $cVersion));
+		'foreign_key_version' => $cVersion),
+	$keepOldImagesThatAreNotInUse = true);
 
 //Update the Content in the cache table
 $text = trim(strip_tags($content));

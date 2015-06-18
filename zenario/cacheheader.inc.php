@@ -144,7 +144,7 @@ function get($n) {
 }
 
 function hash64($text, $len = 28) {
-	return substr(strtr(base64_encode(sha1($text, true)), ' +/=', '~-_,'), 0, $len);
+	return substr(rtrim(strtr(base64_encode(sha1($text, true)), '+/', '-_'), '='), 0, $len);
 }
 
 function in($needle) {
@@ -175,7 +175,7 @@ function moduleDir($moduleName, $subDir = '', $checkExists = false, $checkFramew
 	$moduleName = preg_replace('/\W/', '', $moduleName);
 	
 	if ($subDir !== '') {
-		//Catch the case where the tuix/storekeeper subdirectory was renamed to tuix/storekeeper
+		//Catch the case where the tuix/storekeeper subdirectory wasn't yet renamed to tuix/organizer
 		if ($checkS2O
 		 && ((($len = 14) && (substr($subDir, 0, $len) == 'tuix/organizer'))
 		  || (($len = 16) && (substr($subDir, 0, $len) == 'tuix/storekeeper')))) {
@@ -303,7 +303,8 @@ function useCache($ETag = false, $maxAge = false) {
 function useGZIP($useGZIP = true) {
 	if ($useGZIP) {
 		//Note: IE 6 frequently crashes if we try to use compression
-		if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
+		if (!empty($_SERVER['HTTP_USER_AGENT'])
+		 && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
 			ob_start();
 		
 		//If there has already been some output (e.g. an error) then that will also cause a problem
@@ -317,7 +318,9 @@ function useGZIP($useGZIP = true) {
 		//Otherwise try to use zlib
 		} else {
 			if (extension_loaded('zlib')) {
-				ini_set('zlib.output_compression', 4096);
+				if (checkFunctionEnabled('ini_set')) {
+					ini_set('zlib.output_compression', 4096);
+				}
 			}
 			ob_start();
 		}
@@ -365,6 +368,28 @@ function deleteCacheDir($dir) {
 	}
 	return @rmdir($dir);
 }
+
+//Check whether we are allowed to call exec()
+function execEnabled() {
+	
+	if (is_null(cms_core::$execEnabled)) {
+		cms_core::$execEnabled = checkFunctionEnabled('exec');
+	}
+	
+	return cms_core::$execEnabled;
+}
+
+function checkFunctionEnabled($name, $checkSafeMode = true) {
+	try {
+		return @is_callable($name)
+			&& !($checkSafeMode && version_compare(PHP_VERSION, '5.4.0', '<') && ini_get('safe_mode'))
+			&& !(($disable_functions = ini_get('disable_functions')) && (preg_match('/\b'. $name. '\b/i', $disable_functions) !== 0));
+	} catch (Exception $e) {
+		return false;
+	}
+}
+
+
 
 
 
@@ -441,6 +466,7 @@ class cms_core {
 	public static $dbupUninstallPluginOnFail = false;
 	public static $apcDirs = array();
 	public static $apcFoundCodes = array();
+	public static $execEnabled = null;
 
 
 	public static function initInstance(

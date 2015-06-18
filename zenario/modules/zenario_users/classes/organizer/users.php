@@ -85,6 +85,10 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 		}
 		
+		// Get group labels
+		$groupNames = getRowsArray('custom_dataset_fields', 'label', array('type' => 'group', 'is_system_field' => 0));
+		
+		
 		//Add user images to each user, if they have an image
 		foreach ($panel['items'] as $id => &$item) {
 			$item['traits'] = array();
@@ -93,8 +97,8 @@ class zenario_users__organizer__users extends zenario_users {
 				$item['traits']['has_image'] = true;
 				$img = '&usage=user&c='. $item['checksum'];
 	
-				$item['image'] = 'zenario/file.php?sk=1'. $img;
-				$item['list_image'] = 'zenario/file.php?skl=1'. $img;
+				$item['image'] = 'zenario/file.php?og=1'. $img;
+				$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 			}
 			
 			if ($item['status'] == 'contact') {
@@ -131,30 +135,37 @@ class zenario_users__organizer__users extends zenario_users {
 				} else {
 					$item['row_css_class'] = 'user_active';
 				}
-			} 
+			}
+			
+			// Get a users groups
+			$groups = getUserGroups($id);
+			foreach ($groups as $id => &$value) {
+				$value = $groupNames[$id];
+			}
+			$item['groups'] = implode(', ', $groups);
 		}
 	
 		//Set a title
 		if ($refinerName == 'group_members') {
 			$groupDetails = zenario_users::getGroupDetails($refinerId);
 				
-			$panel['title'] = adminPhrase('Members of the Group "[[name]]"', $groupDetails);
+			$panel['title'] = adminPhrase('Members of the Group "[[label]]"', $groupDetails);
 			$panel['no_items_message'] = adminPhrase('This Group has no members.');
-				
-			$panel['item_buttons']['remove_users_from_group']['tooltip'] = adminPhrase('Remove User from the Group "[[name]]"', $groupDetails);
-			$panel['item_buttons']['remove_users_from_group']['multiple_select_tooltip'] = adminPhrase('Remove Users from the Group "[[name]]"', $groupDetails);
-			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the User "[[screen_name]]" from the Group "[[name]]"?', $groupDetails);
-			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Users from the Group "[[name]]"?', $groupDetails);
+			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the User "[[identifier]]" from the Group "[[label]]"?', $groupDetails);
+			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Users from the Group "[[label]]"?', $groupDetails);
 		}
 	
-		//Don't show the "Create User" or "Delete User" button on a refiner
+		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner
 		if ($refinerName) {
 			unset($panel['collection_buttons']['add']);
 			unset($panel['item_buttons']['delete']);
+			unset($panel['collection_buttons']['import_dropdown']);
 		}
 	
 		if ($refinerName != 'group_members') {
 			unset($panel['collection_buttons']['add_user_to_group']);
+		} else {
+			unset($panel['item_buttons']['add_users_to_group']);
 		}
 		
 		if ($refinerName == 'smart_group') {

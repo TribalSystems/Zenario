@@ -47,6 +47,11 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->mode = 'modeRegistration';
 		$this->registerGetRequest('extranet_resend');
 		
+		// Set the title
+		if ($this->setting('registration_title')) {
+			$this->subSections['Registration_Title_Section'] = true;
+			$this->objects['Registration_Title'] = $this->phrase($this->setting('registration_title'));
+		}
 		
 		if (!canSetCookie() && setting('cookie_consent_for_extranet') == 'required') {
 			requireCookieConsent();
@@ -425,7 +430,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$emailMergeFields['ip_address'] = visitorIP();
 			$emailMergeFields['cms_url'] = absCMSDirURL();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);
-			$emailMergeFields['storekeeper_link'] = httpOrhttps(). primaryDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['organizer_link'] = httpOrhttps(). primaryDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
 			
 			$emailMergeFields['user_groups'] = getUserGroupsNames($userId);
 			
@@ -528,7 +533,7 @@ class zenario_extranet_registration extends zenario_extranet {
 			$emailMergeFields = getUserDetails($userId);
 			$emailMergeFields['ip_address'] = visitorIP();
 			$emailMergeFields['cms_url'] = absCMSDirURL();
-			$emailMergeFields['storekeeper_link'] = httpOrhttps(). primaryDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
+			$emailMergeFields['organizer_link'] = httpOrhttps(). primaryDomain(). SUBDIRECTORY. 'zenario/admin/organizer.php#zenario__users/panels/users//'. $emailMergeFields['id'];
 			
 			$emailMergeFields['user_groups'] = getUserGroupsNames($userId);
 			

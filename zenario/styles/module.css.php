@@ -81,7 +81,7 @@ $moduleDetails = array_reverse($moduleDetails, true);
 if (!empty($_GET['admin_frontend'])) {
 	$files = array('admin_frontend.css');
 
-} elseif (!empty($_GET['storekeeper'])) {
+} elseif (!empty($_GET['organizer'])) {
 	$files = array('storekeeper.css', 'organizer.css');
 
 } else {

@@ -116,9 +116,10 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (checkPriv('_PRIV_CHANGE_USER_STATUS')) {
-			if (isset($fields['details/send_activation_email_to_user']) &&  $fields['details/send_activation_email_to_user']
+			if (isset($values['details/send_activation_email_to_user']) &&  $values['details/send_activation_email_to_user']
 				&& issetArrayKey($values,'details/email_to_send') && (inc('zenario_email_template_manager'))) {
 				$mergeFields=getUserDetails($box['key']['id']);
+				$mergeFields['username'] = $mergeFields['screen_name'];
 				$mergeFields['password'] = $values['password'];
 				$mergeFields['cms_url'] = absCMSDirURL();
 				

@@ -355,7 +355,9 @@ incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
-incJS('zenario/libraries/lgpl/tinymce_4_1_6/jquery.tinymce');
+incJS('zenario/libraries/lgpl/tinymce_4_1_7/jquery.tinymce');
+//Include the autocomplete library for the FAB library
+incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
 //Include the selectboxes library for moving items between select lists
 incJS('zenario/libraries/mit/jquery/jquery.selectboxes');
 //Include the jQuery Slider code in Admin Mode
@@ -367,7 +369,7 @@ incJS('zenario/libraries/mit/spectrum/spectrum');
 incJS('zenario/libraries/public_domain/mousehold/mousehold');
 
 echo '
-zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_6/tinymce.jquery.min.js"';
+zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_7/tinymce.jquery.min.js"';
 
 
 //Fix for the hasLayout bug and transparent slots in IE 6 and 7

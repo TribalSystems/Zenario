@@ -103,3 +103,9 @@ function primaryDomain() {
 		return false;
 	}
 }
+
+//This will be implemented in 7.0.6. But I've added a dummy version into 7.0.5
+//so we can add it into client module code in advance.
+function cookieDomain() {
+	return httpHost();
+}

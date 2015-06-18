@@ -143,6 +143,7 @@ if (get('quick_create') && (
 
 } elseif (post('delete') && checkPriv('_PRIV_DELETE_MENU_ITEM')) {
 	foreach (explode(',', $ids) as $id) {
+		deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id));
 		deleteMenuNode($id);
 	}
 

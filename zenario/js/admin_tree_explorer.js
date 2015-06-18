@@ -187,10 +187,10 @@ function update(source) {
 		
 	nodeEnter.append("a")
 		.attr("xlink:href", function (d) { if (d.content_href) return d.content_href; return undefined;})
-		.on("click", function (d) { if (d.storekeeper_href) window.parent.zenarioO.go(d.storekeeper_href); return false; })
+		.on("click", function (d) { if (d.organizer_href) window.parent.zenarioO.go(d.organizer_href); return false; })
 		.attr("xlink:show", "new")
 		.attr("xlink:target", "_blank")
-		.style("display", function(d) { return (d.content_href == undefined && d.storekeeper_href === undefined) ? "none" : "block"})
+		.style("display", function(d) { return (d.content_href == undefined && d.organizer_href === undefined) ? "none" : "block"})
 		.append("svg:text")
 	  	//.attr("x", function(d) { return d.children || d._children ? -12 : (d.target_loc!=undefined && d.target_loc!="none") ? child_text_xpos : 12; })
 	  	.attr("x", function(d) { return child_text_xpos; })

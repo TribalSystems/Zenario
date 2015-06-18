@@ -1,10 +1,10 @@
 {% if showSuccessMessage %}
-	<div class="success">{{successMessage|e}}</div>
+	<div class="success">{{successMessage}}</div>
 {% elseif showForm %}
 	{% if title %}
-		<div class="title">{{title|e}}</div>
+		<div class="title">{{title}}</div>
 	{% endif %}
-	<div class="user_form">
+	<div id="{{identifier|e}}" class="user_form">
 		{{openForm}}
 		{{formFields}}
 		{% if captcha %}
@@ -13,7 +13,9 @@
 				{{captcha_html}}
 			</div>
 		{% endif %}
-		<input type="submit" name="submit_form" value="{{'Submit'|trans}}"/>
+		{{multiPageFormFinalBackButton}}
+		<input type="submit" name="submit_form" class="next submit" value="{{submit_button_text}}"/>
+		{{multiSPageFormFinalPageEnd}}
 		{{closeForm}}
 	</div>
 {% else %}

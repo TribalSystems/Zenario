@@ -48,25 +48,30 @@ plugin_settings:
                             label: Change image
                     value: same_image
 
-                mobile_image_thumbnail:
-                    full_width: Yes
-                    snippet:
-                        html: ""            
-
                 mobile_image:
                     plugin_setting:
                         name: mobile_image
                         foreign_key_to: file
                     label: 'Mobile image:'
                     pick_items:
-                        path: zenario__content/panels/inline_images_for_reusable_plugins
-                        min_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        max_path: zenario__content/panels/inline_images_for_reusable_plugins
-                        target_path: zenario__content/panels/inline_images_for_reusable_plugins
+                        path: zenario__content/panels/image_library
+                        min_path: zenario__content/panels/image_library
+                        max_path: zenario__content/panels/image_library
+                        target_path: zenario__content/panels/image_library
                         select_phrase: Select mobile image...
                     value: ""
                     format_onchange: Yes
                     hidden: Yes
+                    upload:
+                        multi: false
+                        accept: 'image/*'
+                        extensions:
+                            - .gif
+                            - .jpg
+                            - .jpeg
+                            - .png
+                        drag_and_drop: true
+                        reorder_items: false
                 mobile_canvas:
                     plugin_setting:
                         name: mobile_canvas

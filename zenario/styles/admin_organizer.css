@@ -2,8 +2,8 @@ body.webkit input {
     line-height: inherit !important;
 }
 
-.zenario_sk,
-.zenario_sk textarea {
+.zenario_og,
+.zenario_og textarea {
 	font-family:Verdana, Arial, Helvetica, sans-serif;
 	font-size:9pt;
 	color:#616161;
@@ -564,11 +564,6 @@ body.ie label#search_term_placeholder {
 	font-size: 14px;
 }
 
-.organizer-button-first a,
-.organizer-button-first {
-	/*background: 0!important;*/
-}
-
 #organizer_container {
 	width: auto;
 	overflow: hidden;
@@ -644,6 +639,12 @@ body.ie label#search_term_placeholder {
 .zenario_toolbar_header .toolbar div:hover,
 #organizer_trash_button:hover {
 	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
+}
+
+#organizer__box_inner.organizer_filters_set .zenario_toolbar_header #organizer_viewOptions.toolbar,
+#organizer__box_inner.organizer_filters_set .zenario_toolbar_header #organizer_viewOptions.toolbar div:hover {
+	background:#01d300;
+	border-color:#616161;
 }
 
 .zenario_toolbar_header .toolbar div {
@@ -728,6 +729,41 @@ body.ie label#search_term_placeholder {
 
 .organizer_list_view .organizer_slidedown_view_toggle_open {
 	background-position:-406px -210px;
+}
+
+.organizer_total_wrapper {
+    height: 31px;
+    position: absolute;
+    bottom: 0px;
+    background-color: #f6f6f6;
+    border-color: #c4c4c4;
+    border-style: solid;
+    border-width: 1px 0px 0px 0;
+} 
+
+.organizer_total_wrapper .organizer_total_cell {
+      display: block;
+      float: left;
+      height: 23px;
+      padding: 3px 5px 3px 5px;
+      border-color: #c4c4c4;
+      border-style: solid;
+      border-width: 0 1px 1px 0;
+      text-align: right;
+}
+
+.organizer_total_wrapper span {
+    color: #000000;
+    text-align: right;
+    font-weight: bold;
+}
+
+.placeholder-checkbox {
+    width: 25px;
+}
+
+.placeholder-week-item {
+    width: 39px;
 }
 
 .organizer_slidedown_view_closed {
@@ -3076,11 +3112,6 @@ body.ie9 #organizer_preloader_circle div {
 	height: 18px;
 }
 
-
-
-
-
-
 #organizer_rightColumnContent div.organizer_row div.organizer_cell table.organizer_no_border td {
 	border-style: none;
 	border-width: 0;
@@ -3885,40 +3916,29 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 
 #organizer_pagination .organizer_page_button {
 	display: inline-block;
-	width: 30px;
-	height: 32px;
+	width: 24px;
+	height: 24px;
 	text-align: center;
+	position: relative;
+	bottom: 5px;
 }
 
 #organizer_page_first {
-	background:url('../admin/images/pagination_btn_left_off.gif') no-repeat;
+	background:url('../admin/images/go-to-start-btn-off-state.png') no-repeat;
+	margin-right: 5px;
 }
 
-#organizer_page_prev {
-	background:url('../admin/images/pagination_btn_left_on.gif') no-repeat;
-}
-
-#organizer_page_left {
-	background:url('../admin/images/scroll-left-btn.png') no-repeat;
-}
-
-#organizer_page_right {
-	background:url('../admin/images/scroll-right-btn.png') no-repeat;
-}
-
-#organizer_page_next {
-	background:url('../admin/images/pagination_btn_right_on.gif') no-repeat;
+#organizer_page_first:hover {
+	background:url('../admin/images/go-to-start-btn-over-state.png') no-repeat;
 }
 
 #organizer_page_last {
-	background:url('../admin/images/pagination_btn_right_off.gif') no-repeat;
+	background:url('../admin/images/go-to-end-btn-off-state.png') no-repeat;
+	margin-left: 5px;
 }
 
-#organizer_pagination .paginator_p_wrap {
-	/*max-width:225px !important;
-	max-width:calc( 100% - 180px ) !important;*/
-	float:none;
-	display:inline-block;
+#organizer_page_last:hover {
+    background:url('../admin/images/go-to-end-btn-over-state.png') no-repeat;
 }
 
 .organizer_page_button {
@@ -3929,12 +3949,18 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 	cursor: default;
 }
 
+.pagination_disabled_first,
+.pagination_disabled_last {
+	opacity: 0.5;
+}
 
+.pagination_disabled_first:hover {
+	background: url('../admin/images/go-to-start-btn-off-state.png') no-repeat!important;
+}
 
-/*
-	Some hacks by Chris to try and get the slider to appear,
-	please remove these two rules and implement it properly!
-*/
+.pagination_disabled_last:hover {
+	background: url('../admin/images/go-to-end-btn-off-state.png') no-repeat!important;
+}
 
 .organizer_page_numbers {
 	height: 32px;
@@ -3942,42 +3968,63 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 }
 
 #organizer_pagination .paginator_p_wrap {
+    float:none;
+	display: inline-block;
 	float: left;
-	height: 20px;
-	line-height: 20px;
+	height: 24px;
+	line-height: 23px;
+	margin-bottom: 4px;
+	margin-top: 3px;
 }
 
 #organizer_pagination .paginator_slider {
+	background: #b9b9b9;
+	border: 0;
 	float: left;
 	clear: both;
 }
-/*
-	End of Chris' hacky code
-*/
 
+.paginator_slider .ui-slider-handle {
+	background:url('../admin/images/srub-bar-off-state.png') no-repeat;
+	border: 0;
+	width: 24px;
+	cursor: pointer;
+}
 
-
+.paginator_slider .ui-slider-handle:hover {
+	background:url('../admin/images/srub-bar-over-state.png') no-repeat;
+}
 
 .paginator_p {
-	background: transparent;
-	color: #000000;
+	background: #b9b9b9;
+	color: #4d4d4d;
+	font-weight: 700;
+	border-radius: 2px;
+	-moz-border-radius: 2px;
+	-webkit-border-radius: 2px;
+	padding: 0;
 }
 
-.paginator_p .selected:hover,
+.paginator_p_wrap .selected,
+.paginator_p_wrap .selected:hover {
+	background: #027dc9;
+	color: #ffffff;
+}
+
 .paginator_p:hover {
-	background: transparent;
+	background: #6f6f6f;
+	color: #ffffff;
 }
 
-/*  Old pagination (can we delete this?)  */
 
 #organizer_itemCountWrap {
 	width: 100%;
-	height: 31px;
+	height: 45px;
 	float: right;
 	text-align: center;
 	color: #333;
 	font-size:11px;
-	margin-top:6px;
+	margin-top:0;
 }
 
 #organizer_itemCountWrap .page {
@@ -4579,4 +4626,119 @@ table.table-bordered td
 
 #organizer_search.introjs-showElement {
 	background:#FFF;
+}
+
+/* Calendar panel styling */
+.calendar-organizer {
+    width: 100%;
+    border-collapse: collapse;
+    margin-left: 1%;
+    margin-top: 1%;
+    table-layout: fixed;
+}
+
+.calendar-organizer .calendar-prev-link,
+.calendar-organizer .calendar-next-link {
+    text-align: center;
+}
+
+.calendar-organizer .calendar-prev-link a,
+.calendar-organizer .calendar-next-link a {
+    cursor: pointer;
+}
+
+.calendar-organizer-day {
+    border: 1px solid #c4c4c4;
+    padding: 3%;
+    text-align: right;
+    position: relative;
+}
+
+.calendar-organizer-no-date {
+    background: #F6F6F6;
+}
+
+.calendar-organizer-date:hover {
+    background: #dcf5fd;
+}
+
+.calendar-organizer-day-names td {
+    border: 1px solid #c4c4c4;
+    color: #ffffff;
+    background: #333333;
+    text-align: center;
+    padding: 1%;
+}
+
+.calendar-organizer-events-details {
+    display: block;
+    float: left;
+    width: 26%;
+    margin-left: 3%;
+    margin-top: 0;
+}
+
+.calendar-organizer-event {
+    position: absolute;
+    top: 55%;
+    right: 5%;
+    background: #01D103;
+    color: #ffffff;
+    padding: 3%;
+    cursor: pointer;
+}
+
+.calendar-organizer-wrapper {
+    display: block;
+    float: left;
+    width: 70%;
+}
+
+.calendar-organizer-day-value {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+}
+
+.calendar-first-row {
+    width: 100%;
+}
+
+.calendar-first-row div {
+    display: block;
+    float: left;
+    width: 33%;
+}
+
+.calendar-organizer-first-row {
+    background: #f9f9f9;
+    border: 1px solid #c4c4c4;
+}
+
+.calendar-first-row-left {
+    text-align: left;
+}
+
+.calendar-first-row-middle h2 {
+    text-align: center;
+    margin: 0;
+}
+
+.calendar-first-row-right {
+    text-align: right;
+}
+
+.calendar-first-row ul li {
+    display: inline-block;
+}
+
+.calendar-first-row ul {
+    padding-left: 6%;
+    margin: 0;
+}
+
+.calendar-organizer-month-year-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    text-align: center;
 }

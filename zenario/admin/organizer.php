@@ -29,7 +29,7 @@ if (!checkPriv()) {
 		<body>
 			<script type="text/javascript">
 				var hash = encodeURIComponent(("" + document.location.hash).replace("#", ""));
-				document.location.href = "welcome.php?sk=" + (hash? hash : "zenario__content/panels/content");
+				document.location.href = "welcome.php?og=" + (hash? hash : "zenario__content/panels/content");
 			</script>
 			<p><a href="welcome.php">', adminPhrase('Please log in'), '</a></p>
 		</body>

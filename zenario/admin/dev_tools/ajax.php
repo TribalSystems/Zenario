@@ -13,7 +13,7 @@ switch (get('mode')) {
 		$type = 'admin_toolbar';
 		break;
 	case 'zenarioO';
-		$type = 'storekeeper';
+		$type = 'organizer';
 		break;
 	default:
 		exit;

@@ -36,6 +36,7 @@ zenario__modules:
                     label: "Running"
                     column: status
                     value: module_running
+                    enabled_by_default: true
                 module_suspended:
                     ord: 4
                     label: "Suspended"

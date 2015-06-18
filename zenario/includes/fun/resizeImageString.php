@@ -97,7 +97,7 @@ if ($width != $cropNewWidth || $height != $cropNewHeight) {
 		$temp_file = tempnam(sys_get_temp_dir(), 'Img');
 			if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
 			if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
-			if ($mime_type == 'image/jpeg' || $mime_type == 'image/pjpeg') imagejpeg($resized_image, $temp_file, ifNull((int) setting('jpeg_quality'), 85));
+			if ($mime_type == 'image/jpeg' || $mime_type == 'image/pjpeg') imagejpeg($resized_image, $temp_file, ifNull((int) setting('jpeg_quality'), 99));
 			
 			imagedestroy($resized_image);
 			unset($resized_image);

@@ -546,7 +546,7 @@ class zenario_pro_features extends zenario_common_features {
 			'~';
 		
 			//Get the current server time
-			if (windowsServer()) {
+			if (windowsServer() || !execEnabled()) {
 				echo date('H~i~s');
 		
 			} else {
@@ -870,7 +870,7 @@ class zenario_pro_features extends zenario_common_features {
 					//These tables are all used in Admin Mode, but not really used to display anything to Visitors; ignore these as well
 					case 'document_types':
 					case 'email_templates':
-					case 'inline_file_link':
+					case 'inline_images':
 					case 'jobs':
 					case 'job_logs':
 					case 'local_revision_numbers':

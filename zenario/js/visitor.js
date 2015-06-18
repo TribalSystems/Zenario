@@ -68,26 +68,26 @@ zenario.adminId = 0;
 
 //WiP callback class	
 zenario.callback = function() {
+	this.isOwnCallback = false;
 	this.isWrapper = false;
 	this.results = [undefined];
 	this.completes = [false];
+	this.funs = [];
 };
 var methods = methodsOf(zenario.callback);
 
 //Register a function to call afterwards.
-//You can only register one function; calling it a second time overwrites the first time
 //Your function will be called with the result of the callback as its arguement
 //(Or the results of the callbacks as its arguements, if you have chained multiple callbacks together)
 methods.after = function(fun, that) {
-	this.that = that || this;
-	this.fun = fun;
-	
+	this.funs.push([fun, that || this]);
 	return this;
 };
 
 //Complete the callback with a result
 //The result you give will be added as an arguement to the callback function
 methods.call = function(result) {
+	this.isOwnCallback = true;
 	this.completes[0] = true;
 	this.results[0] = result;
 	this.checkComplete();
@@ -119,7 +119,11 @@ methods.add = function(cb) {
 //Check to see if the callback is complete and trigger the callback function if so.
 //An internal function, no need to call it.
 methods.checkComplete = function() {
-	var i, link;
+	var i, link, fun;
+	
+	if (!this.isOwnCallback && !this.isWrapper) {
+		return;
+	}
 	
 	for (i = 0; i < this.completes.length; ++i) {
 		if (!this.completes[i]) {
@@ -127,11 +131,15 @@ methods.checkComplete = function() {
 		}
 	}
 	
-	if (this.fun) {
-		if (this.isWrapper) {
+	if (this.funs.length) {
+		//If this was just used as a wrapper, don't include an empty first parameter
+		//But if this was used as a wrapper *and* a callback, we need to keep the first parameter
+		if (!this.isOwnCallback && this.isWrapper) {
 			this.results.splice(0, 1);
 		}
-		this.fun.apply(this.that, this.results);
+		foreach (this.funs as i => fun) {
+			fun[0].apply(fun[1], this.results);
+		}
 	}
 };
 
@@ -142,13 +150,13 @@ methods.checkComplete = function() {
 //		url3 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_3&_limit=1';
 //	
 //	zenario.ajax(url1, false, true).after(function(data) {
-//		console.log(data.items.html_1.tag);
+//		console.log(1, data.items.html_1.tag);
 //	});
 //	zenario.ajax(url2, false, true).after(function(data) {
-//		console.log(data.items.html_2.tag);
+//		console.log(2, data.items.html_2.tag);
 //	});
 //	zenario.ajax(url3, false, true).after(function(data) {
-//		console.log(data.items.html_3.tag);
+//		console.log(3, data.items.html_3.tag);
 //	});
 //	
 //	var cb = new zenario.callback;
@@ -156,7 +164,7 @@ methods.checkComplete = function() {
 //	cb.add(zenario.ajax(url2, false, true));
 //	cb.add(zenario.ajax(url3, false, true));
 //	cb.after(function(data1, data2, data3) {
-//		console.log(data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
+//		console.log(4, data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
 //	});
 //
 //	
@@ -164,7 +172,10 @@ methods.checkComplete = function() {
 //	.add(zenario.ajax(url2, false, true))
 //	.add(zenario.ajax(url3, false, true))
 //	.after(function(data1, data2, data3) {
-//		console.log(data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
+//		console.log(5, data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
+//	})
+//	.after(function(data1, data2, data3) {
+//		console.log(6, data1.items.html_1.tag, data2.items.html_2.tag, data3.items.html_3.tag);
 //	});
 //};
 
@@ -210,7 +221,7 @@ zenario.checkForHashChanges = function(timed) {
 		//Extract the instance id and the request from the hash
 		var hash = document.location.hash.substr(1);
 		
-		//If this is a storekeeper window, go to that location
+		//If this is an Organizer window, go to that location
 		if (zenarioA.storekeeperWindow && zenarioO.init) {
 			
 			if (hash.substr(0, 1) == '/') {
@@ -1232,7 +1243,7 @@ zenario.captcha = function(publicKey, divId, hideAudio) {
 	
 	if (!window.Recaptcha) {
 		$.getScript(
-			'http://www.google.com/recaptcha/api/js/recaptcha_ajax.js',
+			zenario.httpOrhttps() + 'www.google.com/recaptcha/api/js/recaptcha_ajax.js',
 			function() {
 				Recaptcha.create(publicKey, divId, RecaptchaOptions);
 			}

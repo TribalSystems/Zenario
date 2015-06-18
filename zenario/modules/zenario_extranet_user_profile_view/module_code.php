@@ -90,52 +90,17 @@ class zenario_extranet_user_profile_view extends module_base_class {
 
 			$this->subSections['Bus_Country'] = issetArrayKey($userDetails,"bus_country_id");			
 			$this->mergeFields['Bus_Country'] = zenario_country_manager::adminPhrase(cms_core::$langId,"_COUNTRY_NAME_" . $userDetails['bus_country_id']);
-
-
-			$this->subSections['Res_Address'] = (
-													issetArrayKey($userDetails,"res_address1") ||
-													issetArrayKey($userDetails,"res_address2") ||
-													issetArrayKey($userDetails,"res_address3") ||
-													issetArrayKey($userDetails,"res_town") ||
-													issetArrayKey($userDetails,"res_state") ||
-													issetArrayKey($userDetails,"res_postcode") ||
-													issetArrayKey($userDetails,"res_country_id")
-												);
-												
-			$this->subSections['Res_Address1'] = issetArrayKey($userDetails,"res_address1");			
-			$this->mergeFields['Res_Address1'] = htmlspecialchars($userDetails['res_address1']);
 			
-			$this->subSections['Res_Address2'] = issetArrayKey($userDetails,"res_address2");			
-			$this->mergeFields['Res_Address2'] = htmlspecialchars($userDetails['res_address2']);
-			
-			$this->subSections['Res_Address3'] = issetArrayKey($userDetails,"res_address3");			
-			$this->mergeFields['Res_Address3'] = htmlspecialchars($userDetails['res_address3']);
-			
-			$this->subSections['Res_Town'] = issetArrayKey($userDetails,"res_town");			
-			$this->mergeFields['Res_Town'] = htmlspecialchars($userDetails['res_town']);
-			
-			$this->subSections['Res_State'] = issetArrayKey($userDetails,"res_state");			
-			$this->mergeFields['Res_State'] = htmlspecialchars($userDetails['res_state']);
-			
-			$this->subSections['Res_Postcode'] = issetArrayKey($userDetails,"res_postcode");			
-			$this->mergeFields['Res_Postcode'] = htmlspecialchars($userDetails['res_postcode']);
-
-			$this->subSections['Res_Country'] = issetArrayKey($userDetails,"res_country_id");			
-			$this->mergeFields['Res_Country'] = zenario_country_manager::adminPhrase(cms_core::$langId,"_COUNTRY_NAME_" . $userDetails['res_country_id']);
-
-			if (inc('zenario_users')) {
-				$characteristics = zenario_users::getUserDetails($userId);
-				foreach ($characteristics as $characteristic) {
-					$cName = zenario_users::getCharacteristic($characteristic['characteristic_id']);
-					$cName = $cName['name'];
-					$cValue = zenario_users::getCharacteristicValue($characteristic['characteristic_value_id']);
-					$cValue = $cValue['name'];
-					$C[$cName][] = htmlspecialchars($cValue);
-				}
-				foreach ($C as $K=>$V) {
-					$this->subSections[$K] = true;
-					$this->mergeFields[$K] = implode(', ', $V);
-				}
+			// Make custom dataset fields available for custom frameworks
+			$C = array();
+			foreach ($userDetails as $col => $value) {
+				$cName = $col;
+				$cValue = $value;
+				$C[$cName][] = htmlspecialchars($cValue);
+			}
+			foreach ($C as $K=>$V) {
+				$this->subSections[$K] = issetArrayKey($userDetails, $K);
+				$this->mergeFields[$K] = implode(', ', $V);
 			}
 
 			if (inc('zenario_comments')) {

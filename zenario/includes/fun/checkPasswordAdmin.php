@@ -79,6 +79,7 @@ if (connectGlobalDB()) {
 				status,
 				username,
 				". $passwordColumns. "
+				password_needs_changing,
 				CONCAT(first_name, ' ', last_name) AS full_name
 			FROM ". DB_NAME_PREFIX_GLOBAL ."admins
 			WHERE ". $whereStatement. "
@@ -160,7 +161,17 @@ if (!$details['password_correct'] || $details['status'] != 'active') {
 }
 
 if ($details['type'] == 'global') {
-	return syncSuperAdmin($details['id']);
+	//If the password needs changing flag is set, don't allow a superadmin to log in until they have changed
+	//it on the control site.
+	if ($details['password_needs_changing']) {
+		//Return null in this case.
+			//I want the "password needs changing" and "password not correct" states to be different,
+			//yet still both evaulate to false.
+		return null;
+	
+	} else {
+		return syncSuperAdmin($details['id']);
+	}
 }
 
 //Update non-sha2 passwords to sha2. 

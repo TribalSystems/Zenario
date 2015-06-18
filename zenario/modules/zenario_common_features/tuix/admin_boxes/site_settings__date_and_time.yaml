@@ -23,32 +23,36 @@ site_settings:
                     type: select
                     value: '%e/%c/%Y'
                     values:
-                        '%c/%d/%y':
+                        '%e/%c/%y':
                             label: ''
+                        '%e/%c/%Y':
+                            label: ''
+                        '%d/%m/%y':
+                            label: ''
+                        '%d/%m/%Y':
+                            label: ''
+#                       '%e.%c.%Y':
+#                           label: ''
+                        '%d.%m.%Y':
+                            label: ''
+#                       '%d-%m-%y':
+#                           label: ''
+#                       '%d-%m-%Y':
+#                           label: ''
+                        '%c/%e/%y':
+                            label: ''
+                        '%c/%e/%Y':
+                            label: ''
+#                       '%c/%d/%y':
+#                           label: ''
                         '%m/%d/%y':
                             label: ''
                         '%m/%d/%Y':
                             label: ''
-                        '%e/%c/%y':
-                            label: ''
-                        '%d/%m/%y':
-                            label: ''
-                        '%e/%c/%Y':
-                            label: ''
-                        '%d/%m/%Y':
-                            label: ''
-                        '%e.%c.%Y':
-                            label: ''
-                        '%d.%m.%Y':
-                            label: ''
-                        '%d-%m-%y':
-                            label: ''
-                        '%d-%m-%Y':
-                            label: ''
-                        '%Y/%m/%d':
-                            label: ''
-                        '%Y.%m.%d':
-                            label: ''
+#                       '%Y/%m/%d':
+#                           label: ''
+#                       '%Y.%m.%d':
+#                           label: ''
                         '%Y-%m-%d':
                             label: ''
                     validation:
@@ -92,32 +96,36 @@ site_settings:
                     type: select
                     value: 'd/m/yy'
                     values:
+                        'd/m/y':
+                            label: ''
+                        'd/m/yy':
+                            label: ''
+                        'dd/mm/y':
+                            label: ''
+                        'dd/mm/yy':
+                            label: ''
+#                       'd.m.yy':
+#                           label: ''
+                        'dd.mm.yy':
+                            label: ''
+#                       'dd-mm-y':
+#                           label: ''
+#                       'dd-mm-yy':
+#                           label: ''
                         'm/d/y':
                             label: ''
+                        'm/d/yy':
+                            label: ''
+#                       'm/d/y':
+#                           label: ''
                         'mm/dd/y':
                             label: ''
                         'mm/dd/yy':
                             label: ''
-                        'd/m/y':
-                            label: ''
-                        'dd/mm/y':
-                            label: ''
-                        'd/m/yy':
-                            label: ''
-                        'dd/mm/yy':
-                            label: ''
-                        'd.m.yy':
-                            label: ''
-                        'dd.mm.yy':
-                            label: ''
-                        'dd-mm-y':
-                            label: ''
-                        'dd-mm-yy':
-                            label: ''
-                        'yy/mm/dd':
-                            label: ''
-                        'yy.mm.dd':
-                            label: ''
+#                       'yy/mm/dd':
+#                           label: ''
+#                       'yy.mm.dd':
+#                           label: ''
                         'yy-mm-dd':
                             label: ''
                         'd M y':
@@ -139,32 +147,36 @@ site_settings:
                     type: select
                     value: 'd M yy'
                     values:
+                        'd/m/y':
+                            label: ''
+                        'd/m/yy':
+                            label: ''
+                        'dd/mm/y':
+                            label: ''
+                        'dd/mm/yy':
+                            label: ''
+#                       'd.m.yy':
+#                           label: ''
+                        'dd.mm.yy':
+                            label: ''
+#                       'dd-mm-y':
+#                           label: ''
+#                       'dd-mm-yy':
+#                           label: ''
                         'm/d/y':
                             label: ''
+                        'm/d/yy':
+                            label: ''
+#                       'm/d/y':
+#                           label: ''
                         'mm/dd/y':
                             label: ''
                         'mm/dd/yy':
                             label: ''
-                        'd/m/y':
-                            label: ''
-                        'dd/mm/y':
-                            label: ''
-                        'd/m/yy':
-                            label: ''
-                        'dd/mm/yy':
-                            label: ''
-                        'd.m.yy':
-                            label: ''
-                        'dd.mm.yy':
-                            label: ''
-                        'dd-mm-y':
-                            label: ''
-                        'dd-mm-yy':
-                            label: ''
-                        'yy/mm/dd':
-                            label: ''
-                        'yy.mm.dd':
-                            label: ''
+#                       'yy/mm/dd':
+#                           label: ''
+#                       'yy.mm.dd':
+#                           label: ''
                         'yy-mm-dd':
                             label: ''
                         'd M y':
@@ -177,100 +189,6 @@ site_settings:
                         required: Please enter a date format.
                     note_below: |
                         Used in Organizer and the admin back-end.
-                
-                #vis_date_format_short:
-                #    site_setting:
-                #        name: vis_date_format_short
-                #    label: 'Short Date Format:'
-                #    type: text
-                #    onkeyup: "zenarioAB.previewDateFormat('vis_date_format_short', 'vis_date_format_short__preview');"
-                #    value: "%c/%d/%y"
-                #    validation:
-                #        required: Please enter a short date format.
-                #vis_date_format_short__preview:
-                #    same_row: Yes
-                #    type: text
-                #    disabled: disabled
-                #vis_date_format_med:
-                #    site_setting:
-                #        name: vis_date_format_med
-                #    label: 'Medium Date Format:'
-                #    type: text
-                #    onkeyup: "zenarioAB.previewDateFormat('vis_date_format_med', 'vis_date_format_med__preview');"
-                #    value: '%e [[_MONTH_SHORT_%m]] %Y'
-                #    validation:
-                #        required: Please enter a medium date format.
-                #vis_date_format_med__preview:
-                #    same_row: Yes
-                #    type: text
-                #    disabled: disabled
-                #vis_date_format_long:
-                #    site_setting:
-                #        name: vis_date_format_long
-                #    label: 'Long Date Format:'
-                #    type: text
-                #    onkeyup: "zenarioAB.previewDateFormat('vis_date_format_long', 'vis_date_format_long__preview');"
-                #    value: '[[_WEEKDAY_%w]] %D [[_MONTH_LONG_%m]] %Y'
-                #    validation:
-                #        required: Please enter a long date format.
-                #vis_date_format_long__preview:
-                #    same_row: Yes
-                #    type: text
-                #    disabled: disabled
-                #    note_below: |
-                #        These are in the MySQL date format, and use
-                #        <a href="http://dev.mysql.com/doc/refman/4.1/en/date-and-time-functions.html#function_date-format"
-                #            target="_blank"
-                #            style="text-decoration:underline;"
-                #            title="MySQL date format">
-                #                MySQL's date specifiers</a>.
-                #        <br/>
-                #        You may also use Visitor Phrases from the Common Features Module or a combination of the two, e.g. [[_MONTH_SHORT_%m]].
-                #vis_date_format_datepicker:
-                #    site_setting:
-                #        name: vis_date_format_datepicker
-                #    label: 'Admin Date Format:'
-                #    type: text
-                #    value: d M yy
-                #    onkeyup: "get('vis_date_format_datepicker__preview').value = zenario.formatDate(new Date(), false, this.value);"
-                #    validation:
-                #        required: Please enter a JavaScript date format.
-                #vis_date_format_datepicker__preview:
-                #    visible_if: |
-                #        ((
-                #            tuixObject.value =
-                #            tuixObject.current_value =
-                #                zenario.formatDate(new Date(), false, zenarioAB.value('vis_date_format_datepicker'))
-                #        ) || true)
-                #    same_row: Yes
-                #    type: text
-                #    disabled: disabled
-                #    note_below: |
-                #        Used in in floating Admin Boxes and the Admin back-end. Also used for interactive date-pickers for visitors.
-                #        <br/>
-                #        This is in the jQuery date format, and uses
-                #        <a href="http://docs.jquery.com/UI/Datepicker/formatDate"
-                #            target="_blank"
-                #            style="text-decoration:underline;"
-                #            title="jQuery date format">
-                #                jQuery's date specifiers</a>.
-                
-                #organizer_date_format:
-                #    site_setting:
-                #        name: organizer_date_format
-                #    label: 'Date format:'
-                #    type: text
-                #    value: d M yy
-                #    note_below: |
-                #        jQuery Date Format - 
-                #                                    <a href="http://docs.jquery.com/UI/Datepicker/formatDate"
-                #                                        target="_blank"
-                #                                        style="text-decoration:underline;"
-                #                                        title="jQuery Date Format">
-                #                                            See this page
-                #                                    </a>.
-                #    validation:
-                #        required: Please enter a date format.
                 
         times:
             label: Times
@@ -295,22 +213,6 @@ site_settings:
                             label: '09:00'
                         '%l:%i %p':
                             label: '9:00 AM'
-                    #values:
-                    #    '%k:%i':
-                    #        label: '9:00 - 17:00'
-                    #    '%H:%i':
-                    #        label: '09:00 - 17:00'
-                    #    '%l:%i %p':
-                    #        label: '9:00 AM - 5:00 PM'
-                    #    '%h:%i %p':
-                    #        label: '09:00 AM - 05:00 PM'
-                    #note_below: |
-                    #    This is in the MySQL date format, and uses
-                    #    <a href="http://dev.mysql.com/doc/refman/4.1/en/date-and-time-functions.html#function_date-format"
-                    #        target="_blank"
-                    #        style="text-decoration:underline;"
-                    #        title="MySQL time format">
-                    #            MySQL's date specifiers</a>.
                     validation:
                         required: Please enter a time format.
     setting_group: date_and_time

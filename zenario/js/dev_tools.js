@@ -361,8 +361,8 @@ devTools.updateToolbar = function(refresh) {
 	var merge = {
 		files: {},
 		selectedFile: devTools.skMap? 'combined' : 'current',
-		storekeeper_query_ids: devTools.focus.storekeeper_query_ids,
-		storekeeper_query_details: devTools.focus.storekeeper_query_details
+		organizer_query_ids: devTools.focus.organizer_query_ids,
+		organizer_query_details: devTools.focus.organizer_query_details
 	};
 	
 	var file,
@@ -421,13 +421,13 @@ devTools.updateEditor = function() {
 		devTools.rootPath = devTools.tagPath;
 	
 	//Show Storekeeper queries
-	} else if (view == 'storekeeper_query_ids') {
-		editor.setValue(devTools.focus.storekeeper_query_ids);
+	} else if (view == 'organizer_query_ids') {
+		editor.setValue(devTools.focus.organizer_query_ids);
 		//editor.setReadOnly(true);
 		format = 'mysql';
 	
-	} else if (view == 'storekeeper_query_details') {
-		editor.setValue(devTools.focus.storekeeper_query_details);
+	} else if (view == 'organizer_query_details') {
+		editor.setValue(devTools.focus.organizer_query_details);
 		//editor.setReadOnly(true);
 		format = 'mysql';
 	
@@ -764,7 +764,7 @@ devTools.validate = function() {
 	
 	var session = editor.getSession(),
 		showErrors = devTools.lastView == 'current' || devTools.lastView == 'combined' || devTools.lastView == 'map',
-		showWarnings = devTools.lastView != 'storekeeper_query_ids' && devTools.lastView != 'storekeeper_query_details';
+		showWarnings = devTools.lastView != 'organizer_query_ids' && devTools.lastView != 'organizer_query_details';
 	
 	if (!showErrors && !showWarnings) {
 		session.setAnnotations([]);
