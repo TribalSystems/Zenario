@@ -79,8 +79,8 @@ E.g. on a UNIX/Linux server:
     chmod 777 private/
     chmod 777 public/
     chmod 777 zenario_custom/templates/grid_templates/
-    chmod 666 "zenario_custom/templates/grid_templates/2 Column Fluid.css"
-    chmod 666 "zenario_custom/templates/grid_templates/2 Column Fluid.tpl.php"
+    chmod 666 zenario_custom/templates/grid_templates/*.css
+    chmod 666 zenario_custom/templates/grid_templates/*.tpl.php
 
 You can optionally make the zenario_siteconfig.php file writable for a smoother install
 process.
