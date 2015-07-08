@@ -19,31 +19,32 @@
 		</div>
 	{% endif %}
 	
-
-	<div class="banner_content">
-		{# If a title has been set show the title. #}
-		{% if Title %}
-			<div class="banner_title">
-				<{{Title_Tags}}>
-					{% if Link_Href %}
-						<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
-					{% else %}
-						{{Title}}
-					{% endif %}
-				</{{Title_Tags}}>
-			</div>
-		{% endif %}
+	{% if (Title or Text or More_Link_Text) %}
+		<div class="banner_content">
+			{# If a title has been set show the title. #}
+			{% if Title %}
+				<div class="banner_title">
+					<{{Title_Tags}}>
+						{% if Link_Href %}
+							<a {{Link_Href}}{{Target_Blank}}>{{Title}}</a>
+						{% else %}
+							{{Title}}
+						{% endif %}
+					</{{Title_Tags}}>
+				</div>
+			{% endif %}
 	
-		{# If text has been set show the text. #}
-		{% if Text %}
-			<div class="banner_text">{{Text}}</div>
-		{% endif %}
+			{# If text has been set show the text. #}
+			{% if Text %}
+				<div class="banner_text">{{Text}}</div>
+			{% endif %}
 
-		{# If more link text has been set show the more link. #}
-		{% if More_Link_Text %}
-			<div class="banner_more">
-				<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
-			</div>
-		{% endif %}
-	</div>
+			{# If more link text has been set show the more link. #}
+			{% if More_Link_Text %}
+				<div class="banner_more">
+					<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+				</div>
+			{% endif %}
+		</div>
+	{% endif %}
 </div></div></div>

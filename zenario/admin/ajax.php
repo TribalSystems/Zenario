@@ -2265,7 +2265,11 @@ if ($type == 'organizer') {
 
 //Only get the raw data when getting item data
 if ($mode == 'get_item_data') {
-	$tags = array('__item_sort_order__' => $tags['__item_sort_order__'], 'items' => $tags['items'], 'title' => $tags['title']);
+	$tags = array(
+		'count' => $tags['count'],
+		'items' => $tags['items'],
+		'title' => $tags['title'],
+		'__item_sort_order__' => $tags['__item_sort_order__']);
 	
 //Item links don't need most things in the panel
 //I also need to set the path for Menu Nodes

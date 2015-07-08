@@ -413,7 +413,7 @@ zenarioG.checkData = function(layoutName, familyName) {
 	
 	if (!zenarioG.history.length) {
 		zenarioG.pos = 0;
-		zenarioG.history = [JSON.stringify(zenarioG.data)];
+		zenarioG.history = [zenarioG.ajaxData()];
 	}
 };
 
@@ -567,12 +567,22 @@ zenarioG.recalcColumnAndGutterOptions = function(data, justCalc, scale) {
 };
 
 
-zenarioG.AJAXsrc = function() {
-	var data = JSON.stringify(zenarioG.data),
-		src = URLBasePath + 'zenario/admin/grid_maker/ajax.php?data=' + encodeURIComponent(data);
+zenarioG.ajaxURL = function() {
+	return URLBasePath + 'zenario/admin/grid_maker/ajax.php';
+};
+
+
+zenarioG.ajaxData = function() {
+	return JSON.stringify(zenarioG.data);
+};
+
+
+zenarioG.ajaxSrc = function() {
+	var data = zenarioG.ajaxData(),
+		src = zenarioG.ajaxURL() + '?data=' + encodeURIComponent(data);
 	
-	if (src.length > 2000) {
-		src = URLBasePath + 'zenario/admin/grid_maker/ajax.php?cdata=' + zenario.nonAsyncAJAX(URLBasePath + 'zenario/admin/grid_maker/ajax.php', {compress: 1, data: data});
+	if (src.length > 400) {
+		src = zenarioG.ajaxURL() + '?cdata=' + zenario.nonAsyncAJAX(zenarioG.ajaxURL(), {compress: 1, data: data});
 	}
 	
 	return src;
@@ -586,15 +596,13 @@ zenarioG.drawPreview = function() {
 		min = 100,
 		max = Math.max(zenarioG.desktopSmallestSize, Math.round(($(window).width() - zenarioG.previewPaddingLeftRight) / 100) * 100),
 		startingValue = Math.min(max - 20, zenarioG.data.maxWidth),
-		src = zenarioG.AJAXsrc(),
 		m = {
 			gridId: gridId,
 			topHack: topHack,
 			leftHack: leftHack,
 			min: min,
 			max: max,
-			startingValue: startingValue,
-			src: src
+			startingValue: startingValue
 		},
 		html = zenarioA.microTemplate('zenario_grid_maker_preview', m);
 	
@@ -603,6 +611,11 @@ zenarioG.drawPreview = function() {
 	$('.ui-tooltip').remove();
 	get(gridId).innerHTML = html;
 	zenarioA.tooltips('#' + gridId);
+	
+	//I want to set an iframe up so that the preview shows in the iframe.
+	//I would want to use GET, but the grid data can be too large for GET on some servers so I need to use post.
+	//To do this, I need to create a form that's pointed at the iframe, then submit it.
+	$('<form action="' + htmlspecialchars(zenarioG.ajaxURL()) + '" method="post" target="' + gridId + '-iframe"><input name="data" value="' + htmlspecialchars(zenarioG.ajaxData()) + '"/></form>').submit();
 	
 	$('#' + gridId + '-slider').slider({
 		min: min,
@@ -1517,7 +1530,7 @@ zenarioG.drawEditor = function(
 zenarioG.drawLinks = function() {
 	zenarioG.checkData();
 	
-	var src = zenarioG.AJAXsrc(),
+	var src = zenarioG.ajaxSrc(),
 		m = {
 			src: src
 		},
@@ -1586,13 +1599,20 @@ zenarioG.save = function(saveAs) {
 		saveAs = true;
 	}
 	
-	var src = zenarioG.AJAXsrc(),
-		data;
+	var data;
 	
 	if (saveAs) {
 		var cssClasses = ['zenario_grid_box', 'zenario_grid_new_layout_box'];
 		
-		if (data = zenario.nonAsyncAJAX(src, {saveas: 1, layoutId: zenarioG.layoutId}, true)) {
+		if (data = zenario.nonAsyncAJAX(
+			zenarioG.ajaxURL(),
+			{
+				saveas: 1,
+				data: zenarioG.ajaxData(),
+				layoutId: zenarioG.layoutId
+			},
+			true
+		)) {
 			
 			$.colorbox({
 				transition: 'none',
@@ -1605,12 +1625,16 @@ zenarioG.save = function(saveAs) {
 					$('#zenario_grid_new_layout_save').click(function() {
 						$('#zenario_grid_error').hide();
 						
-						if (data = zenario.nonAsyncAJAX(src, {
-							saveas: 1,
-							confirm: 1,
-							layoutId: zenarioG.layoutId,
-							layoutName: zenarioG.newLayoutName = get('zenario_grid_layout_name').value
-						}, true)) {
+						if (data = zenario.nonAsyncAJAX(
+							zenarioG.ajaxURL(), {
+								saveas: 1,
+								confirm: 1,
+								data: zenarioG.ajaxData(),
+								layoutId: zenarioG.layoutId,
+								layoutName: zenarioG.newLayoutName = get('zenario_grid_layout_name').value
+							},
+							true
+						)) {
 							if (data.error) {
 								$('#zenario_grid_error').html(htmlspecialchars(data.error)).slideDown();
 							} else {
@@ -1628,7 +1652,15 @@ zenarioG.save = function(saveAs) {
 		}
 	
 	} else {
-		if (data = zenario.nonAsyncAJAX(src, {save: 1, layoutId: zenarioG.layoutId}, true)) {
+		if (data = zenario.nonAsyncAJAX(
+			zenarioG.ajaxURL(),
+			{
+				save: 1,
+				data: zenarioG.ajaxData(),
+				layoutId: zenarioG.layoutId
+			},
+			true
+		)) {
 			if (data.success) {
 				zenarioG.markAsSaved(data, true);
 			
@@ -1638,7 +1670,16 @@ zenarioG.save = function(saveAs) {
 				$('#zenario_fbMessageButtons .submit_selected').click(function() {
 					setTimeout(function() {
 						var data;
-						if (data = zenario.nonAsyncAJAX(src, {save: 1, layoutId: zenarioG.layoutId, confirm: 1}, true)) {
+						if (data = zenario.nonAsyncAJAX(
+							zenarioG.ajaxURL(),
+							{
+								save: 1,
+								data: zenarioG.ajaxData(),
+								layoutId: zenarioG.layoutId,
+								confirm: 1
+							},
+							true
+						)) {
 							zenarioG.markAsSaved(data);
 						}
 					}, 50);
@@ -2107,7 +2148,7 @@ zenarioG.change = function(historic, doNotRedrawForm) {
 		}
 		
 		//Add the current state to the history
-		zenarioG.history.push(JSON.stringify(zenarioG.data));
+		zenarioG.history.push(zenarioG.ajaxData());
 		
 		//Set our currently position to the current state in the history
 		zenarioG.pos = zenarioG.history.length - 1;

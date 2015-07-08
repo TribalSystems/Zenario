@@ -443,8 +443,19 @@ class zenario_user_forms extends module_base_class {
 					}
 				// If condition field is select
 				} else {
-					if (!(isset($data[$visibleConditionFieldName]) && ($data[$visibleConditionFieldName] == $field['visible_condition_field_value']))) {
-						$hidden = true;
+					
+					$hidden = isset($data[$visibleConditionFieldName]) && ($data[$visibleConditionFieldName] != $field['visible_condition_field_value']);
+					
+					if (empty($data[$visibleConditionFieldName]) && !$hidden) {
+						$default = false;
+						if (!empty($visibleConditionField['default_value'])) {
+							$default = $visibleConditionField['default_value'];
+						} elseif (!empty($visibleConditionField['default_value_class_name']) && !empty($visibleConditionField['default_value_method_name'])) {
+							if (inc($visibleConditionField['default_value_class_name'])) {
+							$default = call_user_func(array($visibleConditionField['default_value_class_name'], $visibleConditionField['default_value_method_name']), $visibleConditionField['default_value_param_1'], $visibleConditionField['default_value_param_2']);
+							}
+						}
+						$hidden = ($default !== false) && ($field['visible_condition_field_value'] != $default);
 					}
 				}
 			}

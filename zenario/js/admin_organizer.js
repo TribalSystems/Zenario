@@ -6047,38 +6047,37 @@ zenarioO.yourWorkInProgressLastUpdated = 0;
 zenarioO.updateYourWorkInProgress = function() {
 	
 	//Only update once every so often, to avoid spamming AJAX requests just because the admin keeps moving their mouse over the button
-	var ms = (new Date()).getTime();
-	if (zenarioO.yourWorkInProgressLastUpdated - ms < -zenarioO.yourWorkInProgressLastUpdateFrequency) {
-		zenarioO.yourWorkInProgressLastUpdated = ms;
+	var ms = (new Date()).getTime(),
+		$dropdown,
+		url;
+	
+	if ((zenarioO.yourWorkInProgressLastUpdated - ms < -zenarioO.yourWorkInProgressLastUpdateFrequency)
+	 && ($dropdown = $('#zenario_ywip_dropdown'))) {
 		
-		var dropdown = get('zenario_ywip_dropdown');
-		if (dropdown) {
-			$(dropdown).removeClass('zenario_ywip_loaded').addClass('zenario_ywip_loading');
+		zenarioO.yourWorkInProgressLastUpdated = ms;
+		$dropdown.removeClass('zenario_ywip_loaded').addClass('zenario_ywip_loading');
+		
+		url =
+			URLBasePath + 'zenario/admin/ajax.php' +
+			'?_json=1' +
+			'&path=zenario__content/panels/content' +
+			'&_sort_col=last_modified_datetime' +
+			'&_sort_desc=1' +
+			'&_start=0' +
+			'&_limit=' + zenarioO.yourWorkInProgressItemCount +
+			'&refinerId=' +
+			'&refinerName=your_work_in_progress' +
+			'&refiner__your_work_in_progress=' +
+			'&_get_item_data=1';
+		
+		zenario.ajax(url, false, true, true).after(function(WiP) {
+			var html = zenarioA.microTemplate('zenario_ywip', WiP);
+			$dropdown.removeClass('zenario_ywip_loading').addClass('zenario_ywip_loaded').html(html);
 			
-			//Don't run syncronously
-			setTimeout(function() {
-				var url =
-						URLBasePath + 'zenario/admin/ajax.php' +
-						'?_json=1' +
-						'&path=zenario__content/panels/content' +
-						'&_sort_col=last_modified_datetime' +
-						'&_sort_desc=1' +
-						'&_start=0' +
-						'&_limit=' + zenarioO.yourWorkInProgressItemCount +
-						'&refinerId=' +
-						'&refinerName=your_work_in_progress' +
-						'&refiner__your_work_in_progress=' +
-						'&_get_item_data=1',
-					WiP = zenario.nonAsyncAJAX(url, false, true, true),
-					html = zenarioA.microTemplate('zenario_ywip', WiP);
-				
-				dropdown.innerHTML = html;
-				$(dropdown).removeClass('zenario_ywip_loading').addClass('zenario_ywip_loaded');
-			}, 1);
-		}
+		});
 	}
 };
-$(document).ready(zenarioO.updateYourWorkInProgress);
+$(document).ready(function() { setTimeout(zenarioO.updateYourWorkInProgress, 100) } );
 
 
 

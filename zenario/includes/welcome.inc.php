@@ -371,7 +371,9 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		} else {
 			$box['tabs'][2]['fields']['mysql_1']['row_class'] = 'valid';
 			
-			$mysqlVersion = arrayKey($phpinfo, 'mysql', 'Client API version');
+			$mysqlVersion = ifNull(
+				arrayKey($phpinfo, 'mysql', 'Client API version'),
+				arrayKey($phpinfo, 'mysqli', 'Client API library version'));
 			
 			if ($mysqlVersion) {
 				$box['tabs'][2]['fields']['mysql_2']['post_field_html'] =
