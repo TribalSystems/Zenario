@@ -2,11 +2,11 @@
 ---
 zenario_spare_domains:
     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
-    title: Creating a spare domain
+    title: Creating a domain name redirect
     key:
         id: ""
     hide_tab_bar: Yes
-    max_height: "250"
+    max_height: 350
     tabs:
         details:
             edit_mode:
@@ -17,13 +17,15 @@ zenario_spare_domains:
                     full_width: Yes
                     snippet:
                         html: |
-                            You can define a Spare Domain Name, so that visitors to that Domain Name are redirected to a specified Content Item under the Admin URL. 
-                            Use this panel to define a Spare Domain Name and the target Content Item. 
+                            You can define a domain name redirect, so that visitors to that Domain Name are redirected to a specified Content Item under the Admin URL. 
+                            Use this panel to define a domain name redirect and the target Content Item. 
                             Note that DNS and your web server must be correctly set up to map the Spare Domain to the CMS directory.
                 requested_url:
                     label: |
-                        Spare domain name:
+                        Domain name:
                     type: text
+                    pre_field_html: "http://"
+                    side_note: "Please do not include http:// or https:// in your domain name."
                     
                 add_www:
                     label: |

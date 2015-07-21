@@ -67,7 +67,7 @@ var methods = methodsOf(
 methods.returnPanelTitle = function() {
 	var title = this.tuix.title;
 	
-	if (window.zenarioOSelectMode && (zenarioO.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
+	if (window.zenarioOSelectMode && (this.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
 		if (window.zenarioOMultipleSelect && this.tuix.multiple_select_mode_title) {
 			title = this.tuix.multiple_select_mode_title;
 		} else if (this.tuix.select_mode_title) {
@@ -85,17 +85,23 @@ methods.returnPanelTitle = function() {
 //n.b. your showPanel() method is special; it will be called by the CMS when the panel needs to be drawn
 methods.showPanel = function($header, $panel, $footer) {
 	this.setHeader($header);
+	this.showViewOptions($header);
 	
-	//Show the view "options" button if in grid view
-	$header.find('#organizer_viewOptions').show();
-	
-	this.items = zenarioO.getPanelItems(true);
-	$panel.html(zenarioA.microTemplate('zenario_organizer_grid', this.items));
-	$panel.show();
+	this.drawItems($panel);
 	this.setScroll($panel);
 	
-	this.drawPagination($footer, this.items);
 	this.setTooltips($header, $panel, $footer);
+};
+
+methods.drawItems = function($panel) {
+	this.items = this.getMergeFieldsForItemsAndColumns(true);
+	$panel.html(zenarioA.microTemplate('zenario_organizer_grid', this.items));
+	$panel.show();
+};
+
+methods.showViewOptions = function($header) {
+	//Show the view "options" button
+	$header.find('#organizer_viewOptions').show();
 };
 
 //n.b. your showButtons() method is special; it will be called by the CMS when the buttons needs to be drawn
@@ -192,7 +198,7 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		//above as we need to calculate the rules for hidden/disabled again.)
 		} else {
 			foreach (this.tuix.collection_buttons as id => button) {
-				if (!zenarioO.isInfoTag(id)
+				if (button
 				 && button.upload
 				 && engToBoolean(button.upload.drag_and_drop)
 				 && !zenarioO.checkButtonHidden(button)
@@ -213,14 +219,12 @@ methods.enableDragDropUpload = function(collectionButtons, itemButtons) {
 		if (uploadButton.upload
 		 && uploadButton.upload.request) {
 			foreach (uploadButton.upload.request as k) {
-				if (!zenarioO.isInfoTag(k)) {
-					request[k] = uploadButton.upload.request[k];
-				}
+				request[k] = uploadButton.upload.request[k];
 			}
 		}
 		
 		request.__pluginClassName__ = uploadButton.class_name;
-		request.__path__ = zenarioO.path;
+		request.__path__ = this.path;
 		request.method_call = 'handleOrganizerPanelAJAX';
 		
 		zenarioA.setHTML5UploadFromDragDrop(
@@ -330,6 +334,248 @@ methods.setTooltips = function($header, $panel, $footer) {
 };
 
 
+
+
+
+
+//This function looks through the data sent via AJAX (which is stored in the this.tuix variable)
+//and translates it into merge fields for list view and grid view.
+//It was originally part of the zenarioO library of functions, and while it has now been moved into the code
+//for panel types, there are still some references to some static variables from the zenarioO library.
+methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
+	
+	var itemsExist = false,
+		itemButtonsExist = false,
+		c, column, colNo, row, cell,
+		bi,
+		ci = -1,
+		ii = -1,
+		lastCol = false,
+		firstCell = 'firstcell ',
+		numberOfInlineButtons = 0,
+		labelColumns = {},
+		labelFormat, boldColsInListView,
+		data = {
+			items: [],
+			columns: [],
+			totalWidth: 0,
+			maxNumberOfInlineButtons: 0,
+			allItemsSelected: zenarioO.allItemsSelected()
+		};
+		
+	//Set the format for labels
+	if (!(labelFormat = this.tuix.label_format_for_grid_view)) {
+		labelFormat = '[[' + zenarioO.defaultSortColumn + ']]';
+	}
+	boldColsInListView = this.tuix.bold_columns_in_list_view || this.tuix.label_format_for_picked_items || labelFormat;
+	zenarioO.popoutLabelFormat = this.tuix.label_format_for_popouts;
+
+		
+	
+	
+	if (this.tuix.item_buttons) {
+		foreach (this.tuix.item_buttons as bi) {
+			itemButtonsExist = true;
+			break;
+		}
+	}
+	
+	foreach (zenarioO.sortedColumns as colNo => c) {
+		if (zenarioO.isShowableColumn(c, true)) {
+			lastCol = c;
+		}
+	}
+	foreach (zenarioO.sortedColumns as colNo => c) {
+		
+		if (boldColsInListView == c
+		 || boldColsInListView.indexOf('[[' + c + ']]') !== -1) {
+			labelColumns[c] = true;
+		}
+		
+		if (zenarioO.isShowableColumn(c, true)) {
+			
+			column = {
+				id: c,
+				tuix: this.tuix.columns[c],
+				htmlId: 'organizer_column__' + c,
+				css_class:
+					firstCell + (lastCol == c? 'lastcell' : '') +
+					(labelColumns[c]? ' label_column' : '') +
+					zenarioO.columnCssClass(c),
+				title: this.tuix.columns[c].title,
+				tooltip: this.tuix.columns[c].tooltip
+			};
+			
+			this.addExtraMergeFieldsForColumns(data, column);
+			data.columns[++ci] = column;
+			firstCell = '';
+		}
+	}
+	data.totalWidth += zenarioO.columnsExtraSpacing;
+	
+	zenarioO.shownItems = {};
+	zenarioO.shownItemsLength = 0;
+	if (this.tuix.items) {
+		//Work out which items to display for this page,
+		var pageStop, pageStart;
+		if (zenarioO.thisPageSize) {
+			pageStop = zenarioO.page * zenarioO.thisPageSize,
+			pageStart = pageStop - zenarioO.thisPageSize;
+			pageStop = Math.min(pageStop, zenarioO.searchMatches);
+			
+			data.pageStart = pageStart + 1;
+			data.pageStop = pageStop;
+		}
+		data.page = zenarioO.page;
+		data.pageCount = zenarioO.pageCount;
+		data.itemCount = zenarioO.searchMatches;
+		
+		var firstRow = 'firstrow ';
+		foreach (zenarioO.searchedItems as var itemNo => var i) {
+			itemsExist = true;
+			
+			if (zenarioO.thisPageSize) {
+				if (itemNo >= pageStop) {
+					break;
+				} else if (itemNo < pageStart) {
+					continue;
+				}
+			}
+			
+			if (!this.tuix.items[i]) {
+				continue;
+			}
+			
+			row = {
+				id: i,	//Using "[[id]]" in your microtemplates should both html and js escape this
+				cells: [],
+				tuix: this.tuix.items[i],
+				open_in_inspection_view: zenarioO.inspectionView && i == zenarioO.inspectionViewItem,
+				canClickThrough: !!zenarioO.itemClickThroughLink(i),
+				showCheckbox: window.zenarioOSelectMode || itemButtonsExist,
+				//canDrag: zenarioO.changingHierarchyView && !engToBoolean(this.tuix.items[i].disable_reorder),
+				label: zenarioO.applySmallSpaces($.trim(zenarioO.applyMergeFields(labelFormat, false, i, true))).replace(/\n/g, '<br/>'),
+				selected: !!this.selectedItems[i],
+				css_class: zenarioO.rowCssClass(i) + ' ' + firstRow
+			};
+			
+			row.image_css_class = zenarioO.getItemCSSClass(i);
+			
+			if (!useLargerThumbnails && this.tuix.items[i].list_image) {
+				row.image_css_class += ' organiser_item_with_image';
+				row.image = zenario.addBasePath(this.tuix.items[i].list_image);
+			
+			} else if (useLargerThumbnails && this.tuix.items[i].image) {
+				row.image_css_class += ' organiser_item_with_image';
+				row.image = zenario.addBasePath(this.tuix.items[i].image);
+			}
+			
+			row.tooltip = this.tuix.items[i].tooltip;
+			if (!row.tooltip && this.tuix.item) {
+				if (this.tuix.item.tooltip_when_link_is_active && zenarioO.itemClickThroughLink(i)) {
+					row.tooltip = zenarioO.applyMergeFields(this.tuix.item.tooltip_when_link_is_active, true, i);
+				} else if (this.tuix.item.tooltip) {
+					row.tooltip = zenarioO.applyMergeFields(this.tuix.item.tooltip, true, i);
+				}
+			}
+			
+			
+			row.inline_buttons = zenarioO.getInlineButtons(i);
+			
+			if (row.inline_buttons
+			 && (numberOfInlineButtons = row.inline_buttons.length)
+			 && (numberOfInlineButtons > data.maxNumberOfInlineButtons)) {
+				data.maxNumberOfInlineButtons = numberOfInlineButtons;
+			}
+			
+			this.addExtraMergeFieldsForRows(data, row);
+			
+			var ei = -1,
+				firstCell = 'firstcell ',
+				needsComma = false,
+				lastNeedsComma = false,
+				value;
+			
+			ci = -1;
+			foreach (zenarioO.sortedColumns as colNo => c) {
+				if (zenarioO.isShowableColumn(c, true)) {
+					column = data.columns[++ci];
+					
+					value = zenarioO.columnValue(i, c);
+					
+					//Put commas between words, but don't put commas between non-words or words that end with something.
+					needsComma = !(value == '' && value !== 0);
+					
+					cell = {
+						id: c,
+						first: !!firstCell,
+						css_class:
+							'organizer_column__' + c + '__cell ' +
+							firstRow + firstCell + (lastCol == c? 'lastcell' : '') +
+							(engToBoolean(this.tuix.columns[c].align_right)? ' right' : '') +
+							(labelColumns[c]? ' label_column' : '') + 
+							zenarioO.columnCssClass(c, i),
+						value: value,
+						needsComma: needsComma && lastNeedsComma
+					};
+					
+					this.addExtraMergeFieldsForCells(data, column, row, cell);
+					
+					row.cells[++ei] = cell;
+					firstCell = '';
+					lastNeedsComma = needsComma && !(value + '').match(/\W\s*$/);
+				}
+			}
+			
+			data.items[++ii] = row;
+			zenarioO.shownItems[i] = true;
+			++zenarioO.shownItemsLength;
+			firstRow = '';
+		}
+		
+		foreach (data.items as ii => row) {
+			row.maxNumberOfInlineButtons = data.maxNumberOfInlineButtons;
+		}
+	}
+	
+	//Remove any items that have disappeared from view
+	foreach (this.selectedItems as var i) {
+		if (!zenarioO.shownItems[i]) {
+			delete this.selectedItems[i];
+		}
+	}
+	
+	
+	if (!itemsExist) {
+		//Display a message if there were no items to display
+		if (zenarioO.filteredView) {
+			data.no_items_message = this.tuix.no_items_in_search_message? this.tuix.no_items_in_search_message : phrase.noItemsInSearch;
+		} else {
+			data.no_items_message = this.tuix.no_items_message? this.tuix.no_items_message : phrase.noItems;
+		}
+	}
+	
+	this.addExtraMergeFields(data);
+	
+	return data;
+};
+
+
+methods.addExtraMergeFields = function(data) {
+	//...
+};
+
+methods.addExtraMergeFieldsForColumns = function(data, column) {
+	//...
+};
+
+methods.addExtraMergeFieldsForRows = function(data, row) {
+	//...
+};
+
+methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
+	//...
+};
 
 
 

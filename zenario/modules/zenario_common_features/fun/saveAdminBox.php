@@ -368,11 +368,30 @@ switch ($path) {
 	case 'zenario_document_properties':
 		$id = (int)$box['key']['id'];
 		$documentId = $box['key']['id'];
+		
+		$document = getRow('documents', array('filename', 'file_id'), array('id' => $documentId));
+		$file = getRow('files', 
+						array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
+						$document['file_id']);
+		
+		$oldDocumentName = $document['filename'];
 		$documentName = trim($values['details/document_name']);
-		updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
+		
+		// Rename public files directory and update filename if different
+		if ($oldDocumentName != $documentName) {
+			$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
+			$symFolder =  CMS_ROOT . $dirPath;
+			$oldSymPath = $symFolder . '/' . $oldDocumentName;
+			$newSymPath = $symFolder . '/' . $documentName;
+			if(!windowsServer() && is_link($oldSymPath)) {
+				rename($oldSymPath, $newSymPath);
+			}
+			
+			updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
+		}
 
 		$old_image = getRowsArray('documents',
-									'file_id',  //file_id
+									'file_id',
 									array('id' => $id)
 									);
 		$new_image = explode(',',$values['zenario_common_feature__upload']);
@@ -551,6 +570,7 @@ switch ($path) {
 				'summary_field' => $values['details/summary_field'],
 				'release_date_field' => $values['details/release_date_field'],
 				'enable_summary_auto_update' => $values['details/enable_summary_auto_update'],
+				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
 				'default_layout_id' => $values['details/default_layout_id']);
 			
 			if ($values['details/summary_field'] == 'hidden') {

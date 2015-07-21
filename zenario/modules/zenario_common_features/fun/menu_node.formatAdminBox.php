@@ -35,6 +35,12 @@ $box['tabs']['advanced']['fields']['menu__method_name']['hidden'] =
 $box['tabs']['advanced']['fields']['menu__param_1']['hidden'] = 
 $box['tabs']['advanced']['fields']['menu__param_2']['hidden'] = 
 	!$values['advanced/hide_by_static_method'];
+	
+$box['tabs']['advanced']['fields']['menu_text__module_class_name']['hidden'] = 
+$box['tabs']['advanced']['fields']['menu_text__method_name']['hidden'] = 
+$box['tabs']['advanced']['fields']['menu_text__param_1']['hidden'] = 
+$box['tabs']['advanced']['fields']['menu_text__param_2']['hidden'] = 
+	!$values['advanced/overwrite_menu_text_by_static_method'];
 
 $box['tabs']['text']['fields']['hyperlink_target']['hidden'] = 
 $box['tabs']['text']['fields']['hyperlink_anchor']['hidden'] = 

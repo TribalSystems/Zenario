@@ -573,4 +573,54 @@ _sql
 	ADD COLUMN `log_user_in_cookie` tinyint(1) NOT NULL default 0
 _sql
 
+); revision (31270
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	MODIFY COLUMN `user_duplicate_email_action` enum('merge', 'overwrite', 'ignore', 'stop') DEFAULT 'merge',
+	ADD COLUMN `duplicate_email_address_error_message` varchar(255) DEFAULT NULL
+_sql
+
+); revision (31280
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	DROP COLUMN `send_another_email`
+_sql
+
+); revision( 31300
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs`
+	ADD COLUMN `default_label` varchar(32) NOT NULL DEFAULT '' AFTER `label`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `default_label` varchar(64) NOT NULL DEFAULT '' AFTER `label`
+_sql
+
+); revision( 31390
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs`
+	ADD COLUMN `is_system_field` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+); revision( 31530
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `include_in_export` tinyint(1) NOT NULL DEFAULT '0'
+_sql
+
+); revision( 31760
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `create_index` tinyint(1) NOT NULL DEFAULT 0 AFTER `show_in_organizer`
+_sql
+
 );
+
+

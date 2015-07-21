@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Common Features
 description: |
     <p>This Module provides all the standard features for Zenario.</p>
@@ -67,7 +67,7 @@ special_pages:
         logic: create_and_maintain_in_default_language
     zenario_example_page:
         page_type: zenario_example_page
-        default_alias: second_page
+        default_alias: second-page
         default_title: Second page
         default_content: |
             <h1>This is a simple content page</h1>

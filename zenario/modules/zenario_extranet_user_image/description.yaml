@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Extranet User Image
 description: |
     <p>This module allows registered extranet users upload and change their display picture.</p>

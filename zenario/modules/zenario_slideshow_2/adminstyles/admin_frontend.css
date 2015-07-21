@@ -16,3 +16,15 @@
 .zenario_fbAdminImageManager .zenario_close_image_manager {
 	float: right;
 }
+
+/* New admin box */
+.zenario_slide_attributes_panel p,
+.zenario_slide_settings_inner p,
+.zenario_slide_settings_inner .caching_message {
+	font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+	font-size: 0.9em;
+} 
+
+.zenario_slide_settings_inner #caching_message {
+	padding: 7px 0px 7px 0px;
+}

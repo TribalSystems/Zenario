@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Newsletter
 description: |
             <p>Design and send HTML Newsletters to your customers.</p>

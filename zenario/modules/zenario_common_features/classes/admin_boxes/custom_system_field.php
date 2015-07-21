@@ -74,7 +74,6 @@ class zenario_common_features__admin_boxes__custom_system_field extends module_b
 			}
 		}
 		
-		
 		//Attempt to get details of this field from the TUIX description
 		$tField = $cField = false;
 		$this->loadFieldDetails($box, $tField, $cField);
@@ -82,6 +81,7 @@ class zenario_common_features__admin_boxes__custom_system_field extends module_b
 		$label = ifNull(arrayKey($tField, 'dataset_label'), arrayKey($tField, 'label'));
 		$type = arrayKey($tField, 'type');
 		$note_below = arrayKey($tField, 'note_below');
+		$include_in_export = arrayKey($cField, 'include_in_export');
 		
 		//Only show the select field type from the list, or show "other_system_field" if the type is not in the list
 		if (!$type || empty($fields['details/type']['values'][$type])) {
@@ -91,6 +91,7 @@ class zenario_common_features__admin_boxes__custom_system_field extends module_b
 		$fields['details/type']['values'] = array($type => $fields['details/type']['values'][$type]);
 		
 		$values['details/label'] = $label;
+		$values['details/include_in_export'] = $include_in_export;
 		$values['display/note_below'] = $note_below;
 		$values['display/type'] = $type;
 		
@@ -121,7 +122,8 @@ class zenario_common_features__admin_boxes__custom_system_field extends module_b
 				'label' => ifNull(arrayKey($tField, 'dataset_label'), arrayKey($tField, 'label')) == $values['details/label']?
 					'' : $values['details/label'],
 				'note_below' => arrayKey($tField, 'note_below') == $values['display/note_below']?
-					'' : $values['display/note_below']),
+					'' : $values['display/note_below'],
+				'include_in_export' => $values['details/include_in_export']),
 			array(
 				'dataset_id' => $box['key']['dataset_id'],
 				'tab_name' => $box['key']['tab_name'],

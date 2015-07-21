@@ -7,13 +7,22 @@ zenario__email_template_manager:
     tooltip: "Send pre-formatted emails from your site, email logs"
     nav:
         email_templates: 
+            ord: 1
             label: Templates
             tooltip: "Email templates that your site can send"
             link:
                 path: zenario__email_template_manager/panels/email_templates
         email_log:
+            ord: 2
             priv: _PRIV_VIEW_USER
             label: Sent email log
             tooltip: "Log of emails sent from your site"
             link:
                 path: zenario__email_template_manager/panels/email_log
+        plugin_email_addresses:
+            ord: 3
+            label: Plugin recipients
+            tooltip: "View plugins that have an email address in a setting"
+            link:
+                path: zenario__modules/panels/plugins
+                refiner: email_address_setting

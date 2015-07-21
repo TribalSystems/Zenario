@@ -1233,11 +1233,11 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 			if ($adminIdL = checkPasswordAdmin($box['tabs']['login']['fields']['username']['current_value'], $details, $box['tabs']['login']['fields']['password']['current_value'], $checkViaEmail = false)) {
 				
 				if ($box['tabs']['login']['fields']['remember_me']['current_value']) {
-					setcookie('COOKIE_LAST_ADMIN_USER', $box['tabs']['login']['fields']['username']['current_value'], time()+8640000, '/');
-					setcookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '', time()-3600, '/');
+					setcookie('COOKIE_LAST_ADMIN_USER', $box['tabs']['login']['fields']['username']['current_value'], time()+8640000, '/', cookieDomain());
+					clearCookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
 				} else {
-					setcookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1', time()+8640000, '/');
-					setcookie('COOKIE_LAST_ADMIN_USER', '', time()-3600, '/');
+					setcookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1', time()+8640000, '/', cookieDomain());
+					clearCookie('COOKIE_LAST_ADMIN_USER');
 				}
 				
 				if ($details['type'] == 'global') {
@@ -1983,7 +1983,13 @@ function redirectAdmin($getRequest) {
 	}
 	
 	if ($cID && checkPerm($cID, $cType)) {
-		return linkToItem($cID, $cType, true);
+		
+		unset($getRequest['task']);
+		unset($getRequest['cID']);
+		unset($getRequest['cType']);
+		unset($getRequest['cVersion']);
+		
+		return linkToItem($cID, $cType, true, http_build_query($getRequest));
 	} else {
 		return indexDotPHP();
 	}

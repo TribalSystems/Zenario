@@ -187,7 +187,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 				resizeWidth = Math.min(bodyWidth, parseInt(width));
 			}
 			if (resizeWidth) {
-				jssor_slider1.$SetScaleWidth(resizeWidth);
+				jssor_slider1.$ScaleWidth(resizeWidth);
 			} else {
 				window.setTimeout(ScaleSlider, 30);
 			}

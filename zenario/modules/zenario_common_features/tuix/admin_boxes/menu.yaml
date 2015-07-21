@@ -205,6 +205,7 @@ zenario_menu:
                         </span>
                     side_note: |
                         This menu node will appear as a &lt;li&gt; with these CSS class names.
+                
                 hide_by_static_method:
                     ord: 7.1
                     label: |
@@ -235,6 +236,38 @@ zenario_menu:
                     label: 'Parameter 2:'
                     type: text
                     maxlength: 255
+                
+                overwrite_menu_text_by_static_method:
+                    ord: 7.51
+                    label: |
+                        Call a module's static method overwrite the menu text
+                    type: checkbox
+                    format_onchange: true
+                menu_text__module_class_name:
+                    ord: 7.52
+                    hidden: true
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: 200
+                menu_text__method_name:
+                    ord: 7.53
+                    hidden: true
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: 127
+                menu_text__param_1:
+                    ord: 7.54
+                    hidden: true
+                    label: 'Parameter 1:'
+                    type: text
+                    maxlength: 255
+                menu_text__param_2:
+                    ord: 7.55
+                    hidden: true
+                    label: 'Parameter 2:'
+                    type: text
+                    maxlength: 255
+                
                 rel_tag:
                     ord: 8
                     label: 'Rel-Tag:'

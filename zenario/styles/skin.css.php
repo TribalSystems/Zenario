@@ -58,6 +58,7 @@ require CMS_ROOT. 'zenario/includes/wrapper.inc.php';
 loadSiteConfig();
 
 
+outputRulesForSlotMinHeights();
 includeSkinFiles($_GET);
 
 

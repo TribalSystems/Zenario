@@ -148,5 +148,17 @@ if (request('delete_phrase') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 	sqlQuery($sql);
 	
 	return $returnId;
-}
 
+} elseif (request('import_phrases')) {
+	if ($refinerId && ($moduleDetails = getRow('modules', array('class_name', 'display_name'), $refinerId))) {
+		$importFiles = scanModulePhraseDir($moduleDetails['class_name'], 'number and file');
+		$list = array();
+		$languages = getLanguages(false, true, true);
+		
+		foreach ($languages as $langId => $language) {
+			importPhrasesForModule($moduleDetails['class_name'], $langId);
+		}
+	} else {
+		echo adminPhrase('Could not find target module');
+	}
+}

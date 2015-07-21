@@ -241,6 +241,9 @@ zenario.lib(function(
 		// && window.console
 		// && console.trace) {
 		//	console.trace('Synchronous AJAX request made');
+		//	//or
+		//	var e = new Error();
+		//	console.log(e.stack);
 		//}
 		
 		url = zenario.addBasePath(url);
@@ -472,21 +475,40 @@ zenario.lib(function(
 			request = '';
 		}
 	
-		var basePath = URLBasePath;
+		var pos,
+			canonicalURL,
+			basePath = URLBasePath;
 		if (adminlogin) {
 			basePath += 'zenario/admin/welcome.php';
 		} else {
 			basePath += zenario.indexDotPHP;
 		}
-	
-		if (cID === zenario.cID && !zenario.adminId && zenario.aliasAndLangCode) {
-			cID = zenario.aliasAndLangCode;
+		
+		//If we're linking to the content item that we're currently on...
+		if (!adminlogin
+		 && !zenario.adminId
+		 && cID === zenario.cID) {
+			//...check to see if it is using a friendly URL...
+			if ((canonicalURL = $('link[rel="canonical"]').attr('href'))
+			 && (!canonicalURL.match(/\bcID=/))) {
+			 	//..and try to keep it if possible
+				
+				//Get rid of any existing requests
+				pos = canonicalURL.indexOf('?');
+				if (pos != -1) {
+					canonicalURL = canonicalURL.substr(0, pos);
+				}
+				
+				if (request) {
+					return canonicalURL + '?' + zenario.urlRequest(request).substr(1);
+				} else {
+					return canonicalURL;
+				}
+			}
 		}
-	
-		if (!zenarioA.init && !adminlogin && zenario.suffix !== undefined && (cID != 1*cID) && request == '') {
-			return cID + zenario.suffix;
-	
-		} else if (cID != 1*cID) {
+		
+		
+		if (cID != 1*cID) {
 			return basePath + '?cID=' + cID + zenario.urlRequest(request);
 	
 		} else {
@@ -809,6 +831,35 @@ zenario.lib(function(
 		}
 	};
 
-
+	//Disable any parent elements of element from scrolling
+	zenario.disableBackgroundScrolling = function(element) {
+		$(element).on('DOMMouseScroll mousewheel', function(ev) {
+			var $this = $(this),
+				scrollTop = this.scrollTop,
+				scrollHeight = this.scrollHeight,
+				height = $this.height(),
+				delta = (ev.type == 'DOMMouseScroll' ?
+					ev.originalEvent.detail * -40 :
+					ev.originalEvent.wheelDelta),
+				up = delta > 0;
+		
+			var prevent = function() {
+				ev.stopPropagation();
+				ev.preventDefault();
+				ev.returnValue = false;
+				return false;
+			}
+		
+			if (!up && -delta > scrollHeight - height - scrollTop) {
+				// Scrolling down, but this will take us past the bottom.
+				$this.scrollTop(scrollHeight);
+				return prevent();
+			} else if (up && delta > scrollTop) {
+				// Scrolling up, but this will take us past the top.
+				$this.scrollTop(0);
+				return prevent();
+			}
+		});
+	};
 
 });

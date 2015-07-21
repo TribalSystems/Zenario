@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (needRevision(32)) {
+if (needRevision(37)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	//(Note if you upgrade from version 7 or earlier this will have been done manually
@@ -57,12 +57,34 @@ if (needRevision(32)) {
 	registerDatasetSystemField($datasetId, 'text', 'details', 'first_name');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'last_name');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'screen_name', 'screen_name', 'screen_name');
-	registerDatasetSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus');
+	registerDatasetSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_common_features::userStatus', true);
 	registerDatasetSystemField($datasetId, 'text', 'details', 'password');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'password_needs_changing');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'screen_name_confirmed');
-	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '')
+	//registerDatasetSystemFieldregisterDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false)
 	
-	revision(32);
+	revision(37);
+}
+
+if (needRevision(38)) {
+	
+	if ($statusField = getDatasetFieldDetails('status', 'users')) {
+		
+		$stats = array('created_on' => now(), 'created_by' => adminId(), 'last_modified_on' => now(), 'last_modified_by' => adminId());
+		
+		$key = array('name' => 'All active users');
+		if (!checkRowExists('smart_groups', $key)) {
+			$smartGroupId = setRow('smart_groups', $stats, $key);
+			setRow('smart_group_rules', array('field_id' => $statusField['id'], 'value' => 'active'), array('ord' => 1, 'smart_group_id' => $smartGroupId));
+		}
+		
+		$key = array('name' => 'All contacts');
+		if (!checkRowExists('smart_groups', $key)) {
+			$smartGroupId = setRow('smart_groups', $stats, $key);
+			setRow('smart_group_rules', array('field_id' => $statusField['id'], 'value' => 'contact'), array('ord' => 1, 'smart_group_id' => $smartGroupId));
+		}
+	}
+	
+	revision(38);
 }

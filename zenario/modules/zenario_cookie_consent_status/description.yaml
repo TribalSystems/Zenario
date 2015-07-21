@@ -5,7 +5,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 description: |
     <p>
                     This module displays information to website visitors on whether they have consented to or rejected cookies.

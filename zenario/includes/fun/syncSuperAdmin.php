@@ -43,7 +43,7 @@ $image = false;
 connectLocalDB();
 $result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "admins WHERE Field = 'image_id'");
 $dbAtRecentRevision = sqlFetchRow($result);
-$result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'");
+$result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'");
 $dbAtRecentRevision2 = sqlFetchRow($result);
 
 //Look up the current copy of the Admin's details on the local database

@@ -5,7 +5,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: true
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 description: >
     <p>The Users enable the admin user interface to create/edit users.</p>
 category: management

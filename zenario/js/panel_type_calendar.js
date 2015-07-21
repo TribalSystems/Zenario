@@ -38,12 +38,15 @@ zenario.lib(function(
 
 var 
 	methods = methodsOf(
-		panelTypes.calendar = extensionOf(panelTypes.base, function() {
-			var now = new Date();
-			this.month = now.getMonth();
-			this.year = now.getFullYear();
-		})
+		panelTypes.calendar = extensionOf(panelTypes.base)
 	);
+
+
+methods.init = function() {
+	var now = new Date();
+	this.month = now.getMonth();
+	this.year = now.getFullYear();
+};
 
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
@@ -85,19 +88,17 @@ methods.showPanel = function($header, $panel, $footer) {
 		labelFormat = this.tuix.label_format_for_calendar,
 		singleEvent = this.tuix.use_single_event;
 	
-	for (var key in items) {
-		if (items.hasOwnProperty(key) && !zenarioO.isInfoTag(key)) {
-			items[key].label = zenarioO.applyMergeFields(labelFormat, false, key, true);
-			var datetime = items[key][date_column];
-			if (datetime) {
-				var dateAndTime = datetime.split(' ');
-				if (dateAndTime[0]) {
-					if (!itemsByDate[dateAndTime[0]]) {
-						itemsByDate[dateAndTime[0]] = [];
-					}
-					items[key]['id'] = key;
-					itemsByDate[dateAndTime[0]].push(items[key]);
+	foreach (items as var key => var item) {
+		item.label = zenarioO.applyMergeFields(labelFormat, false, key, true);
+		var datetime = item[date_column];
+		if (datetime) {
+			var dateAndTime = datetime.split(' ');
+			if (dateAndTime[0]) {
+				if (!itemsByDate[dateAndTime[0]]) {
+					itemsByDate[dateAndTime[0]] = [];
 				}
+				item['id'] = key;
+				itemsByDate[dateAndTime[0]].push(item);
 			}
 		}
 	}

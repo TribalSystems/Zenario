@@ -82,8 +82,12 @@ if (cms_core::$canCache
 		$chToLoadStatus['l'] = true;
 	}
 	
+	$caching_debug_info = setting('caching_debug_info');
+	if ($caching_debug_info && setting('limit_caching_debug_info_by_ip')) {
+		$caching_debug_info = (setting('limit_caching_debug_info_by_ip') == visitorIP());
+	}
 	
-	if (setting('caching_debug_info')) {
+	if ($caching_debug_info) {
 		$chSlots = array();
 		foreach (cms_core::$slotContents as $slotName => &$instance) {
 			if (!empty($instance['instance_id']) && !empty($instance['class'])) {
@@ -171,7 +175,7 @@ if (cms_core::$canCache
 			
 			
 			//Put a marker on the page to note that it came from the cache
-			if (setting('caching_debug_info')) {
+			if ($caching_debug_info) {
 				touch(CMS_ROOT. $path. 'show_cache_info');
 				chmod(CMS_ROOT. $path. 'show_cache_info', 0666);
 				$html = str_replace('<div class="zenario_cache_in_use"', '<div class="zenario_from_cache"', $html);

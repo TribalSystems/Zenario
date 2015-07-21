@@ -31,7 +31,8 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		$panel['columns']['field_id']['values'] = listCustomFields('documents', true, array('!' => 'group', '!' => 'checkboxes', '!' => 'other_system_field'));
+		//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
+		$panel['columns']['field_id']['values'] = listCustomFields('documents', false, array('!' => 'group', '!' => 'checkboxes', '!' => 'other_system_field'), true, true);
 		$panel['columns']['folder_id']['values'] = generateDocumentFolderSelectList(true);
 		
 		//Look up all of the fields that have been used
@@ -69,7 +70,7 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 		if (post('reorder')) {
 			foreach (explode(',', $ids) as $id) {
 				if ($id) {
-					updateRow('document_rules', array('ordinal' => post('item__'. $id)), $id);
+					updateRow('document_rules', array('ordinal' => $_POST['ordinals'][$id]), $id);
 				}
 			}
 			

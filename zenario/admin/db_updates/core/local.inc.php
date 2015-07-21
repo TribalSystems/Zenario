@@ -887,4 +887,275 @@ _sql
 _sql
 
 
+
+//Create tables to store tags for images
+);	revision( 31100
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]image_tags`
+	ADD COLUMN `color` enum('blue', 'red', 'green', 'orange', 'yellow', 'violet', 'grey') NOT NULL default 'blue'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]image_tags`
+	ADD KEY (`color`)
+_sql
+
+
+//Add a new size of thumbnail for images to the files table
+//Also tidy up the column names that we use to make things more specific
+);	revision( 31200
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP KEY `storekeeper_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP KEY `storekeeper_height`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP KEY `storekeeper_list_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	DROP KEY `storekeeper_list_height`
+_sql
+
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_width` `thumbnail_180x130_width` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_height` `thumbnail_180x130_height` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_data` `thumbnail_180x130_data` blob
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `thumbnail_64x64_width` tinyint(3) unsigned NOT NULL default 0
+	AFTER `thumbnail_180x130_data`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `thumbnail_64x64_height` tinyint(3) unsigned NOT NULL default 0
+	AFTER `thumbnail_64x64_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `thumbnail_64x64_data` blob
+	AFTER `thumbnail_64x64_height`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_list_width` `thumbnail_24x23_width` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_list_height` `thumbnail_24x23_height` tinyint(3) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	CHANGE COLUMN `organizer_list_data` `thumbnail_24x23_data` blob
+_sql
+
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_180x130_width`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_180x130_height`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_64x64_width`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_64x64_height`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_24x23_width`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD KEY (`thumbnail_24x23_height`)
+_sql
+
+
+);	revision( 31210
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings`
+	ADD COLUMN is_email_address tinyint(1) DEFAULT NULL
+_sql
+
+
+//Task #9706: Remove Storekeeper on email templates AW
+);	revision( 31250
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]email_templates`
+	SET body = REPLACE(body, ' in Storekeeper ', ' in Organizer ')
+	WHERE body LIKE '% in Storekeeper %'
+_sql
+
+
+);	revision( 31260
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]files`
+	ADD COLUMN `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto'
+	AFTER `usage`
+_sql
+
+
+//Add some basic information about the grid into the layouts table
+); 	revision( 31450
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `cols` tinyint(2) unsigned NOT NULL default 0
+	AFTER `status`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `min_width` smallint(4) unsigned NOT NULL default 0
+	AFTER `cols`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `max_width` smallint(4) unsigned NOT NULL default 0
+	AFTER `min_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `fluid` tinyint(1) unsigned NOT NULL default 0
+	AFTER `max_width`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]layouts`
+	ADD COLUMN `responsive` tinyint(1) unsigned NOT NULL default 0
+	AFTER `fluid`
+_sql
+
+//Populate some initial values for the default layouts
+);	revision( 31460
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]layouts`
+	SET cols = 12,
+		min_width = 769,
+		max_width = 1140,
+		fluid = 1,
+		responsive = 1
+	WHERE family_name = 'grid_templates'
+	  AND file_base_name = 'Home page'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]layouts`
+	SET cols = 12,
+		min_width = 769,
+		max_width = 1140,
+		fluid = 1,
+		responsive = 1
+	WHERE family_name = 'grid_templates'
+	  AND file_base_name = 'Text-heavy'
+_sql
+
+
+//Add a column into the languages table for a language-specific domain or sub-domain
+); 	revision( 31500
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]languages`
+	ADD COLUMN `domain` varchar(255) NOT NULL default ''
+	AFTER `search_type`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]languages`
+	ADD KEY (`domain`)
+_sql
+
+// Add a column to content types to show categorys or not
+); revision( 31510
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `enable_categories` tinyint(1) NOT NULL default 0
+	AFTER `enable_summary_auto_update`
+_sql
+
+
+); revision( 31550
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	ADD COLUMN `menu_text_module_class_name` varchar(255) DEFAULT NULL,
+	ADD COLUMN `menu_text_method_name` varchar(255) DEFAULT NULL,
+	ADD COLUMN `menu_text_param_1` varchar(255) DEFAULT NULL,
+	ADD COLUMN `menu_text_param_2` varchar(255) DEFAULT NULL
+_sql
+
+
+//Add a column to the datasets table to flag important system fields
+); revision( 31720
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `fundamental` tinyint(1) NOT NULL default 0
+	AFTER `is_system_field`
+_sql
+
+
+//Create a table for storing smart group rules in the new format
+);	revision( 31740
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_rules`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
+		`smart_group_id` int(10) unsigned NOT NULL,
+		`ord` int(10) unsigned NOT NULL,
+		`field_id` int(10) unsigned NOT NULL,
+		`field2_id` int(10) unsigned NOT NULL default 0,
+		`field3_id` int(10) unsigned NOT NULL default 0,
+		`not` tinyint(1) NOT NULL default 0,
+		`value` text,
+		PRIMARY KEY (`smart_group_id`, `ord`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+
+//Correct a bug where TinyMCE added "zenario/admin" into the login link a second time
+);	revision( 31850
+, <<<_sql
+	UPDATE [[DB_NAME_PREFIX]]site_settings
+	SET value = REPLACE(value, 'zenario/admin/[', '[')
+	WHERE name = 'site_disabled_message'
+_sql
+
 );
+

@@ -226,7 +226,7 @@ body.ie label#search_term_placeholder {
 
 .organizer_wrapOuter .organizer_close_button a,
 #organizer__box_top .close_button a {
-	background: url("../admin/images/sprites/org-icons-1.png") no-repeat;
+	background: url("../admin/images/sprites/org-icons-v2.png") no-repeat;
 	background-position:-58px -208px;
     width: 34px;
     height: 34px;
@@ -673,9 +673,8 @@ body.ie label#search_term_placeholder {
 }
 
 .headerPanel .viewMode div,
-.headerPanel #organizer_switch_to_grid_view,
+.headerPanel #organizer_switch_view,
 .headerPanel #organizer_refreshRightColumn,
-.headerPanel #organizer_switch_to_list_view,
 .headerPanel #organizer_listViewOptionsDropdown {
 	width: 30px;
 	height: 30px;
@@ -719,12 +718,12 @@ body.ie label#search_term_placeholder {
 }
 
 .organizer_list_view .organizer_slidedown_view_toggle_closed {
-	background-position:-155px -58px;
+	background-position:-455px -210px;
 }
 
 .organizer_list_view .organizer_slidedown_view_toggle_closed:hover,
 .organizer_list_view .organizer_selected .organizer_slidedown_view_toggle_closed {
-	background-position:-205px -58px;
+	background-position:-505px -210px;
 }
 
 .organizer_list_view .organizer_slidedown_view_toggle_open {
@@ -732,25 +731,36 @@ body.ie label#search_term_placeholder {
 }
 
 .organizer_total_wrapper {
-    height: 31px;
-    position: absolute;
-    bottom: 0px;
+    height: 30px;
+    /*position: fixed;
+    z-index: 5;*/
     background-color: #f6f6f6;
     border-color: #c4c4c4;
     border-style: solid;
-    border-width: 1px 0px 0px 0;
+    border-width: 0 0 1px 0;
 } 
 
-.organizer_total_wrapper .organizer_total_cell {
+.organizer_total_wrapper .organizer_total_cell,
+.organizer_total_wrapper .organizer_slidedown_view_toggle {
       display: block;
       float: left;
       height: 23px;
       padding: 3px 5px 3px 5px;
+      text-align: right;
       border-color: #c4c4c4;
       border-style: solid;
-      border-width: 0 1px 1px 0;
-      text-align: right;
+      border-width: 0 1px 0 0;
 }
+
+.organizer_subtotal_grouping .organizer_total_wrapper {
+      border-color: #c4c4c4;
+      border-style: solid;
+      border-width: 0 1px 0 0;
+}
+
+/*.organizer_subtotal_grouping .organizer_total_wrapper .organizer_total_cell {
+	border-width: 0 0 1px 0;
+}*/
 
 .organizer_total_wrapper span {
     color: #000000;
@@ -772,25 +782,26 @@ body.ie label#search_term_placeholder {
 
 .organizer_slidedown_view {
 	width: auto;
-	padding:10px 20px 20px;
+	padding:20px 20px 20px;
 	background:#FDFDDF;
 	border-bottom:1px solid #C4C4C4;
 }
 
-
-
-.headerPanel #organizer_advancedSearch {
-	display: none;
+.organizer-slidedown-image-information table td {
+	vertical-align: top;
 }
 
-.headerPanel #organizer_advancedSearch.advancedSearchEnabled,
-.headerPanel #organizer_advancedSearch.advancedSearchOn {
-	display: block;
+.organizer-slidedown-image-information table {
+	width: 100%;
 }
 
-.headerPanel #organizer_advancedSearch #organizer_openAdvancedSearch {
-	display: block;
-	width: 20px;
+.organizer-slidedown-image-information table .slidedown_table_image {
+	width: 360px;
+}
+
+.organizer-slidedown-image-information p {
+	margin: 0 0 10px 20px;
+	color: #202020;
 }
 
 .headerPanel .secondToolbar,
@@ -806,10 +817,6 @@ body.ie6 .headerPanel .secondToolbar {
 	width: 62px;
 }
 
-body.ie6 .headerPanel #organizer_advancedSearch {
-	width: 72px;
-}
-
 .organizer_wrapOuter .home_page_button a,
 .organizer_wrapOuter .zenario_ywip a,
 .organizer_wrapOuter .last_page_button a {
@@ -819,18 +826,10 @@ body.ie6 .headerPanel #organizer_advancedSearch {
 .organizer_wrapOuter .logout_button a,
 #organizer_header #organizer_listViewOptionsDropdown a,
 #organizer_header #organizer_refreshRightColumn a,
-.headerPanel .viewMode #organizer_switch_to_list_view a,
-.headerPanel .viewMode #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .disable_grid_view #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .grid_view_reordering #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .can_reorder #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .grid_view_reordering #organizer_switch_to_grid_view a:hover,
-.headerPanel .viewMode .organizer_grid_view.grid_view_reordering #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .can_reorder #organizer_switch_to_grid_view a:hover,
-.headerPanel .viewMode .organizer_grid_view.can_reorder #organizer_switch_to_grid_view a,
+.headerPanel .viewMode #organizer_switch_view a,
 .organizer_list_view .organizer_slidedown_view_toggle_closed,
 .organizer_list_view .organizer_slidedown_view_toggle_open {
-	background-image: url('../admin/images/sprites/org-icons-1.png');
+	background-image: url('../admin/images/sprites/org-icons-v2.png');
 }
 
 #organizer_header #organizer_refreshRightColumn a {
@@ -846,49 +845,21 @@ body.ie6 .headerPanel #organizer_advancedSearch {
 	display:none;
 }
 
-.headerPanel .viewMode #organizer_switch_to_grid_view,
-.headerPanel .viewMode #organizer_switch_to_grid_view a,
-.headerPanel .viewMode #organizer_switch_to_list_view,
-.headerPanel .viewMode #organizer_switch_to_list_view a {
+.headerPanel .viewMode #organizer_switch_view,
+.headerPanel .viewMode #organizer_switch_view a {
 	width: 31px;
 }
 
-.headerPanel .viewMode #organizer_switch_to_list_view a {
+.zenario_toolbar_header .toolbar .list_view div#organizer_switch_view {
+	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
+}
+
+.headerPanel .viewMode #organizer_switch_view.organizer_switch_to_list_view a {
     background-position: -160px -11px;
 }
 
-.zenario_toolbar_header .toolbar .list_view div#organizer_switch_to_list_view {
-	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
-}
-
-.headerPanel .viewMode #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .grid_view_reordering #organizer_switch_to_grid_view a,
-.headerPanel .viewMode .can_reorder #organizer_switch_to_grid_view a {
+.headerPanel .viewMode #organizer_switch_view.organizer_switch_to_grid_view a {
 	background-position: -110px -11px;
-}
-
-.zenario_toolbar_header .toolbar .grid_view div#organizer_switch_to_grid_view {
-	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
-}
-
-.headerPanel .viewMode .disable_list_view #organizer_switch_to_list_view a {
-	background-position: -160px -162px;
-	cursor:auto;
-}
-
-.zenario_toolbar_header .toolbar .disable_list_view div#organizer_switch_to_list_view:hover,
-.zenario_toolbar_header .toolbar .disable_list_view div#organizer_switch_to_list_view {
-	background:none;
-}
-
-.headerPanel .viewMode .disable_grid_view #organizer_switch_to_grid_view a {
-	background-position: -110px -160px;
-	cursor:auto;
-}
-
-.zenario_toolbar_header .toolbar .disable_grid_view div#organizer_switch_to_grid_view:hover,
-.zenario_toolbar_header .toolbar .disable_grid_view div#organizer_switch_to_grid_view {
-	background:none;
 }
 
 
@@ -896,13 +867,11 @@ body.ie6 .headerPanel #organizer_advancedSearch {
 
 body.zenario_organizer_bespoke_panel #organizer_search,
 body.zenario_organizer_bespoke_panel #organizer_viewOptions,
-body.zenario_organizer_bespoke_panel #organizer_advancedSearch,
 body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 	display: none;
 }
 
 
-#zenario_fbAdminAdvancedSearch,
 #zenario_fbAdminColumnFilter,
 #zenario_fbAdminViewModeOptions {
 	padding-bottom: 5px;
@@ -918,14 +887,12 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 	border: solid 1px #333;
 }
 
-#zenario_fbAdminAdvancedSearch,
 #zenario_fbAdminColumnFilter,
 #zenario_fbAdminViewModeOptions {
 	font-family:Verdana,Arial,Helvetica,sans-serif;
 	font-size:11px;
 }
 
-#zenario_fbAdminAdvancedSearch div.organizer_colsortheader,
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader {
 	margin: 1px 1px 3px;
 	padding: 2px 2px 3px 6px;
@@ -937,7 +904,6 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 	line-height:0;
 }
 
-#zenario_fbAdminAdvancedSearch div.organizer_colsortheader a,
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a {
 	display: block;
 	position:absolute;
@@ -945,40 +911,22 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 	height: 22px;
 	width: 22px;
 	border:1px solid #B3B3B3;
-	background: url('../admin/images/sprites/org-icons-1.png') no-repeat -313px -163px;
+	background: url('../admin/images/sprites/org-icons-v2.png') no-repeat -313px -163px;
 	cursor: pointer;
 }
 
-#zenario_fbAdminAdvancedSearch div.organizer_colsortheader a:hover,
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a:hover {
 	background-color:#007FA3;
-}
-
-#zenario_fbAdminAdvancedSearch div.organizer_colsortheader a {
-	right:10px;
 }
 
 #zenario_fbAdminViewModeOptions div.organizer_colsortheader a { 
 	right:20px;
 }
 
-#zenario_fbAdminAdvancedSearch p,
 #zenario_fbAdminViewModeOptions p {
 	margin: 0px;
 	padding: 2px 5px;
 	white-space: nowrap;
-}
-
-#zenario_fbAdminAdvancedSearch a {
-	cursor: pointer;
-}
-
-#zenario_fbAdminAdvancedSearch p.current_search a.organizer_search_name {
-	font-weight: bold;
-}
-
-#zenario_fbAdminAdvancedSearch p a.organizer_delete_search {
-	font-size: 80%;
 }
 
 
@@ -1127,7 +1075,7 @@ body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
 	display:block;
 	width:18px;
 	height:17px;
-	background:url('../admin/images/sprites/org-icons-1.png') no-repeat scroll -316px -167px transparent;
+	background:url('../admin/images/sprites/org-icons-v2.png') no-repeat scroll -316px -167px transparent;
 	border:1px solid #B3B3B3;
 	position:absolute;
 	top:5px;
@@ -1154,7 +1102,7 @@ body.ie7 #zenario_fbAdminViewModeOptions .organizer_mov_col {
 }
 
 #zenario_fbAdminViewModeOptions div.organizer_togglefilter input.togglefilter_closed {
-	background:url("../admin/images/sprites/org-icons-1.png") no-repeat -109px -63px;
+	background:url("../admin/images/sprites/org-icons-v2.png") no-repeat -109px -63px;
 }
 
 /*  Hack by Chris to move the cross inline with the filter funnel above!  */
@@ -1359,7 +1307,7 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 
 .zenario_debugInfo .organizer_info_box,
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
-	background-image: url('../admin/images/sprites/org-icons-1.png');
+	background-image: url('../admin/images/sprites/org-icons-v2.png');
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
@@ -1751,7 +1699,7 @@ body.ie9 #organizer_preloader_circle div {
 #organizer_leftColumn .organizer_item a.zenario_cms_core_languages,
 #organizer_leftColumn .organizer_item a.zenario_cms_core_plugins,
 #organizer_leftColumn .organizer_item a.zenario_cms_core_administration {
-	background: url('../admin/images/sprites/org-icons-1.png') no-repeat;
+	background: url('../admin/images/sprites/org-icons-v2.png') no-repeat;
 }
 
 #organizer_leftColumn .organizer_item a.zenario_cms_core_content {
@@ -2611,14 +2559,9 @@ body.ie9 #organizer_preloader_circle div {
 	display:table;
 }
 
-#organizer_rightColumnContent .organizer_header,
-#organizer_rightColumnContent div.organizer_list_view .organizer_list_view_body {
-
-}
-
-#organizer_rightColumnContent div.organizer_list_view .organizer_list_view_body {
+/*#organizer_rightColumnContent div.organizer_list_view .organizer_list_view_body {
 	border-bottom:1px solid #C4C4C4;
-}
+}*/
 
 #organizer_rightColumnContent .ui-sortable div.organizer_row,
 #organizer_rightColumnContent .ui-sortable div.organizer_row div.organizer_cell {
@@ -2653,8 +2596,6 @@ body.ie9 #organizer_preloader_circle div {
 	float: left;
 	z-index: 2;
 }
-
-
 
 /*  Hack to make the title bar appear full-width in grid view  */
 
@@ -2834,6 +2775,13 @@ body.ie9 #organizer_preloader_circle div {
 	color: #202020;
 }
 
+#organizer_rightColumnContent .organizer_list_view_with_tall_rows .organizer_list_view_body_wrap div.organizer_row div.organizer_cell,
+#organizer_rightColumnContent .organizer_list_view_with_tall_rows .organizer_list_view_body_wrap div.organizer_row span.organizer_cell {
+	/*height: 67px;*/
+	height: 50px;
+}
+
+
 #organizer_rightColumnContent div.organizer_row div.organizer_cell {
 	border-style:solid;
 	border-width: 0 1px 0 0;
@@ -2861,7 +2809,7 @@ body.ie9 #organizer_preloader_circle div {
 	width:18px;
 	height:19px;
 	display:block;
-	background: url('../admin/images/sprites/org-icons-1.png') no-repeat -115px -63px;
+	background: url('../admin/images/sprites/org-icons-v2.png') no-repeat -115px -63px;
 	position:absolute;
 	right:3px;
 	top:3px;
@@ -2872,7 +2820,7 @@ body.ie9 #organizer_preloader_circle div {
 	width:18px;
 	height:19px;
 	display:block;
-	background: url('../admin/images/sprites/org-icons-1.png') no-repeat -414px -161px;
+	background: url('../admin/images/sprites/org-icons-v2.png') no-repeat -414px -161px;
 	position:absolute;
 	right:3px;
 	top:3px;
@@ -3479,6 +3427,27 @@ body.ie8 #organizer_rightColumn div.organizer_row div.organizer_cell div.ghost {
 	background-image: url('../admin/images/sprites/sprite-list-icons-single-col.png');
 }
 
+#organizer_rightColumn div.organizer_row div.organizer_cell div.phrase_translated,
+#organizer_rightColumn #organizer_panelTitle div.phrase_translated {
+    background: -20px -18px  no-repeat;
+	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.phrase_partially_translated,
+#organizer_rightColumn #organizer_panelTitle div.phrase_partially_translated {
+    background: -20px -79px  no-repeat;
+	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.phrase_not_translated,
+#organizer_rightColumn #organizer_panelTitle div.phrase_not_translated {
+    background: -20px -140px  no-repeat;
+	background-image: url('../admin/images/sprites/phrase-translation-status.png');
+}
+
+
+
+
 #organizer_rightColumn div.organizer_row div.organizer_cell div.admins_collection {
 	/* to add */
 }
@@ -3771,6 +3740,13 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 	height: 160px;
 }
 
+.organizer_image_tags {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	color: white;
+}
+
 #organizer_rightColumn div.organizer_item div.organizer_image_container,
 #organizer_rightColumn div.organizer_item div.image_container_on {
 	position: relative;
@@ -3808,6 +3784,26 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 #organizer_rightColumn div.zenario_shared div.organizer_image_container .organizer_image_shared_marker {
 	display:block;
 }
+
+
+/*  Borders by image privacy  */
+
+.zenario_image_privacy_auto .organiser_item_with_image {
+	outline: solid 1px orange;
+}
+
+.zenario_image_privacy_public .organiser_item_with_image {
+	outline: solid 1px LightGreen;
+}
+
+.zenario_image_privacy_private .organiser_item_with_image {
+	outline: solid 1px cyan;
+}
+
+.organizer_list_view_body  .organiser_item_with_image {
+	cursor: pointer;
+}
+
 
 #organizer_rightColumn .organizer_grid_view div.organizer_item .organizer_image {
 	width: 180px;
@@ -3875,12 +3871,12 @@ body.ie6 #organizer_rightColumn div.organizer_list_view div.organizer_item {
 
 .trash_button_empty a {
 	background: -408px -10px;
-	background-image: url('../admin/images/sprites/org-icons-1.png');
+	background-image: url('../admin/images/sprites/org-icons-v2.png');
 }
 
 .trash_button_full a {
 	background: -408px -10px;
-	background-image: url('../admin/images/sprites/org-icons-1.png');
+	background-image: url('../admin/images/sprites/org-icons-v2.png');
 	cursor: pointer;
 }
 
@@ -4685,7 +4681,6 @@ table.table-bordered td
     background: #01D103;
     color: #ffffff;
     padding: 3%;
-    cursor: pointer;
 }
 
 .calendar-organizer-wrapper {
@@ -4741,4 +4736,156 @@ table.table-bordered td
     font-size: 1.2em;
     font-weight: 700;
     text-align: center;
+}
+
+.organizer_subheading {
+	font-weight: 700;
+	color: #000000;
+	font-family: Verdana;
+	font-size: 1em;
+	background-color: #e6e6e6;
+	padding: 5px 0px 5px 5px;
+	border-bottom: 1px solid #c4c4c4;
+}
+
+/* Image gallery thumbnails */
+/*#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organiser_item_with_image {
+    width: 64px;
+    height: 64px;
+}
+
+#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons {
+    display: block;
+    float: left;
+    margin-top: 6px;
+}
+
+div.organizer_cell.listicon .image {
+    display: block;
+    float: left;
+}
+
+#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organiser_item_with_image{
+	padding: 0;
+}*/
+
+
+
+/*  Form builder styles  */
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer,
+#organizer_rightColumn .organizer_form_builder_view .form_fields_palette {
+	display: block;
+	float: left;
+	width: 50%; 
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form_tabs,
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form {
+	width: 94%;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .tab {
+	border-top: 1px solid #c5c5c5;
+	border-left: 1px solid #c5c5c5;
+	border-right: 1px solid #c5c5c5;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	margin: 20px 0 0 5px;
+	display: block;
+	float: left;
+	background-color: #c5c5c5;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .tab.on {
+	background-color: #baefba;
+	border-top: 1px solid #baefba;
+	border-left: 1px solid #baefba;
+	border-right: 1px solid #baefba;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .tab.first_tab {
+	margin: 20px 0 0 20px;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .tab:hover {
+	cursor: pointer;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .tab h3 {
+	color: #202020;
+	padding: 10px;
+	margin: 0;
+	font-size: 9pt;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form,
+#organizer_rightColumn .organizer_form_builder_view .form_fields_palette .field_type_list {
+	border: 1px solid #c5c5c5;
+	margin: 0% 0% 20px 20px;
+	padding-bottom: 20px;
+	color: #202020;
+	clear: both;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form h4 {
+	color: #202020;
+	margin: 15px 0px 5px 0px;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form .field.ui-sortable-handle {
+	margin-left: 20px;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form .field.ui-sortable-handle input {
+	width: 200px;
+}
+
+/* Temp styles, please remove when adding proper styles for form builder */
+#organizer_rightColumn .organizer_form_builder_view .form_fields_palette .field_details #field_values_list,
+#organizer_rightColumn .organizer_form_builder_view .form_outer .form .form_section {
+	min-height: 100px;
+	border: 1px solid #c5c5c5;
+}
+
+#organizer_rightColumn .organizer_form_builder_view .form_fields_palette .field_details #field_values_list div {
+	width: 150px;
+	border: 1px solid #c5c5c5;
+}
+
+/*.organizer_list_view_with_tall_rows .listicon {
+    width: 64px;
+    height: 64px;
+}*/
+
+.organizer_list_view_with_short_rows div.organizer_cell div {
+	display: block;
+	float: left;
+}
+
+.organizer_list_view_with_tall_rows .listicon div {
+	width: 64px;
+	height: 48px!important;
+}
+
+.organizer_list_view_with_tall_rows .listicon>div {
+	padding-left: 0!important;
+}
+
+.organizer_list_view_with_tall_rows .listicon .organizer_inline_buttons {
+	display: none;
+}
+
+.organizer_slidedown_view table td .slidedown_tags_title {
+	width: 40px;
+	margin: 0 0 10px 20px;
+	display: block;
+	float: left;
+	color: #202020;
+	margin: 0 0 10px 20px;
+}
+
+.organizer_slidedown_view table td .organizer_image_tags.slidedown_view {
+	display: block;
+	float: left;
 }

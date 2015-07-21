@@ -341,32 +341,79 @@ function visitorIP() {
 	}
 }
 
+function clearCookie($name) {
+	setcookie($name, '', time()-3600, '/');
+	
+	if (cms_core::$lastDB && function_exists('cookieDomain')) {
+		setcookie($name, '', time()-3600, '/', cookieDomain());
+
+	} elseif (!empty($_SERVER['HTTP_HOST'])) {
+	
+		$domain = explode('.', $_SERVER['HTTP_HOST']);
+		while (count($domain) >= 2) {
+			setcookie($name, '', time()-3600, '/', implode('.', $domain));
+			array_shift($domain);
+		}
+	}
+	
+	unset($_COOKIE[$name]);
+}
+
 function setCookieConsent() {
-	setcookie('cookies_accepted', 1, time() + 60*60*24*365, '/');
+	
+	if (cms_core::$lastDB && function_exists('cookieDomain')) {
+		setcookie('cookies_accepted', 1, time() + 60*60*24*365, '/', cookieDomain());
+	
+	} elseif (!empty($_SERVER['HTTP_HOST'])) {
+		
+		$domain = explode('.', $_SERVER['HTTP_HOST']);
+		while (count($domain) >= 2) {
+			setcookie('cookies_accepted', 1, time() + 60*60*24*365, '/', implode('.', $domain));
+			array_shift($domain);
+		}
+	}
+	
 	$_COOKIE['cookies_accepted'] = true;
 	unset($_SESSION['cookies_rejected']);
 }
 
 function setCookieNoConsent() {
 	if (isset($_COOKIE['cookies_accepted'])) {
-		unset($_COOKIE['cookies_accepted']);
-		setcookie('cookies_accepted', '', time()-3600, '/');
+		clearCookie('cookies_accepted');
 	}
 	$_SESSION['cookies_rejected'] = true;
 }
 
-function deleteCacheDir($dir) {
-	if (is_dir($dir)) {
-		foreach (scandir($dir) as $file) {
-			if ($file != '.' && $file != '..') {
-				if (!is_file($dir. '/'. $file)
-				 || !@unlink($dir. '/'. $file)) {
-					return false;
-				}
-			}
+function deleteCacheDir($dir, $subDirLimit = 0) { 
+	
+	$allGone = true;
+	
+	if (!is_dir($dir)
+	 || !is_writable($dir)) { 
+		return false;
+	}
+	
+	foreach (scandir($dir) as $file) { 
+		if ($file == '.'
+		 || $file == '..') {
+			continue;
+		
+		} else
+		if (is_file($dir. '/'. $file)) {
+			$allGone = @unlink($dir. '/'. $file) && $allGone;
+		
+		} else
+		if ($subDirLimit > 0
+		 && is_dir($dir. '/'. $file)
+		 && !is_link($dir. '/'. $file)) {
+			$allGone = deleteCacheDir($dir. '/'. $file, $subDirLimit - 1) && $allGone;
+		
+		} else {
+			$allGone = false;
 		}
 	}
-	return @rmdir($dir);
+	
+	return @rmdir($dir) && $allGone;
 }
 
 //Check whether we are allowed to call exec()
@@ -424,15 +471,22 @@ class cms_core {
 	public static $skinName = '';
 	public static $skinCSS = '';
 	public static $layoutId = false;
+	public static $cols = false;
+	public static $minWidth = false;
+	public static $maxWidth = false;
+	public static $fluid = false;
+	public static $responsive = false;
 	public static $templatePath = '';
 	public static $templateFamily = '';
 	public static $templateFilename = '';
 	public static $templateFileBaseName = '';
+	public static $siteDesc = array();
 	public static $siteConfig = array();
 	public static $specialPages = array();
 	public static $slotContents = array();
 	
 	public static $homeCID = 0;
+	public static $homeEquivId = 0;
 	public static $homeCType = '';
 	public static $pkCols = array();
 	public static $numericCols = array();
@@ -443,12 +497,13 @@ class cms_core {
 	public static $canCache;
 	public static $cachingInUse = false;
 	public static $userAccessLogged = false;
+	public static $mustUseFullPath = false;
 	public static $cookieConsent = '';
 	public static $pageTitle = '';
 	public static $description = '';
 	public static $keywords = '';
 	public static $moduleClassNameForPhrases = '';
-	public static $translateLanguages = array();
+	public static $langs = array();
 	public static $date = false;
 	public static $menuTitle = false;
 	public static $rss = array();
@@ -490,10 +545,6 @@ class cms_core {
 	
 	public static function postSlot($slotName, $showPlaceholderMethod) {
 		return cms_core::$editionClass->postSlot($slotName, $showPlaceholderMethod);
-	}
-	
-	public static function fillInfoBox(&$infoBox) {
-		cms_core::$editionClass->fillInfoBox($infoBox);
 	}
 	
 	public static function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {

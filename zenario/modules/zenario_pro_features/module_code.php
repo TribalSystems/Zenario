@@ -103,33 +103,6 @@ class zenario_pro_features extends zenario_common_features {
 		//...your PHP code...//
 	}
 	
-	public static function advancedSearchWhereStatement($path, $values, $tablePrefix) {
-		
-		//...your PHP code...//
-		
-		return '';
-	}
-	
-	public static function advancedSearchTableJoins($path, $values, $tablePrefix) {
-		
-		//...your PHP code...//
-		
-		return array();
-	}
-	
-	public static function smartGroupInclusionsDescription($values) {
-		//...your PHP code...//
-
-		return '';
-	}
-
-	public static function smartGroupExclusionsDescription($values) {
-		//...your PHP code...//
-
-		return '';
-	}
-
-	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		
 		//...your PHP code...//
@@ -341,7 +314,11 @@ class zenario_pro_features extends zenario_common_features {
 				m.image_id,
 				m.rollover_image_id,
 				m.css_class,
-				t.descriptive_text
+				t.descriptive_text,
+				m.menu_text_module_class_name,
+				m.menu_text_method_name,
+				m.menu_text_param_1,
+				m.menu_text_param_2
 			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
 			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
@@ -459,22 +436,6 @@ class zenario_pro_features extends zenario_common_features {
 	//
 	//	Admin functions
 	//
-	
-	
-	public static function fillInfoBox(&$infoBox) {
-		zenario_common_features::fillInfoBox($infoBox);
-		
-		$infoBox[10]['fields'][10]['value'] = adminPhrase('Pro');
-		$infoBox[10]['fields'][20]['value'] = adminPhrase('Commercial');
-
-		if (file_exists(absCMSDir() . "product-license")) {
-			$strLicenseFile = file_get_contents(absCMSDir() . "product-license");
-		
-			$infoBox[10]['fields'][25] = array();
-			$infoBox[10]['fields'][25]['label'] = adminPhrase('Restrictions:');
-			$infoBox[10]['fields'][25]['value'] = trim(substr($strLicenseFile,0,strpos($strLicenseFile,"------ LICENSE FILE DATA")));
-		}
-	}
 	
 	
 	

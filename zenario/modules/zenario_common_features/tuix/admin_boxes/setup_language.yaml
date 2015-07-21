@@ -79,3 +79,32 @@ zenario_setup_language:
                             label: Use "LIKE" in searches
                             note_below: Search for anything containing the search term, e.g. a search for "van" would match "caravan"
                     value: full_text
+                use_domain:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && zenarioA.siteSettings.primary_domain
+                    label: 'Use a language-specific domain'
+                    type: checkbox
+                    redraw_onchange: true
+                domain:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && zenarioA.siteSettings.primary_domain
+                        && zenarioAB.value('use_domain')
+                    label: 'Domain:'
+                    type: text
+                    note_below: |
+                        Links to content items in this language will use this domain in the URL.
+                primary_domain_warning:
+                    visible_if: |
+                        zenarioA.multipleLanguagesEnabled()
+                        && !zenarioA.siteSettings.primary_domain
+                    label: 'Use a language-specific domain'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        You need to set a primary domain before you can use a language-specific domain.
+                        Please go to <em>Configuration -&gt; Site settings -&gt; Primary Domain</em>
+                        and set the primary domain.
+                        
+                        

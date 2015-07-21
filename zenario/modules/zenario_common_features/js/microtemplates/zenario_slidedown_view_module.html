@@ -18,7 +18,21 @@
 	<tr><th>Category:</th><td>{{zenarioO.columnValue(m.id, 'category')}}</td></tr>
 	<tr><th>Keywords:</th><td>{{zenarioO.columnValue(m.id, 'keywords')}}</td></tr>
 	<tr><th>Linked Special Page:</th><td>{{zenarioO.columnValue(m.id, 'special_page')}}</td></tr>
-	<tr><th>Pluggable:</th><td>{{zenarioO.columnValue(m.id, 'is_pluggable')}}</td></tr>
+	<tr><th>Has Plugins:</th><td>
+		<% var l = zenarioO.pi.tuix.items[m.id].is_pluggable == true, v = zenarioO.pi.tuix.items[m.id].can_be_version_controlled == true %>
+		<% if (l || v) { %>
+			Yes
+			<% if (l && v) { %>
+				(Library plugin and version controlled plugin)
+			<% } else if (l) { %>
+				(library plugin)
+			<% } else if (v) { %>
+				(version controlled plugin)
+			<% } %>
+		<% } else { %>
+			No
+		<% } %>
+	</td></tr>
 	<tr><th>Nestable:</th><td>{{zenarioO.columnValue(m.id, 'nestable')}}</td></tr>
 	<tr><th>Signal listeners:</th><td>{{zenarioO.columnValue(m.id, 'listens_for')}}</td></tr>
 	<tr><th>Table prefix:</th><td>{{zenarioO.columnValue(m.id, 'prefix')}}</td></tr>

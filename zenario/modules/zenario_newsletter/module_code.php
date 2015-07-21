@@ -98,8 +98,7 @@ class zenario_newsletter extends module_base_class {
 		switch ($mode) {
 			case 'count':
 				$sql = "
-					SELECT DISTINCT u.id
-					FROM ". DB_NAME_PREFIX. "users AS u";
+					SELECT DISTINCT u.id";
 				break;
 			
 			case 'populate':
@@ -111,23 +110,23 @@ class zenario_newsletter extends module_base_class {
 						SHA(CONCAT(u.id, '_', ". (int) $id. ", '_unsubscribe')) AS remove_hash,
 						SHA(CONCAT(u.id, '_', ". (int) $id. ", '_remove')) AS delete_account_hash,
 						u.screen_name,
-						u.email
-					FROM "
-						. DB_NAME_PREFIX. "users AS u";
+						u.email";
 				break;
 			
 			case 'get_sql':
-				$sql = "SELECT 
-							u.id
-						FROM 
-							" . DB_NAME_PREFIX. "users AS u";
+				$sql = "SELECT u.id";
 				break;
 			default:
 				return false;
 		}
 		
-		$whereStatement = 
-		"u.email != ''" ;
+		$sql .= "
+			FROM ". DB_NAME_PREFIX. "users AS u
+			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+			   ON ucd.user_id = u.id";
+		
+		$whereStatement = "
+			WHERE u.email != ''";
 		//AND u.status IN('active', 'contact')";
 		
 		foreach (getRowsArray(
@@ -144,12 +143,8 @@ class zenario_newsletter extends module_base_class {
 				AND nul_". (int) $sentNewsletterId. ".user_id IS NULL";
 		}
 		
-		$joins = array();
-		if (smartGroupSQL($smartGroupId, $whereStatement, $joins)) {
-			foreach ($joins as $join => $dummy) {
-				$sql .= "
-					". $join;
-			}
+		if ($smartGroupId) {
+			$whereStatement .= smartGroupSQL($smartGroupId);
 		
 		} else {
 			return false;
@@ -164,8 +159,7 @@ class zenario_newsletter extends module_base_class {
 				  AND noo.`". sqlEscape($cField['db_column']). "` = 1";
 		}
 
-		$sql .= "
-			WHERE ". $whereStatement;
+		$sql .= $whereStatement;
 		
 		if ($cField) {
 			$sql .= "
@@ -303,7 +297,12 @@ class zenario_newsletter extends module_base_class {
 	}
 	
 	// Send the newsletter to all admins
-	private static function sendNewsletterToAdmins($id) {
+	private static function sendNewsletterToAdmins($id, $mode = 'myself') {
+		
+		if ($mode == 'none') {
+			return false;
+		}
+		
 		// Get admins
 		$admins = array();
 		$sql = '
@@ -316,6 +315,11 @@ class zenario_newsletter extends module_base_class {
 				1 AS admin_account
 			FROM '.DB_NAME_PREFIX.'admins
 			WHERE status = \'active\'';
+		
+		if ($mode == 'myself') {
+			$sql .= 'AND id = '.(int)adminId();
+		}
+		
 		$result = sqlSelect($sql);
 		while ($row = sqlFetchAssoc($result)) {
 			$admins[] = $row;

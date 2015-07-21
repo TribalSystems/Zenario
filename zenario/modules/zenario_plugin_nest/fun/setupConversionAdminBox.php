@@ -78,7 +78,7 @@ $onlyBanners = $onlyOneModule && $moduleId == getRow('modules', 'id', array('cla
 
 $firstConvertField = true;
 foreach ($fields as $key => &$field) {
-	if (!isInfoTag($key)) {
+	if (is_array($field)) {
 		if (isset($field['current_module'])) {
 			if ($field['current_module'] != $currentClassName) {
 				$field['hidden'] = true;

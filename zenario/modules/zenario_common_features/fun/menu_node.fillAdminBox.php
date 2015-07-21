@@ -76,8 +76,14 @@ if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id']))) {
 	$box['tabs']['advanced']['fields']['menu__param_1']['value'] = $menu['param_1'];
 	$box['tabs']['advanced']['fields']['menu__param_2']['value'] = $menu['param_2'];
 	
+	$box['tabs']['advanced']['fields']['overwrite_menu_text_by_static_method']['value'] = (bool)$menu['menu_text_module_class_name'];
+	$box['tabs']['advanced']['fields']['menu_text__module_class_name']['value'] = $menu['menu_text_module_class_name'];
+	$box['tabs']['advanced']['fields']['menu_text__method_name']['value'] = $menu['menu_text_method_name'];
+	$box['tabs']['advanced']['fields']['menu_text__param_1']['value'] = $menu['menu_text_param_1'];
+	$box['tabs']['advanced']['fields']['menu_text__param_2']['value'] = $menu['menu_text_param_2'];
+	
 	foreach ($box['tabs'] as $i => &$tab) {
-		if (!isInfoTag($i) && isset($tab['edit_mode'])) {
+		if (is_array($tab) && isset($tab['edit_mode'])) {
 			$tab['edit_mode']['enabled'] =
 				$box['key']['parentMenuID']?
 					checkPriv('_PRIV_EDIT_MENU_ITEM')
@@ -102,7 +108,7 @@ if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id']))) {
 	}
 	
 	foreach ($box['tabs'] as $i => &$tab) {
-		if (!isInfoTag($i) && isset($tab['edit_mode'])) {
+		if (is_array($tab) && isset($tab['edit_mode'])) {
 			$tab['edit_mode']['enabled'] = true;
 			$tab['edit_mode']['on'] = true;
 			$tab['edit_mode']['always_on'] = true;

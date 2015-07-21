@@ -19,7 +19,7 @@ switch (get('mode')) {
 		exit;
 }
 
-if (!empty($_GET['load_tuix_files']) && $data = json_decode($_GET['load_tuix_files'], true)) {
+if (!empty($_POST['load_tuix_files']) && $data = json_decode($_POST['load_tuix_files'], true)) {
 	if (!empty($data) && is_array($data)) {
 		foreach ($data as $paths => &$dataForFile) {
 			$paths = explode('.', $paths);

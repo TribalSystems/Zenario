@@ -226,27 +226,11 @@ zenario__email_template_manager:
                     priv: _PRIV_SEND_NEWSLETTER
                     css_class: zenario_newsletter_send
                     label: Live send
-                    ajax:
-                        confirm:
-                            message: 'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient(s)? Click-throughs counts will be reset.'
-                            button_message: Send
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            send: "1"
-                    traits:
-                        has_recipients: Yes
+                    admin_box:
+                        path: zenario_live_send
                     hide_in_select_mode: true
-                send_dumby:
-                    priv: _PRIV_SEND_NEWSLETTER
-                    css_class: zenario_newsletter_send
-                    label: Live send
-                    help:
-                        message: 'You can not send this Newsletter as it does not have any recipients.'
-                        message_type: error
-                    traits:
-                        has_no_recipients: Yes
-                    hide_in_select_mode: true
+                    disabled_if_for_any_selected_items: item.recipients == 0
+                
                 resume:
                     priv: _PRIV_SEND_NEWSLETTER
                     css_class: zenario_newsletter_send

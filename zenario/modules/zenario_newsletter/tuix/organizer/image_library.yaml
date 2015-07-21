@@ -4,6 +4,10 @@ zenario__content:
     panels:
         image_library:
             columns:
+                all_usage_newsletters:
+                    title: Newsletters
+                    tooltip: All newsletter usage (attached to newsletters, newsletter templates)
+                    show_by_default: true
                 usage_newsletters:
                     title: Attached to (newsletters)
                     db_column: |
@@ -25,6 +29,7 @@ zenario__content:
                             LIMIT 1
                         )
                     show_by_default: false
+                    align_right: true
                 usage_newsletter_templates:
                     title: Usage (newsletter templates)
                     db_column: |
@@ -44,7 +49,7 @@ zenario__content:
                             LIMIT 1
                         )
                     show_by_default: false
-            
+                    align_right: true
             quick_filter_buttons:
                 usage_newsletters:
                     parent: usage_dropdown

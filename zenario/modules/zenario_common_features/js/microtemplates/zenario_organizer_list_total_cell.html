@@ -3,8 +3,18 @@
 	class="organizer_total_cell"
 >
 	<span class="label">
-	{% if (m.total) { %}
-		Total: {{m.total|escape}}
-	{% } %}
+	
+		<% if (m.grandTotalExists) { %>
+		
+			Grand total: {{m.total|escape}}
+			
+		<% } else { %>
+			
+			<% if (m.total) { %>
+				Total: {{m.total|escape}}
+			<% } %>
+			
+		<% } %>
+	
 	</span>
 </div>

@@ -3,7 +3,7 @@ display_name: '[[MODULE_DIRECTORY_NAME]]'
 required_cms_version: '[[ZENARIO_CMS_VERSION]]'
 author_name: ""
 copyright_info: ""
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 description: >
     <p>
         This Module has no description file, or its description file is missing its &lt;description&gt; tag.

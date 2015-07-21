@@ -3,7 +3,7 @@
 zenario__content:
     panels:
         image_tags:
-            panel_type: grid_or_list
+            panel_type: images_with_tags
             title: Image tags
             no_items_message: No tags have been created.
             db_items:
@@ -17,6 +17,20 @@ zenario__content:
                     db_column: it.name
                     show_by_default: true
                     searchable: true
+                color:
+                    title: Color
+                    db_column: it.color
+                    show_by_default: true
+                    searchable: true
+                    format: enum
+                    values:
+                        blue: Blue
+                        green: Green
+                        grey: Grey
+                        orange: Orange
+                        red: Red
+                        violet: Violet
+                        yellow: Yellow
                 usage:
                     title: Usage
                     show_by_default: true
@@ -33,7 +47,7 @@ zenario__content:
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_MEDIA
-                    label: Rename
+                    label: Properties
                     admin_box:
                         path: zenario_image_tag
                 view_images:
@@ -98,3 +112,10 @@ zenario__content:
                 #    label: Actions
                 #    multiple_select: true
                 #    hide_when_children_are_not_visible: true
+            collection_buttons:
+                create:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Create tag
+                    admin_box:
+                        path: zenario_image_tag
+                    css_class: zenario_create_a_new

@@ -52,13 +52,20 @@ switch ($path) {
 			}
 		}
 		
-		//Plugin pickers need different paths for Wireframe modules
-		if ($instance['content_id']) {
-			foreach (array('collection_buttons', 'item_buttons') as $buttonType) {
-				if (!empty($panel[$buttonType])) {
-					foreach ($panel[$buttonType] as &$button) {
-						if (isset($button['pick_items']['path_if_wireframe'])) {
-							$button['pick_items']['path'] = $button['pick_items']['path_if_wireframe'];
+		foreach (array('collection_buttons', 'item_buttons') as $buttonType) {
+			if (!empty($panel[$buttonType])) {
+				foreach ($panel[$buttonType] as &$button) {
+					if (is_array($button)) {
+						//Fix a problem in 7.0.6 where the buttons were missing their class names
+						if (empty($button['class_name'])) {
+							$button['class_name'] = 'zenario_plugin_nest';
+						}
+					
+						//Plugin pickers need different paths for Wireframe modules
+						if ($instance['content_id']) {
+							if (isset($button['pick_items']['path_if_wireframe'])) {
+								$button['pick_items']['path'] = $button['pick_items']['path_if_wireframe'];
+							}
 						}
 					}
 				}

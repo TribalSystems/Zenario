@@ -132,8 +132,8 @@ class zenario_ctype_audio extends module_base_class {
 		$mergeFields['Size'] = formatFilesizeNicely(getRow('files','size',array('id'=> arrayKey($contentItemDetails,'file_id'))), 0, false, 'zenario_ctype_audio');
 		$mergeFields['title'] = arrayKey($contentItemDetails,'title');
 		contentFileLink($url, $this->targetID, $this->targetType, $this->targetVersion);
-		$mergeFields['mp3Path'] = $url;
-			
+		$mergeFields['mp3Path'] = urlencode($url);
+		
 		$this->framework('mp3', $mergeFields, $subSections);
 		
 	}

@@ -110,12 +110,12 @@ if ($hierarchalSearch) {
 	unset($panel['item']['link']);
 	unset($panel['item']['tooltip']);
 	foreach ($panel['item_buttons'] as $tagName => &$button) {
-		if (!isInfoTag($tagName)) {
+		if (is_array($button)) {
 			$button['hidden'] = $tagName != 'go_to_menu_in_sk';
 		}
 	}
 	foreach ($panel['collection_buttons'] as $tagName => &$button) {
-		if (!isInfoTag($tagName)) {
+		if (is_array($button)) {
 			$button['hidden'] = true;
 		}
 	}

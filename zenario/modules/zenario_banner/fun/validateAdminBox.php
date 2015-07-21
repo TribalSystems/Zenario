@@ -37,12 +37,7 @@ switch ($path) {
 		 && !$values['first_tab/alt_tag']) {
 			$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter an alt-tag.');
 		}
-		if (!empty($fields['first_tab/image_title'])
-		 && empty($fields['first_tab/image_title']['hidden'])
-		 && $changes['first_tab/image_title']
-		 && !$values['first_tab/image_title']) {
-			$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a title.');
-		}
+		
 		if (!empty($fields['first_tab/floating_box_title'])
 		 && empty($fields['first_tab/floating_box_title']['hidden'])
 		 && $changes['first_tab/floating_box_title']

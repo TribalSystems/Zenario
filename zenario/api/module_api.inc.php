@@ -455,37 +455,42 @@ class zenario_api {
 	protected final function linkToItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$httpHost = false
+		$usePrimaryDomain = false
 	) {
-		return linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $httpHost);
+		return linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain);
 	}
 	
 	protected final function linkToItemAnchor(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$httpHost = false
+		$usePrimaryDomain = false
 	) {
-		return ' href="'. htmlspecialchars(linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $httpHost)). '"';
+		return ' href="'. htmlspecialchars(linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain)). '"';
 	}
 	
 	protected final function linkToItemAnchorAndJS(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$httpHost = false
+		$usePrimaryDomain = false
 	) {
-		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $httpHost), $this->linkToItemJS($cID, $cType, $request));
+		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain), $this->linkToItemJS($cID, $cType, $request));
 	}
 	
 	protected final function linkToItemJS($cID, $cType = 'html', $request = '') {
 		return $this->moduleClassName. '.goToItem(\''. jsOnClickEscape($cID). '\', \''. jsOnClickEscape($cType). '\', \''. jsOnClickEscape($request). '\');';
 	}
 	
-	protected final function moduleAJAXURL($requests = '') {
+	protected final function moduleDir($subDir = '') {
+		return moduleDir($this->moduleClassName, $subDir);
+	}
+	
+	protected final function AJAXLink($requests = '') {
 		return 'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=handleAJAX'. urlRequest($requests);
 	}
 	
-	protected final function moduleDir($subDir = '') {
-		return moduleDir($this->moduleClassName, $subDir);
+	//Old name of the above function, deprecated
+	protected final function moduleAJAXURL($requests = '') {
+		return $this->AJAXLink($requests);
 	}
 	
 	protected final function pluginAJAXLink($requests = '') {
@@ -525,13 +530,13 @@ class zenario_api {
 			urlRequest($requests);
 	}
 	
-	protected final function showIframeLink($requests = '', $hideLayout = false) {
+	protected final function showSingleSlotLink($requests = '', $hideLayout = true) {
 		return
 			$this->linkToItem($this->cID, $this->cType, false, 
 			  (checkPriv()?
 				'&cVersion='. $this->cVersion
 			   : '').
-				'&method_call=showIframe'.
+				'&method_call=showSingleSlot'.
 				'&instanceId='. $this->instanceId.
 				'&slotName='. $this->slotName.
 				'&eggId='. $this->eggId.
@@ -540,10 +545,22 @@ class zenario_api {
 			cms_core::$alias);
 	}
 	
+	//Old deprecated link
+	protected final function showIframeLink($requests = '', $hideLayout = false) {
+		return $this->showSingleSlotLink($requests, $hideLayout);
+	}
+	
 	protected final function showImageLink($requests) {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showImage'.
+			urlRequest($requests);
+	}
+	
+	protected final function showStandalonePageLink($requests) {
+		return
+			httpOrHttps(). httpHost(). SUBDIRECTORY.
+			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showStandalonePage'.
 			urlRequest($requests);
 	}
 	
@@ -591,13 +608,6 @@ class zenario_api {
 		}
 		
 		return linkToItem($this->cID, $this->cType, true, $request, cms_core::$alias, false, true);
-	}
-	
-	protected final function showStandalonePageLink($requests) {
-		return
-			httpOrHttps(). httpHost(). SUBDIRECTORY.
-			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showStandalonePage'.
-			urlRequest($requests);
 	}
 
 
@@ -1484,7 +1494,7 @@ class zenario_api {
 						
 							} elseif ($thing == 'URL' || $thing == 'CANONICAL_URL') {
 								//Output the URL
-								echo htmlspecialchars(linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, $thing == 'CANONICAL_URL', true, primaryDomain()));
+								echo htmlspecialchars(linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, $thing == 'CANONICAL_URL', true, true));
 							}
 					
 						//Display some text from another Plugin

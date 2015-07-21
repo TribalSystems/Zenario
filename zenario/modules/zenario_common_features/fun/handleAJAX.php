@@ -54,7 +54,7 @@ if (checkPriv()) {
 		
 		//$cID = $cType = false;
 		//getCIDAndCTypeFromTagId($cID, $cType, $tagId);
-		$result_array = array('message' => 'Hello again');
+		$result_array = array();
                 
                 $sql = "SELECT version, created_datetime, 
                         (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.creating_author_id) as creating_author,
@@ -93,97 +93,114 @@ if (checkPriv()) {
 	//Get the current SVN number
 	} elseif (get('infoBox')) {
 		
-		$infoBox = array();
-		$infoBox[10] = array('title' => adminPhrase('Software Information'), 'fields' => array());
-		
-		$infoBox[10]['fields'][10] = array('label' => adminPhrase('Edition:'), 'value' => '');
-		$infoBox[10]['fields'][20] = array('label' => adminPhrase('License:'), 'value' => '');
-		$infoBox[10]['fields'][30] = array('label' => adminPhrase('Version:'), 'value' => getCMSVersionNumber());
-		
-		if (!windowsServer() && execEnabled() && is_dir('zenario/.svn') && is_file('zenario/visitorheader.inc.php') && ($svnversion = @exec('svnversion zenario/'))) {
-			$infoBox[10]['fields'][40] = array('label' => adminPhrase('SVN no:'), 'value' => $svnversion);
-		}
-		
-		
-		$infoBox[20] = array('title' => adminPhrase('Installation Information'), 'fields' => array());
-		
-		if ((function_exists('gethostname') && ($hostName = @gethostname()))
-		 || ($hostName = @php_uname('n'))) {
-			$infoBox[20]['fields'][5] = array('label' => adminPhrase('Server Name:'), 'value' => $hostName);
-		}
-		
-		$infoBox[20]['fields'][6] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
-		
 		$realDir = realpath($logicalDir = CMS_ROOT. 'zenario');
-		if ($realDir == $logicalDir) {
-			$infoBox[20]['fields'][10] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-		} else {
-			$infoBox[20]['fields'][10] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-			$infoBox[20]['fields'][20] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
-		}
 		
-		if (globalDBDefined()) {
-			$infoBox[20]['fields'][30] = array('label' => adminPhrase('Local Database:'), 'value' => DBNAME);
-			$infoBox[20]['fields'][40] = array('label' => adminPhrase('Global Database:'), 'value' => DBNAME_GLOBAL);
-		} else {
-			$infoBox[20]['fields'][30] = array('label' => adminPhrase('Database Name:'), 'value' => DBNAME);
-		}
+		$infoBox = array('title' => adminPhrase('About Zenario'), 'sections' => array());
+		$section = array('title' => adminPhrase('Software Information'), 'fields' => array());
 		
-		if (defined('DBHOST_GLOBAL') && DBHOST_GLOBAL != DBHOST) {
-			$infoBox[20]['fields'][50] = array('label' => adminPhrase('Local DB Host:'), 'value' => DBHOST);
-			$infoBox[20]['fields'][60] = array('label' => adminPhrase('Global DB Host:'), 'value' => DBHOST_GLOBAL);
-		} else {
-			$infoBox[20]['fields'][50] = array('label' => adminPhrase('Database Host:'), 'value' => DBHOST);
-		}
+		$section['fields'][] = array('label' => adminPhrase('Edition:'), 'value' => siteDescription('edition'));
+		$section['fields'][] = array('label' => adminPhrase('License:'), 'value' => siteDescription('license_info'));
+		$section['fields'][] = array('label' => adminPhrase('Version:'), 'value' => getCMSVersionNumber());
 		
-		if (defined('DB_NAME_PREFIX_GLOBAL') && DB_NAME_PREFIX_GLOBAL != DB_NAME_PREFIX) {
-			$infoBox[20]['fields'][70] = array('label' => adminPhrase('Local DB Prefix:'), 'value' => DB_NAME_PREFIX);
-			$infoBox[20]['fields'][80] = array('label' => adminPhrase('Global DB Prefix:'), 'value' => DB_NAME_PREFIX_GLOBAL);
-		} else {
-			$infoBox[20]['fields'][70] = array('label' => adminPhrase('Database Prefix:'), 'value' => DB_NAME_PREFIX);
-		}
-		
-		
-		cms_core::fillInfoBox($infoBox);
-		
-
-		echo '
-			<div class="zenario_infoBoxHead">
-				<a onclick="zenarioA.closeInfoBox();" class="zenario_jqmClose" style="display: block;"><div><p>Close</p></div></a>
-				<p>', adminPhrase('About Zenario'), '</p>
-			</div>
-			<div class="zenario_infoBox">';
-		
-		ksort($infoBox, SORT_NUMERIC);
-		foreach ($infoBox as &$infoSection) {
-			echo '
-				<div class="zenario_infoSection">';
+		if (!windowsServer() && execEnabled() && is_file('zenario/visitorheader.inc.php')) {
 			
-			if (!empty($infoSection['title'])) {
-				echo '
-					<span>', htmlspecialchars($infoSection['title']), '</span>';
+			$output = array();
+			$svninfo = array();
+			if (is_dir($realDir. '/.svn')) {
+				@exec('svn info '. escapeshellcmd($realDir. '/'), $output);
+			} elseif (is_dir('.svn')) {
+				@exec('svn info .', $output);
 			}
 			
-			if (!empty($infoSection['fields']) && is_array($infoSection['fields'])) {
-				ksort($infoSection['fields'], SORT_NUMERIC);
-				foreach ($infoSection['fields'] as &$field) {
-					echo '
-					<div>
-						<div', empty($field['class'])? '' : ' class="'. htmlspecialchars($field['class']). '"', '>
-							', htmlspecialchars($field['value']), '
-						</div>
-						', htmlspecialchars($field['label']), '
-					</div>';
+			foreach ($output as $line) {
+				$line = explode(': ', $line, 2);
+				
+				if (!empty($line[1])) {
+					$svninfo[$line[0]] = $line[1];
 				}
 			}
 			
-			echo '
-				</div>';
+			if (!empty($svninfo['Revision'])) {
+				$section['fields'][] = array('label' => adminPhrase('SVN revision no:'), 'value' => $svninfo['Revision']);
+				
+				if (!empty($svninfo['Last Changed Date'])) {
+					
+					if ($date = formatDateTimeNicely($svninfo['Last Changed Date'])) {
+						$section['fields'][] = array('label' => adminPhrase('Last SVN commit applied to this site:'), 'value' => $date);
+					}
+				}
+			}
+			
+			//I've removed the "Code last changed" section as the time that the system reports isn't
+			//actually the time the code was last changed, it's actually the time that the system
+			//noticed that the code had changed.
+			//(There's a subtle difference which can cause a lot of confusion.)
+			/*
+			$codeLastChanged = 0;
+			if (($php_files_last_changed = setting('php_files_last_changed'))
+			 && (is_numeric($php_files_last_changed))) {
+				$codeLastChanged = $php_files_last_changed;
+			}
+			if (($yaml_files_last_changed = setting('yaml_files_last_changed'))
+			 && (is_numeric($yaml_files_last_changed))
+			 && ($codeLastChanged < $yaml_files_last_changed)) {
+				$codeLastChanged = $yaml_files_last_changed;
+			}
+			
+			if ($codeLastChanged
+			 && ($codeLastChanged = date("Y-m-d H:i:s", $codeLastChanged))
+			 && ($codeLastChanged = formatDateTimeNicely($codeLastChanged))) {
+				$section['fields'][] = array('label' => adminPhrase('Code last changed:'), 'value' => $codeLastChanged);
+			}
+			*/
+		}
+		$infoBox['sections'][] = $section;
+		
+		
+		
+		
+		$section = array('title' => adminPhrase('Installation Information'), 'fields' => array());
+		
+		if ((function_exists('gethostname') && ($hostName = @gethostname()))
+		 || ($hostName = @php_uname('n'))) {
+			$section['fields'][] = array('label' => adminPhrase('Server Name:'), 'value' => $hostName);
 		}
 		
-		echo '
-			</div>
-			<div class="zenario_infoBoxFoot"></div>';
+		$section['fields'][] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
+		
+		if ($realDir == $logicalDir) {
+			$section['fields'][] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+		} else {
+			$section['fields'][] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+			$section['fields'][] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
+		}
+		
+		if (globalDBDefined()) {
+			$section['fields'][] = array('label' => adminPhrase('Local Database:'), 'value' => DBNAME);
+			$section['fields'][] = array('label' => adminPhrase('Global Database:'), 'value' => DBNAME_GLOBAL);
+		} else {
+			$section['fields'][] = array('label' => adminPhrase('Database Name:'), 'value' => DBNAME);
+		}
+		
+		if (defined('DBHOST_GLOBAL') && DBHOST_GLOBAL != DBHOST) {
+			$section['fields'][] = array('label' => adminPhrase('Local DB Host:'), 'value' => DBHOST);
+			$section['fields'][] = array('label' => adminPhrase('Global DB Host:'), 'value' => DBHOST_GLOBAL);
+		} else {
+			$section['fields'][] = array('label' => adminPhrase('Database Host:'), 'value' => DBHOST);
+		}
+		
+		if (defined('DB_NAME_PREFIX_GLOBAL') && DB_NAME_PREFIX_GLOBAL != DB_NAME_PREFIX) {
+			$section['fields'][] = array('label' => adminPhrase('Local DB Prefix:'), 'value' => DB_NAME_PREFIX);
+			$section['fields'][] = array('label' => adminPhrase('Global DB Prefix:'), 'value' => DB_NAME_PREFIX_GLOBAL);
+		} else {
+			$section['fields'][] = array('label' => adminPhrase('Database Prefix:'), 'value' => DB_NAME_PREFIX);
+		}
+		$infoBox['sections'][] = $section;
+		
+		
+		header('Content-Type: text/javascript; charset=UTF-8');
+		echo json_encode($infoBox);
+		exit;
 	
 	//Attempt to load this list from an xml file description to add choices in for swatches from the Skin
 	} elseif (get('skinId')) {

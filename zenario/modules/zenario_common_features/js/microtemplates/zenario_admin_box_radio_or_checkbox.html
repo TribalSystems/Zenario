@@ -1,4 +1,4 @@
-<div class="group_field_wrap {{m.newRow? 'group_field_wrap_new_row' : 'group_field_wrap_same_row'}}">
+<div class="zenario_radio_or_checkbox zenario_group zenario_group_{{m.cols|e}}_cols zenario_group_col_{{m.col|e}}">
 
 	<% if (m.lovField.pre_field_html !== undefined) { %>
 		{{m.lovField.pre_field_html}}
@@ -14,8 +14,16 @@
 	<% } %>
 
 	{{m.lovHTML}}
-
-	<label for="{{m.lovId|escape}}" id="label_for__{{m.lovId|escape}}">
+	
+	<label
+		for="{{m.lovId|escape}}"
+		id="label_for__{{m.lovId|escape}}"
+		class="
+			<% if (m.tag_color) { %>
+				zenario_tag zenario_tag_{{m.tag_color|escape}}
+			<% } %>
+		"
+	>
 		{{m.lovField.label}}
 	</label>
 

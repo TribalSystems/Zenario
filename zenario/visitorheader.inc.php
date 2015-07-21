@@ -115,10 +115,23 @@ $hostWOPort = httpHostWithoutPort();
 if ($host != primaryDomain()
  && $hostWOPort != primaryDomain()
  && $redirect = getRow('spare_domain_names', array('content_id', 'content_type'), array('requested_url' => array($host, $hostWOPort)))) {
-	header(
-		'location:'. linkToItem($redirect['content_id'], $redirect['content_type'], true, '', false, false, false, primaryDomain()),
-		true, 301);
-	exit;
+	
+	//Catch the case where a language specific domain was used as a redirect. Don't allow the redirect in this case.
+	foreach (cms_core::$langs as $langId => $lang) {
+		if ($lang['domain']
+		 && ($lang['domain'] == $host
+		  || $lang['domain'] == $hostWOPort)) {
+			$redirect = false;
+			break;
+		}
+	}
+	
+	if ($redirect) {
+		header(
+			'location:'. linkToItem($redirect['content_id'], $redirect['content_type'], true, '', false, false, false, true),
+			true, 301);
+		exit;
+	}
 }
 
 

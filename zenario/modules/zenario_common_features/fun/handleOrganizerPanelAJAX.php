@@ -97,14 +97,14 @@ switch ($path) {
 					$cols = array();
 					
 					//Update the ordinal if it is different
-					if (isset($_POST['ordinal__'. $id]) && $_POST['ordinal__'. $id] != $file['ordinal']) {
-						$cols['ordinal'] = $_POST['ordinal__'. $id];
+					if (isset($_POST['ordinals'][$id]) && $_POST['ordinals'][$id] != $file['ordinal']) {
+						$cols['ordinal'] = $_POST['ordinals'][$id];
 					}
 	
 					//Update the folder id if it is different, and remember that we've done this
-					if (isset($_POST['parent_id__'. $id]) && $_POST['parent_id__'. $id] != $file['folder_id']) {
+					if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $file['folder_id']) {
 					
-						$parentFolderId = $_POST['parent_id__'. $id];
+						$parentFolderId = $_POST['parent_ids'][$id];
 						$newChildId = $id;
 						
 						
@@ -121,8 +121,8 @@ switch ($path) {
 						var_dump($parentFolderId);
 					
 						*/
-						$cols['folder_id'] = $_POST['parent_id__'. $id];
-						$folder = getRow('documents', array('id', 'type'), $_POST['parent_id__'. $id]);
+						$cols['folder_id'] = $_POST['parent_ids'][$id];
+						$folder = getRow('documents', array('id', 'type'), $_POST['parent_ids'][$id]);
 						if ($folder['type'] == "file") {
 							echo '<!--Message_Type:Error-->';
 							echo adminPhrase('Files may not be moved under other files, files can only be placed under folders.');
@@ -180,23 +180,28 @@ switch ($path) {
 			} else {
 				echo "<!--Message_Type:Success-->";
 			}
+			
 			if (empty($documentProperties['extract'])) {
-				echo "<p>Unable to update document text extract.</p>";
+				echo '<p>', adminPhrase('Unable to update document text extract.'), '</p>';
+				
+				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+					 && ($extract == 'Test'))) {
+					echo '<p>', adminPhrase('antiword or pdftotext do not appear to be working.'), '</p>';
+				}
 			} else {
-				echo "<p>Successfully updated document text extract.</p>";
+				echo '<p>', adminPhrase('Successfully updated document text extract.'), '</p>';
 			}
+			
 			if (empty($documentProperties['thumbnail_id'])) {
-				echo "<p>Unable to update document image.</p>";
+				echo '<p>', adminPhrase('Unable to update document image.'), '</p>';
+				
+				if (!createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
+					echo '<p>', adminPhrase('ghostscript does not appear to be working.'), '</p>';
+				}
 			} else {
-				echo "<p>Successfully updated document image.</p>";
+				echo '<p>', adminPhrase('Successfully updated document image.'), '</p>';
 			}
-			if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
-				 && ($extract == 'Test'))) {
-				echo "<p>antiword or pdftotext do not appear to be working.</p>";
-			}
-			if (!createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
-				echo "<p>ghostscript does not appear to be working.</p>";
-			}
+			
 			updateRow('documents', $documentProperties, array('id' => $ids));
 			
 		}elseif(post('rescanText')){ 
@@ -208,18 +213,17 @@ switch ($path) {
 				echo "<!--Message_Type:Success-->";
 			}
 			if (empty($documentProperties['extract'])) {
-				echo "<p>Unable to update document text extract.</p>";
+				echo '<p>', adminPhrase('Unable to update document text extract.'), '</p>';
+				
+				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
+					 && ($extract == 'Test'))) {
+					echo '<p>', adminPhrase('antiword or pdftotext do not appear to be working.'), '</p>';
+				}
 			} else {
 				echo "<p>Successfully updated document text extract.</p>";
+				updateRow('documents', array('extract'=>$documentProperties['extract']), array('id' => $ids));
 			}
-			if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
-				 && ($extract == 'Test'))) {
-				echo "<p>antiword or pdftotext do not appear to be working.</p>";
-			}
-			if (!createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
-				echo "<p>ghostscript does not appear to be working.</p>";
-			}
-			updateRow('documents', array('extract'=>$documentProperties['extract']), array('id' => $ids));
+		
 		}elseif (post('autoset')) {
 			self::processDocumentRules($ids);
 			
@@ -252,19 +256,29 @@ switch ($path) {
 			foreach (explode(',', $ids) as $id) {
 				$document = getRow('documents', array('file_id', 'filename'), $id);
 				$file = getRow('files', 
-								array('id', 'filename', 'path', 'created_datetime'),
+								array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
 								$document['file_id']);
 				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $document['filename'];
-					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' . $document['filename'];
+					if (cleanDownloads()) {
+						$dirPath = createCacheDir($file['short_checksum'], 'downloads', false, -1, 'public');
+					}
+					if (!$dirPath) {
+						$messageType = 'Error';
+						$html .= 'Could not generate public link because public file structure incorrect</br>';
+						break;
+					}
+					
+					$symFolder =  CMS_ROOT . $dirPath;
+					$symPath = $symFolder . $document['filename'];
+					
+					$frontLink = $dirPath . $document['filename'];
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 						if (!file_exists($symPath)) {
 							if(!file_exists($symFolder)) {
 								mkdir($symFolder);
 							}
 							symlink($path, $symPath);
-						}
+						} 
 				
 						$baseURL = absCMSDirURL();
 						
@@ -290,36 +304,21 @@ switch ($path) {
 			echo '<!--Message_Type:'.$messageType.'-->';
 			echo $html;
 		}elseif(post('delete_public_link')){
-			echo "<!--Message_Type:Success-->";
+			
 			foreach (explode(',', $ids) as $id) {
 				//$fileId = getRow('documents', 'file_id', $id);
-				$document = getRow('documents', array('file_id', 'filename'), $id);
+				//$document = getRow('documents', array('file_id', 'filename'), $id);
 				
-				$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
-				$numberFileIds =count($fileIdsInDocument);
+				$result = self::deleteHierarchicalDocumentPubliclink($id);
 				
-				echo $numberFileIds;
-				
-				$file = getRow('files', 
-								array('id', 'filename', 'path', 'created_datetime'),
-								$document['file_id']);
-				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' .  $document['filename'];
-					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' .  $document['filename'];
-					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
-							if(is_link($symPath)) {
-								$target = readlink($symPath);
-								unlink($symPath);
-								if ($numberFileIds == 1){
-									rmdir($symFolder);
-								}
-								echo ' public link was deleted successfully.';
-							} else {
-								echo ' does not have public link to delete.';
-							}
-					}
+				if ($result === true) {
+					echo "<!--Message_Type:Success-->";
+					echo 'Public link was deleted successfully.';
+				} else {
+					echo '<!--Message_Type:Error-->';
+					echo $result;
 				}
+				
 			}
 		}
 		break;
@@ -334,40 +333,39 @@ switch ($path) {
 	
 
 	case 'editor_temp_file':
-	case 'zenario__content/panels/inline_images_for_content':
-	case 'zenario__content/panels/image_library':
-		
 		$key = false;
-		$usage = 'image';
 		$privCheck = checkPriv('_PRIV_MANAGE_MEDIA');
 		
-		if ($path == 'editor_temp_file') {
-			$usage = 'editor_temp_file';
-			$privCheck = true;
-			
-		} elseif ($path == 'zenario__content/panels/inline_images_for_content') {
-			if (!$content = getRow('content', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
-				exit;
-			}
-			
-			if (post('make_sticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE')) {
-				updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => $ids));
-				syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
-				return;
-			
-			} elseif (post('make_unsticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE')) {
-				updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => 0));
-				syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
-				return;
-			}
-			
-			$privCheck = checkPriv('_PRIV_EDIT_DRAFT', $content['id'], $content['type']);
+		return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
+	
+	case 'zenario__content/panels/inline_images_for_content':
+		if (!$content = getRow('content', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
+			exit;
+		
+		} elseif (post('make_sticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE')) {
+			updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => $ids));
+			syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
+			return;
+		
+		} elseif (post('make_unsticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE')) {
+			updateVersion($content['id'], $content['type'], $content['admin_version'], array('sticky_image_id' => 0));
+			syncInlineFileContentLink($content['id'], $content['type'], $content['admin_version']);
+			return;
+		
+		} else {
 			$key = array(
 				'foreign_key_to' => 'content',
 				'foreign_key_id' => $content['id'],
 				'foreign_key_char' => $content['type'],
 				'foreign_key_version' => $content['admin_version']);
+			$privCheck = checkPriv('_PRIV_EDIT_DRAFT', $content['id'], $content['type']);
+			
+			return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
 		}
+	
+	case 'zenario__content/panels/image_library':
+		$key = false;
+		$privCheck = checkPriv('_PRIV_MANAGE_MEDIA');
 		
 		return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
 	
@@ -488,22 +486,18 @@ switch ($path) {
 		} elseif (post('delete') && checkPriv('_PRIV_RESTORE_SITE')) {
 			unlink($filename);
 		
-		} elseif (post('upload_and_restore') && checkPriv('_PRIV_RESTORE_SITE')) {
-			exitIfUploadError();
+		} elseif (post('upload') && checkPriv('_PRIV_BACKUP_SITE')) {
 			
-			//Call restoreDatabaseFromBackup on the temp file
-			$failures = array();
-			if (restoreDatabaseFromBackup(
-							$_FILES['Filedata']['tmp_name'],
-							//Attempt to check whether gzip compression has not been used
-							strtolower(substr($_FILES['Filedata']['name'], -3)) != '.gz',
-							DB_NAME_PREFIX, $failures
-			)) {
-				echo '<!--Reload_Storekeeper-->';
+			$filename = $_FILES['Filedata']['name'];
+			$ext = pathinfo($filename, PATHINFO_EXTENSION);
+			if (!in_array($ext, array('sql', 'gz'))) {
+				echo '<!--Message_Type:Error-->Only .sql or .gz files can be uploaded as backups';
+			} elseif (file_exists(setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
+				echo '<!--Message_Type:Error-->A backup with the same name already exists';
+			} elseif (move_uploaded_file($_FILES['Filedata']['tmp_name'], setting('backup_dir') . '/'. $_FILES['Filedata']['name'])) {
+				echo '<!--Message_Type:Success-->Successfully uploaded backup';
 			} else {
-				foreach ($failures as $text) {
-					echo $text;
-				}
+				echo '<!--Message_Type:Error-->Unable to upload backup';
 			}
 		
 		} elseif (post('restore') && checkPriv('_PRIV_RESTORE_SITE')) {

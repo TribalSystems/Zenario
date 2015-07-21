@@ -101,12 +101,13 @@ if ($file['mime_type'] == 'image/gif' || $file['mime_type'] == 'image/png' || $f
 		
 		//Create resizes for the image as needed.
 		//Working copies should only be created if they are enabled, and the image is big enough to need them.
-		//Storekeeper thumbnails should always be created, even if the image needs to be scaled up
+		//Organizer thumbnails should always be created, even if the image needs to be scaled up
 		foreach (array(
 			array('working_copy_data', 'working_copy_width', 'working_copy_height', setting('working_copy_image_size'), setting('working_copy_image_size'), false),
 			array('working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height', setting('thumbnail_wc_image_size'), setting('thumbnail_wc_image_size'), false),
-			array('organizer_data', 'organizer_width', 'organizer_height', 180, 130, true),
-			array('organizer_list_data', 'organizer_list_width', 'organizer_list_height', 24, 23, true)
+			array('thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130, true),
+			array('thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64, true),
+			array('thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23, true)
 		) as $c) {
 			if ($c[3] && $c[4] && ($c[5] || ($file['width'] > $c[3] || $file['height'] > $c[4]))) {
 				$file[$c[1]] = $image[0];

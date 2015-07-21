@@ -53,34 +53,42 @@ function addFileToDatabase($usage, $location, $filename = false, $mustBeAnImage 
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
+
+//Delete a file from the database, and anywhere it was stored on the disk
 function deleteFile($fileId) {
-	$path = getRow("files", 'path', $fileId);
-	$pathForDelete = docstoreFilePath($fileId);
-	$result = deleteRow("files",$fileId);
-	if ($result) {
-		if ($path) {
-			if(checkRowExists("files", array('path' => $path) )) {
-				//file still being used
-				return false;
-			} else {
-				if(is_dir($dir = setting('docstore_dir'). '/')
-					 && is_writable($dir)) {
-					unlink($pathForDelete);
-					rmdir($dir . $path);
-					return true;
-				} else {
-					return false;
-				}
-			}
-		} else {
-			//file in database not Docstore
-			return true;
+	
+	if ($file = getRow('files', array('path', 'mime_type', 'short_checksum'), $fileId)) {
+	
+		//If the file was being stored in the docstore and nothing else uses it...
+		if ($file['path']
+		 && !checkRowExists('files', array('id' => array('!' => $fileId), 'path' => $file['path']))) {
+			//...then delete that directory from the docstore
+			deleteCacheDir(setting('docstore_dir'). '/'. $file['path']);
 		}
-	} else {
-		//file not found
-		return false;
+		
+		//If the file was an image and there's no other copies with a different usage
+		if (substr($file['mime_type'], 0, 6) == 'image/'
+		 && !checkRowExists('files', array('id' => array('!' => $fileId), 'short_checksum' => $file['short_checksum']))) {
+			//...then delete it from the public/images/ directory
+			deletePublicImage($file);
+		}
+		
+		deleteRow('files', $fileId);
+	}
+}
+
+//Remove an image from the public/images/ directory
+function deletePublicImage($image) {
+	
+	if (!is_array($image)) {
+		$image = getRow('files', array('mime_type', 'short_checksum'), $image);
 	}
 	
+	if ($image
+	 && $image['short_checksum']
+	 && substr($image['mime_type'], 0, 6) == 'image/') {
+		deleteCacheDir(CMS_ROOT. 'public/images/'. $image['short_checksum'], 1);
+	}
 }
 
 function addImageDataURIsToDatabase(&$content, $prefix = '', $usage = 'image') {
@@ -316,54 +324,129 @@ function guessAltTagFromFilename($filename) {
 
 function imageLink(
 	&$width, &$height, &$url, $fileId, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
-	$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
+	$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false,
+	$privacy = 'auto'
 ) {
 	$url = $width = $height = $newWidth = $newHeight = $cropWidth = $cropHeight = $cropNewWidth = $cropNewHeight = false;
 	$widthLimit = (int) $widthLimit;
 	$heightLimit = (int) $heightLimit;
 	
-	//Check that this file exists, and is actually an image
-	if (!$fileId
-	 || !($file = getRow('files', array('mime_type', 'width', 'height', 'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height', 'organizer_width', 'organizer_height', 'organizer_list_width', 'organizer_list_height', 'checksum', 'filename', 'location', 'path'), $fileId))
-	 || !(substr($file['mime_type'], 0, 6) == 'image/')) {
+	//Check the $privacy variable is set to a valid option
+	if ($privacy != 'auto'
+	 && $privacy != 'public'
+	 && $privacy != 'private') {
 		return false;
 	}
 	
-	//If no limits were set, use the image's own width and height
-	if (!$widthLimit) {
-		$widthLimit = $file['width'];
-	}
-	if (!$heightLimit) {
-		$heightLimit = $file['height'];
+	//Check that this file exists, and is actually an image
+	if (!$fileId
+	 || !($image = getRow(
+	 				'files',
+	 				array(
+	 					'privacy', 'mime_type', 'width', 'height',
+	 					'working_copy_width', 'working_copy_height', 'working_copy_2_width', 'working_copy_2_height',
+	 					'thumbnail_180x130_width', 'thumbnail_180x130_height',
+						'thumbnail_64x64_width', 'thumbnail_64x64_height',
+						'thumbnail_24x23_width', 'thumbnail_24x23_height',
+	 					'checksum', 'short_checksum', 'filename', 'location', 'path'),
+	 				$fileId))
+	 || !(substr($image['mime_type'], 0, 6) == 'image/')) {
+		return false;
 	}
 	
-	//Workout a hash for the image
-	$hash = hash64($widthLimit. '_'. $heightLimit. '_'. $mode. '_'. $offset. '_'. $file['checksum']);
+	
+	//If no limits were set, use the image's own width and height
+	if (!$widthLimit) {
+		$widthLimit = $image['width'];
+	}
+	if (!$heightLimit) {
+		$heightLimit = $image['height'];
+	}
 	
 	//Work out what size the resized image should actually be
 	resizeImageByMode(
-		$mode, $file['width'], $file['height'],
+		$mode, $image['width'], $image['height'],
 		$widthLimit, $heightLimit,
 		$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight);
 	
-	//Try to get a directory in the cache dir
+	$imageNeedsToBeResized = $image['width'] != $cropNewWidth || $image['height'] != $cropNewHeight;
+	
+	
+	//Check the privacy settings for the image
+	//If the image is set to auto, check the settings here
+	if ($image['privacy'] == 'auto') {
+		
+		//If the privacy settings here weren't specified, try to work them out form the current content item
+		//(Note that this won't we shouldn't try to do this running from a published content item.)
+		if ($privacy == 'auto'
+		 && cms_core::$equivId
+		 && cms_core::$cType
+		 && cms_core::$cVersion
+		 && cms_core::$cVersion == cms_core::$visitorVersion
+		 && ($citemPrivacy = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType)))) {
+			if ($citemPrivacy == 'public') {
+				$privacy = 'public';
+			} else {
+				$privacy = 'private';
+			}
+		}
+		
+		//If the privacy settings were specified, and the image was set to auto, update the image and to use these settings
+		if ($privacy != 'auto') {
+			$image['privacy'] = $privacy;
+			updateRow('files', array('privacy' => $privacy), $fileId);
+		}
+	}
+	
+	//If we couldn't work out the privacy settings for an image, assume for now that it is private,
+	//but don't update them in the database
+	//if ($image['privacy'] == 'auto') {
+	//	$image['privacy'] = 'private';
+	//}
+	
+	
+	//Combine the resize options into a string
+	$settingCode = $mode. '_'. $widthLimit. '_'. $heightLimit. '_'. $offset;
+	//Workout a hash for the image at this size
+	$hash = hash64($settingCode. '_'. $image['checksum']);
+	
+	//If the $useCacheDir variable is set and the public/private directories are writable,
+	//try to create this image on the disk
 	$path = false;
 	if ($useCacheDir && cleanDownloads()) {
-		$path = createCacheDir($hash, 'images', false);
+		//If this image should be in the public directory, try to create friendly and logical directory structure
+		if ($image['privacy'] == 'public') {
+			//We'll try to create a subdirectory inside public/images/ using the short checksum as the name
+			$path = createCacheDir($image['short_checksum'], 'images', false, -1, 'public');
+			
+			//If this is a resize, we'll put the resize in another subdirectory using the code above as the name
+			if ($path && $imageNeedsToBeResized) {
+				$path = createCacheDir($image['short_checksum']. '/'. $settingCode, 'images', false, -1, 'public');
+			}
+		
+		//If the image should be in the private directory, don't worry about a friendly URL and
+		//just use the full hash.
+		} else {
+			//Try to get a directory in the cache dir
+			$path = createCacheDir($hash, 'images', false);
+		}
 	}
 	
 	//Look for the image inside the cache directory
-	if ($path && file_exists($path. $file['filename'])) {
+	if ($path && file_exists($path. $image['filename'])) {
 		
 		//If the image is already available, all we need to do is link to it
 		if ($internalFilePath) {
-			$url = CMS_ROOT. $path. $file['filename'];
+			$url = CMS_ROOT. $path. $image['filename'];
 		
 		} else {
-			$url = $path. rawurlencode($file['filename']);
+			$url = $path. rawurlencode($image['filename']);
 			
 			if ($cookieFreeDomain = cookieFreeDomain()) {
 				$url = $cookieFreeDomain. $url;
+			
+			} elseif (cms_core::$mustUseFullPath) {
+				$url = absCMSDirURL(). $url;
 			}
 			
 			$width = $cropNewWidth;
@@ -379,60 +462,64 @@ function imageLink(
 		$wcit = ifNull((int) setting('working_copy_image_threshold'), 66) / 100;
 		
 		foreach (array(
-			array('organizer_list_data', 'organizer_list_width', 'organizer_list_height'),
-			array('organizer_data', 'organizer_width', 'organizer_height'),
+			array('thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height'),
+			array('thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height'),
+			array('thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height'),
 			array('working_copy_data', 'working_copy_width', 'working_copy_height'),
 			array('working_copy_2_data', 'working_copy_2_width', 'working_copy_2_height')
 		) as $c) {
 			
-			$xOK = $file[$c[1]] && $newWidth == $file[$c[1]] || ($newWidth < $file[$c[1]] * $wcit);
-			$yOK = $file[$c[1]] && $newHeight == $file[$c[2]] || ($newHeight < $file[$c[2]] * $wcit);
+			$xOK = $image[$c[1]] && $newWidth == $image[$c[1]] || ($newWidth < $image[$c[1]] * $wcit);
+			$yOK = $image[$c[1]] && $newHeight == $image[$c[2]] || ($newHeight < $image[$c[2]] * $wcit);
 			
-			if ($mode == 'resize_and_crop' && (($yOK && $cropNewWidth >= $file[$c[1]]) || ($xOK && $cropNewHeight >= $file[$c[2]]))) {
+			if ($mode == 'resize_and_crop' && (($yOK && $cropNewWidth >= $image[$c[1]]) || ($xOK && $cropNewHeight >= $image[$c[2]]))) {
 				$xOK = $yOK = true;
 			}
 			
 			if ($xOK && $yOK) {
-				$file['width'] = $file[$c[1]];
-				$file['height'] = $file[$c[2]];
-				$file['data'] = getRow('files', $c[0], $fileId);
+				$image['width'] = $image[$c[1]];
+				$image['height'] = $image[$c[2]];
+				$image['data'] = getRow('files', $c[0], $fileId);
 				break;
 			}
 		}
 		
-		if (empty($file['data'])) {
-			if ($file['location'] == 'db') {
-				$file['data'] = getRow('files', 'data', $fileId);
+		if (empty($image['data'])) {
+			if ($image['location'] == 'db') {
+				$image['data'] = getRow('files', 'data', $fileId);
 			
-			} elseif ($pathDS = docstoreFilePath($file['path'])) {
-				$file['data'] = file_get_contents($pathDS);
+			} elseif ($pathDS = docstoreFilePath($image['path'])) {
+				$image['data'] = file_get_contents($pathDS);
 			
 			} else {
 				return false;
 			}
 		}
 		
-		if ($file['width'] != $cropNewWidth || $file['height'] != $cropNewHeight) {
+		if ($imageNeedsToBeResized) {
 			resizeImageString(
-				$file['data'], $file['mime_type'],
-				$file['width'], $file['height'],
-				ifNull((int) $widthLimit, $file['width']), ifNull((int) $heightLimit, $file['height']),
+				$image['data'], $image['mime_type'],
+				$image['width'], $image['height'],
+				ifNull((int) $widthLimit, $image['width']), ifNull((int) $heightLimit, $image['height']),
 				$mode, $offset);
 		}
 		
 		//If $useCacheDir is set, attempt to store the image in the cache directory
 		if ($useCacheDir && $path
-		 && file_put_contents(CMS_ROOT. $path. $file['filename'], $file['data'])) {
-			chmod(CMS_ROOT. $path. $file['filename'], 0666);
+		 && file_put_contents(CMS_ROOT. $path. $image['filename'], $image['data'])) {
+			chmod(CMS_ROOT. $path. $image['filename'], 0666);
 			
 			if ($internalFilePath) {
-				$url = CMS_ROOT. $path. $file['filename'];
+				$url = CMS_ROOT. $path. $image['filename'];
 			
 			} else {
-				$url = $path. rawurlencode($file['filename']);
+				$url = $path. rawurlencode($image['filename']);
 				
 				if ($cookieFreeDomain = cookieFreeDomain()) {
 					$url = $cookieFreeDomain. $url;
+				
+				} elseif (cms_core::$mustUseFullPath) {
+					$url = absCMSDirURL(). $url;
 				}
 			}
 			
@@ -442,7 +529,7 @@ function imageLink(
 		
 		//Otherwise just return the data if $returnImageStringIfCacheDirNotWorking is set
 		} elseif ($returnImageStringIfCacheDirNotWorking) {
-			return $file['data'];
+			return $image['data'];
 		}
 	}
 	
@@ -464,7 +551,7 @@ function imageLink(
 				'mode' => $mode, 'offset' => $offset,
 				'id' => $fileId, 'useCacheDir' => $useCacheDir);
 		
-		$url = 'zenario/file.php?usage=resize&c='. $hash. '&filename='. rawurlencode($file['filename']);
+		$url = 'zenario/file.php?usage=resize&c='. $hash. '&filename='. rawurlencode($image['filename']);
 		
 		$width = $cropNewWidth;
 		$height = $cropNewHeight;
@@ -484,9 +571,13 @@ function itemStickyImageId($cID, $cType, $cVersion = false) {
 	return getRow('versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
-function itemStickyImageLink(&$width, &$height, &$url, $cID, $cType, $cVersion = false, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0, $useCacheDir = true) {
+function itemStickyImageLink(
+	&$width, &$height, &$url, $cID, $cType, $cVersion = false,
+	$widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+	$useCacheDir = true, $privacy = 'auto'
+) {
 	if ($imageId = itemStickyImageId($cID, $cType, $cVersion)) {
-		return imageLink($width, $height, $url, $imageId, $widthLimit, $heightLimit, $mode, $offset, $useCacheDir);
+		return imageLink($width, $height, $url, $imageId, $widthLimit, $heightLimit, $mode, $offset, $useCacheDir, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false, $privacy);
 	} else {
 		return false;
 	}

@@ -29,7 +29,7 @@
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_7');
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_9b');
 define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
@@ -160,7 +160,7 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 			}
 		}
 		
-		if ($modified || $svnAdd || ($needsreverting && !IGNORE_REVERTS)) {
+		if ($modified || ($needsreverting && !IGNORE_REVERTS)) {
 			if ($needsreverting && !IGNORE_REVERTS) {
 				echo '-reverting '. $minFile. "\n";
 			} else {
@@ -267,8 +267,8 @@ if ((is_dir($dir = 'zenario/styles/')) && ($scan = scandir($dir))) {
 //Minify plugin/module js files
 foreach (array(
 	'zenario/modules/',
-	'zenario_extra_modules/',
-	'zenario_custom/modules/'
+	//'zenario_custom/modules/'
+	'zenario_extra_modules/'
 ) as $path) {
 	if (is_dir($path)) {
 		if ($scan = scandir($path)) {
@@ -355,6 +355,10 @@ minify('zenario/libraries/mit/respond/', 'respond', $level, '.js');
 
 //Minifythe Responsive Multilevel Menu plugin
 minify('zenario/libraries/mit/ResponsiveMultiLevelMenu/js/', 'jquery.dlmenu', $level, '.js');
+
+//Minify slimmenu
+minify('zenario/libraries/mit/slimmenu/', 'slimmenu', $level, '.css');
+minify('zenario/libraries/mit/slimmenu/', 'jquery.slimmenu', $level, '.js');
 
 //Minify Spectrum
 minify('zenario/libraries/mit/spectrum/', 'spectrum', $level, '.css');

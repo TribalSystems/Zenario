@@ -1,3 +1,7 @@
+<% if (m.subheading) { %>
+	<div class="organizer_subheading">{{m.subheading}}</div>
+<% } %>
+
 <div
 	id="organizer_item_{{m.id|escape}}"
 	data-id="{{m.id|escape}}"
@@ -25,21 +29,46 @@
 	<% } %>
 	
 	<div class="organizer_cell organizer_checkbox_col" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
-		<% if (zenarioO.itemButtonsExist) { %>
+		<% if (m.showCheckbox) { %>
 			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
 		<% } %>
 	</div>
-	<div class="organizer_cell firstcol listicon" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;">
+	<div
+		class="organizer_cell firstcol listicon"
+		style="width: {{zenarioO.firstColWidth}}px;"
+		title="{{m.tooltip|escape}}"
+	>
+	
+	
 		<div
-			class="image {{m.image_css_class|escape}}"
-			{{m.image? 'style="background-image: url(\'' + htmlspecialchars(m.image) + '\'); background-position: left center;"' : ''}}
+			class="image {{m.image_css_class|escape}}
+			
+				<% if (m.image) { %>
+					<% if (zenarioO.tuix.item_buttons && zenarioO.tuix.item_buttons.view_image) { %>
+						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view_image', '{{m.id|escape}}');
+					<% } else if (zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons.view_image) { %>
+						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view_image', '{{m.id|escape}}');
+					<% } else if (zenarioO.tuix.item_buttons && zenarioO.tuix.item_buttons.view) { %>
+						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view', '{{m.id|escape}}');
+					<% } else if (zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons.view) { %>
+						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view', '{{m.id|escape}}');
+					<% } %>
+				
+					" style="background-image: url('{{m.image|escape}}'); background-position: left center;
+				<% } %>
+			"
 		>
-			{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioA.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}}
+		
 		</div>
+		
+		{{m.inline_buttons? '<div class="organizer_inline_buttons" style="width: ' + (m.inline_buttons.length * 20) + 'px;">' + zenarioA.microTemplate('zenario_organizer_list_inline_button', m.inline_buttons) + '</div>' : ''}} 
+		 
 		<% if (m.canClickThrough) { %>
-			<a class="organizer_doubleclick" onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);" title="{{m.tooltip|escape}}"></a>
+			<a class="organizer_doubleclick" onclick="return zenarioO.itemClickThrough('{{m.id|escape}}', event);"></a>
 		<% } %>
 	</div>
+	
+	
 
 	{{zenarioA.microTemplate('zenario_organizer_list_cell', m.cells)}}
 
@@ -54,3 +83,8 @@
 		<div id="organizer_slidedown_{{m.id|escape}}" class="organizer_slidedown_view organizer_slidedown_view_closed"></div>
 	<% } %>
 <% } %>
+
+<% if (m.subtotal) { %>
+	<div class="organizer_subtotal">{{m.subtotal}}</div>
+<% } %>
+

@@ -110,7 +110,7 @@ function zenarioAJAXIncludeModule(&$modules, &$tag, $type, $requestedPath, $sett
 
 	if (!empty($modules[$tag['class_name']])) {
 		return true;
-	} elseif (inc($tag['class_name']) && ($module = activateModuleClass($tag['class_name']))) {
+	} elseif (inc($tag['class_name']) && ($module = activateModule($tag['class_name']))) {
 		$modules[$tag['class_name']] = $module;
 		return true;
 	} else {
@@ -321,10 +321,9 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 		 || (($type = 'value') && $key4 === false && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on')
 		 || (($type = 'array') && $key3 === false && $key2 == 'tabs' && $key0 == 'fields')
 		 || (($type = 'array') && $key4 === false && $key3 == 'tabs' && $key1 == 'fields')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_h')
-		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_h_js')
 		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'current_value')
 		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_display_value')
+		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_was_hidden_before')
 		 || (($type = 'value') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'pressed')
 		 || (($type = 'array') && $key5 === false && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit')
 		 || (($type = 'value') && $key6 === false && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed')) {
@@ -445,7 +444,7 @@ if ($type == 'admin_boxes' && !post('_fill') && !$debugMode) {
 		$loadDefinition = false;
 	
 	} else {
-		if (!empty($clientTags['_sync']['session'])) {
+		if (!empty($clientTags['_sync']['session']) || !setting('fab_use_cache_dir')) {
 			echo adminPhrase('An error occurred when syncing this floating admin box with the server. There is a problem with the server\'s $_SESSION variable.');
 		
 		} else {
@@ -465,7 +464,7 @@ if (get('method_call') == 'showSitemap') {
 	$requestedPath = 'zenario__content/hidden_nav/sitemap/panel';
 
 } elseif (request('path')) {
-	$requestedPath = zenarioAJAXShortenPath(preg_replace('/[^\w\/]/', '', request('path')), $type);
+	$requestedPath = preg_replace('/[^\w\/]/', '', request('path'));
 }
 cms_core::$skPath = $requestedPath;
 
@@ -500,9 +499,6 @@ if ($type == 'admin_boxes') {
 				$compatibilityClassNames[$className] = $className;
 			}
 		}
-	
-	} elseif ($requestedPath == 'advanced_search') {
-		$settingGroup = request('organizer_path');		
 	
 	} elseif ($requestedPath == 'site_settings') {
 		$settingGroup = request('id');
@@ -553,7 +549,7 @@ if (!checkPriv() && !($mode == 'xml' && engToBooleanArray($tags, 'xml', 'allow_u
 }
 
 //If this is a request for a specific path, run that Module and let it manage its output in PHP
-if ($requestedPath && $tags['class_name']) {
+if ($requestedPath && !empty($tags['class_name'])) {
 	
 	if (isset($tags['priv']) && !checkPriv($tags['priv'])) {
 		if ($type == 'organizer') {
@@ -584,9 +580,7 @@ if ($requestedPath && $tags['class_name']) {
 		//Add definitions for any refiners defined for this panel
 		if (isset($tags['refiners']) && is_array($tags['refiners'])) {
 			foreach ($tags['refiners'] as $key => $refiner) {
-				if (!isInfoTag($key)) {
-					$refinersPresent['refiner__'. $key] = strtoupper('refiner__'. $key);
-				}
+				$refinersPresent['refiner__'. $key] = strtoupper('refiner__'. $key);
 			}
 		}
 		
@@ -830,8 +824,10 @@ if ($requestedPath && $tags['class_name']) {
 			foreach ($tags['columns'] as $colName => &$col) {
 				if (is_array($col) && !empty($col['db_column'])) {
 					//Add it to the SELECT
-					$columns .= ",
-						". $col['db_column'];
+					if ($col['db_column'] != 'NULL') {
+						$columns .= ",
+							". $col['db_column'];
+					}
 					
 					//Add it to the sort if we're sorting by it
 					if ($colName == get('_sort_col') && !engToBooleanArray($col, 'disallow_sorting')) {
@@ -915,13 +911,6 @@ if ($requestedPath && $tags['class_name']) {
 				  )";
 			}
 			
-			
-			//Apply any advanced searches
-			if (isset($_REQUEST['_adv_search'])) {
-				if (!advancedSearchSQL($whereStatement, $sortExtraTables, $path, $_REQUEST['_adv_search'])) {
-					$tags['no_items_message'] = adminPhrase('There is a problem with this advanced search and it cannot be displayed.');
-				}
-			}
 			
 			
 			//Apply filters
@@ -1456,7 +1445,9 @@ if ($requestedPath && $tags['class_name']) {
 					
 						foreach ($tags['columns'] as $colName => &$col) {
 							if (is_array($col) && !empty($col['db_column'])) {
-								$tags['items'][$id][$colName] = $row[++$i];
+								if ($col['db_column'] != 'NULL') {
+									$tags['items'][$id][$colName] = $row[++$i];
+								}
 							}
 						}
 						
@@ -1511,8 +1502,14 @@ if ($requestedPath && $tags['class_name']) {
 		}
 		
 		//Set the current item count
-		if (isset($count) && $mode != 'xml') {
-			$tags['items']['count'] = $count;
+		if ($mode != 'xml') {
+			if (isset($count)) {
+				$tags['__item_count__'] = $count;
+			} elseif (!empty($tags['items'])) {
+				$tags['__item_count__'] = count($tags['items']);
+			} else {
+				$tags['__item_count__'] = 0;
+			}
 		}
 		
 	
@@ -1614,8 +1611,9 @@ if ($requestedPath && $tags['class_name']) {
 									//Check for fields that are required if not hidden. (Note that it is the user submitted data from the client
 									//which determines whether a field was hidden.)
 									} elseif (($msg = arrayKey($field['validation'], 'required_if_not_hidden'))
-										   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($tab, 'fields', $fieldName, 'hidden')
-										   && !engToBooleanArray($tab, '_h_js') && !engToBooleanArray($tab, 'fields', $fieldName, '_h_js')
+										   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($field, 'hidden')
+										   //&& !engToBooleanArray($tab, '_was_hidden_before')
+										   && !engToBooleanArray($field, '_was_hidden_before')
 										   && $notSet
 									) {
 										$field['error'] = $msg;
@@ -2066,8 +2064,11 @@ if ($requestedPath && $tags['class_name']) {
 						} else {
 							$cfield['read_only'] = true;
 						}
-					
-					
+						
+						$cfield['class'] = 'zab_custom_field zab_custom_field__'. $cfield['type'];
+						$cfield['row_class'] = 'zab_custom_field_row zab_custom_field_row__'. $cfield['type'];
+						$cfield['label_class'] = 'zab_custom_field_label zab_custom_field_label__'. $cfield['type'];
+						
 						if ($cfield['type'] == 'group') {
 							$cfield['type'] = 'checkbox';
 						} else {
@@ -2266,9 +2267,9 @@ if ($type == 'organizer') {
 //Only get the raw data when getting item data
 if ($mode == 'get_item_data') {
 	$tags = array(
-		'count' => $tags['count'],
 		'items' => $tags['items'],
 		'title' => $tags['title'],
+		'__item_count__' => $tags['__item_count__'],
 		'__item_sort_order__' => $tags['__item_sort_order__']);
 	
 //Item links don't need most things in the panel
@@ -2364,9 +2365,7 @@ if ($mode == 'xml') {
 	
 	if (!empty($tags['xml']['outer_tag_attributes']) && is_array($tags['xml']['outer_tag_attributes'])) {
 		foreach ($tags['xml']['outer_tag_attributes'] as $key => $value) {
-			if (!isInfoTag($key)) {
-				$xml->writeAttribute($key, $value);
-			}
+			$xml->writeAttribute($key, $value);
 		}
 	}
 	
@@ -2395,7 +2394,7 @@ if ($mode == 'xml') {
 		//Remove a few things we don't need for an XML feed
 		unset($tags['back_link']);
 		unset($tags['panel']);
-		unset($tags['count']);
+		unset($tags['__item_count__']);
 		unset($tags['ord']);
 		
 		foreach ($tags as $key => &$child) {

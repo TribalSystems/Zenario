@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Export Tools
 description: |
     <p>This Module lets you export a Content Item a flat file for translation outside of the CMS, either in HTML or XML, then import it after translation.</p>

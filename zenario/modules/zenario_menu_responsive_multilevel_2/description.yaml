@@ -1,0 +1,41 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: true
+license_info: 'Modified BSD License'
+display_name: Menu (Responsive Multilevel v2)
+description: |
+    <p>This Module generates a horizontal &quot;top menu&quot; that appears at the top of a webpage when
+        viewed on a desktop computer. When viewed on a mobile device, the menu changes to a
+        vertical &quot;hamburger&quot; menu.</p>
+    
+    <p>If you use Grid Maker to make your layouts, this plugin will use the break-point width that you set
+        when creating your layout. If you did not use Grid Maker to make your layout, this plugin will
+        instead use the break-point width that you entered under <em>Configuration -&gt; Site
+        Settings -&gt; File and Image Handling</em>.</p>
+    
+    <p>If you just wish to use this menu for mobile devices, then you can put it into a slot, edit your layout
+        in grid maker, and then set the &quot;Hide on small screens&quot; option for that slot in grid maker.
+        Likewise, you can set the &quot;Only show on small screens&quot; to only show it on a desktop computer.</p>
+    
+    <p>It supports multiple menu sections, providing support for different menu trees.</p>
+    
+    <p>It is powered by the
+        <a href="http://adnantopal.github.io/slimmenu/" target="_blank">
+            <em>slimMenu</em></a>
+        jQuery plugin, which is licensed under the MIT License.</p>
+    
+    
+category: pluggable
+keywords: menu, navigation
+css_class_name: zenario_menu_reponsive_multilevel_2
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Responsive Multilevel Menu
+dependencies:
+    module: zenario_menu
+inheritance:
+    inherit_settings_from_module: zenario_menu

@@ -85,17 +85,15 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			//Set the checkboxes for permissions up appropriately
 			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
-				if (!isInfoTag($fieldName) && !empty($field['type'])) {
+				if (is_array($field) && !empty($field['type'])) {
 					if ($field['type'] == 'checkbox') {
 						$field['value'] = $allPerms || !empty($perms[$fieldName]);
 							
 					} elseif ($field['type'] == 'checkboxes' && !empty($field['values'])) {
 						$items = array();
 						foreach ($field['values'] as $valueName => &$value) {
-							if (!isInfoTag($valueName)) {
-								if (!empty($perms[$valueName])) {
-									$items[] = $valueName;
-								}
+							if (!empty($perms[$valueName])) {
+								$items[] = $valueName;
 							}
 						}
 						
@@ -137,7 +135,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		$rowStart = false;
 		foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
 			if ($fieldName != 'everything'
-			 && !isInfoTag($fieldName)
+			 && is_array($field)
 			 && !empty($field['type'])) {
 				
 				//Hide every other field if the "This administrator has every possible permission" option is checked
@@ -177,9 +175,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 						//Loop through each value for the child checkboxes and count them.
 						$n = 0;
 						foreach ($field['values'] as $valueName => &$value) {
-							if (!isInfoTag($valueName)) {
-								++$n;
-							}
+							++$n;
 						}
 
 						//Count how many children have been checked
@@ -354,7 +350,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			
 			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
 				//Ignore info tags, non-fields and anything that's not a checkbox/checkboxes.
-				if (!isInfoTag($fieldName)
+				if (is_array($field)
 				&& !empty($field['type'])) {
 
 					//For single checkboxes, just save one permission
@@ -370,12 +366,10 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 					} else
 					if ($field['type'] == 'checkboxes' && !empty($field['values'])) {
 						foreach ($field['values'] as $valueName => &$value) {
-							if (!isInfoTag($valueName)) {
-								if ($box['key']['id'] == adminId() && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
-									$perms[$valueName] = checkPriv($valueName);
-								} else {
-									$perms[$valueName] = in_array($valueName, explode(',', $values['permissions'. '/'. $fieldName]));
-								}
+							if ($box['key']['id'] == adminId() && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
+								$perms[$valueName] = checkPriv($valueName);
+							} else {
+								$perms[$valueName] = in_array($valueName, explode(',', $values['permissions'. '/'. $fieldName]));
 							}
 						}
 					}

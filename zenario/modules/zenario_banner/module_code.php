@@ -39,6 +39,7 @@ class zenario_banner extends module_base_class {
 	
 	protected $editing = false;
 	protected $editorId = '';
+	protected $request = '';
 	
 	protected function editTitleInlineOnClick() {
 		return 'if (zenarioA.checkForEdits() && zenarioA.draft(this.id)) { '. $this->refreshPluginSlotJS('&content__edit_container='. $this->containerId, false). ' } return false;';
@@ -88,16 +89,15 @@ class zenario_banner extends module_base_class {
 			!$this->isVersionControlled && $this->setting('use_translation'))
 		)) {
 			
-			$request = '';
 			$this->mergeFields['Target_Blank'] = '';
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
 			if ($downloadFile) {
-				$request = 'download=1';
+				$this->request = 'download=1';
 			}
 			
-			$link = $this->linkToItem($cID, $cType, $fullPath = false, $request);
+			$link = $this->linkToItem($cID, $cType, $fullPath = false, $this->request);
 			
 			//Use the Theme Section for a Masthead with a link and set the link
 			$this->mergeFields['Link_Href'] =
@@ -144,22 +144,18 @@ class zenario_banner extends module_base_class {
 							$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 				}
 			}
-		
-		} elseif ($this->setting('link_type') == '_CONTENT_ITEM' && !$linkExists) {
-			$this->allowCaching(
-				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
-			$this->clearCacheBy(
-				$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
-			
-			return false;
 			
 		} else {
+			
 			$this->allowCaching(
 				$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 			$this->clearCacheBy(
 				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 			
-			if ($this->setting('link_type') == '_EXTERNAL_URL' && $this->setting('url')) {
+			// If the content item this banner was linking to has been removed, update setting to no-link
+			if ($this->setting('link_type') == '_CONTENT_ITEM' && !$linkExists) {
+				updateRow('plugin_settings', array('value' => '_NO_LINK'), array('instance_id' => $this->instanceId, 'name' => 'link_type'));
+			} elseif ($this->setting('link_type') == '_EXTERNAL_URL' && $this->setting('url')) {
 				$this->mergeFields['Link_Href'] =
 				$this->mergeFields['Image_Link_Href'] =
 					'href="'. htmlspecialchars($this->setting('url')). '"';
@@ -315,10 +311,6 @@ class zenario_banner extends module_base_class {
 					$cols[] = 'alt_tag';
 				}
 				
-				if (!$this->setting('image_title')) {
-					$cols[] = 'title';
-				}
-				
 				if ($fancyboxLink && !$this->setting('floating_box_title')) {
 					$cols[] = 'floating_box_title';
 				}
@@ -331,12 +323,6 @@ class zenario_banner extends module_base_class {
 					$this->mergeFields['Image_Alt'] = htmlspecialchars($this->setting('alt_tag'));
 				} else {
 					$this->mergeFields['Image_Alt'] = htmlspecialchars($image['alt_tag']);
-				}
-				
-				if ($this->setting('image_title')) {
-					$this->mergeFields['Image_Title'] = htmlspecialchars($this->setting('image_title'));
-				} else {
-					$this->mergeFields['Image_Title'] = htmlspecialchars($image['title']);
 				}
 				
 				if ($fancyboxLink) {

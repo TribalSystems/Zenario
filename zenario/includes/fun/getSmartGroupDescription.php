@@ -27,42 +27,82 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
 $desc = '';
 
-if ($smartGroupId 
- && ($smartGroup = getSmartGroupDetails($smartGroupId))
- && $smartGroup['values'] 
- && $json = json_decode($smartGroup['values'], true)) {
-
+foreach (getRowsArray(
+	'smart_group_rules',
+	array('field_id', 'field2_id', 'field3_id', 'not', 'value'),
+	array('smart_group_id' => $smartGroupId),
+	'ord'
+) as $rule) {
 	
-	$inclusionPieces = array();
-	$exclusionPieces = array();
-	
-	foreach (modulesAndTUIXFiles('admin_boxes', 'advanced_search', 'zenario__users/panels/users', false, false) as $module) {
-		if (inc($module['class_name'])) {
-			if ($inclusionPiece = call_user_func(array($module['class_name'], 'smartGroupInclusionsDescription'), $json)) {
-				$inclusionPieces[] = $inclusionPiece;
+	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
+	if ($rule['field_id']
+	 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
+	 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
+		
+		if ($field['is_system_field'] && $field['label'] == '') {
+			$field['label'] = $field['default_label'];
+		}
+		
+		if ($desc !== '') {
+			$desc .= '; ';
+		}
+		
+		if ($field['type'] == 'group') {
+			$desc .= 'Member of '. $field['label'];
+		
+			//If you filter by group, an "OR" logic is allowed. Handle this as a special case
+			if ($rule['field2_id'] || $rule['field3_id']) {
+			
+				if ($rule['field2_id'] && $rule['field3_id']) {
+					$desc .= ', ';
+				} else {
+					$desc .= ' or ';
+				}
+			
+				if ($rule['field2_id']) {
+					$desc .= getRow('custom_dataset_fields', 'label', $rule['field2_id']);
+				}
+			
+				if ($rule['field2_id'] && $rule['field3_id']) {
+					$desc .= ' or ';
+				}
+			
+				if ($rule['field3_id']) {
+					$desc .= getRow('custom_dataset_fields', 'label', $rule['field3_id']);
+				}
 			}
-			if ($exclusionPiece = call_user_func(array($module['class_name'], 'smartGroupExclusionsDescription'), $json)) {
-				$exclusionPieces[] = $exclusionPiece;
+			
+		} else {
+			$desc .= $field['label'];
+			
+			if ($rule['not']) {
+				$desc .= ' is not ';
+			} else {
+				$desc .= ' is ';
+			}
+			
+			switch ($field['type']) {
+				case 'checkbox':
+					$desc .= 'set';
+					break;
+				
+				//List of values work via a numeric value id
+				case 'radios':
+				case 'select':
+					$desc .= '"'. getRow('custom_dataset_field_values', 'label', $rule['value']). '"';
+					break;
+				
+				//Centralised lists work via a text value
+				default:
+					$desc .= '"'. $rule['value']. '"';
 			}
 		}
 	}
-
-	
-	if ($inclusionPieces || $exclusionPieces) {
-		if ($inclusionPieces) {
-			$desc .= adminPhrase("Include users [[criteria]]", array('criteria' => implode(' AND ', $inclusionPieces)));
-		}
-		if ($exclusionPieces) {
-			$desc .= adminPhrase(($desc?'; ':'') . "Exclude users [[criteria]]", array('criteria' => implode(' AND ', $exclusionPieces)));
-		}
-	} else {
-		$desc = 'All Users';
-	}
-
-
 }
 
-return $desc;
 
+
+return $desc;

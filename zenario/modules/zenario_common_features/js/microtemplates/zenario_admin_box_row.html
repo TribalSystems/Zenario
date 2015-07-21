@@ -38,7 +38,7 @@
 				<% } %>
 				<% if (m.fields[0].label && !(m.fields[0].type == 'checkbox' || m.fields[0].type == 'radio' || m.fields[0].type == 'toggle')) { %>
 					<div class="title {{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
+						<label class="{{m.fields[0].label_class|escape}}" for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
 					</div>
 				<% } %>
 			<% } %>
@@ -48,7 +48,7 @@
 					{{m.fields[f]._html}}
 					
 					<% if (m.fields[f].label && (m.fields[f].type == 'checkbox' || m.fields[f].type == 'radio' || m.fields[f].type == 'toggle')) { %>
-						<label for="{{m.fields[f]._id|escape}}">{{m.fields[f].label}}</label>
+						<label class="{{m.fields[f].label_class|escape}}" for="{{m.fields[f]._id|escape}}">{{m.fields[f].label}}</label>
 					<% } %>
 					
 					<% if (m.fields[f].show_phrase_icon) { %>

@@ -192,7 +192,7 @@
 	text-indent:-999;
 	font-size:0;
 	line-height:0;
-	background:url(../admin/images/sprites/org-icons-1.png) no-repeat;
+	background:url(../admin/images/sprites/org-icons-v2.png) no-repeat;
 	float:right;
 }
 
@@ -386,6 +386,13 @@
 	clear: right;
 	float: right;
 	width: 70%;
+}
+
+#zenario_fbAdminInfoBox .zenario_infoBox input.zenario_info_box_value {
+	border: none;
+	background: none;
+	padding: 0;
+	width: 100%;
 }
 
 
@@ -772,6 +779,14 @@
 	margin-top: 5px;
 }
 
+#zenario_fbAdminInner input[type=text].zenario_datepicker,
+.webkit #zenario_fbAdminInner input[type=text].zenario_datepicker {
+	background: url("../admin/images/icons/calendar_small.gif") no-repeat scroll 98% 50% white !important;
+	border: 1px solid #c4c4c4 !important;
+	color: #424242 !important;
+	padding:5px;
+}
+
 #zenario_fbAdminInner input[type=text]:disabled, 
 #zenario_fbAdminInner input[type=email]:disabled, 
 #zenario_fbAdminInner input[type=number]:disabled, 
@@ -818,14 +833,20 @@
 	color:#6F6F6F !important;
 }
 
+#zenario_fbAdminInner input[type=text].zenario_datepicker:disabled,
+#zenario_fbAdminInner input[disabled="disabled"].zenario_datepicker:disabled,
+.webkit #zenario_fbAdminInner input[type=text].zenario_datepicker:disabled,
+.webkit #zenario_fbAdminInner input[disabled="disabled"].zenario_datepicker:disabled {
+	background: url("../admin/images/icons/calendar_small.gif") no-repeat 98% 50% #F6F6F6 !important;
+	border: 1px solid #dadada !important;
+	color: #6F6F6F !important;
+}
+
 #zenario_fbAdminInner input[readonly].zenario_datepicker,
 #zenario_fbAdminInner input[readonly="readonly"].zenario_datepicker,
 .webkit #zenario_fbAdminInner input[readonly].zenario_datepicker,
 .webkit #zenario_fbAdminInner input[readonly="readonly"].zenario_datepicker {
-	background: url("../admin/images/icons/calendar_small.gif") no-repeat scroll 98% 50% white !important;
-	border: 1px solid #c4c4c4 !important;
-	color: #424242 !important;
-	padding:2px;
+	background-color:#FFF;
 }
 
 #zenario_fbAdminInner input.zenario_textbox_noborder,
@@ -859,6 +880,63 @@
 #zenario_fbAdminInner textarea.tinymce_with_images_and_links {
 	visibility: hidden !important;
 }
+
+
+/*  Rows and columns for radio/checkboxes  */
+
+div.zenario_group {
+	float: left;
+}
+
+div.zenario_group_1_cols {
+	float: none;
+}
+
+div.zenario_group_col_1 {
+	clear: both;
+}
+
+div.zenario_group_2_cols {
+	min-width: 300px;
+}
+
+div.zenario_group_3_cols {
+	min-width: 200px;
+}
+
+div.zenario_group_4_cols {
+	min-width: 150px;
+}
+
+div.zenario_group_5_cols {
+	min-width: 120px;
+}
+
+div.zenario_group_6_cols {
+	min-width: 100px;
+}
+
+div.zenario_group_7_cols {
+	min-width: 85px;
+}
+
+div.zenario_group_8_cols {
+	min-width: 75px;
+}
+
+div.zenario_group_9_cols {
+	min-width: 66px;
+}
+
+div.zenario_group_10_cols {
+	min-width: 60px;
+}
+
+/*  Special case for the colour picker on the tag FAB - it doesn't need to be quite this large  */
+.zenario_ab__zenario_image_tag .zenario_ab_row__color div.zenario_group {
+	min-width: 85px;
+}
+
 
 
 /* Mandatory fields */
@@ -1378,6 +1456,7 @@ body.ie7 #zenario_fbAdminInner input.zenario_remove_date {
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap .zenario_side_note  { 
 	font-size:10px;
 	color:#333;
+	word-wrap: break-word;
 }
 
 /*
@@ -1412,9 +1491,9 @@ body.ie7 #zenario_fbAdminInner input.zenario_remove_date {
 
 #zenario_fbAdminInner .div_table .zenario_side_note_wrap {
 	visibility:hidden;
-  	opacity:0;
-  	transition: all 0.3s ease-in-out;
-  	-webkit-transition: all 0.3s ease-in-out;
+	opacity:0;
+	transition: all 0.3s ease-in-out;
+	-webkit-transition: all 0.3s ease-in-out;
 	-moz-transition: all 0.3s ease-in-out;
 	-o-transition: all 0.3s ease-in-out;
 	transition: all 0.3s ease-in-out;
@@ -1432,6 +1511,16 @@ body.ie9 #zenario_fbAdminInner .div_table .zenario_side_note_wrap {
 	opacity:1;
 	transition-delay:0s;
 	cursor:default;
+}
+
+#zenario_fbAdminInner .div_table .zenario_ab_row__field_type_picker:hover .zenario_side_note_wrap {
+	opacity: 0;
+    visibility: hidden;
+}
+
+#zenario_fbAdminInner .div_table .zenario_ab_row__field_type_picker .zenario_radio_or_checkbox:hover .zenario_side_note_wrap {
+    opacity: 1;
+    visibility: visible;
 }
 
 body.ie8 #zenario_fbAdminInner .div_table .div_table_row:hover .zenario_side_note_wrap,
@@ -1702,7 +1791,7 @@ body.ie6 .zenario_now h1 {
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label,
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_hierarchical_perms label {
 	padding-left: 15px;
-	background: url('../admin/images/cms_themes_grey/perm_module.png') 5px 50% no-repeat;
+	background: url('../admin/images/cms_themes_grey/perm_module.png') 0 50% no-repeat;
 }
 
 
@@ -1782,7 +1871,7 @@ body.ie6 .zenario_now h1 {
 
 #zenario_fbAdminInner .zenario_ab__zenario_admin tr.zenario_hierarchical_perms label#label_for__perm_restore_permissions____PRIV_RESET_SITE,
 #zenario_fbAdminInner .zenario_ab__zenario_admin tr.zenario_hierarchical_perms label#label_for__perm_restore_permissions____PRIV_RESTORE_SITE {
-	background-image: url('../admin/images/cms_themes_grey/perm_core.png');
+	background: url('../admin/images/cms_themes_grey/perm_core.png') 5px 50% no-repeat;
 }
 
 #zenario_fbAdminFloatingBox .zenario_debug {
@@ -2590,7 +2679,9 @@ body.ie6 .zenario_now h1 {
 
 #zenario_fbAdminInner .organizer_removebutton,
 #zenario_fbAdminFloatingBox.zab_plugin .zenario_jqmMain #zenario_fbMain .organizer_removebutton.launch_keeper {
-	margin:0 0 0 8px;
+	margin: 0 0 0 15px;
+	position: relative;
+	left: 5px;
 }
 
 #zenario_fbAdminFloatingBox.zab_plugin .zenario_jqmMain #zenario_fbMain .zab_picked_item_info {

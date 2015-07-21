@@ -47,6 +47,7 @@ zenario.lib(function(
 ) {
 	"use strict";
 
+
 //Note: extensionOf() and methodsOf() are our shortcut functions for class extension in JavaScript.
 	//extensionOf() creates a new class (optionally as an extension of another class).
 	//methodsOf() allows you to get to the methods of a class.
@@ -55,58 +56,29 @@ var methods = methodsOf(
 	panelTypes.google_map_or_list = extensionOf(panelTypes.grid_or_list)
 );
 
-methods.parentMethods = function() {
-	if (this.altView) {
-		return methodsOf(panelTypes.google_map);
-	} else {
-		return methodsOf(panelTypes.list);
-	}
+methods.returnPanelTypeA = function() {
+	return panelTypes.list;
 };
 
-methods.init = function() {
-	methodsOf(panelTypes.google_map).init.call(this);
-	methodsOf(panelTypes.grid_or_list).init.call(this);
+methods.returnPanelTypeB = function() {
+	return panelTypes.google_map;
 };
 
-methods.updatePanelAfterChangingView = function($header, $panel, $footer) {
-	//zenarioO.reload();
-	zenarioO.goToPage(1);
+methods.returnSwitchButtonCSSClassA = function() {
+	return 'organizer_switch_to_list_view';
 };
 
-
-
-methods.returnPageSize = function() {
-	return this.parentMethods().returnPageSize.apply(this, arguments);
+methods.returnSwitchButtonCSSClassB = function() {
+	return 'organizer_switch_to_grid_view';
+	//n.b. it would be nice to have a "map" icon here rather than using the grid view icon
 };
 
-methods.returnPanelTitle = function() {
-	return this.parentMethods().returnPanelTitle.apply(this, arguments);
+methods.returnSwitchButtonTooltipA = function() {
+	return 'List view';
 };
 
-methods.showPanel = function($header, $panel, $footer) {
-	var that = this;
-	
-	//hack to fix a bug I can't work out how to fix properly right now - Chris
-	setTimeout(function() {
-		that.parentMethods().showPanel.call(that, $header, $panel, $footer);
-		that.setSwitchButton($header, $panel, $footer);
-	}, 0);
-};
-
-methods.makeOpenAdminBoxCallback = function() {
-	return this.parentMethods().makeOpenAdminBoxCallback.apply(this, arguments);
-};
-
-methods.makeSelectItemCallback = function() {
-	return this.parentMethods().makeSelectItemCallback.apply(this, arguments);
-};
-
-methods.itemClick = function() {
-	return this.parentMethods().itemClick.apply(this, arguments);
-};
-
-methods.showButtons = function() {
-	return this.parentMethods().showButtons.apply(this, arguments);
+methods.returnSwitchButtonTooltipB = function() {
+	return 'Map view';
 };
 
 

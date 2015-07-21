@@ -1,0 +1,19 @@
+[cms:section name="Level_1"]
+	<ul class="slimmenu" id="[cms:merge name='CONTAINER_ID'/]_slimmenu" style="visibility:hidden;">
+		[cms:section name="Level_1_Link"]
+			<li class="[cms:merge name='Class'/]">
+				[cms:merge name="Hyperlink"/]
+				[cms:section name="Level_X"]
+					<ul>
+						[cms:section name="Level_X_Link"]
+							<li class="[cms:merge name='Class'/]">
+								[cms:merge name="Hyperlink"/]
+								[cms:section name="Level_X_Plus_1_Link"][/cms:section]
+							</li>
+						[/cms:section]
+					</ul>
+				[/cms:section]
+			</li>
+		[/cms:section]
+	</ul>
+[/cms:section]

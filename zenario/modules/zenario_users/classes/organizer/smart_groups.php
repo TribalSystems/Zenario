@@ -98,6 +98,7 @@ class zenario_users__organizer__smart_groups extends zenario_users {
 		} elseif (post('delete') && checkPriv('_PRIV_DELETE_GROUP')) {
 			foreach (explode(',', $ids) as $id) {
 				deleteRow('smart_groups', $id);
+				deleteRow('smart_group_rules', array('smart_group_id' => $id));
 				sendSignal("eventSmartGroupDeleted",array("smartGroupId" => $id));
 			}
 		}

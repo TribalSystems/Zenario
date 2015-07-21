@@ -95,6 +95,7 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 			$values['details/values_source'] = $field['values_source'];
 			$values['details/values_source_filter'] = $field['values_source_filter'];
 			$values['details/protected'] = $field['protected'];
+			$values['details/include_in_export'] = $field['include_in_export'];
 			
 			$values['display/width'] = $field['width'];
 			$values['display/height'] = $field['height'];
@@ -182,7 +183,9 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 		}
 		
 		//List all possible parent fields...
-		$fields['display/parent_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false);
+		$fields['display/parent_id']['values'] =
+			listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false, true);
+			//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
 		
 		//...being careful not to let something be a parent of itself, or any of its children!
 		if ($box['key']['id'] && isset($field)) {
@@ -268,7 +271,7 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 		 && (inc($source[0]))) {
 			$listInfo = call_user_func($source, ZENARIO_CENTRALISED_LIST_MODE_INFO);
 			$fields['values_source_filter']['hidden'] = !$listInfo['can_filter'];
-			if (isset($listInfo['filter_label']) && !empty($listInfo['filter_label'])) {
+			if (!empty($listInfo['filter_label'])) {
 				$fields['values_source_filter']['label'] = $listInfo['filter_label'];
 			}
 		}
@@ -371,9 +374,8 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 				'show_by_default' => $values['organizer/show_in_organizer'] && $values['organizer/visibility'] == 1,
 				'always_show' => $values['organizer/show_in_organizer'] && $values['organizer/visibility'] == 2,
 				
-				
-				
-				'label' => $values['details/label']);
+				'label' => $values['details/label'],
+				'include_in_export' => $values['details/include_in_export']);
 			
 			//if (checkPriv('_PRIV_PROTECT_DATASET_FIELD')) {
 				$cols['protected'] = $values['details/protected'];

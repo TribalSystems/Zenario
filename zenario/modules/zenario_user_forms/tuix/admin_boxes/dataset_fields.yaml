@@ -15,7 +15,6 @@ zenario_user_dataset_field_picker:
                 dataset_fields:
                     label: 'Dataset field:'
                     type: select
-                    load_values_from_organizer_path: zenario__users/panels/all_fields
                     empty_value: ' -- Select -- '
                     format_onchange: Yes
                     validation:

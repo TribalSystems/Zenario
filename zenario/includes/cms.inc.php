@@ -178,11 +178,25 @@ function showCookieConsentBox() {
 		
 	//Add the login link for admins if this looks like a logged out admin
 	if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !checkPriv()) { 
-		$url = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?cID='. rawurlencode(request('cID')). '&cType='. rawurlencode(request('cType'));
+		
+		$url = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?';
+		$importantGetRequests = importantGetRequests(true);
+		
+		//If this is a 401/403/404 page, include the requested cID and cType,
+		//not the actual cID/cType of the 401/403/404 page
+		switch (isSpecialPage(cms_core::$cID, cms_core::$cType)) {
+			case 'zenario_login':
+			case 'zenario_no_access':
+			case 'zenario_not_found':
+				$importantGetRequests['cID'] = request('cID');
+				if (!($importantGetRequests['cType'] = request('cType'))) {
+					unset($importantGetRequests['cType']);
+				}
+		}
 		
 		echo '
 			<div class="admin_link">
-				<a href="', $url, '">', adminPhrase('Login'), '</a>
+				<a href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '">', adminPhrase('Login'), '</a>
 			</div>';
 		
 		//Never allow a page with an "Admin" link to be cached...
@@ -477,6 +491,175 @@ function showStartSitePageIfNeeded($reportDBOutOfDate = false) {
 
 
 
+
+
+
+
+
+
+
+
+
+//Some functions for loading a YAML file
+function tuixCacheDir($path) {
+	
+	$strlen = strlen(CMS_ROOT);
+	if (substr($path, 0, $strlen) == CMS_ROOT) {
+		$path = substr($path, $strlen);
+	}
+	$path = str_replace('/tuix/', '/', $path);
+	$path = str_replace('/zenario/', '/', $path);
+	
+	$dir = dirname($path);
+	$dir = str_replace('%', ' ', rawurlencode($dir));
+	$file = basename($path);
+	$file = explode('.', $file, 2);
+	$file = $file[0];
+	
+	cleanDownloads();
+	return createCacheDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false). $file. '.json';
+}
+
+
+function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
+	$type = explode('.', $path);
+	$type = $type[count($type) - 1];
+	
+	//Attempt to use a cached copy of this TUIX file
+		//JSON is a lot faster to read than the other formats, so for speed purposes we create cached JSON copies of files
+	$cachePath = false;
+	if ($useCache || $updateCache) {
+		$cachePath = tuixCacheDir($path);
+	}
+	if ($useCache && $cachePath
+	 && file_exists($path)
+	 && file_exists($cachePath)
+	 && filemtime($cachePath) > filemtime($path)
+	 && ($tags = json_decode(file_get_contents($cachePath), true))) {
+		return $tags;
+	}
+	
+	switch ($type) {
+		case 'xml':
+			//If this is admin mode, allow an old xml file to be loaded and read as a yaml file
+			$tags = array();
+			if (function_exists('zenarioReadTUIXFileR')) {
+				$xml = simplexml_load_file($path);
+				zenarioReadTUIXFileR($tags, $xml);
+			}
+			
+			break;
+			
+		case 'yml':
+		case 'yaml':
+			
+			$contents = file_get_contents($path);
+			
+			if ($contents === false) {
+				echo 'Could not read file '. $path;
+				exit;
+			
+			} else
+			if ((preg_match("/[\n\r](\t* +\t|\t+ {4})/", "\n". $contents) !== 0)
+			 || (preg_match("/[\n\r](\t+[^\t])/", "\n". $contents) === 1
+			 &&  preg_match("/[\n\r]( +[^ ])/", "\n". $contents) === 1)) {
+				echo 'The YAML file '. $path. ' contains a mixture of tabs and spaces for indentation and cannot be read';
+				exit;
+			}
+			
+			if (defined('USE_NATIVE_YAML_EXTENSION') && function_exists('yaml_parse')) {
+				
+				$parsedContents = '';
+				foreach (preg_split("/([\n\r][ \t]+)/", $contents, -1, PREG_SPLIT_DELIM_CAPTURE) as $i => $line) {
+					if ($i % 2) {
+						$parsedContents .= str_replace("\t", '    ', $line);
+					} else {
+						$parsedContents .= $line;
+					}
+				}
+				
+				$tags = yaml_parse($parsedContents);
+				unset($parsedContents);
+				
+			} else {
+				require_once CMS_ROOT. 'zenario/libraries/mit/spyc/Spyc.php';
+				$tags = Spyc::YAMLLoad($path);
+			}
+			unset($contents);
+			
+			break;
+			
+		default:
+			$tags = array();
+	}
+	
+	if (!is_array($tags) || $tags === NULL) {
+		echo 'Error in file '. $path;
+		exit;
+	}
+	
+	//Backwards compatability hack so that Modules created before we moved the
+	//site settings don't immediately break!
+	if (!empty($tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel'])
+	 && empty($tags['zenario__administration']['panels']['site_settings'])) {
+		$tags['zenario__administration']['panels']['site_settings'] =
+			$tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel'];
+		unset($tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel']);
+	}
+	
+	//Save this array in the cache as a JSON file, for faster loading next time
+	if ($updateCache && $cachePath) {
+		@file_put_contents($cachePath, json_encode($tags));
+		@chmod($cachePath, 0666);
+	}
+	
+	return $tags;
+}
+
+function siteDescription($settingName = false) {
+	//Load the site description if it's not already loaded
+	if (empty(cms_core::$siteDesc)) {
+		//Look for a customised site description file:
+		if (is_file($path = CMS_ROOT. 'zenario_custom/site_description.yaml')) {
+			cms_core::$siteDesc = zenarioReadTUIXFile($path);
+		}
+		
+		//If we didn't find one, try to load one of the templates
+		//(Check to see which modules are in the system to try and work out which!)
+		if (empty(cms_core::$siteDesc)) {
+			$path = CMS_ROOT. 'zenario/api/sample_site_descriptions/';
+			
+			if (!moduleDir('zenario_pro_features', '', true)) {
+				cms_core::$siteDesc = zenarioReadTUIXFile($path. 'community/site_description.yaml');
+			
+			} elseif (!moduleDir('zenario_scheduled_task_manager', '', true) || !moduleDir('zenario_user_documents', '', true)) {
+				cms_core::$siteDesc = zenarioReadTUIXFile($path. 'pro/site_description.yaml');
+			
+			} elseif (!moduleDir('zenario_geo_landing_pages', '', true) || !moduleDir('zenario_user_timers', '', true)) {
+				cms_core::$siteDesc = zenarioReadTUIXFile($path. 'probusiness/site_description.yaml');
+			
+			} else {
+				cms_core::$siteDesc = zenarioReadTUIXFile($path. 'enterprise/site_description.yaml');
+			}
+		}
+	}
+	
+	if ($settingName) {
+		if (isset(cms_core::$siteDesc[$settingName])) {
+			return cms_core::$siteDesc[$settingName];
+		} else {
+			return false;
+		}
+	} else {
+		return cms_core::$siteDesc;
+	}
+}
+
+
+
+
+
+
 //Deprecated function that has since been renamed
 function getSiteConfig($settingName) {
 	return setting($settingName);
@@ -503,6 +686,24 @@ function getGlobalURL($includeProtocol = false) {
 	} else {
 		return primaryDomain();
 	}
+}
+
+
+function importantGetRequests($includeCIDAndType = false) {
+
+	$importantGetRequests = array();
+	foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+		if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+			$importantGetRequests[$getRequest] = $_GET[$getRequest];
+		}
+	}
+	
+	if ($includeCIDAndType && cms_core::$cID && cms_core::$cType) {
+		$importantGetRequests['cID'] = cms_core::$cID;
+		$importantGetRequests['cType'] = cms_core::$cType;
+	}
+	
+	return $importantGetRequests;
 }
 
 
@@ -606,6 +807,7 @@ function unsetAdminSession($destorySession = true) {
 		if (session('admin_logged_into_site') == httpHost(). SUBDIRECTORY. setting('site_id')) {
 			if (isset($_COOKIE[session_name()])) {
 				setcookie(session_name(), '', time() - 42000, '/');
+				setcookie(session_name(), '', time() - 42000, '/', cookieDomain());
 			}
 		}
 		
@@ -807,8 +1009,11 @@ function getContentLang($cID, $cType = false) {
 	return getRow('content', 'language_id', array('id' => $cID, 'type' => ifNull($cType, 'html')));
 }
 
+//Try to work out what content item is being accessed
+//n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
 function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
-	$equivId = $cID = $cType = $alias = $reqLangId = $redirectNeeded = false;
+	$alias = '';
+	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = false;
 
 	//If there is a menu id in the request, try to get the Content Item from that
 	if (!empty($_REQUEST['mID']) && ($menu = getContentFromMenu($_REQUEST['mID'], 2))) {
@@ -823,30 +1028,98 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		return;
 	}
 	
+	$multilingual = getNumLanguages() > 1;
 	
-	//Check for a requested page
-	if (empty($_REQUEST['cID'])) {
-		//Show one of the home pages if there's nothing in the request
-		$equivId = cms_core::$homeCID;
+	//Check for a language-specific domain. If it is being used, get the language from that.
+	if ($multilingual) {
+		foreach (cms_core::$langs as $langId => $lang) {
+			if ($lang['domain']
+			 && $lang['domain'] == $_SERVER['HTTP_HOST']) {
+				$languageSpecificDomain = true;
+				$reqLangId = $langId;
+				break;
+			}
+		}
+	}
+	
+	//Check for a requested page in the GET request
+	if (!empty($_GET['cID'])) {
+		$alias = $_GET['cID'];
+		
+		//If we see any slashes in the alias used in the URL, any links we generate will need to have the full path.
+		if (strpos($alias, '/') !== false) {
+			cms_core::$mustUseFullPath = true;
+		}
+	}
+	//Also check the POST request; use this instead if we see it
+	if (!empty($_POST['cID'])) {
+		$alias = $_POST['cID'];
+	}
+	
+	if (!$reqLangId && !$alias) {
+		//Show one of the home pages if there's nothing in the request and no language specific domain
+		$equivId = cms_core::$homeEquivId;
 		$cType = cms_core::$homeCType;
 	
 	} else {
-		//Check the request for a numeric cID, a string alias, and a language code separated by a comma.
-		$alias = explode(',', $_REQUEST['cID']);
 		
-		if (!empty($alias[1])) {
-			$reqLangId = $alias[1];
+		//Check for slashes in the alias
+		if (strpos($alias, '/') !== false) {
+			$slashes = explode('/', $alias);
+			
+			//For multilingual sites, check the first part of the URL for the requested language code.
+			//(Except if a language-specific domain was used above, in which case skip this.)
+			if ($multilingual
+			 && !$reqLangId
+			 && !empty($slashes[0])
+			 && isset(cms_core::$langs[$slashes[0]])) {
+				$reqLangId = array_shift($slashes);
+			}
+			
+			//Use the last bit of the URL to find the page.
+			//Note that I am writing this using a while-loop to catch the case
+			//where there are trailing slashes
+			$alias = '';
+			while (!empty($slashes)) {
+				$alias = array_pop($slashes);
+				
+				if ($alias != '') {
+					break;
+				}
+			}
+			
+			//Anything in the middle are the other aliases in the menu tree; currently these are just visual
+			//and are ignored.
+		
+		} else {
+			//Check the request for a numeric cID, a string alias, and a language code separated by a comma.
+			$alias = explode(',', $alias);
+		
+			if (!empty($alias[1])) {
+				//Don't allow a language specific domain name *and* the language code in a comma
+				if ($reqLangId) {
+					$redirectNeeded = 301;
+				}
+				
+				$reqLangId = $alias[1];
+			}
+			
+			$alias = $alias[0];
 		}
-		$alias = $alias[0];
 		
-		//Allow language codes with no alias as a shortcut to the homepage in that language
+		//Language codes with no alias means the home page for that language
 		if ($reqLangId && !$alias) {
-			$cID = cms_core::$homeCID;
-			$cType = cms_core::$homeCType;
 			
-			langEquivalentItem($cID, $cType, $reqLangId);
+			langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true);
 			
-			$redirectNeeded = 301;
+			//Slightly different logic depending on whether we are allowed slashes in the alias or not
+				//If so, this is a valid URL and we don't need to change it
+				//If not, it's not a valid URL, and we should rewrite it to show the alias.
+			//Also, language specific domains should trigger the same logic.
+			if (!$languageSpecificDomain && !setting('mod_rewrite_slashes')) {
+				$redirectNeeded = 301;
+			}
+			
 			return;
 		
 		//Link by numeric cID
@@ -871,7 +1144,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		
 		//Link by tag id
 		} elseif (getCIDAndCTypeFromTagId($cID, $cType, $alias)) {
-			//Allow numeric cIDs with language codes, but redirect them to the correct URL
+			//Allow tag ids with language codes, but redirect them to the correct URL
 			if ($reqLangId) {
 				langEquivalentItem($cID, $cType, $reqLangId);
 				$redirectNeeded = 301;
@@ -1004,7 +1277,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		
 		//For multilingual sites, if the language code was not in the URL and we had an ambiguous link, we should do a redirect.
 		//But make it a 302 redirect, as we don't want to discourage Search Engines from listing the URLs of landing pages.
-		} elseif (!$reqLangId && getNumLanguages() > 1) {
+		} elseif (!$reqLangId && $multilingual) {
 			$redirectNeeded = 302;
 		}
 	
@@ -1206,7 +1479,9 @@ function setShowableContent(&$content, &$version) {
 	//Give priority to matching Layout ids, matching family names, active Layouts,
 	//and then html type Layouts in that order
 	$sql = "
-		SELECT family_name, layout_id, file_base_name, skin_id, css_class
+		SELECT
+			family_name, layout_id, file_base_name, skin_id, css_class,
+			cols, min_width, max_width, fluid, responsive
 		FROM ". DB_NAME_PREFIX. "layouts
 		ORDER BY
 			content_type = '". sqlEscape(cms_core::$cType). "' DESC";
@@ -1223,6 +1498,11 @@ function setShowableContent(&$content, &$version) {
 	$template = sqlFetchAssoc($result);
 	
 	cms_core::$layoutId = $template['layout_id'];
+	cms_core::$cols = (int) $template['cols'];
+	cms_core::$minWidth = (int) $template['min_width'];
+	cms_core::$maxWidth = (int) $template['max_width'];
+	cms_core::$fluid = (bool) $template['fluid'];
+	cms_core::$responsive = (bool) $template['responsive'];
 	cms_core::$templateCSS = $template['css_class'];
 	cms_core::$templateFamily = $template['family_name'];
 	cms_core::$templateFileBaseName = $template['file_base_name'];
@@ -1362,11 +1642,7 @@ function cutTitle($title, $max_title_length = 20, $cutText = '...') {
 
 
 
-function updateShortChecksums($clearAll = false) {
-	
-	if ($clearAll) {
-		updateRow('files', array('short_checksum' => null), array());
-	}
+function updateShortChecksums() {
 	
 	//Attempt to fill in any missing short checksums
 	$sql = "
@@ -1380,7 +1656,7 @@ function updateShortChecksums($clearAll = false) {
 		
 		//Handle the problem by increasing the short checksum length and trying again
 		setSetting('short_checksum_length', 1 + (int) setting('short_checksum_length'));
-		updateShortChecksums(true);
+		updateShortChecksums();
 	}
 }
 
@@ -1504,7 +1780,7 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 	
 	$multiLingal = getNumLanguages() > 1;
 	$isCode = substr($code, 0, 1) == '_';
-	$needsTranslating = $isCode || !empty(cms_core::$translateLanguages[$languageId]);
+	$needsTranslating = $isCode || !empty(cms_core::$langs[$languageId]['translate_phrases']);
 	$needsUpdate = false;
 	$phrase = $code;
 	
@@ -1932,7 +2208,8 @@ function getMenuStructure(
 	$showAdminAddMenuItem = true,
 	$showInvisibleMenuItems = false,
 	$showMissingMenuNodes = false,
-	$recurseCount = 0
+	$recurseCount = 0,
+	$requests = false
 ) {
 	if ($language === false) {
 		$language = !empty($_SESSION['user_lang'])? $_SESSION['user_lang'] : setting('default_language');
@@ -1961,7 +2238,6 @@ function getMenuStructure(
 	while ($row = sqlFetchAssoc($result)) {
 		$rows[$row['mID']] = $row;
 	}
-	
 	
 	if (!empty($rows)) {
 		$menuIds = '';
@@ -2036,6 +2312,9 @@ function getMenuStructure(
 					if ($downloadDocument) {
 						$request = '&download=1';
 					}
+					if ($requests) {
+						$request .= $requests;
+					}
 					
 					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], true);
 					
@@ -2083,7 +2362,7 @@ function getMenuStructure(
 												$numLevels, $maxLevel1MenuItems, $language,
 												$onlyFollowOnLinks, $onlyIncludeOnLinks,
 												$showAdminAddMenuItem, $showInvisibleMenuItems, $showMissingMenuNodes,
-												$recurseCount);
+												$recurseCount, $requests);
 						
 						if ($row['target_loc'] == 'none' && checkPriv()) {
 							//Publishing a Content Item under an unlinked Menu Node will cause that to appear - mark this as so in Admin Mode
@@ -2123,6 +2402,8 @@ function getMenuStructure(
 					$row['children'] = array('add' => showAdminAddMenuItem($sectionId, $language, $row['mID']));
 				}
 			}
+			
+			
 			
 			if ($showMenuItem) {
 				//Don't show unlinked Menu Nodes that have no immediate children to Visitors
@@ -2188,11 +2469,15 @@ function showAdminAddMenuItem($sectionId, $language, $parentMenuId) {
 
 
 //Build a link to a content item
+//n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
 function linkToItem(
-			$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-			$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-			$httpHost = false, $returnAliasAndLanguageCode = false) {
+	$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
+	$autoAddImportantRequests = false, $useAliasInAdminMode = false,
+	$usePrimaryDomain = false, $returnAliasAndLanguageCode = false,
+	$equivId = false, $languageId = false
+) {
 	
+	//Catch the case where a tag id is entered, not a cID and cType
 	if (!is_numeric($cID)) {
 		$tagId = $cID;
 		getCIDAndCTypeFromTagId($cID, $cType, $tagId);
@@ -2203,115 +2488,172 @@ function linkToItem(
 		return false;
 	}
 	
+	//If there are slashes in the alias, we need to make sure to return a full URL, not a relative one
+	if (cms_core::$mustUseFullPath) {
+		$fullPath = true;
+	}
 	
-	//Add important requests to the URL, if the content item being linked to is the current content item
-	$request = addAmp($request);
-	if ($autoAddImportantRequests
-	 && !empty(cms_core::$importantGetRequests)
-	 && is_array(cms_core::$importantGetRequests)
-	 && $cID == cms_core::$cID
+	
+	$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
+	$mod_rewrite_enabled = setting('mod_rewrite_enabled');
+	$mod_rewrite_slashes = setting('mod_rewrite_slashes');
+	$mod_rewrite_suffix = setting('mod_rewrite_suffix');
+	$useAlias = $useAliasInAdminMode || !$adminMode;
+	$multilingual = getNumLanguages() > 1;
+	$returnSlashForHomepage = false;
+	$langSpecificDomain = false;
+	$needToUseLangCode = false;
+	$usingAlias = false;
+	$content = false;
+	$domain = false;
+	
+	
+	//If this is a link to the current page, we can get some of the metadata from the cms_core variables
+	//without needing to use the database to look it up
+	if ($cID == cms_core::$cID
 	 && $cType == cms_core::$cType) {
-		foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
-			if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
-				$request .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
+		$alias = cms_core::$alias;
+		$equivId = cms_core::$equivId;
+		$languageId = cms_core::$langId;
+	
+	
+		//Add important requests to the URL, if the content item being linked to is the current content item
+		if ($autoAddImportantRequests
+		 && !empty(cms_core::$importantGetRequests)
+		 && is_array(cms_core::$importantGetRequests)) {
+			foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+				if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+					$request .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
+				}
 			}
+		}
+	
+	} elseif (!$multilingual) {
+		//For single-lingual sites, the cID is always equal to the alias
+		$equivId = $cID;
+	}
+	
+	//Attempt to look up the alias if it wasn't provided.
+	//If we need to make a multi-lingual URL or if the mod_rewrite_slashes option is enabled
+	//then we'll also need the equivId and languageId of the content item.
+	if ($useAlias
+	 && ($multilingual
+	  || $alias === false
+	  || ($mod_rewrite_slashes && ($equivId === false || $languageId === false))
+	)) {
+		$result = sqlSelect("
+			SELECT alias, equiv_id, language_id, lang_code_in_url
+			FROM ". DB_NAME_PREFIX. "content
+			WHERE id = ". (int) $cID. "
+			  AND type = '". sqlEscape($cType). "'"
+		);
+		if ($content = sqlFetchRow($result)) {
+			$alias = $content[0];
+			$equivId = $content[1];
+			$languageId = $content[2];
+			$lang_code_in_url = $content[3];
+		} else {
+			return false;
+		}
+	}
+	
+	//On multi-lingual sites, use a language-specific domain if one is set up
+	if ($useAlias && $multilingual) {
+		if (!empty(cms_core::$langs[$languageId]['domain'])) {
+			$domain = cms_core::$langs[$languageId]['domain'];
+		
+			//If we're using a language specific domain, we don't need to add the language code into the URL later
+			$langSpecificDomain = true;
+		
+		//Catch the case where we were on a language specific domain but need to change back to a
+		//language without a language specific name
+		} else {
+			$usePrimaryDomain = true;
 		}
 	}
 	
 	
-	//For single-language sites, if there is nothing in the request then links to the homepage
-	//should always use just the domain name
-	$returnFullPath = false;
-	if ($cID == cms_core::$homeCID
-	 && $cType == cms_core::$homeCType
-	 && !$request
-	 && getNumLanguages() < 2) {
+	//If there is nothing in the request then links to the homepage
+	//should always use just the domain name (with maybe the language code for multilingual sites)
+	if ($useAlias
+	 && $equivId == cms_core::$homeEquivId
+	 && $cType == cms_core::$homeCType) {
 		$fullPath = true;
-		$returnFullPath = true;
+		$returnSlashForHomepage = true;
+	}
+	
+	//Always try to use the primary domain in admin mode
+	if ($adminMode && !$useAliasInAdminMode) {
+		$usePrimaryDomain = true;
+	}
+	
+	//If we'd prefer to use the primary domain, and we didn't find a language specific domain, then use it.
+	if (!$domain && $usePrimaryDomain) {
+		$domain = primaryDomain();
+	}
+	
+	//If the domain we want to use isn't the current domain, make sure to use the full path in the URL
+	if ($domain
+	 && $domain != $_SERVER['HTTP_HOST']) {
+		$fullPath = true;
 	}
 	
 	if (!$fullPath) {
 		$fullPath = '';
-	} elseif (!$httpHost) {
-		$fullPath = httpOrHttps(). httpHost(). SUBDIRECTORY;
 	} else {
-		$fullPath = httpOrHttps(). $httpHost. SUBDIRECTORY;
-	}
-	
-	if ($returnFullPath) {
-		return $fullPath;
-	}
-	
-	
-	$useAlias = ($useAliasInAdminMode || empty($_SESSION['admin_logged_into_site']) || !checkPriv());
-	$usingAlias = false;
-	
-	//Attempt to look up the alias if it wasn't provided
-	$content = false;
-	if ($alias === false) {
-		if ($cID == cms_core::$cID && $cType == cms_core::$cType) {
-			$alias = cms_core::$alias;
-		
-		} elseif ($useAlias) {
-			$result = sqlSelect("
-				SELECT lang_code_in_url, language_id, alias
-				FROM ". DB_NAME_PREFIX. "content
-				WHERE id = ". (int) $cID. "
-				  AND type = '". sqlEscape($cType). "'"
-			);
-			if ($content = sqlFetchRow($result)) {
-				$alias = $content[2];
-			}
+		if (!$domain) {
+			$domain = httpHost();
 		}
+		$fullPath = httpOrHttps(). $domain. SUBDIRECTORY;
 	}
+	
+	//If we're linking to a homepage, if possible, just use a slash and never show the alias
+	if ($returnSlashForHomepage) {
+		
+		//If the site isn't multilingual, or if there is one domain per language, we can just use the domain and subdirectory
+		if (!$multilingual || $langSpecificDomain) {
+			return $fullPath. ($request? addQu($request) : '');
+		
+		//If slashes are enabled in the URL, we'll make a sub-directory on a per-language basis
+		} elseif ($mod_rewrite_slashes) {
+			return $fullPath. $languageId. '/'. ($request? addQu($request) : '');
+		}
+		
+		//For any other cases we'll need to show the alias
+	}
+
 	
 	//Link to the item using either the cID or the alias.
-	if ($alias && $useAlias) {
+	if ($useAlias && $alias) {
 		$aliasOrCID = $alias;
 		$usingAlias = true;
 		
 		//If multiple languages are enabled on this site, check to see if we need to add the language code to the alias.
-		if (getNumLanguages() > 1) {
-			//We will need to add the language code if the alias is used more than once,
+		if ($multilingual) {
+			//We don't need to add the language code again if we've already used a language-specific domain
+			if ($langSpecificDomain) {
+				$needToUseLangCode = false;
+				
+			//Otherwise we will need to add the language code if the alias is used more than once,
 			//the settings for that Content Item say so, or if the settings for the Content Item are left on
 			//default and the Site Settings say so.
-			//Note for efficiency, use slightly different code depending on if we already have the details looked up
-			if ($content) {
-				if ($content[0] == 'show' || ($content[0] == 'default' && !setting('translations_hide_language_code'))) {
-					$needToUseLangCode = true;
-				} else {
-					$sql = "
-						SELECT 1
-						FROM ". DB_NAME_PREFIX. "content
-						WHERE alias = '". sqlEscape($alias). "'
-						LIMIT 2";
-					$result = sqlQuery($sql);
-					$needToUseLangCode = sqlFetchRow($result) && sqlFetchRow($result);
-				}
-					
+			} elseif ($lang_code_in_url == 'show' || ($lang_code_in_url == 'default' && !setting('translations_hide_language_code'))) {
+				$needToUseLangCode = true;
+			
 			} else {
 				$sql = "
-					SELECT lang_code_in_url, language_id
+					SELECT 1
 					FROM ". DB_NAME_PREFIX. "content
 					WHERE alias = '". sqlEscape($alias). "'
-					ORDER BY
-						id = ". (int) $cID. " DESC,
-						type = '". sqlEscape($cType). "' DESC
 					LIMIT 2";
-				
 				$result = sqlQuery($sql);
-				if (!$content = sqlFetchRow($result)) {
-					return false;
-				
-				} else {
-					$needToUseLangCode =
-						sqlFetchRow($result)
-					 || ($content[0] == 'show' || ($content[0] == 'default' && !setting('translations_hide_language_code')));
-				}
+				$needToUseLangCode = sqlFetchRow($result) && sqlFetchRow($result);
 			}
 			
-			if ($needToUseLangCode) {
-				$aliasOrCID .= ','. $content[1];
+			//If we're not allowed slashes in the URL, and we need to add the language code,
+			//add it to the end after a comma.
+			if ($needToUseLangCode && ($returnAliasAndLanguageCode || !$mod_rewrite_slashes)) {
+				$aliasOrCID .= ','. $languageId;
 			}
 		}
 		
@@ -2327,28 +2669,82 @@ function linkToItem(
 		}
 	}
 	
+	//If enabled in the site settings, attempt to add the full menu tree into the friendly URL
+	if ($useAlias && $mod_rewrite_slashes) {
+		
+		//Try to get the menu node that this content item is for, and check if it has a parent to follow
+		$sql = "
+			SELECT id, parent_id, section_id
+			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+			WHERE m.equiv_id = ". (int) $equivId. "
+			  AND m.content_type = '" . sqlEscape($cType) . "'
+			  AND m.target_loc = 'int'
+			ORDER BY m.redundancy = 'primary' DESC
+			LIMIT 1";
+		$result = sqlQuery($sql);
+		
+		if (($menu = sqlFetchAssoc($result))
+		 && ($menu['parent_id'])) {
+			
+			//Loop through the menu structure above. Where a content item has an alias,
+			//add it into the URL.
+			//Note that we should not add the same alias twice in a row - this may happen
+			//if a content item has a secondary menu node
+			$sql = "
+				SELECT c.alias
+				FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+				INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+				   ON m.id = mh.ancestor_id
+				  AND m.target_loc = 'int'
+				INNER JOIN ". DB_NAME_PREFIX. "content AS c
+				   ON c.equiv_id = m.equiv_id
+				  AND c.type = m.content_type
+				  AND c.language_id = '" . sqlEscape($languageId) . "'
+				WHERE mh.section_id = ". (int) $menu['section_id']. "
+				  AND mh.child_id = ". (int) $menu['parent_id']. "
+				ORDER BY mh.separation ASC";
+			$result = sqlQuery($sql);
+			
+			$lastAlias = $alias;
+			while ($menu = sqlFetchAssoc($result)) {
+				if ($menu['alias'] != '') {
+					if ($menu['alias'] != $lastAlias) {
+						$aliasOrCID = $menu['alias']. '/'. $aliasOrCID;
+						$lastAlias = $menu['alias'];
+					}
+				}
+			}
+		}
+	}
+	
+	//If we're allowed slashes in the URL, and we need to add the language code,
+	//then add it as a slash at the start of the URL
+	if ($needToUseLangCode && $mod_rewrite_slashes) {
+		$aliasOrCID = $languageId. '/'. $aliasOrCID;
+	}
+	
+	//"Download now" format for old documents
 	if ($useAlias
 	 && $cType == 'document'
+	 && $mod_rewrite_enabled
 	 && ($request === '&download=1'
 	  || $request === '&download=true'
 	  || $request === '&download=1&cType=document'
 	  || $request === '&download=true&cType=document'
 	  || $request === '&cType=document&download=1'
-	  || $request === '&cType=document&download=true')
-	 && setting('mod_rewrite_enabled')) {
+	  || $request === '&cType=document&download=true')) {
 		return $fullPath. $aliasOrCID. '.download';
 	
-	} elseif ($useAlias && $request === '&method_call=showRSS' && setting('mod_rewrite_enabled')) {
+	//"RSS link" shortcut. Note that this only works if there is only one plugin on a page with an RSS feed.
+	//If there are two, this link will link to the first one on the page that we found.
+	} elseif ($useAlias && $request === '&method_call=showRSS' && $mod_rewrite_enabled) {
 		return $fullPath. $aliasOrCID. '.rss';
 	
-	} elseif ($request) {
-		return $fullPath. indexDotPHP(!$fullPath). "?cID=". $aliasOrCID. addAmp($request);
-	
-	} elseif ($useAlias && setting('mod_rewrite_enabled')) {
-		return $fullPath. $aliasOrCID. setting('mod_rewrite_suffix');
+	} elseif ($useAlias && $mod_rewrite_enabled) {
+		return $fullPath. $aliasOrCID. $mod_rewrite_suffix. ($request? addQu($request) : '');
 	
 	} else {
-		return $fullPath. indexDotPHP(!$fullPath). "?cID=". $aliasOrCID;
+		return $fullPath. indexDotPHP(!$fullPath). "?cID=". $aliasOrCID. ($request? addAmp($request) : '');
 	}
 }
 
@@ -2494,6 +2890,16 @@ function getDatasetTabDetails($datasetId, $tabName) {
 	return getRow('custom_dataset_tabs', true, array('dataset_id' => $datasetId, 'name' => $tabName));
 }
 
+function getDatasetFieldBasicDetails($fieldId) {
+	$sql = "
+		SELECT type, is_system_field, db_column, label, default_label
+		FROM ". DB_NAME_PREFIX. "custom_dataset_fields
+		WHERE id = ". (int) $fieldId;
+	
+	$result = sqlSelect($sql);
+	return sqlFetchAssoc($result);
+}
+
 function getDatasetFieldDetails($field, $dataset = false) {
 	if (is_numeric($field)) {
 		return getRow('custom_dataset_fields', true, $field);
@@ -2635,7 +3041,7 @@ function getDatasetFieldLOV($field, $flat = true) {
 			$listMode = ZENARIO_CENTRALISED_LIST_MODE_LIST;
 			if (isset($field['values_source_filter'])) {
 				$filter = $field['values_source_filter'];
-				if ($field['values_source_filter'] !== '') {
+				if ($filter !== '') {
 					$listMode = ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST;
 				}
 			}
@@ -2994,33 +3400,35 @@ function cleanDownloads() {
 	} else {
 		$time = time();
 		
-		//Check if this function was last run within the last 5 minutes
-		$lifetime = 5 * 60;
-		if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
-			$timeA = fileatime($accessed);
-			$timeM = filemtime($accessed);
+		//Check to see if anyone has done a "rm -rf" on the images directory
+		//If so skip the "every 5 minutes rule" and run now.
+		if (is_dir(CMS_ROOT. 'public/images')
+		 && is_dir(CMS_ROOT. 'private/images')
+		 && is_dir(CMS_ROOT. 'cache/frameworks')) {
 			
-			if (!$timeA || $timeA < $timeM) {
-				$timeA = $timeM;
+			//Check if this function was last run within the last 5 minutes
+			$lifetime = 5 * 60;
+			if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
+				$timeA = fileatime($accessed);
+				$timeM = filemtime($accessed);
+			
+				if (!$timeA || $timeA < $timeM) {
+					$timeA = $timeM;
+				}
+			
+				if ($timeA < $time - $lifetime) {
+					//If it was run in the last 5 minutes, don't run it again now...
+					define('ZENARIO_CLEANED_DOWNLOADS', true);
+					return true;
+				}
 			}
-			
-			$empty = $timeA < $time - $lifetime;
-		} else {
-			$empty = true;
 		}
 		
-		if (!$empty) {
-			//If it was run in the last 5 minutes, don't run it again now
-			define('ZENARIO_CLEANED_DOWNLOADS', true);
-			return true;
+		//...otherwise, continue running cleanDownloads(), and call the createCacheDir() function to create/touch
+		//the cache/stats/clean_downloads/accessed file so we know that we last ran cleanDownloads() at this current time
+		createCacheDir('clean_downloads', 'stats', true, false);
 		
-		} else {
-			//Otherwise, continue running cleanDownloads(), and call the createCacheDir() function to create/touch
-			//the cache/stats/clean_downloads/accessed file so we know that we last ran cleanDownloads() at this current time
-			createCacheDir('clean_downloads', 'stats', true, false);
-			
-			return require funIncPath(__FILE__, __FUNCTION__);
-		}
+		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 }
 
@@ -3591,10 +3999,6 @@ function canActivateModule($name, $fetchBy = 'name', $activate = false) {
 }
 
 function activateModule($name) {
-	return canActivateModule($name, 'name', true);
-}
-
-function activateModuleClass($name) {
 	return canActivateModule($name, 'class', true);
 }
 
@@ -3676,12 +4080,8 @@ function includeModuleAndDependencies($moduleName, &$missingPlugin, $recurseCoun
 function modulesAndTUIXFiles(
 	$type, $requestedPath = false, $settingGroup = '',
 	$getIndividualFiles = true, $includeBaseFunctionalityWithSettingGroups = true,
-	$compatibilityClassNames = false
+	$compatibilityClassNames = false, $runningModulesOnly = true
 ) {
-	return require funIncPath(__FILE__, __FUNCTION__);
-}
-
-function advancedSearchSQL(&$whereStatement, &$joins, $path, $json, $tablePrefix = '') {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 

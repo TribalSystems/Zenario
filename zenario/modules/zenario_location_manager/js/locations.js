@@ -65,7 +65,7 @@ function placeMarker (method) {
 		}
 		
 		if (parent.document.getElementById("country").value!="") {
-			var country = parent.zenario.handlePluginAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
+			var country = parent.zenario.moduleNonAsyncAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
 			address += country + ',';
 		}
 		
@@ -82,7 +82,7 @@ function placeMarker (method) {
 		}
 		
 		if (parent.document.getElementById("country").value!="") {
-			var country = parent.zenario.handlePluginAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
+			var country = parent.zenario.moduleNonAsyncAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
 			address += country + ',';
 		}
 		
@@ -99,7 +99,7 @@ function placeMarker (method) {
 		}
 		
 		if (parent.document.getElementById("country").value!="") {
-			var country = parent.zenario.handlePluginAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
+			var country = parent.zenario.moduleNonAsyncAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
 			address += country + ',';
 		}
 		

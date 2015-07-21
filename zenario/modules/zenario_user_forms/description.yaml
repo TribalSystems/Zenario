@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: true
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Forms
 description: |
     <p>
@@ -27,4 +27,5 @@ nestable: true
 default_framework: standard
 dependencies:
     zenario_users: true
+    zenario_email_template_manager: true
 default_instance_name: Untitled form

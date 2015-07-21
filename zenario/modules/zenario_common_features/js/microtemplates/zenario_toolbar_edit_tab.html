@@ -19,8 +19,11 @@
 </div>
 <div class="zenario_at_toolbar_container_bottom">
 	<div id="zenario_at_lower_section">
+		<div class="zenario_at_infobar zenario_at_infobar_title" onclick="zenarioAB.open('zenario_content', {cID: zenario.cID, cType: zenario.cType, cVersion:zenario.cVersion});">
+			{{zenarioAT.tuix.meta_info.title|escape}}
+		</div>
 		<div class="zenario_at_infobar zenario_at_infobar_version">
-		{{zenarioAT.tuix.meta_info.version|escape}}
+			{{zenarioAT.tuix.meta_info.version|escape}}
 		</div>
 	</div>
 </div>

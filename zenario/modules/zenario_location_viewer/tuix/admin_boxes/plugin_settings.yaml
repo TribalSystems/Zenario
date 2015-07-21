@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_location_viewer
     tabs:
         first_tab:
             label: Settings
@@ -9,16 +10,25 @@ plugin_settings:
                     plugin_setting:
                         name: location_source_mode
                     label: 'Location source mode:'
-                    type: select
+                    type: radios
                     format_onchange: Yes
                     note_below: 'If you select Get location from URL (l_id), you pass the location id in the url as parameter l_id'
                     values:
-                        location_from_url:
-                            label: "Get location from URL (l_id)"
-                            ord: 1
                         location_from_selector:
-                            label: "Get location from static selector"
+                            label: "Auto"
+                            ord: 1
+                            side_note: |
+                                When placed on a content item that is a descriptive page for a specific location, display the images of that location.
+                        location_from_organizer:
+                            label: "Specific location"
                             ord: 2
+                            side_note: |
+                                Select a location from Organizer and display its images.
+                        location_from_url:
+                            label: "Get location from URL"
+                            ord: 3
+                            side_note: |
+                                If the URL contains the parameter l_id, use its value to get the ID of the location.
                     value: location_from_selector
                 location_plugin_mode:
                     plugin_setting:
@@ -52,7 +62,8 @@ plugin_settings:
                         max_path: zenario__locations/panel
                         select_phrase: Select Location...
                         nothing_selected_phrase: No Location selected
-                    note_below: 'Displays details of the Location selected above. If none selected, and Plugin is placed on a Descriptive Page for a Location, displays details of that Location. Otherwise if Plugin placed on an Event with a Location specified in When & Where, displays that Location.'
+                    validation:
+                        required_if_not_hidden: You must select a location
                 map_width:
                     label: 'Map size:'
                     pre_field_html: 'width:'
@@ -91,4 +102,3 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 50px'
                     value: "120"
-    module_class_name: zenario_location_viewer

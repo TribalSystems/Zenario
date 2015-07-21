@@ -82,6 +82,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
         "paste autoresize"],
         
         image_advtab: true,
+        visual_table_class: ' ',
         browser_spellcheck: true,
         
         //contextmenu:
@@ -127,6 +128,7 @@ directionality	ltr rtl
 		inline_styles: false,
 		allow_events: true,
 		allow_script_urls: true,
+		document_base_url: URLBasePath,
 		convert_urls: true,
 		relative_urls: true,
 		
@@ -276,7 +278,7 @@ zenario_wysiwyg_editor.setEditorField = function(value, el, onlyIfEmpty) {
 zenario_wysiwyg_editor.setLinkURL = function(path, key, row) {
 	//Get the URL via an AJAX program
 	key.getItemURL = 1;
-	var URL = zenario.pluginClassAJAX('zenario_common_features', key, true);
+	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
 	
 	zenario_wysiwyg_editor.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
 	zenario_wysiwyg_editor.setEditorField(URL);

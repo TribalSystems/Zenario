@@ -82,9 +82,6 @@ foreach(array(
 	'abandonChangesConfirm' => 'Are you sure you wish to abandon the changes you have made to this field?',
 	'aboutzenario' => 'About Zenario',
 	'addToNest' => 'Add to nest',
-	'advancedSearchClear' => 'Clear advanced search',
-	'advancedSearches' => 'Your advanced searches',
-	'advancedSearchNotOn' => 'No advanced rearch running|Click the down-arrow to create a new search.',
 	'after' => 'On or after:',
 	'am' => 'AM',
 	'applyChanges' => 'Apply changes',
@@ -139,7 +136,7 @@ foreach(array(
 	'leaveAdminBoxWarning' => 'You are currently editing this floating admin box. If you leave now you will lose any unsaved changes.',
 	'leavePageWarning' => 'You are currently editing this page. If you leave now you will lose any unsaved changes.',
 	'like' => 'Like:',
-	'logIn' => 'Log In',
+	'logIn' => 'Login',
 	'mode' => 'Mode',
 	'module' => 'Module',
 	'moreActions' => 'More actions',
@@ -165,6 +162,7 @@ foreach(array(
 	'refined' => ' (filtered)',
 	'remove' => 'Remove',
 	'reset' => 'Reset to default view',
+	'retry' => 'Retry',
 	'revert' => 'Revert',
 	'revertConfirm' => '<p>Are you sure you wish to abandon any changes made to this plugin since the previous version?</p><p>Only settings/content in this slot will be affected.</p>',
 	'save' => 'Save',
@@ -185,7 +183,7 @@ foreach(array(
 	'skin' => 'Skin',
 	'sort' => 'Sort',
 	'sortByCol' => 'Click here to sort by this column',
-	'swapContentsConfirm' => 'The contents you previously copied will appear here, and the contents that were here will be copied. Are you sure you wish to swap?',
+	'swapContentsConfirm' => 'Are you sure you wish to paste? The contents you previously copied will appear here, and the contents that were here will be copied.',
 	'translatedField' => 'Uses phrases',
 	'tru' => 'True',
 	'undoChanges' => 'Undo changes',
@@ -204,7 +202,6 @@ foreach(array(
 	'skQuickSearch' => 'Quick search',
 	'skSearch' => 'Search',
 	'skAdjustView' => 'Adjust view',
-	'skAdvancedSearch' => 'Advanced search',
 	'skRefreshView' => 'Refresh view',
 	'skListView' => 'List View',
 	'skSummaryView' => 'Summary view',
@@ -300,17 +297,15 @@ _help
 	'gridHtml' => 'Custom HTML:',
 	'gridIncNestedRules' => 'CSS rules for nested cells:',
 	'gridIncNestedRulesTooltip' => "Include CSS rules for cells with nested cells|Cells with nested cells need additional CSS rules. If you're not using nested cells, you can omit these rules for a smaller download.",
-	'gridMirror' => 'Create RTL version:',
-	'gridMirrorTooltip' => 'Create right-to-left version|Check this option to generate a right-to-left version of your normal Skin, e.g. for the Arabic, Hebrew or Urdu languages. The resulting CSS will be adjusted so that the slots display right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will also be added. The HTML generated remains the same. (This effect is not displayed when managing slots in the editor.)',
-	'gridProperties' => 'Properties',
 	'gridLayoutName' => 'Layout name:',
 	'gridMaxWidth' => 'Max-width:',
 	'gridMinWidth' => 'Min-width:',
-	'gridMirror' => 'Create RTL version',
-	'gridMirrorTooltip' => 'Create right-to-left version|Check this option to generate a right-to-left version of your normal Skin, e.g. for the Arabic, Hebrew or Urdu languages. The resulting CSS will be adjusted so that the slots display right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will also be added. The HTML generated remains the same. (This effect is not displayed when managing slots in the editor.)',
+	'gridMirror' => 'Right-to-left',
+	'gridMirrorTooltip' => 'Display right-to-left|Check this option to display slots from the right to the left, e.g. for creating an Arabic, Hebrew or Urdu language version of an English language site.<br/><br/>The slots will appear right-to-left rather than left-to-right, and the <code>direction: rtl;</code> rule will be added. (This effect is not displayed when managing slots in &quot;Slot view&quot;.)',
 	'gridMobile' => 'Mobile',
 	'gridNewSkinMessage' => 'You have created a new Grid Skin. Before you can see this Skin on a page, you must edit the settings of a Layout and select it. All content items using that Layout will then use your new Skin.',
 	'gridPreviewGrid' => 'Grid view',
+	'gridProperties' => 'Properties',
 	'gridRedo' => 'Redo',
 	'gridSaveProperties' => 'Save properties',
 	'gridSlotHtmlBefore' => 'HTML before slot:',
@@ -355,7 +350,7 @@ incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
-incJS('zenario/libraries/lgpl/tinymce_4_1_7/jquery.tinymce');
+incJS('zenario/libraries/lgpl/tinymce_4_1_9b/jquery.tinymce');
 //Include the autocomplete library for the FAB library
 incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
 //Include the selectboxes library for moving items between select lists
@@ -369,7 +364,7 @@ incJS('zenario/libraries/mit/spectrum/spectrum');
 incJS('zenario/libraries/public_domain/mousehold/mousehold');
 
 echo '
-zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_7/tinymce.jquery.min.js"';
+zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_9b/tinymce.jquery.min.js"';
 
 
 //Fix for the hasLayout bug and transparent slots in IE 6 and 7

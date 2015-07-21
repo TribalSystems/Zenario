@@ -68,13 +68,16 @@ if (engToBooleanArray($box['tabs']['settings'], 'edit_mode', 'on')) {
 			'language_id' => $box['key']['id'],
 			'module_class_name' => 'zenario_common_features'));
 	
-	updateRow('languages', array(
-								'detect' => $values['settings/detect'], 
-								'detect_lang_codes' => $values['settings/detect_lang_codes'], 
-								'translate_phrases' => $values['settings/translate_phrases'], 
-								'search_type'=> ($values['settings/search_type']=='simple'?'simple':'full_text')
-								), 
-								$box['key']['id']);
+	updateRow(
+		'languages',
+		array(
+			'detect' => $values['settings/detect'], 
+			'detect_lang_codes' => $values['settings/detect_lang_codes'], 
+			'translate_phrases' => $values['settings/translate_phrases'], 
+			'search_type'=> ($values['settings/search_type'] == 'simple'? 'simple' : 'full_text'),
+			'domain'=> ($values['settings/use_domain'] && getNumLanguages() > 1? $values['domain'] : '')
+		),
+		$box['key']['id']);
 }
 
 //Check if a default language has been set, and set it now if not

@@ -330,12 +330,18 @@ zenario_user_admin_box_form_field:
 					value: none
 					format_onchange: true
 				
-				default_value:
+				default_value_lov:
 					label: 'Default value:'
 					type: select
 					empty_value: '-- Select --'
 					side_note: |
 						Select a value to pre-populate this field.
+				
+				default_value_text:
+					label: 'Default value:'
+					type: text
+					side_note: |
+						Enter a value to pre-populate this field.
 				
 				default_value_class_name:
 					label: 'Module class name:'

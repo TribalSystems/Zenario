@@ -40,6 +40,9 @@ $oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
 
 if (!$isWelcome && !$oldIE && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
+
+} elseif (cms_core::$mustUseFullPath) {
+	$prefix = absCMSDirURL(). 'zenario/';
 }
 
 //Work out what's on this page, which wrappers we need to include, and which Plugin/Swatches need to be requested
@@ -112,6 +115,11 @@ if ($isWelcome || checkPriv()) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/inc-organizer.css.php?v=', $v, $gz, '"/>';
 		
+		if ($isOrganizer) {
+			echo '
+<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/admin_organizer_print.min.css?v=', $v, $gz, '"/>';
+		}
+		
 		$cssModuleIds = '';
 		foreach (getRunningModules() as $module) {
 			if (moduleDir($module['class_name'], 'adminstyles/organizer.css', true)
@@ -157,6 +165,11 @@ if (setting('css_wrappers') == 'on' || (setting('css_wrappers') == 'visitors_onl
 	require CMS_ROOT. 'zenario/includes/wrapper.inc.php';
 	
 	if (cms_core::$skinId || cms_core::$layoutId) {
+		
+		echo "\n", '<style type="text/css">';
+		outputRulesForSlotMinHeights();
+		echo "\n", '</style>';
+		
 		$req = array('id' => (int) cms_core::$skinId, 'print' => '', 'layoutId' => cms_core::$layoutId);
 		includeSkinFiles($req);
 		$req = array('id' => (int) cms_core::$skinId, 'print' => '1');
@@ -197,8 +210,16 @@ if (checkPriv()) {
 	//Add the CSS for the login link for admins if this looks like a logged out admin
 	echo '
 <style type="text/css">
-	body div.admin_link a { position:fixed; top:30px; right:0; display:inline; width:58px; height:37px; padding:32px 0 0 3px; text-align:center; color:#000; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px; text-transform:uppercase; text-decoration:none; z-index:9999999; background:url("admin/images/welcome/admin-btn-off-state.png") no-repeat 0 0; }
-	body div.admin_link a:hover { text-decoration:underline; }
+	body div.admin_link a {
+		position:fixed; top:30px; right:0; display:inline;
+		width:58px; height:37px; padding:32px 0 0 3px;
+		text-align:center; color:#000; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px;
+		text-transform:uppercase; text-decoration:none; z-index:9999999;
+		background:url("zenario/admin/images/welcome/admin-btn-off-state.png") no-repeat 0 0;
+	}
+	body div.admin_link a:hover {
+		text-decoration:underline;
+	}
 </style>';
 }
 

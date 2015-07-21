@@ -88,7 +88,7 @@ full_slot:
         overwrite_contents:
             hidden: true
             css_class: zenario_slotControl_cutCopyPaste
-            label: Paste and overwrite contents
+            label: Paste and overwrite existing
             page_modes:
                 edit: true
             onclick: >
@@ -99,7 +99,7 @@ full_slot:
         swap_contents:
             hidden: true
             css_class: zenario_slotControl_cutCopyPaste
-            label: Swap contents
+            label: Paste and copy existing to paste buffer
             page_modes:
                 edit: true
             onclick: >

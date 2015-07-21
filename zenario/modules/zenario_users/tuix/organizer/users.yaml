@@ -18,7 +18,9 @@ zenario__users:
         users:
             title: 'All users & contacts'
             enable_close_up_view: true
-            view_mode: list
+            panel_type: grid_or_list
+            grid_view_microtemplate: zenario_grid_view_user
+            label_format_for_grid_view: '[[identifier]]'
             slidedown_view_microtemplate: zenario_slidedown_view_user
             no_items_message: >
                 No users/contacts. Click "Create" to create users and
@@ -29,7 +31,6 @@ zenario__users:
                 table: '[[DB_NAME_PREFIX]]users AS u'
                 id_column: u.id
                 custom_where_statement_if_no_refiner: "WHERE u.status <> 'suspended'"
-            advanced_search: true
             refiners:
                 group_members: {}
                 suspended_users:
@@ -101,6 +102,9 @@ zenario__users:
                     title: Groups
                     width: xlarge
                     show_by_default: true
+                first_group:
+                    title: Groups
+                    client_side_only: true
                 type:
                     title: Sync type
                     db_column: "IF (u.global_id = 0, 'local', 'from_hub')"
@@ -191,18 +195,16 @@ zenario__users:
                     css_class: zenario_create_a_new
                     admin_box:
                         path: zenario_user__details
-                #export:
-                #    label: Export as CSV
-                #    hide_in_select_mode: true
                 
-                add_user_to_group:
-                    hide_in_select_mode: true
+                add_user_to_this_group:
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    only_show_on_refiner: group_members
+                    hide_in_select_mode: true
                     label: Add users to this Group
                     pick_items:
                         path: zenario__users/panels/users
                         request:
-                            add_user_to_group: "1"
+                            add_user_to_this_group: "1"
                         one_to_one_choose_phrase: Add user to Group
                         multiple_select: true
                         one_to_many_choose_phrase: Add users to Group
@@ -212,7 +214,7 @@ zenario__users:
                     label: Import
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
-                    ord: 999999
+                    ord: 999998
                 import:
                     label: Start import wizard
                     parent: import_dropdown
@@ -229,6 +231,13 @@ zenario__users:
                         path: zenario_download_sample_file
                         key:
                             dataset:
+                export:
+                    label: Export
+                    admin_box:
+                        path: zenario_export_dataset
+                        key:
+                            dataset:
+                    ord: 999999
             item_buttons:
                 edit:
                     label: Edit user/contact
@@ -253,35 +262,39 @@ zenario__users:
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
                     multiple_select: true
-                add_users_to_group:
+                
+                add_users_to_groups:
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
                     parent: action_dropdown
-                    label: Add to Group...
-                    tooltip: Add this user to one or more Groups
+                    label: Add to group...
+                    tooltip: Add this user to one or more groups
                     hide_in_select_mode: true
-                    multiple_select_tooltip: Add selected users to one or more Groups
+                    multiple_select_tooltip: Add selected users to one or more groups
                     multiple_select: true
-                    combine_items:
-                        path: zenario__users/panels/groups_only
-                        min_path: zenario__users/panels/groups_only
-                        max_path: zenario__users/panels/groups_only
-                        target_path: zenario__users/panels/groups_only
-                        
-                        request:
-                            add_users_to_group:1
-                        
-                        one_to_one_choose_phrase: Add user to Group
-                        many_to_one_choose_phrase: Add users to Group
-                        multiple_select: true
-                        one_to_many_choose_phrase: Add user to Groups
-                        many_to_many_choose_phrase: Add users to Groups
+                    admin_box:
+                        path: zenario_mass_group_membership
+                        key:
+                            remove: false
                 
-                remove_users_from_group:
-                    label: Remove user from this Group
+                remove_users_from_groups:
+                    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    parent: action_dropdown
+                    label: Remove from group...
+                    tooltip: Add this user to one or more groups
                     hide_in_select_mode: true
+                    multiple_select_tooltip: Add selected users to one or more groups
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_mass_group_membership
+                        key:
+                            remove: true
+                
+                remove_users_from_this_group:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
                     only_show_on_refiner: group_members
+                    hide_in_select_mode: true
+                    label: Remove user from this Group
                     multiple_select: true
                     ajax:
                         confirm:
@@ -289,7 +302,7 @@ zenario__users:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            remove_users_from_group: "1"
+                            remove_users_from_this_group: "1"
                 image_dropdown:
                     label: Image
                     hide_in_select_mode: true

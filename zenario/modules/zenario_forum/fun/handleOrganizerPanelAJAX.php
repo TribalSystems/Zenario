@@ -70,10 +70,10 @@ switch ($path) {
 			
 		} elseif (post('reorder') && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
 			foreach (explode(',', $ids) as $id) {
-				if (post('item__'. $id)) {
+				if (!empty($_POST['ordinals'][$id])) {
 					$sql = "
 						UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "forums SET
-							ordinal = ". (int) post('item__'. $id). "
+							ordinal = ". (int) $_POST['ordinals'][$id]. "
 						WHERE id = ". (int) $id;
 					sqlQuery($sql);
 				}

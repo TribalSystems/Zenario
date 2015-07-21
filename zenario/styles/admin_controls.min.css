@@ -21,7 +21,7 @@ div.zenario_slotAdminControlBox{position:relative;z-index:98;float:right;width:3
 div.zenario_adminSlotControlsOpen a.zenario_movePlugin,div.zenario_adminSlotControlsOpen a.zenario_swapPlugin,div.zenario_adminSlotControlsOpen a.zenario_cancelMovePlugin,div.zenario_adminSlotControlsOpen a.zenario_openSlotControls{border-color:#464646}
 div.zenario_slotAdminControlBox a.zenario_movePlugin,div.zenario_slotAdminControlBox a.zenario_swapPlugin{margin-top:0;margin-left:0;background:center top no-repeat #333 url(../admin/images/slots/move_plugin.png)}
 div.zenario_slotAdminControlBox a.zenario_cancelMovePlugin{margin-top:0;margin-left:0;background:center top no-repeat #333 url(../admin/images/slots/cancel_move_plugin.png)}
-div.zenario_slotAdminControlBox a.zenario_openSlotControls{margin-top:0;margin-left:0;display:block;background:#333 url('../admin/images/sprites/org-icons-1.png') no-repeat -257px -212px}
+div.zenario_slotAdminControlBox a.zenario_openSlotControls{margin-top:0;margin-left:0;display:block;background:#333 url('../admin/images/sprites/org-icons-v2.png') no-repeat -257px -212px}
 .zenario_reusable div.zenario_slotAdminControlBox a.zenario_openSlotControls{background:center 4px no-repeat url(../admin/images/slots/reusable-icon.png) #333}
 .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls{background:center 4px no-repeat url(../admin/images/slots/wireframe-icon.png) #333}
 body.zenario_pageMode_edit .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls,body.zenario_pageMode_edit_disabled .zenario_wireframe div.zenario_slotAdminControlBox a.zenario_openSlotControls{background:center 4px no-repeat url(../admin/images/slots/edit-icon.png) #333}

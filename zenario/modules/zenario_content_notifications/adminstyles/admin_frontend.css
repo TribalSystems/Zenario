@@ -7,6 +7,7 @@
 	height:22px;
 	display:block;
 	float:right;
+	cursor:pointer;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_no_request a {

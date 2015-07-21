@@ -34,7 +34,7 @@ if (!isset($_SESSION)) {
 $logoURL = $logoWidth = $logoHeight = false;
 if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
- && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'"))
+ && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
  && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
 	$logoURL = $logoURL;
@@ -64,6 +64,12 @@ if ($reportDBOutOfDate && checkPriv()) {
 	$errorMessage = setting('site_disabled_message');
 	$adminLink = 'zenario/admin/welcome.php?og=zenario__administration/panels/site_settings//site_disabled';
 }
+
+$errorMessage = adminPhrase($errorMessage, array('admin_link' => htmlspecialchars($adminLink)));
+
+//Workaround for a bug where TinyMCE can add "zenario/admin" into the login link a second time
+$errorMessage = str_replace('zenario/admin/zenario/admin', 'zenario/admin', $errorMessage);
+
 
 echo '
 <html>
@@ -110,10 +116,7 @@ echo '
 				alt="', adminPhrase('Pit canary. Image broken? Check that you have the .htaccess file in your site home directory, and that Apache is reading it!'), '"
 			/>
 			<div>
-				', adminPhrase(
-					$errorMessage,
-					array('admin_link' => htmlspecialchars($adminLink))
-				), '
+				', $errorMessage, '
 			</div>
 		</div>
 	</body>

@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (cms_core::$canCache 
  && isset($chToLoadStatus)
  && setting('compress_web_pages') && setting('cache_web_pages') && setting('cache_ajax')
- && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showIframe', 'showRSS', 'showSlot')) {
+ && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
 	
 	$chToSaveStatus = array();
 	$chToSaveStatus['u'] = 'u';

@@ -60,11 +60,7 @@ switch ($path) {
 			}
 		} else {
 			foreach($panel['items'] as $id => &$item) {
-				if ($item['recipients'] = zenario_newsletter::newsletterRecipients($id, 'count')) {
-					$item['traits'] = array('has_recipients' => true);
-				} else {
-					$item['traits'] = array('has_no_recipients' => true);
-				}
+				$item['recipients'] = zenario_newsletter::newsletterRecipients($id, 'count');
 			} 
 		}
 		break;
@@ -128,5 +124,67 @@ switch ($path) {
 	case 'zenario__content/panels/email_images_for_newsletters':
 		$zenario_common_features = new zenario_common_features;
 		return $zenario_common_features->fillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
+		
+	case 'zenario__content/panels/image_library':
+		foreach ($panel['items'] as $id => &$item) {
+			$text = '';
+			$comma = false;
+			$usage_newsletters = (int)$item['usage_newsletters'];
+			$usage_newsletter_templates = (int)$item['usage_newsletter_templates'];
+			$newsletterUsage = $usage_newsletters + $usage_newsletter_templates;
+			if ($newsletterUsage === 1) {
+				if ($usage_newsletters === 1) {
+					$sql = '
+						SELECT 
+							n.newsletter_name
+						FROM ' . DB_NAME_PREFIX . 'inline_images ii
+						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletters n
+							ON ii.foreign_key_id = n.id
+							AND ii.foreign_key_to = "newsletter"
+						WHERE image_id = ' . $item['id'] . '
+						AND archived = 0';
+					$result = sqlSelect($sql);
+					$row = sqlFetchAssoc($result);
+					$text .= adminPhrase('Used on "[[newsletter_name]]"', $row);
+				} else {
+					$sql = '
+						SELECT 
+							nt.name
+						FROM ' . DB_NAME_PREFIX . 'inline_images ii
+						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_templates nt
+							ON ii.foreign_key_id = nt.id
+							AND ii.foreign_key_to = "newsletter_template"
+						WHERE image_id = ' . $item['id'] . '
+						AND archived = 0';
+					$result = sqlSelect($sql);
+					$row = sqlFetchAssoc($result);
+					$text .= adminPhrase('Used on "[[name]]"', $row);
+				}
+			} elseif ($newsletterUsage > 1) {
+				$text .= 'Used on ';
+				if ($usage_newsletters > 0) {
+					$text .= nAdminPhrase(
+						'[[count]] newsletter',
+						'[[count]] newsletters',
+						$usage_newsletters,
+						array('count' => $usage_newsletters)
+					);
+					$comma = true;
+				}
+				if ($usage_newsletter_templates > 0) {
+					if ($comma) {
+						$text .= ', ';
+					}
+					$text .= nAdminPhrase(
+						'[[count]] newsletter template',
+						'[[count]] newsletter templates',
+						$usage_newsletter_templates,
+						array('count' => $usage_newsletter_templates)
+					);
+				}
+			}
+			$item['all_usage_newsletters'] = $text;
+		}
+		break;
 
 }

@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise, news, ticker
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: News Ticker
 description: |
             <p>Displays a scrolling "news ticker" on your website.

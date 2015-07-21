@@ -35,7 +35,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //try to check for a landing page set up for their country.
 //If one is found, take them there rather than leaving them on the home page.
 if (empty($_GET) && empty($_POST)) {
-	if (inc('zenario_geoip_lookup')
+	
+	//Check for a language-specific domain. If one is being used, don't do a redirect
+	$languageSpecificDomain = false;
+	foreach (cms_core::$langs as $langId => $lang) {
+		if ($lang['domain']
+		 && $lang['domain'] == $_SERVER['HTTP_HOST']) {
+			$languageSpecificDomain = true;
+			break;
+		}
+	}
+	
+	if (!$languageSpecificDomain
+	 && inc('zenario_geoip_lookup')
 	 && inc('zenario_country_manager')
 	 && inc('zenario_geo_landing_pages')) {
 		
@@ -56,6 +68,7 @@ if (empty($_GET) && empty($_POST)) {
 		unset($redirectToCID);
 		unset($redirectToCType);
 	}
+	unset($languageSpecificDomain);
 
 
 

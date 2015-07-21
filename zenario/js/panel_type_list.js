@@ -67,16 +67,11 @@ var methods = methodsOf(
 
 methods.showPanel = function($header, $panel, $footer) {
 	this.setHeader($header);
+	this.showViewOptions($header);
 	
-	//Show the view "options" button if in list view
-	$header.find('#organizer_viewOptions').show();
-	
-	this.items = zenarioO.getPanelItems(false);
-	$panel.html(zenarioA.microTemplate('zenario_organizer_list', this.items));
-	$panel.show();
+	this.drawItems($panel);
 	this.setupListViewColumns($panel);
 	this.setScroll($panel);
-	
 	
 	this.setTooltips($header, $panel, $footer);
 	
@@ -91,6 +86,14 @@ methods.returnPageSize = function() {
 	} else {
 		return methodsOf(panelTypes.grid).returnPageSize.call(this);
 	}
+};
+
+
+
+methods.drawItems = function($panel) {
+	this.items = this.getMergeFieldsForItemsAndColumns();
+	$panel.html(zenarioA.microTemplate('zenario_organizer_list', this.items));
+	$panel.show();
 };
 
 
@@ -174,6 +177,40 @@ methods.closeInspectionView = function(id) {
 
 
 
+
+methods.addExtraMergeFieldsForColumns = function(data, column) {
+	
+	var c = column.id,
+		prefs = zenarioO.prefs[this.path] || {},
+		columnWidth;
+	
+	if (prefs.colSizes
+	 && prefs.colSizes[c]) {
+		columnWidth = Math.max(prefs.colSizes[c], zenarioO.columnWidths.xxsmall);
+	} else {
+		columnWidth = this.tuix.columns[c].width;
+	}
+	
+	if (columnWidth && zenarioO.columnWidths[columnWidth]) {
+		columnWidth = zenarioO.columnWidths[columnWidth];
+	
+	} else if (!(columnWidth = 1*columnWidth)) {
+		columnWidth = zenarioO.defaultColumnWidth
+	}
+	
+	if (data.totalWidth) {
+		data.totalWidth += zenarioO.columnSpacing;
+	}
+	data.totalWidth += columnWidth + zenarioO.columnPadding;
+	
+	column.width = columnWidth;
+};
+
+
+
+methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
+	cell.width = column.width;
+};
 
 
 //This function makes all of the columns in list view the correct size,
@@ -354,10 +391,11 @@ methods.setupReordering = function($panel) {
 				
 					//Look through newOrder and oldOrder for any changes, and update those column
 					var actionRequests = zenarioO.getKey();
+					actionRequests.ordinals = {};
 					foreach (newOrder as itemNo => i) {
 						if (i != oldOrder[itemNo]) {
 							saves += (saves? ',' : '') + i;
-							actionRequests['item__' + i] = values[itemNo];
+							actionRequests.ordinals[i] = values[itemNo];
 						}
 					}
 					actionRequests.reorder = true;

@@ -36,6 +36,22 @@ class zenario_users__admin_boxes__content extends zenario_users {
 		$equivId = $cID = $cType = false;
 		
 		if (empty($box['tabs']['privacy']['hidden'])) {
+			//Populate the list of groups
+			$lov = listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+		
+			//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
+			//people to be able to select them
+			foreach ($lov as &$v) {
+				if (empty($v['parent'])) {
+					$v['readonly'] =
+					$v['disabled'] = true;
+					$v['style'] = 'display: none;';
+				}
+			}
+		
+			$box['tabs']['privacy']['fields']['group_members']['values'] = $lov;
+			
+			
 			//Default newly create items to "public"
 			$values['privacy/privacy'] = ifNull($box['key']['target_privacy'], 'public');
 			

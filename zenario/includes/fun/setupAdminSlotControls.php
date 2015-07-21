@@ -84,7 +84,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 		//Call the fill method for each Module that added tags
 		foreach ($modules as $className => &$module) {
 			if (!isset($activeModules[$className])) {
-				$activeModules[$className] = activateModuleClass($className);
+				$activeModules[$className] = activateModule($className);
 			}
 			
 			$activeModules[$className]->fillAllAdminSlotControls(
@@ -134,7 +134,7 @@ if (!empty($slotContents) && is_array($slotContents)) {
 				
 				$foundButton = false;
 				foreach ($tags[$section] as $id => &$control) {
-					if (!isInfoTag($id) && !empty($control['label']) && !engToBooleanArray($control, 'hidden')) {
+					if (is_array($control) && !empty($control['label']) && !engToBooleanArray($control, 'hidden')) {
 						$foundButton = true;
 						
 						$thisHtml .= '<div id="'. htmlspecialchars('zenario_slot_control__'. $slotName. '__'. $section. '__'. $id). '" class="zenario_sc ';

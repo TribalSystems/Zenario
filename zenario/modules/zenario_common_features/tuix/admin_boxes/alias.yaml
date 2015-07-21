@@ -44,7 +44,8 @@ zenario_alias:
                 lang_code_in_url:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
-                                 && zenarioAB.value('update_translations') == 'update_this'
+                        && zenarioAB.value('update_translations') == 'update_this'
+                        && !(zenarioA.siteSettings.mod_rewrite_enabled && zenarioA.siteSettings.mod_rewrite_slashes)
                     label: 'Language code:'
                     type: select
                     values:
@@ -62,7 +63,8 @@ zenario_alias:
                 lang_code_in_url_dummy:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
-                                 && zenarioAB.value('update_translations') != 'update_this'
+                        && zenarioAB.value('update_translations') != 'update_this'
+                        && !(zenarioA.siteSettings.mod_rewrite_enabled && zenarioA.siteSettings.mod_rewrite_slashes)
                     label: 'Language code:'
                     type: select
                     read_only: Yes

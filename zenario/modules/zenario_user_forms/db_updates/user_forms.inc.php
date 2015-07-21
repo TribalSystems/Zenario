@@ -116,3 +116,13 @@ if (needRevision(19)) {
 	}
 	revision(19);
 }
+
+revision (22
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ADD COLUMN `crm_response` text DEFAULT NULL
+_sql
+
+
+);

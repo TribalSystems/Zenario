@@ -1,0 +1,69 @@
+<div id="organizer_form_field_{{m.id}}" class="form_field {{m.type}} {{m.css_classes}}" data-id="{{m.id}}">
+	
+	<% m.display_label = m.label ? m.label : 'Untitled' %>
+	
+	<% if (m.type == 'group') { %>
+		<input type="checkbox" disabled/>
+		<label class="label">{{m.display_label}}</label>
+	
+	<% } else if (m.type == 'checkbox') { %>
+		<input type="checkbox" disabled/>
+		<label class="label">{{m.display_label}}</label>
+	
+	<% } else if (m.type == 'checkboxes') { %>
+		<span class="label">{{m.display_label}}</span>
+		<div id="organizer_form_field_values_{{m.id}}">
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_checkbox_values', m.lov)}}
+		</div>
+	
+	<% } else if (m.type == 'date') { %>
+		<span class="label">{{m.display_label}}</span>
+		<input type="text" value="{{m.value}}" readonly class="datepicker"/>
+	
+	<% } else if (m.type == 'editor') { %>
+		<span class="label">{{m.display_label}}</span>
+		<img src="{{m.field_placeholder}}"/>
+		
+	<% } else if (m.type == 'radios') { %>
+		<span class="label">{{m.display_label}}</span>
+		<div id="organizer_form_field_values_{{m.id}}">
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_radio_values', m.lov)}}
+		</div>
+	
+	<% } else if (m.type == 'centralised_radios') { %>
+		<span class="label">{{m.display_label}}</span>
+		<div id="organizer_form_field_values_{{m.id}}">
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_radio_values', m.lov)}}
+		</div>
+	
+	<% } else if (m.type == 'select') { %>
+		<span class="label">{{m.display_label}}</span>
+		<select readonly disabled>
+			<option>-- Select --</option>
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_select_values', m.lov)}}
+		</select>
+	
+	<% } else if (m.type == 'centralised_select') { %>
+		<span class="label">{{m.display_label}}</span>
+		<select readonly disabled>
+			<option>-- Select --</option>
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_select_values', m.lov)}}
+		</select>
+		
+	<% } else if (m.type == 'text') { %>
+		<span class="label">{{m.display_label}}</span>
+		<input type="text" value="" readonly/>
+	
+	<% } else if (m.type == 'textarea') { %>
+		<span class="label">{{m.display_label}}</span>
+		<textarea disabled></textarea>
+	
+	<% } else if (m.type == 'url') { %>
+		<span class="label">{{m.display_label}}</span>
+		<input type="text" value="http://" readonly class="url"/>
+	
+	<% } else { %>
+		<span class="label">{{m.display_label}}</span>
+		<div class="other"></div>
+	<% } %>
+</div>

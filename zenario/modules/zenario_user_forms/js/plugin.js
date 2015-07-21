@@ -91,7 +91,7 @@ zenario_user_forms.toggleFieldVisibility = function(
 	});
 };
 
-zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier) {
+zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox) {
 	// Enter key advances to next stage instead of submitting form
 	$('#'+identifier+' :input:not(textarea)').on('keydown', function(event) {
 		if (event.keyCode == 13) {
@@ -137,17 +137,22 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 						$(errorSelector+' div.field_title').after(html);
 					}
 				}
-				$('#'+containerId).effect( "shake", {distance: 10, times: 3, duration: 300});
+				var selector = containerId;
+				if (isFloatingBox) {
+					selector = 'colorbox';
+				}
+				$('#'+selector).effect( "shake", {distance: 10, times: 3, duration: 300});
 			} else {
 				// Submit if final button
 				if (submitForm) {
 					$('#'+identifier+'__form').submit();
 				} else {
-					//current.hide();
 					current.css('visibility', 'visible');
 					next.show('slide', {direction: 'right'}, 500);
 					current.hide();
-					$('html, body').animate({scrollTop:$('#'+containerId).offset().top - 20});
+					if (!isFloatingBox) {
+						$('html, body').animate({scrollTop:$('#'+containerId).offset().top - 20});
+					}
 				}
 			}
 		});

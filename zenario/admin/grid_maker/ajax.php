@@ -105,8 +105,9 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		if (empty($a)) {
 			
 			//If this is from an existing Layout, check what the slot names originally were and what they are now.
+			$newNames = array();
 			$oldToNewNames = array();
-			zenario_grid_maker::checkForRenamedSlots($data, $oldToNewNames);
+			zenario_grid_maker::checkForRenamedSlots($data, $newNames, $oldToNewNames);
 			
 			
 			//Attempt to save, and report on what happened
@@ -219,6 +220,17 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 						$a['success'] .= ' '. adminPhrase('Your layout has been created.');
 					}
 					
+					//Whether we are saving a new layout or updating an existing one,
+					//update the information on the grid.
+					if ($a['layoutId']) {
+						$submission = array();
+						foreach (array('cols', 'minWidth', 'maxWidth', 'fluid', 'responsive') as $var) {
+							$submission[$var] = $data[$var];
+						}
+						saveTemplate($submission, $a['layoutId']);
+					}
+						
+					
 					//Look for any renamed slots
 					if ($renameSlotsInDatabase && !empty($layout)) {
 						
@@ -272,6 +284,26 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 								sqlUpdate($sql);
 							}
 						}
+						
+						//Make sure all of the slots are recorded in the database
+						foreach ($newNames as $newName) {
+							setRow(
+								'template_slot_link',
+								array(),
+								array(
+									'family_name' => $layout['family_name'],
+									'file_base_name' => $layout['file_base_name'],
+									'slot_name' => $newName)
+							);
+						}
+						
+						//Remove any deleted slots from the database
+						$sql = "
+							DELETE FROM ". DB_NAME_PREFIX. "template_slot_link
+							WHERE family_name = '". sqlEscape($layout['family_name']). "'
+							  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'
+							  AND slot_name NOT IN (". inEscape($newNames). ")";
+						sqlUpdate($sql);
 					}
 				}
 			}

@@ -1,6 +1,6 @@
-<strong>
+<span class="tag_name">
 	{{m.tag|escape}}
-</strong>
+</span>
 
 <br>
 &nbsp; &nbsp;
@@ -47,6 +47,25 @@
 	<span><em>
 		enum ({{devTools.arrayToList(m.schema.enum)|escape}})
 	</em></span>
+<% } %>
+
+<% if (m.parent && m.parent.schema && m.parent.schema.additionalProperties) { %>
+<% } else { %>
+	<br/>
+	&nbsp; &nbsp;
+	<% if (m.data === undefined) { %>
+		<% if (m.isRequired) { %>
+			missing required property
+		<% } else { %>
+			optional, isn't set
+		<% } %>
+	<% } else { %>
+		<% if (m.isRequired) { %>
+			required
+		<% } else { %>
+			optional
+		<% } %>
+	<% } %>
 <% } %>
 
 <% if (m.schema.description) { %>

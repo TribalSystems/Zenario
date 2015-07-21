@@ -312,7 +312,7 @@ zenarioA.addNewReusablePlugin = function(path, key, row) {
 	var instanceId = key.id, slotName = zenarioA.pickNewPluginSlotName, level = zenarioA.pickNewPluginLevel;
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {addPluginInstance: instanceId, slotName: slotName, level: level, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {addPluginInstance: instanceId, slotName: slotName, level: level, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -333,7 +333,7 @@ zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
 			cType: zenario.cType,
 			cVersion: zenario.cVersion
 		},
-		html = zenario.pluginClassAJAX('zenario_common_features', req, false);
+		html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
 	
 	if (zenarioA.loggedOut(html)) {
 		return;
@@ -341,7 +341,7 @@ zenarioA.addNewWireframePlugin = function(el, slotName, moduleId) {
 	
 	zenarioA.floatingBox(html, $(el).text(), 'warning', false, false, function() {
 	
-		var error = zenario.pluginClassAJAX('zenario_common_features', req, true);
+		var error = zenario.moduleNonAsyncAJAX('zenario_common_features', req, true);
 	
 		if (error) {
 			zenarioA.showMessage(error);
@@ -389,7 +389,7 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 		if (zenarioA.toolbar == 'edit') {
 			zenarioA.doMovePlugin2(moveSource, moveDestination, 1);
 		} else if (zenarioA.toolbar == 'template') {
-			var html = zenario.pluginClassAJAX('zenario_common_features', {movePlugin: 1, level: 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false);
+			var html = zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: 2, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, false);
 			
 			if (zenarioA.loggedOut(html)) {
 				return;
@@ -406,13 +406,13 @@ zenarioA.doMovePlugin = function(el, moveDestination) {
 
 zenarioA.doMovePlugin2 = function(moveSource, moveDestination, level) {
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {movePlugin: 1, level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {movePlugin: 1, level: level, slotNameSource: moveSource, slotNameDestination: moveDestination, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
 	} else {
-		zenario.refreshPluginSlot(moveSource, '');
-		zenario.refreshPluginSlot(moveDestination, '');
+		zenario.refreshPluginSlot(moveSource, '', zenarioA.importantGetRequests);
+		zenario.refreshPluginSlot(moveDestination, '', zenarioA.importantGetRequests);
 	}
 };
 
@@ -463,7 +463,7 @@ zenarioA.copyContents = function(el, slotName, allowedModules) {
 	el.blur();
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {copyContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {copyContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -476,7 +476,7 @@ zenarioA.cutContents = function(el, slotName, allowedModules) {
 	el.blur();
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {cutContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {cutContents: 1, allowedModules: allowedModules, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -489,7 +489,7 @@ zenarioA.pasteContents = function(el, slotName) {
 	el.blur();
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {pasteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {pasteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -503,7 +503,7 @@ zenarioA.overwriteContents = function(el, slotName) {
 	
 	zenarioA.floatingBox(phrase.overwriteContentsConfirm, $(el).text(), 'warning', false, false, function() {
 		var error = 
-			zenario.pluginClassAJAX('zenario_common_features', {overwriteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+			zenario.moduleNonAsyncAJAX('zenario_common_features', {overwriteContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 		if (error) {
 			zenarioA.showMessage(error);
@@ -520,7 +520,7 @@ zenarioA.swapContents = function(el, slotName) {
 	
 	zenarioA.floatingBox(phrase.swapContentsConfirm, $(el).text(), 'warning', false, false, function() {
 		var error = 
-			zenario.pluginClassAJAX('zenario_common_features', {swapContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+			zenario.moduleNonAsyncAJAX('zenario_common_features', {swapContents: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 		if (error) {
 			zenarioA.showMessage(error);
@@ -548,7 +548,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 		},
 		doRemovePlugin = function() {
 			var error = 
-				zenario.pluginClassAJAX('zenario_common_features', req, true);
+				zenario.moduleNonAsyncAJAX('zenario_common_features', req, true);
 	
 			if (error) {
 				zenarioA.showMessage(error);
@@ -558,7 +558,7 @@ zenarioA.removePlugin = function(el, slotName, level) {
 		};
 	
 	if (level > 1) {
-		html = zenario.pluginClassAJAX('zenario_common_features', req, false);
+		html = zenario.moduleNonAsyncAJAX('zenario_common_features', req, false);
 		
 		if (zenarioA.loggedOut(html)) {
 			return;
@@ -577,7 +577,7 @@ zenarioA.hidePlugin = function(el, slotName) {
 	el.blur();
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {hidePlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {hidePlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -591,7 +591,7 @@ zenarioA.showPlugin = function(el, slotName) {
 	el.blur();
 	
 	var error = 
-		zenario.pluginClassAJAX('zenario_common_features', {showPlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
+		zenario.moduleNonAsyncAJAX('zenario_common_features', {showPlugin: 1, slotName: slotName, cID: zenario.cID, cType: zenario.cType, cVersion: zenario.cVersion}, true);
 	
 	if (error) {
 		zenarioA.showMessage(error);
@@ -1014,15 +1014,6 @@ zenarioA.closeBoxHandler = function(box) {
 		}, 100);
 };
 
-zenarioA.infoBox2 = function(html) {
-	zenarioA.openBox(html, 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 405, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
-	
-	$('#zenario_fbAdminInfoBox .zenario_infoBoxDirectory').each(function(i, el) {
-		el.innerHTML = zenarioA.forcePathWrap(el.innerHTML);
-	});
-};
-
-
 //Fix a bug where the directory path does not wrap in Webkit/IE
 zenarioA.forcePathWrap = function(html, pattern, replacement) {
 	
@@ -1189,131 +1180,6 @@ zenarioA.closeFloatingBox = function(stopBoxClosingTwice) {
 //Add jQuery elements automatically by class name
 zenarioA.addJQueryElements = function(path) {
 	
-	var onchange_callback = undefined;
-	
-	if (zenarioAB.isOpen) {
-		onchange_callback = function(inst) {
-			zenarioAB.fieldChange(inst.id);
-		}
-	}
-	
-	var	content_css = undefined;
-	
-	//if (zenario.skinId) {
-	//	content_css = URLBasePath + 'zenario/styles/skin.css.php?v=' + encodeURIComponent(window.zenarioCSSJSVersionNumber) + '&id=' + zenario.skinId + '&editor=1' + (zenario.useGZ? '' : '&gz=1');
-	//}
-
-	//Add TinyMCE editors to the page
-	zenarioA.getSkinDesc();
-	var options = {
-		script_url: URLBasePath + zenarioA.tinyMCEPath,
-		
-		inline: false,
-		menubar: false,
-		statusbar: false,
-		plugins: "autoresize",
-		convert_urls: false,
-		readonly: true,
-		
-		inline_styles: false,
-		allow_events: true,
-		allow_script_urls: true,
-		
-		autoresize_max_height: Math.max(Math.floor(($(window).height()) * 0.5), 300),
-		
-		onchange_callback: onchange_callback,
-		init_instance_callback: function(instance) {
-			zenarioA.enableDragDropUploadInTinyMCE(false, undefined, get('row__' + ifNull(instance.editorId, instance.id)));
-			var el;
-			if ((el = instance.editorContainer)
-			 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-			 && (el = el[0])
-			 && (el = el.contentWindow)) {
-				zenarioA.enableDragDropUploadInTinyMCE(false, undefined, el);
-			}
-		}
-	}
-	$(path + 'textarea.tinymce_readonly').tinymce(options);
-	
-	
-	var options2 = $.extend(true, {}, options, {
-		plugins: [
-			"advlist autolink lists link image charmap hr anchor",
-			"searchreplace code",
-			"nonbreaking table contextmenu directionality",
-			"paste autoresize"],
-		
-		image_advtab: true,
-        browser_spellcheck: true,
-		
-		paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
-
-		readonly: false,
-		
-		relative_urls: true,
-		document_base_url: URLBasePath,
-		
-		content_css: content_css,
-		toolbar: 'undo redo | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
-		style_formats: zenarioA.skinDesc.style_formats,
-		oninit: undefined
-	});
-	$(path + 'textarea.tinymce').tinymce(options2);
-	
-	var options3 = $.extend(true, {}, options2, {
-		relative_urls: false,
-		document_base_url: undefined,
-		toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
-		
-		file_browser_callback: zenarioA.fileBrowser,
-		init_instance_callback: function(instance) {
-			zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, get('row__' + ifNull(instance.editorId, instance.id)));
-			var el;
-			if ((el = instance.editorContainer)
-			 && (el = $('#' + instance.editorContainer.id + ' iframe'))
-			 && (el = el[0])
-			 && (el = el.contentWindow)) {
-				zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
-			}
-		}
-	});
-	$(path + 'textarea.tinymce_with_images_and_links').tinymce(options3);
-	
-	var options4 = $.extend(true, {}, options3, {
-		toolbar: 'undo redo | image | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
-	});
-	$(path + 'textarea.tinymce_with_images').tinymce(options4);
-	
-	var options5 = $.extend(true, {}, options4, {
-		toolbar: 'undo redo | link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
-	});
-	$(path + 'textarea.tinymce_with_links').tinymce(options5);
-	
-	
-	
-	
-	//Look for fields that IDs from Organizer, and look up what the names should be
-	$(path + '.look_value_from_sk').each(function(i, el) {
-		//Requires three fields with ids in the format: "id", "name_for_id" and "target_path_for_id" to work.
-		if (el.id && el.id.substr(0, 9) == 'name_for_') {
-			var id = el.id.substr(9);
-			var pathEl, valueEl, panel;
-			if ((valueEl = get(id)) && (pathEl = get('target_path_for_' + id))) {
-				if (valueEl.value && valueEl.value != 0) {
-					if (panel = zenarioA.getSKItem(pathEl.value, valueEl.value)) {
-						var labelTag = ifNull(panel.default_sort_column, 'name');
-						if (panel.items && panel.items[valueEl.value] && panel.items[valueEl.value][labelTag]) {
-							if (el.type && el.type == 'text') {
-								el.value = (panel.items[valueEl.value][labelTag] + '').replace(/\s/g, ' ');
-							} else {
-								el.innerHTML = htmlspecialchars(panel.items[valueEl.value][labelTag]);
-							}
-						}
-					}
-				}
-			}
-		}
-	});
 	
 	//jQuery datepickers (Admin mode version)
 	$(path + 'input.zenario_datepicker').each(function(i, el) {
@@ -1459,7 +1325,7 @@ zenarioA.addMediaToTinyMCE = function(prefix) {
 		foreach (files as var f => var file) {
 			if (file && file.checksum && file.filename) {
 				
-				var url = prefix + 'zenario/file.php?c=' + file.checksum + '&usage=editor_temp_file&filename=' + encodeURIComponent(file.filename);
+				var url = prefix + 'zenario/file.php?c=' + file.checksum + '&filename=' + encodeURIComponent(file.filename);
 				
 				html += '\n' +
 					'<img src="' + htmlspecialchars(url) + '" alt="' + htmlspecialchars(file.filename) + '"' +
@@ -1478,7 +1344,7 @@ zenarioA.getSkinDesc = function() {
 		
 		var desc;
 		if (zenario.skinId
-		 && (desc = zenario.pluginClassAJAX('zenario_common_features', {skinId: zenario.skinId}, false, true))
+		 && (desc = zenario.moduleNonAsyncAJAX('zenario_common_features', {skinId: zenario.skinId}, false, true))
 		 && (typeof desc == 'object')) {
 			zenarioA.skinDesc = desc;
 		}
@@ -1580,7 +1446,7 @@ zenarioA.setLinkURL = function(path, key, row) {
 	
 	//Get the URL via an AJAX program
 	key.getItemURL = true;
-	var URL = zenario.pluginClassAJAX('zenario_common_features', key, true);
+	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
 	
 	if (zenarioA.loggedOut(URL)) {
 		return;
@@ -1862,7 +1728,7 @@ zenarioA.organizerSelect = function(
 ) {
 	
 	var win,
-		useIframe = !skQuick || zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('og');
+		useIframe = !skQuick || zenarioA.isFullOrganizerWindow || zenarioA.checkIfBoxIsOpen('og');
 	
 	if (!object) {
 		object = {};
@@ -2276,7 +2142,7 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 	
 	if (key.id) {
 		//If this is an existing Menu Item, open it in Organizer Quick
-		var path = zenario.pluginClassAJAX('zenario_common_features', {getMenuItemStorekeeperDeepLink: key.id, languageId: key.languageId}, true);
+		var path = zenario.moduleNonAsyncAJAX('zenario_common_features', {getMenuItemStorekeeperDeepLink: key.id, languageId: key.languageId}, true);
 		
 		if (zenarioA.loggedOut(path)) {
 			return;
@@ -2422,24 +2288,21 @@ zenarioA.draftDoCallback = function(aId) {
 //Admin Actions
 
 
-zenarioA.hidden = function(tuixObject, checkJsFunction) {
-	delete tuixObject._h_js;
+zenarioA.hidden = function(tuixObject, checkJsFunction, item, id) {
 	var c;
+	//tuixObject._was_hidden_before = true;
 	
 	if (engToBoolean(tuixObject.hidden)) {
 		return true;
 	
 	//Don't show a <call_js_function> button or toolbar that calls a function that does not exist
 	} else if (checkJsFunction && (tuixObject.call_js_function && !zenarioA.checkFunctionExists(tuixObject.call_js_function['function'], tuixObject.call_js_function.encapsulated_object))) {
-		
-		tuixObject._h_js = true;
 		return true;
 	
 	//Check a JavaScript condition (which used to be called "js_condition" but is now called "visible_if")
 	} else if (c = tuixObject.visible_if || tuixObject.js_condition) {
 		//try {
-			if (!zenarioA.eval(c, tuixObject)) {
-				tuixObject._h_js = true;
+			if (!zenarioA.eval(c, tuixObject, item, id)) {
 				return true;
 			}
 		//} catch (e) {
@@ -2447,6 +2310,8 @@ zenarioA.hidden = function(tuixObject, checkJsFunction) {
 		//	tuixObject.visible_if = false;
 		//}
 	}
+	
+	//delete tuixObject._was_hidden_before;
 	return false;
 };
 
@@ -3076,6 +2941,10 @@ zenarioA.sortArrayByOrd = function(a, b) {
 	return zenarioA.sortLogic(a, b, 'ord');
 };
 
+zenarioA.sortArrayByOrdinal = function(a, b) {
+	return zenarioA.sortLogic(a, b, 'ordinal');
+};
+
 zenarioA.sortLogic = function(a, b, prop) {
 	
 	//Check to see if they're identical
@@ -3135,8 +3004,11 @@ zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageReques
 	//Secondly there's a slight time delay inserted on the 404 errors using setTimeout(), as a work around to try and prevent any race-conditions
 
 zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
+	
 	if (!zenarioA.unloaded) {
-		var msg = '<!--Button_HTML:-->';
+		var msg = '',
+			buttonsHTML = '',
+			fun;
 		
 		if (statusText) {
 			msg += '<h1><b>' + htmlspecialchars(resp.status + ' ' + statusText) + '</b></h1>';
@@ -3162,10 +3034,28 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 				htmlspecialchars(zenario.checkLastUrl) +
 			'</p>';
 		
+		
+		showErrorMessage = function() {
+			if (resp.zenario_retry) {
+				buttonsHTML =
+					'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
+				
+				zenarioA.nowDoingSomething();
+				zenarioA.showMessage(msg, buttonsHTML, 'error', true)
+				
+				$('#zenario_retry').click(function() {
+					setTimeout(resp.zenario_retry, 1);
+				});
+				
+			} else {
+				zenarioA.showMessage(msg, '', 'error');
+			}
+		}
+		
 		if (resp.status == 0 || statusType == 'timeout') {
-			setTimeout(function() { zenarioA.showMessage(msg, true, 'error'); }, 750);
+			setTimeout(showErrorMessage, 750);
 		} else {
-			zenarioA.showMessage(msg, true, 'error');
+			showErrorMessage();
 		}
 	}
 };

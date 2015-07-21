@@ -177,19 +177,9 @@ sections:
                 priv: _PRIV_TRASH_CONTENT_ITEM
                 label: Trash
                 css_class: zenario_trash_content label_to_the_left
-                ajax:
-                    confirm:
-                        message: |
-                            Trashing this content item will remove it from the site. It will no longer be visible to site visitors.
-                            
-                            You can recover a trashed item in Organizer, go to Content and then click on the trash can.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Trash
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        trash: "1"
+                
+                admin_box:
+                    path: zenario_trash
             unhide:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT

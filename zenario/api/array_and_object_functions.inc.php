@@ -165,14 +165,14 @@ function putErrorsOnAdminBoxTabs(&$box, $e, $defaultTab = false, $specifics = ar
 	
 	if (!empty($box['tabs'])) {
 		foreach ($box['tabs'] as $tabName => &$tab) {
-			if (!isInfoTag($tabName) && !empty($tab['fields'])) {
+			if (is_array($tab) && !empty($tab['fields'])) {
 				
 				if (!$defaultTab || !isset($box['tabs'][$defaultTab])) {
 					$defaultTab = $tabName;
 				}
 				
 				foreach ($tab['fields'] as $fieldName => &$field) {
-					if (!isInfoTag($fieldName)) {
+					if (is_array($field)) {
 						if (isset($errors[$fieldName]) && empty($errors[$fieldName]['t'])) {
 							$errors[$fieldName]['t'] = $tabName;
 						}

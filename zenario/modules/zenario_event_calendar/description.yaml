@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Event Calendar
 description: |
     <p>When a Plugin from this Module is inserted into a Slot on a visitor-facing page, it displays a calendar in either month-view or year-view format, highlighting any days/months that contain Events. </p>

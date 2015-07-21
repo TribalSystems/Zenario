@@ -53,4 +53,11 @@ if (needRevision(30752)) {
 				'default_previous_button_text' => 'Back'), 
 			$id);
 	}
+	revision(30752);
+}
+
+// Mark all sortable columns as indexed
+if (needRevision(31762)) {
+	updateRow('custom_dataset_fields', array('create_index' => 1), array('sortable' => 1));
+	revision(31762);
 }

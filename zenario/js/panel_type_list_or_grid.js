@@ -59,73 +59,191 @@ zenario.lib(function(
 	//extensionOf() creates a new class (optionally as an extension of another class).
 	//methodsOf() allows you to get to the methods of a class.
 var methods = methodsOf(
-	panelTypes.grid_or_list = extensionOf(panelTypes.list)
+	panelTypes.grid_or_list = function() {}
 );
 
 
+
 methods.init = function() {
+	//This class works by taking two other classes and switching between them on a toggle
+	var methodName, type,
+		that = this,
+		panelTypeA = this.returnPanelTypeA(),
+		panelTypeB = this.returnPanelTypeB(),
+		pia = this.pia = new panelTypeA,
+		pib = this.pib = new panelTypeB,
+		methods = {};
+	
+	//Get a combined list of all of the methods and properties from the parent classes
+	//Note: we must NOT use "hasOwnProperty" (or any shortcut function to hasOwnProperty) because we
+	//want all of the methods the class has, including its parent methods
+	for (methodName in pia) {
+		methods[methodName] = typeof pia[methodName];
+	}
+	for (methodName in pib) {
+		methods[methodName] = typeof pib[methodName];
+	}
+	
+	//Loop through each of them, setting up pointers to them
+	foreach (methods as methodName => type) {
+		(function(methodName, type) {
+			var childMethod;
+		
+			switch (methodName) {
+				//Some special cases, don't create pointers for init() or the constructor method
+				case 'init':
+				case 'constructor':
+					break;
+			
+				default:
+					//Ignore everything but functions
+					switch (type) {
+						case 'function':
+							
+							//If this class has a method, and the parent classes also have that method,
+							//link them all together so that one of the parent methods is called and then the
+							//child method is called.
+							if (childMethod = that[methodName]) {
+								that[methodName] = function() {
+									var rv;
+								
+									if (that.altView) {
+										rv = pib[methodName].apply(pib, arguments);
+									} else {
+										rv = pia[methodName].apply(pia, arguments);
+									}
+								
+									childMethod.apply(that, arguments);
+								
+									return rv;
+								};
+							
+							//For the "cmsSets" methods, always call both of the parent methods
+							} else if (methodName.match(/^cmsSets/)) {
+								that[methodName] = function() {
+									pib[methodName].apply(pib, arguments);
+									pia[methodName].apply(pia, arguments);
+								};
+							
+							//If this class does not have a method, just call one of the parent methods
+							} else {
+								that[methodName] = function() {
+									if (that.altView) {
+										return pib[methodName].apply(pib, arguments);
+									} else {
+										return pia[methodName].apply(pia, arguments);
+									}
+								};
+							}
+							break;
+					}
+			}
+		})(methodName, type);
+	}
+	
+	
+	
 	//Check the local storage to check whether grid or list view was last used.
-	this.altView = zenario.sGetItem(true, this.sessionVarName());
+	this.altView = zenario.sGetItem(true, 'view_for_' + this.path);
+	
+	//Init both parent classes, as zenarioO.initNewPanelInstance() would
+	this.pia.cmsSetsPath(this.path);
+	this.pib.cmsSetsPath(this.path);
+	this.pia.cmsSetsRefiner(this.refiner);
+	this.pib.cmsSetsRefiner(this.refiner);
+	this.pia.init();
+	this.pib.init();
+};
+
+methods.cmsSetsPath = function(path) {
+	this.path = path;
+};
+
+methods.cmsSetsRefiner = function(refiner) {
+	this.refiner = refiner;
 };
 
 
-methods.sessionVarName = function() {
-	return 'view_for_' + this.path;
-};
-
-methods.parentMethods = function() {
-	if (this.altView) {
-		return methodsOf(panelTypes.grid);
-	} else {
-		return methodsOf(panelTypes.list);
-	}
-};
-
-
+//Every time the panel is shown, we also need to set up the switch button
 methods.showPanel = function($header, $panel, $footer) {
-	//Call the showPanel() method of either grid or list view, depending on what was chosen.
-	//Also display and wire up a button to switch views between the two
-	this.parentMethods().showPanel.apply(this, arguments);
-
 	this.setSwitchButton($header, $panel, $footer);
-	
 };
 
+methods.changeViewMode = function(altView) {
+	//If the view mode is changed, remember the last value in the local storage
+	zenario.sSetItem(true, 'view_for_' + this.path, this.altView = altView);
+	
+	
+	var selectedItems;
+	if (altView) {
+		selectedItems = this.pia.returnSelectedItems();
+		this.pib.cmsSetsSelectedItems(selectedItems);
+	} else {
+		selectedItems = this.pib.returnSelectedItems();
+		this.pia.cmsSetsSelectedItems(selectedItems);
+	}
+	
+	//Refresh the panel to show things in the new view
+	zenarioO.refresh();
+};
+
+//Setup the switch view button at the top right of Organizer
 methods.setSwitchButton = function($header, $panel, $footer) {
-	var that = this;
+	var that = this,
+		$switchButton = $header.find('#organizer_switch_view'),
+		tooltip,
+		cssClass,
+		selectedItems;
 	
 	if (this.altView) {
-		$header.find('#organizer_switch_to_list_view').show().click(function() {
+		$switchButton.click(function() {
 			that.changeViewMode('');
-			that.updatePanelAfterChangingView($header, $panel, $footer);
 		});
+		tooltip = this.returnSwitchButtonTooltipA();
+		cssClass = this.returnSwitchButtonCSSClassA();
+		
 	} else {
-		$header.find('#organizer_switch_to_grid_view').show().click(function() {
+		$switchButton.click(function() {
 			that.changeViewMode('1');
-			that.updatePanelAfterChangingView($header, $panel, $footer);
 		});
+		tooltip = this.returnSwitchButtonTooltipB();
+		cssClass = this.returnSwitchButtonCSSClassB();
 	}
-};
-
-methods.returnInspectionViewEnabled = function() {
-	return this.parentMethods().returnInspectionViewEnabled.call(this);
-};
-
-
-//If the view mode is changed, remember the last value in the local storage
-methods.changeViewMode = function(altView) {
-	this.closeInspectionView();
-	zenario.sSetItem(true, this.sessionVarName(), this.altView = altView);
-};
-
-methods.updatePanelAfterChangingView = function($header, $panel, $footer) {
-	this.showPanel($header, $panel, $footer);
+	
+	$switchButton.show().attr('class', cssClass);
+	zenarioA.tooltips($switchButton, {items: '*', content: tooltip});
 };
 
 
 
 
 
+
+//You can redefine these methods when extending this class to easily change which
+//panel types are switched between, and to customise the button
+methods.returnPanelTypeA = function() {
+	return panelTypes.list;
+};
+
+methods.returnPanelTypeB = function() {
+	return panelTypes.grid;
+};
+
+methods.returnSwitchButtonCSSClassA = function() {
+	return 'organizer_switch_to_list_view';
+};
+
+methods.returnSwitchButtonCSSClassB = function() {
+	return 'organizer_switch_to_grid_view';
+};
+
+methods.returnSwitchButtonTooltipA = function() {
+	return 'List view';
+};
+
+methods.returnSwitchButtonTooltipB = function() {
+	return 'Grid view';
+};
 
 
 }, zenarioO.panelTypes);

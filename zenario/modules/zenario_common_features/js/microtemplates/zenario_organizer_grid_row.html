@@ -13,7 +13,7 @@
 		<% } %>
 	"
 >
-	<% if (zenarioO.itemButtonsExist) { %>	
+	<% if (m.showCheckbox) { %>	
 		<div class="organizer_checkbox_at_top_left" onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" ondblclick="return zenario.stop(event);">
 			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
 		</div>

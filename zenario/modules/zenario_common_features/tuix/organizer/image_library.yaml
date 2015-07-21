@@ -15,7 +15,10 @@ zenario__content:
                     WHERE f.`usage` = 'image'
                       AND f.archived = 0
                       AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
-            panel_type: grid_or_list
+            
+            #panel_type: grid_or_list
+            panel_type: images_with_tags_or_grid
+            
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
             
@@ -36,18 +39,25 @@ zenario__content:
                     searchable: true
                     db_column: f.filename
                     show_by_default: true
+                    get_tags_from_column: tags
                 tags:
-                    title: Tags
+                    #title: Tags
+                    #db_column: |
+                    #    (
+                    #        SELECT GROUP_CONCAT(itl.tag_id SEPARATOR ',')
+                    #        FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
+                    #        WHERE itl.image_id = f.id
+                    #        GROUP BY itl.image_id
+                    #    )
                     db_column: |
                         (
-                            SELECT GROUP_CONCAT(DISTINCT it.name ORDER BY it.name SEPARATOR ', ')
+                            SELECT GROUP_CONCAT(DISTINCT it.name ORDER BY it.name SEPARATOR ',')
                             FROM [[DB_NAME_PREFIX]]image_tag_link AS itl
                             INNER JOIN [[DB_NAME_PREFIX]]image_tags AS it
                                ON itl.tag_id = it.id
                             WHERE itl.image_id = f.id
                             GROUP BY itl.image_id
                         )
-                    show_by_default: true
                     searchable: false
                     disallow_sorting: true
                 alt_tag:
@@ -84,6 +94,33 @@ zenario__content:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                privacy:
+                    title: Privacy
+                    db_column: f.privacy
+                    show_by_default: true
+                    width: medium
+                    format: enum
+                    values:
+                        auto: Will auto-detect
+                        public: Public
+                        private: Private
+                    tooltip: |
+                        <table>
+                            <tr>
+                                <th style="text-align: left;">Public (green border):</th>
+                                <td style="vertical-align: text-top;">Accessible by any visitor via a friendly URL; may be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Private (blue border):</th>
+                                <td style="vertical-align: text-top;">Contains an cryptic directory path to prevent unauthorised visitor access; may not be indexed by search engines.</td>
+                            </tr>
+                            <tr>
+                                <th style="text-align: left;">Will auto-detect (orange border):</th>
+                                <td style="vertical-align: text-top;">When next displayed to a visitor, will be set to Public if on a public content item, or Private if on a private content item.</td>
+                            </tr>
+                        </table>
+                    
+                    
                 in_use_anywhere:
                     title: In use
                     db_column: |
@@ -98,6 +135,12 @@ zenario__content:
                     format: yes_or_no
                     show_by_default: true
                     width: xsmall
+                
+                all_usage_content:
+                    title: Where it's used
+                    tooltip: All content usage (attached to items, plugins, menu nodes)
+                    show_by_default: true
+                
                 usage_content:
                     title: Attached to (content items)
                     db_column: |
@@ -130,6 +173,7 @@ zenario__content:
                             FROM [[DB_NAME_PREFIX]]inline_images AS pii
                             WHERE pii.image_id = f.id
                               AND pii.foreign_key_to = 'library_plugin'
+                              AND pii.foreign_key_id != 0
                         )
                     filter_format: yes_or_no
                     search_column: |
@@ -138,27 +182,6 @@ zenario__content:
                             FROM [[DB_NAME_PREFIX]]inline_images AS pii
                             WHERE pii.image_id = f.id
                               AND pii.foreign_key_to = 'library_plugin'
-                            LIMIT 1
-                        )
-                    show_by_default: false
-                    align_right: true
-                    width: xsmall
-                usage_email_templates:
-                    title: Usage (email templates)
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'email_template'
-                        )
-                    filter_format: yes_or_no
-                    search_column: |
-                        (
-                            SELECT 1
-                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
-                            WHERE eii.image_id = f.id
-                              AND eii.foreign_key_to = 'email_template'
                             LIMIT 1
                         )
                     show_by_default: false
@@ -187,6 +210,27 @@ zenario__content:
                     show_by_default: false
                     align_right: true
                     width: xsmall
+                
+                usage_email_templates:
+                    title: Email templates
+                    tooltip: Usage (email templates)
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT eii.foreign_key_to, eii.foreign_key_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'email_template'
+                        )
+                    filter_format: yes_or_no
+                    search_column: |
+                        (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]inline_images AS eii
+                            WHERE eii.image_id = f.id
+                              AND eii.foreign_key_to = 'email_template'
+                            LIMIT 1
+                        )
+                    show_by_default: true
                 
                 duplicate_filename:
                     db_column: |
@@ -257,6 +301,7 @@ zenario__content:
                     label: Used by a menu node
                     column: usage_menu_nodes
                     value: 1
+                
                 #not_usage_email_templates:
                 #    parent: usage_dropdown
                 #    label: Not used by an email template
@@ -410,10 +455,82 @@ zenario__content:
                         href: zenario/file.php
                         options:
                             type: image
+                
+                view_public_link: 
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: View public link
+                    multiple_select: false
+                    visible_if_for_all_selected_items: >
+                        item.privacy == 'public'
+                    ajax: 
+                        request: 
+                            view_public_link: 1
+                
+                
                 action_dropdown:
                     label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                
+                mark_as_public:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Make public
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_any_selected_items: >
+                        item.privacy != 'public'
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to make the image "[[filename]]" public?
+                                
+                                Public images may be indexed by search engines.
+                                
+                            multiple_select_message: |
+                                Are you sure you wish to make the selected images public?
+                                
+                                Public images may be indexed by search engines.
+                            button_message: Make public
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_public: 1
+                
+                mark_as_private:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Make private
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_any_selected_items: >
+                        item.privacy != 'private'
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to make the image "[[filename]]" private?
+                                
+                                Private images have an cryptic directory path to prevent unauthorised visitor access;
+                                they may not be indexed by search engines.
+                                
+                            multiple_select_message: |
+                                Are you sure you wish to make the selected images private?
+                                
+                                Private images have an cryptic directory path to prevent unauthorised visitor access;
+                                they may not be indexed by search engines.
+                            button_message: Make private
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            mark_as_private: 1
+                
+                edit_tags:
+                    priv: _PRIV_MANAGE_MEDIA
+                    label: Add/remove tags
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_change_tags
+                    
                 delete:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Delete
@@ -429,4 +546,4 @@ zenario__content:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete: "1"
+                            delete: 1

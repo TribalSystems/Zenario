@@ -15,6 +15,11 @@ zenario__user_forms:
             refiners:
                 archived:
                     sql: f.status = 'archived'
+                email_address_setting: 
+                    sql: |
+                        f.admin_email_addresses != '' 
+                        AND f.admin_email_addresses IS NOT NULL
+                        AND f.status != 'archived'
             columns:
                 id:
                     title: ID
@@ -29,6 +34,13 @@ zenario__user_forms:
                     show_by_default: true
                     searchable: true
                     width: xlarge
+                
+                form_email_addresses:
+                    title: Email
+                    db_column: f.admin_email_addresses
+                    width: xlarge
+                    show_by_default: true
+                
                 field_count:
                     title: Field count
                     tooltip: Field count

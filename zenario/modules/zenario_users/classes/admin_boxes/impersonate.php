@@ -36,7 +36,8 @@ class zenario_users__admin_boxes__impersonate extends zenario_users {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (checkPriv('_PRIV_IMPERSONATE_USER')) {
 			$logAdminOut = ($values['impersonate/options'] == 'logout');
-			$this->impersonateUser($box['key']['id'], $logAdminOut);
+			$setCookie = $values['impersonate/set_keep_me_logged_in_cookie'];
+			$this->impersonateUser($box['key']['id'], $logAdminOut, $setCookie);
 		}
 	}
 	

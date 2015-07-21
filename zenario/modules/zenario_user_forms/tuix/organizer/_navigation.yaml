@@ -19,3 +19,12 @@ zenario__user_forms:
             link:
                 path: zenario__user_forms/panels/zenario_user_forms__forms
                 refiner: archived
+zenario__email_template_manager:
+    nav:
+        form_email_addresses: 
+            ord: 4
+            label: Form recipients
+            tooltip: "View forms that have an email address in a setting"
+            link:
+                path: zenario__user_forms/panels/zenario_user_forms__forms
+                refiner: email_address_setting

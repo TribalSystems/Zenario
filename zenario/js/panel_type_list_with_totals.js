@@ -61,96 +61,87 @@ methods.returnPageSize = function() {
 	return false;
 };
 
-methods.returnInspectionViewEnabled = function() {
-	return false;
-};
 
-methods.showPanel = function($header, $panel, $footer) {
-	
-	methodsOf(panelTypes.list).showPanel.apply(this, arguments);
-	
-	
-	var ci,
-		column,
-		html = '',
-		itemId,
-		item,
-		value,
-		total,
-		foundANumber,
-		decimalPlaces,
-		maxDecimalPlaces;
-	
-	
+methods.generateTotals = function(data, itemsToCount, grandTotal) {
+
 	//Loop through each column, trying to put a total in it
-	if (this.items
-	 && this.items.columns) {
-		foreach (this.items.columns as ci => column) {
+	if (data
+	 && data.columns) {
+		foreach (data.columns as ci => column) {
 			
-			if (column.tuix.calculate_total !== undefined || column.tuix.total !== undefined) {
-				//Check to see if a total is specifically set in TUIX
-				if (column.tuix.total !== undefined) {
-					//Note: "column.tuix" is a shortcut to this.tuix.columns[column.id]
-					column.total = column.tuix.total;
+			//Check to see if a total is specifically set in TUIX
+			if (!itemsToCount && column.tuix.total !== undefined) {
+				//Note: "column.tuix" is a shortcut to this.tuix.columns[column.id]
+				column.total = column.tuix.total;
 				
-				} else {
-					//Otherwise attempt to manually add it up
-					total = 0;
-					foundANumber = false;
-					maxDecimalPlaces = 0;
-					
-					if (this.tuix.items) {
-						foreach (this.tuix.items as itemId => item) {
-							if (!zenarioO.isInfoTag(itemId)) {
-								value = item[column.id];
-								if (value !== undefined) {
-									//Check if this is numeric
-									if (value == 1*value) {
-										if (value.toString().indexOf('.') !== -1) {
-											decimalPlaces = value.toString().split(".")[1].length;
-											maxDecimalPlaces = (maxDecimalPlaces < decimalPlaces) ? decimalPlaces : maxDecimalPlaces;
-										}
-										total += 1*value;
-										foundANumber = true;
+			//Otherwise attempt to manually add it up
+			} else if (column.tuix.calculate_total !== undefined) {
+				total = 0;
+				foundANumber = false;
+				maxDecimalPlaces = 0;
+				
+				if (this.tuix.items) {
+					foreach (this.tuix.items as itemId => item) {
+						
+						if (!itemsToCount || itemsToCount[itemId]) {
+							
+							value = item[column.id];
+							if (value !== undefined) {
+								//Check if this is numeric
+								if (value == 1*value) {
+									if (value.toString().indexOf('.') !== -1) {
+										decimalPlaces = value.toString().split(".")[1].length;
+										maxDecimalPlaces = (maxDecimalPlaces < decimalPlaces) ? decimalPlaces : maxDecimalPlaces;
 									}
+									total += 1*value;
+									foundANumber = true;
 								}
 							}
 						}
 					}
-					if (foundANumber) {
-						if (maxDecimalPlaces) {
-							total = total.toFixed(maxDecimalPlaces);
-						}
-						column.total = total;
+				}
+				if (foundANumber) {
+					if (maxDecimalPlaces) {
+						total = total.toFixed(maxDecimalPlaces);
 					}
+					column.total = total;
+					
+					if(grandTotal == true) {
+						column.grandTotalExists = false;
+					} else {
+						column.grandTotalExists = true;
+					}
+					
 				}
 			}
 		}
 	}
 	
-	html = zenarioA.microTemplate('zenario_organizer_list_total', this.items);
-	$panel.append(html);
-	
-	sizeListViewColumns = function() {
-			$resizables = $panel.find('.organizer_sort_and_resize_wrapper .organizer_resizable');
-			var thisWidth,
-				width = $('#organizer_non_sortable_resizeable_cols').width();
-			
-			$resizables.each(function(i, el) {
-				if (thisWidth = $(el).outerWidth()) {
-					width += thisWidth;
-				}
-			});
-			
-
-			$('#organizer_list_view').css('min-width', width + 'px');
-			$('#organizer_list_view .organizer_row').css('min-width', width + 'px');
-			$('#organizer_total_wrapper').css('min-width', width + 'px');
-	}
-	
-	sizeListViewColumns();
-	
+	return zenarioA.microTemplate('zenario_organizer_list_total', data);
 };
 
+
+methods.showPanel = function($header, $panel, $footer) {
+	
+	methodsOf(panelTypes.list).showPanel.apply(this, arguments);
+	
+	var ci,
+		column,
+		itemId,
+		item,
+		value,
+		total,
+		grandTotalExists,
+		foundANumber,
+		decimalPlaces,
+		maxDecimalPlaces;
+	
+	
+	var html = this.generateTotals(this.items),
+		$totals = $(html),
+		$listView = $('#organizer_list_view .organizer_list_view_body_wrap');
+	
+	$listView.append($totals);
+};
 
 }, zenarioO.panelTypes);

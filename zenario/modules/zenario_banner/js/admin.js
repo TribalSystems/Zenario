@@ -91,6 +91,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		inline_styles: false,
 		allow_events: true,
 		allow_script_urls: false,
+		document_base_url: URLBasePath,
 		convert_urls: true,
 		relative_urls: true,
 		
@@ -182,7 +183,7 @@ zenario_banner.setEditorField = function(value, el, onlyIfEmpty) {
 zenario_banner.setLinkURL = function(path, key, row) {
 	//Get the URL via an AJAX program
 	key.getItemURL = 1;
-	var URL = zenario.pluginClassAJAX('zenario_common_features', key, true);
+	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
 	
 	zenario_banner.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
 	zenario_banner.setEditorField(URL);

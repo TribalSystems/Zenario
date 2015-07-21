@@ -85,7 +85,6 @@ switch ($path) {
 		
 		$box['tabs']['first_tab']['fields']['canvas']['hidden'] = 
 		$box['tabs']['first_tab']['fields']['alt_tag']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['image_title']['hidden'] = 
 			!$imagePicked;
 		
 		$box['tabs']['first_tab']['fields']['floating_box_title']['hidden'] = 
@@ -104,14 +103,6 @@ switch ($path) {
 			}
 			if ($editModeOn && !$changes['first_tab/alt_tag']) {
 				$box['tabs']['first_tab']['fields']['alt_tag']['current_value'] = $image['alt_tag'];
-			}
-
-			$box['tabs']['first_tab']['fields']['image_title']['multiple_edit']['original_value'] = $image['title'];
-			if ($box['first_display'] && !$values['first_tab/image_title']) {
-				$box['tabs']['first_tab']['fields']['image_title']['value'] = $image['title'];
-			}
-			if ($editModeOn && !$changes['first_tab/image_title']) {
-				$box['tabs']['first_tab']['fields']['image_title']['current_value'] = $image['title'];
 			}
 
 			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['original_value'] = $image['floating_box_title'];
@@ -135,7 +126,6 @@ switch ($path) {
 				
 		} else {
 			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['original_value'] = '';
-			$box['tabs']['first_tab']['fields']['image_title']['multiple_edit']['original_value'] = '';
 			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['original_value'] = '';
 		}
 		

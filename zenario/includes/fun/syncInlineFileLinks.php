@@ -104,9 +104,6 @@ for ($i=0; $i < $c; $i += 4) {
 				if (($existingFile = getRow('files', array('id', 'width', 'height', 'usage', 'filename'), array('checksum' => $checksum)))
 				 && ($newId = copyFileInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
 					
-					if ($existingFile['usage'] == 'editor_temp_file') {
-						deleteRow('files', $existingFile['id']);
-					}
 					$existingFile['id'] = $newId;
 					
 					$foundChecksumsWithTheWrongUsage[$checksum] = $existingFile;

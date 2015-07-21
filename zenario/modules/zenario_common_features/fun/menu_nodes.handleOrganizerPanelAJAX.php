@@ -158,13 +158,13 @@ if (get('quick_create') && (
 			$cols = array();
 			
 			//Update the ordinal if it is different
-			if (isset($_POST['ordinal__'. $id]) && $_POST['ordinal__'. $id] != $menuNode['ordinal']) {
-				$cols['ordinal'] = $_POST['ordinal__'. $id];
+			if (isset($_POST['ordinals'][$id]) && $_POST['ordinals'][$id] != $menuNode['ordinal']) {
+				$cols['ordinal'] = $_POST['ordinals'][$id];
 			}
 			
 			//Update the parent id if it is different, and remember that we've done this
-			if (isset($_POST['parent_id__'. $id]) && $_POST['parent_id__'. $id] != $menuNode['parent_id']) {
-				$cols['parent_id'] = $_POST['parent_id__'. $id];
+			if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $menuNode['parent_id']) {
+				$cols['parent_id'] = $_POST['parent_ids'][$id];
 				$sectionIds[$menuNode['section_id']] = true;
 			}
 			updateRow('menu_nodes', $cols, $id);

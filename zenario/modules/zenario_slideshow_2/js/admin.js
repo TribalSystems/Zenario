@@ -278,6 +278,7 @@ zenario_slideshow_2.bindEventListeners = function() {
 		} else {
 			$("#zenario_user_field_settings").hide();
 		}
+		$('#caching_message').toggle($(this).val() != 'everyone');
 	});
 	
 	// Add prefix to URL box

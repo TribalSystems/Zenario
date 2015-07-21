@@ -1,40 +1,73 @@
+# You must use a tab-size of 4 spaces to edit this file.
+# 
+# This file contains descriptive information about this skin.
+# 
+# This file is optional, but we recommend that you include it in your skins as you
+# would not be able to give your skin a display name or enable several features
+# without this file.
+---
+# Write a display name for this skin in admin mode.
+# (The directory name will be used if you leave this blank.)
 display_name: Duke Street
 
+# Enter the directory name of another skin here to extend that skin.
+# (The other skin must be in the same directory that this skin is in.)
+# 
+# When extending a skin, your skin will inherit all of its CSS files.
+# The CSS files of the extended skin will always be included before
+# the CSS files of the extending skin.
+# 
+# It will also inherit anything in that skin's description, with properties
+# merging together using TUIX-style logic.
+extension_of_skin: ''
+
+# Set this to "component" or "usable".
+# Usable skins appear in admin mode. Component skins are hidden from admin mode.
+# (The skin will default to "usable" if you leave this blank.)
 type: usable
 
-style_formats:
-	-
-		title: "Text extra small"
-		selector: "*"
-		classes: "x-small"
-	-
-		title: "Text small"
-		selector: "*"
-		classes: "small"
-	-
-		title: "Text large"
-		selector: "*"
-		classes: "large"
-	-
-		title: "Text extra large"
-		selector: "*"
-		classes: "x-large"
-	-
-		title: "Code"
-		selector: "*"
-		classes: "code"
+# Enter CSS class name names here to have them added to a <div> that wraps the page.
+css_class: ''
 
+# Style formats are class names that can be selected in the WYSIWYG Editor
+# under the Styles menu.
+# 
+# See http://www.tinymce.com/wiki.php/Configuration:style_formats for more information.
+style_formats:
+    -
+        title: "Text extra small"
+        selector: "*"
+        classes: "x-small"
+    -
+        title: "Text small"
+        selector: "*"
+        classes: "small"
+    -
+        title: "Text large"
+        selector: "*"
+        classes: "large"
+    -
+        title: "Text extra large"
+        selector: "*"
+        classes: "x-large"
+    -
+        title: "Code"
+        selector: "*"
+        classes: "code"
+
+# Any CSS class names that you define for a plugin will appear as an option on the
+# "Framework & CSS" settings for that plugin.
 pickable_css_class_names:
-	plugins:
-		-
-			module_css_class_name: zenario_banner
-			css_class_name: banner_masthead
-			label: Masthead
-		-
-			module_css_class_name: zenario_content_list
-			css_class_name: content_list_sand_box
-			label: Recent pages
-		-
-			module_css_class_name: zenario_html_snippet
-			css_class_name: html_video_box
-			label: Watch our video
+    plugins:
+        -
+            module_css_class_name: zenario_banner
+            css_class_name: banner_masthead
+            label: Masthead
+        -
+            module_css_class_name: zenario_content_list
+            css_class_name: content_list_sand_box
+            label: Recent pages
+        -
+            module_css_class_name: zenario_html_snippet
+            css_class_name: html_video_box
+            label: Watch our video

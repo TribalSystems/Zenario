@@ -33,6 +33,22 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		//Populate the list of groups
+		$lov = listCustomFields('users', $flat = false, 'groups_only', $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+		
+		//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
+		//people to be able to select them
+		foreach ($lov as &$v) {
+			if (empty($v['parent'])) {
+				$v['readonly'] =
+				$v['disabled'] = true;
+				$v['style'] = 'display: none;';
+			}
+		}
+		
+		$box['tabs']['privacy']['fields']['group_members']['values'] = $lov;
+		
+		
 		$combinedValues = true;
 		
 		$box['key']['originalId'] = $box['key']['id'];

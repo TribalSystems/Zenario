@@ -103,6 +103,25 @@ if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
 			$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a Static Method.');
 		}
 	}
+	if (!empty($values['advanced/overwrite_menu_text_by_static_method'])) {
+		if (!$values['advanced/menu_text__module_class_name']) {
+			$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin.');
+		
+		} elseif (!inc($values['advanced/menu_text__module_class_name'])) {
+			$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin that you have running on this site.');
+		
+		} elseif ($values['advanced/menu_text__method_name']
+			&& !method_exists(
+					$values['advanced/menu_text__module_class_name'],
+					$values['advanced/menu_text__method_name'])
+		) {
+			$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of an existing Static Method.');
+		}
+		
+		if (!$values['advanced/menu_text__method_name']) {
+			$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a Static Method.');
+		}
+	}
 }
 
 return false;

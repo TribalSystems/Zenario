@@ -40,6 +40,7 @@ class zenario_menu extends module_base_class {
 	var $onlyIncludeOnLinks;
 	var $showInvisibleMenuItems;
 	var $showMissingMenuNodes;
+	var $requests;
 	
 	//Load settings from the instance of this plugin
 	function init() {
@@ -101,6 +102,8 @@ class zenario_menu extends module_base_class {
 			$this->language = cms_core::$langId;
 		}
 		
+		$userDetails = false;
+		
 		// Display a users first and last name, only used on vertical menus.
 		if ($this->checkFrameworkSectionExists('User_Names')) {
 			if ($id = userId()) {
@@ -110,13 +113,20 @@ class zenario_menu extends module_base_class {
 			}
 		}
 		
+		$welcome_message_text = $this->setting('welcome_message');
+		
+		$headerObjects['welcome_message'] = 
+			$this->phrase($welcome_message_text, 
+				array('first_name' => htmlspecialchars($userDetails['first_name']), 
+					'last_name' => htmlspecialchars($userDetails['last_name'])));
+		
 		// Display a title, usually only used for vertical side menus
 		if ($this->checkFrameworkSectionExists('Title')) {
 			if ($parentMenuId && $parentMenuDetails = getMenuInLanguage($parentMenuId, $this->language)) {
 				$headerObjects['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
 				if ($parentMenuDetails['cID']) {
 					$headerObjects['Parent_Link'] = htmlspecialchars(
-						$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, '', $parentMenuDetails['alias'])
+						$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
 					);
 				}
 			} else {
@@ -134,7 +144,7 @@ class zenario_menu extends module_base_class {
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
 							 $this->showAdminAddMenuItem, $this->showInvisibleMenuItems,
-							 $this->showMissingMenuNodes);
+							 $this->showMissingMenuNodes,$recurseCount = 0,$this->requests);
 							 
 		switch ($cachingRestrictions) {
 			case 'privateItemsExist':
@@ -145,7 +155,6 @@ class zenario_menu extends module_base_class {
 				$this->allowCaching(false);
 				break;
 		}
-		
 		
 		//Draw the Menu Nodes we found
 		$this->drawMenu($menuArray, 0, $headerObjects, $subSections);
@@ -327,7 +336,7 @@ class zenario_menu extends module_base_class {
 		
 		//A function that can be overwritten to allow extra functionality
 		if ($this->addExtraMergeFields($row, $objects, $recurseCount, $i, $maxI)) {
-			
+		
 			$this->frameworkHead($theme, true, $objects, $sections);
 			
 			if (!empty($row['children']) && is_array($row['children'])) {
@@ -336,7 +345,6 @@ class zenario_menu extends module_base_class {
 			
 			$this->frameworkFoot($theme, true, $objects, $sections);
 		}
-		
 	}
 	
 	//A function that can be overwritten to allow extra functionality
@@ -413,7 +421,11 @@ class zenario_menu extends module_base_class {
 				$onlyFollowOnLinks = true,
 				$onlyIncludeOnLinks = true,
 				$showAdminAddMenuItem = false,
-				$showInvisibleMenuItems = true);
+				$showInvisibleMenuItems = true,
+				$showMissingMenuNodes = false,
+				$recurseCount = 0,
+				$this->requests
+				);
 			
 			if (!empty($rows[$menu['id']])) {
 				return $rows[$menu['id']];
@@ -421,7 +433,7 @@ class zenario_menu extends module_base_class {
 		}
 		
 		$page['name'] = getItemTitle($cID, $cType);
-		$page['url'] = linkToItem($cID, $cType, false, '', false, false);
+		$page['url'] = linkToItem($cID, $cType, false, $this->requests, false, false);
 		$page['active'] = true;
 		
 		return $page;

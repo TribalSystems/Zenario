@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Content Summary List ProBusiness
 description: |
     <p>This Module can show a list of Content Items from your website and you can choose from any of the available content types.</p><p>

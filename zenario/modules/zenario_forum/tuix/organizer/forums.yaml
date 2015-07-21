@@ -85,15 +85,15 @@ zenario__social:
                         tooltip: View in Front-end window
                         frontend_link:
                             exists: Yes
-                        with_columns_set:
-                            frontend_link: Yes
+                        visible_if: >
+                            zenario.engToBoolean(item.frontend_link)
                     inspect:
                         css_class: inspect
                         tooltip: View in floating box
                         popout:
                             iframe: Yes
-                        with_columns_set:
-                            frontend_link: Yes
+                        visible_if: >
+                            zenario.engToBoolean(item.frontend_link)
                 item_buttons:
                     lock_forum:
                         priv: _PRIV_MODERATE_USER_COMMENTS

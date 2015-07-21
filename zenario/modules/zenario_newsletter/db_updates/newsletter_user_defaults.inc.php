@@ -52,32 +52,8 @@ if (needRevision(131)) {
 		createDatasetFieldInDB($optOutFieldId);
 	}
 	
-	if (($statusField = getDatasetFieldDetails('status', 'users'))
-	 && ($optOutField = getDatasetFieldDetails('all_newsletters_opt_out', 'users'))) {
+	if ($optOutField = getDatasetFieldDetails('all_newsletters_opt_out', 'users')) {
 		setSetting('zenario_newsletter__all_newsletters_opt_out', $optOutField['id']);
-		
-		$allActiveUsers =
-			'{"first_tab":{"name":"All active users","indexes":"1","rule_type":"","rule_group_picker":"","rule_characteristic_picker":"","rule_characteristic_values_picker":"","rule_logic":"","rule_type_1":"characteristic","rule_group_picker_1":"","rule_characteristic_picker_1":"'.
-			$statusField['id'].
-			'","rule_characteristic_values_picker_1":"active","rule_logic_1":""},"exclude":{"enable":true,"rule_type":"characteristic","rule_group_picker":"","rule_characteristic_picker":"'.
-			$optOutField['id'].
-			'","rule_characteristic_values_picker":"","rule_logic":""}}';
-		
-		$allContacts =
-			'{"first_tab":{"name":"All contacts","indexes":"1","rule_type":"","rule_group_picker":"","rule_characteristic_picker":"","rule_characteristic_values_picker":"","rule_logic":"","rule_type_1":"characteristic","rule_group_picker_1":"","rule_characteristic_picker_1":"'.
-			$statusField['id'].
-			'","rule_characteristic_values_picker_1":"contact","rule_logic_1":""},"exclude":{"enable":true,"rule_type":"characteristic","rule_group_picker":"","rule_characteristic_picker":"'.
-			$optOutField['id'].
-			'","rule_characteristic_values_picker":"","rule_logic":""}}';
-		
-		setRow(
-			'smart_groups',
-			array('created_on' => now(), 'last_modified_on' => now(), 'values' => $allActiveUsers),
-			array('name' => 'All active users'));
-		setRow(
-			'smart_groups',
-			array('created_on' => now(), 'last_modified_on' => now(), 'values' => $allContacts),
-			array('name' => 'All contacts'));
 	}
 	
 	revision(131);

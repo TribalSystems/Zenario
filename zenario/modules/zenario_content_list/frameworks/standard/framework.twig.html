@@ -12,10 +12,10 @@
 					<description>{{item.Excerpt_Text}}</description>
 					<link>{{item.Full_Link}}</link>
 					<guid>{{item.Full_Link}}</guid>
-					{% if 'Language' in item%}
+					{% if item.Language %}
 						<language>{{item.Language}}</language>
 					{% endif %}
-					{% if 'Date' in item%}
+					{% if item.Date %}
 						<pubDate>{{item.Date}}</pubDate>
 					{% endif %}
 				</item>
@@ -36,7 +36,7 @@
 				<div class="content_list_data_row data_row_{{item.ODD_OR_EVEN|e}}">
 					{% if Show_Sticky_Image %}
 						<div class="sticky_image">
-							<a {{Link}}>
+							<a {{item.Link}}{{item.Target_Blank}}>
 								{{item.Sticky_Image}}
 							</a>
 						</div>

@@ -81,12 +81,14 @@ switch ($path) {
 				$document = getRow('documents', array('file_id', 'filename'), $item['id']);
 				
 				$file = getRow('files', 
-								array('id', 'filename', 'path', 'created_datetime'),
+								array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
 								$document['file_id']);
 				if($document['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $document['filename'];
-					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' . $document['filename'];
+					$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
+					$frontLink = $dirPath . '/' . $document['filename'];
+					$symPath = CMS_ROOT . $frontLink;
+					$symFolder =  CMS_ROOT . $dirPath;
+					
 					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
 							if(is_link($symPath)) {
 								$publicLink = true;
@@ -293,10 +295,6 @@ switch ($path) {
 				
 				}
 				
-				if ($item['status'] == 'suspended') {
-					$item['traits']['archived'] = true;
-				}
-				
 				$item['usage_status'] = $item['usage_count'];
 				
 				// Try to automatically add a thumbnail
@@ -471,10 +469,114 @@ switch ($path) {
 	
 	
 	
+	case 'zenario__content/panels/image_library':
+		if (in($mode, 'full', 'select', 'quick')) {
+			$panel['columns']['tags']['tag_colors'] =
+			$panel['columns']['filename']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
+			
+			foreach ($panel['items'] as $id => &$item) {
+				$text = '';
+				$comma = false;
+				$usage_content = (int)$item['usage_content'];
+				$usage_plugins = (int)$item['usage_plugins'];
+				$usage_menu_nodes = (int)$item['usage_menu_nodes'];
+				$contentUsage = $usage_content + $usage_plugins + $usage_menu_nodes;
+				if ($contentUsage === 1) {
+					if ($usage_content === 1) {
+						$sql = '
+							SELECT 
+								foreign_key_id AS id, 
+								foreign_key_char AS type
+							FROM ' . DB_NAME_PREFIX . 'inline_images
+							WHERE image_id = ' . (int)$item['id'] . '
+							AND foreign_key_to = "content"
+							AND archived = 0';
+						$result = sqlSelect($sql);
+						$row = sqlFetchAssoc($result);
+						$text .= adminPhrase('Used on "[[tag]]"', array('tag' => formatTag($row['id'], $row['type'])));
+					} elseif ($usage_plugins === 1) {
+						$sql = '
+							SELECT p.name, m.display_name
+							FROM ' . DB_NAME_PREFIX . 'inline_images pii
+							INNER JOIN ' . DB_NAME_PREFIX . 'plugin_instances p
+								ON pii.foreign_key_id = p.id
+								AND pii.image_id = ' . (int)$item['id'] . '
+								AND pii.foreign_key_to = "library_plugin"
+								AND pii.foreign_key_id != 0
+							INNER JOIN ' . DB_NAME_PREFIX . 'modules m
+								ON p.module_id = m.id';
+						$result = sqlSelect($sql);
+						$row = sqlFetchAssoc($result);
+						if ($row['name'] && $row['display_name']) {
+							$text = adminPhrase('Used on plugin "[[name]]" of the module "[[display_name]]"', $row);
+						} else {
+							$text = 'Used on 1 plugin';
+						}
+					} else {
+						$text = 'Used on 1 menu node';
+					}
+				} elseif ($contentUsage > 1) {
+					$text .= 'Used on ';
+					if ($usage_content > 0) {
+						$text .= nAdminPhrase(
+							'[[count]] content item',
+							'[[count]] content items',
+							$usage_content,
+							array('count' => $usage_content)
+						);
+						$comma = true;
+					}
+					if ($usage_plugins > 0) {
+						if ($comma) {
+							$text .= ', ';
+						}
+						$text .= nAdminPhrase(
+							'[[count]] plugin',
+							'[[count]] plugins',
+							$usage_plugins,
+							array('count' => $usage_plugins)
+						);
+						$comma = true;
+					}
+					if ($usage_menu_nodes > 0) {
+						if ($comma) {
+							$text .= ', ';
+						}
+						$text .= nAdminPhrase(
+							'[[count]] menu node',
+							'[[count]] menu nodes',
+							$usage_menu_nodes,
+							array('count' => $usage_menu_nodes)
+						);
+					}
+				}
+				$item['all_usage_content'] = $text;
+				
+				$text = '';
+				$usage_email_templates = (int)$item['usage_email_templates'];
+				if ($usage_email_templates === 1) {
+					$sql = '
+						SELECT 
+							e.template_name
+						FROM ' . DB_NAME_PREFIX . 'inline_images ii
+						INNER JOIN ' . DB_NAME_PREFIX . 'email_templates e
+							ON ii.foreign_key_id = e.id
+							AND ii.foreign_key_to = "email_template"
+						WHERE image_id = ' . $item['id'] . '
+						AND archived = 0';
+					$result = sqlSelect($sql);
+					$row = sqlFetchAssoc($result);
+					$text .= adminPhrase('Used on "[[template_name]]"', $row);
+				} elseif ($usage_email_templates > 1) {
+					$text = adminPhrase('Used on [[count]] email templates', array('count' => $usage_email_templates));
+				}
+				$item['usage_email_templates'] = $text;
+			}
+		}
+		
 	case 'generic_image_panel':
 	case 'zenario__content/panels/background_images':
 	case 'zenario__content/panels/inline_images_for_content':
-	case 'zenario__content/panels/image_library':
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
@@ -484,16 +586,32 @@ switch ($path) {
 				$img .= '&usage='. rawurlencode($panel['key']['usage']);
 			}
 			
-			$item['image'] = $img. '&og=1';
-			$item['list_image'] = $img. '&ogl=1';
-			
-			$item['row_css_class'] = '';
-			if (!empty($item['sticky_flag'])) {
-				$item['row_css_class'] .= ' zenario_sticky';
+			if ($path == 'zenario__content/panels/image_library') {
+				$item['list_image'] = $img. '&ogt=1';
+			} else {
+				$item['list_image'] = $img. '&ogl=1';
 			}
+			$item['image'] = $img. '&og=1';
 			
-			if (!($item['row_css_class'] = trim($item['row_css_class']))) {
-				unset($item['row_css_class']);
+			$classes = array();
+			if (!empty($item['sticky_flag'])) {
+				$classes[] = 'zenario_sticky';
+			}
+			if (!empty($item['privacy'])) {
+				switch ($item['privacy']) {
+					case 'auto':
+						$classes[] = 'zenario_image_privacy_auto';
+						break;
+					case 'public':
+						$classes[] = 'zenario_image_privacy_public';
+						break;
+					case 'private':
+						$classes[] = 'zenario_image_privacy_private';
+						break;
+				}
+			}
+			if (!empty($classes)) {
+				$item['row_css_class'] = implode(' ', $classes);
 			}
 			
 			if (!empty($item['filename'])
@@ -532,11 +650,17 @@ switch ($path) {
 				$item['image'] = getModuleIconURL($item['module_class_name']);
 			}
 			
-			
-			if ($item['usage_item'] || $item['usage_template']) {
+			//Should archived layouts trigger the "in use" flag..?
+			if ($item['usage_item']
+			 || $item['usage_layouts']
+			 || $item['usage_archived_layouts']) {
 				$item['traits']['in_use'] = true;
 			} else {
 				$item['traits']['unused'] = true;
+			}
+			
+			if ($item['usage_archived_layouts']) {
+				$item['usage_layouts'] = adminPhrase('[[usage_layouts]] (and [[usage_archived_layouts]] archived)', $item);
 			}
 
 		}
@@ -592,19 +716,50 @@ switch ($path) {
 			if ($enabledCount < 2) {
 				unset($panel['collection_buttons']['default_language']);
 			}
+			
+			//If a language specific domain is in use, show that column by default. Otherwise hide it.
+			$langSpecificDomainsUsed = checkRowExists('languages', array('domain' => array('!' => '')));
+			if ($langSpecificDomainsUsed) {
+				$panel['columns']['domain']['show_by_default'] = true;
+			}
 		}
 		
 		break;
 		
 	
 	case 'zenario__languages/panels/phrases':
-		/*
-		if ($mode != 'xml') {
+		//Task #9611 Change the icon in the phrases panel to help when creating a module's phrase
+		if ($additionalLanguages = getNumLanguages() - 1) {
+			
+			$defaultLanguage = setting('default_language');
+			$languages = getLanguages(false, true, true);
+			unset($languages[$defaultLanguage]);
+			$languages = array_keys($languages);
+			
 			foreach ($panel['items'] as $id => &$item) {
-				$item['local_text'] = formatNicely($item['local_text'], 50);
+				if (isset($item[$defaultLanguage]) && $item[$defaultLanguage] != '') {
+					$translations = 0;
+					foreach ($languages as $langId) {
+						if (isset($item[$langId]) && $item[$langId] != '') {
+							++$translations;
+						}
+					}
+				
+					if ($translations == 0) {
+						$item['css_class'] = 'phrase_not_translated';
+						$item['tooltip'] = adminPhrase('This phrase has not been translated into all site languages, click "Edit phrase" to add translations.');
+				
+					} else if ($translations < $additionalLanguages) {
+						$item['css_class'] = 'phrase_partially_translated';
+						$item['tooltip'] = adminPhrase('This phrase has been translated into some site languages, click "Edit phrase" to add missing translations.');
+				
+					} else {
+						$item['css_class'] = 'phrase_translated';
+						$item['tooltip'] = adminPhrase('This phrase has been translated into all site languages.');
+					}
+				}
 			}
 		}
-		*/
 		
 		break;
 

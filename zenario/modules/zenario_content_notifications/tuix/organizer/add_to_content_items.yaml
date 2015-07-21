@@ -36,13 +36,13 @@ zenario__content:
                     ord: 9
                     admin_box:
                         path: zenario_content_requests
-                    without_columns_set:
-                        content_has_requests: true
+                    visible_if: >
+                        !zenario.engToBoolean(item.content_has_requests)
                 view_content_has_requests:
                     css_class: view_content_has_requests
                     tooltip: "View requests on this content item"
                     ord: 9
                     admin_box:
                         path: zenario_content_requests
-                    with_columns_set:
-                        content_has_requests: true
+                    visible_if: >
+                        zenario.engToBoolean(item.content_has_requests)

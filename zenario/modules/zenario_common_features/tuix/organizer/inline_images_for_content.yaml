@@ -173,7 +173,7 @@ zenario__content:
                     priv: _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE
                     label: Make sticky
                     hide_in_select_mode: false
-                    visible_if_for_all_selected_items: |
+                    visible_if: |
                         !zenario.engToBoolean(item.sticky_flag)
                     ajax:
                         confirm:

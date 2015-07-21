@@ -36,6 +36,12 @@ class zenario_email_a_friend extends module_base_class {
 	var $errors = '';
 	
 	function init() {
+		
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
+		
 		if (request('floatingBoxMode')=='1'){
 			$this->showInFloatingBox(); 
 		}

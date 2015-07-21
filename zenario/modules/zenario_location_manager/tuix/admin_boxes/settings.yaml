@@ -2,7 +2,7 @@
 ---
 site_settings:
     setting_group: zenario_location_manager__site_settings_group
-    title: Editing settings for location
+    title: Editing settings for Location Manager
     tabs:
         zenario_location_manager__site_settings:
             edit_mode:

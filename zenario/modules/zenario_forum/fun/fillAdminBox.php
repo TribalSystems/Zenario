@@ -41,7 +41,9 @@ switch ($path) {
 		}
 		break;
 	case 'plugin_settings':
-		$groups = listCustomFields('users', $flat = true, $filter = 'groups_only');
+		$groups = listCustomFields('users', $flat = false, $filter = 'groups_only', true, true);
+		//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
+		
 		$box['tabs']['posting']['fields']['restrict_new_thread_to_group']['values'] = $groups;
 		$box['tabs']['posting']['fields']['restrict_posting_to_group']['values'] = $groups;
 		$box['tabs']['moderation']['fields']['moderators']['values'] = $groups;

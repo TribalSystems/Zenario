@@ -78,12 +78,11 @@ if (isset($_GET['refiner__trash']) && !get('refiner__template')) {
 	unset($panel['db_items']['where_statement']);
 }
 
-
-if (get('refiner__content_type')) {
-	switch (get('refiner__content_type')) {
+//Attempt to customise the defaults slightly depending on the content type
+//These options are only defaults and will be overridden if the Administrator has ever set or changed them.
+if ($cType = get('refiner__content_type')) {
+	switch ($cType) {
 		case 'news':
-			$panel['default_sort_column'] = 'publication_date';
-			
 			$panel['columns']['title']['show_by_default'] = true;
 			$panel['columns']['description']['show_by_default'] = false;
 			$panel['columns']['publication_date']['show_by_default'] = true;
@@ -97,6 +96,41 @@ if (get('refiner__content_type')) {
 			$panel['columns']['publication_date']['show_by_default'] = true;
 			
 			break;
+	}
+	
+	//Task #9514: Release Date should always be visible if you are looking at a Content Type where it is mandatory.
+	if ($details = getContentTypeDetails($cType)) {
+		foreach (array(
+			'writer_field' => 'writer_name',
+			'description_field' => 'description',
+			'keywords_field' => 'keywords',
+			//'summary_field' => '...',
+			'release_date_field' => 'publication_date'
+		) as $fieldName => $columnName) {
+		
+			if ($details[$fieldName] == 'mandatory') {
+				$panel['columns'][$columnName]['always_show'] = true;
+		
+			} elseif ($details[$fieldName] == 'hidden') {
+				$panel['columns'][$columnName]['hidden'] = true;
+			}
+		}
+	}
+
+//If this is a panel for multiple content types then we are limited in how much we can customise it.
+//But if any fields are always hidden, we can still hide them
+} else {
+	foreach (array(
+		'writer_field' => 'writer_name',
+		'description_field' => 'description',
+		'keywords_field' => 'keywords',
+		//'summary_field' => '...',
+		'release_date_field' => 'publication_date'
+	) as $fieldName => $columnName) {
+	
+		if (!checkRowExists('content_types', array($fieldName => array('!' => 'hidden')))) {
+			$panel['columns'][$columnName]['hidden'] = true;
+		}
 	}
 }
 

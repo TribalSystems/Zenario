@@ -4,7 +4,7 @@ author_name: 'Tribiq'
 copyright_info: '© Tribal Limited'
 editions: 'ProBusiness, Enterprise'
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 description: >
     <p>The Project Sector Service Gallery displays projects by service and sectors.</p>
     <p> Various kinds of project can be represented by this module </p>

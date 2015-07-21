@@ -40,14 +40,14 @@ class zenario_user_documents extends module_base_class {
 							$cols = array();
 							//var_dump($file);
 							//Update the ordinal if it is different
-							if (isset($_POST['ordinal__'. $id]) && $_POST['ordinal__'. $id] != $file['ordinal']) {
-								$cols['ordinal'] = $_POST['ordinal__'. $id];
+							if (isset($_POST['ordinals'][$id]) && $_POST['ordinals'][$id] != $file['ordinal']) {
+								$cols['ordinal'] = $_POST['ordinals'][$id];
 							}
 							
 							//*Update the folder id if it is different, and remember that we've done this
-							if (isset($_POST['parent_id__'. $id]) && $_POST['parent_id__'. $id] != $file['folder_id']) {
-								$cols['folder_id'] = $_POST['parent_id__'. $id];
-								$folder = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', array('id', 'type'), $_POST['parent_id__'. $id]);
+							if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $file['folder_id']) {
+								$cols['folder_id'] = $_POST['parent_ids'][$id];
+								$folder = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', array('id', 'type'), $_POST['parent_ids'][$id]);
 								if ($folder['type'] == "file") {
 									echo '<!--Message_Type:Error-->';
 									echo adminPhrase('Files may not be moved under other files, files can only be placed under folders.');

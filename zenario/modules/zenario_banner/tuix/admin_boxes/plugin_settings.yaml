@@ -154,15 +154,6 @@ plugin_settings:
                     type: text
                     maxlength: "255"
                     value: ""
-                image_title:
-                    plugin_setting:
-                        name: image_title
-                        translate: true
-                    multiple_edit:
-                        original_value: ""
-                    label: 'Overwrite image title attribute'
-                    type: text
-                    value: ""
                 floating_box_title:
                     plugin_setting:
                         name: floating_box_title
@@ -198,7 +189,6 @@ plugin_settings:
                     plugin_setting:
                         name: hyperlink_target
                         foreign_key_to: content
-                        dangling_cross_references: delete_instance
                         use_value_for_plugin_name: "4"
                     label: 'Content Item'
                     pick_items:

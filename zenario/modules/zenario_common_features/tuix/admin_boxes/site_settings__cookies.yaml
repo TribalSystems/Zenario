@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
+    setting_group: cookies
     title: Editing cookie settings
     tabs:
         cookies:
@@ -15,8 +16,8 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                    This tab allows you to control when your site's Modules can place cookies on a visitor's computer.
-                                                                </p>
+                                This tab allows you to control when your site's Modules can place cookies on a visitor's computer.
+                            </p>
                 cookie_require_consent:
                     site_setting:
                         name: cookie_require_consent
@@ -37,13 +38,15 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                    Modules that set cookies may do so irrespective of the visitor's action.
-                                                                </p>
-                    visible_if: "!zenarioAB.value('cookie_require_consent')"
+                                Modules that set cookies may do so irrespective of the visitor's action.
+                            </p>
+                    visible_if: |
+                        !zenarioAB.value('cookie_require_consent')
                 cookie_consent_type_implied:
                     label: 'Message for visitor:'
                     type: select
-                    visible_if: "zenarioAB.value('cookie_require_consent') == 'implied'"
+                    visible_if: |
+                        zenarioAB.value('cookie_require_consent') == 'implied'
                     values:
                         message_continue: A consent message with a "Continue" button
                     redraw_onchange: Yes
@@ -52,11 +55,11 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                    A panel will appear on every page of your site, but only on the visitor's
-                                                                    first page load. On subsequent page loads or visits, the panel does not appear.
-                                                                </p><p>
-                                                                    Modules that set cookies may do so irrespective of the visitor's action.
-                                                                </p>
+                                A panel will appear on every page of your site, but only on the visitor's
+                                first page load. On subsequent page loads or visits, the panel does not appear.
+                            </p><p>
+                                Modules that set cookies may do so irrespective of the visitor's action.
+                            </p>
                     visible_if: "zenarioAB.value('cookie_require_consent') == 'implied'"
                 cookie_consent_type__explicit:
                     site_setting:
@@ -75,41 +78,49 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                    A panel will appear on every page of your site, until the visitor presses
-                                                                    the &quot;Accept&quot; button.
-                                                                </p><p>
-                                                                    Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
-                                                                    (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
-                                                                </p><p>
-                                                                    HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                                                    gain a new setting, in their floating admin box panels.
-                                                                    Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
-                                                                    a cookie on a visitor's machine.
-                                                                    You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                                                    on your site and enable this option where appropriate.
-                                                                </p>
+                                A panel will appear on every page of your site, until the visitor presses
+                                the &quot;Accept&quot; button.
+                            </p><p>
+                                Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
+                                (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
+                            </p><p>
+                                HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
+                                gain a new setting, in their floating admin box panels.
+                                Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
+                                a cookie on a visitor's machine.
+                                You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
+                                on your site and enable this option where appropriate.
+                            </p>
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
-                                                    zenarioAB.value('cookie_consent_type__explicit') != 'message_accept_reject'
+                        zenarioAB.value('cookie_consent_type__explicit') != 'message_accept_reject'
                 description__explicit__message_accept_reject:
                     ord: "93"
                     snippet:
                         html: |
                             <p>
-                                                                    A panel will appear on every page of your site, until the visitor presses either
-                                                                    the &quot;Accept&quot; or &quot;Reject&quot; button.
-                                                                </p><p>
-                                                                    Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
-                                                                    (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
-                                                                </p><p>
-                                                                    HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                                                    gain a new setting, in their floating admin box panels.
-                                                                    Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
-                                                                    a cookie on a visitor's machine.
-                                                                    You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
-                                                                    on your site and enable this option where appropriate.
-                                                                </p>
+                                A panel will appear on every page of your site, until the visitor presses either
+                                the &quot;Accept&quot; or &quot;Reject&quot; button.
+                            </p><p>
+                                Modules will not set cookies until the visitor presses the &quot;Accept&quot; button.
+                                (A PHP session cookie will be placed on the visitor's computer regardless of this setting.)
+                            </p><p>
+                                HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
+                                gain a new setting, in their floating admin box panels.
+                                Their new setting allows you to declare that the code you have entered for that Plugin or Slot can place
+                                a cookie on a visitor's machine.
+                                You should review the HTML Snippet Plugins, HEAD Snippet Plugins, Head Slots and Foot Slots
+                                on your site and enable this option where appropriate.
+                            </p>
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
-                                                    zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
-    setting_group: cookies
+                        zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
+                
+                cookie_domain:
+                    ord: 200
+                    site_setting:
+                        name: cookie_domain
+                    label: 'Share cookies across subdomains:'
+                    type: select
+                    empty_value: 'Cookies are not shared across subdomains'
+                    values: {}

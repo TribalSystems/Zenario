@@ -53,7 +53,6 @@ if ($methodCall == 'handleOrganizerPanelAJAX') {
 //Some method calls are associated with instances and content items, and some are not
 if ($methodCall == 'refreshPlugin'
  || $methodCall == 'showFloatingBox'
- || $methodCall == 'showIframe'
  || $methodCall == 'handlePluginAJAX'
  || $methodCall == 'pluginAJAX'
  || $methodCall == 'showRSS'
@@ -148,11 +147,11 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	if (request('__pluginClassName__')) {
-		if (!($module = activateModuleClass(request('__pluginClassName__')))) {
+		if (!($module = activateModule(request('__pluginClassName__')))) {
 			exit;
 		}
 	} elseif (request('moduleClassName')) {
-		if (!($module = activateModuleClass(request('moduleClassName')))) {
+		if (!($module = activateModule(request('moduleClassName')))) {
 			exit;
 		}
 	} elseif (request('__pluginName__')) {
@@ -188,7 +187,7 @@ if ($methodCall == 'refreshPlugin'
 	$result = sqlQuery($sql);
 	while ($row = sqlFetchAssoc($result)) {
 		$isCode = substr($row['code'], 0, 1) == '_';
-		$needsTranslating = $isCode || !empty(cms_core::$translateLanguages[$languageId]);
+		$needsTranslating = $isCode || !empty(cms_core::$langs[$languageId]['translate_phrases']);
 		
 		if ($needsTranslating) {
 			$phrases[$row['code']] = $row['local_text'];
@@ -230,7 +229,7 @@ if ($methodCall == 'refreshPlugin'
 	$files = array();
 	if (isset($_SESSION['sk_new_ids']) && is_array($_SESSION['sk_new_ids'])) {
 		foreach ($_SESSION['sk_new_ids'] as $id => $dummy) {
-			if ($file = getRow('files', array('id', 'checksum', 'filename', 'width', 'height'), array('id' => $id, 'usage' => 'editor_temp_file'))) {
+			if ($file = getRow('files', array('id', 'checksum', 'filename', 'width', 'height'), array('id' => $id, 'usage' => 'image'))) {
 				$files[$id] = $file;
 			}
 		}
@@ -255,7 +254,7 @@ if ($methodCall == 'refreshPlugin'
 	
 	//Otherwise look for a Module Name
 	if (request('moduleClassName')) {
-		if (!($module = activateModuleClass(request('moduleClassName')))) {
+		if (!($module = activateModule(request('moduleClassName')))) {
 			exit;
 		}
 	} elseif (request('__pluginName__')) {

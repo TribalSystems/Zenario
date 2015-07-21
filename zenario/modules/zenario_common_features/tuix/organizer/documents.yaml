@@ -154,13 +154,6 @@ zenario__content:
                 #        path: zenario_document_folder
                 #    traits:
                 #        is_folder: true
-                reorder:
-                    hide_in_select_mode: true
-                    label: Re-order
-                    admin_box:
-                        path: zenario_reorder_documents
-                    traits:
-                        is_folder: true
                 view_tags:
                     hide_in_select_mode: true
                     label: Edit document metadata
@@ -169,7 +162,19 @@ zenario__content:
                         is_folder: true
                     admin_box:
                         path: zenario_document_properties
+                actions_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                reorder:
+                    hide_in_select_mode: true
+                    label: Re-order
+                    admin_box:
+                        path: zenario_reorder_documents
+                    traits:
+                        is_folder: true
                 rename:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Rename
                     multiple_select: false
@@ -178,6 +183,7 @@ zenario__content:
                     traits:
                         is_folder: true
                 download:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Download
                     multiple_select: false
@@ -190,12 +196,12 @@ zenario__content:
                             #message_type: warning
                             button_message: Download
                             cancel_button_message: Cancel
-                autoset_dropdown:
-                    label: Auto-set
+                advanced_dropdown:
+                    label: Advanced
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 autoset:
-                    parent: autoset_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Auto-set metadata
                     tooltip: >
@@ -213,7 +219,7 @@ zenario__content:
                     disabled_tooltip: >
                         All of the selected documents are protected from auto-set
                 dont_autoset_metadata:
-                    parent: autoset_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Protect from auto-set
                     multiple_select: true
@@ -225,7 +231,7 @@ zenario__content:
                     visible_if_for_any_selected_items: >
                         !zenario.engToBoolean(item.dont_autoset_metadata)
                 allow_autoset_metadata:
-                    parent: autoset_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Allow auto-set
                     multiple_select: true
@@ -237,7 +243,7 @@ zenario__content:
                     visible_if_for_any_selected_items: >
                         zenario.engToBoolean(item.dont_autoset_metadata)
                 remove_metadata:
-                    parent: autoset_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Remove all metadata
                     multiple_select: true
@@ -252,12 +258,8 @@ zenario__content:
                             cancel_button_message: Cancel
                         request: 
                             remove_metadata: true
-                rescan_dropdown:
-                    label: Rescan extract
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
                 rescan_extract:
-                    parent: rescan_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Rescan text and image
                     multiple_select: false
@@ -275,7 +277,7 @@ zenario__content:
                         request: 
                             rescan: true
                 rescan_text:
-                    parent: rescan_dropdown
+                    parent: advanced_dropdown
                     hide_in_select_mode: true
                     label: Rescan text
                     multiple_select: false
@@ -285,6 +287,7 @@ zenario__content:
                         request: 
                             rescanText: true
                 move_documents:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Move selected document
                     multiple_select_label: Move selected documents
@@ -309,6 +312,7 @@ zenario__content:
                         request: 
                             delete: true
                 generate_public_link:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Generate public link
                     multiple_select: false
@@ -319,6 +323,7 @@ zenario__content:
                         request: 
                             generate_public_link: true
                 view_public_link:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: View public link
                     multiple_select: false
@@ -330,6 +335,7 @@ zenario__content:
                         request: 
                             generate_public_link: true
                 delete_public_link:
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: Delete public link
                     multiple_select: true

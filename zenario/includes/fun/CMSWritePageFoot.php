@@ -36,6 +36,9 @@ $isOrganizer = $mode === 'organizer';
 
 if (!$isWelcome && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
+
+} elseif (cms_core::$mustUseFullPath) {
+	$prefix = absCMSDirURL(). 'zenario/';
 }
 
 
@@ -148,11 +151,6 @@ if (cms_core::$cType) {
 	echo '
 	zenario.cType = "', jsEscape(cms_core::$cType), '";';
 }
-if (cms_core::$alias
- && $aliasAndLangCode = linkToItem(cms_core::$cID, cms_core::$cType, false, '', cms_core::$alias, false, true, false, true)) {
-	echo '
-	zenario.aliasAndLangCode = "', jsEscape($aliasAndLangCode), '";';
-}
 
 if (!$isWelcome && checkPriv()) {
 	if (cms_core::$cVersion) {
@@ -171,6 +169,7 @@ if (!$isWelcome && checkPriv()) {
 			if ($value
 			 && ($setting == 'cookie_require_consent'
 			  || $setting == 'default_language'
+			  || $setting == 'primary_domain'
 			  || $setting == 'organizer_title'
 			  || $setting == 'organizer_date_format'
 			  || $setting == 'vis_time_format'
@@ -180,12 +179,14 @@ if (!$isWelcome && checkPriv()) {
 		}
 	}
 	
+	
 	echo '
 	zenarioA.toolbar = \'', jsEscape(ifNull(session('page_toolbar'), 'preview')), '\';
 	zenarioA.pageMode = \'', jsEscape(ifNull(session('page_mode'), 'preview')), '\';
 	zenarioA.slotWandOn = ', engToBoolean(session('admin_slot_wand')), ';
 	zenarioA.showGridOn = ', engToBoolean(session('admin_show_grid')), ';
-	zenarioA.siteSettings = ', json_encode($settings), ';';
+	zenarioA.siteSettings = ', json_encode($settings), ';
+	zenarioA.importantGetRequests = ', json_encode(importantGetRequests()), ';';
 	
 	
 	//Get a list of language names and flags for use in the formatting options

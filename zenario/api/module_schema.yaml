@@ -366,6 +366,12 @@ properties:
             
                         This will be the default value; it can be overwritten on a per site basis
                         by changing it in the Content Type settings.
+                enable_categories:
+                    type: boolean
+                    description: >
+                        Whether to support categories for this content type. Defaults to false.
+                        
+                        Categories functionality will be hidden for content items on this type if not enabled.
                 description_field:
                     enum:
                         - optional

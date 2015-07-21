@@ -1,4 +1,4 @@
-<% if (/*m.object.tag && */m.object.schema && m.object.schema.properties && typeof m.object.data == 'object') { %>
+<% if (m.object.schema && m.object.schema.properties && typeof m.object.data == 'object') { %>
 	<div class="sidepanel_title">
 		<% if (m.object.parent && m.object.parent.schema && m.object.parent.schema.additionalProperties) { %>
 			<% if (!m.object.lastTag) { %>
@@ -28,29 +28,33 @@
 		</tr>
 		
 		<% for (var prop in m.object.schema.properties) { %>
-			<% if (m.object.data[prop] === undefined) { %>
-				<% if (m.object.requiredProperties[prop]) { %>
-					<tr class="property undefined_property required">
+			
+			<% var mTooltip = {data: m.object.data[prop], isRequired: m.object.requiredProperties[prop], schema: m.object.schema.properties[prop], tag: prop}; %>
+			<% var tooltip = zenarioA.microTemplate('zenario_dev_tools_tooltip', mTooltip); %>
+			
+			<% if (mTooltip.data === undefined) { %>
+				<% if (mTooltip.isRequired) { %>
+					<tr title="{{tooltip|escape}}" class="property undefined_property required">
 						<td class="property_name">
-							<a title="Missing required property">
+							<span>
 				<% } else { %>
-					<tr class="property undefined_property">
+					<tr title="{{tooltip|escape}}" class="property undefined_property">
 						<td class="property_name">
-							<a title="Optional property that isn't set">
+							<span>
 				<% } %>
 			<% } else { %>
-				<% if (m.object.requiredProperties[prop]) { %>
-					<tr class="property defined_property required">
+				<% if (mTooltip.isRequired) { %>
+					<tr title="{{tooltip|escape}}" class="property defined_property required">
 						<td class="property_name">
-							<a title="Required property">
+							<span>
 				<% } else { %>
-					<tr class="property defined_property">
+					<tr title="{{tooltip|escape}}" class="property defined_property">
 						<td class="property_name">
-							<a title="Optional property">
+							<span>
 				<% } %>
 			<% } %>
-						{{zenarioA.forcePathWrap(prop, /_/g, '_')}}
-					</a>
+						<input type="text" readonly="readonly" value="{{prop|escape}}"/>
+					</span>
 				</td>
 				<td class="property_desc">
 					<div>

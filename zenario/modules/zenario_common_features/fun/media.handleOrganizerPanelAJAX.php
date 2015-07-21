@@ -28,6 +28,12 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+
+
+
+
+
+
 //Upload a new file
 if (post('upload') && $privCheck) {
 	
@@ -36,11 +42,11 @@ if (post('upload') && $privCheck) {
 	if ($_FILES['Filedata']['tmp_name']
 	 && ($existingChecksum = md5_file($_FILES['Filedata']['tmp_name']))
 	 && ($existingChecksum = base16To64($existingChecksum))) {
-		$existingFilename = getRow('files', 'filename', array('checksum' => $existingChecksum, 'usage' => $usage));
+		$existingFilename = getRow('files', 'filename', array('checksum' => $existingChecksum, 'usage' => 'image'));
 	}
 	
 	//Try to add the uploaded image to the database
-	$fileId = addFileToDatabase($usage, $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
+	$fileId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
 	
 	if ($fileId) {
 		
@@ -74,6 +80,19 @@ if (post('upload') && $privCheck) {
 	}
 	return $ids;
 
+//Mark images as public
+} elseif (post('mark_as_public') && checkPriv('_PRIV_MANAGE_MEDIA')) {
+	foreach (explode(',', $ids) as $id) {
+		updateRow('files', array('privacy' => 'public'), $id);
+	}
+
+//Mark images as private
+} elseif (post('mark_as_private') && checkPriv('_PRIV_MANAGE_MEDIA')) {
+	foreach (explode(',', $ids) as $id) {
+		updateRow('files', array('privacy' => 'private'), $id);
+		deletePublicImage($id);
+	}
+
 //Delete an unused image
 } elseif (post('delete') && checkPriv('_PRIV_MANAGE_MEDIA')) {
 	foreach (explode(',', $ids) as $id) {
@@ -86,6 +105,27 @@ if (post('upload') && $privCheck) {
 		$key['image_id'] = $id;
 		$key['in_use'] = 0;
 		deleteRow('inline_images', $key);
+	}
+
+
+
+} elseif (post('view_public_link')) {
+	$width = $height = $url = false;
+	if (imageLink($width, $height, $url, $ids)) {
+		//if ($url
+		
+		echo
+			'<!--Message_Type:Success-->',
+			adminPhrase('<h3>The URL to your image is shown below:</h3><p>Full hyperlink:<br>[[full]]<br>Internal hyperlink:<br>[[internal]]</p>',
+				array(
+					'full' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars(absCMSDirURL(). $url). '"/>',
+					'internal' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars($url). '"/>'
+				));
+		
+	} else {
+		echo
+			'<!--Message_Type:Error-->',
+			adminPhrase('Could not generate public link');
 	}
 	
 }

@@ -22,7 +22,7 @@
 					{% if node1.descriptive_text %}
 						{{node1.descriptive_text}}
 					{% endif %}
-					{% if node1.children %}
+					{% if node1.children or nodeExtraProperties[node1.mID]['use_feature_image'] %}
 						<div class="columns_wrap">
 						<div class="column">
 							{% set currentInCol = 0 %}

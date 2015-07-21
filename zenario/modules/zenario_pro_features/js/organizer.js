@@ -77,7 +77,7 @@ zenario_pro_features.serverTime = function() {
 
 
 zenario_pro_features.fillOrganizerLowerLeft = function() {
-	var times = zenario.pluginClassAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
+	var times = zenario.moduleNonAsyncAJAX('zenario_pro_features', 'getBottomLeftInfo=1', true).split('~'),
 		now = new Date(),
 		htmlPC = '',
 		htmlSC = '';

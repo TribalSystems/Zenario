@@ -1,28 +1,45 @@
-<table>
-	<tr><td>
-		<img
-			src="{{URLBasePath|escape}}zenario/file.php?id={{m.id|escape}}&amp;c={{zenarioO.columnValue(m.id, 'checksum')|escape}}&amp;closeup=1"
-			width="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'width'), Math.min(zenarioO.columnRawValue(m.id, 'width') / zenarioO.columnRawValue(m.id, 'height') * 400, 400)))|escape}}"
-			height="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'height'), Math.min(zenarioO.columnRawValue(m.id, 'height') / zenarioO.columnRawValue(m.id, 'width') * 400, 400)))|escape}}"
-		/>
-	</td><td>
-		<div>Filename: {{zenarioO.columnValue(m.id, 'filename')|escape}}</div>
-		<div>Alt tag: {{zenarioO.columnValue(m.id, 'alt_tag')|escape}}</div>
-		<div>Size: {{zenarioO.columnValue(m.id, 'size')|escape}}</div>
-		<div>Height: {{zenarioO.columnValue(m.id, 'height')|escape}}px</div>
-		<div>Width: {{zenarioO.columnValue(m.id, 'width')|escape}}px</div>
-		<% if (zenarioO.tuix.columns.in_use_anywhere) { %>
-			<div>In use: {{zenarioO.columnValue(m.id, 'in_use_anywhere')|escape}}</div>
-		<% } else { %>
-			<% if (zenarioO.tuix.columns.in_use_here) { %>
-				<div>In use here: {{zenarioO.columnValue(m.id, 'in_use_here')|escape}}</div>
+<div class="organizer-slidedown-image-information">
+	<table>
+		<tr><td class="slidedown_table_image">
+			<img
+				src="{{URLBasePath|escape}}zenario/file.php?id={{m.id|escape}}&amp;c={{zenarioO.columnValue(m.id, 'checksum')|escape}}&amp;closeup=1"
+				width="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'width'), Math.min(zenarioO.columnRawValue(m.id, 'width') / zenarioO.columnRawValue(m.id, 'height') * 400, 400)))|escape}}"
+				height="{{Math.floor(Math.min(zenarioO.columnRawValue(m.id, 'height'), Math.min(zenarioO.columnRawValue(m.id, 'height') / zenarioO.columnRawValue(m.id, 'width') * 400, 400)))|escape}}"
+			/>
+		</td><td>
+			<p><strong>Filename:</strong> {{zenarioO.columnValue(m.id, 'filename')|escape}}</p>
+			<p><strong>Alt tag:</strong> {{zenarioO.columnValue(m.id, 'alt_tag')|escape}}</p>
+			<p><strong>Size:</strong> {{zenarioO.columnValue(m.id, 'size')|escape}}</p>
+			<p><strong>Height:</strong> {{zenarioO.columnValue(m.id, 'height')|escape}}px</p>
+			<p><strong>Width:</strong> {{zenarioO.columnValue(m.id, 'width')|escape}}px</p>
+			<% if (zenarioO.tuix.columns.in_use_anywhere) { %>
+				<p><strong>In use:</strong> {{zenarioO.columnValue(m.id, 'in_use_anywhere')|escape}}</p>
+			<% } else { %>
+				<% if (zenarioO.tuix.columns.in_use_here) { %>
+					<p><strong>In use here:</strong> {{zenarioO.columnValue(m.id, 'in_use_here')|escape}}</p>
+				<% } %>
+				<% if (zenarioO.tuix.columns.in_use_elsewhere) { %>
+					<p><strong>In use elsewhere:</strong> {{zenarioO.columnValue(m.id, 'in_use_elsewhere')|escape}}</p>
+				<% } %>
 			<% } %>
-			<% if (zenarioO.tuix.columns.in_use_elsewhere) { %>
-				<div>In use elsewhere: {{zenarioO.columnValue(m.id, 'in_use_elsewhere')|escape}}</div>
+			
+			<p><strong>Where it's used:</strong> {{zenarioO.columnValue(m.id, 'all_usage_content')}}</p>
+			<p><strong>Email templates:</strong> {{zenarioO.columnValue(m.id, 'usage_email_templates')}}</p>
+			<% if (zenarioO.tuix.columns.all_usage_newsletters) { %>
+			<p><strong>Newsletters:</strong> {{zenarioO.columnValue(m.id, 'all_usage_newsletters')}}</p>
 			<% } %>
-		<% } %>
-		<% if (zenarioO.tuix.columns.tags) { %>
-			<div>Tags: {{zenarioO.columnValue(m.id, 'tags')|escape}}</div>
-		<% } %>
-	</td></tr>
-</table>
+			
+			<% if (zenarioO.tuix.columns.tags) { %>
+				<div class="slidedown_tags_title">
+					<span><strong>Tags:</strong></span>
+				</div>
+				
+				<% if (zenarioO.pi.imageTagsById && zenarioO.pi.imageTagsById[m.id]) { %>
+					<div class="organizer_image_tags slidedown_view">
+						{{zenarioA.microTemplate('zenario_image_tag', zenarioO.pi.imageTagsById[m.id])}}
+					</div>
+				<% } %>
+			<% } %>
+		</td></tr>
+	</table>
+</div>

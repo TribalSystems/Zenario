@@ -5,11 +5,11 @@ sections:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
-                hidden: Yes
+                hidden: true
                 css_class: zenario_at_infobar_menu_orphaned
                 label: '[Orphaned page]'
             menu_section:
-                hidden: Yes
+                hidden: true
                 label: '[Orphaned page]'
             quick_add_to_menu:
                 priv: _PRIV_ADD_MENU_ITEM
@@ -30,10 +30,10 @@ sections:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
-                hidden: Yes
+                hidden: true
                 label: ""
             menu_section:
-                hidden: Yes
+                hidden: true
                 label: ""
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM
@@ -53,11 +53,11 @@ sections:
                     min_path: zenario__menu/panels/menu_nodes
                     max_path: zenario__menu/panels/menu_nodes
                     disallow_refiners_looping_on_min_path: No
-                    reload_menu_slots: Yes
-                    reload_admin_toolbar: Yes
+                    reload_menu_slots: true
+                    reload_admin_toolbar: true
             advanced_dropdown:
                 label: Advanced
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             detach:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Detach content item
@@ -98,11 +98,11 @@ sections:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:
             menu_path:
-                hidden: Yes
+                hidden: true
                 css_class: ""
                 label: ""
             menu_section:
-                hidden: Yes
+                hidden: true
                 label: ""
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM
@@ -121,11 +121,11 @@ sections:
                     min_path: zenario__menu/panels/menu_nodes
                     max_path: zenario__menu/panels/menu_nodes
                     disallow_refiners_looping_on_min_path: No
-                    reload_menu_slots: Yes
-                    reload_admin_toolbar: Yes
+                    reload_menu_slots: true
+                    reload_admin_toolbar: true
             advanced_dropdown:
                 label: Advanced
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             detach:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Detach content item

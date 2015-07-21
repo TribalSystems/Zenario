@@ -1,5 +1,9 @@
 <?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?>
 
+<script type="text/javascript">
+	window.zenarioGrid = {"cols":12,"minWidth":769,"maxWidth":1140,"fluid":true,"responsive":true};
+</script>
+
 <?php if (file_exists(CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php')) {
 	require CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php';
 }?>
@@ -64,4 +68,4 @@
 
 
 <?php //data:eJy9lE1vgzAMhv9LzmgaLdoHt3Vau8N6mSb1ME0oJS5ECwlKwtaq6n9fQilNWSPoDjuBX_l97NiBLUqBMYXi9y36pkTnKA5HAcokJclSAv5EsZYVNEqqVJIyrEw-mlnhGTABiQKkNyUY0fHtghOiYkIfWBwXNvlNlMlcLCmDZA68OlLq3ADlQLNc27jAjBlh_4yR4GzT5butWfCDacJYfp1u7G0l7GvAqXjrpYyGHyOnBFyof0rj3tY-nBWIqqQ86w5o6Eongmz-uNBpxViyqFOGj7K7vDmm3Lu9u7N1reWCitFZyESsL7oCfkrvFRhE6d_5EEr0jzdnKoQe9jNwrXuXd-O-q9apdcHhjJYKW8SiC8oXzSd9c29CvG7CMIyuA7RiFSWH0gWVUkgUrzBTJpSgSsEV_YJ2LI8t1742JIPJZpW27cbR1aiNXmCln0gGbsarbf8o1tqUVQfjia_W26zWuZd3P0Nq6xI,//v2// ?>
-<?php //checksum:nEwN9tHSmcOqaRikAjJB-386KqA,// ?>
+<?php //checksum:flSxq9wGkeH_jcLgTZwzxeWjtGQ,// ?>

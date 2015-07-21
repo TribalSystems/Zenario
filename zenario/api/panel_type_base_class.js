@@ -82,6 +82,11 @@ methods.cmsSetsPath = function(path) {
 	this.path = path;
 };
 
+//Called by Organizer to give information on the current refiner
+methods.cmsSetsRefiner = function(refiner) {
+	this.refiner = refiner;
+};
+
 //Called by Organizer whenever a panel is first loaded with a specific item requested
 methods.cmsSetsRequestedItem = function(requestedItem) {
 	this.lastItemClicked =
@@ -138,12 +143,11 @@ methods.returnPanelTitle = function() {
 //(In select mode the opening picker will determine whether multiple select is allowed.)
 methods.returnMultipleSelectEnabled = function() {
 	if (this.tuix && this.tuix.item_buttons) {
-		foreach (this.tuix.item_buttons as i) {
-			if (!zenarioO.isInfoTag(i)) {
-				if (engToBoolean(this.tuix.item_buttons[i].multiple_select)
-				 && !zenarioO.checkButtonHidden(this.tuix.item_buttons[i])) {
-					return true;
-				}
+		foreach (this.tuix.item_buttons as var i => var button) {
+			if (button
+			 && engToBoolean(button.multiple_select)
+			 && !zenarioO.checkButtonHidden(button)) {
+				return true;
 			}
 		}
 	}
@@ -157,8 +161,8 @@ methods.returnSearchingEnabled = function() {
 	
 	//Look to see if there's a column marked as searchable, and if so return true
 	if (this.tuix && this.tuix.columns) {
-		foreach (this.tuix.columns as var c) {
-			if (!zenarioO.isInfoTag(c) && engToBoolean(this.tuix.columns[c].searchable)) {
+		foreach (this.tuix.columns as var c => var column) {
+			if (column && engToBoolean(column.searchable)) {
 				return true;
 			}
 		}
@@ -182,8 +186,7 @@ methods.sortAndSearchItems = function() {
 
 //Part one of sortAndSearchItems(), this is broken up into two halves for easier overriding
 methods.sortItems = function() {
-	zenarioO.createSortArray('sortedItems', 'items', zenarioO.sortBy, zenarioO.sortDesc);
-	return zenarioO.sortedItems;
+	return zenarioO.getSortedIdsOfTUIXElements('items', zenarioO.sortBy, zenarioO.sortDesc);
 };
 
 //Part two of sortAndSearchItems(), this is broken up into two halves for easier overriding
@@ -191,14 +194,14 @@ methods.searchItems = function(items, searchTerm) {
 	
 	if (searchTerm !== undefined) {
 		var lowerCaseSearchTerm = searchTerm.toLowerCase(),
-			itemNo, id, c;
+			itemNo, id, c, column;
 		
 		for (itemNo = items.length - 1; itemNo >= 0; --itemNo) {
 			id = items[itemNo];
 			
 			matches = false;
-			foreach (this.tuix.columns as c) {
-				if (!zenarioO.isInfoTag(c) && engToBoolean(this.tuix.columns[c].searchable)) {
+			foreach (this.tuix.columns as c => column) {
+				if (column && engToBoolean(column.searchable)) {
 					value = zenarioO.columnValue(id, c, true);
 					
 					if (value == (numeric = 1*value)) {

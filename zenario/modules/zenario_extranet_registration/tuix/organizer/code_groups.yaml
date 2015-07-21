@@ -19,16 +19,8 @@ zenario__users:
                     sql: 'cg.code_id = [[REFINER_ID]]'
             collection_buttons:
                 add_group_to_code:
-                    name: Add group
-                    pick_items:
-                        path: zenario__users/panels/groups_only
-                        target_path: zenario__users/panels/groups_only
-                        min_path: zenario__users/panels/groups_only
-                        one_to_one_choose_phrase: Add Group to Code
-                        multiple_select: Yes
-                        one_to_many_choose_phrase: Add Groups to Code
-                        request:
-                            action: add_group_to_code
+                    label: Add group...
+                    hide_when_children_are_not_visible: true
             item_buttons:
                 remove_group_from_code:
                     name: Remove

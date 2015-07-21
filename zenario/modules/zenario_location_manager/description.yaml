@@ -5,7 +5,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 description: |
     <p>The Location Manager can be used to model any kind of location in the real world.</p>
     <p>For example, you can use it to store the locations of customers, individuals, important buildings, venues for events, and much more. This Module can be extended by other Modules which add more context-specific information.</p>

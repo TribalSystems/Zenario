@@ -10,10 +10,6 @@ zenario__locations:
             label: Locations
             link:
                 path: zenario__locations/panel
-        locations_map:
-            label: Locations (Map)
-            link:
-                path: zenario__locations/panels/map
         hierarchy:
             label: Hierarchy
             visible_if: >

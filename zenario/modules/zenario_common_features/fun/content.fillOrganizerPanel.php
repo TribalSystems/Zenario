@@ -46,9 +46,10 @@ if (isset($_GET['refiner__trash']) && !get('refiner__template')) {
 	$panel['no_items_message'] = adminPhrase('No items with duplicate file attachments found');
 	unset($panel['collection_buttons']['diagnostics_dropdown']);
 	
-	//code bellow deal with default columns for a specific refiner, after defining use_different_view_options on the tuix file.
+	//Attempt to turn off a few columns by default here.
+	//These options are only defaults and will be overridden if the Administrator has ever set or changed them.
 	foreach ($panel['columns'] as $col_name => &$col) {
-		if (is_array($col_name) && !isInfoTag($col_name)) {
+		if (is_array($col_name)) {
 			$col['show_by_default'] = false;
 		
 			switch ($col_name) {
@@ -228,6 +229,8 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 		unset($panel['item_buttons']['hidden']['ajax']);
 	}
 	
+	$contentTypes = getRowsArray('content_types', array('enable_categories'));
+	
 	foreach ($panel['items'] as $id => &$item) {
 		$item['cell_css_classes'] = array();
 		
@@ -245,7 +248,9 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 			
 			
 			$item['css_class'] = getItemIconClass($item['id'], $item['type'], true, $item['status']);
-	
+			
+			$item['enable_categories'] = $contentTypes[$item['type']]['enable_categories'];
+			
 			switch (arrayKey($item,'privacy')){
 				case 'all_extranet_users':
 					$item['cell_css_classes']['privacy'] = 'blue';

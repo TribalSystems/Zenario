@@ -64,6 +64,7 @@ plugin_settings:
 					type: text
 					plugin_setting:
 						name: user_signup_notification_email_address
+						is_email_address: true
 					side_note: >
 						Notify these administrators of new sign-ups. Separate multiple email addresses with commas.
 				user_signup_notification_email_template:
@@ -284,7 +285,6 @@ plugin_settings:
 						name: select_characteristics_for_new_users
 					label: 'Characteristic:'
 					type: select
-					load_values_from_organizer_path: zenario__users/panels/boolean_and_list_only
 					empty_value: ' -- Select -- '
 					validation:
 						required_if_not_hidden: Please select a user characteristic.
@@ -338,7 +338,6 @@ plugin_settings:
 						name: select_group_for_new_users
 					label: 'Group'
 					type: select
-					load_values_from_organizer_path: zenario__users/panels/groups_only
 					empty_value: ' -- Select -- '
 					validation:
 						required_if_not_hidden: Please select a group.

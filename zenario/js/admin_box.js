@@ -43,43 +43,55 @@ zenario.lib(function(
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
 	extensionOf, methodsOf,
-	boxNum
+	zenarioAF, boxNum
 ) {
 	"use strict";
 
+	var methods = methodsOf(zenarioAF);
 
 
 
-zenarioAB.init = true;
-zenarioAB.welcome = false;
-zenarioAB.baseCSSClass = '';
+methods.init = function(globalName, microtemplatePrefix) {
+	
+	this.globalName = globalName;
+	this.mtPrefix = microtemplatePrefix || 'zenario_admin_box';
+	
+	this.isWelcomePage = false;
+	this.isFAB = false;
+	
+	this.baseCSSClass = '';
+	this.onKeyUpNum = 0;
+	zenarioAB.sizing = false;
+	this.documentScrollTop = false;
+	this.cachedAJAXSnippets = {};
+	this.changed = {};
+	this.toggleLevelsPressed = {};
+};
+zenarioAB.init('zenarioAB');
+zenarioAB.isFAB = true;
 
-zenarioAB.onKeyUpNum = 0;
-zenarioAB.sizing = false;
-zenarioAB.documentScrollTop = false;
-zenarioAB.cachedAJAXSnippets = {};
 
 
 
-zenarioAB.getKey = function(itemLevel) {
-	return zenarioAB.tuix.key;
+methods.getKey = function(itemLevel) {
+	return this.tuix.key;
 };
 
-zenarioAB.getKeyId = function(limitOfOne) {
-	if (zenarioAB.tuix && zenarioAB.tuix.key) {
-		return zenarioAB.tuix.key.id;
+methods.getKeyId = function(limitOfOne) {
+	if (this.tuix && this.tuix.key) {
+		return this.tuix.key.id;
 	} else {
 		return false;
 	}
 };
 
-zenarioAB.getLastKeyId = function(limitOfOne) {
-	return zenarioAB.getKeyId(limitOfOne);
+methods.getLastKeyId = function(limitOfOne) {
+	return this.getKeyId(limitOfOne);
 };
 
 
-zenarioAB.openSiteSettings = function(settingGroup, tab) {
-	zenarioAB.open(
+methods.openSiteSettings = function(settingGroup, tab) {
+	this.open(
 		'site_settings',
 		{
 			id: settingGroup
@@ -91,8 +103,8 @@ zenarioAB.openSiteSettings = function(settingGroup, tab) {
 		}
 	);
 };
-zenarioAB.enableOrDisableSite = function() {
-	zenarioAB.open(
+methods.enableOrDisableSite = function() {
+	this.open(
 		'zenario_enable_site',
 		undefined,
 		undefined,
@@ -104,18 +116,16 @@ zenarioAB.enableOrDisableSite = function() {
 };
 
 //Open an admin floating box
-zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
+methods.open = function(path, key, tab, values, callBack) {
 	
 	//Don't allow a box to be opened if Organizer is opened and covering the screen
 	if (zenarioA.checkIfBoxIsOpen('AdminOrganizer')) {
 		return false;
 	}
 	
-	zenarioAB.templatePrefix = templatePrefix || 'zenario_admin_box';
-	
 	//Record the current scroll location of the page behind the box
-	if (zenarioAB.documentScrollTop === false) {
-		zenarioAB.documentScrollTop = $(zenario.browserIsSafari()? 'body' : 'html').scrollTop();
+	if (this.documentScrollTop === false) {
+		this.documentScrollTop = $(zenario.browserIsSafari()? 'body' : 'html').scrollTop();
 	}
 	
 	//Allow admin boxes to be opened in a simmilar format to Organizer panels; e.g. tag/path//id
@@ -130,16 +140,15 @@ zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
 	
 	
 	//Open the box...
-	zenarioAB.isOpen = true;
-	zenarioAB.callBack = callBack;
-	zenarioAB.getRequestKey = key;
-	zenarioAB.changed = {};
-	zenarioAB.SKColPicker = false;
+	this.isOpen = true;
+	this.callBack = callBack;
+	this.getRequestKey = key;
+	this.changed = {};
 
-	var html = zenarioA.microTemplate(zenarioAB.templatePrefix, {});
+	var html = zenarioA.microTemplate(this.mtPrefix, {});
 	
-	zenarioAB.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zab_' + path;
-	zenarioA.openBox(html, zenarioAB.baseCSSClass, 'AdminFloatingBox' + boxNum, false, 800, 50, 2, true, true, '.zenario_jqmHead', false);
+	this.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zab_' + path;
+	zenarioA.openBox(html, this.baseCSSClass, 'AdminFloatingBox' + boxNum, false, 800, 50, 2, true, true, '.zenario_jqmHead', false);
 	
 	//...but hide the box itself, so only the overlay shows
 	get('zenario_fbAdminFloatingBox').style.display = 'none';
@@ -148,67 +157,71 @@ zenarioAB.open = function(path, key, tab, values, callBack, templatePrefix) {
 	window.onbeforeunload = zenarioA.onbeforeunload;
 	
 	
-	zenarioAB.start(path, key, tab, values);
+	this.start(path, key, tab, values);
 };
 
 
-zenarioAB.start = function(path, key, tab, values) {
-	zenarioAB.tabHidden = true;
-	zenarioAB.differentTab = false;
+methods.start = function(path, key, tab, values) {
+	var that = this;
 	
-	zenarioAB.path = ifNull(path, '');
+	this.tabHidden = true;
+	this.differentTab = false;
 	
-	zenarioAB.tuix = {};
+	this.path = ifNull(path, '');
+	
+	this.tuix = {};
 		//Backwards compatability for any old code
-		zenarioAB.focus = zenarioAB.tuix;
+		this.focus = this.tuix;
 	
-	zenarioAB.key = ifNull(key, {});
-	zenarioAB.tab = tab;
-	zenarioAB.shownTab = false;
-	zenarioAB.url = zenarioAB.getURL();
+	this.key = ifNull(key, {});
+	this.tab = tab;
+	this.shownTab = false;
+	this.url = this.getURL();
 	
-	$.post(zenarioAB.url,
+	this.retryAJAX(
+		this.url,
 		{_fill: true, _values: values? JSON.stringify(values) : ''},
 		function(data) {
-			if (zenarioAB.load(data)) {
-				if (zenarioAB.tab) {
-					zenarioAB.tuix.tab = zenarioAB.tab;
+			if (that.load(data)) {
+				if (that.tab) {
+					that.tuix.tab = that.tab;
 				}
 				
-				delete zenarioAB.key;
-				delete zenarioAB.tab;
+				delete that.key;
+				delete that.tab;
 				
-				zenarioAB.sortTabs();
-				zenarioAB.initFields();
-				zenarioAB.draw();
+				that.sortTabs();
+				that.initFields();
+				that.draw();
 			} else {
-				zenarioAB.close(true);
+				that.close(true);
 			}
 		},
-	'text');
+		'loading'
+	);
 };
 
-zenarioAB.load = function(data) {
-	zenarioAB.loaded = true;
+methods.load = function(data) {
+	this.loaded = true;
 	
 	if (!(data = zenarioA.readData(data))) {
 		return false;
 	}
 	
-	if (zenarioAB.callFunctionOnEditors('isDirty')) {
-		zenarioAB.markAsChanged();
+	if (this.callFunctionOnEditors('isDirty')) {
+		this.markAsChanged();
 	}
 	
-	zenarioAB.callFunctionOnEditors('remove');
-	if (zenarioAB.welcome) {
-		zenarioAB.tuix = data;
+	this.callFunctionOnEditors('remove');
+	if (this.isWelcomePage) {
+		this.tuix = data;
 			//Backwards compatability for any old code
-			zenarioAB.focus = zenarioAB.tuix;
+			this.focus = this.tuix;
 	} else {
-		zenarioAB.syncAdminBoxFromServerToClient(data, zenarioAB.tuix);
+		this.syncAdminBoxFromServerToClient(data, this.tuix);
 	}
 	
-	if (!zenarioAB.tuix || (!zenarioAB.tuix.tabs && zenarioAB.tuix._location === undefined)) {
+	if (!this.tuix || (!this.tuix.tabs && this.tuix._location === undefined)) {
 		zenarioA.showMessage(phrase.couldNotOpenBox, true, 'error');
 		return false;
 	}
@@ -217,26 +230,27 @@ zenarioAB.load = function(data) {
 };
 
 //Setup some fields when the Admin Box is first loaded/displayed
-zenarioAB.initFields = function() {
+methods.initFields = function() {
 	
 	var tab, id, i, panel, field;
 	
-	if (zenarioAB.tuix.tabs) {
-		foreach (zenarioAB.tuix.tabs as tab) {
-			if (!zenarioAB.isInfoTag(tab) && zenarioAB.tuix.tabs[tab] && zenarioAB.tuix.tabs[tab].fields) {
-				foreach (zenarioAB.tuix.tabs[tab].fields as id) {
-					if (!zenarioAB.isInfoTag(id) && (field = zenarioAB.tuix.tabs[tab].fields[id])) {
+	if (this.tuix.tabs) {
+		foreach (this.tuix.tabs as tab) {
+			if (this.tuix.tabs[tab]
+			 && this.tuix.tabs[tab].fields) {
+				foreach (this.tuix.tabs[tab].fields as id) {
+					if (field = this.tuix.tabs[tab].fields[id]) {
 						
 						//Ensure that the display values for <use_value_for_plugin_name> fields are always looked up,
 						//even if that field is never actually shown
 						if (field.pick_items
 						 && field.plugin_setting
 						 && field.plugin_setting.use_value_for_plugin_name) {
-							zenarioAB.pickedItemsArray(id, zenarioAB.value(id, tab, false));
+							this.pickedItemsArray(id, this.value(id, tab, false));
 						
 						} else
 						if (field.load_values_from_organizer_path && !field.values) {
-							zenarioAB.loadValuesFromOrganizerPath(field);
+							this.loadValuesFromOrganizerPath(field);
 						}
 					}
 				}
@@ -245,7 +259,7 @@ zenarioAB.initFields = function() {
 	}
 };
 
-zenarioAB.loadValuesFromOrganizerPath = function(field) {
+methods.loadValuesFromOrganizerPath = function(field) {
 	
 	var i, panel;
 	
@@ -254,34 +268,32 @@ zenarioAB.loadValuesFromOrganizerPath = function(field) {
 		if (panel = zenarioA.getSKItem(field.load_values_from_organizer_path)) {
 			if (panel.items) {
 				foreach (panel.items as i) {
-					if (!zenarioAB.isInfoTag(i)) {
-						field.values[zenario.decodeItemIdForStorekeeper(i)] = zenarioA.formatSKItemName(panel, i);
-					}
+					field.values[zenario.decodeItemIdForStorekeeper(i)] = zenarioA.formatSKItemName(panel, i);
 				}
 			}
 		}
 	}
 };
 
-zenarioAB.changeMode = function() {
-	if (zenarioAB.editCancelEnabled(zenarioAB.tuix.tab)) {
-		if (zenarioAB.editModeOn()) {
-			zenarioAB.editCancelOrRevert('cancel', zenarioAB.tuix.tab);
+methods.changeMode = function() {
+	if (this.editCancelEnabled(this.tuix.tab)) {
+		if (this.editModeOn()) {
+			this.editCancelOrRevert('cancel', this.tuix.tab);
 		} else {
-			zenarioAB.editCancelOrRevert('edit', zenarioAB.tuix.tab);
+			this.editCancelOrRevert('edit', this.tuix.tab);
 		}
 	}
 };
 
-zenarioAB.revertTab = function() {
-	if (zenarioAB.changes(zenarioAB.tuix.tab) && zenarioAB.revertEnabled(zenarioAB.tuix.tab)) {
-		zenarioAB.editCancelOrRevert('revert', zenarioAB.tuix.tab);
+methods.revertTab = function() {
+	if (this.changes(this.tuix.tab) && this.revertEnabled(this.tuix.tab)) {
+		this.editCancelOrRevert('revert', this.tuix.tab);
 	}
 };
 
-zenarioAB.editCancelOrRevert = function(action, tab) {
+methods.editCancelOrRevert = function(action, tab) {
 	
-	if (!zenarioAB.tuix.tabs[tab].edit_mode) {
+	if (!this.tuix.tabs[tab].edit_mode) {
 		return;
 	}
 	
@@ -290,91 +302,88 @@ zenarioAB.editCancelOrRevert = function(action, tab) {
 		needToValidate;
 	
 	if (action == 'edit') {
-		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_edit);
-		needToValidate = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_edit);
+		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_edit);
+		needToValidate = engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_edit);
 	
 	} else if (action == 'cancel') {
-		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_cancel_edit);
-		needToValidate = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_cancel_edit);
+		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_cancel_edit);
+		needToValidate = engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_cancel_edit);
 	
 	} else if (action == 'revert') {
-		needToFormat = engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.format_on_revert);
-		needToValidate = zenarioAB.errorOnTab(tab) || engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.validate_on_revert);
+		needToFormat = engToBoolean(this.tuix.tabs[tab].edit_mode.format_on_revert);
+		needToValidate = this.errorOnTab(tab) || engToBoolean(this.tuix.tabs[tab].edit_mode.validate_on_revert);
 	}
 	
-	if (zenarioAB.tuix.tabs[tab].fields && !needToValidate) {
-		foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-			if (!zenarioAB.isInfoTag(f)) {
-				if (engToBoolean(zenarioAB.tuix.tabs[tab].fields[f].validate_onchange)
-				 && ((value = zenarioAB.readField(f)) !== undefined)
-				 && (value != zenarioAB.tuix.tabs[tab].fields[f].value)) {
-					needToValidate = true;
-					break;
-				
-				} else
-				if (!needToFormat
-				 && engToBoolean(zenarioAB.tuix.tabs[tab].fields[f].format_onchange)
-				 && ((value = zenarioAB.readField(f)) !== undefined)
-				 && (value != zenarioAB.tuix.tabs[tab].fields[f].value)) {
-					needToFormat = true;
-				}
+	if (this.tuix.tabs[tab].fields && !needToValidate) {
+		foreach (this.tuix.tabs[tab].fields as var f) {
+			if (engToBoolean(this.tuix.tabs[tab].fields[f].validate_onchange)
+			 && ((value = this.readField(f)) !== undefined)
+			 && (value != this.tuix.tabs[tab].fields[f].value)) {
+				needToValidate = true;
+				break;
+			
+			} else
+			if (!needToFormat
+			 && engToBoolean(this.tuix.tabs[tab].fields[f].format_onchange)
+			 && ((value = this.readField(f)) !== undefined)
+			 && (value != this.tuix.tabs[tab].fields[f].value)) {
+				needToFormat = true;
 			}
 		}
 	}
 	
-	zenarioAB.tuix.tabs[tab].edit_mode.on = action != 'cancel';
-	zenarioAB.changed[tab] = false;
+	this.tuix.tabs[tab].edit_mode.on = action != 'cancel';
+	this.changed[tab] = false;
 	
 	if (needToValidate) {
-		zenarioAB.validate(undefined, undefined, true);
+		this.validate(undefined, undefined, true);
 	
 	} else if (needToFormat) {
-		zenarioAB.format(true);
+		this.format(true);
 	
 	} else {
-		zenarioAB.wipeTab();
-		zenarioAB.redrawTab(true);
+		this.wipeTab();
+		this.redrawTab(true);
 	}
 	
-	if (zenarioAB.tuix.tab == tab) {
+	if (this.tuix.tab == tab) {
 		$('#zenario_abtab').removeClass('zenario_abtab_changed');
 	}
 };
 
 
-zenarioAB.clickTab = function(tab) {
-	if (zenarioAB.loaded) {
-		zenarioAB.validate(tab != zenarioAB.tuix.tab, tab);
+methods.clickTab = function(tab) {
+	if (this.loaded) {
+		this.validate(tab != this.tuix.tab, tab);
 	}
 };
 
-zenarioAB.clickButton = function(el, id) {
-	if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].type == 'submit') {
-		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed = true;
-		zenarioAB.validate(true);
+methods.clickButton = function(el, id) {
+	if (this.tuix.tabs[this.tuix.tab].fields[id].type == 'submit') {
+		this.tuix.tabs[this.tuix.tab].fields[id].pressed = true;
+		this.validate(true);
 	
-	} else if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].type == 'toggle') {
-		if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed = !engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].pressed)) {
+	} else if (this.tuix.tabs[this.tuix.tab].fields[id].type == 'toggle') {
+		if (this.tuix.tabs[this.tuix.tab].fields[id].pressed = !engToBoolean(this.tuix.tabs[this.tuix.tab].fields[id].pressed)) {
 			$('#' + id).removeClass('not_pressed').addClass('pressed');
 		} else {
 			$('#' + id).removeClass('pressed').addClass('not_pressed');
 		}
 		
-		zenarioAB.validateFormatOrRedrawForField(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]);
+		this.validateFormatOrRedrawForField(this.tuix.tabs[this.tuix.tab].fields[id]);
 	}
 };
 
 
-zenarioAB.toggleLevelsPressed = {};
-zenarioAB.togglePressed = function(toggleLevel, tuixObject) {
+methods.togglePressed = function(toggleLevel, tuixObject) {
 	
 	var show;
 	
 	if (!toggleLevel) {
-		show = zenarioAB.toggleLevelsPressed.last;
+		show = this.toggleLevelsPressed.last;
 	
 	} else if (toggleLevel > 1) {
-		show = zenarioAB.toggleLevelsPressed[toggleLevel - 1];
+		show = this.toggleLevelsPressed[toggleLevel - 1];
 	
 	} else {
 		show = true;
@@ -385,86 +394,110 @@ zenarioAB.togglePressed = function(toggleLevel, tuixObject) {
 	}
 	
 	if (tuixObject && tuixObject.type == 'toggle') {
-		zenarioAB.toggleLevelsPressed.last = show && engToBoolean(tuixObject.pressed);
+		this.toggleLevelsPressed.last = show && engToBoolean(tuixObject.pressed);
 		
 		if (toggleLevel) {
-			zenarioAB.toggleLevelsPressed[toggleLevel] = zenarioAB.toggleLevelsPressed.last;
+			this.toggleLevelsPressed[toggleLevel] = this.toggleLevelsPressed.last;
 		}
 	}
 	
 	return show;
 };
 
-zenarioAB.toggleLevel = function(tuixObject) {
-	return zenarioAB.toggleLevelsPressed.last;
+methods.toggleLevel = function(tuixObject) {
+	return this.toggleLevelsPressed.last;
 };
 
 
 
-zenarioAB.format = function(wipeValues) {
-	if (zenarioAB.SKColPicker || !zenarioAB.loaded) {
+methods.format = function(wipeValues) {
+	if (!this.isFAB || !this.loaded) {
 		return;
 	}
 	
-	zenarioAB.loaded = false;
-	zenarioAB.hideTab();
+	var that = this;
 	
-	zenarioAB.checkValues(wipeValues);
+	this.loaded = false;
+	this.hideTab();
 	
-	$.post(zenarioAB.getURL(),
-		{_format: true, _box: zenarioAB.syncAdminBoxFromClientToServer()},
+	this.checkValues(wipeValues);
+	
+	this.retryAJAX(
+		this.getURL(),
+		{_format: true, _box: this.syncAdminBoxFromClientToServer()},
 		function(data) {
-			zenarioAB.load(data);
-			zenarioAB.sortTabs();
-			zenarioAB.draw();
+			that.load(data);
+			that.sortTabs();
+			that.draw();
 		},
-	'text');
-	
-	zenarioA.nowDoingSomething('loading');
+		'loading'
+	);
 };
 
-zenarioAB.validate = function(differentTab, tab, wipeValues, callBack) {
-	if (zenarioAB.SKColPicker || !zenarioAB.loaded) {
+methods.validate = function(differentTab, tab, wipeValues, callBack) {
+	if (!this.isFAB || !this.loaded) {
 		return;
 	}
 	
-	zenarioAB.differentTab = differentTab;
-	zenarioAB.loaded = false;
-	zenarioAB.hideTab(differentTab);
+	this.differentTab = differentTab;
+	this.loaded = false;
+	this.hideTab(differentTab);
 	
-	zenarioAB.checkValues(wipeValues);
+	this.checkValues(wipeValues);
 	
-	$.post(zenarioAB.getURL(),
-		{_validate: true, _box: zenarioAB.syncAdminBoxFromClientToServer()},
+	var that = this;
+	
+	this.retryAJAX(
+		this.getURL(),
+		{_validate: true, _box: this.syncAdminBoxFromClientToServer()},
 		function(data) {
-			if (zenarioAB.load(data)) {
-				
-				if (!zenarioAB.errorOnTab(zenarioAB.tuix.tab) && tab !== undefined) {
-					zenarioAB.tuix.tab = tab;
+			if (that.load(data)) {
+		
+				if (!that.errorOnTab(that.tuix.tab) && tab !== undefined) {
+					that.tuix.tab = tab;
 				}
 			}
-			
-			zenarioAB.sortTabs();
-			zenarioAB.switchToATabWithErrors();
-			zenarioAB.draw();
-			
+	
+			that.sortTabs();
+			that.switchToATabWithErrors();
+			that.draw();
+	
 			if (callBack) {
 				callBack();
 			}
 		},
-	'text');
-	
-	zenarioA.nowDoingSomething('loading');
+		'loading'
+	);
 };
 
-zenarioAB.switchToATabWithErrors = function() {
-	if (zenarioAB.tuix && zenarioAB.tuix.tabs) {
-		if (!zenarioAB.errorOnTab(zenarioAB.tuix.tab)) {
-			foreach (zenarioAB.sortedTabs as var i) {
-				var tab = zenarioAB.sortedTabs[i];
-				if (zenarioAB.tuix.tabs[tab] && !zenarioA.hidden(zenarioAB.tuix.tabs[tab])) {
-					if (zenarioAB.errorOnTab(tab)) {
-						zenarioAB.tuix.tab = tab;
+methods.retryAJAX = function(url, post, done, nowDoingSomething) {
+	var doAJAX = function() {
+		$.ajax({
+			type: 'POST',
+			url: url,
+			data: post,
+			dataType: 'text'
+		})
+			.done(done)
+			.zenario_retry = doAJAX;
+		
+		if (nowDoingSomething) {
+			zenarioA.nowDoingSomething(nowDoingSomething);
+		}
+	}
+	
+	doAJAX();
+};
+
+
+methods.switchToATabWithErrors = function() {
+	if (this.tuix && this.tuix.tabs) {
+		if (!this.errorOnTab(this.tuix.tab)) {
+			foreach (this.sortedTabs as var i) {
+				var tab = this.sortedTabs[i];
+				if (this.tuix.tabs[tab] && !zenarioA.hidden(this.tuix.tabs[tab])) {
+					if (this.errorOnTab(tab)) {
+						this.tuix.tab = tab;
 						return true;
 					}
 				}
@@ -475,206 +508,227 @@ zenarioAB.switchToATabWithErrors = function() {
 	return false;
 };
 
-zenarioAB.save = function(confirm, saveAndContinue) {
-	if (zenarioAB.SKColPicker || !zenarioAB.loaded) {
+methods.save = function(confirm, saveAndContinue) {
+	if (!this.isFAB || !this.loaded) {
 		return;
 	}
 	
-	if (zenarioAB.saving) {
+	var that = this;
+	
+	if (this.saving) {
 		return;
 	} else {
-		zenarioAB.saving = true;
+		this.saving = true;
 	}
 	
-	zenarioAB.differentTab = true;
-	zenarioAB.loaded = false;
-	zenarioAB.hideTab(true);
+	this.differentTab = true;
+	this.loaded = false;
+	this.hideTab(true);
 	
-	zenarioAB.checkValues();
+	this.checkValues();
 	
 	var post = {
 		_save: true,
 		_confirm: confirm? 1 : '',
 		_save_and_continue: saveAndContinue,
-		_box: zenarioAB.syncAdminBoxFromClientToServer()};
+		_box: this.syncAdminBoxFromClientToServer()};
 	
-	if (engToBoolean(zenarioAB.tuix.download) || (zenarioAB.tuix.confirm && engToBoolean(zenarioAB.tuix.confirm.download))) {
-		zenarioAB.save2(zenario.nonAsyncAJAX(zenarioAB.getURL(), zenario.urlRequest(post)), saveAndContinue);
+	if (engToBoolean(this.tuix.download) || (this.tuix.confirm && engToBoolean(this.tuix.confirm.download))) {
+		this.save2(zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest(post)), saveAndContinue);
 	} else {
-		$.post(zenarioAB.getURL(), post, function(data) {
-			zenarioAB.save2(data, saveAndContinue);
-		}, 'text');
-		zenarioA.nowDoingSomething('saving');
+		this.retryAJAX(
+			this.getURL(),
+			post,
+			function(data) {
+				that.save2(data, saveAndContinue);
+			},
+			'saving'
+		);
 	}
 };
 
-zenarioAB.save2 = function(data, saveAndContinue) {
-	delete zenarioAB.saving;
+methods.save2 = function(data, saveAndContinue) {
+	delete this.saving;
 	
 	if (('' + data).substr(0, 12) == '<!--Valid-->') {
 		data = data.substr(12);
 		
 		if (('' + data).substr(0, 14) == '<!--Confirm-->') {
 			data = data.substr(14);
-			zenarioAB.load(data);
-			zenarioAB.sortTabs();
-			zenarioAB.draw();
-			zenarioAB.showConfirm(saveAndContinue);
+			this.load(data);
+			this.sortTabs();
+			this.draw();
+			this.showConfirm(saveAndContinue);
 		
 		} else if (('' + data).substr(0, 15) == '<!--Download-->') {
-			get('zenario_iframe_form').action = zenarioAB.getURL();
+			get('zenario_iframe_form').action = this.getURL();
 			get('zenario_iframe_form').innerHTML =
 				'<input type="hidden" name="_download" value="1"/>' +
-				'<input type="hidden" name="_box" value="' + htmlspecialchars(zenarioAB.syncAdminBoxFromClientToServer()) + '"/>';
+				'<input type="hidden" name="_box" value="' + htmlspecialchars(this.syncAdminBoxFromClientToServer()) + '"/>';
 			get('zenario_iframe_form').submit();
 			
 			if (saveAndContinue) {
 				data = data.substr(15);
-				zenarioAB.load(data);
+				this.load(data);
 			}
 			
-			zenarioAB.refreshParentAndClose(true, saveAndContinue);
+			this.refreshParentAndClose(true, saveAndContinue);
 		
 		} else if (('' + data).substr(0, 12) == '<!--Saved-->') {
 			data = data.substr(12);
-			zenarioAB.load(data);
-			zenarioAB.refreshParentAndClose(false, saveAndContinue);
+			this.load(data);
+			this.refreshParentAndClose(false, saveAndContinue);
 		
 		} else {
-			zenarioAB.close();
+			this.close();
 			zenarioA.showMessage(data, true, 'error');
 		}
 	} else {
-		zenarioAB.load(data);
-		zenarioAB.sortTabs();
-		zenarioAB.switchToATabWithErrors();
-		zenarioAB.draw();
+		this.load(data);
+		this.sortTabs();
+		this.switchToATabWithErrors();
+		this.draw();
 	}
 };
 
 
-zenarioAB.showConfirm = function(saveAndContinue) {
-	if (zenarioAB.tuix && zenarioAB.tuix.confirm && engToBoolean(zenarioAB.tuix.confirm.show)) {
+methods.showConfirm = function(saveAndContinue) {
+	if (this.tuix && this.tuix.confirm && engToBoolean(this.tuix.confirm.show)) {
 		
-		var message = zenarioAB.tuix.confirm.message;
+		var message = this.tuix.confirm.message;
 		
-		if (!engToBoolean(zenarioAB.tuix.confirm.html)) {
+		if (!engToBoolean(this.tuix.confirm.html)) {
 			message = htmlspecialchars(message, true);
 		}
 		
 		var buttons =
-			'<input type="button" class="submit_selected" value="' + zenarioAB.tuix.confirm.button_message + '" onclick="zenarioAB.save(true, ' + engToBoolean(saveAndContinue) + ');"/>' +
-			'<input type="button" class="submit" value="' + zenarioAB.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
+			'<input type="button" class="submit_selected" value="' + this.tuix.confirm.button_message + '" onclick="' + this.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ');"/>' +
+			'<input type="button" class="submit" value="' + this.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
 		
-		zenarioA.floatingBox(message, buttons, ifNull(zenarioAB.tuix.confirm.message_type, 'none'));
+		zenarioA.floatingBox(message, buttons, ifNull(this.tuix.confirm.message_type, 'none'));
 	}
 };
 
 
-zenarioAB.hideTab = function(differentTab) {
+methods.hideTab = function(differentTab) {
+	var that = this;
+	
 	if (differentTab) {
 		$('#zenario_abtab input').add('#zenario_abtab select').add('#zenario_abtab textarea').attr('disabled', 'disabled');
 		$('#zenario_abtab').clearQueue().show().animate({opacity: .8}, 200, function() {
-			zenarioAB.tabHidden = true;
-			zenarioAB.draw();
+			that.tabHidden = true;
+			that.draw();
 		});
 	} else {
 		$('#zenario_abtab input').add('#zenario_abtab select').add('#zenario_abtab textarea').attr('disabled', 'disabled').animate({opacity: .9}, 100);
-		zenarioAB.tabHidden = true;
-		zenarioAB.draw();
+		this.tabHidden = true;
+		this.draw();
 	}
 };
 
-zenarioAB.draw = function() {
-	if (zenarioAB.welcome && zenarioAB.tuix) {
+methods.draw = function() {
+	if (this.isWelcomePage && this.tuix) {
 		
-		if (zenarioAB.tuix._clear_local_storage) {
-			delete zenarioAB.tuix._clear_local_storage;
+		if (this.tuix._clear_local_storage) {
+			delete this.tuix._clear_local_storage;
 			zenario.sClear(true);
 		}
 		
-		if (zenarioAB.tuix._location !== undefined) {
-			document.location.href = zenario.addBasePath(zenarioAB.tuix._location);
+		if (this.tuix._location !== undefined) {
+			document.location.href = zenario.addBasePath(this.tuix._location);
 			return;
-		} else if (zenarioAB.tuix._task !== undefined) {
-			zenarioAB.task = zenarioAB.tuix._task;
-			delete zenarioAB.tuix._task;
+		} else if (this.tuix._task !== undefined) {
+			this.task = this.tuix._task;
+			delete this.tuix._task;
 		}
 	}
 	
-	if ((zenarioAB.isOpen || zenarioAB.SKColPicker || zenarioAB.welcome) && zenarioAB.loaded && zenarioAB.tabHidden) {
-		zenarioAB.draw2();
+	if ((this.isOpen || !this.isFAB || this.isWelcomePage) && this.loaded && this.tabHidden) {
+		this.draw2();
 	}
 };
 
-zenarioAB.draw2 = function(SKColPicker) {
-	zenarioAB.SKColPicker = SKColPicker;
+
+
+methods.drawTabs = function(microTemplate) {
 	
-	if (!zenarioAB.SKColPicker && !zenarioAB.welcome) {
+	if (!microTemplate) {
+		microTemplate = this.mtPrefix + '_tab';
+	}
+	
+	//Generate the HTML for the tabs
+	var data = [];
+	foreach (this.sortedTabs as var i => var tab) {
+		if (this.tuix.tabs[tab] && !zenarioA.hidden(this.tuix.tabs[tab])) {
+			//Show the first tab we find, if a tab has not yet been set
+			if (!this.tuix.tab) {
+				this.tuix.tab = tab;
+			}
+			
+			data.push({
+				tabId: tab,
+				current: this.tuix.tab == tab,
+				label: this.tuix.tabs[tab].label
+			});
+		}
+	}
+	
+	return zenarioA.microTemplate(microTemplate, data);
+};
+
+methods.draw2 = function() {
+	var that = this;
+	
+	
+	if (this.isFAB && !this.isWelcomePage) {
 		
 		//Add wrapper CSS classes
 		get('zenario_fbAdminFloatingBox').className =
-			zenarioAB.baseCSSClass +
+			this.baseCSSClass +
 			' ' +
-			(zenarioAB.tuix.css_class || '') + 
+			(this.tuix.css_class || '') + 
 			' ' +
-			(engToBoolean(zenarioAB.tuix.hide_tab_bar)? 'zenario_admin_box_with_tabs_hidden' : 'zenario_admin_box_with_tabs_shown');
+			(engToBoolean(this.tuix.hide_tab_bar)? 'zenario_admin_box_with_tabs_hidden' : 'zenario_admin_box_with_tabs_shown');
 		
 		//Don't show the requested tab if it has been hidden
-		if (zenarioAB.tuix.tab && (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || zenarioA.hidden(zenarioAB.tuix.tabs[zenarioAB.tuix.tab]))) {
-			zenarioAB.tuix.tab = false;
-		}
-		
-		//Generate the HTML for the tabs
-		var data = [];
-		foreach (zenarioAB.sortedTabs as var i => var tab) {
-			if (zenarioAB.tuix.tabs[tab] && !zenarioA.hidden(zenarioAB.tuix.tabs[tab])) {
-				//Show the first tab we find, if a tab has not yet been set
-				if (!zenarioAB.tuix.tab) {
-					zenarioAB.tuix.tab = tab;
-				}
-				
-				data.push({
-					tabId: tab,
-					current: zenarioAB.tuix.tab == tab,
-					label: zenarioAB.tuix.tabs[tab].label
-				});
-			}
+		if (this.tuix.tab && (!this.tuix.tabs[this.tuix.tab] || zenarioA.hidden(this.tuix.tabs[this.tuix.tab]))) {
+			this.tuix.tab = false;
 		}
 		
 		//Set the HTML for the floating boxes tabs and title
-		get('zenario_jqmTabs').innerHTML = zenarioA.microTemplate(zenarioAB.templatePrefix + '_tab', data);
-		zenarioAB.setTitle(zenarioAB.tuix.title);
-		zenarioAB.showCloseButton();
+		get('zenario_jqmTabs').innerHTML = this.drawTabs();
+		
+		this.setTitle(this.tuix.title);
+		this.showCloseButton();
 		
 		
 		html = '';
 		
 		//Set the html for the save and continue button
-		if (zenarioAB.tuix.save_and_continue_button_message) {
-			html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + htmlspecialchars(zenarioAB.tuix.save_and_continue_button_message) + '"';
+		if (this.tuix.save_and_continue_button_message) {
+			html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + htmlspecialchars(this.tuix.save_and_continue_button_message) + '"';
 			
-			if (!zenarioAB.editModeOnBox()) {
+			if (!this.editModeOnBox()) {
 				html += ' class="submit_disabled"/>';
 			} else {
-				html += ' class="submit_selected" onclick="zenarioAB.save(undefined, true);"/>';
+				html += ' class="submit_selected" onclick="' + this.globalName + '.save(undefined, true);"/>';
 			}
 		}
 
 		
 		//Set the html for the save button
-		html += '<input id="zenarioAFB_save"  type="button" value="' + ifNull(htmlspecialchars(zenarioAB.tuix.save_button_message), phrase.save) + '"';
+		html += '<input id="zenarioAFB_save"  type="button" value="' + ifNull(htmlspecialchars(this.tuix.save_button_message), phrase.save) + '"';
 		
-		if (!zenarioAB.editModeOnBox()) {
+		if (!this.editModeOnBox()) {
 			html += ' class="submit_disabled"/>';
 		} else {
-			html += ' class="submit_selected" onclick="zenarioAB.save();"/>';
+			html += ' class="submit_selected" onclick="' + this.globalName + '.save();"/>';
 		}
 
 		
 		//Set the html for the cancel button, if enabled
-		if (zenarioAB.tuix.cancel_button_message) {
-			html += '<input type="button" value="' + htmlspecialchars(zenarioAB.tuix.cancel_button_message) + '" onclick="zenarioAB.close();">';
+		if (this.tuix.cancel_button_message) {
+			html += '<input type="button" value="' + htmlspecialchars(this.tuix.cancel_button_message) + '" onclick="' + this.globalName + '.close();">';
 		}
 		
 		get('zenario_fbButtons').innerHTML = html;
@@ -686,32 +740,38 @@ zenarioAB.draw2 = function(SKColPicker) {
 		get('zenario_fbAdminFloatingBox').style.display = 'block';
 	}
 	
-	zenarioA.nowDoingSomething(false);
-	if (zenarioAB.welcome) {
+	if (this.isFAB || this.isWelcomePage) {
+		zenarioA.nowDoingSomething(false);
+	}
+	
+	if (this.isWelcomePage) {
 		$('#zenario_abtab input').add('#zenario_abtab select').add('#zenario_abtab textarea').clearQueue();
 	}
 	
 	
-	var html = zenarioAB.drawFields();
+	var cb = new zenario.callback,
+		html = this.drawFields(cb);
 	
 	
 	//Special logic if we're generating the column picker
-	if (zenarioAB.SKColPicker) {
+	if (!this.isFAB) {
 		return html;
 	
 	//On the Admin Login screen, drop in the tab if this is the first time we're showing the box
-	} else if (zenarioAB.welcome && zenarioAB.shownTab === false) {
-		zenarioAB.insertHTML(html);
+	} else if (this.isWelcomePage && this.shownTab === false) {
+		this.insertHTML(html, cb);
 		
-		$('#welcome').show({effect: 'drop', direction: 'up', duration: 300, complete: zenarioAB.addJQueryElementsToTabAndFocusFirstField});
+		$('#welcome').show({effect: 'drop', direction: 'up', duration: 300, complete: function() {
+			that.addJQueryElementsToTabAndFocusFirstField();
+		}});
 		zenario.addJQueryElements('#zenario_abtab ', true);	
 	
 	//If this is the current tab...
-	} else if (zenarioAB.shownTab == zenarioAB.tuix.tab) {
+	} else if (this.shownTab == this.tuix.tab) {
 	
 		//...shake the tab if there are errors...
-		if (zenarioAB.tuix.shake === undefined? zenarioAB.differentTab && zenarioAB.errorOnTab(zenarioAB.tuix.tab) : engToBoolean(zenarioAB.tuix.shake)) {
-			$(zenarioAB.welcome? '#welcome' : '#zenario_abtab').effect({
+		if (this.tuix.shake === undefined? this.differentTab && this.errorOnTab(this.tuix.tab) : engToBoolean(this.tuix.shake)) {
+			$(this.isWelcomePage? '#welcome' : '#zenario_abtab').effect({
 				effect: 'bounce',
 				duration: 125,
 				direction: 'right',
@@ -719,17 +779,17 @@ zenarioAB.draw2 = function(SKColPicker) {
 				distance: 5,
 				mode: 'effect',
 				complete: function() {
-					zenarioAB.insertHTML(html);
+					that.insertHTML(html, cb);
 					
 					$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 75, function() {
 						if (zenario.browserIsIE()) {
-							this.style.removeAttribute('filter');
+							that.style.removeAttribute('filter');
 						}
 						
-						zenarioAB.addJQueryElementsToTabAndFocusFirstField();
+						that.addJQueryElementsToTabAndFocusFirstField();
 					});
 					
-					zenarioAB.hideShowFields();
+					that.hideShowFields();
 				}
 			});
 			
@@ -737,115 +797,110 @@ zenarioAB.draw2 = function(SKColPicker) {
 		} else {
 			//Fade in a tab if it was hidden
 			//(It's probably not hidden but just in case)
-			zenarioAB.insertHTML(html);
+			this.insertHTML(html, cb);
 			
-			var lastScrollTop = zenarioAB.lastScrollTop;
+			var lastScrollTop = this.lastScrollTop;
 			
 			$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 				if (zenario.browserIsIE()) {
-					this.style.removeAttribute('filter');
+					that.style.removeAttribute('filter');
 				}
 				
 				if (lastScrollTop !== undefined) {
-					zenarioAB.addJQueryElementsToTab();
+					that.addJQueryElementsToTab();
 				} else {
-					zenarioAB.addJQueryElementsToTabAndFocusFirstField();
+					that.addJQueryElementsToTabAndFocusFirstField();
 				}
 			});
 			
 			//Attempt to preserve the previous scroll height if this is the same tab as last time
 			$('#zenario_fbAdminInner').scrollTop(lastScrollTop);
 			
-			zenarioAB.hideShowFields();
+			this.hideShowFields();
 		}
 		
-		delete zenarioAB.tuix.shake;
+		delete this.tuix.shake;
 	
 	//A new/different tab - fade it in
 	} else {
-		zenarioAB.insertHTML(html);
+		this.insertHTML(html, cb);
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
-				this.style.removeAttribute('filter');
+				that.style.removeAttribute('filter');
 			}
 			
-			zenarioAB.addJQueryElementsToTabAndFocusFirstField();
+			that.addJQueryElementsToTabAndFocusFirstField();
 		});
 	}
 
-	zenarioAB.shownTab = zenarioAB.tuix.tab;
-	delete zenarioAB.lastScrollTop;
+	this.shownTab = this.tuix.tab;
+	delete this.lastScrollTop;
 };
 
-zenarioAB.drawFields = function() {
+methods.drawFields = function(cb) {
 	
 	zenarioA.clearHTML5UploadFromDragDrop();
 	
-	zenarioAB.sliders = {};
-	zenarioAB.codeEditors = {};
-	zenarioAB.colourPickers = {};
-	
-	var tab = zenarioAB.tuix.tab,
+	var tab = this.tuix.tab,
 		html = '',
 		buttonHTML = '';
 	
-	if (!zenarioAB.savedAndContinued(tab) && zenarioAB.editCancelEnabled(tab)) {
+	if (!this.savedAndContinued(tab) && this.editCancelEnabled(tab)) {
 		buttonHTML =
 			'<div class="zenario_editCancelButton">' +
-				'<input class="submit" type="button" onclick="zenarioAB.changeMode(); return false;" value="' +
-					(zenarioAB.editModeOn()? phrase.cancel : phrase.edit) +
+				'<input class="submit" type="button" onclick="' + this.globalName + '.changeMode(); return false;" value="' +
+					(this.editModeOn()? phrase.cancel : phrase.edit) +
 				'">' +
 			'</div>';
 	}
 	
 	
-	var microTemplate = ifNull(zenarioAB.tuix.tabs[tab].template, zenarioAB.templatePrefix + '_current_tab'),
+	var microTemplate = ifNull(this.tuix.tabs[tab].template, this.mtPrefix + '_current_tab'),
 		errorsDrawn = false,
+		i, error, field, notice,
 		data = {
 			fields: {},
 			rows: [],
 			tabId: tab,
-			path: zenarioAB.path,
+			path: this.path,
 			revert: buttonHTML,
 			errors: [],
 			notices: {}
 		};
 	
-	if (zenarioAB.editModeOn()) {
-		if (zenarioAB.tuix.tabs[tab].errors) {
-			foreach (zenarioAB.tuix.tabs[tab].errors as var e) {
-				if (!zenarioAB.isInfoTag(e)) {
-					data.errors.push({message: zenarioAB.tuix.tabs[tab].errors[e]});
-				}
+	if (this.editModeOn()) {
+		if (this.tuix.tabs[tab].errors) {
+			foreach (this.tuix.tabs[tab].errors as i => error) {
+				data.errors.push({message: error});
 			}
 		}
 		
-		//Temporary code - for now, we'll just display field errors at the top of the tab with the others
-		if (zenarioAB.tuix.tabs[tab].fields) {
-			foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-				if (!zenarioAB.isInfoTag(f) && zenarioAB.tuix.tabs[tab].fields[f].error) {
-					data.errors.push({message: zenarioAB.tuix.tabs[tab].fields[f].error});
+		//Errors can be linked to fields, but we don't have any way of displaying this so
+		//we'll just display field errors at the top of the tab with the others.
+		if (this.tuix.tabs[tab].fields) {
+			foreach (this.tuix.tabs[tab].fields as i => field) {
+				if (field.error) {
+					data.errors.push({message: field.error});
 				}
 			}
 		}
 	}
 	
-	if (zenarioAB.tuix.tabs[tab].notices) {
-		foreach (zenarioAB.tuix.tabs[tab].notices as var n) {
-			if (!zenarioAB.isInfoTag(n)
-			 && engToBoolean(zenarioAB.tuix.tabs[tab].notices[n].show)
-			 && {error: 1, warning: 1, question: 1, success: 1}[zenarioAB.tuix.tabs[tab].notices[n].type]) {
-				data.notices[n] = zenarioAB.tuix.tabs[tab].notices[n];
+	if (this.tuix.tabs[tab].notices) {
+		foreach (this.tuix.tabs[tab].notices as i => notice) {
+			if (engToBoolean(notice.show)
+			 && {error: 1, warning: 1, question: 1, success: 1}[notice.type]) {
+				data.notices[i] = notice;
 			}
 		}
 	}	
 	
-	foreach (zenarioAB.sortedFields[tab] as var f) {
-		var fieldId = zenarioAB.sortedFields[tab][f],
-			field = zenarioAB.tuix.tabs[tab].fields[fieldId];
+	foreach (this.sortedFields[tab] as var f) {
+		var fieldId = this.sortedFields[tab][f],
+			field = this.tuix.tabs[tab].fields[fieldId];
 		
 		field._id = fieldId;
-		field._html = zenarioAB.drawField(tab, fieldId, true);
+		field._html = this.drawField(cb, tab, fieldId, true);
 		
 		//Don't add completely hidden fields
 		if (field._html === false) {
@@ -856,7 +911,7 @@ zenarioAB.drawFields = function() {
 			data.rows.push({fields: []});
 		}
 		
-		if (!errorsDrawn && zenarioAB.tuix.tabs[tab].show_errors_after_field == fieldId) {
+		if (!errorsDrawn && this.tuix.tabs[tab].show_errors_after_field == fieldId) {
 			data.rows[data.rows.length-1].errors = data.errors;
 			data.rows[data.rows.length-1].notices = data.notices;
 			errorsDrawn = true;
@@ -874,106 +929,38 @@ zenarioAB.drawFields = function() {
 	
 	html += zenarioA.microTemplate(microTemplate, data);
 	
-	foreach (zenarioAB.sortedFields[tab] as var f) {
-		var fieldId = zenarioAB.sortedFields[tab][f];
+	foreach (this.sortedFields[tab] as var f) {
+		var fieldId = this.sortedFields[tab][f];
 		
-		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._startNewRow;
-		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._hideOnOpen;
-		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._showOnOpen;
-		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._html;
-		delete zenarioAB.tuix.tabs[tab].fields[fieldId]._id;
+		delete this.tuix.tabs[tab].fields[fieldId]._startNewRow;
+		delete this.tuix.tabs[tab].fields[fieldId]._hideOnOpen;
+		delete this.tuix.tabs[tab].fields[fieldId]._showOnOpen;
+		delete this.tuix.tabs[tab].fields[fieldId]._html;
+		delete this.tuix.tabs[tab].fields[fieldId]._id;
 	}
 	
 	return html;
 };
 
-zenarioAB.insertHTML = function(html) {
+methods.insertHTML = function(html, cb) {
 	var id,
 		tab = get('zenario_abtab'),
 		details,
 		language;
 	
 	tab.innerHTML = html;
-	zenarioAB.tabHidden = false;
+	this.tabHidden = false;
 	
-	if (zenarioAB.changes(zenarioAB.tuix.tab)) {
+	if (this.changes(this.tuix.tab)) {
 		$(tab).addClass('zenario_abtab_changed');
 	} else {
 		$(tab).removeClass('zenario_abtab_changed');
 	}
 	
-	if (zenarioAB.sliders) {
-		foreach (zenarioAB.sliders as id) {
-			$(get(id)).each(function(i, el) {
-				var slider;
-				if (slider = get('zenario_slider_for__' + id)) {
-					
-					if (zenarioAB.sliders[id].min !== undefined) zenarioAB.sliders[id].min *= 1;
-					if (zenarioAB.sliders[id].max !== undefined) zenarioAB.sliders[id].max *= 1;
-					if (zenarioAB.sliders[id].step !== undefined) zenarioAB.sliders[id].step *= 1;
-					
-					zenarioAB.sliders[id].disabled = !zenarioAB.editModeOn();
-					zenarioAB.sliders[id].value = $(el).val();
-					zenarioAB.sliders[id].slide =
-						function(event, ui) {
-							$(el).val(ui.value);
-						};
-					
-					zenarioAB.sliders[id].change = function(event, ui) {
-						if (this && this.id) {
-							zenarioAB.fieldChange(this.id.replace('zenario_slider_for__', ''));
-						}
-					};
-					
-					$(slider).slider(zenarioAB.sliders[id]);
-				}
-			});
-		}
-	}
-	
-	//Set up code editors
-	if (zenarioAB.codeEditors) {
-		foreach (zenarioAB.codeEditors as id => details) {
-			var codeEditor = ace.edit(id);
-			codeEditor.session.setUseSoftTabs(false);
-			codeEditor.setShowPrintMargin(false);
-			
-			if (details.readonly) {
-				codeEditor.setReadOnly(true);
-				codeEditor.setBehavioursEnabled(false);
-				//codeEditor.session.setOption("useWorker", false);
-			}
-			codeEditor.session.setOption("useWorker", false);
-			
-			//Attempt to set the correct language
-			if (language = zenarioAB.codeEditors[id].language) {
-				try {
-					//Attempt to detect the language from the filename
-					if (language.match(/\.twig\.html$/i)) {
-						language = 'ace/mode/twig';
-					} else if (language.match(/\./)) {
-						language = ace.require('ace/ext/modelist').getModeForPath(language).mode;
-					} else {
-						language = 'ace/mode/' + language;
-					}
-					
-					codeEditor.session.setMode(language);
-				} catch (e) {
-					console.log('Ace editor could not load that language', language);
-				}
-			}
-			
-		}
-	}
-	
-	if (zenarioAB.colourPickers) {
-		foreach (zenarioAB.colourPickers as id => details) {
-			$(get(id)).spectrum(details);
-		}
-	}
+	cb.call();
 };
 
-zenarioAB.hideShowFields = function(onShowFunction) {
+methods.hideShowFields = function(onShowFunction) {
 	//Open/close newly hidden sections with a blind animation
 	var hideDivsOnOpen = $('.zenario_hide_on_open'),
 		hideRowsOnOpen = $('.zenario_hide_row_on_open'),
@@ -996,24 +983,24 @@ zenarioAB.hideShowFields = function(onShowFunction) {
 };
 
 
-zenarioAB.addJQueryElementsToTab = function() {
+methods.addJQueryElementsToTab = function() {
 	//Add any special jQuery objects to the tab
 	zenario.addJQueryElements('#zenario_abtab ', true);
 };
 
-zenarioAB.addJQueryElementsToTabAndFocusFirstField = function() {
+methods.addJQueryElementsToTabAndFocusFirstField = function() {
 	//Add any special jQuery objects to the tab
 	zenario.addJQueryElements('#zenario_abtab ', true);
 	
-	zenarioAB.focusFirstField();
+	this.focusFirstField();
 };
 
 
 //Focus either the first field, or if the first field is filled in and the second field is a password then focus that instead
-zenarioAB.focusFirstField = function() {
+methods.focusFirstField = function() {
 	
-	if (!zenarioAB.tuix
-	 || engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].disable_autofocus)) {
+	if (!this.tuix
+	 || engToBoolean(this.tuix.tabs[this.tuix.tab].disable_autofocus)) {
 		return;
 	}
 	
@@ -1022,9 +1009,9 @@ zenarioAB.focusFirstField = function() {
 		fields = [],
 		focusField = undefined;
 	
-	foreach (zenarioAB.sortedFields[zenarioAB.tuix.tab] as var f) {
-		var fieldId = zenarioAB.sortedFields[zenarioAB.tuix.tab][f],
-			field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[fieldId];
+	foreach (this.sortedFields[this.tuix.tab] as var f) {
+		var fieldId = this.sortedFields[this.tuix.tab][f],
+			field = this.tuix.tabs[this.tuix.tab].fields[fieldId];
 		if (get(fieldId) && $(get(fieldId)).is(':visible')) {
 			fields[++i] = {
 				id: fieldId,
@@ -1063,14 +1050,14 @@ zenarioAB.focusFirstField = function() {
 	}, 50);
 };
 
-zenarioAB.focusField = function() {
-	if (zenarioAB.fieldToFocus && get(zenarioAB.fieldToFocus) && $(get(zenarioAB.fieldToFocus)).is(':visible')) {
-		get(zenarioAB.fieldToFocus).focus();
+methods.focusField = function() {
+	if (this.fieldToFocus && get(this.fieldToFocus) && $(get(this.fieldToFocus)).is(':visible')) {
+		get(this.fieldToFocus).focus();
 	}
-	delete zenarioAB.fieldToFocus;
+	delete this.fieldToFocus;
 };
 
-zenarioAB.setTitle = function(title, isHTML) {
+methods.setTitle = function(title, isHTML) {
 	
 	if (!title) {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').css('display', 'none');
@@ -1091,18 +1078,18 @@ zenarioAB.setTitle = function(title, isHTML) {
 	}
 };
 
-zenarioAB.showCloseButton = function() {
-	if (zenarioAB.tuix.cancel_button_message) {
+methods.showCloseButton = function() {
+	if (this.tuix.cancel_button_message) {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'none');
 	} else {
 		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'block');
 	}
 };
 
-zenarioAB.errorOnBox = function() {
-	if (zenarioAB.tuix && zenarioAB.tuix.tabs) {
-		foreach (zenarioAB.tuix.tabs as tab) {
-			if (zenarioAB.errorOnTab(tab)) {
+methods.errorOnBox = function() {
+	if (this.tuix && this.tuix.tabs) {
+		foreach (this.tuix.tabs as tab) {
+			if (this.errorOnTab(tab)) {
 				return true;
 			}
 		}
@@ -1111,18 +1098,18 @@ zenarioAB.errorOnBox = function() {
 	return false;
 };
 
-zenarioAB.errorOnTab = function(tab) {
-	if (zenarioAB.tuix.tabs[tab] && zenarioAB.editModeOn(tab)) {
-		if (zenarioAB.tuix.tabs[tab].errors) {
-			foreach (zenarioAB.tuix.tabs[tab].errors as var e) {
-				if (!zenarioAB.isInfoTag(e)) {
-					return true;
-				}
+methods.errorOnTab = function(tab) {
+	var i;
+	
+	if (this.tuix.tabs[tab] && this.editModeOn(tab)) {
+		if (this.tuix.tabs[tab].errors) {
+			foreach (this.tuix.tabs[tab].errors as i) {
+				return true;
 			}
 		}
-		if (zenarioAB.tuix.tabs[tab].fields) {
-			foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-				if (!zenarioAB.isInfoTag(f) && zenarioAB.tuix.tabs[tab].fields[f].error) {
+		if (this.tuix.tabs[tab].fields) {
+			foreach (this.tuix.tabs[tab].fields as i) {
+				if (this.tuix.tabs[tab].fields[i].error) {
 					return true;
 				}
 			}
@@ -1130,48 +1117,44 @@ zenarioAB.errorOnTab = function(tab) {
 	}
 };
 
-zenarioAB.checkValues = function(wipeValues) {
+methods.checkValues = function(wipeValues) {
 	
 	if (wipeValues) {
-		zenarioAB.wipeTab();
+		this.wipeTab();
 	} else {
-		zenarioAB.readTab();
+		this.readTab();
 	}
 	
-	foreach (zenarioAB.tuix.tabs as var tab) {
-		if (!zenarioAB.isInfoTag(tab)) {
-			
-			//Workaround for a problem where initial values do not get submitted if a tab is never visited.
-			//This script loops through all of the tabs and all of the fields on this admin boxes, and ensures
-			//that their values are set correctly.
-			var editing = zenarioAB.editModeOn(tab);
-			if (zenarioAB.tuix.tabs[tab].fields) {
-				foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-					if (!zenarioAB.isInfoTag(f)) {
-						
-						var field = zenarioAB.tuix.tabs[tab].fields[f],
-							nonFieldType = field.snippet || field.type == 'submit' || field.type == 'toggle',
-							multi = field.pick_items || field.type == 'checkboxes' || field.type == 'radios';
-						
-						//Ignore non-field types
-						if (!nonFieldType) {
-							
-							if (field.current_value === undefined) {
-								field.current_value = zenarioAB.value(f, tab, true);
-							}
-							
-							if (editing) {
-								if (field.value === undefined) {
-									field.value = zenarioAB.value(f, tab, false);
-								}
-							
-								if (field.multiple_edit
-								 && field.multiple_edit._changed === undefined
-								 && field.multiple_edit.changed !== undefined) {
-									field.multiple_edit._changed =
-									field.multiple_edit.changed;
-								}
-							}
+	foreach (this.tuix.tabs as var tab => var thisTab) {
+		
+		//Workaround for a problem where initial values do not get submitted if a tab is never visited.
+		//This script loops through all of the tabs and all of the fields on this admin boxes, and ensures
+		//that their values are set correctly.
+		var editing = this.editModeOn(tab);
+		if (thisTab.fields) {
+			foreach (thisTab.fields as var f) {
+				
+				var field = thisTab.fields[f],
+					nonFieldType = field.snippet || field.type == 'submit' || field.type == 'toggle',
+					multi = field.pick_items || field.type == 'checkboxes' || field.type == 'radios';
+				
+				//Ignore non-field types
+				if (!nonFieldType) {
+					
+					if (field.current_value === undefined) {
+						field.current_value = this.value(f, tab, true);
+					}
+					
+					if (editing) {
+						if (field.value === undefined) {
+							field.value = this.value(f, tab, false);
+						}
+					
+						if (field.multiple_edit
+						 && field.multiple_edit._changed === undefined
+						 && field.multiple_edit.changed !== undefined) {
+							field.multiple_edit._changed =
+							field.multiple_edit.changed;
 						}
 					}
 				}
@@ -1180,65 +1163,68 @@ zenarioAB.checkValues = function(wipeValues) {
 	}
 };
 
-			
-//Most attributes that are part of the HTML spec we'll pass on directly
-zenarioAB.allowedAtt = {
-	'id': true,
-	'name': true, //radio groups only
-	'size': true,
-	'maxlength': true,
-	'accesskey': true,
-	'class': true,
-	'cols': true,
-	'dir': true,
-	'readonly': true,
-	'rows': true,
-	'style': true,
-	'tabindex': true,
-	'title': true,
-	'disabled': true,
-	'onblur': true,
-	'onchange': true,
-	'onclick': true,
-	'ondblclick': true,
-	'onfocus': true,
-	'onmousedown': true,
-	'onmousemove': true,
-	'onmouseout': true,
-	'onmouseover': true,
-	'onmouseup': true,
-	'onkeydown': true,
-	'onkeypress': true,
-	'onkeyup': true,
-	'onselect': true,
 	
-	//New HTML 5 attributes
-	'autocomplete': true,
-	'autofocus': true,
-	'list': true,
-	'max': true,
-	'min': true,
-	'multiple': true,
-	'pattern': true,
-	'placeholder': true,
-	'required': true,
-	'step': true};
 
-zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readOnly, tempReadOnly, sortOrder, lovField) {
+methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
 	
-	var html = '',
+		
+	var that = this,
+		//Most attributes that are part of the HTML spec we'll pass on directly
+		allowedAtt = {
+			'id': true,
+			'name': true, //radio groups only
+			'size': true,
+			'maxlength': true,
+			'accesskey': true,
+			'class': true,
+			'cols': true,
+			'dir': true,
+			'readonly': true,
+			'rows': true,
+			'style': true,
+			'tabindex': true,
+			'title': true,
+			'disabled': true,
+			'onblur': true,
+			'onchange': true,
+			'onclick': true,
+			'ondblclick': true,
+			'onfocus': true,
+			'onmousedown': true,
+			'onmousemove': true,
+			'onmouseout': true,
+			'onmouseover': true,
+			'onmouseup': true,
+			'onkeydown': true,
+			'onkeypress': true,
+			'onkeyup': true,
+			'onselect': true,
+	
+			//New HTML 5 attributes
+			'autocomplete': true,
+			'autofocus': true,
+			'max': true,
+			'min': true,
+			'pattern': true,
+			'placeholder': true,
+			'required': true,
+			'step': true
+		},
+		
+		html = '',
+		i, v, val,
 		hasSlider = false,
 		extraAtt = {'class': ''},
 		extraAttAfter = {},
-		color_picker_options,
-		isNormalTextField = true;
+		isNormalTextField = true,
+		parentsValuesExist = false;
 	
 	if (field === undefined) {
-		field = zenarioAB.tuix.tabs[tab].fields[id];
+		field = this.tuix.tabs[tab].fields[id];
 	}
 	
 	if (readOnly === undefined) {
-		readOnly = !zenarioAB.editModeOn() || engToBoolean(field.read_only);
+		readOnly = !this.editModeOn() || engToBoolean(field.read_only);
 	}
 	
 	//Currently date-time fields are readonly
@@ -1246,24 +1232,34 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		readOnly = true;
 	}
 	
-	if (sortOrder === undefined && typeof field.values == 'object') {
+	if (!(sortOrder && existingParents)
+	 && typeof field.values == 'object') {
+		
 		//Build an array to sort, containing:
 			//0: The item's actual index
 			//1: The value to sort by
 		sortOrder = [];
-		foreach (field.values as var v) {
-			if (typeof field.values[v] == 'object') {
-				if (zenarioA.hidden(field.values[v])) {
+		existingParents = {};
+		
+		foreach (field.values as v => val) {
+			if (typeof val == 'object') {
+				
+				if (val.parent !== undefined) {
+					parentsValuesExist = true;
+					existingParents[val.parent] = true;
+				}
+				
+				if (zenarioA.hidden(val)) {
 					continue;
-				} else if (field.values[v].ord !== undefined) {
-					sortOrder.push([v, field.values[v].ord]);
-				} else if (field.values[v].label !== undefined) {
-					sortOrder.push([v, field.values[v].label]);
+				} else if (val.ord !== undefined) {
+					sortOrder.push([v, val.ord]);
+				} else if (val.label !== undefined) {
+					sortOrder.push([v, val.label]);
 				} else {
 					sortOrder.push([v, v]);
 				}
 			} else {
-				sortOrder.push([v, field.values[v]]);
+				sortOrder.push([v, val]);
 			}
 		}
 	
@@ -1277,7 +1273,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 	
 	if (lov === undefined) {
 		if (field.load_values_from_organizer_path && !field.values) {
-			zenarioAB.loadValuesFromOrganizerPath(field);
+			this.loadValuesFromOrganizerPath(field);
 		}
 		
 		//Close the last row if it was left open, unless this field should be on the same line
@@ -1285,34 +1281,34 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		
 		//Include an animation to show newly unhidden fields
 		if (field._startNewRow
-		 && zenarioAB.shownTab !== false
-		 && zenarioAB.shownTab == zenarioAB.tuix.tab
+		 && this.shownTab !== false
+		 && this.shownTab == this.tuix.tab
 		 && field.type != 'editor'
 		 && field.type != 'code_editor'
-		 && zenarioAB.tuix.tabs[tab].fields[id]._h
+		 && this.tuix.tabs[tab].fields[id]._was_hidden_before
 		 && !zenarioA.hidden(field)) {
 			field._showOnOpen = true;
-			delete zenarioAB.tuix.tabs[tab].fields[id]._h;	
+			delete this.tuix.tabs[tab].fields[id]._was_hidden_before;	
 		
 		//Include an animation to hide newly hidden fields
 		} else
 		if (field._startNewRow
-		 && zenarioAB.shownTab !== false
-		 && zenarioAB.shownTab == zenarioAB.tuix.tab
+		 && this.shownTab !== false
+		 && this.shownTab == this.tuix.tab
 		 && field.type != 'editor'
 		 && field.type != 'code_editor'
-		 && !zenarioAB.tuix.tabs[tab].fields[id]._h
+		 && !this.tuix.tabs[tab].fields[id]._was_hidden_before
 		 && zenarioA.hidden(field)) {
 			field._hideOnOpen = true;
-			zenarioAB.tuix.tabs[tab].fields[id]._h = true;
+			this.tuix.tabs[tab].fields[id]._was_hidden_before = true;
 		
 		//Don't show hidden fields
 		} else if (zenarioA.hidden(field)) {
-			zenarioAB.tuix.tabs[tab].fields[id]._h = true;
+			this.tuix.tabs[tab].fields[id]._was_hidden_before = true;
 			return false;
 		
 		} else {
-			delete zenarioAB.tuix.tabs[tab].fields[id]._h;	
+			delete this.tuix.tabs[tab].fields[id]._was_hidden_before;	
 		}
 		
 		
@@ -1341,7 +1337,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 					meHTML += ' disabled="disabled"';
 				
 				} else {
-					meHTML += ' onchange="zenarioAB.meChange(this.checked, \'' + htmlspecialchars(id) + '\');"';
+					meHTML += ' onchange="' + this.globalName + '.meChange(this.checked, \'' + htmlspecialchars(id) + '\');"';
 					meId = 'multiple_edit__' + id;
 				}
 				
@@ -1353,7 +1349,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 				if (readOnly) {
 					meHTML += ' disabled="disabled"';
 				} else {
-					meHTML += ' onchange="zenarioAB.meChange(this.value == 1, \'' + htmlspecialchars(id) + '\');"';
+					meHTML += ' onchange="' + this.globalName + '.meChange(this.value == 1, \'' + htmlspecialchars(id) + '\');"';
 				}
 				
 				meHTML += '>' +
@@ -1379,7 +1375,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 	
 	
 	if (!field.snippet && value === undefined) {
-		value = zenarioAB.value(id, tab, undefined, true);
+		value = this.value(id, tab, undefined, true);
 	}
 	
 	if (value === undefined) {
@@ -1400,11 +1396,11 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			if (!engToBoolean(field.snippet.cache)) {
 				html += zenario.nonAsyncAJAX(zenario.addBasePath(field.snippet.url));
 			
-			} else if (!zenarioAB.cachedAJAXSnippets[field.snippet.url]) {
-				html += (zenarioAB.cachedAJAXSnippets[field.snippet.url] = zenario.nonAsyncAJAX(zenario.addBasePath(field.snippet.url)));
+			} else if (!this.cachedAJAXSnippets[field.snippet.url]) {
+				html += (this.cachedAJAXSnippets[field.snippet.url] = zenario.nonAsyncAJAX(zenario.addBasePath(field.snippet.url)));
 			
 			} else {
-				html += zenarioAB.cachedAJAXSnippets[field.snippet.url];
+				html += this.cachedAJAXSnippets[field.snippet.url];
 			}
 		
 		} else if (field.snippet.separator) {
@@ -1420,8 +1416,8 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 	//Draw multiple checkboxes/radiogroups
 	} else if ((field.type == 'checkboxes' || field.type == 'radios') && lov === undefined) {
 		if (field.values) {
-			var picked_items = zenarioAB.pickedItemsArray(field, value),
-				thisField = $.extend(true, {}, field);
+			var picked_items = this.pickedItemsArray(field, value),
+				thisField = _.extend({}, field);
 			
 			thisField.name = ifNull(field.name, id);
 			thisField.type = field.type == 'checkboxes'? 'checkbox' : 'radio';
@@ -1430,7 +1426,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 				thisField.disabled = true;
 			}
 			
-			html += zenarioAB.hierarchicalBoxes(tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder);
+			html += this.hierarchicalBoxes(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents);
 		}
 	
 	} else if (field.upload || field.pick_items) {
@@ -1441,10 +1437,10 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			tempReadOnly: tempReadOnly};
 		
 		if (readOnly) {
-			mergeFields.pickedItems = zenarioAB.drawPickedItems(id, true);
+			mergeFields.pickedItems = this.drawPickedItems(id, true);
 		
 		} else {
-			mergeFields.pickedItems = zenarioAB.drawPickedItems(id, false, tempReadOnly);
+			mergeFields.pickedItems = this.drawPickedItems(id, false, tempReadOnly);
 			
 			if (field.pick_items
 			 && field.pick_items.path
@@ -1452,34 +1448,38 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			 && field.pick_items.target_path
 			 && !engToBoolean(field.pick_items.hide_select_button)) {
 				mergeFields.select = {
-					onclick: "zenarioAB.pickItems('" + htmlspecialchars(id) + "');",
+					onclick: this.globalName + ".pickItems('" + htmlspecialchars(id) + "');",
 					phrase: field.pick_items.select_phrase || phrase.selectDotDotDot
 				};
 			}
 			
 			if (field.upload) {
 				mergeFields.upload = {
-					onclick: "zenarioAB.upload('" + htmlspecialchars(id) + "');",
+					onclick: this.globalName + ".upload('" + htmlspecialchars(id) + "');",
 					phrase: field.upload.upload_phrase || phrase.uploadDotDotDot
 				};
 				
 				if (engToBoolean(field.upload.drag_and_drop)) {
-					zenarioAB.upload(id, true);
+					this.upload(id, true);
 				}
 				
 				if (window.Dropbox && Dropbox.isBrowserSupported()) {
 					mergeFields.dropbox = {
-						onclick: "zenarioAB.chooseFromDropbox('" + htmlspecialchars(id) + "');",
+						onclick: this.globalName + ".chooseFromDropbox('" + htmlspecialchars(id) + "');",
 						phrase: field.upload.dropbox_phrase || phrase.dropboxDotDotDot
 					};
 				}
 			}
 		}
 		
-		html += zenarioA.microTemplate(zenarioAB.templatePrefix + '_picked_items', mergeFields);
+		html += zenarioA.microTemplate(this.mtPrefix + '_picked_items', mergeFields);
 	
 	} else if (field.type) {
-		extraAtt.onchange = "zenarioAB.fieldChange('" + htmlspecialchars(id) + "');";
+		if (lov) {
+			extraAtt.onchange = this.globalName + ".fieldChange('" + htmlspecialchars(id) + "', '" + htmlspecialchars(lov) + "');";
+		} else {
+			extraAtt.onchange = this.globalName + ".fieldChange('" + htmlspecialchars(id) + "');";
+		}
 		
 		if (field.disabled) {
 			extraAtt['class'] += 'disabled ';
@@ -1496,7 +1496,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		if (engToBoolean(field.multiple_edit) && !readOnly) {
 			extraAtt.onkeyup =
 				ifNull(extraAtt.onkeyup, '', '') +
-				"if (event && event.keyCode == 9) return true; zenarioAB.meMarkChanged('" + htmlspecialchars(id) + "', this.value, '" + htmlspecialchars(field.value) + "');";
+				"if (event && event.keyCode == 9) return true; " + this.globalName + ".meMarkChanged('" + htmlspecialchars(id) + "', this.value, '" + htmlspecialchars(field.value) + "');";
 				//Note keyCode 9 is the tab key; a field should not be marked as changed if the Admin is just tabbing through them
 		}
 		
@@ -1506,7 +1506,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		if (field.type == 'select') {
 			if (field.slider) {
 				hasSlider = true;
-				html += zenarioAB.drawSlider(id, field, readOnly, true);
+				html += this.drawSlider(cb, id, field, readOnly, true);
 			}
 			
 			html += '<select';
@@ -1517,55 +1517,188 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		} else if (field.type == 'code_editor') {
 			html += '<div';
 			extraAtt['class'] = ' zenario_embedded_ace_editor';
-			zenarioAB.codeEditors[id] = {readonly: readOnly, language: field.language};
+			
+			//Set up code editors after the HTML is drawn
+			cb.after(function() {
+				var codeEditor = ace.edit(id);
+				codeEditor.session.setUseSoftTabs(false);
+				codeEditor.setShowPrintMargin(false);
+		
+				if (readOnly) {
+					codeEditor.setReadOnly(true);
+					codeEditor.setBehavioursEnabled(false);
+					//codeEditor.session.setOption("useWorker", false);
+				}
+				codeEditor.session.setOption("useWorker", false);
+		
+				//Attempt to set the correct language
+				if (language = field.language) {
+					try {
+						//Attempt to detect the language from the filename
+						if (language.match(/\.twig\.html$/i)) {
+							language = 'ace/mode/twig';
+						} else if (language.match(/\./)) {
+							language = ace.require('ace/ext/modelist').getModeForPath(language).mode;
+						} else {
+							language = 'ace/mode/' + language;
+						}
+				
+						codeEditor.session.setMode(language);
+					} catch (e) {
+						console.log('Ace editor could not load that language', language);
+					}
+				}
+			});
 			
 		} else if (field.type == 'color_picker' || field.type == 'colour_picker') {
 			html += '<input';
 			extraAtt['class'] = ' zenario_color_picker';
-			color_picker_options = field.color_picker_options || field.colour_picker_options || {};
-			color_picker_options.disabled = readOnly;
-			color_picker_options.preferredFormat = color_picker_options.preferredFormat || 'hex';
-			zenarioAB.colourPickers[id] = color_picker_options;
+			
+	
+			//Set up the colour picker after the html is on the page
+			cb.after(function() {
+				var color_picker_options = field.color_picker_options || field.colour_picker_options || {};
+				
+				color_picker_options.disabled = readOnly;
+				color_picker_options.preferredFormat = color_picker_options.preferredFormat || 'hex';
+				
+				$(get(id)).spectrum(color_picker_options);
+			});
 			
 		} else if (field.type == 'editor') {
 			html += '<textarea';
 			
-			extraAtt.style = 'visibility: hidden;';
+			zenarioA.getSkinDesc();
+			
+			var content_css = undefined,
+				onchange_callback = function(inst) {
+						that.fieldChange(inst.id);
+					},
+				options,
+				readonlyOptions = {
+						script_url: URLBasePath + zenarioA.tinyMCEPath,
+		
+						inline: false,
+						menubar: false,
+						statusbar: false,
+						plugins: "autoresize",
+						document_base_url: undefined,
+						convert_urls: false,
+						readonly: true,
+		
+						inline_styles: false,
+						allow_events: true,
+						allow_script_urls: true,
+		
+						autoresize_max_height: Math.max(Math.floor(($(window).height()) * 0.5), 300),
+		
+						onchange_callback: onchange_callback,
+						init_instance_callback: function(instance) {
+							zenarioA.enableDragDropUploadInTinyMCE(false, undefined, get('row__' + ifNull(instance.editorId, instance.id)));
+							var el;
+							if ((el = instance.editorContainer)
+							 && (el = $('#' + instance.editorContainer.id + ' iframe'))
+							 && (el = el[0])
+							 && (el = el.contentWindow)) {
+								zenarioA.enableDragDropUploadInTinyMCE(false, undefined, el);
+							}
+						}
+					},
+				normalOptions = _.extend({}, readonlyOptions, {
+						plugins: [
+							"advlist autolink lists link image charmap hr anchor",
+							"searchreplace code fullscreen",
+							"nonbreaking table contextmenu directionality",
+							"paste autoresize"],
+		
+						image_advtab: true,
+						visual_table_class: ' ',
+						browser_spellcheck: true,
+		
+						paste_preprocess: zenarioA.tinyMCEPasteRreprocess,
+
+						readonly: false,
+						
+						convert_urls: true,
+						relative_urls: false,
+		
+						content_css: content_css,
+						toolbar: 'undo redo | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
+						style_formats: zenarioA.skinDesc.style_formats,
+						oninit: undefined
+					}),
+				optionsWithImagesAndLinks = _.extend({}, normalOptions, {
+						toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code',
+		
+						file_browser_callback: zenarioA.fileBrowser,
+						init_instance_callback: function(instance) {
+							zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, get('row__' + ifNull(instance.editorId, instance.id)));
+							var el;
+							if ((el = instance.editorContainer)
+							 && (el = $('#' + instance.editorContainer.id + ' iframe'))
+							 && (el = el[0])
+							 && (el = el.contentWindow)) {
+								zenarioA.enableDragDropUploadInTinyMCE(true, URLBasePath, el);
+							}
+						}
+					}),
+				optionsWithImages = _.extend({}, optionsWithImagesAndLinks, {
+						toolbar: 'undo redo | image | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
+					}),
+				optionsWithLinks = _.extend({}, optionsWithImages, {
+						toolbar: 'undo redo | link unlink | bold italic | removeformat | fontsizeselect | formatselect | numlist bullist | outdent indent | code'
+					});
 			
 			if (readOnly) {
+				options = readonlyOptions;
 				extraAtt['class'] = ' tinymce_readonly';
 			
 			} else {
 				if (field.insert_image_button) {
 					if (field.insert_link_button) {
+						options = optionsWithImagesAndLinks;
 						extraAtt['class'] = ' tinymce_with_images_and_links';
 					} else {
+						options = optionsWithImages;
 						extraAtt['class'] = ' tinymce_with_images';
 					}
 				} else {
 					if (field.insert_link_button) {
+						options = optionsWithLinks;
 						extraAtt['class'] = ' tinymce_with_links';
 					} else {
+						options = normalOptions;
 						extraAtt['class'] = ' tinymce';
 					}
 				}
 			}
+			
+			extraAtt.style = 'visibility: hidden;';
+			
+			if (_.isObject(field.editor_options) ) {
+				options = _.extend(options, field.editor_options);
+			}
+			
+			cb.after(function() {
+				var $field = $(get(id));
+				$field.tinymce(options);
+			});
 		
 		} else if (field.type == 'submit' || field.type == 'toggle') {
 			html += '<input';
 			extraAtt.type = 'button';
 			
 			if (!readOnly || engToBoolean(field.can_be_pressed_in_view_mode)) {
-				extraAttAfter.onclick = 'zenarioAB.clickButton(this, \'' + id + '\');';
+				extraAttAfter.onclick = this.globalName + ".clickButton(this, '" + id + "');";
 				delete extraAtt.disabled;
 			}
 			
 			if (field.type == 'submit') {
-				zenarioAB.tuix.tabs[tab].fields[id].pressed = false;
+				this.tuix.tabs[tab].fields[id].pressed = false;
 			}
 			
 			if (field.type == 'toggle') {
-				extraAtt['class'] += zenarioAB.tuix.tabs[tab].fields[id].pressed? ' pressed' : ' not_pressed';
+				extraAtt['class'] += this.tuix.tabs[tab].fields[id].pressed? ' pressed' : ' not_pressed';
 			}
 		
 		} else if (field.type == 'date' || field.type == 'datetime') {
@@ -1598,7 +1731,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		} else {
 			if (field.slider) {
 				hasSlider = true;
-				html += zenarioAB.drawSlider(id, field, readOnly, true);
+				html += this.drawSlider(cb, id, field, readOnly, true);
 			}
 			
 			html += '<input';
@@ -1612,6 +1745,17 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 				extraAtt.checked = 'checked';
 			}
 			value = undefined;
+			
+	
+			//If the indeterminate option is set in TUIX, set that property in the DOM after the html is drawn
+			if (engToBoolean(field.indeterminate)) {
+				cb.after(function() {
+					var checkbox;
+					if (checkbox = get(id)) {
+						checkbox.indeterminate = true;
+					}
+				});
+			}
 		}
 		
 		if (hasSlider) {
@@ -1623,26 +1767,24 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 				"$('#zenario_slider_for__" + id + "').slider('value', $(this).val());";
 		}
 		
+		//Add attributes
+		var atts = field;
 		if (lov === undefined) {
-			field.id = id;
+			atts.id = id;
 		} else {
-			field.id = id + '___' + lov;
+			atts = $.extend({}, atts, lovField);
+			atts.id = id + '___' + lov;
 			extraAtt['class'] += ' control_for__' + id;
 		}
 		
-		if (field.type != 'radio' || !field.name) {
-			field.name = id;
+		if (atts.type != 'radio' || !atts.name) {
+			atts.name = id;
 		}
 		
 		
-		//Add attributes
-		var atts = field;
-		if (lovField) {
-			atts = $.extend({}, field, lovField);
-		}
 		
 		foreach (atts as var att) {
-			if (zenarioAB.allowedAtt[att]) {
+			if (allowedAtt[att]) {
 				if ((att == 'disabled' || att == 'readonly')) {
 					if (engToBoolean(extraAtt[att]) || engToBoolean(atts[att])) {
 						html += ' ' + att + '="' + att + '"';
@@ -1696,8 +1838,8 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			html += ' value="' + htmlspecialchars(zenario.formatDate(value, field.type == 'datetime')) + '"/>';
 			html += '<input type="hidden" id="_value_for__' + htmlspecialchars(id) + '" value="' + htmlspecialchars(value) + '"/>';
 			
-			if (!readOnly && !zenarioAB.SKColPicker) {
-				html += '<input type="button" class="zenario_remove_date" value="x" onclick="zenarioAB.blankField(\'' + htmlspecialchars(id) + '\'); zenarioAB.fieldChange(\'' + htmlspecialchars(id) + '\');"/>';
+			if (!readOnly && this.isFAB) {
+				html += '<input type="button" class="zenario_remove_date" value="x" onclick="' + this.globalName + '.blankField(\'' + htmlspecialchars(id) + '\'); ' + this.globalName + '.fieldChange(\'' + htmlspecialchars(id) + '\');"/>';
 			}
 		
 		} else if (value !== undefined) {
@@ -1713,12 +1855,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 			}
 			
 			if (field.values) {
-				foreach (sortOrder as var i => var v) {
-					html +=
-						'<option value="' + htmlspecialchars(v) + '"' + (v == value? ' selected="selected"' : '') + '>' +
-							htmlspecialchars(field.values[v], false, true) +
-						'</option>';
-				}
+				html += this.hierarchicalSelect(value, field, sortOrder, parentsValuesExist, existingParents);
 			}
 			html += '</select>';
 		
@@ -1732,12 +1869,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 					source.push({label: field.values[v], value: v});
 				}
 				
-				setTimeout(function() {
-					
-					if (!get(id)) {
-						return;
-					}
-					
+				cb.after(function() {
 					var $field = $(get(id)),
 						options = {
 							source: source,
@@ -1765,7 +1897,7 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 							$field.autocomplete('search', '');
 						}
 					});
-				}, 0);
+				});
 			}
 			
 		}
@@ -1793,19 +1925,68 @@ zenarioAB.drawField = function(tab, id, customTemplate, lov, field, value, readO
 		}
 		
 		if (hasSlider) {
-			html += zenarioAB.drawSlider(id, field, readOnly, false);
+			html += this.drawSlider(cb, id, field, readOnly, false);
 		}
 	}
 	
 	return html;
 };
 
-zenarioAB.chooseFromDropbox = function(id) {
-				
-	var field, options;
 
-	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-	 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
+
+
+methods.hierarchicalSelect = function(value, field, sortOrder, parentsValuesExist, existingParents, parent) {
+	
+	var html = '',
+		disabled,
+		selected,
+		val, i, v;
+	
+	foreach (sortOrder as i => v) {
+		val = field.values[v];
+		disabled = '';
+		selected = '';
+		
+		if (_.isString(val)) {
+			val = {label: val};
+		
+		} else
+		if (engToBoolean(val.disabled)) {
+			disabled = ' disabled="disabled"';
+		}
+		
+		if (v == value) {
+			selected = ' selected="selected"';
+		}
+		
+		if (parent === undefined
+		 && parentsValuesExist
+		 && existingParents[v]) {
+			html +=
+				'<optgroup label="' + htmlspecialchars(val, false, true) + '"' + disabled + '>' +
+					this.hierarchicalSelect(value, field, sortOrder, parentsValuesExist, existingParents, v) +
+				'</optgroup>';
+		
+		} else
+		if (parent === val.parent) {
+			html +=
+				'<option value="' + htmlspecialchars(v) + '"' + selected + disabled + '>' +
+					htmlspecialchars(val, false, true) +
+				'</option>';
+		}
+	}
+	
+	return html;
+};
+
+
+methods.chooseFromDropbox = function(id) {
+				
+	var that = this,
+		field, options;
+
+	if (!this.tuix.tabs[this.tuix.tab]
+	 || !(field = this.tuix.tabs[this.tuix.tab].fields[id])
 	 || !(field.upload)) {
 		return false;
 	}
@@ -1855,8 +2036,8 @@ zenarioAB.chooseFromDropbox = function(id) {
 					picked_items,
 					multiple_select;
 		
-				if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-				 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
+				if (!that.tuix.tabs[that.tuix.tab]
+				 || !(field = that.tuix.tabs[that.tuix.tab].fields[id])
 				 || !(field.upload)) {
 					return false;
 				}
@@ -1877,7 +2058,7 @@ zenarioAB.chooseFromDropbox = function(id) {
 				}
 				
 				zenarioA.hideAJAXLoader();
-				zenarioAB.redrawPickedItems(id, field, values);
+				that.redrawPickedItems(id, field, values);
 			});
 		}
 	};
@@ -1886,10 +2067,13 @@ zenarioAB.chooseFromDropbox = function(id) {
 	Dropbox.choose(options);
 };
 
-zenarioAB.upload = function(id, setUpDragDrop) {
-	var field, object;
-	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-	 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
+methods.upload = function(id, setUpDragDrop) {
+	
+	var that = this,
+		field, object;
+	
+	if (!this.tuix.tabs[this.tuix.tab]
+	 || !(field = this.tuix.tabs[this.tuix.tab].fields[id])
 	 || !(field.upload)) {
 		return false;
 	}
@@ -1899,7 +2083,7 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 		upload: field.upload
 	};
 	
-	zenarioAB.uploadCallback = function(responses) {
+	this.uploadCallback = function(responses) {
 		if (responses) {
 			var i,
 				file,
@@ -1907,8 +2091,8 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 				values,
 				multiple_select;
 		
-			if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-			 || !(field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id])
+			if (!that.tuix.tabs[that.tuix.tab]
+			 || !(field = that.tuix.tabs[that.tuix.tab].fields[id])
 			 || !(field.upload)) {
 				return false;
 			}
@@ -1929,7 +2113,7 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 				}
 			}
 			
-			zenarioAB.redrawPickedItems(id, field, values);
+			that.redrawPickedItems(id, field, values);
 		}
 	};
 	
@@ -1940,25 +2124,27 @@ zenarioAB.upload = function(id, setUpDragDrop) {
 				fileUpload: 1
 			},
 			false,
-			zenarioAB.uploadCallback,
+			this.uploadCallback,
 			get('zenario_fbAdminInner')
 		);
 	} else {
-		zenarioA.action(zenarioAB, object, undefined, undefined, undefined, {fileUpload: 1});
+		zenarioA.action(this, object, undefined, undefined, undefined, {fileUpload: 1});
 	}
 };
 
-zenarioAB.uploadComplete = function(responses) {
-	if (zenarioAB.uploadCallback !== undefined) {
-		zenarioAB.uploadCallback(responses);
+methods.uploadComplete = function(responses) {
+	if (this.uploadCallback !== undefined) {
+		this.uploadCallback(responses);
 	}
-	delete zenarioAB.uploadCallback;
+	delete this.uploadCallback;
 };
 
-zenarioAB.drawSlider = function(id, field, readOnly, before) {
-	html = '';
+methods.drawSlider = function(cb, id, field, readOnly, before) {
+	var that = this,
+		options = _.clone(field.slider),
+		html = '';
 	
-	if (engToBoolean(field.slider.before_field)? before : !before) {
+	if (engToBoolean(options.before_field)? before : !before) {
 		if (readOnly) {
 			html +=
 				'<div class="ui-disabled">';
@@ -1966,20 +2152,45 @@ zenarioAB.drawSlider = function(id, field, readOnly, before) {
 		
 		html +=
 			'<div id="zenario_slider_for__' + htmlspecialchars(id) + '"' +
-			' class="' + htmlspecialchars(field.slider['class']) + '"' +
-			' style="' + htmlspecialchars(field.slider.style) + '"></div>';
-		zenarioAB.sliders[id] = field.slider;
+			' class="' + htmlspecialchars(options['class']) + '"' +
+			' style="' + htmlspecialchars(options.style) + '"></div>';
 		
 		if (readOnly) {
 			html +=
 				'</div>';
 		}
+		
+		//Set up the slider after the html is drawn
+		cb.after(function() {
+			var domSlider;
+			if (domSlider = get('zenario_slider_for__' + id)) {
+				
+				if (options.min !== undefined) options.min *= 1;
+				if (options.max !== undefined) options.max *= 1;
+				if (options.step !== undefined) options.step *= 1;
+				
+				options.disabled = !that.editModeOn();
+				options.value = $(get(id)).val();
+				options.slide =
+					function(event, ui) {
+						$(get(id)).val(ui.value);
+					};
+				
+				options.change = function(event, ui) {
+					if (that && that.id) {
+						that.fieldChange(that.id.replace('zenario_slider_for__', ''));
+					}
+				};
+				
+				$(domSlider).slider(options);
+			}
+		});
 	}
 	
 	return html;
 };
 
-zenarioAB.pickedItemsArray = function(field, value) {
+methods.pickedItemsArray = function(field, value) {
 	
 	if (value === false || value === null || value === undefined) {
 		return {};
@@ -2073,7 +2284,7 @@ zenarioAB.pickedItemsArray = function(field, value) {
 	return picked_items;
 };
 
-zenarioAB.pickedItemsValue = function(picked_items) {
+methods.pickedItemsValue = function(picked_items) {
 	var i, value = '';
 	
 	if (picked_items) {
@@ -2086,7 +2297,7 @@ zenarioAB.pickedItemsValue = function(picked_items) {
 };
 
 //Draw hierarchical checkboxes or radiogroups
-zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, parent, parents, level) {
+methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, parent, parents, level) {
 	var cols = 1;
 	
 	//Set a depth limit to try and prevent infinite loops
@@ -2099,15 +2310,15 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 	}
 	
 	//Create a list of ids that have children, so we don't waste time looping through looking for children for checkboxes which have none
-	if (existingParents === undefined) {
-		existingParents = {};
-		
-		foreach (field.values as var v) {
-			if (typeof field.values[v] == 'object' && field.values[v].parent) {
-				existingParents[field.values[v].parent] = true;
-			}
-		}
-	}
+	//if (existingParents === undefined) {
+	//	existingParents = {};
+	//	
+	//	foreach (field.values as var v) {
+	//		if (typeof field.values[v] == 'object' && field.values[v].parent) {
+	//			existingParents[field.values[v].parent] = true;
+	//		}
+	//	}
+	//}
 	
 	//Set up a list of parents that the current level of items will have
 	if (!parents) {
@@ -2143,6 +2354,10 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 			lovField = {label: field.values[v]};
 		}
 		
+		if (field.tag_colors) {
+			m.tag_color = field.tag_colors[v] || 'blue';
+		}
+		
 		thisParent = lovField.parent;
 		if (thisParent === '0') {
 			thisParent = false;
@@ -2152,6 +2367,8 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 			if (m.newRow = (++col > cols)) {
 				col = 1;
 			}
+			m.col = col;
+			m.cols = cols;
 			
 			//Work out whether this should be checked
 			var thisValue;
@@ -2225,16 +2442,26 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 				}
 			}
 			
-			//If I need different html in different places I might need to use:
-			//zenarioA.microTemplate(zenarioAB.templatePrefix + '_radio_or_checkbox', m)
-			
 			m.lovId = id + '___' + v;
 			m.lovField = lovField;
-			m.lovHTML = zenarioAB.drawField(tab, id, true, v, thisField, thisValue, false, tempReadOnly, sortOrder, lovField);
+			
+			if (field.indeterminates
+			 && engToBoolean(field.indeterminates[v])) {
+				(function(id) {
+					cb.after(function() {
+						var checkbox;
+						if (checkbox = get(id)) {
+							checkbox.indeterminate = true;
+						}
+					});
+				})(m.lovId);
+			}
+			
+			m.lovHTML = this.drawField(cb, tab, id, true, v, thisField, thisValue, false, tempReadOnly, sortOrder, existingParents, lovField);
 			
 			m.childrenHTML = '';
 			if (existingParents[v]) {
-				m.childrenHTML = zenarioAB.hierarchicalBoxes(tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, v, $.extend(true, {}, parents), level + 1);
+				m.childrenHTML = this.hierarchicalBoxes(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, v, _.extend({}, parents), level + 1);
 				col = 0;
 			}
 			
@@ -2249,20 +2476,22 @@ zenarioAB.hierarchicalBoxes = function(tab, id, value, field, thisField, picked_
 	return html;
 };
 
-zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
+methods.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 	
 	if (tab === undefined) {
-		tab = zenarioAB.tuix.tab;
+		tab = this.tuix.tab;
 	}
 	
-	var field = zenarioAB.tuix.tabs[tab].fields[id],
+	var field = this.tuix.tabs[tab].fields[id],
 		itemSelected = false,
 		panel,
 		m, i,
-		value = zenarioAB.value(id, tab, readOnly),
+		value = this.value(id, tab, readOnly),
 		values,
-		picked_items = zenarioAB.pickedItemsArray(field, value),
-		reorder_items = field.upload && engToBoolean(field.upload.reorder_items);
+		picked_items = this.pickedItemsArray(field, value),
+		reorder_items = field.upload && engToBoolean(field.upload.reorder_items),
+		cols = 1*field.cols || 1,
+		col = 0;
 	
 	foreach (picked_items as var i) {
 		itemSelected = true;
@@ -2318,6 +2547,16 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 					readOnly: readOnly,
 					tempReadOnly: tempReadOnly};
 			
+			if (mi.newRow = (++col > cols)) {
+				col = 1;
+			}
+			mi.col = col;
+			mi.cols = cols;
+			
+			if (field.tag_colors) {
+				mi.tag_color = field.tag_colors[item] || 'blue';
+			}
+			
 			//Attempt to work out the path to the item in Organizer, and include an "info" button there
 			//If this is a file upload, the info button shouldn't be shown for newly uploaded files;
 			//only files with an id should show the info button.
@@ -2366,7 +2605,7 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 				if (extension.match(/gif|jpg|jpeg|png/)) {
 					//For images, display a thumbnail that opens a colorbox when clicked
 					mi.thumbnail = {
-						onclick: "zenarioAB.showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "');",
+						onclick: this.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "');",
 						src: src + "&og=1"
 					};
 					
@@ -2388,12 +2627,12 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 				if (reorder_items) {
 					if (!mi.first) {
 						mi.nudgeUp = {
-							onclick: "zenarioAB.nudge('" + jsEscape(id) + "', " + (i-1) + ", " + (i) + ");"
+							onclick: this.globalName + ".nudge('" + jsEscape(id) + "', " + (i-1) + ", " + (i) + ");"
 						};
 					}
 					if (!mi.last) {
 						mi.nudgeDown = {
-							onclick: "zenarioAB.nudge('" + jsEscape(id) + "', " + (i) + ", " + (i+1) + ");"
+							onclick: this.globalName + ".nudge('" + jsEscape(id) + "', " + (i) + ", " + (i+1) + ");"
 						};
 					}
 				}
@@ -2401,7 +2640,7 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 			
 			if (!readOnly && !(field.pick_items && engToBoolean(field.pick_items.hide_remove_button))) {
 				mi.removeButton = {
-					onclick: "zenarioAB.removePickedItem('" + jsEscape(id) + "', '" + jsEscape(item) + "');"
+					onclick: this.globalName + ".removePickedItem('" + jsEscape(id) + "', '" + jsEscape(item) + "');"
 				};
 			}
 			
@@ -2409,19 +2648,19 @@ zenarioAB.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 		}
 	}
 	
-	return zenarioA.microTemplate(zenarioAB.templatePrefix + '_picked_item', m);
+	return zenarioA.microTemplate(this.mtPrefix + '_picked_item', m);
 };
 
-zenarioAB.showPickedItemInPopout = function(href) {
-	zenarioA.action(zenarioAB, {popout: {href: href, css_class: 'zenario_show_colobox_above_fab'}});
+methods.showPickedItemInPopout = function(href) {
+	zenarioA.action(this, {popout: {href: href, css_class: 'zenario_show_colobox_above_fab'}});
 };
 
-zenarioAB.pickItems = function(id) {
-	if (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]) {
+methods.pickItems = function(id) {
+	if (!this.tuix.tabs[this.tuix.tab] || !this.tuix.tabs[this.tuix.tab].fields[id]) {
 		return false;
 	}
 	
-	var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id],
+	var field = this.tuix.tabs[this.tuix.tab].fields[id],
 		selectedItem,
 		path;
 	
@@ -2434,7 +2673,7 @@ zenarioAB.pickItems = function(id) {
 	path = field.pick_items.path;
 	if (!engToBoolean(field.pick_items.multiple_select)
 	 && (path == field.pick_items.target_path || field.pick_items.min_path == field.pick_items.target_path)
-	 && (selectedItem = zenarioAB.readField(id))
+	 && (selectedItem = this.readField(id))
 	 && (selectedItem.indexOf(',') == -1)) {
 		//No matter what the generated path was, there should always be two slashes between the selected item and the path
 		if (zenario.rightHandedSubStr(path, 2) == '//') {
@@ -2447,8 +2686,8 @@ zenarioAB.pickItems = function(id) {
 	}
 	
 	
-	zenarioAB.SKTarget = id;
-	zenarioA.organizerSelect('zenarioAB', 'setPickedItems', field.pick_items.multiple_select,
+	this.SKTarget = id;
+	zenarioA.organizerSelect(this.globalName, 'setPickedItems', field.pick_items.multiple_select,
 				path, field.pick_items.target_path, field.pick_items.min_path, field.pick_items.max_path, field.pick_items.disallow_refiners_looping_on_min_path,
 				undefined, field.pick_items.one_to_one_choose_phrase, field.pick_items.one_to_many_choose_phrase,
 				undefined,
@@ -2460,8 +2699,8 @@ zenarioAB.pickItems = function(id) {
 				field.pick_items);
 };
 
-zenarioAB.setPickedItems = function(path, key, row, panel) {
-	var id = zenarioAB.SKTarget,
+methods.setPickedItems = function(path, key, row, panel) {
+	var id = this.SKTarget,
 		item, 
 		ditem;
 		values = {};
@@ -2472,16 +2711,16 @@ zenarioAB.setPickedItems = function(path, key, row, panel) {
 		values[ditem] = zenarioA.formatSKItemName(panel, item);
 	}
 	
-	zenarioAB.addToPickedItems(values, id);
+	this.addToPickedItems(values, id);
 };
 
-zenarioAB.addToPickedItems = function(values, id, tab) {
+methods.addToPickedItems = function(values, id, tab) {
 	
 	if (!tab) {
-		tab = zenarioAB.tuix.tab;
+		tab = this.tuix.tab;
 	}
 	
-	var field = zenarioAB.tuix.tabs[tab].fields[id],
+	var field = this.tuix.tabs[tab].fields[id],
 		current_value = (field.current_value === undefined? field.value : field.current_value),
 		i, value, display, arrayOfValues, picked_items;
 	
@@ -2497,7 +2736,7 @@ zenarioAB.addToPickedItems = function(values, id, tab) {
 	if (!engToBoolean(field.pick_items.multiple_select) || !current_value) {
 		picked_items = {};
 	} else {
-		picked_items = zenarioAB.pickedItemsArray(field, current_value);
+		picked_items = this.pickedItemsArray(field, current_value);
 	}
 	
 	foreach (values as value => display) {
@@ -2516,12 +2755,12 @@ zenarioAB.addToPickedItems = function(values, id, tab) {
 		}
 	}
 	
-	zenarioAB.redrawPickedItems(id, field, picked_items);
+	this.redrawPickedItems(id, field, picked_items);
 };
 
-zenarioAB.removePickedItem = function(id, item) {
-	var tab = zenarioAB.tuix.tab,
-		field = zenarioAB.tuix.tabs[tab].fields[id],
+methods.removePickedItem = function(id, item) {
+	var tab = this.tuix.tab,
+		field = this.tuix.tabs[tab].fields[id],
 		value = (field.current_value === undefined? field.value : field.current_value),
 		values = value.split(',');
 	
@@ -2534,16 +2773,16 @@ zenarioAB.removePickedItem = function(id, item) {
 	
 	value = values.join(',');
 	
-	zenarioAB.redrawPickedItems(id, field, value);
+	this.redrawPickedItems(id, field, value);
 };
 
 //nudgeUp
-zenarioAB.nudge = function(id, i, j) {
+methods.nudge = function(id, i, j) {
 	i *= 1;
 	j *= 1;
 	
-	var tab = zenarioAB.tuix.tab,
-		field = zenarioAB.tuix.tabs[tab].fields[id],
+	var tab = this.tuix.tab,
+		field = this.tuix.tabs[tab].fields[id],
 		value = (field.current_value === undefined? field.value : field.current_value);
 	
 	value = value.split(',');
@@ -2557,28 +2796,27 @@ zenarioAB.nudge = function(id, i, j) {
 	
 	value = value.join(',');
 	
-	zenarioAB.redrawPickedItems(id, field, value);
+	this.redrawPickedItems(id, field, value);
 };
 
-zenarioAB.redrawPickedItems = function(id, field, value) {
+methods.redrawPickedItems = function(id, field, value) {
 	
 	if (typeof value == 'object') {
-		value = zenarioAB.pickedItemsValue(value);
+		value = this.pickedItemsValue(value);
 	}
 	
 	field.current_value = value;
-	get('name_for_' + id).innerHTML = zenarioAB.drawPickedItems(id);
-	zenarioAB.fieldChange(id);
+	get('name_for_' + id).innerHTML = this.drawPickedItems(id);
+	this.fieldChange(id);
 };
 
-zenarioAB.changed = {};
-zenarioAB.changes = function(tab) {
-	if (!zenarioAB.tuix || !zenarioAB.tuix.tab) {
+methods.changes = function(tab) {
+	if (!this.tuix || !this.tuix.tab) {
 		return false;
 	
 	} else if (tab == undefined) {
-		foreach (zenarioAB.tuix.tabs as tab) {
-			if (zenarioAB.changed[tab]) {
+		foreach (this.tuix.tabs as tab) {
+			if (this.changed[tab]) {
 				return true;
 			}
 		}
@@ -2586,81 +2824,92 @@ zenarioAB.changes = function(tab) {
 		return false;
 	
 	} else {
-		return zenarioAB.changed[tab];
+		return this.changed[tab];
 	}
 };
 
-zenarioAB.markAsChanged = function(tab, dontUpdateButton) {
-	if (!zenarioAB.tuix) {
+methods.markAsChanged = function(tab, dontUpdateButton) {
+	if (!this.tuix) {
 		return;
 	}
 	
 	if (tab === undefined) {
-		tab = zenarioAB.tuix.tab;
+		tab = this.tuix.tab;
 	}
 	
 	if (!tab) {
 		return;
 	}
 	
-	if (!zenarioAB.changed[tab]) {
-		zenarioAB.changed[tab] = true;
+	if (!this.changed[tab]) {
+		this.changed[tab] = true;
 		
 	}
 	
-	if (zenarioAB.tuix.tab == tab) {
+	if (this.tuix.tab == tab) {
 		$('#zenario_abtab').addClass('zenario_abtab_changed');
 	}
 };
 
-zenarioAB.fieldChange = function(id) {
+methods.fieldChange = function(id, lov) {
 	
-	if (!zenarioAB.tuix || !zenarioAB.tuix.tab || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || !zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]) {
+	if (!this.tuix || !this.tuix.tab || !this.tuix.tabs[this.tuix.tab] || !this.tuix.tabs[this.tuix.tab].fields[id]) {
 		return;
 	}
 	
-	var tab = zenarioAB.tuix.tab,
-		field = zenarioAB.tuix.tabs[tab].fields[id];
+	var tab = this.tuix.tab,
+		field = this.tuix.tabs[tab].fields[id];
 	
-	zenarioAB.markAsChanged(tab);
-	
-	if (engToBoolean(field.multiple_edit)) {
-		zenarioAB.meMarkChanged(id);
+	if (field.indeterminate) {
+		field.indeterminate = false;
 	}
 	
-	zenarioAB.validateFormatOrRedrawForField(field);
+	if (lov !== undefined
+	 && field.indeterminates
+	 && field.indeterminates[lov]) {
+		field.indeterminates[lov] = false;
+	}
+	
+	
+	this.markAsChanged(tab);
+	
+	if (engToBoolean(field.multiple_edit)) {
+		this.meMarkChanged(id);
+	}
+	
+	this.validateFormatOrRedrawForField(field);
 };
 
-zenarioAB.validateFormatOrRedrawForField = function(field) {
+methods.validateFormatOrRedrawForField = function(field) {
 	
 	if (typeof field != 'object') {
-		field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field];
+		field = this.tuix.tabs[this.tuix.tab].fields[field];
 	}
 	
 	var validate = engToBoolean(field.validate_onchange),
 		format = engToBoolean(field.format_onchange),
 		redraw = engToBoolean(field.redraw_onchange);
-	validate = validate || (zenarioAB.errorOnTab(zenarioAB.tuix.tab) && (format || redraw));
+	validate = validate || (this.errorOnTab(this.tuix.tab) && (format || redraw));
 		
 	if (validate) {
-		zenarioAB.validate();
+		this.validate();
 		return true;
 	
 	} else if (format) {
-		zenarioAB.format();
+		this.format();
 		return true;
 	
 	} else {
 		if (redraw) {
-			zenarioAB.readTab();
-			zenarioAB.redrawTab();
+			this.readTab();
+			this.redrawTab();
 		}
 		
 		return redraw;
 	}
 };
 
-zenarioAB.meMarkChanged = function(id, current_value, value) {
+methods.meMarkChanged = function(id, current_value, value) {
 	
 	if (current_value !== undefined) {
 		if (current_value == value) {
@@ -2668,11 +2917,11 @@ zenarioAB.meMarkChanged = function(id, current_value, value) {
 		}
 	}
 	
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = true;
-	zenarioAB.meSetCheckbox(id, true);
+	this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit._changed = true;
+	this.meSetCheckbox(id, true);
 };
 
-zenarioAB.meSetCheckbox = function(id, changed) {
+methods.meSetCheckbox = function(id, changed) {
 	if (get('multiple_edit__' + id).type == 'checkbox') {
 		get('multiple_edit__' + id).checked = changed;
 	} else {
@@ -2681,39 +2930,39 @@ zenarioAB.meSetCheckbox = function(id, changed) {
 };
 
 //The admin changes a multiple-edit checkbox
-zenarioAB.meChange = function(changed, id, confirm) {
+methods.meChange = function(changed, id, confirm) {
 	
 	//Update its state in the schema
 	if (changed) {
-		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = true;
+		this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit._changed = true;
 	} else {
 		
 		//Require a confirm prompt if this will lose any changes
 		if (!confirm
-		 && engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.warn_when_abandoning_changes)
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.original_value !== undefined
-		 && zenarioAB.readField(id) != zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.original_value) {
+		 && engToBoolean(this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit.warn_when_abandoning_changes)
+		 && this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit.original_value !== undefined
+		 && this.readField(id) != this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit.original_value) {
 		 	
 			var buttonsHTML =
-				'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioAB.meChange(false, \'' + htmlspecialchars(id) + '\', true);"/>' + 
+				'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="' + this.globalName + '.meChange(false, \'' + htmlspecialchars(id) + '\', true);"/>' + 
 				'<input type="button" class="submit" value="' + phrase.cancel + '"/>';
 			
 			zenarioA.floatingBox(phrase.abandonChangesConfirm, buttonsHTML, 'warning');
-			zenarioAB.meSetCheckbox(id, true);
+			this.meSetCheckbox(id, true);
 			return;
 		}
 		
-		zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit._changed = false;
+		this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit._changed = false;
 		
 		//If it is now off, revert the field's value back to the default.
-		delete zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].current_value;
+		delete this.tuix.tabs[this.tuix.tab].fields[id].current_value;
 		
-		var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id];
+		var field = this.tuix.tabs[this.tuix.tab].fields[id];
 		
 		var value = field.value;
 		if (field.multiple_edit.original_value !== undefined) {
 			value =
-			zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].current_value =
+			this.tuix.tabs[this.tuix.tab].fields[id].current_value =
 			field.multiple_edit.original_value;
 		}
 		
@@ -2725,11 +2974,13 @@ zenarioAB.meChange = function(changed, id, confirm) {
 			}
 		} else {
 			//Some non-standard fields - i.e. fields that couldn't be changed using $().val() - will need a complete redraw of the tab to achieve
-			zenarioAB.insertHTML(zenarioAB.drawFields());
+			var cb = new zenario.callback,
+				html = this.drawFields(cb);
+			this.insertHTML(html, cb);
 		}
 	}
 	
-	if (engToBoolean(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].multiple_edit.disable_when_unchanged)) {
+	if (engToBoolean(this.tuix.tabs[this.tuix.tab].fields[id].multiple_edit.disable_when_unchanged)) {
 		if (get(id)) {
 			get(id).disabled = !changed;
 		}
@@ -2746,23 +2997,23 @@ zenarioAB.meChange = function(changed, id, confirm) {
 		});
 	}
 	
-	zenarioAB.meSetCheckbox(id, changed);
+	this.meSetCheckbox(id, changed);
 	
-	zenarioAB.validateFormatOrRedrawForField(id);
+	this.validateFormatOrRedrawForField(id);
 };
 
 
-zenarioAB.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
+methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	if (!tab) {
-		tab = zenarioAB.tuix.tab;
+		tab = this.tuix.tab;
 	}
 	
 	var value = '',
 		first = true,
-		field = zenarioAB.tuix.tabs[tab].fields[f];
+		field = this.tuix.tabs[tab].fields[f];
 	
 	if (readOnly === undefined) {
-		readOnly = !zenarioAB.editModeOn(tab);
+		readOnly = !this.editModeOn(tab);
 	}
 	
 	if (!field) {
@@ -2786,10 +3037,10 @@ zenarioAB.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 };
 
 
-zenarioAB.readField = function(f) {
+methods.readField = function(f) {
 	var value = undefined,
-		tab = zenarioAB.tuix.tab,
-		field = zenarioAB.tuix.tabs[tab].fields[f],
+		tab = this.tuix.tab,
+		field = this.tuix.tabs[tab].fields[f],
 		el;
 	
 	//Non-field types
@@ -2797,13 +3048,13 @@ zenarioAB.readField = function(f) {
 		return undefined;
 	}
 	
-	var readOnly = !zenarioAB.editModeOn() || engToBoolean(field.read_only),
-		hidden = zenarioAB.tuix.tabs[tab].fields[f]._h;
+	var readOnly = !this.editModeOn() || engToBoolean(field.read_only),
+		hidden = this.tuix.tabs[tab].fields[f]._was_hidden_before;
 	
 	//Update logic for multiple edit fields
 	if (field.multiple_edit) {
 		if (readOnly) {
-			delete zenarioAB.tuix.tabs[tab].fields[f].multiple_edit._changed;
+			delete this.tuix.tabs[tab].fields[f].multiple_edit._changed;
 		}
 	}
 	
@@ -2839,7 +3090,7 @@ zenarioAB.readField = function(f) {
 
 	//Fields with seperate values to display values
 	if (get('_value_for__' + f)) {
-		zenarioAB.tuix.tabs[tab].fields[f].current_value = value = get('_value_for__' + f).value;
+		this.tuix.tabs[tab].fields[f].current_value = value = get('_value_for__' + f).value;
 	
 	//Editors
 	} else if ((field.type == 'editor' || field.type == 'code_editor') && !readOnly) {
@@ -2859,7 +3110,7 @@ zenarioAB.readField = function(f) {
 		}
 		
 		if (content !== undefined && content !== false) {
-			value = zenarioAB.tuix.tabs[tab].fields[f].current_value = content;
+			value = this.tuix.tabs[tab].fields[f].current_value = content;
 		
 		//If due to some bug we couldn't get the content from the editor,
 		//return the stored value and don't do any further manipulations to the data model.
@@ -2887,10 +3138,10 @@ zenarioAB.readField = function(f) {
 			} else {
 				value = $(el).val();
 			}
-			zenarioAB.tuix.tabs[tab].fields[f].current_value = value;
+			this.tuix.tabs[tab].fields[f].current_value = value;
 		
 		} else {
-			delete zenarioAB.tuix.tabs[tab].fields[f].current_value;
+			delete this.tuix.tabs[tab].fields[f].current_value;
 			value = field.value;
 		}
 	}
@@ -2898,8 +3149,8 @@ zenarioAB.readField = function(f) {
 	return value;
 };
 
-zenarioAB.blankField = function(f) {
-	var tab = zenarioAB.tuix.tab;
+methods.blankField = function(f) {
+	var tab = this.tuix.tab;
 	
 	if (get(f)) {
 		$(get(f)).val('');
@@ -2909,49 +3160,45 @@ zenarioAB.blankField = function(f) {
 		get('_value_for__' + f).value = '';
 	}
 	
-	zenarioAB.tuix.tabs[tab].fields[f].current_value = '';
+	this.tuix.tabs[tab].fields[f].current_value = '';
 };
 
 
-//zenarioAB.lastScrollTop = undefined;
+//this.lastScrollTop = undefined;
 
-zenarioAB.readTab = function() {
-	var tab = zenarioAB.tuix.tab,
+methods.readTab = function() {
+	var tab = this.tuix.tab,
 		value,
 		values = {};
 	
-	zenarioAB.lastScrollTop = $('#zenario_fbAdminInner').scrollTop();
+	this.lastScrollTop = $('#zenario_fbAdminInner').scrollTop();
 	
-	foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-		if (!zenarioAB.isInfoTag(f)) {
-			if ((value = zenarioAB.readField(f)) !== undefined) {
-				values[f] = value;
-			}
+	foreach (this.tuix.tabs[tab].fields as var f) {
+		if ((value = this.readField(f)) !== undefined) {
+			values[f] = value;
 		}
 	}
 	
 	return values;
 };
 
-zenarioAB.wipeTab = function() {
-	var tab = zenarioAB.tuix.tab,
+methods.wipeTab = function() {
+	var tab = this.tuix.tab,
 		value,
 		values = {};
 	
-	foreach (zenarioAB.tuix.tabs[tab].fields as var f) {
-		if (!zenarioAB.isInfoTag(f)) {
-			delete zenarioAB.tuix.tabs[tab].fields[f].current_value;
-			
-			if (zenarioAB.tuix.tabs[tab].fields[f].multiple_edit) {
-				delete zenarioAB.tuix.tabs[tab].fields[f].multiple_edit._changed;
-			}
+	foreach (this.tuix.tabs[tab].fields as var f) {
+		delete this.tuix.tabs[tab].fields[f].current_value;
+		
+		if (this.tuix.tabs[tab].fields[f].multiple_edit) {
+			delete this.tuix.tabs[tab].fields[f].multiple_edit._changed;
 		}
 	}
 };
 
-zenarioAB.redrawTab = function() {
-	zenarioAB.tuix.shake = false;
-	zenarioAB.draw2();
+methods.redrawTab = function() {
+	this.tuix.shake = false;
+	this.draw2();
 };
 
 
@@ -2961,6 +3208,10 @@ zenarioAB.redrawTab = function() {
 
 //Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller
 zenarioAB.size = function() {
+	if (!zenarioAB.isFAB) {
+		return;
+	}
+	
 	if (zenarioAB.sizing) {
 		clearTimeout(zenarioAB.sizing);
 	}
@@ -2980,7 +3231,9 @@ zenarioAB.size = function() {
 	if (get('zenario_fbAdminInner')) {
 		var height = Math.floor($(window).height() * 0.96 - (zenario.browserIsIE()? 210 : zenario.browserIsSafari()? 202 : 205));
 		
-		if (zenarioAB.tuix.max_height && height > zenarioAB.tuix.max_height) {
+		if (zenarioAB.tuix
+		 && zenarioAB.tuix.max_height
+		 && height > zenarioAB.tuix.max_height) {
 			height = zenarioAB.tuix.max_height;
 		}
 		
@@ -3004,78 +3257,78 @@ zenarioAB.size = function() {
 
 
 //Get a URL needed for an AJAX request
-zenarioAB.getURL = function() {
+methods.getURL = function() {
 	//Outdate any validation attempts
-	++zenarioAB.onKeyUpNum;
+	++this.onKeyUpNum;
 	
-	if (zenarioAB.welcome) {
+	if (this.isWelcomePage) {
 		return URLBasePath + 'zenario/admin/welcome_ajax.php' +
 										'?_json=1&_ab=1' +
-										'&task=' + encodeURIComponent(zenarioAB.task) +
-										'&get=' + encodeURIComponent(JSON.stringify(zenarioAB.getRequest)) +
-										zenario.urlRequest(ifNull(zenarioAB.key, zenarioAB.tuix.key));
+										'&task=' + encodeURIComponent(this.task) +
+										'&get=' + encodeURIComponent(JSON.stringify(this.getRequest)) +
+										zenario.urlRequest(ifNull(this.key, this.tuix.key));
 	} else {
 		return URLBasePath + 'zenario/admin/ajax.php' +
 										'?_json=1&_ab=1' +
-										'&path=' + encodeURIComponent(zenarioAB.path) +
-										zenario.urlRequest(zenarioAB.getRequestKey);
+										'&path=' + encodeURIComponent(this.path) +
+										zenario.urlRequest(this.getRequestKey);
 	}
 };
 
 
 //Some shortcuts
-zenarioAB.editModeOn = function(tab) {
+methods.editModeOn = function(tab) {
 	
-	if (!zenarioAB.tuix || !zenarioAB.tuix.tabs) {
+	if (!this.tuix || !this.tuix.tabs) {
 		return false;
 	}
 	
 	if (!tab) {
-		tab = zenarioAB.tuix.tab;
+		tab = this.tuix.tab;
 	}
 	
-	if (zenarioAB.tuix.tabs[tab].edit_mode) {
-		return zenarioAB.tuix.tabs[tab].edit_mode.on =
-			engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
-		 && (engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.on)
-		  || zenarioAB.editModeAlwaysOn(tab));
+	if (this.tuix.tabs[tab].edit_mode) {
+		return this.tuix.tabs[tab].edit_mode.on =
+			engToBoolean(this.tuix.tabs[tab].edit_mode.enabled)
+		 && (engToBoolean(this.tuix.tabs[tab].edit_mode.on)
+		  || this.editModeAlwaysOn(tab));
 	
 	} else {
 		return false;
 	}
 };
 
-zenarioAB.editModeAlwaysOn = function(tab) {
-	return zenarioAB.tuix.tabs[tab].edit_mode.always_on === undefined
-		|| engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.always_on)
-		|| zenarioAB.savedAndContinued(tab);
+methods.editModeAlwaysOn = function(tab) {
+	return this.tuix.tabs[tab].edit_mode.always_on === undefined
+		|| engToBoolean(this.tuix.tabs[tab].edit_mode.always_on)
+		|| this.savedAndContinued(tab);
 };
 
-zenarioAB.editCancelEnabled = function(tab) {
-	return zenarioAB.tuix.tabs[tab].edit_mode
-		&& engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
-		&& !zenarioAB.editModeAlwaysOn(tab);
+methods.editCancelEnabled = function(tab) {
+	return this.tuix.tabs[tab].edit_mode
+		&& engToBoolean(this.tuix.tabs[tab].edit_mode.enabled)
+		&& !this.editModeAlwaysOn(tab);
 };
 
-zenarioAB.revertEnabled = function(tab) {
-	return zenarioAB.tuix.tabs[tab].edit_mode
-		&& engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enabled)
-		&& zenarioAB.editModeAlwaysOn(tab)
-		&& !zenarioAB.savedAndContinued(tab)
-		&& ((zenarioAB.tuix.tabs[tab].edit_mode.enable_revert === undefined && zenarioAB.tuix.key && zenarioAB.tuix.key.id)
-		 || engToBoolean(zenarioAB.tuix.tabs[tab].edit_mode.enable_revert));
+methods.revertEnabled = function(tab) {
+	return this.tuix.tabs[tab].edit_mode
+		&& engToBoolean(this.tuix.tabs[tab].edit_mode.enabled)
+		&& this.editModeAlwaysOn(tab)
+		&& !this.savedAndContinued(tab)
+		&& ((this.tuix.tabs[tab].edit_mode.enable_revert === undefined && this.tuix.key && this.tuix.key.id)
+		 || engToBoolean(this.tuix.tabs[tab].edit_mode.enable_revert));
 };
 
-zenarioAB.savedAndContinued = function(tab) {
-	return zenarioAB.tuix.tabs[tab]._saved_and_continued;
+methods.savedAndContinued = function(tab) {
+	return this.tuix.tabs[tab]._saved_and_continued;
 };
 
-zenarioAB.editModeOnBox = function() {
-	if (zenarioAB.tuix && zenarioAB.tuix.tabs && zenarioAB.sortedTabs) {
-		foreach (zenarioAB.sortedTabs as var i) {
-			var tab = zenarioAB.sortedTabs[i];
+methods.editModeOnBox = function() {
+	if (this.tuix && this.tuix.tabs && this.sortedTabs) {
+		foreach (this.sortedTabs as var i) {
+			var tab = this.sortedTabs[i];
 			
-			if (zenarioAB.editModeOn(tab)) {
+			if (this.editModeOn(tab)) {
 				return true;
 			}
 		}
@@ -3088,58 +3341,51 @@ zenarioAB.editModeOnBox = function() {
 
 //  Sorting Functions  //
 
-//refine tags added by the CMS for location/tracking purposes
-zenarioAB.isInfoTag = function(i) {
-	return i == 'class_name'
-		|| i == 'count'
-		|| i == 'ord';
-};
-
-zenarioAB.sortTabs = function() {
+methods.sortTabs = function() {
 	//Build an array to sort, containing:
 		//0: The item's actual index
 		//1: The value to sort by
-	zenarioAB.sortedTabs = [];
-	if (zenarioAB.tuix.tabs) {
-		foreach (zenarioAB.tuix.tabs as var i) {
-			if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[i]) {
-				zenarioAB.sortedTabs.push([i, zenarioAB.tuix.tabs[i].ord]);
+	this.sortedTabs = [];
+	if (this.tuix.tabs) {
+		foreach (this.tuix.tabs as var i => var thisTab) {
+			if (thisTab) {
+				this.sortedTabs.push([i, thisTab.ord]);
 			}
 		}
 	}
 	
 	//Sort this array
-	zenarioAB.sortedTabs.sort(zenarioA.sortArray);
+	this.sortedTabs.sort(zenarioA.sortArray);
 	
 	//Remove fields that were just there to help sort
-	zenarioAB.sortedFields = {};
+	this.sortedFields = {};
 	
-	foreach (zenarioAB.sortedTabs as var i) {
-		var tab = zenarioAB.sortedTabs[i] = zenarioAB.sortedTabs[i][0];
-		zenarioAB.sortFields(tab);
-		//zenarioAB.sortedTabOrders[tab] = i;
+	foreach (this.sortedTabs as var i) {
+		var tab = this.sortedTabs[i] = this.sortedTabs[i][0];
+		this.sortFields(tab);
+		//this.sortedTabOrders[tab] = i;
 	}
 };
 
-zenarioAB.sortFields = function(tab) {
+methods.sortFields = function(tab) {
 	//Build an array to sort, containing:
 		//0: The item's actual index
 		//1: The value to sort by
-	zenarioAB.sortedFields[tab] = [];
-	if (zenarioAB.tuix.tabs[tab].fields) {
-		foreach (zenarioAB.tuix.tabs[tab].fields as var i) {
-			if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[tab].fields[i]) {
-				zenarioAB.sortedFields[tab].push([i, zenarioAB.tuix.tabs[tab].fields[i].ord]);
+	this.sortedFields[tab] = [];
+	if (this.tuix.tabs[tab].fields) {
+		foreach (this.tuix.tabs[tab].fields as var i => var field) {
+			if (field) {
+				this.sortedFields[tab].push([i, field.ord]);
 			}
 		}
 	}
 	
 	//Sort this array
-	zenarioAB.sortedFields[tab].sort(zenarioA.sortArray);
+	this.sortedFields[tab].sort(zenarioA.sortArray);
 	
 	//Remove fields that were just there to help sort
-	foreach (zenarioAB.sortedFields[tab] as var i) {
-		zenarioAB.sortedFields[tab][i] = zenarioAB.sortedFields[tab][i][0];
+	foreach (this.sortedFields[tab] as var i) {
+		this.sortedFields[tab][i] = this.sortedFields[tab][i][0];
 	}
 };
 
@@ -3149,20 +3395,20 @@ zenarioAB.sortFields = function(tab) {
 
 /*	Saving/Closing  */
 
-zenarioAB.syncAdminBoxFromClientToServer = function() {
-	if (zenarioAB.welcome) {
-		return JSON.stringify(zenarioAB.tuix);
+methods.syncAdminBoxFromClientToServer = function() {
+	if (this.isWelcomePage) {
+		return JSON.stringify(this.tuix);
 	
 	} else {
 		var $serverTags = {};
-		zenarioAB.syncAdminBoxFromClientToServerR($serverTags, zenarioAB.tuix);
+		this.syncAdminBoxFromClientToServerR($serverTags, this.tuix);
 		
 		return JSON.stringify($serverTags);
 	}
 };
 
 //Sync updates from the client to the array stored on the server
-zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $key1, $key2, $key3, $key4, $key5, $key6) {
+methods.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $key1, $key2, $key3, $key4, $key5, $key6) {
 	
 	if ('object' != typeof $clientTags) {
 		return;
@@ -3185,10 +3431,9 @@ zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $
 		 || (($type = 'value') && $key4 === undefined && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on')
 		 || (($type = 'array') && $key3 === undefined && $key2 == 'tabs' && $key0 == 'fields')
 		 || (($type = 'array') && $key4 === undefined && $key3 == 'tabs' && $key1 == 'fields')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_h')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_h_js')
 		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'current_value')
 		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_display_value')
+		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_was_hidden_before')
 		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'pressed')
 		 || (($type = 'array') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit')
 		 || (($type = 'value') && $key6 === undefined && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed')) {
@@ -3203,7 +3448,7 @@ zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $
 			} else if ($type == 'array') {
 				if ('object' == typeof $clientTags[$key0]) {
 					$serverTags[$key0] = {};
-					zenarioAB.syncAdminBoxFromClientToServerR($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
+					this.syncAdminBoxFromClientToServerR($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
 				}
 			}
 		}
@@ -3211,7 +3456,7 @@ zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $
 };
 
 //Sync updates from the server to the array stored on the client
-zenarioAB.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
+methods.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
 	for (var $key0 in $serverTags) {
 		if ($serverTags[$key0]['[[__unset__]]']) {
 			delete $clientTags[$key0];
@@ -3234,48 +3479,50 @@ zenarioAB.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
 			$clientTags[$key0] = $serverTags[$key0];
 		
 		} else {
-			zenarioAB.syncAdminBoxFromServerToClient($serverTags[$key0], $clientTags[$key0]);
+			this.syncAdminBoxFromServerToClient($serverTags[$key0], $clientTags[$key0]);
 		}
 	}
 };
 
 
-zenarioAB.getValueArrayofArrays = function(leaveAsJSONString) {
-	return zenario.nonAsyncAJAX(zenarioAB.getURL(), zenario.urlRequest({_read_values: true, _box: zenarioAB.syncAdminBoxFromClientToServer()}), !leaveAsJSONString);
+methods.getValueArrayofArrays = function(leaveAsJSONString) {
+	return zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest({_read_values: true, _box: this.syncAdminBoxFromClientToServer()}), !leaveAsJSONString);
 };
 
-zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) {
+methods.refreshParentAndClose = function(disallowNavigation, saveAndContinue) {
 	zenarioA.nowDoingSomething(false);
 	
+	var requests = {};
+	
 	if (!saveAndContinue) {
-		zenarioAB.isOpen = false;
+		this.isOpen = false;
 	}
 	
 	//Attempt to work out what to do next.
-	if (zenarioAB.callBack && !saveAndContinue) {
+	if (this.callBack && !saveAndContinue) {
 		var values;
-		if (values = zenarioAB.getValueArrayofArrays()) {
-			zenarioAB.callBack(zenarioAB.tuix.key, values);
+		if (values = this.getValueArrayofArrays()) {
+			this.callBack(this.tuix.key, values);
 		}
 		
-	} else if (zenarioO.init && (zenarioA.storekeeperWindow || zenarioA.checkIfBoxIsOpen('og'))) {
+	} else if (zenarioO.init && (zenarioA.isFullOrganizerWindow || zenarioA.checkIfBoxIsOpen('og'))) {
 		//Reload Organizer if this window is an Organizer window
 		var id = false;
 		
-		if (zenarioAB.tuix.key.id !== undefined) {
-			id = zenarioAB.tuix.key.id;
+		if (this.tuix.key.id !== undefined) {
+			id = this.tuix.key.id;
 		} else {
-			foreach (zenarioAB.tuix.key as var i) {
-				id = zenarioAB.tuix.key[i];
+			foreach (this.tuix.key as var i) {
+				id = this.tuix.key[i];
 				break;
 			}
 		}
 		
 		zenarioO.refreshToShowItem(id);
 		
-	} else if (zenarioAB.tuix.key.slotName) {
-		//Refresh the slot if this was one of the slot settings thickboxes
-		zenario.refreshPluginSlot(zenarioAB.tuix.key.slotName, '');
+	} else if (this.tuix.key.slotName) {
+		//Refresh the slot if this was a plugin settings FAB
+		zenario.refreshPluginSlot(this.tuix.key.slotName, '', zenarioA.importantGetRequests);
 		
 		if (zenarioAT.init) {
 			zenarioAT.init();
@@ -3285,20 +3532,31 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 		//Don't allow any of the actions below, as they involve navigation
 	
 	//Otherwise build up a URL from the primary key, if it looks valid
-	} else if (zenarioAB.tuix.key.cID) {
-		//Go to a specific content item
-		zenario.goToURL(zenario.linkToItem(zenarioAB.tuix.key.cID, zenarioAB.tuix.key.cType));
+	} else
+	if (this.tuix.key.cID) {
+		
+		//If this is the current content item, add any important get requests from plugins
+		if (this.tuix.key.cID == zenario.cID
+		 && this.tuix.key.cType == zenario.cType) {
+			requests = zenarioA.importantGetRequests;
+		}
+		
+		zenario.goToURL(zenario.linkToItem(this.tuix.key.cID, this.tuix.key.cType, requests));
 	
 	//For any other Admin Toolbar changes, reload the page
 	} else if (zenarioAT.init) {
-		zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, 'cVersion=' + zenario.cVersion));
 		
+		//Try to keep to the same version if possible.
+		requests = _.clone(zenarioA.importantGetRequests);
+		requests.cVersion = zenario.cVersion;
+		
+		zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests));
 	}
 	
-	var popout_message = zenarioAB.tuix.popout_message;
+	var popout_message = this.tuix.popout_message;
 	
 	if (!saveAndContinue) {
-		zenarioAB.close();
+		this.close();
 	}
 	
 	if (popout_message) {
@@ -3306,27 +3564,27 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 	}
 	
 	if (saveAndContinue) {
-		zenarioAB.changed = {};
+		this.changed = {};
 		
-		if (zenarioAB.tuix.tabs) {
-			foreach (zenarioAB.tuix.tabs as var i) {
-				if (!zenarioAB.isInfoTag(i) && zenarioAB.tuix.tabs[i]) {
-					if (zenarioAB.editModeOn(i)) {
-						zenarioAB.tuix.tabs[i]._saved_and_continued = true;
+		if (this.tuix.tabs) {
+			foreach (this.tuix.tabs as var i => var thisTab) {
+				if (thisTab) {
+					if (this.editModeOn(i)) {
+						this.tuix.tabs[i]._saved_and_continued = true;
 					}
 				}
 			}
 		}
 		
-		zenarioAB.sortTabs();
-		zenarioAB.draw();
+		this.sortTabs();
+		this.draw();
 	}
 };
 
 
-zenarioAB.close = function(keepMessageWindowOpen) {
+methods.close = function(keepMessageWindowOpen) {
 	//Close TinyMCE if it is open
-	zenarioAB.callFunctionOnEditors('remove');
+	this.callFunctionOnEditors('remove');
 	zenarioA.nowDoingSomething(false);
 	
 	if (zenarioAB.sizing) {
@@ -3338,37 +3596,37 @@ zenarioAB.close = function(keepMessageWindowOpen) {
 	}
 	
 	zenarioA.closeBox('AdminFloatingBox' + boxNum);
-	zenarioAB.isOpen = false;
+	this.isOpen = false;
 	
 	//Return the page to it's original scroll position, before the box was opened
-	if (zenarioAB.documentScrollTop !== false) {
-		$(zenario.browserIsSafari()? 'body' : 'html').scrollTop(zenarioAB.documentScrollTop);
-		zenarioAB.documentScrollTop = false;
+	if (this.documentScrollTop !== false) {
+		$(zenario.browserIsSafari()? 'body' : 'html').scrollTop(this.documentScrollTop);
+		this.documentScrollTop = false;
 	}
 	
-	delete zenarioAB.tuix;
+	delete this.tuix;
 	
 	return false;
 };
 
-zenarioAB.closeButton = function(onlyCloseIfNoChanges) {
+methods.closeButton = function(onlyCloseIfNoChanges) {
 	//Check if there is an editor open
 	var message = zenarioA.onbeforeunload();
 	
 	//If there was, give the Admin a chance to stop leaving the page
 	if (message === undefined || (!onlyCloseIfNoChanges && confirm(message))) {
-		if (zenarioAB.isOpen) {
-			zenarioAB.close();
+		if (this.isOpen) {
+			this.close();
 		}
 	}
 	
 	return false;
 };
 
-zenarioAB.callFunctionOnEditors = function(action) {
-	if (zenarioAB.tuix && zenarioAB.tuix.tab && zenarioAB.tuix.tabs[zenarioAB.tuix.tab] && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields && window.tinyMCE) {
-		foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields as var f) {
-			var field = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[f];
+methods.callFunctionOnEditors = function(action) {
+	if (this.tuix && this.tuix.tab && this.tuix.tabs[this.tuix.tab] && this.tuix.tabs[this.tuix.tab].fields && window.tinyMCE) {
+		foreach (this.tuix.tabs[this.tuix.tab].fields as var f) {
+			var field = this.tuix.tabs[this.tuix.tab].fields[f];
 			
 			if (field.type == 'editor') {
 				if (tinyMCE.get(f)) {
@@ -3391,25 +3649,28 @@ zenarioAB.callFunctionOnEditors = function(action) {
 
 //Specific bespoke functions for a few cases. These could have been on onkeyup/onchange events, but this way is more efficient.
 //Add the alias validation functions from the meta-data tab
-zenarioAB.validateAlias = function() {
-	zenario.actAfterDelayIfNotSuperseded('validateAlias', zenarioAB.validateAliasGo);
+methods.validateAlias = function() {
+	var that = this;
+	zenario.actAfterDelayIfNotSuperseded('validateAlias', function() {
+		that.validateAliasGo(); 
+	});
 };
 
-zenarioAB.validateAliasGo = function() {
+methods.validateAliasGo = function() {
 	
 	var req = {
 		_validate_alias: 1,
 		alias: get('alias').value
 	}
 	
-	if (zenarioAB.tuix.key.cID) {
-		req.cID = zenarioAB.tuix.key.cID;
+	if (this.tuix.key.cID) {
+		req.cID = this.tuix.key.cID;
 	}
-	if (zenarioAB.tuix.key.cType) {
-		req.cType = zenarioAB.tuix.key.cType;
+	if (this.tuix.key.cType) {
+		req.cType = this.tuix.key.cType;
 	}
-	if (zenarioAB.tuix.key.equivId) {
-		req.equivId = zenarioAB.tuix.key.equivId;
+	if (this.tuix.key.equivId) {
+		req.equivId = this.tuix.key.equivId;
 	}
 	if (get('language_id')) {
 		req.langId = get('language_id').value;
@@ -3443,7 +3704,7 @@ zenarioAB.validateAliasGo = function() {
 };
 
 //bespoke functions for the Content Tab
-zenarioAB.generateAlias = function(text) {
+methods.generateAlias = function(text) {
 	return text
 			.toLowerCase()
 			.replace(
@@ -3467,27 +3728,27 @@ zenarioAB.generateAlias = function(text) {
 			.substr(0, 50);
 };
 
-zenarioAB.contentTitleChange = function() {
+methods.contentTitleChange = function() {
 	
-	if (get('menu_title') && !zenarioAB.tuix.___menu_title_changed) {
+	if (get('menu_title') && !this.tuix.___menu_title_changed) {
 		get('menu_title').value = get('title').value.replace(/\s+/g, ' ');
 		get('menu_title').onkeyup();
 	}
 	
-	if (get('alias') && !zenarioAB.tuix.___alias_changed) {
-		get('alias').value = zenarioAB.generateAlias(get('title').value);
-		zenarioAB.validateAlias();
+	if (get('alias') && !this.tuix.___alias_changed) {
+		get('alias').value = this.generateAlias(get('title').value);
+		this.validateAlias();
 	}
 };
 
 
 
 //bespoke functions for Plugin Settings
-zenarioAB.viewFrameworkSource = function() {
+methods.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +
 		'zenario/admin/organizer.php' +
-		'#zenario__modules/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForStorekeeper(zenarioAB.readField('framework'));
+		'#zenario__modules/show_frameworks//' + this.tuix.key.moduleId + '//' + zenario.encodeItemIdForStorekeeper(this.readField('framework'));
 	window.open(url);
 	
 	return false;
@@ -3498,7 +3759,7 @@ zenarioAB.viewFrameworkSource = function() {
 //bespoke functions for Admin Perms
 
 //Change a child-checkbox
-zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c) {
+methods.adminPermChange = function(parentName, childrenName, toggleName, n, c) {
 	var parentChecked = true,
 		parentClass;
 	
@@ -3520,7 +3781,7 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	}
 	
 	get(parentName).checked =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[parentName].current_value = parentChecked;
+	this.tuix.tabs[this.tuix.tab].fields[parentName].current_value = parentChecked;
 	
 	$(get('row__' + parentName))
 		.removeClass('zenario_permgroup_empty')
@@ -3530,12 +3791,12 @@ zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c)
 	
 	//Set the "X / Y" display on the toggle
 	get(toggleName).value =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].value =
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].current_value = c + '/' + n;
+	this.tuix.tabs[this.tuix.tab].fields[toggleName].value =
+	this.tuix.tabs[this.tuix.tab].fields[toggleName].current_value = c + '/' + n;
 };
 
 //Change the parent checkbox
-zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName) {
+methods.adminParentPermChange = function(parentName, childrenName, toggleName) {
 	var n = 0,
 		c = 0,
 		current_value = '',
@@ -3544,13 +3805,11 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	
 	//Loop through each value for the child checkboxes.
 	//Count them, and either turn them all on or all off, depending on whether the parent was checked
-	foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].values as var v) {
-		if (!zenarioAB.isInfoTag(v)) {
-			++n;
-			if (checked) {
-				current_value += (current_value? ',' : '') + v;
-				++c;
-			}
+	foreach (this.tuix.tabs[this.tuix.tab].fields[childrenName].values as var v) {
+		++n;
+		if (checked) {
+			current_value += (current_value? ',' : '') + v;
+			++c;
 		}
 	}
 	
@@ -3563,53 +3822,54 @@ zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName)
 	}
 	
 	//Update them in the data
-	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].current_value = current_value;
+	this.tuix.tabs[this.tuix.tab].fields[childrenName].current_value = current_value;
 	
 	//Call the function above to update the count and the CSS
-	zenarioAB.adminPermChange(parentName, childrenName, toggleName, n, c);
+	this.adminPermChange(parentName, childrenName, toggleName, n, c);
 };
 
 //Date Previews in the Site Settings
-zenarioAB.previewDateFormat = function(formatField, previewField) {
+methods.previewDateFormat = function(formatField, previewField) {
+	var that = this;
+	
 	zenario.actAfterDelayIfNotSuperseded(
 		formatField,
 		function() {
-			zenarioAB.previewDateFormatGo(formatField, previewField);
+			that.previewDateFormatGo(formatField, previewField);
 		});
 };
 
-zenarioAB.previewDateFormatGo = function(formatField, previewField) {
+methods.previewDateFormatGo = function(formatField, previewField) {
 	if ((formatField = get(formatField))
 	 && (previewField = get(previewField))) {
-		previewField.value = zenario.pluginClassAJAX('zenario_common_features', {previewDateFormat: formatField.value});
+		previewField.value = zenario.moduleNonAsyncAJAX('zenario_common_features', {previewDateFormat: formatField.value});
 	}
 };
 
 
 //Quickly add validation for a few things on the Welcome page as the user types.
 //Also used for directories in the Site Settings
-zenarioAB.quickValidateWelcomePage = function(delay) {
-	zenario.actAfterDelayIfNotSuperseded('quickValidateWelcomePage', zenarioAB.quickValidateWelcomePageGo, delay);
+methods.quickValidateWelcomePage = function(delay) {
+	var that = this;
+	zenario.actAfterDelayIfNotSuperseded('quickValidateWelcomePage', function() { that.quickValidateWelcomePageGo(); }, delay);
 };
 
-zenarioAB.quickValidateWelcomePageGo = function() {
+methods.quickValidateWelcomePageGo = function() {
 	
-	var rowClasses = {};
+	var that = this,
+		f, field,
+		rowClasses = {},
+		url = URLBasePath + 'zenario/admin/welcome_ajax.php?quickValidate=1';
 	
-	foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields as var field) {
-		if (!zenarioAB.isInfoTag(field)) {
-			rowClasses[field] = ifNull(zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].row_class, '', '');
-		}
+	foreach (this.tuix.tabs[this.tuix.tab].fields as f => field) {
+		rowClasses[f] = ifNull(field.row_class, '', '');
 	}
-
-	
-	var url = URLBasePath + 'zenario/admin/welcome_ajax.php?quickValidate=1';
 	
 	$.post(url,
 		{
-			tab: zenarioAB.tuix.tab,
-			path: zenarioAB.welcome? '' : zenarioAB.path,
-			values: JSON.stringify(zenarioAB.readTab()),
+			tab: this.tuix.tab,
+			path: this.isWelcomePage? '' : this.path,
+			values: JSON.stringify(this.readTab()),
 			row_classes: JSON.stringify(rowClasses)
 		},
 		function(data) {
@@ -3618,21 +3878,21 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 			}
 			
 			if (data && data.row_classes) {
-				foreach (data.row_classes as var field) {
-					if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field] && get('row__' + field)) {
-						zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].row_class = data.row_classes[field];
-						get('row__' + field).className = 'zenario_ab_row zenario_ab_row__' + field + ' ' + data.row_classes[field];
+				foreach (data.row_classes as f) {
+					if (that.tuix.tabs[that.tuix.tab].fields[f] && get('row__' + f)) {
+						that.tuix.tabs[that.tuix.tab].fields[f].row_class = data.row_classes[f];
+						get('row__' + f).className = 'zenario_ab_row zenario_ab_row__' + f + ' ' + data.row_classes[f];
 					}
 				}
 			}
 			
 			if (data && data.snippets) {
-				foreach (data.snippets as var field) {
-					if (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field]
-					 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet
-					 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet.html && get('snippet__' + field)) {
-						zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[field].snippet.html = data.snippets[field];
-						get('snippet__' + field).innerHTML = data.snippets[field];
+				foreach (data.snippets as f) {
+					if (that.tuix.tabs[that.tuix.tab].fields[f]
+					 && that.tuix.tabs[that.tuix.tab].fields[f].snippet
+					 && that.tuix.tabs[that.tuix.tab].fields[f].snippet.html && get('snippet__' + f)) {
+						that.tuix.tabs[that.tuix.tab].fields[f].snippet.html = data.snippets[f];
+						get('snippet__' + f).innerHTML = data.snippets[f];
 					}
 				}
 			}
@@ -3648,5 +3908,5 @@ zenarioAB.quickValidateWelcomePageGo = function() {
 
 
 },
-	''
+	zenarioAF, ''
 );

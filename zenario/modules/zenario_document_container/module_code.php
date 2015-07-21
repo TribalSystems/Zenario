@@ -107,7 +107,7 @@ class zenario_document_container extends module_base_class {
 					}
 					$documentTagText = rtrim($documentTagText, ",");
 					$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
-					$file = getRow('files', array('id', 'path', 'created_datetime'), $document['file_id']);
+					$file = getRow('files', array('id', 'path', 'created_datetime', 'short_checksum'), $document['file_id']);
 					$file['filename'] = $document['filename'];
 					$link = $this->getFileLink($file, $privacyLevel);
 					$this->sendErrorReportIfPrivateFilesInPublicFolder();
@@ -120,7 +120,7 @@ class zenario_document_container extends module_base_class {
 						}
 					} else {
 						$this->mergeFields['Document_Link'] = $link;
-						$fileURL = self::getGoogleAnalyticsDocumentLink($document['file_id'], $privacyLevel);
+						$fileURL = self::getGoogleAnalyticsDocumentLink($document['file_id'], $privacyLevel, $document['filename']);
 						$this->mergeFields['Google_Analytics_Link'] = trackFileDownload($fileURL);
 						$this->mergeFields['Document_Tags'] = '';
 						$this->mergeFields['Document_Mime'] = str_replace('/', '_', documentMimeType($link));
@@ -225,7 +225,7 @@ class zenario_document_container extends module_base_class {
 					foreach ($documents as &$document) {
 					
 						$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
-						$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $document['file_id']);
+						$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $document['file_id']);
 						
 						
 						$link = $this->getFileLink($file, 'private');
@@ -294,17 +294,21 @@ class zenario_document_container extends module_base_class {
 		$this->framework('Outer', $this->mergeFields);
 	}
 	
-	private static function getGoogleAnalyticsDocumentLink($fileId, $privacyLevel = false) {
+	private static function getGoogleAnalyticsDocumentLink($fileId, $privacyLevel = false, $docFilename = false) {
 		$path = 'File not found';
 		if (is_numeric($fileId)) {
-			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $fileId);
-			if ($file['filename']) {
+			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $fileId);
+			if ($docFilename || $file['filename']) {
 				if (!windowsServer() && $privacyLevel == 'public' && (docstoreFilePath($file['id'], false))) {
-					$path = 'public';
+					$path = 'public/downloads/' . $file['short_checksum'];
 				} else {
 					$path = 'private';
 				}
-				$path .= '/'.$file['filename'];
+				if($docFilename) {
+					$path .= '/'.$docFilename;
+				} else {
+					$path .= '/'.$file['filename'];
+				}
 			}
 		} else {
 			$path = 'private/'.$fileId;
@@ -636,10 +640,12 @@ class zenario_document_container extends module_base_class {
 	
 	public function getFileLink($file, $privacyLevel) {
 		if($file['filename']) {
-			$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' . $file['filename'];
-			$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-			$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
 			if (!windowsServer() && $privacyLevel == 'public' && ($path = docstoreFilePath($file['id'], false))) {
+				$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
+				$symFolder =  CMS_ROOT . $dirPath;
+				$symPath = $symFolder . '/' . $file['filename'];
+				$frontLink = $dirPath . '/' . $file['filename'];
+				
 				if (!file_exists($symPath)) {
 					if(!file_exists($symFolder)) {
 						mkdir($symFolder);
@@ -692,7 +698,7 @@ class zenario_document_container extends module_base_class {
 	function addMergeFields($documents, $level) {
 		$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
 		foreach ($documents as $key => $childDoc) {
-			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime'), $childDoc['file_id']);
+			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $childDoc['file_id']);
 			$file['filename'] = $childDoc['filename'];
 			$documents[$key]['Document_Type'] =  'file';
 			$documents[$key]['Document_Link'] =  $this->getFileLink($file, $privacyLevel);

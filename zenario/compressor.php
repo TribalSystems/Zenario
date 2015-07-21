@@ -47,7 +47,9 @@ if ($path == 'zenario/includes/test_files/is_htaccess_working.css') {
 //If this is a cached image, mark that it's been accessed
 if (substr($path, 0, 8) == 'private/'
  || substr($path, 0, 7) == 'public/') {
-	touch(dirname($path). '/accessed');
+	if (is_writable(dirname($path). '/accessed')) {
+		touch(dirname($path). '/accessed');
+	}
 }
 
 

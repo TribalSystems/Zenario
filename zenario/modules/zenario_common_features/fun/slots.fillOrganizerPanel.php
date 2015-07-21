@@ -57,7 +57,7 @@ switch ($refinerName) {
 		} elseif (!checkPriv('_PRIV_MANAGE_ITEM_SLOT', $content['id'], $content['type'], $content['admin_version'])) {
 			//Disable the buttons if there is no draft or the item is locked
 			foreach ($panel['item_buttons'] as $id => &$button) {
-				if (!isInfoTag($id) && is_array($button)) {
+				if (is_array($button)) {
 					if ($id != 'edit_reusable') {
 						$button['disabled'] = true;
 						$button['disabled_tooltip'] =

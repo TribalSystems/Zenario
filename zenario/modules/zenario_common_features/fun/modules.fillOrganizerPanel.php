@@ -33,14 +33,11 @@ if ($mode == 'select' && $panel['item_buttons']['view_instances']['link']) {
 	$panel['item']['link'] = $panel['item_buttons']['view_instances']['link'];
 }
 
-//Don't show the "all_instances" options for Plugin Nests
 switch ($refinerName) {
 	case 'nestable_only':
-		$panel['collection_buttons']['all_instances'] = false;
 		$panel['title'] = adminPhrase('Modules that can be nested');
 		break;
 	case 'nestable_wireframes_only':
-		$panel['collection_buttons']['all_instances'] = false;
 		$panel['title'] = adminPhrase('Plugins that can be nested');
 		break;
 	case 'phrases_only':

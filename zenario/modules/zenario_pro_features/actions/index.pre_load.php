@@ -134,7 +134,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	
 	foreach ($_COOKIE as $request => &$value) {
 		if (substr($request, 0, 11) != 'can_cache__' && substr($request, 0, 2) != '__'
-		 && !in($request, 'cookies_accepted', 'is_returning', 'PHPSESSID', 'tinymcePasteText')) {
+		 && !in($request, 'cookies_accepted', '_ga', '_gat', 'is_returning', 'PHPSESSID', 'tinymcePasteText')) {
 			$chToLoadStatus['c'] = 'c';
 			break;
 		}

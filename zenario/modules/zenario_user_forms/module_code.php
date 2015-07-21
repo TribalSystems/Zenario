@@ -29,10 +29,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_user_forms extends module_base_class {
 	
-	var $data = array();
+	public $data = array();
 	
 	public function init() {
-	
+		
+		$this->allowCaching(
+			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
+		$this->clearCacheBy(
+			$clearByContent = false, $clearByMenu = false, $clearByUser = true, $clearByFile = false, $clearByModuleData = true);
+		
 		$this->data['showForm'] = true;
 		$formProperties = getRow('user_forms', 
 			array('name', 'title', 'success_message', 'show_success_message', 'use_captcha', 'captcha_type', 'extranet_users_use_captcha', 'send_email_to_admin', 'admin_email_use_template', 'translate_text', 'submit_button_text', 'default_previous_button_text'), 
@@ -73,7 +78,7 @@ class zenario_user_forms extends module_base_class {
 		if ($pageBreakFields) {
 			$this->data['multiPageFormFinalBackButton'] = '<input type="button" name="previous" value="'.self::formPhrase($formProperties['default_previous_button_text'], array(), $translate).'" class="previous"/>';
 			$this->data['multiPageFormFinalPageEnd'] = '</fieldset>';
-			$this->callScript('zenario_user_forms', 'initMultiPageForm', $this->pluginAJAXLink(), $this->containerId, $this->data['identifier']);
+			$this->callScript('zenario_user_forms', 'initMultiPageForm', $this->pluginAJAXLink(), $this->containerId, $this->data['identifier'], ($this->setting('display_mode') == 'in_modal_window'));
 		}
 		
 		// Handle form submission
@@ -177,7 +182,16 @@ class zenario_user_forms extends module_base_class {
 			} else {
 				$this->data['displayText'] = self::formPhrase($this->setting('display_text'), array(), $translate);
 				$this->data['showForm'] = false;
-				$this->data['showFormJS'] = $this->refreshPluginSlotAnchor('show_user_form=1', false, false);
+				$requests = 'show_user_form=1';
+				if (!empty(cms_core::$importantGetRequests)
+				 && is_array(cms_core::$importantGetRequests)) {
+					foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+						if (isset($_GET[$getRequest]) && $_GET[$getRequest] != $defaultValue) {
+							$requests .= '&'. urlencode($getRequest). '='. urlencode($_GET[$getRequest]);
+						}
+					}
+				}
+				$this->data['showFormJS'] = $this->refreshPluginSlotAnchor($requests, false, false);
 			}
 		}
 		return true;
@@ -279,7 +293,6 @@ class zenario_user_forms extends module_base_class {
 		}
 		$sql .= "
 			ORDER BY uff.ordinal";
-		
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
 			
@@ -432,6 +445,7 @@ class zenario_user_forms extends module_base_class {
 				$hidden = true;
 			
 			} elseif (($field['visibility'] == 'visible_on_condition') && $field['visible_condition_field_id'] && isset($formFields[$field['visible_condition_field_id']])) {
+				
 				$visibleConditionField = $formFields[$field['visible_condition_field_id']];
 				$visibleConditionFieldName = self::getFieldName($visibleConditionField);
 				
@@ -494,13 +508,15 @@ class zenario_user_forms extends module_base_class {
 			}
 			
 			// Get default value of field
-			if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
-				$fieldValue = false;
+			$fieldValue = false;
+			if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea'))) {
 				if (!empty($data[$fieldName])) {
 					$fieldValue = $data[$fieldName];
 				} elseif (!empty($field['default_value'])) {
 					$fieldValue = $field['default_value'];
 				} elseif (!empty($field['default_value_class_name']) && !empty($field['default_value_method_name'])) {
+					
+					inc($field['default_value_class_name']);
 					$fieldValue = call_user_func(array($field['default_value_class_name'], $field['default_value_method_name']), $field['default_value_param_1'], $field['default_value_param_2']);
 				}
 			}
@@ -788,10 +804,14 @@ class zenario_user_forms extends module_base_class {
 					
 					if (isset($data[$fieldName]) && $data[$fieldName] !== '' && $data[$fieldName] !== false) {
 						$html .= ' value="'. htmlspecialchars($data[$fieldName]). '"';
+					} elseif ($fieldValue) {
+						$html .= ' value="'. htmlspecialchars($fieldValue). '"';
 					}
+					
 					if (isset($field['placeholder']) && $field['placeholder'] !== '' && $field['placeholder'] !== null) {
 						$html .= ' placeholder="'.htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) .'"';
 					}
+					
 					$maxlength = 255;
 					switch ($field['db_column']) {
 						case 'salutation':
@@ -825,12 +845,15 @@ class zenario_user_forms extends module_base_class {
 						$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
 					}
 					
-					$html .= '/>';
-					if (isset($data[$fieldName])) {
+					$html .= '>';
+					if (isset($data[$fieldName]) && $data[$fieldName] !== '' && $data[$fieldName] !== false) {
 						$html .= htmlspecialchars($data[$fieldName]);
+					} elseif ($fieldValue) {
+						$html .= htmlspecialchars($fieldValue);
 					}
 					
 					$html .= '</textarea>';
+					
 					break;
 				case 'attachment':
 					// TODO: Mirrored field for attachment
@@ -890,6 +913,14 @@ class zenario_user_forms extends module_base_class {
 	public static function validateUserForm($userFormId, $data, $pageNo = 0) {
 		
 		$formFields = self::getUserFormFields($userFormId);
+		$formProperties = getRow('user_forms', 
+							array(
+								'save_data',
+								'user_duplicate_email_action', 
+								'duplicate_email_address_error_message'), 
+							array('id' => $userFormId));
+		
+		
 		// Unset all fields except on the current page if form is multi-page
 		if ($pageNo) {
 			self::filterFormFieldsByPage($formFields, $pageNo);
@@ -1015,7 +1046,6 @@ class zenario_user_forms extends module_base_class {
 						break;
 				}
 			}
-			
 			if ($field['is_required']) {
 				switch ($type){
 					case 'group':
@@ -1067,7 +1097,15 @@ class zenario_user_forms extends module_base_class {
 						break;
 					
 				}
-			} 
+			}
+			
+			// If form does not allow more than 1 submission per person, show error on email field
+			if (($field['db_column'] == 'email') && $formProperties['save_data'] && ($formProperties['user_duplicate_email_action'] == 'stop') && $formProperties['duplicate_email_address_error_message']) {
+				$userId = getRow('users', 'id', array('email' => $data[$fieldName]));
+				if (checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId, 'form_id' => $userFormId))) {
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($formProperties['duplicate_email_address_error_message'], array(), $translate), 'type' => $type);
+				}
+			}
 		}
 		// If there are files and validation failed, save the file to cache and set in POST
 		foreach ($fileFields as $key => $fieldName) {
@@ -1208,7 +1246,8 @@ class zenario_user_forms extends module_base_class {
 						'ordinal' => $ordinal, 
 						'db_column' => $fieldName,
 						'value_type' => $valueType,
-						'user_field_id' => $userFieldId);
+						'user_field_id' => $userFieldId,
+						'type' => $type);
 					break;
 				case 'date':
 					$date = '';
@@ -1238,12 +1277,34 @@ class zenario_user_forms extends module_base_class {
 							'ordinal' => $ordinal);
 					}
 					break;
-				case 'editor':
+				
 				case 'text':
-				case 'textarea':
 				case 'url':
 				case 'calculated':
-					$values[$fieldId] = array('value' => $data[$fieldName], 'db_column' => $fieldName, 'ordinal' => $ordinal);
+					$value = $data[$fieldName] ? $data[$fieldName] : '';
+					switch ($field['db_column']) {
+						case 'salutation':
+							$value = substr($value, 0, 25);
+							break;
+						case 'screen_name':
+						case 'password':
+							$value = substr($value, 0, 50);
+							break;
+						case 'first_name':
+						case 'last_name':
+						case 'email':
+							$value = substr($value, 0, 100);
+							break;
+						default:
+							$value = substr($value, 0, 255);
+					}
+					$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+					$fieldIdValueLink[$fieldId] = $data[$fieldName];
+					break;
+				case 'editor':
+				case 'textarea':
+					$value = $data[$fieldName] ? $data[$fieldName] : '';
+					$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal);
 					$fieldIdValueLink[$fieldId] = $data[$fieldName];
 					break;
 				case 'attachment':
@@ -1256,10 +1317,15 @@ class zenario_user_forms extends module_base_class {
 					$fieldIdValueLink[$fieldId] = $fileId;
 					break;
 			}
+			if (isset($values[$fieldId])) {
+				$values[$fieldId]['type'] = $type;
+			}
 		}
 		
+		$zenario_extranet = inc('zenario_extranet');
+		
 		// Save data against user record
-		if ($formProperties['save_data']) {
+		if ($formProperties['save_data'] && $zenario_extranet) {
 			$fields = array();
 			foreach ($user_fields as $fieldData) {
 				$fields[$fieldData['db_column']] = $fieldData['value'];
@@ -1309,7 +1375,7 @@ class zenario_user_forms extends module_base_class {
 						$user = logUserIn($userId);
 						
 						if($formProperties['log_user_in_cookie'] && canSetCookie()) {
-							setcookie('LOG_ME_IN_COOKIE', $user['login_hash'], time()+8640000, '/');
+							setcookie('LOG_ME_IN_COOKIE', $user['login_hash'], time()+8640000, '/', cookieDomain());
 						}
 					}
 				}
@@ -1317,6 +1383,7 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		// Save a record of the submission
+		$user_response_id = false;
 		if ($formProperties['save_record']) {
 			// Save record only if there is no duplicate response by the identified user
 			// Or if there is a response but the appropriate options have been checked,
@@ -1353,10 +1420,9 @@ class zenario_user_forms extends module_base_class {
 				}
 			}
 		}
+		
 		// Send an email to the user
 		$emailMergeFields = false;
-		
-		
 		if (($formProperties['send_email_to_user'] && $formProperties['user_email_template'] && isset($data['email'])) || ($formProperties['send_email_to_admin'] && $formProperties['admin_email_addresses'])) {
 			
 			$values = $user_fields + $user_custom_fields + $checkBoxValues + $unlinked_fields;
@@ -1369,26 +1435,32 @@ class zenario_user_forms extends module_base_class {
 				$emailMergeFields['user_id'] = $userId;
 			}
 		}
-		
-		
 		if ($formProperties['send_email_to_user'] && $formProperties['user_email_template'] && isset($data['email'])) {
 			// Send email
-			zenario_email_template_manager::sendEmailsUsingTemplate($data['email'],$formProperties['user_email_template'],$emailMergeFields,array());
+			zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $formProperties['user_email_template'], $emailMergeFields, array());
 		}
+		
 		// Send an email to administrators
 		if ($formProperties['send_email_to_admin'] && $formProperties['admin_email_addresses']) {
 			// Set reply to address and name
 			$replyToEmail = false;
 			$replyToName = false;
-			if ($formProperties['reply_to'] && $formProperties['reply_to_email_field'] && $formProperties['reply_to_first_name']) {
-				if (isset($data[$formProperties['reply_to_email_field']]) && isset($data[$formProperties['reply_to_first_name']])) {
+			if ($formProperties['reply_to'] && $formProperties['reply_to_email_field']) {
+				if (isset($data[$formProperties['reply_to_email_field']])) {
 					$replyToEmail = $data[$formProperties['reply_to_email_field']];
-					$replyToName = $data[$formProperties['reply_to_first_name']];
+					$replyToName = '';
+					if (isset($data[$formProperties['reply_to_first_name']])) {
+						$replyToName .= $data[$formProperties['reply_to_first_name']];
+					}
 					if (isset($data[$formProperties['reply_to_last_name']])) {
 						$replyToName .= ' '.$data[$formProperties['reply_to_last_name']];
 					}
+					if (!$replyToName) {
+						$replyToName = $replyToEmail;
+					}
 				}
 			}
+			
 			// Send email
 			if ($formProperties['admin_email_use_template'] && $formProperties['admin_email_template']) {
 				zenario_email_template_manager::sendEmailsUsingTemplate(
@@ -1406,6 +1478,9 @@ class zenario_user_forms extends module_base_class {
 				foreach ($values as $fieldId => $fieldData) {
 					if (isset($fieldData['attachment'])) {
 						$fieldData['value'] = absCMSDirURL().fileLink($fieldData['internal_value']);
+					}
+					if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
+						$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
 					}
 					$emailValues[$fieldData['ordinal']] = array($formFields[$fieldId]['name'], $fieldData['value']);
 				}
@@ -1431,7 +1506,7 @@ class zenario_user_forms extends module_base_class {
 				$subject = phrase('New form submission for: [[name]]', array('name' => $formName), 'zenario_user_forms');
 				$addressFrom = setting('email_address_from');
 				$nameFrom = setting('email_name_from');
-				
+			
 				zenario_email_template_manager::sendEmails(
 					$recipients,
 					$subject,
@@ -1453,7 +1528,15 @@ class zenario_user_forms extends module_base_class {
 			$formProperties['user_form_id'] = $userFormId;
 			$values = $user_fields + $user_custom_fields + $checkBoxValues + $unlinked_fields;
 			$formattedData = self::getTemplateEmailMergeFields($values);
-			sendSignal('eventUserFormSubmitted', array('data' => $formattedData, 'rawData' => $data, 'formProperties' => $formProperties, 'fieldIdValueLink' => $fieldIdValueLink));
+			$params = array(
+				'data' => $formattedData, 
+				'rawData' => $data, 
+				'formProperties' => $formProperties, 
+				'fieldIdValueLink' => $fieldIdValueLink);
+			if ($user_response_id) {
+				$params['responseId'] = $user_response_id;
+			}
+			sendSignal('eventUserFormSubmitted', $params);
 		}
 		// Redirect to page if speficied
 		if ($formProperties['redirect_after_submission'] && $formProperties['redirect_location']) {
@@ -1470,6 +1553,9 @@ class zenario_user_forms extends module_base_class {
 		foreach($values as $fieldId => $fieldData) {
 			if (isset($fieldData['attachment'])) {
 				$fieldData['value'] = absCMSDirURL().fileLink($fieldData['internal_value']);
+			}
+			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
+				$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
 			}
 			$emailMergeFields[$fieldData['db_column']] = $fieldData['value'];
 		}
@@ -1636,6 +1722,15 @@ class zenario_user_forms extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
 			case 'zenario__user_forms/panels/zenario_user_forms__forms':
+				
+				if ($refinerName == 'email_address_setting') {
+					unset($panel['collection_buttons']);
+					$panel['title'] = adminPhrase('Summary of email addresses used by forms');
+					$panel['no_items_message'] = adminPhrase('No forms send emails to a specific address.');
+				} else {
+					unset($panel['columns']['form_email_addresses']);
+				}
+				
 				// Get plugins using a form
 				$moduleIds = self::getFormModuleIds();
 				$formPlugins = array();
@@ -1644,6 +1739,7 @@ class zenario_user_forms extends module_base_class {
 					FROM '.DB_NAME_PREFIX.'plugin_instances
 					WHERE module_id IN ('. inEscape($moduleIds, 'numeric'). ')
 					ORDER BY name';
+				
 				$result = sqlSelect($sql);
 				while ($row = sqlFetchAssoc($result)) {
 					$formPlugins[$row['id']] = $row['name'];
@@ -1660,7 +1756,7 @@ class zenario_user_forms extends module_base_class {
 					WHERE c.status NOT IN (\'trashed\',\'deleted\')
 					AND pil.module_id IN ('. inEscape($moduleIds, 'numeric'). ')
 					GROUP BY pil.content_id, pil.content_type';
-					
+				
 				$result = sqlSelect($sql);
 				while ($row = sqlFetchAssoc($result)) {
 					$tagId = formatTag($row['content_id'], $row['content_type']);
@@ -1741,11 +1837,14 @@ class zenario_user_forms extends module_base_class {
 						$refinerId;
 				}
 				$panel['item_buttons']['edit']['admin_box']['key']['form_id'] = $refinerId;
-				
-				
-				
 				break;
 			case 'zenario__user_forms/panels/zenario_user_forms__user_responses':
+				
+				if (!self::isFormCRMEnabled($refinerId)) {
+					unset($panel['columns']['crm_response']);
+				}
+				
+				$panel['item_buttons']['view_response']['admin_box']['key']['form_id'] = $refinerId;
 				
 				$sql = '
 					SELECT id, name
@@ -1857,10 +1956,10 @@ class zenario_user_forms extends module_base_class {
 					// Update ordinals
 					$ids = explode(',', $ids);
 					foreach ($ids as $id) {
-						if (post('item__'. $id)) {
+						if (!empty($_POST['ordinals'][$id])) {
 							$sql = "
 								UPDATE ". DB_NAME_PREFIX. "user_form_fields SET
-									ordinal = ". (int) post('item__'. $id). "
+									ordinal = ". (int) $_POST['ordinals'][$id]. "
 								WHERE id = ". (int) $id . 
 								" AND user_form_id=" . (int)$formId;
 							sqlUpdate($sql);
@@ -1868,7 +1967,8 @@ class zenario_user_forms extends module_base_class {
 					}
 					// Update div wrapper class
 					if ($droppedItemId = post('dropped_item')) {
-						if ($ord = post('item__'.$droppedItemId)) {
+						if (!empty($_POST['ordinals'][$droppedItemId])) {
+							$ord = $_POST['ordinals'][$droppedItemId];
 							$field = getRow('user_form_fields', array('div_wrap_class', 'field_type'), $droppedItemId);
 							$fieldBelow = getRow('user_form_fields', array('div_wrap_class'), array('user_form_id' => $formId, 'ordinal' => $ord + 1));
 							if ($field['field_type'] != 'page_break') {
@@ -1993,12 +2093,34 @@ class zenario_user_forms extends module_base_class {
 		}
 	}
 	
+	private function isFormCRMEnabled($formId) {
+		if (inc('zenario_crm_form_integration')) {
+			$formCRMDetails = getRow(
+				ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', 
+				array('enable_crm_integration'), 
+				array('form_id' => $formId)
+			);
+			if ($formCRMDetails['enable_crm_integration']) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch($path) {
 			case 'zenario_user_form_response':
 				$box['title'] = adminPhrase('Form response [[id]]', array('id' => $box['key']['id']));
-				$responseDateTime = getRow(ZENARIO_USER_FORMS_PREFIX. 'user_response', 'response_datetime', $box['key']['id']);
-				$values['response_datetime'] = formatDateTimeNicely($responseDateTime, 'vis_date_format_med');
+				$responseDetails = getRow(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('response_datetime', 'crm_response'), $box['key']['id']);
+				$values['response_datetime'] = formatDateTimeNicely($responseDetails['response_datetime'], 'vis_date_format_med');
+				
+				$crmEnabled = false;
+				if (self::isFormCRMEnabled($box['key']['form_id'])) {
+					$values['crm_response'] = $responseDetails['crm_response'];
+				} else {
+					unset($box['tabs']['form_fields']['fields']['crm_response']);
+				}
+				
 				
 				$formFields = getRowsArray('user_form_fields', array('name', 'id', 'field_type', 'ordinal'), array('user_form_id' => request('refiner__form_id')), 'ordinal');
 				$userResponse = array();
@@ -2036,22 +2158,43 @@ class zenario_user_forms extends module_base_class {
 				break;
 			case 'zenario_user_dataset_field_picker':
 				$box['key']['refinerId'] = get('refinerId');
+				$box['tabs']['dataset_fields']['fields']['dataset_fields']['values'] =
+					listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 				break;
 			case 'zenario_user_admin_box_form':
+				if (!inc('zenario_extranet')) {
+					$fields['data/save_data']['hidden'] = 
+					$fields['data/email_html']['hidden'] = 
+					$fields['data/user_status']['hidden'] = 
+					$fields['data/log_user_in']['hidden'] = 
+					$fields['data/log_user_in_cookie']['hidden'] = 
+					$fields['data/add_user_to_group']['hidden'] = 
+					$fields['data/duplicate_submission_html']['hidden'] = 
+					$fields['data/user_duplicate_email_action']['hidden'] = 
+					$fields['data/duplicate_email_address_error_message']['hidden'] = 
+					$fields['data/create_another_form_submission_record']['hidden'] = 
+					$fields['data/line_br_2']['hidden'] = true;
+				}
+				$fields['data/add_user_to_group']['values'] = 
+					listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
+				
 				if (get('refinerName') == 'archived') {
 					foreach($box['tabs'] as &$tab) {
 						$tab['edit_mode']['enabled'] = false;
 					}
 				}
+				
 				// Get default language english name
+				$defaultLanguageName = false;
 				$languages = getLanguages(false, true, true);
 				foreach($languages as $language) {
 					$defaultLanguageName = $language['english_name'];
 					break;
 				}
-				$fields['details/translate_text']['side_note'] = adminPhrase(
-					'This will cause all displayable text from this form to be translated when used in a Forms plugin. This should be disabled if you enter non-[[default_language]] text into the form field admin boxes.', array('default_language' => $defaultLanguageName));
-				
+				if ($defaultLanguageName) {
+					$fields['details/translate_text']['side_note'] = adminPhrase(
+						'This will cause all displayable text from this form to be translated when used in a Forms plugin. This should be disabled if you enter non-[[default_language]] text into the form field admin boxes.', array('default_language' => $defaultLanguageName));
+				}
 				
 				$formTextFieldLabels = array();
 				$formTextFieldLabels[''] = array('label' => '-- Select --');
@@ -2091,7 +2234,8 @@ class zenario_user_forms extends module_base_class {
 							'success_message' => $record['success_message'],
 							'submit_button_text' => $record['submit_button_text'],
 							'default_next_button_text' => $record['default_next_button_text'],
-							'default_previous_button_text' => $record['default_previous_button_text']);
+							'default_previous_button_text' => $record['default_previous_button_text'],
+							'duplicate_email_address_error_message' => $record['duplicate_email_address_error_message']);
 						
 						// Get any existing phrases that translatable fields have
 						$existingPhrases = array();
@@ -2110,7 +2254,7 @@ class zenario_user_forms extends module_base_class {
 						foreach($fieldsToTranslate as $name => $value) {
 							
 							// Create label for field with english translation (if set)
-							$label = $fields['details/'.$name]['label'];
+							$label = $fields[$name]['label'];
 							$html = '<b>'.$label.'</b>';
 							$readOnly = true;
 							if (!empty($value)) {
@@ -2164,6 +2308,7 @@ class zenario_user_forms extends module_base_class {
 					$values['details/submit_button_text'] = 'Submit';
 					$values['details/default_next_button_text'] = 'Next';
 					$values['details/default_previous_button_text'] = 'Back';
+					$values['data/duplicate_email_address_error_message'] = 'Sorry this form has already been completed with this email address';
 				}
 				// Set text field select lists (will just be -- Select -- if creating new form)
 				$fields['data/reply_to_email_field']['values'] =
@@ -2171,6 +2316,7 @@ class zenario_user_forms extends module_base_class {
 				$fields['data/reply_to_last_name']['values'] =
 					$formTextFieldLabels;
 				break;
+			
 			case 'zenario_user_admin_box_form_field':
 				
 				// If no conditional field types, hide conditional mandatory option and conditional visible option
@@ -2396,10 +2542,25 @@ class zenario_user_forms extends module_base_class {
 				}
 				// Populate advanced tab
 				if (in_array($fieldType, array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
-					$fields['advanced/default_value']['values'] = $formFieldValues['db_column'] ? getDatasetFieldLOV($formFieldValues['field_id']) : self::getUnlinkedFieldLOV($id);
+					$fields['advanced/default_value_text']['hidden'] = true;
+					$fields['advanced/default_value_lov']['values'] = $formFieldValues['db_column'] ? getDatasetFieldLOV($formFieldValues['field_id']) : self::getUnlinkedFieldLOV($id);
 					if ($formFieldValues['default_value']) {
 						$values['advanced/default_value_mode'] = 'value';
-						$values['advanced/default_value'] = $formFieldValues['default_value'];
+						$values['advanced/default_value_lov'] = $formFieldValues['default_value'];
+					} elseif ($formFieldValues['default_value_class_name'] && $formFieldValues['default_value_method_name']) {
+						$values['advanced/default_value_mode'] = 'method';
+						$values['advanced/default_value_class_name'] = $formFieldValues['default_value_class_name'];
+						$values['advanced/default_value_method_name'] = $formFieldValues['default_value_method_name'];
+						$values['advanced/default_value_param_1'] = $formFieldValues['default_value_param_1'];
+						$values['advanced/default_value_param_2'] = $formFieldValues['default_value_param_2'];
+					} else {
+						$values['advanced/default_value_mode'] = 'none';
+					}
+				} elseif (in_array($fieldType, array('text', 'textarea'))) {
+					$fields['advanced/default_value_lov']['hidden'] = true;
+					if ($formFieldValues['default_value']) {
+						$values['advanced/default_value_mode'] = 'value';
+						$values['advanced/default_value_text'] = $formFieldValues['default_value'];
 					} elseif ($formFieldValues['default_value_class_name'] && $formFieldValues['default_value_method_name']) {
 						$values['advanced/default_value_mode'] = 'method';
 						$values['advanced/default_value_class_name'] = $formFieldValues['default_value_class_name'];
@@ -2415,7 +2576,7 @@ class zenario_user_forms extends module_base_class {
 				
 				break;
 			case 'zenario_email_template':
-				$forms = getRowsArray('user_forms', 'name', array(), 'name');
+				$forms = getRowsArray('user_forms', 'name', array('status' => 'active'), 'name');
 				$fields['body/user_form']['values'] = $forms;
 				break;
 		}
@@ -2429,10 +2590,10 @@ class zenario_user_forms extends module_base_class {
 				
 				// Display translation boxes for translatable fields with a value entered
 				$languages = getLanguages(false, true, true);
-				$fieldsToTranslate = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text');
+				$fieldsToTranslate = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text', 'duplicate_email_address_error_message');
 				foreach($fieldsToTranslate as $fieldName) {
 					$fields['translations/'.$fieldName]['snippet']['html'] = '<b>'.$fields[$fieldName]['label'].'</b>';
-					if (!empty($values['details/'.$fieldName])) {
+					if (!empty($values[$fieldName])) {
 						$fields['translations/'.$fieldName]['snippet']['html'] .= ' "'.$values[$fieldName].'"';
 						$readOnly = false;
 					} else {
@@ -2450,22 +2611,36 @@ class zenario_user_forms extends module_base_class {
 				$fields['captcha/extranet_users_use_captcha']['hidden'] =
 					!$values['captcha/use_captcha'];
 				
-				$fields['data/user_status']['hidden'] =
-				$fields['data/email_html']['hidden'] =
-				$fields['data/add_user_to_group']['hidden'] =
-				$fields['data/duplicate_submission_html']['hidden'] =
-				$fields['data/user_duplicate_email_action']['hidden'] =
-				$fields['data/create_another_form_submission_record']['hidden'] =
-					!$values['data/save_data'];
+				$zenario_extranet = inc('zenario_extranet');
+				if ($zenario_extranet) {
+					$fields['data/user_status']['hidden'] =
+					$fields['data/email_html']['hidden'] =
+					$fields['data/add_user_to_group']['hidden'] =
+					$fields['data/duplicate_submission_html']['hidden'] =
+					$fields['data/user_duplicate_email_action']['hidden'] =
+						!$values['data/save_data'];
 				
-				$fields['data/log_user_in_cookie']['hidden'] =
-					!($values['data/save_data'] && ($values['data/log_user_in'] == 1) && ($values['data/user_status'] == 'active'));
+					$fields['data/create_another_form_submission_record']['hidden'] =
+						!$values['data/save_data'] || ($values['data/user_duplicate_email_action'] == 'stop');
 				
-				$fields['data/log_user_in']['hidden'] =
-					!($values['data/save_data'] && ($values['data/user_status'] == 'active'));
+					$fields['data/duplicate_email_address_error_message']['hidden'] = 
+						$fields['data/user_duplicate_email_action']['hidden']
+						|| ($values['data/user_duplicate_email_action'] != 'stop');
+					
+					$fields['data/log_user_in_cookie']['hidden'] =
+						!($values['data/save_data'] && ($values['data/log_user_in'] == 1) && ($values['data/user_status'] == 'active'));
+				
+					$fields['data/log_user_in']['hidden'] =
+						!($values['data/save_data'] && ($values['data/user_status'] == 'active'));
+				
+					$fields['data/create_another_form_submission_record']['disabled'] = !$values['data/save_record'];
+					if (!$values['data/save_record']) {
+						$values['data/create_another_form_submission_record'] = false;
+					}
+				}
 				
 				$fields['data/user_email_template']['hidden'] = 
-					!$values['data/send_email_to_user'];
+						!$values['data/send_email_to_user'];
 				
 				$fields['data/admin_email_addresses']['hidden'] = 
 				$fields['data/admin_email_options']['hidden'] = 
@@ -2486,10 +2661,7 @@ class zenario_user_forms extends module_base_class {
 				$fields['details/success_message']['hidden'] = 
 					$values['details/success_message_type'] != 'show_success_message';
 				
-				$fields['data/create_another_form_submission_record']['disabled'] = !$values['data/save_record'];
-				if (!$values['data/save_record']) {
-					$values['data/create_another_form_submission_record'] = false;
-				}
+				
 				if (empty($box['key']['id'])) {
 					$values['data/create_another_form_submission_record'] = $values['data/save_record'];
 				} else {
@@ -2665,7 +2837,11 @@ class zenario_user_forms extends module_base_class {
 				}
 				// Advanced tab display
 				if (!$box['tabs']['advanced']['hidden']) {
-					$fields['advanced/default_value']['hidden'] = $values['advanced/default_value_mode'] != 'value';
+					if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
+						$fields['advanced/default_value_lov']['hidden'] = $values['advanced/default_value_mode'] != 'value';
+					} elseif (in_array($values['details/field_type_picker'], array('text', 'textarea'))) {
+						$fields['advanced/default_value_text']['hidden'] = $values['advanced/default_value_mode'] != 'value';
+					}
 					$fields['advanced/default_value_class_name']['hidden'] = 
 					$fields['advanced/default_value_method_name']['hidden'] = 
 					$fields['advanced/default_value_param_1']['hidden'] = 
@@ -2682,23 +2858,27 @@ class zenario_user_forms extends module_base_class {
 						SELECT
 							uff.id,
 							IF(
-								uff.label IS NULL or uff.label = "", 
+								uff.name IS NULL or uff.name = "", 
 								IFNULL(
 									cdf.db_column, 
 									CONCAT("unlinked_", uff.field_type, "_", uff.id)
 								), 
 								uff.label
-							) AS label
+							) AS name,
+							uff.field_type
 						FROM '. DB_NAME_PREFIX. 'user_form_fields AS uff
 						LEFT JOIN '. DB_NAME_PREFIX.'custom_dataset_fields AS cdf
 							ON uff.user_field_id = cdf.id
 						WHERE uff.user_form_id = '.(int)$formId. '
 						ORDER BY uff.ordinal';
+					
 					$result = sqlSelect($sql);
 					$formFields = array();
 					$formFields['all'] = adminPhrase('Add all to template');
 					while ($row = sqlFetchAssoc($result)) {
-						$formFields[$row['id']] = trim($row['label'], " \t\n\r\0\x0B:");
+						if (self::fieldTypeCanRecordValue($row['field_type'])) {
+							$formFields[$row['id']] = trim($row['name'], " \t\n\r\0\x0B:");
+						}
 					}
 					$fields['body/user_form_field']['values'] = $formFields;
 					
@@ -2706,22 +2886,27 @@ class zenario_user_forms extends module_base_class {
 					if ($formFieldId = $values['body/user_form_field']) {
 						// Add form field mergefield onto end of email template
 						$sql = '
-							SELECT IFNULL(uff.label, cdf.label) AS label, IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield
+							SELECT 
+								IFNULL(uff.name, cdf.label) AS name, 
+								IFNULL(cdf.db_column, CONCAT(\'unlinked_\', uff.field_type, \'_\', uff.id)) AS mergefield
 							FROM '.DB_NAME_PREFIX.'user_form_fields AS uff
 							LEFT JOIN '.DB_NAME_PREFIX. 'custom_dataset_fields AS cdf
-								ON uff.user_field_id = cdf.id';
+								ON uff.user_field_id = cdf.id
+							WHERE (uff.field_type NOT IN ("page_break", "restatement", "section_description") 
+								OR uff.field_type IS NULL)';
+						
 						if ($formFieldId == 'all') {
-							$sql .= ' WHERE uff.user_form_id = '.(int)$formId;
+							$sql .= ' AND uff.user_form_id = '.(int)$formId;
 						} else {
-							$sql .= ' WHERE uff.id = '.(int)$formFieldId;
+							$sql .= ' AND uff.id = '.(int)$formFieldId;
 						}
 						
 						$result = sqlSelect($sql);
 						$mergeFields = '';
 						while ($row = sqlFetchAssoc($result)) {
 							$mergeFields .= '<p>';
-							if ($row['label']) {
-								$mergeFields .= trim($row['label'], " \t\n\r\0\x0B:"). ': ';
+							if ($row['name']) {
+								$mergeFields .= trim($row['name'], " \t\n\r\0\x0B:"). ': ';
 							}
 							$mergeFields .= '[['.$row['mergefield'].']]</p>';
 						}
@@ -2798,8 +2983,9 @@ class zenario_user_forms extends module_base_class {
 				
 				$errors = &$box['tabs']['data']['errors'];
 				// Create an error if the form is doing nothing with data
+				$zenario_extranet = inc('zenario_extranet');
 				if ($saving
-					&& empty($values['data/save_data'])
+					&& (!$zenario_extranet || empty($values['data/save_data']))
 					&& empty($values['data/save_record'])
 					&& empty($values['data/send_signal'])
 					&& empty($values['data/send_email_to_user'])
@@ -2839,7 +3025,7 @@ class zenario_user_forms extends module_base_class {
 				
 				// Validate advanced tab
 				if (!$box['tabs']['advanced']['hidden']) {
-					if ($values['advanced/default_value_mode'] == 'value' && !$values['advanced/default_value']) {
+					if ($values['advanced/default_value_mode'] == 'value' && !$values['advanced/default_value_lov'] && !$values['advanced/default_value_text']) {
 						$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter a default value.');
 					} elseif ($values['advanced/default_value_mode'] == 'method') {
 						if (!$values['advanced/default_value_class_name']) {
@@ -2848,9 +3034,9 @@ class zenario_user_forms extends module_base_class {
 							$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter a class name of a module that\'s running on this site.');
 						}
 						if (!$values['advanced/default_value_method_name']) {
-							$box['tabs']['advanced']['errors'][] = adminPhrase('Please the name of a static method.');
+							$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a static method.');
 						} elseif (!method_exists($values['advanced/default_value_class_name'], $values['advanced/default_value_method_name'])) {
-							$box['tabs']['advanced']['errors'][] = adminPhrase('Please the name of an existing static method.');
+							$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of an existing static method.');
 						}
 					}
 				}
@@ -2930,6 +3116,7 @@ class zenario_user_forms extends module_base_class {
 				$record['submit_button_text'] = (empty($values['submit_button_text']) ? 'Submit' : $values['submit_button_text']);
 				$record['default_next_button_text'] = (empty($values['default_next_button_text']) ? 'Next' : $values['default_next_button_text']);
 				$record['default_previous_button_text'] = (empty($values['default_previous_button_text']) ? 'Back' : $values['default_previous_button_text']);
+				$record['duplicate_email_address_error_message'] = ($values['user_duplicate_email_action'] != 'stop') ? 'Sorry this form has already been completed with this email address' : $values['duplicate_email_address_error_message'];
 				
 				if ($id = $box['key']['id']) {
 					setRow('user_forms', $record, array('id' => $id));
@@ -2937,7 +3124,7 @@ class zenario_user_forms extends module_base_class {
 					$formProperties = getRow('user_forms', array('translate_text'), array('id' => $id));
 					// Save translations
 					if ($formProperties['translate_text']) { 
-						$translatableFields = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text');
+						$translatableFields = array('title', 'success_message', 'submit_button_text', 'default_next_button_text', 'default_previous_button_text', 'duplicate_email_address_error_message');
 						
 						// Update phrase code if phrases are changed to keep translation chain
 						$fieldsToTranslate = getRow('user_forms', $translatableFields, $id);
@@ -2962,6 +3149,8 @@ class zenario_user_forms extends module_base_class {
 											default_next_button_text = "'.sqlEscape($oldCode).'"
 										OR
 											default_previous_button_text = "'.sqlEscape($oldCode).'"
+										OR
+											duplicate_email_address_error_message = "'.sqlEscape($oldCode).'"
 										)';
 								$result = sqlSelect($sql);
 								if (sqlNumRows($result) > 1) {
@@ -2973,14 +3162,14 @@ class zenario_user_forms extends module_base_class {
 							if ($identicalPhraseFound) {
 								foreach($languages as $language) {
 									// Create or overwrite new phrases with the new english code
-									$setArray = array('code' => $values['details/'.$name]);
+									$setArray = array('code' => $values[$name]);
 									if (!empty($language['translate_phrases'])) {
 										$setArray['local_text'] = ($values['translations/'.$name.'__'.$language['id']] !== '') ? $values['translations/'.$name.'__'.$language['id']] : null;
 									}
 									setRow('visitor_phrases', 
 										$setArray,
 										array(
-											'code' => $values['details/'.$name],
+											'code' => $values[$name],
 											'module_class_name' => 'zenario_user_forms',
 											'language_id' => $language['id']));
 								}
@@ -2988,7 +3177,7 @@ class zenario_user_forms extends module_base_class {
 								// If nothing else is using the same phrase code...
 								if (!checkRowExists('visitor_phrases', array('code' => $values[$name], 'module_class_name' => 'zenario_user_forms'))) {
 									updateRow('visitor_phrases', 
-										array('code' => $values['details/'.$name]), 
+										array('code' => $values[$name]), 
 										array('code' => $oldCode, 'module_class_name' => 'zenario_user_forms'));
 									foreach($languages as $language) {
 										if ($language['translate_phrases'] && !empty($values['translations/'.$name.'__'.$language['id']])) {
@@ -2996,7 +3185,7 @@ class zenario_user_forms extends module_base_class {
 												array(
 													'local_text' => ($values['translations/'.$name.'__'.$language['id']] !== '' ) ? $values['translations/'.$name.'__'.$language['id']] : null), 
 												array(
-													'code' => $values['details/'.$name], 
+													'code' => $values[$name], 
 													'module_class_name' => 'zenario_user_forms', 
 													'language_id' => $language['id']));
 										}
@@ -3005,16 +3194,16 @@ class zenario_user_forms extends module_base_class {
 								// If code already exists, and nothing else is using the code, delete current phrases, and update/create new translations
 								} else {
 									deleteRow('visitor_phrases', array('code' => $oldCode, 'module_class_name' => 'zenario_user_forms'));
-									if (isset($values['details/'.$name]) && !empty($values['details/'.$name])) {
+									if (isset($values[$name]) && !empty($values[$name])) {
 										foreach($languages as $language) {
-											$setArray = array('code' => $values['details/'.$name]);
+											$setArray = array('code' => $values[$name]);
 											if (!empty($language['translate_phrases'])) {
 												$setArray['local_text'] = ($values['translations/'.$name.'__'.$language['id']] !== '' ) ? $values['translations/'.$name.'__'.$language['id']] : null;
 											}
 											setRow('visitor_phrases',
 												$setArray,
 												array(
-													'code' => $values['details/'.$name], 
+													'code' => $values[$name], 
 													'module_class_name' => 'zenario_user_forms', 
 													'language_id' => $language['id']));
 										}
@@ -3165,7 +3354,12 @@ class zenario_user_forms extends module_base_class {
 						$record['default_value_param_1'] = 
 						$record['default_value_param_2'] = null;
 					} elseif ($values['advanced/default_value_mode'] == 'value') {
-						$record['default_value'] = $values['advanced/default_value'];
+						
+						if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
+							$record['default_value'] = $values['advanced/default_value_lov'];
+						} elseif (in_array($values['details/field_type_picker'], array('text', 'textarea'))) {
+							$record['default_value'] = $values['advanced/default_value_text'];
+						}
 						$record['default_value_class_name'] =
 						$record['default_value_method_name'] = 
 						$record['default_value_param_1'] = 
@@ -3351,4 +3545,7 @@ class zenario_user_forms extends module_base_class {
 		return getRowsArray(ZENARIO_USER_FORMS_PREFIX. 'form_field_values', $cols, array('form_field_id' => $formFieldId), 'ord');
 	}
 	
+	public static function fieldTypeCanRecordValue($type) {
+		return !in_array($type, array('page_break', 'section_description', 'restatement'));
+	}
 }

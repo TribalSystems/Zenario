@@ -43,8 +43,8 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 			$record = getRow('spare_domain_names', true, array('requested_url' => decodeItemIdForStorekeeper($box['key']['id'])));
 			//$this->fillFieldValues($values, $record);
 
-			$values['requested_url'] = $record['requested_url'];
-			$values['content'] = $record['content_type']. '_'. $record['content_id'];
+			$values['details/requested_url'] = $record['requested_url'];
+			$values['details/content'] = $record['content_type']. '_'. $record['content_id'];
 			
 			$box['title'] = adminPhrase('View/Edit a spare domain');
 			$fields['requested_url']['read_only'] = true;
@@ -55,24 +55,38 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 	
 		if(!$box['key']['id']) {
-			if (!$values['requested_url']) {
-				$box['tabs']['details']['errors'][] = adminPhrase('Please enter a spare domain URL.');
+			if (!$values['details/requested_url']) {
+				$box['tabs']['details']['errors'][] = adminPhrase('Please enter a domain name.');
 			
-			} elseif (!aliasURLIsValid($values['requested_url'])) {
-				$box['tabs']['details']['errors'][] = adminPhrase('Please enter a spare domain valid URL.');
+			} elseif (!aliasURLIsValid($values['details/requested_url'])) {
+				$box['tabs']['details']['errors'][] = adminPhrase('Please enter a valid domain name.');
 			
 			} else {
-				if (checkRowExists('spare_domain_names', array('requested_url' => $values['requested_url']))) {
-					$box['tabs']['details']['errors'][] = adminPhrase('The spare domain URL "[[url]]" already exists in the system.', array('url' => htmlspecialchars($values['requested_url'])));
+				if (checkRowExists('spare_domain_names', array('requested_url' => $values['details/requested_url']))) {
+					$box['tabs']['details']['errors'][] =
+						adminPhrase('The domain "[[details/requested_url]]" is already used as a spare domain name.', $values);
+				
+				} elseif (checkRowExists('languages', array('domain' => $values['details/requested_url']))) {
+					$box['tabs']['details']['errors'][] =
+						adminPhrase('The domain "[[details/requested_url]]" is already used as a language specific domain.', $values);
 				}
-				if (!empty($values['add_www'])
-				&& checkRowExists('spare_domain_names', array('requested_url' => 'www.'. $values['requested_url']))) {
-					$box['tabs']['details']['errors'][] = adminPhrase('The spare domain URL "[[url]]" already exists in the system.', array('url' => htmlspecialchars('www.'. $values['requested_url'])));
+				
+				if (!empty($values['details/add_www'])) {
+					if (checkRowExists('spare_domain_names', array('requested_url' => 'www.'. $values['details/requested_url']))) {
+						$box['tabs']['details']['errors'][] =
+							adminPhrase('The domain "[[domain]]" is already used as a spare domain name.',
+								array('domain' => 'www.'. $values['details/requested_url']));
+					
+					} elseif (checkRowExists('languages', array('domain' => 'www.'. $values['details/requested_url']))) {
+						$box['tabs']['details']['errors'][] =
+							adminPhrase('The domain "[[domain]]" is already used as a language specific domain.',
+								array('domain' => 'www.'. $values['details/requested_url']));
+					}
 				}
 			}			
 		}
 
-		if (!$values['content']) {
+		if (!$values['details/content']) {
 			$box['tabs']['details']['errors'][] = adminPhrase('Please select a content item.');
 		}
 	}
@@ -80,9 +94,9 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 			
 		$cID = $cType = false;
-		getCIDAndCTypeFromTagId($cID, $cType, $values['content']);
+		getCIDAndCTypeFromTagId($cID, $cType, $values['details/content']);
 		
-		if ($requested_url = $box['key']['id']) {
+		if ($requested_url = decodeItemIdForStorekeeper($box['key']['id'])) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. "spare_domain_names SET
 					content_id = ". (int) $cID. ",
@@ -93,17 +107,17 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 		} else {
 			$sql = "
 				INSERT INTO ". DB_NAME_PREFIX. "spare_domain_names SET
-					requested_url = '". sqlEscape($values['requested_url']). "',
+					requested_url = '". sqlEscape($values['details/requested_url']). "',
 					content_id = ". (int) $cID. ",
 					content_type = '". sqlEscape($cType). "'";
 			sqlQuery($sql);
 			
-			$box['key']['id'] = $values['requested_url'];
+			$box['key']['id'] = $values['details/requested_url'];
 			
-			if (!empty($values['add_www'])) {
+			if (!empty($values['details/add_www'])) {
 				$sql = "
 					INSERT INTO ". DB_NAME_PREFIX. "spare_domain_names SET
-						requested_url = 'www.". sqlEscape($values['requested_url']). "',
+						requested_url = 'www.". sqlEscape($values['details/requested_url']). "',
 						content_id = ". (int) $cID. ",
 						content_type = '". sqlEscape($cType). "'";
 				sqlQuery($sql);

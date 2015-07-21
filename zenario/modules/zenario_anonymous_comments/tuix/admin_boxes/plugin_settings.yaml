@@ -185,6 +185,7 @@ plugin_settings:
                 email_address_for_reports:
                     plugin_setting:
                         name: email_address_for_reports
+                        is_email_address: true
                     label: 'Email Address that reports will be sent to:'
                     type: text
                     maxlength: "255"
@@ -222,6 +223,7 @@ plugin_settings:
                 notification_email_address:
                     plugin_setting:
                         name: notification_email_address
+                        is_email_address: true
                     label: 'Email Address:'
                     type: text
                     maxlength: "255"

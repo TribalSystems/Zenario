@@ -1,981 +1,1007 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario__content:
-	panels:
-		content:
-			key:
-				cType: ""
-				language: ""
-			title: All content items, flat view
-			view_mode: list
-			disable_grid_view: Yes
-			slidedown_view_microtemplate: zenario_slidedown_view_content_item
-			no_items_message: No content items have been created.
-			db_items:
-				table: >
-					[[DB_NAME_PREFIX]]content AS c
-					INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
-					   ON c.equiv_id = tc.equiv_id
-					  AND c.type = tc.type
-					INNER JOIN [[DB_NAME_PREFIX]]versions AS v
-					   ON c.id = v.id
-					  AND c.type = v.type
-					  AND c.admin_version = v.version
-					LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
-					   ON mi.target_loc = 'int'
-					  AND mi.equiv_id = c.equiv_id
-					  AND mi.content_type = c.type
-					  AND mi.redundancy = 'primary'
-					LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
-					   ON mt.menu_id = mi.id
-					  AND mt.language_id = c.language_id
-					LEFT JOIN [[DB_NAME_PREFIX]]files AS f
-					   ON f.id = v.file_id
-				id_column: c.tag_id
-				where_statement: "WHERE c.status NOT IN ('trashed','deleted')"
-				custom_where_statement__trash: "WHERE c.status = 'trashed'"
-				
-			quick_filter_buttons:
-				all:
-					ord: 1
-					label: "All"
-					column: status
-					remove_filter: true
-				drafts:
-					ord: 2
-					label: "Drafts"
-					column: status
-					value: first_draft
-				published_with_draft:
-					ord: 3
-					label: "Published with draft"
-					column: status
-					value: published_with_draft
-				published:
-					ord: 4
-					label: "Published"
-					column: status
-					value: published
-				hidden:
-					ord: 5
-					label: "Hidden"
-					column: status
-					value: hidden
-					
-				
-			refiners:
-				following_item_link:
-					exists: Yes
-				template_family:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-												   ON t.layout_id = v.layout_id
-												  AND t.family_name = [[REFINER__TEMPLATE_FAMILY]]
-				content_type:
-					sql: 'c.type = [[REFINER__CONTENT_TYPE]]'
-					use_different_view_options_per_refiner_id: Yes
-				language:
-					sql: 'c.language_id = [[REFINER__LANGUAGE]]'
-					use_different_view_options_per_id_in_previous_refiner: content_type
-				template:
-					sql: 'v.layout_id = [[REFINER__TEMPLATE]]'
-					use_different_view_options_per_id_in_previous_refiner: content_type
-				content_type__template__language:
-					sql: |
-						c.type = [[REFINER__CONTENT_TYPE]]
-												AND v.layout_id = [[REFINER__TEMPLATE]]
-												AND c.language_id = [[REFINER__LANGUAGE]]
-					use_different_view_options_per_id_in_previous_refiner: content_type
-				content_type__language:
-					sql: |
-						c.type = [[REFINER__CONTENT_TYPE]]
-												AND c.language_id = [[REFINER__LANGUAGE]]
-					use_different_view_options_per_id_in_previous_refiner: content_type
-				template__language:
-					sql: |
-						v.layout_id = [[REFINER__TEMPLATE]]
-												AND c.language_id = [[REFINER__LANGUAGE]]
-					use_different_view_options_per_id_in_previous_refiner: content_type
-				can_chain:
-					sql: |
-						languages_chained.language_id IS NULL
-												AND equivs_chained.equiv_id IS NULL
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with
-												   ON chain_with.tag_id = [[COMBINE_ITEM]]
-												  AND chain_with.type = c.type
-												INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with_equiv
-												   ON chain_with_equiv.equiv_id = chain_with.equiv_id
-												  AND chain_with_equiv.type = chain_with.type
-												LEFT JOIN [[DB_NAME_PREFIX]]content AS languages_chained
-												   ON languages_chained.equiv_id = chain_with.equiv_id
-												  AND languages_chained.type = chain_with.type
-												  AND languages_chained.language_id = c.language_id
-												LEFT JOIN [[DB_NAME_PREFIX]]content AS equivs_chained
-												   ON equivs_chained.type = chain_with.type
-												  AND equivs_chained.equiv_id = c.equiv_id
-												  AND equivs_chained.language_id = chain_with_equiv.language_id
-				category:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]category_item_link AS cal
-												   ON cal.category_id = [[REFINER__CATEGORY]]
-												  AND cal.equiv_id = c.equiv_id
-												  AND cal.content_type = v.type
-				menu_children:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]menu_hierarchy AS mh
-												   ON mh.ancestor_id = [[REFINER__MENU_CHILDREN]]
-												  AND mh.child_id = mi.id
-												  AND ([[REFINER__SHOW_LANGUAGE_CHOICE]] IS NULL OR c.language_id = [[REFINER__LANGUAGE]])
-				special_pages:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]special_pages AS sp
-												   ON sp.equiv_id = c.id
-												  AND sp.content_type = c.type
-				find_duplicates:
-					use_different_view_options: Yes
-					sql: |
-						(select count(*) FROM [[DB_NAME_PREFIX]]versions as vfcd INNER JOIN [[DB_NAME_PREFIX]]content AS cfcd 
-							ON cfcd.id = vfcd.id AND cfcd.type = vfcd.type AND cfcd.admin_version = vfcd.version
-							AND cfcd.admin_version = cfcd.visitor_version WHERE vfcd.file_id = f.id) > 1
-	
-				your_work_in_progress:
-					sql: >
-							c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
-							AND (
-								c.lock_owner_id = [[ADMIN_ID]]
-							 OR v.last_author_id = [[ADMIN_ID]]
-							 OR (v.last_author_id = 0 AND v.creating_author_id = [[ADMIN_ID]])
-							)
-				module_usage:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-												   ON t.layout_id = v.layout_id
-												INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-												   ON tsl.family_name = t.family_name
-												  AND tsl.file_base_name = t.file_base_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-												   ON piil.content_id = v.id
-												  AND piil.content_type = v.type
-												  AND piil.content_version = v.version
-												  AND piil.slot_name = tsl.slot_name
-					sql: 'piil.module_id = [[REFINER__MODULE_USAGE]]'
-				module_effective_usage:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-												   ON t.layout_id = v.layout_id
-												INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-												   ON tsl.family_name = t.family_name
-												  AND tsl.file_base_name = t.file_base_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-												   ON piil.content_id = v.id
-												  AND piil.content_type = v.type
-												  AND piil.content_version = v.version
-												  AND piil.slot_name = tsl.slot_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-												   ON pitl.layout_id = t.layout_id
-												  AND pitl.slot_name = tsl.slot_name
-					sql: 'IFNULL(piil.module_id, pitl.module_id) = [[REFINER__MODULE_EFFECTIVE_USAGE]]'
-				plugin_instance_usage:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-												   ON t.layout_id = v.layout_id
-												INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-												   ON tsl.family_name = t.family_name
-												  AND tsl.file_base_name = t.file_base_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-												   ON piil.content_id = v.id
-												  AND piil.content_type = v.type
-												  AND piil.content_version = v.version
-												  AND piil.slot_name = tsl.slot_name
-					sql: 'piil.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]'
-				plugin_instance_effective_usage:
-					table_join: |
-						INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-												   ON t.layout_id = v.layout_id
-												INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-												   ON tsl.family_name = t.family_name
-												  AND tsl.file_base_name = t.file_base_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-												   ON piil.content_id = v.id
-												  AND piil.content_type = v.type
-												  AND piil.content_version = v.version
-												  AND piil.slot_name = tsl.slot_name
-												LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-												   ON pitl.layout_id = t.layout_id
-												  AND pitl.slot_name = tsl.slot_name
-					sql: 'IFNULL(piil.instance_id, pitl.instance_id) = [[REFINER__PLUGIN_INSTANCE_EFFECTIVE_USAGE]]'
-				trash:
-					exists: Yes
-			item:
-				name: Content item
-				names: Content items
-				css_class: content_published
-			trash:
-				link:
-					path: zenario__content/panels/content
-					refiner: trash
-					branch: Yes
-			columns:
-				tag:
-					title: Tag
-					width: large
-					searchable: Yes
-					db_column: c.tag_id
-					sort_column: c.type, c.id
-					sort_column_desc: c.type DESC, c.id DESC
-					show_by_default: Yes
-					disallow_filtering: Yes
-				equiv_id:
-					db_column: c.equiv_id
-				id:
-					db_column: c.id
-					align_right: Yes
-					width: xsmall
-				type:
-					title: Content Type
-					db_column: c.type
-					format: enum
-					width: xsmall
-				language_id:
-					title: Language
-					db_column: c.language_id
-					format: language_english_name_with_id
-				alias:
-					title: Alias
-					searchable: Yes
-					db_column: c.alias
-					width: small
-				title:
-					title: Title
-					db_column: v.title
-					searchable: Yes
-					width: large
-				description:
-					title: Description
-					db_column: v.description
-					searchable: Yes
-					show_by_default: Yes
-					length_limit: 250
-				keywords:
-					title: Keywords
-					db_column: v.keywords
-					searchable: Yes
-					length_limit: 250
-				word_count:
-					title: Word count
-					sortable: true
-					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
-							ON v.id = cc.content_id
-						   AND v.type = cc.content_type
-						   AND v.version = cc.content_version
-					db_column: >
-						IFNULL(cc.text_wordcount, 0)
-					align_right: true
-					width: xsmall
-				file_id:
-					title: File ID
-					db_column: f.id
-					searchable: No
-				checksum:
-					db_column: f.checksum
-				mime_type:
-					db_column: f.mime_type
-				filename:
-					title: Filename
-					db_column: v.filename
-					searchable: Yes
-					width: large
-				file_size:
-					title: File size
-					db_column: f.size
-					format: filesize
-					searchable: No
-				file_path:
-					db_column: f.path
-				version:
-					title: Version
-					db_column: v.version
-				status:
-					title: Status
-					db_column: c.status
-					format: enum
-					values:
-						first_draft: First draft
-						published_with_draft: Published with draft
-						hidden_with_draft: Hidden with draft
-						trashed_with_draft: Trashed with draft
-						published: Published
-						hidden: Hidden
-						trashed: Trashed
-				admin_version_status:
-					db_column: c.status
-					format: enum
-					values:
-						first_draft: Draft
-						published_with_draft: Draft
-						hidden_with_draft: Draft
-						trashed_with_draft: Draft
-						published: Published
-						hidden: Hidden
-						trashed: Trashed
-				visitor_version_status:
-					db_column: c.status
-					format: enum
-					values:
-						first_draft: '[Not Published]'
-						published_with_draft: ""
-						hidden_with_draft: '[Hidden]'
-						trashed_with_draft: '[Trashed]'
-						published: ""
-						hidden: '[Hidden]'
-						trashed: '[Trashed]'
-				privacy:
-					title: Privacy
-					db_column: tc.privacy
-					format: enum
-					values:
-						public: Public
-						all_extranet_users: All extranet users
-						group_members: Group members
-						specific_users: Specific users
-						no_access: No access
-				first_created_datetime:
-					title: Date/time first created
-					db_column: c.first_created_datetime
-					format: datetime
-				created_datetime:
-					title: Date/time latest version created
-					db_column: v.created_datetime
-					format: datetime
-				concealed_datetime:
-					title: Date/time canceled/trashed
-					db_column: v.concealed_datetime
-					format: datetime
-					show_by_default: No
-				creating_author_id:
-					db_column: v.creating_author_id
-				last_modified_datetime:
-					title: Date/time last edited
-					db_column: v.last_modified_datetime
-					format: datetime
-				last_author_id:
-					db_column: v.last_author_id
-				published_datetime:
-					title: Date/time published
-					db_column: v.published_datetime
-					format: datetime
-				publisher_id:
-					db_column: v.publisher_id
-				publication_date:
-					title: Release date
-					db_column: v.publication_date
-					format: date
-				lock_owner_id:
-					db_column: c.lock_owner_id
-				lock_owner_name:
-				writer_name:
-					title: Writer name
-					db_column: v.writer_name
-					searchable: Yes
-				inline_files:
-					title: Images and animations
-					db_column: |
-						(
-							SELECT COUNT(DISTINCT ii.image_id)
-							FROM [[DB_NAME_PREFIX]]inline_images AS ii
-							WHERE ii.foreign_key_to = 'content'
-							  AND ii.foreign_key_id = v.id
-							  AND ii.foreign_key_char = v.type
-							  AND ii.foreign_key_version = v.version
-						)
-					align_right: Yes
-					width: xsmall
-				zenario_trans__links:
-					title: Translations
-					align_right: Yes
-					show_by_default: Yes
-				layout:
-					title: Layout
-					db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
-					show_by_default: Yes
-					width: xsmall
-				menu:
-					title: Menu Node
-					db_column: mt.name
-					show_by_default: Yes
-					item_link: menu_item
-				menu_id:
-					db_column: mi.id
-				content_extract:
-					title: Content extract
-					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
-							ON v.id = cc.content_id
-						   AND v.type = cc.content_type
-						   AND v.version = cc.content_version
-					db_column: >
-						SUBSTRING(cc.extract, 1, 200)
-				content_extract_wordcount:
-					title: Plain-text word count
-					table_join: |
-						LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
-							ON v.id = cc.content_id
-						   AND v.type = cc.content_type
-						   AND v.version = cc.content_version
-					db_column: >
-						cc.extract_wordcount
-					align_right: Yes
-					width: xsmall
-				scheduled_publish_datetime:
-					title: 'Scheduled publish date/time'
-					db_column: v.scheduled_publish_datetime
-					format: datetime
-					
-			default_sort_column: tag
-			label_format_for_grid_view: |
-				[[tag]]
-						Version [[version]]
-			label_format_for_picked_items: '[[tag]] [[visitor_version_status]]'
-			label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
-			default_sort_column: first_created_datetime
-			collection_buttons:
-				create:
-					priv: _PRIV_CREATE_FIRST_DRAFT
-					css_class: zenario_create_a_new
-					label: Create
-					admin_box:
-						path: zenario_quick_create
-				equivs:
-					label: Show translations
-					tooltip: >
-						Show translations missing in this language alongside content items
-					link:
-						path: zenario__content/panels/language_equivs
-						branch: Yes
-						refiner: language_equivs
-				delete_trashed_items:
-					priv: _PRIV_TRASH_CONTENT_ITEM
-					hide_in_select_mode: Yes
-					only_show_on_refiner: trash
-					label: Empty trash
-					ajax:
-						confirm:
-							message: >
-								Empty the trash?
-								
-								This will permanently delete all content items in the trash. This cannot be undone.
-							button_message: Delete
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							delete_trashed_items: "1"
-				diagnostics_dropdown:
-					label: Diagnostics
-					hide_when_children_are_not_visible: Yes
-	
-				content_find_duplicates:
-					parent: diagnostics_dropdown
-					label: Items with duplicate file attachments
-					hide_in_select_mode: Yes
-					link:
-						branch: Yes
-						path: zenario__content/panels/content
-						refiner: find_duplicates
-				#export:
-				#	tooltip: Export in CSV
-				#	label: Export
-				#	do_csv_export: Yes
-				help:
-					label: Help
-					help:
-						message: >
-							Every page of your website is stored as a "content item".
-							This panel shows all of the content items of your site in a
-							list view.
-			inline_buttons:
-				view_frontend:
-					css_class: view_frontend
-					tooltip: Go to content item in front-end window
-					frontend_link:
-						exists: Yes
-					with_columns_set:
-						frontend_link: Yes
-				inspect:
-					css_class: inspect
-					tooltip: Quick-view in floating box
-					custom_width: 800
-					custom_height: 600
-					custom_description: Preview
-					call_js_function:
-						encapsulated_object: zenarioA
-						function: showPagePreview
-					with_columns_set:
-						frontend_link: Yes
-			item_buttons:
-				settings:
-					parent: property_dropdown
-					priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-					label: Edit metadata
-					admin_box:
-						path: zenario_content
-					without_traits:
-						ghost: Yes
-				download:
-					parent: view_dropdown
-					label: Download
-					ajax:
-						confirm:
-							message: 'Download the file "[[filename]]"?'
-							button_message: Download
-							cancel_button_message: Cancel
-							message_type: question
-							download: Yes
-						request:
-							download: "1"
-					traits:
-						has_file: Yes
-					without_traits:
-						ghost: Yes
-				zenario_trans__view:
-					parent: view_dropdown
-					hide_in_select_mode: Yes
-					label: Translations
-					link:
-						path: zenario__content/panels/chained
-						branch: Yes
-						refiner: zenario_trans__chained_in_link
-				images:
-					parent: view_dropdown
-					label: Images in this content item
-					link:
-						path: zenario__content/panels/inline_images_for_content
-						branch: Yes
-						refiner: content
-					without_traits:
-						no_images: Yes
-						ghost: Yes
-				view_image:
-					parent: view_dropdown
-					label: View picture
-					tooltip: View picture
-					popout:
-						href: 'zenario/file.php?usage=content&popout=1'
-						options:
-							type: image
-					traits:
-						has_picture: Yes
-					without_traits:
-						ghost: Yes
+    panels:
+        content:
+            key:
+                cType: ""
+                language: ""
+            title: All content items, flat view
+            
+            #panel_type: list_with_subheadings
+            #subheading_column: publication_date
+            
+            slidedown_view_microtemplate: zenario_slidedown_view_content_item
+            no_items_message: No content items have been created.
+            db_items:
+                table: >
+                    [[DB_NAME_PREFIX]]content AS c
+                    INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
+                       ON c.equiv_id = tc.equiv_id
+                      AND c.type = tc.type
+                    INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+                       ON c.id = v.id
+                      AND c.type = v.type
+                      AND c.admin_version = v.version
+                    LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi
+                       ON mi.target_loc = 'int'
+                      AND mi.equiv_id = c.equiv_id
+                      AND mi.content_type = c.type
+                      AND mi.redundancy = 'primary'
+                    LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                       ON mt.menu_id = mi.id
+                      AND mt.language_id = c.language_id
+                    LEFT JOIN [[DB_NAME_PREFIX]]files AS f
+                       ON f.id = v.file_id
+                id_column: c.tag_id
+                where_statement: "WHERE c.status NOT IN ('trashed','deleted')"
+                custom_where_statement__trash: "WHERE c.status = 'trashed'"
+                
+            quick_filter_buttons:
+                all:
+                    ord: 1
+                    label: "All"
+                    column: status
+                    remove_filter: true
+                drafts:
+                    ord: 2
+                    label: "Drafts"
+                    column: status
+                    value: first_draft
+                published_with_draft:
+                    ord: 3
+                    label: "Published with draft"
+                    column: status
+                    value: published_with_draft
+                published:
+                    ord: 4
+                    label: "Published"
+                    column: status
+                    value: published
+                hidden:
+                    ord: 5
+                    label: "Hidden"
+                    column: status
+                    value: hidden
+                    
+                
+            refiners:
+                following_item_link:
+                    exists: true
+                template_family:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
+                                                   ON t.layout_id = v.layout_id
+                                                  AND t.family_name = [[REFINER__TEMPLATE_FAMILY]]
+                content_type:
+                    sql: 'c.type = [[REFINER__CONTENT_TYPE]]'
+                language:
+                    sql: 'c.language_id = [[REFINER__LANGUAGE]]'
+                template:
+                    sql: 'v.layout_id = [[REFINER__TEMPLATE]]'
+                content_type__template__language:
+                    sql: |
+                        c.type = [[REFINER__CONTENT_TYPE]]
+                                                AND v.layout_id = [[REFINER__TEMPLATE]]
+                                                AND c.language_id = [[REFINER__LANGUAGE]]
+                content_type__language:
+                    sql: |
+                        c.type = [[REFINER__CONTENT_TYPE]]
+                                                AND c.language_id = [[REFINER__LANGUAGE]]
+                template__language:
+                    sql: |
+                        v.layout_id = [[REFINER__TEMPLATE]]
+                                                AND c.language_id = [[REFINER__LANGUAGE]]
+                can_chain:
+                    sql: |
+                        languages_chained.language_id IS NULL
+                                                AND equivs_chained.equiv_id IS NULL
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with
+                                                   ON chain_with.tag_id = [[COMBINE_ITEM]]
+                                                  AND chain_with.type = c.type
+                                                INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with_equiv
+                                                   ON chain_with_equiv.equiv_id = chain_with.equiv_id
+                                                  AND chain_with_equiv.type = chain_with.type
+                                                LEFT JOIN [[DB_NAME_PREFIX]]content AS languages_chained
+                                                   ON languages_chained.equiv_id = chain_with.equiv_id
+                                                  AND languages_chained.type = chain_with.type
+                                                  AND languages_chained.language_id = c.language_id
+                                                LEFT JOIN [[DB_NAME_PREFIX]]content AS equivs_chained
+                                                   ON equivs_chained.type = chain_with.type
+                                                  AND equivs_chained.equiv_id = c.equiv_id
+                                                  AND equivs_chained.language_id = chain_with_equiv.language_id
+                category:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]category_item_link AS cal
+                                                   ON cal.category_id = [[REFINER__CATEGORY]]
+                                                  AND cal.equiv_id = c.equiv_id
+                                                  AND cal.content_type = v.type
+                menu_children:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]menu_hierarchy AS mh
+                                                   ON mh.ancestor_id = [[REFINER__MENU_CHILDREN]]
+                                                  AND mh.child_id = mi.id
+                                                  AND ([[REFINER__SHOW_LANGUAGE_CHOICE]] IS NULL OR c.language_id = [[REFINER__LANGUAGE]])
+                special_pages:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]special_pages AS sp
+                                                   ON sp.equiv_id = c.id
+                                                  AND sp.content_type = c.type
+                find_duplicates:
+                    sql: |
+                        (select count(*) FROM [[DB_NAME_PREFIX]]versions as vfcd INNER JOIN [[DB_NAME_PREFIX]]content AS cfcd 
+                            ON cfcd.id = vfcd.id AND cfcd.type = vfcd.type AND cfcd.admin_version = vfcd.version
+                            AND cfcd.admin_version = cfcd.visitor_version WHERE vfcd.file_id = f.id) > 1
+    
+                your_work_in_progress:
+                    sql: >
+                            c.status IN ('first_draft','published_with_draft','hidden_with_draft','trashed_with_draft')
+                            AND (
+                                c.lock_owner_id = [[ADMIN_ID]]
+                             OR v.last_author_id = [[ADMIN_ID]]
+                             OR (v.last_author_id = 0 AND v.creating_author_id = [[ADMIN_ID]])
+                            )
+                module_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
+                                                   ON t.layout_id = v.layout_id
+                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                                                   ON tsl.family_name = t.family_name
+                                                  AND tsl.file_base_name = t.file_base_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                                                   ON piil.content_id = v.id
+                                                  AND piil.content_type = v.type
+                                                  AND piil.content_version = v.version
+                                                  AND piil.slot_name = tsl.slot_name
+                    sql: 'piil.module_id = [[REFINER__MODULE_USAGE]]'
+                module_effective_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
+                                                   ON t.layout_id = v.layout_id
+                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                                                   ON tsl.family_name = t.family_name
+                                                  AND tsl.file_base_name = t.file_base_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                                                   ON piil.content_id = v.id
+                                                  AND piil.content_type = v.type
+                                                  AND piil.content_version = v.version
+                                                  AND piil.slot_name = tsl.slot_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                                                   ON pitl.layout_id = t.layout_id
+                                                  AND pitl.slot_name = tsl.slot_name
+                    sql: 'IFNULL(piil.module_id, pitl.module_id) = [[REFINER__MODULE_EFFECTIVE_USAGE]]'
+                plugin_instance_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
+                                                   ON t.layout_id = v.layout_id
+                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                                                   ON tsl.family_name = t.family_name
+                                                  AND tsl.file_base_name = t.file_base_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                                                   ON piil.content_id = v.id
+                                                  AND piil.content_type = v.type
+                                                  AND piil.content_version = v.version
+                                                  AND piil.slot_name = tsl.slot_name
+                    sql: 'piil.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]'
+                plugin_instance_effective_usage:
+                    table_join: |
+                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
+                                                   ON t.layout_id = v.layout_id
+                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                                                   ON tsl.family_name = t.family_name
+                                                  AND tsl.file_base_name = t.file_base_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                                                   ON piil.content_id = v.id
+                                                  AND piil.content_type = v.type
+                                                  AND piil.content_version = v.version
+                                                  AND piil.slot_name = tsl.slot_name
+                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                                                   ON pitl.layout_id = t.layout_id
+                                                  AND pitl.slot_name = tsl.slot_name
+                    sql: 'IFNULL(piil.instance_id, pitl.instance_id) = [[REFINER__PLUGIN_INSTANCE_EFFECTIVE_USAGE]]'
+                trash:
+                    exists: true
+            item:
+                name: Content item
+                names: Content items
+                css_class: content_published
+            trash:
+                link:
+                    path: zenario__content/panels/content
+                    refiner: trash
+                    branch: true
+            columns:
+                tag:
+                    title: ID/alias
+                    width: large
+                    searchable: true
+                    db_column: c.tag_id
+                    sort_column: c.type, c.id
+                    sort_column_desc: c.type DESC, c.id DESC
+                    show_by_default: true
+                    disallow_filtering: true
+                equiv_id:
+                    db_column: c.equiv_id
+                id:
+                    db_column: c.id
+                    align_right: true
+                    width: xsmall
+                type:
+                    title: Content Type
+                    db_column: c.type
+                    format: enum
+                    width: xsmall
+                language_id:
+                    title: Language
+                    db_column: c.language_id
+                    format: language_english_name_with_id
+                alias:
+                    title: Alias
+                    searchable: true
+                    db_column: c.alias
+                    width: small
+                title:
+                    title: Title
+                    db_column: v.title
+                    searchable: true
+                    width: large
+                    show_by_default: true
+                description:
+                    title: Description
+                    db_column: v.description
+                    searchable: true
+                    length_limit: 250
+                keywords:
+                    title: Keywords
+                    db_column: v.keywords
+                    searchable: true
+                    length_limit: 250
+                word_count:
+                    title: Word count
+                    sortable: true
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
+                            ON v.id = cc.content_id
+                           AND v.type = cc.content_type
+                           AND v.version = cc.content_version
+                    db_column: >
+                        IFNULL(cc.text_wordcount, 0)
+                    align_right: true
+                    width: xsmall
+                    show_by_default: true
+                    tooltip: "Word count of version controlled plugins on the content item."
+                file_id:
+                    title: File ID
+                    db_column: f.id
+                    searchable: No
+                checksum:
+                    db_column: f.checksum
+                mime_type:
+                    db_column: f.mime_type
+                filename:
+                    title: Filename
+                    db_column: v.filename
+                    searchable: true
+                    width: large
+                file_size:
+                    title: File size
+                    db_column: f.size
+                    format: filesize
+                    searchable: No
+                file_path:
+                    db_column: f.path
+                version:
+                    title: Version
+                    db_column: v.version
+                status:
+                    title: Status
+                    db_column: c.status
+                    format: enum
+                    values:
+                        first_draft: First draft
+                        published_with_draft: Published with draft
+                        hidden_with_draft: Hidden with draft
+                        trashed_with_draft: Trashed with draft
+                        published: Published
+                        hidden: Hidden
+                        trashed: Trashed
+                admin_version_status:
+                    db_column: c.status
+                    format: enum
+                    values:
+                        first_draft: Draft
+                        published_with_draft: Draft
+                        hidden_with_draft: Draft
+                        trashed_with_draft: Draft
+                        published: Published
+                        hidden: Hidden
+                        trashed: Trashed
+                visitor_version_status:
+                    db_column: c.status
+                    format: enum
+                    values:
+                        first_draft: '[Not Published]'
+                        published_with_draft: ""
+                        hidden_with_draft: '[Hidden]'
+                        trashed_with_draft: '[Trashed]'
+                        published: ""
+                        hidden: '[Hidden]'
+                        trashed: '[Trashed]'
+                privacy:
+                    title: Privacy
+                    db_column: tc.privacy
+                    format: enum
+                    values:
+                        public: Public
+                        all_extranet_users: All extranet users
+                        group_members: Group members
+                        specific_users: Specific users
+                        no_access: No access
+                first_created_datetime:
+                    title: Date/time first created
+                    db_column: c.first_created_datetime
+                    format: datetime
+                created_datetime:
+                    title: Date/time latest version created
+                    db_column: v.created_datetime
+                    format: datetime
+                concealed_datetime:
+                    title: Date/time canceled/trashed
+                    db_column: v.concealed_datetime
+                    format: datetime
+                    show_by_default: No
+                creating_author_id:
+                    db_column: v.creating_author_id
+                last_modified_datetime:
+                    title: Date/time last edited
+                    db_column: v.last_modified_datetime
+                    format: datetime
+                last_author_id:
+                    db_column: v.last_author_id
+                published_datetime:
+                    title: Date/time published
+                    db_column: v.published_datetime
+                    format: datetime
+                publisher_id:
+                    db_column: v.publisher_id
+                publication_date:
+                    title: Release date
+                    db_column: v.publication_date
+                    format: date
+                lock_owner_id:
+                    db_column: c.lock_owner_id
+                lock_owner_name:
+                writer_name:
+                    title: Writer name
+                    db_column: v.writer_name
+                    searchable: true
+                archives_exist:
+                    width: medium
+                    title: 'Archives exist?'
+                    db_column: |
+                        c.status != 'first_draft' AND (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]versions AS pv
+                            WHERE pv.id = c.id
+                              AND pv.type = c.type
+                              AND pv.version NOT IN (c.visitor_version, c.admin_version)
+                            LIMIT 1
+                        )
+                    format: yes_or_no
+                inline_files:
+                    title: Images and animations
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT ii.image_id)
+                            FROM [[DB_NAME_PREFIX]]inline_images AS ii
+                            WHERE ii.foreign_key_to = 'content'
+                              AND ii.foreign_key_id = v.id
+                              AND ii.foreign_key_char = v.type
+                              AND ii.foreign_key_version = v.version
+                        )
+                    align_right: true
+                    width: xsmall
+                zenario_trans__links:
+                    title: Translations
+                    align_right: true
+                    show_by_default: true
+                layout:
+                    title: Layout
+                    db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
+                    show_by_default: true
+                    width: xsmall
+                menu:
+                    title: Menu Node
+                    db_column: mt.name
+                    show_by_default: true
+                    item_link: menu_item
+                menu_id:
+                    db_column: mi.id
+                content_extract:
+                    title: Content extract
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
+                            ON v.id = cc.content_id
+                           AND v.type = cc.content_type
+                           AND v.version = cc.content_version
+                    db_column: >
+                        SUBSTRING(cc.extract, 1, 200)
+                content_extract_wordcount:
+                    title: Plain-text word count
+                    table_join: |
+                        LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
+                            ON v.id = cc.content_id
+                           AND v.type = cc.content_type
+                           AND v.version = cc.content_version
+                    db_column: >
+                        cc.extract_wordcount
+                    align_right: true
+                    width: xsmall
+                scheduled_publish_datetime:
+                    title: 'Scheduled publish date/time'
+                    db_column: v.scheduled_publish_datetime
+                    format: datetime
+                
+                    
+            default_sort_column: tag
+            label_format_for_grid_view: |
+                [[tag]]
+                        Version [[version]]
+            label_format_for_picked_items: '[[tag]] [[visitor_version_status]]'
+            label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
+            default_sort_column: first_created_datetime
+            collection_buttons:
+                create:
+                    priv: _PRIV_CREATE_FIRST_DRAFT
+                    css_class: zenario_create_a_new
+                    label: Create
+                    admin_box:
+                        path: zenario_quick_create
+                equivs:
+                    label: Show translations
+                    tooltip: >
+                        Show translations missing in this language alongside content items
+                    link:
+                        path: zenario__content/panels/language_equivs
+                        branch: true
+                        refiner: language_equivs
+                delete_trashed_items:
+                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    only_show_on_refiner: trash
+                    label: Empty trash
+                    ajax:
+                        confirm:
+                            message: >
+                                Empty the trash?
+                                
+                                This will permanently delete all content items in the trash. This cannot be undone.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_trashed_items: "1"
+                diagnostics_dropdown:
+                    label: Diagnostics
+                    hide_when_children_are_not_visible: true
+    
+                content_find_duplicates:
+                    parent: diagnostics_dropdown
+                    visible_if: |
+                        zenarioO.tuix.key &&
+                        zenarioO.tuix.key.cType == 'document'
+                    label: Items with duplicate file attachments
+                    hide_in_select_mode: true
+                    link:
+                        branch: true
+                        path: zenario__content/panels/content
+                        refiner: find_duplicates
+                #export:
+                #    tooltip: Export in CSV
+                #    label: Export
+                #    do_csv_export: true
+                help:
+                    label: Help
+                    help:
+                        message: >
+                            Every page of your website is stored as a "content item".
+                            This panel shows all of the content items of your site in a
+                            list view.
+            inline_buttons:
+                view_frontend:
+                    css_class: view_frontend
+                    tooltip: Go to content item in front-end window
+                    frontend_link:
+                        exists: true
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+                inspect:
+                    css_class: inspect
+                    tooltip: Quick-view in floating box
+                    custom_width: 800
+                    custom_height: 600
+                    custom_description: Preview
+                    call_js_function:
+                        encapsulated_object: zenarioA
+                        function: showPagePreview
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+            item_buttons:
+                settings:
+                    parent: property_dropdown
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    label: Edit metadata
+                    admin_box:
+                        path: zenario_content
+                    without_traits:
+                        ghost: true
+                download:
+                    parent: view_dropdown
+                    label: Download
+                    ajax:
+                        confirm:
+                            message: 'Download the file "[[filename]]"?'
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            message_type: question
+                            download: true
+                        request:
+                            download: "1"
+                    traits:
+                        has_file: true
+                    without_traits:
+                        ghost: true
+                zenario_trans__view:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: Translations
+                    link:
+                        path: zenario__content/panels/chained
+                        branch: true
+                        refiner: zenario_trans__chained_in_link
+                images:
+                    parent: view_dropdown
+                    label: Images in this content item
+                    link:
+                        path: zenario__content/panels/inline_images_for_content
+                        branch: true
+                        refiner: content
+                    without_traits:
+                        no_images: true
+                        ghost: true
+                view_image:
+                    parent: view_dropdown
+                    label: View picture
+                    tooltip: View picture
+                    popout:
+                        href: 'zenario/file.php?usage=content&popout=1'
+                        options:
+                            type: image
+                    traits:
+                        has_picture: true
+                    without_traits:
+                        ghost: true
 
-				property_dropdown:
-					label: Properties
-					multiple_select: Yes
-					hide_when_children_are_not_visible: Yes
-					
-				publish:
-					priv: _PRIV_PUBLISH_CONTENT_ITEM
-					hide_in_select_mode: Yes
-					label: Publish...
-					multiple_select: Yes
-					traits:
-						draft: Yes
-						not_locked: Yes
-					without_traits:
-						ghost: Yes
-					admin_box:
-						path: zenario_publish
-				action_dropdown:
-					label: Actions
-					multiple_select: Yes
-					hide_when_children_are_not_visible: Yes
-				category_dropdown:
-					label: Categories
-					multiple_select: Yes
-					hide_when_children_are_not_visible: Yes
-				layout_dropdown:
-					label: Layout
-					multiple_select: Yes
-					hide_when_children_are_not_visible: Yes
-				view_dropdown:
-					label: View
-					multiple_select: Yes
-					hide_when_children_are_not_visible: Yes
-				lock_dropdown:
-					label: Locking
-					hide_when_children_are_not_visible: Yes
+                property_dropdown:
+                    label: Properties
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                    
+                publish:
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    label: Publish...
+                    multiple_select: true
+                    traits:
+                        draft: true
+                        not_locked: true
+                    without_traits:
+                        ghost: true
+                    admin_box:
+                        path: zenario_publish
+                action_dropdown:
+                    label: Actions
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                category_dropdown:
+                    label: Categories
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                    visible_if_for_all_selected_items: >
+                        item.enable_categories == 1
+                layout_dropdown:
+                    label: Layout
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                view_dropdown:
+                    label: View
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                lock_dropdown:
+                    label: Locking
+                    hide_when_children_are_not_visible: true
 
-				# Lock dropdown
-				
-				lock:
-					priv: _PRIV_EDIT_DRAFT
-					parent: lock_dropdown
-					visible_if_for_all_selected_items: >
-						('' + item.status).match(/draft/)
-						&& item.lock_owner_id == 0
-					label: Lock this draft
-					ajax:
-						confirm:
-							message: |
-								Are you sure that you wish to lock the draft version of this content item?
-								
-								No other administrator will be able to edit it until it is unlocked.
-								
-								(The item will be automatically unlocked when the draft is published or deleted).
-							button_message: Lock
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							lock: "1"
-				locked:
-					parent: lock_dropdown
-					visible_if_for_all_selected_items: >
-						('' + item.status).match(/draft/)
-						&& item.lock_owner_id != 0
-						&& item.lock_owner_id != zenario.adminId
-					appears_in_toolbars:
-						edit: Yes
-						edit_disabled: Yes
-					label: Locked
-					css_class: zenario_item_locked
-				unlock:
-					priv: _PRIV_EDIT_DRAFT
-					parent: lock_dropdown
-					visible_if_for_all_selected_items: >
-						('' + item.status).match(/draft/)
-						&& item.lock_owner_id != 0
-						&& item.lock_owner_id == zenario.adminId
-					label: Unlock
-					tooltip: This content item is locked by you
-					ajax:
-						confirm:
-							#message: |
-								#Are you sure that you wish to unlock this content item?
-								#
-								#Any administrator who has authoring permission will be able to make changes to it.
-							button_message: Unlock
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							unlock: "1"
-				force_open:
-					priv: _PRIV_CANCEL_CHECKOUT
-					parent: lock_dropdown
-					visible_if_for_all_selected_items: >
-						('' + item.status).match(/draft/)
-						&& item.lock_owner_id != 0
-						&& item.lock_owner_id != zenario.adminId
-					label: Force unlock
-					tooltip: This content item is locked by another administrator
-					ajax:
-						confirm:
-							# This message is set dynamically
-							#message: |
-								#Are you sure that you wish to force-unlock on this content item?
-								#
-								#Any administrator who has authoring permission will be able to make changes to it.
-							button_message: Cancel lock
-							cancel_button_message: Leave it alone
-							message_type: warning
-						request:
-							unlock: "1"
+                # Lock dropdown
+                
+                lock:
+                    priv: _PRIV_EDIT_DRAFT
+                    parent: lock_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id == 0
+                    label: Lock this draft
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure that you wish to lock the draft version of this content item?
+                                
+                                No other administrator will be able to edit it until it is unlocked.
+                                
+                                (The item will be automatically unlocked when the draft is published or deleted).
+                            button_message: Lock
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            lock: "1"
+                locked:
+                    parent: lock_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id != zenario.adminId
+                    appears_in_toolbars:
+                        edit: true
+                        edit_disabled: true
+                    label: Locked
+                    css_class: zenario_item_locked
+                unlock:
+                    priv: _PRIV_EDIT_DRAFT
+                    parent: lock_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id == zenario.adminId
+                    label: Unlock
+                    tooltip: This content item is locked by you
+                    ajax:
+                        confirm:
+                            #message: |
+                                #Are you sure that you wish to unlock this content item?
+                                #
+                                #Any administrator who has authoring permission will be able to make changes to it.
+                            button_message: Unlock
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            unlock: "1"
+                force_open:
+                    priv: _PRIV_CANCEL_CHECKOUT
+                    parent: lock_dropdown
+                    visible_if_for_all_selected_items: >
+                        ('' + item.status).match(/draft/)
+                        && item.lock_owner_id != 0
+                        && item.lock_owner_id != zenario.adminId
+                    label: Force unlock
+                    tooltip: This content item is locked by another administrator
+                    ajax:
+                        confirm:
+                            # This message is set dynamically
+                            #message: |
+                                #Are you sure that you wish to force-unlock on this content item?
+                                #
+                                #Any administrator who has authoring permission will be able to make changes to it.
+                            button_message: Cancel lock
+                            cancel_button_message: Leave it alone
+                            message_type: warning
+                        request:
+                            unlock: "1"
 
-				# End lock dropdown
-				
-				cancel_scheduled_publish:
-					priv: _PRIV_PUBLISH_CONTENT_ITEM
-					hide_in_select_mode: Yes
-					label: Cancel scheduled publish
-					multiple_select: Yes
-					visible_if_for_all_selected_items: "item.scheduled_publish_datetime"
-					ajax:
-						confirm:
-							message: |
-								This item is scheduled to be published on [[scheduled_publish_datetime]]. This has been scheduled by [[lock_owner_name]].
-								
-								Are you sure you still wish to cancel?
-							multiple_select_message: |
-								These items are scheduled to be published
-								
-								Are you sure you still wish to cancel?
-							button_message: Cancel scheduled publication
-							cancel_button_message: Leave it alone
-							message_type: warning
-						request:
-							unlock: "1"
-					
-				layout:
-					priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-					parent: layout_dropdown
-					label: Change layout
-					multiple_select: true
-					admin_box:
-						path: zenario_content_layout
-					without_traits:
-						ghost: Yes
-				view_slots:
-					parent: layout_dropdown
-					label: View item's slots
-					link:
-						path: zenario__content/panels/slots
-						branch: Yes
-						refiner: content_item
-				categories_add:
-					priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-					parent: category_dropdown
-					label: Add to categories
-					multiple_select_only: true
-					multiple_select: true
-					admin_box:
-						path: zenario_content_categories_add
-					without_traits:
-						ghost: Yes
-				categories:
-					priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-					parent: category_dropdown
-					label: Add to/remove from categories
-					
-					admin_box:
-						path: zenario_content_categories
-					without_traits:
-						ghost: Yes
-				categories_remove:
-					priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
-					parent: category_dropdown
-					label: Remove from categories
-					multiple_select_only: true
-					multiple_select: true
-					admin_box:
-						path: zenario_content_categories_remove
-					without_traits:
-						ghost: Yes
-				alias:
-					parent: property_dropdown
-					priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-					label: Edit alias
-					admin_box:
-						path: zenario_alias
-					without_traits:
-						ghost: Yes
-						
-				head:
-					parent: property_dropdown
-					priv: _PRIV_MANAGE_ITEM_SLOT
-					appears_in_toolbars:
-						edit: Yes
-					label: HTML in head of page
-					admin_box:
-						path: zenario_head_foot_slot
-						key:
-							mode: head
-							level: item
-				foot:
-					parent: property_dropdown
-					priv: _PRIV_MANAGE_ITEM_SLOT
-					appears_in_toolbars:
-						edit: Yes
-					label: HTML at foot of page
-					admin_box:
-						path: zenario_head_foot_slot
-						key:
-							mode: foot
-							level: item
-				
-				quick_add_to_menu:
-					parent: action_dropdown
-					priv: _PRIV_ADD_MENU_ITEM
-					hide_in_select_mode: Yes
-					label: Attach to menu
-					multiple_select: No
-					tooltip: Quick-add this content item to the menu (select a position)
-					combine_items:
-						path: zenario__menu/panels/menu_position
-						target_path: zenario__menu/panels/menu_position
-						disallow_refiners_looping_on_min_path: No
-						one_to_one_choose_phrase: Create menu node
-						visible_if_for_all_selected_items: >
-							zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-						request:
-							mass_add_to_menu: "1"
-					traits:
-						unlinked: Yes
-					without_traits:
-						ghost: Yes
-						hidden: Yes
-				mass_add_to_menu:
-					parent: action_dropdown
-					priv: _PRIV_ADD_MENU_ITEM
-					hide_in_select_mode: Yes
-					label: Attach items to menu
-					multiple_select: Yes
-					multiple_select_only: Yes
-					combine_items:
-						path: zenario__menu/panels/menu_position
-						target_path: zenario__menu/panels/menu_position
-						disallow_refiners_looping_on_min_path: No
-						many_to_one_choose_phrase: Create menu nodes
-						visible_if_for_all_selected_items: >
-							zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
-						request:
-							mass_add_to_menu: "1"
-					traits:
-						unlinked: Yes
-					without_traits:
-						ghost: Yes
-						hidden: Yes
-				duplicate:
-					parent: action_dropdown
-					priv: _PRIV_CREATE_FIRST_DRAFT
-					label: Duplicate
-					admin_box:
-						path: zenario_content
-						key:
-							duplicate: "1"
-					without_traits:
-						ghost: Yes
-				hide:
-					parent: action_dropdown
-					priv: _PRIV_HIDE_CONTENT_ITEM
-					hide_in_select_mode: Yes
-					label: Hide
-					multiple_select: Yes
-					traits:
-						hideable: Yes
-					without_traits:
-						ghost: Yes
-					ajax:
-						confirm:
-							message: |
-								This action will hide the content item "[[tag]]".
-								
-								If it's in the menu, its menu node(s) will be hidden. 
-								
-								Are you sure you wish to proceed?
-							multiple_select_message: |
-								This action will hide the selected content items.
-								
-								Any menu nodes linking to the the items will be hidden.
-								
-								Are you sure you wish to proceed?
-							button_message: Hide
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							hide: "1"
-				hidden:
-					parent: action_dropdown
-					priv: _PRIV_CREATE_REVISION_DRAFT
-					label: Unhide/make draft
-					multiple_select: Yes
-					traits:
-						hidden: Yes
-					without_traits:
-						ghost: Yes
-					ajax:
-						confirm:
-							message: |
-								Do you wish to unhide the content item "[[tag]]"?
-								
-								This will create a new draft, which will be available to visitors if you publish it.
-							multiple_select_message: |
-								Do you wish to unhide the selected content items?
-								
-								This will create new drafts, which will be available to visitors if you publish them.
-							button_message: Unhide
-							cancel_button_message: Cancel
-							message_type: question
-						request:
-							unhide: "1"
-				delete:
-					parent: action_dropdown
-					priv: _PRIV_DELETE_DRAFT
-					hide_in_select_mode: Yes
-					label: Delete draft
-					multiple_select: Yes
-					multiple_select_label: Delete drafts
-					traits:
-						draft: Yes
-						deletable: Yes
-						not_locked: Yes
-					without_traits:
-						ghost: Yes
-					ajax:
-						confirm:
-							message: |
-								You are about to delete the draft version of "[[tag]]".
-								
-								Deleting this draft will not affect the published version of this item, if it exists.
-								
-								This cannot be undone. Are you sure you wish to proceed?
-							multiple_select_message: |
-								You are about to delete the draft versions of the selected content items.
-								
-								Deleting a draft will not affect any published versions of these items, if they exist.
-								
-								This cannot be undone. Are you sure you wish to proceed?
-							button_message: Delete
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							delete: "1"
-				trash:
-					parent: action_dropdown
-					priv: _PRIV_TRASH_CONTENT_ITEM
-					hide_in_select_mode: Yes
-					label: Trash
-					multiple_select: Yes
-					traits:
-						trashable: Yes
-					without_traits:
-						ghost: Yes
-					ajax:
-						confirm:
-							message: |
-								This action will move the content item "[[tag]]" to the trash. It will be removed from the menu, and will no longer be accessible by visitors.
-																
-								Are you sure you wish to proceed?
-							multiple_select_message: |
-								This action will move the selected content items to the trash. They will be removed from the menu, and will no longer be accessible by visitors.
-																
-								Are you sure you wish to proceed?
-							button_message: Trash
-							cancel_button_message: Cancel
-							message_type: warning
-						request:
-							trash: "1"
-				redraft:
-					parent: action_dropdown
-					priv: _PRIV_CREATE_REVISION_DRAFT
-					label: Re-draft
-					css_class: create label_to_the_left
-					multiple_select: Yes
-					visible_if_for_all_selected_items: item.status == 'trashed'
-					tooltip: >
-						Re-draft this content item|This will create a new draft of
-						this content item, which will be available to visitors if
-						you Publish it.
-					ajax:
-						confirm:
-							message: |
-								Do you wish to re-draft "[[tag]]"? This will create
-								a new draft of this content item, which will be available to
-								visitors if you Publish it.
-							multiple_select_message: |
-								Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you Publish them.
-							button_message: Re-draft
-							cancel_button_message: Cancel
-							message_type: question
-						request:
-							create_draft: "1"
-				migrate_old_documents:
-					hide_in_select_mode: true
-					multiple_select: Yes
-					label: Migrate to new documents
-					admin_box:
-						path: zenario_migrate_old_documents
-					visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')
-				page_preview_sizes:
-					label: Visitor preview
-					hide_when_children_are_not_visible: true
-					ord: 500
+                # End lock dropdown
+                
+                cancel_scheduled_publish:
+                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    label: Cancel scheduled publish
+                    multiple_select: true
+                    visible_if_for_all_selected_items: "item.scheduled_publish_datetime"
+                    ajax:
+                        confirm:
+                            message: |
+                                This item is scheduled to be published on [[scheduled_publish_datetime]]. This has been scheduled by [[lock_owner_name]].
+                                
+                                Are you sure you still wish to cancel?
+                            multiple_select_message: |
+                                These items are scheduled to be published
+                                
+                                Are you sure you still wish to cancel?
+                            button_message: Cancel scheduled publication
+                            cancel_button_message: Leave it alone
+                            message_type: warning
+                        request:
+                            unlock: "1"
+                    
+                layout:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    parent: layout_dropdown
+                    label: Change layout
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_layout
+                    without_traits:
+                        ghost: true
+                view_slots:
+                    parent: layout_dropdown
+                    label: View item's slots
+                    link:
+                        path: zenario__content/panels/slots
+                        branch: true
+                        refiner: content_item
+                categories_add:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    parent: category_dropdown
+                    label: Add to categories
+                    multiple_select_only: true
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_categories_add
+                    without_traits:
+                        ghost: true
+                categories:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    parent: category_dropdown
+                    label: Add to/remove from categories
+                    
+                    admin_box:
+                        path: zenario_content_categories
+                    without_traits:
+                        ghost: true
+                categories_remove:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    parent: category_dropdown
+                    label: Remove from categories
+                    multiple_select_only: true
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_categories_remove
+                    without_traits:
+                        ghost: true
+                alias:
+                    parent: property_dropdown
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    label: Edit alias
+                    admin_box:
+                        path: zenario_alias
+                    without_traits:
+                        ghost: true
+                        
+                head:
+                    parent: property_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    appears_in_toolbars:
+                        edit: true
+                    label: HTML in head of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            mode: head
+                            level: item
+                foot:
+                    parent: property_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    appears_in_toolbars:
+                        edit: true
+                    label: HTML at foot of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            mode: foot
+                            level: item
+                
+                quick_add_to_menu:
+                    parent: action_dropdown
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    label: Attach to menu
+                    multiple_select: No
+                    tooltip: Quick-add this content item to the menu (select a position)
+                    combine_items:
+                        path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: No
+                        one_to_one_choose_phrase: Create menu node
+                        visible_if_for_all_selected_items: >
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                        request:
+                            mass_add_to_menu: "1"
+                    traits:
+                        unlinked: true
+                    without_traits:
+                        ghost: true
+                        hidden: true
+                mass_add_to_menu:
+                    parent: action_dropdown
+                    priv: _PRIV_ADD_MENU_ITEM
+                    hide_in_select_mode: true
+                    label: Attach items to menu
+                    multiple_select: true
+                    multiple_select_only: true
+                    combine_items:
+                        path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: No
+                        many_to_one_choose_phrase: Create menu nodes
+                        visible_if_for_all_selected_items: >
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                        request:
+                            mass_add_to_menu: "1"
+                    traits:
+                        unlinked: true
+                    without_traits:
+                        ghost: true
+                        hidden: true
+                duplicate:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_FIRST_DRAFT
+                    label: Duplicate
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            duplicate: "1"
+                    without_traits:
+                        ghost: true
+                hide:
+                    parent: action_dropdown
+                    priv: _PRIV_HIDE_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    label: Hide
+                    multiple_select: true
+                    traits:
+                        hideable: true
+                    without_traits:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            message: |
+                                This action will hide the content item "[[tag]]".
+                                
+                                If it's in the menu, its menu node(s) will be hidden. 
+                                
+                                Are you sure you wish to proceed?
+                            multiple_select_message: |
+                                This action will hide the selected content items.
+                                
+                                Any menu nodes linking to the the items will be hidden.
+                                
+                                Are you sure you wish to proceed?
+                            button_message: Hide
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            hide: "1"
+                hidden:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    label: Unhide/make draft
+                    multiple_select: true
+                    traits:
+                        hidden: true
+                    without_traits:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Do you wish to unhide the content item "[[tag]]"?
+                                
+                                This will create a new draft, which will be available to visitors if you publish it.
+                            multiple_select_message: |
+                                Do you wish to unhide the selected content items?
+                                
+                                This will create new drafts, which will be available to visitors if you publish them.
+                            button_message: Unhide
+                            cancel_button_message: Cancel
+                            message_type: question
+                        request:
+                            unhide: "1"
+                delete:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_DRAFT
+                    hide_in_select_mode: true
+                    label: Delete draft
+                    multiple_select: true
+                    multiple_select_label: Delete drafts
+                    traits:
+                        draft: true
+                        deletable: true
+                        not_locked: true
+                    without_traits:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            message: |
+                                You are about to delete the draft version of "[[tag]]".
+                                
+                                Deleting this draft will not affect the published version of this item, if it exists.
+                                
+                                This cannot be undone. Are you sure you wish to proceed?
+                            multiple_select_message: |
+                                You are about to delete the draft versions of the selected content items.
+                                
+                                Deleting a draft will not affect any published versions of these items, if they exist.
+                                
+                                This cannot be undone. Are you sure you wish to proceed?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
+                trash:
+                    parent: action_dropdown
+                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    hide_in_select_mode: true
+                    label: Trash
+                    multiple_select: true
+                    traits:
+                        trashable: true
+                    without_traits:
+                        ghost: true
+                    admin_box:
+                        path: zenario_trash
+                delete_archives:
+                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    parent: action_dropdown
+                    hide_in_select_mode: true
+                    label: Delete archived versions
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete any archived versions of "[[tag]]"?
+                                
+                                This cannot be undone.
+                            multiple_select_message: |
+                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                
+                                This cannot be undone.
+                            button_message: Delete archived versions
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_archives: 1
+                    visible_if_for_any_selected_items: |
+                        item.archives_exist
+                redraft:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    label: Re-draft
+                    css_class: create label_to_the_left
+                    multiple_select: true
+                    visible_if_for_all_selected_items: item.status == 'trashed'
+                    tooltip: >
+                        Re-draft this content item|This will create a new draft of
+                        this content item, which will be available to visitors if
+                        you Publish it.
+                    ajax:
+                        confirm:
+                            message: |
+                                Do you wish to re-draft "[[tag]]"? This will create
+                                a new draft of this content item, which will be available to
+                                visitors if you Publish it.
+                            multiple_select_message: |
+                                Do you wish do re-draft these content items? This will create a new draft for each content item, which will be avaliable to visitors if you Publish them.
+                            button_message: Re-draft
+                            cancel_button_message: Cancel
+                            message_type: question
+                        request:
+                            create_draft: "1"
+                migrate_old_documents:
+                    hide_in_select_mode: true
+                    multiple_select: true
+                    label: Migrate to new documents
+                    admin_box:
+                        path: zenario_migrate_old_documents
+                    visible_if_for_all_selected_items: (item.type == 'document') && (item.status != 'hidden')
+                page_preview_sizes:
+                    label: Visitor preview
+                    hide_when_children_are_not_visible: true
+                    ord: 500

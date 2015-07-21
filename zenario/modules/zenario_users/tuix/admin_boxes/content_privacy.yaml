@@ -43,7 +43,6 @@ zenario_content_privacy:
                 group_members:
                     label: 'Group(s):'
                     type: checkboxes
-                    load_values_from_organizer_path: zenario__users/panels/groups_only
                     visible_if: >
                         zenarioAB.value('privacy') == 'group_members'
                 

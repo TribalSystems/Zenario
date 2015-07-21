@@ -38,8 +38,14 @@ if ($getIndividualFiles) {
 $sql .= "
 	FROM ". DB_NAME_PREFIX. "tuix_file_contents AS x
 	INNER JOIN ". DB_NAME_PREFIX. "modules AS m
-	   ON x.module_class_name = m.class_name
-	  AND m.status = 'module_running'
+	   ON x.module_class_name = m.class_name";
+
+if ($runningModulesOnly) {
+	$sql .= "
+	  AND m.status = 'module_running'";
+}
+
+$sql .= "
 	WHERE x.type = '". sqlEscape($type). "'";
 
 if ($requestedPath) {
@@ -56,7 +62,7 @@ if (($type == 'admin_boxes' || $type == 'slot_controls') && !empty($compatibilit
 
 //For Site Settings, only show settings from the current settings group
 //For Advanced Searches, only show fields for the current Storekeepr Path
-} elseif ($type == 'admin_boxes' && ($requestedPath == 'site_settings' || $requestedPath == 'advanced_search')) {
+} elseif ($type == 'admin_boxes' && ($requestedPath == 'site_settings')) {
 	$settingGroups[] = $settingGroup;
 }
 

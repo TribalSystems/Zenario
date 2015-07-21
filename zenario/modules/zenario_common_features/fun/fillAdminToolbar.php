@@ -131,9 +131,26 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	
 	$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_orange zenario_section_dark_text';
 	
+	// First draft
 	if ($cVersion == 1) {
+		$menu = getMenuItemFromContent($cID, $cType);
+		
+		$redirect_page = adminPhrase('the Home page');
+		if ($menu['parent_id']) {
+			$redirectContent = getRow('menu_nodes', array('equiv_id', 'content_type'), array('id' => $menu['parent_id']));
+			$redirectCID = $redirectContent['equiv_id'];
+			$redrectCType = $redirectContent['content_type'];
+			$redirect_page = formatTag($redirectCID, $redrectCType, -1, false, true);
+		}
+		
 		$adminToolbar['sections']['edit']['label'] = adminPhrase('First Draft');
-	
+		$adminToolbar['sections']['edit']['buttons']['delete_draft']['ajax']['confirm']['message'] = adminPhrase("
+			You are about to delete the current draft version of this content item. 
+			
+			As there isn't published version of this content item, it'll be deleted and you will be redirected to [[redirect_page]].
+			
+			Are you sure you wish to proceed?
+		", array('redirect_page' => $redirect_page));
 	} else {
 		$adminToolbar['sections']['edit']['label'] = adminPhrase('Draft');
 	}
@@ -607,7 +624,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			
 			
 			foreach ($adminToolbar['sections']['menu'. $i]['buttons'] as $tagName => &$button) {
-				if (!isInfoTag($tagName)) {
+				if (is_array($button)) {
 					foreach (array('request', 'key') as $request) {
 						foreach (array('admin_box', 'ajax', 'pick_items') as $action) {
 							if (isset($button[$action][$request]['mID'])) {
@@ -695,7 +712,7 @@ if (isSpecialPage(cms_core::$cID, cms_core::$cType)) {
 	$adminToolbar['sections']['icons']['buttons']['tag_id']['css_class'] .= ' zenario_at_icon_tag_id_special_page';
 }
 
-$adminToolbar['meta_info']['title'] =
+$adminToolbar['meta_info']['title'] = cms_core::$pageTitle;
 $adminToolbar['sections']['icons']['buttons']['title']['tooltip'] = adminPhrase('Title: [[title]]', array('title' => cms_core::$pageTitle));
 
 $layoutLabel = 'L';
@@ -723,26 +740,33 @@ $layoutItemCount = $layoutDetails['item_count'];
 $adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
 	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
 
-$adminToolbar['sections']['icons']['buttons']['language_id']['label'] = cms_core::$langId;
-$adminToolbar['sections']['icons']['buttons']['language_id']['tooltip'] = adminPhrase('Language: [[lang]]', array('lang' => getLanguageName(cms_core::$langId)));
+// Language
+if (getNumLanguages() <= 1) {
+	unset($adminToolbar['sections']['icons']['buttons']['language_id']);
+} else {
+	$adminToolbar['sections']['icons']['buttons']['language_id']['label'] = cms_core::$langId;
+	$adminToolbar['sections']['icons']['buttons']['language_id']['tooltip'] = adminPhrase('Language: [[lang]]', array('lang' => getLanguageName(cms_core::$langId)));
+}
 
-//Alias
+// Alias
 if (cms_core::$alias) {
 	unset($adminToolbar['sections']['icons']['buttons']['no_alias']);
 } else {
-	unset($adminToolbar['sections']['icons']['buttons']['alias']);
+	unset($adminToolbar['sections']['icons']['buttons']['go_to_alias']);
+	$adminToolbar['sections']['icons']['buttons']['alias_dropdown']['css_class'] =
+		'zenario_at_icon_alias zenario_at_icon_no_alias';
 }
 
 $visitorURL = linkToItem(
 	$cID, $cType, $fullPath = false, $request = '', cms_core::$alias,
 	$autoAddImportantRequests = false, $useAliasInAdminMode = true);
 
-if (isset($adminToolbar['sections']['icons']['buttons']['alias'])) {
-	$adminToolbar['sections']['icons']['buttons']['alias']['tooltip'] = adminPhrase('Alias: [[alias]]', array('alias' => (cms_core::$alias)));
-	$adminToolbar['sections']['icons']['buttons']['alias']['frontend_link'] = $visitorURL;
+if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
+	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = adminPhrase('Go to content item via its alias "[[alias]]"', array('alias' => (cms_core::$alias)));
+	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;
 }
 if (isset($adminToolbar['sections']['icons']['buttons']['no_alias'])) {
-	$adminToolbar['sections']['icons']['buttons']['alias']['frontend_link'] = $visitorURL;
+	$adminToolbar['sections']['icons']['buttons']['no_alias']['frontend_link'] = $visitorURL;
 }
 
 
@@ -890,7 +914,6 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed
 	}
 }
 
-
 //Content Item is categorised
 if (checkRowExists('category_item_link', array('equiv_id' => $content['equiv_id'], 'content_type' => $cType))) {
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_none']);
@@ -916,6 +939,15 @@ if (isset($adminToolbar['sections']['icons']['buttons']['item_categories_some'])
 		}
 	}
 }
+
+
+//Content Item type has categories enabled
+if (checkRowExists('content_types', array('enable_categories' => 0, 'content_type_id' => $content['type']))) {
+	unset($adminToolbar['sections']['edit']['buttons']['category_dropdown']);
+	unset($adminToolbar['sections']['icons']['buttons']['item_categories_some']);
+	unset($adminToolbar['sections']['icons']['buttons']['item_categories_none']);
+}
+
 
 // Create page preview buttons
 $pagePreviews = getRowsArray('page_preview_sizes', array('width', 'height', 'description', 'ordinal', 'is_default', 'type'), array(), 'ordinal');

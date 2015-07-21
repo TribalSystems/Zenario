@@ -34,7 +34,7 @@ plugin_settings:
                         site_home_page:
                             label: "Use the home page"
                         other_menu_node:
-                            label: "Use a specific content item"
+                            label: "Use a specific menu node"
                     value: site_home_page
                     format_onchange: Yes
                     side_note: On multi-lingual sites, the link will always point to the page in the current visitor language, if it exists.
@@ -47,7 +47,7 @@ plugin_settings:
                         use_value_for_plugin_name: "4"
                     visible_if: >
                         zenarioAB.value('breadcrumb_trail') == 'other_menu_node'
-                    label: 'Content item:'
+                    label: 'Menu node:'
                     pick_items:
                         by_language: Yes
                         path: zenario__menu/panels/sections
@@ -58,7 +58,13 @@ plugin_settings:
                         disallow_refiners_looping_on_min_path: Yes
                         hide_remove_button: Yes
                     validation:
-                        required_if_not_hidden: Please select a content item
-                    
-                
+                        required_if_not_hidden: Please select a menu node
+                        
+                breadcrumb_trail_separator:
+                    plugin_setting:
+                        name: breadcrumb_trail_separator
+                    label: 'Breadcrumb trail separator:'
+                    type: text
+                    value: '»'
+                    style: 'width: 5em;'
                 

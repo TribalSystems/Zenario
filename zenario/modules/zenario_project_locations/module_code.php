@@ -91,7 +91,7 @@ class zenario_project_locations extends module_base_class {
 			$sql = "SELECT
 						R.id, IFNULL(vs.local_text, R.name) as name
 					FROM 
-						". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids 
+						". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids
 					INNER JOIN 
 						". DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
 					ON 
@@ -748,7 +748,9 @@ class zenario_project_locations extends module_base_class {
 						// FIRST I STORE ALL THE SORT VALUES FROM THE MOVED ELEMENTS
 						$sorts = array();
 						foreach (explode(',', $ids) as $id) {
-							$sorts[] = $_POST['item__'. $id];
+							if (!empty($_POST['ordinals'][$id])) {
+								$sorts[] = $_POST['ordinals'][$id];
+							}
 						}
 
 						$sort = min($sorts);
@@ -789,7 +791,9 @@ class zenario_project_locations extends module_base_class {
 						// FIRST I STORE ALL THE SORT VALUES FROM THE MOVED ELEMENTS
 						$sorts = array();
 						foreach (explode(',', $ids) as $id) {
-							$sorts[] = $_POST['item__'. $id];
+							if (!empty($_POST['ordinals'][$id])) {
+								$sorts[] = $_POST['ordinals'][$id];
+							}
 						}
 
 						$sort = min($sorts);

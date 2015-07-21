@@ -4,7 +4,12 @@ zenario__locations:
 	panel:
 		title: Locations
 		no_items_in_search_message: No locations exist, click "Create" to create a location.
-		#grid_view_microtemplate: zenario_grid_view_location
+		
+		panel_type: google_map_or_list
+		lat_column: latitude
+		lng_column: longitude
+		double_click_item_button: rename_location
+		
 		slidedown_view_microtemplate: zenario_grid_view_location
 		hidden_nav:
 			valid_location_parents:
@@ -291,7 +296,7 @@ zenario__locations:
 				label: Import
 				hide_in_select_mode: true
 				hide_when_children_are_not_visible: true
-				ord: 999999
+				ord: 999998
 			import:
 				label: Start import wizard
 				parent: import_dropdown
@@ -308,6 +313,15 @@ zenario__locations:
 					path: zenario_download_sample_file
 					key:
 						dataset:
+			export:
+					label: Export
+					admin_box:
+						path: zenario_export_dataset
+						key:
+							dataset:
+					ord: 999999
+			
+			
 		item_buttons:
 			rename_location:
 				ord: "1"

@@ -48,7 +48,6 @@ site_settings:
                     site_setting:
                         name: zenario_newsletter__all_newsletters_opt_out
                     type: select
-                    load_values_from_organizer_path: zenario__users/panels/boolean_and_groups_only
                     empty_value: ' -- Select -- '
                     validation:
                         required: Please select the opt-out (unsubscribe) characteristic.

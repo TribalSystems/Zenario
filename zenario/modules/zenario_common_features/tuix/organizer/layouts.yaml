@@ -64,6 +64,10 @@ zenario__layouts:
                     #title: Default layout for content type
                     db_column: ct.default_layout_id IS NOT NULL
                     format: yes_or_no
+                archived:
+                    format: yes_or_no
+                    db_column: >
+                        l.status = 'suspended'
                 status:
                     title: Status
                     show_by_default: true
@@ -188,7 +192,7 @@ zenario__layouts:
                     css_class: zenario_ib_warning
                     tooltip: |
                         Template file is missing!
-                    visible_if_for_all_selected_items: |
+                    visible_if: >
                         item.missing
                 grid_preview:
                     css_class: inspect
@@ -327,8 +331,8 @@ zenario__layouts:
                             message_type: warning
                         request:
                             restore: "1"
-                    traits:
-                        archived: true
+                    visible_if_for_all_selected_items: |
+                        zenario.engToBoolean(item.archived)
                 archive:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_TEMPLATE
@@ -353,10 +357,10 @@ zenario__layouts:
                             archive: "1"
                     without_traits:
                         deletable: true
-                        archived: true
                         unregistered: true
-                    without_columns_set:
-                        default: true
+                    visible_if_for_all_selected_items: |
+                        !zenario.engToBoolean(item.default) &&
+                        !zenario.engToBoolean(item.archived)
                 delete:
                     priv: _PRIV_EDIT_TEMPLATE
                     label: Delete

@@ -241,6 +241,7 @@ ValidatorContext.prototype.validateAll = function (data, schema, dataPathParts, 
 		|| this.validateString(data, schema)
 		|| this.validateArray(data, schema)
 		|| this.validateObject(data, schema)
+		|| this.flagStaticProperties(data, schema)
 		|| this.validateCombinations(data, schema)
 		|| null
 	if (error || errorCount != this.errors.length) {
@@ -507,6 +508,13 @@ ValidatorContext.prototype.validateArrayItems = function validateArrayItems(data
 				return error;
 			}
 		}
+	}
+	return null;
+}
+ValidatorContext.prototype.flagStaticProperties = function flagStaticProperties(data, schema) {
+	if (schema['static']
+	 && !schema.preFillOrganizerPanel) {
+		return this.createError(ErrorCodes.STATIC_PROPERTY, {});
 	}
 	return null;
 }
@@ -919,6 +927,7 @@ var ErrorCodes = {
 	ARRAY_LENGTH_LONG: 401,
 	ARRAY_UNIQUE: 402,
 	ARRAY_ADDITIONAL_ITEMS: 403
+	, STATIC_PROPERTY: 500
 };
 var ErrorMessagesDefault = {
 	INVALID_TYPE: "invalid type: {type} (expected {expected})",

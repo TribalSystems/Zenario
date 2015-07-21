@@ -171,6 +171,21 @@ properties:
                                 type: string
                                 description: >
                                     A tooltip for this button
+                            
+                            parent:
+                                type: string
+                                description: >
+                                    Enter the name of another button here to make your button appear
+                                    under the named button as a dropdown.
+                                    
+                                    There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                            
+                            hide_when_children_are_not_visible:
+                                type: boolean
+                                description: >
+                                    If you set this property, the button will be hidden when it has no
+                                    visible children.
+                            
                             hidden: *hidden
                             visible_if: *visible_if
                             

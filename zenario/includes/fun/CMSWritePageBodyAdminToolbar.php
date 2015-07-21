@@ -54,6 +54,11 @@ $toolbarTempHTML =
 				file_get_contents(moduleDir('zenario_common_features', 'js/microtemplates/zenario_toolbar.html'))
 )));
 
+//Don't show the "bug" icon from the placeholder HTML if this admin doesn't have permission to see the dev tools
+if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
+	$toolbarTempHTML = str_replace('zenario_debug', 'zenario_debug_hidden', $toolbarTempHTML);
+}
+
 
 
 

@@ -279,30 +279,30 @@ class zenario_extranet extends module_base_class {
 		//Set the User's email/screenname cookie on their local machine if requested
 		if (isset($_SESSION['SET_EXTRANET_LOGIN_COOKIE'])) {
 			if (!$useScreenName || $login_with == 'Email') {
-				setcookie('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/');
+				setcookie('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/', cookieDomain());
 			} else {
-				setcookie('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/');
+				setcookie('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/', cookieDomain());
 			}
 			unset($_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 		
 		//Remove the User's email/screenname cookie on their local machine if requested
 		} elseif (isset($_SESSION['FORGET_EXTRANET_LOGIN_COOKIE'])) {
 			if (!$useScreenName || $login_with == 'Email') {
-				setcookie('COOKIE_LAST_EXTRANET_EMAIL', '', time()-3600, '/');
+				clearCookie('COOKIE_LAST_EXTRANET_EMAIL');
 			} else {
-				setcookie('COOKIE_LAST_EXTRANET_SCREEN_NAME', '', time()-3600, '/');
+				clearCookie('COOKIE_LAST_EXTRANET_SCREEN_NAME');
 			}
 			unset($_SESSION['FORGET_EXTRANET_LOGIN_COOKIE']);
 		}
 		
 		//Set a hash of the User's details in a cookie on their local machine if requested, so they can be logged in automatically
 		if (isset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'])) {
-			setcookie('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'], time()+8640000, '/');
+			setcookie('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'], time()+8640000, '/', cookieDomain());
 			unset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 		
 		//Remove the hash of the User's details if requested
 		} elseif (isset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'])) {
-			setcookie('LOG_ME_IN_COOKIE', '', time()-3600, '/');
+			clearCookie('LOG_ME_IN_COOKIE');
 			unset($_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE']);
 		}
 	}

@@ -29,6 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario_email_template':
+		
+		addAbsURLsToAdminBoxField($box['tabs']['body']['fields']['body']);
+		
+		
 		$files = array();
 		$columns = array();
 		

@@ -110,7 +110,7 @@ class zenario_location_map_and_listing extends module_base_class {
 		
 		$this->data['mapId'] = $this->containerId. '_map';
 		$this->data['mapIframeId'] = $this->containerId. '_map_iframe';
-		$this->data['mapIframeSrc'] = $this->showIframeLink(array('display_map' => 1, 'country_id' => $this->data['country_id']), $hideLayout = true);
+		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(array('display_map' => 1, 'country_id' => $this->data['country_id']));
 		
 		$this->loadLocations();
 		
@@ -201,7 +201,7 @@ class zenario_location_map_and_listing extends module_base_class {
 		
 		if (!empty($this->fields) || !empty($this->datasetFields)) {
 			$sql = "
-				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 					ON cd.location_id = loc.id";
 				
 			if (!empty($this->fields)) {
@@ -301,7 +301,7 @@ class zenario_location_map_and_listing extends module_base_class {
 				$fields['first_tab/field3']['values'] =
 					listCustomFields(
 						ZENARIO_LOCATION_MANAGER_PREFIX. 'locations',
-						$flat = false, $filter = 'boolean_and_groups_only', $customOnly = true);
+						$flat = false, $filter = 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true);
 				break;
 
 		}

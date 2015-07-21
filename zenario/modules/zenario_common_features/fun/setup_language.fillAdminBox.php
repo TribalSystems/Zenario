@@ -31,11 +31,16 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 if (!$box['key']['id']) {
 	exit;
 	
-} elseif ($lang = getRow('languages', array('detect', 'detect_lang_codes', 'search_type', 'translate_phrases'), $box['key']['id'])) {
+} elseif ($lang = getRow('languages', array('detect', 'detect_lang_codes', 'search_type', 'translate_phrases', 'domain'), $box['key']['id'])) {
 	$box['tabs']['settings']['fields']['detect']['value'] = $lang['detect'];
 	$box['tabs']['settings']['fields']['detect_lang_codes']['value'] = $lang['detect_lang_codes'];
 	$box['tabs']['settings']['fields']['search_type']['value'] = $lang['search_type'];
 	$box['tabs']['settings']['fields']['translate_phrases']['value'] = $lang['translate_phrases'];
+	
+	if ($lang['domain']) {
+		$box['tabs']['settings']['fields']['use_domain']['value'] = 1;
+		$box['tabs']['settings']['fields']['domain']['value'] = $lang['domain'];
+	}
 	
 	$box['title'] = adminPhrase('Editing settings for "[[language]]"', array('language' => getLanguageName($box['key']['id'])));
 
@@ -67,6 +72,8 @@ if (!$box['key']['id']) {
 	}
 
 }
+
+$box['tabs']['settings']['fields']['domain']['placeholder'] = $box['key']['id']. '.'. primaryDomain();
 
 $box['tabs']['settings']['fields']['english_name']['value'] =
 	getRow('visitor_phrases', 'local_text', array('code' => '__LANGUAGE_ENGLISH_NAME__', 'language_id' => $box['key']['id'], 'module_class_name' => 'zenario_common_features'));

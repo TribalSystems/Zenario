@@ -95,20 +95,20 @@ switch ($path) {
 
 		//Loop through each field that would be in the Admin Box, and has the <plugin_setting> tag set
 		foreach ($box['tabs'] as $tabName => &$tab) {
-			if (!isInfoTag($tabName) && engToBooleanArray($box, 'tabs', $tabName, 'edit_mode', 'on')) {
+			if (is_array($tab) && engToBooleanArray($box, 'tabs', $tabName, 'edit_mode', 'on')) {
 				foreach ($tab['fields'] as $fieldName => &$field) {
-					if (!isInfoTag($fieldName)) {
+					if (is_array($field)) {
 						if (!empty($field['plugin_setting']['name'])) {
 							$pk['name'] = $field['plugin_setting']['name'];
 					
 							//Delete the value for a field if it was hidden...
-							if (engToBooleanArray($box, 'tabs', $tabName, 'fields', $fieldName, '_h_js')
-							 || engToBooleanArray($box, 'tabs', $tabName, 'fields', $fieldName, 'hidden')) {
+							if (engToBooleanArray($field, 'hidden')
+							 || engToBooleanArray($field, '_was_hidden_before')) {
 								deleteRow('plugin_settings', $pk);
 					
 							//...or a multiple edit field that is not marked as changed
 							} else
-							if (isset($box['tabs'][$tabName]['fields'][$fieldName]['multiple_edit'])
+							if (isset($field['multiple_edit'])
 							 && !$changes[$tabName. '/'. $fieldName]) {
 								deleteRow('plugin_settings', $pk);
 					
@@ -222,7 +222,13 @@ switch ($path) {
 										$value['format'] = 'text';
 									}
 								}
-						
+								
+								if (isset($field['plugin_setting']['is_email_address'])) {
+									$value['is_email_address'] = $field['plugin_setting']['is_email_address'];
+								} else {
+									$value['is_email_address'] = NULL;
+								}
+								
 								setRow('plugin_settings', $value, $pk);
 							}
 						}
@@ -240,17 +246,17 @@ switch ($path) {
 			$eggName = false;
 			$eggNameCurrentPriority = false;
 			foreach ($box['tabs'] as $tabName => &$tab) {
-				if (!isInfoTag($tabName)
-				 && !engToBooleanArray($tab, '_h_js')
+				if (is_array($tab)
 				 && !engToBooleanArray($tab, 'hidden')
+				 && !engToBooleanArray($tab, '_was_hidden_before')
 				 && !empty($tab['fields']) && is_array($tab['fields'])) {
 			
 					foreach ($tab['fields'] as $fieldName => &$field) {
-						if (!isInfoTag($fieldName)
+						if (is_array($field)
 						 && !empty($values[$tabName. '/'. $fieldName])
 						 && !empty($field['plugin_setting']['use_value_for_plugin_name'])
-						 && !engToBooleanArray($field, '_h_js')
 						 && !engToBooleanArray($field, 'hidden')
+						 && !engToBooleanArray($field, '_was_hidden_before')
 						 && ($eggNameCurrentPriority === false || $eggNameCurrentPriority > (int) $field['plugin_setting']['use_value_for_plugin_name'])) {
 					
 							$eggName = $values[$tabName. '/'. $fieldName];

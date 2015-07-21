@@ -196,7 +196,7 @@ switch ($path) {
 					'disabled' => true,
 					'ord' => $ord,
 					'parent' => 'tags',
-					'label' => adminPhrase('No tags exist, edit an image to create tags')
+					'label' => adminPhrase('No tags exist, edit an image or click "Manage tags" to create tags')
 				);
 			
 			} else {
@@ -231,6 +231,23 @@ switch ($path) {
 	
 	case 'zenario__modules/panels/modules':
 		return require funIncPath(__FILE__, 'modules.preFillOrganizerPanel');
+	
+	
+	case 'zenario__modules/panels/plugins':
+		//The usage_layouts column will actually contain two columns
+		//If the admin is sorting on this column, make sure that both columns
+		//are being used to sort so the sorting appears to happen in a logical way
+		$panel['columns']['usage_layouts']['sort_column'] =
+			$panel['columns']['usage_layouts']['db_column'].
+			', '.
+			$panel['columns']['usage_archived_layouts']['db_column'];
+	
+		$panel['columns']['usage_layouts']['sort_column_desc'] =
+			$panel['columns']['usage_layouts']['db_column'].
+			' DESC, '.
+			$panel['columns']['usage_archived_layouts']['db_column'].
+			' DESC';
+		break;
 	
 	
 	case 'zenario__layouts/panels/layouts':

@@ -128,7 +128,6 @@ class zenario_multiple_image_container extends zenario_banner {
 				$fields['first_tab/use_rollover']['hidden'] =
 				$fields['first_tab/rollover_image']['hidden'] =
 				$fields['first_tab/alt_tag']['hidden'] =
-				$fields['first_tab/image_title']['hidden'] =
 				$fields['first_tab/floating_box_title']['hidden'] = true;
 				
 				$fields['text/more_link_text']['hidden'] = true;

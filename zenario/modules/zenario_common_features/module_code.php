@@ -56,7 +56,11 @@ class zenario_common_features extends module_base_class {
 				m.ordinal,
 				m.rel_tag,
 				m.image_id,
-				m.rollover_image_id
+				m.rollover_image_id,
+				m.menu_text_module_class_name,
+				m.menu_text_method_name,
+				m.menu_text_param_1,
+				m.menu_text_param_2
 			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
 			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
@@ -106,6 +110,49 @@ class zenario_common_features extends module_base_class {
 	
 	*/
 	
+	public function deleteHierarchicalDocumentPubliclink($documentId) {
+		$document = getRow('documents', array('file_id', 'filename'), $documentId);
+		
+		$fileIdsInDocument = getRowsArray('documents', array('file_id'), array('file_id'=>$document['file_id'], 'filename'=>$document['filename']));
+		$numberFileIds =count($fileIdsInDocument);
+		
+		$file = getRow('files', 
+						array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
+						$document['file_id']);
+		
+		$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
+		$symFolder =  CMS_ROOT . $dirPath;
+		$symPath = $symFolder . '/' . $document['filename'];
+		$frontLink = $dirPath . '/' . $document['filename'];
+		
+		if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+			if(is_link($symPath)) {
+				$target = readlink($symPath);
+				unlink($symPath);
+				if ($numberFileIds == 1){
+					if (file_exists($symFolder. '/accessed')) {
+						unlink($symFolder. '/accessed');
+					}
+					$empty = true;
+					foreach (scandir($symFolder) as $child) {
+						if (!($child == '.' || $child == '..')) {
+							$empty = false;
+						}
+					}
+					if ($empty) {
+						rmdir($symFolder);
+					} else {
+						return "Unable to delete folder as not empty.";
+					}
+					return true;
+				}
+			} else {
+				return "Does not have public link to delete.";
+			}
+		} else {
+			return "Problem deleting syslink.";
+		}
+	}
 	
 	public function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
@@ -117,27 +164,18 @@ class zenario_common_features extends module_base_class {
 				self::deleteHierarchicalDocument($row['id']);
 			}
 		} elseif ($details && $details['type'] == 'file') {
-				$fileDetails = getRow('files', array('path', 'filename', 'location'), $details['file_id']);
-				$document = getRow('documents', array('file_id', 'filename'), array('id'=>$documentId));
-				$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
-				$numberFileIds =count($fileIdsInDocument);
-				
-				$file = getRow('files', 
-								array('id', 'filename', 'path', 'created_datetime'),
-								$document['file_id']);
-				if($file['filename']) {
-					$symPath = CMS_ROOT . 'public' . '/' . $file['path'] . '/' .  $document['filename'];
-					$symFolder =  CMS_ROOT . 'public' . '/' . $file['path'];
-					$frontLink = 'public' . '/' . $file['path'] . '/' .  $document['filename'];
-					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
-							if(is_link($symPath)) { //file_exists($symPath)
-								$target = readlink($symPath);
-								unlink($symPath);
-								if ($numberFileIds == 1){
-									rmdir($symFolder);
-								}
-					}
-				}
+			
+			$fileDetails = getRow('files', array('path', 'filename', 'location'), $details['file_id']);
+			$document = getRow('documents', array('file_id', 'filename'), array('id'=>$documentId));
+			$fileIdsInDocument = getRowsArray('documents', array('file_id', 'filename'), array('file_id'=>$document['file_id']));
+			$numberFileIds =count($fileIdsInDocument);
+			
+			$file = getRow('files', 
+							array('id', 'filename', 'path', 'created_datetime'),
+							$document['file_id']);
+			
+			if($file['filename']) {
+				self::deleteHierarchicalDocumentPubliclink($documentId);
 				//check to see if file used by another document before deleting or used in ctype documents
 				if (($numberFileIds == 1) && !checkRowExists('versions', array('file_id' => $details['file_id']))) {
 					deleteRow('files', array('id' => $details['file_id']));
@@ -421,11 +459,6 @@ class zenario_common_features extends module_base_class {
 	
 	
 	
-	public static function fillInfoBox(&$infoBox) {
-		$infoBox[10]['fields'][10]['value'] = adminPhrase('Community');
-		$infoBox[10]['fields'][20]['value'] = adminPhrase('BSD');
-	}
-	
 	
 	
 	
@@ -567,14 +600,6 @@ class zenario_common_features extends module_base_class {
 		}
 	}
 	
-	public static function advancedSearchWhereStatement($path, $values, $tablePrefix) {
-		return '';
-	}
-	
-	public static function advancedSearchTableJoins($path, $values, $tablePrefix) {
-		return array();
-	}
-	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
 			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
@@ -675,4 +700,5 @@ class zenario_common_features extends module_base_class {
 		
 		return $action;
 	}
+	
 }

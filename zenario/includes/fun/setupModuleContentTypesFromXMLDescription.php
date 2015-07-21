@@ -49,6 +49,7 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 					summary_field = '". ifNull(sqlEscape(arrayKey($type, 'summary_field')), 'optional'). "',
 					release_date_field = '". ifNull(sqlEscape(arrayKey($type, 'release_date_field')), 'optional'). "',
 					enable_summary_auto_update = ". engToBooleanArray($type, 'enable_summary_auto_update'). ",
+					enable_categories = ". engToBooleanArray($type, 'enable_categories'). ",
 					module_id = ". (int) $moduleId. "
 				ON DUPLICATE KEY UPDATE
 					module_id = ". (int) $moduleId;

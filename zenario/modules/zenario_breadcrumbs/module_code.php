@@ -59,6 +59,10 @@ class zenario_breadcrumbs extends zenario_menu {
 		}
 	}
 	
+	function addExtraMergeFields(&$menuItem, &$mergeFields, $recurseCount, $i, $maxI) {
+		$mergeFields['Separator'] = $this->setting('breadcrumb_trail_separator');
+		return true;
+	}
 	
 	//Recursive function to draw Menu Nodes from the database
 	function drawMenu(&$menuArray, $recurseCount = 0, $headerObjects = array(), $subSections = array()) {

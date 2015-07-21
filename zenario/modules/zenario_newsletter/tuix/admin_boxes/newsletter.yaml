@@ -102,6 +102,10 @@ zenario_newsletter:
                     style: width:98%
                     type: editor
                     rows: "15"
+                    editor_options:
+                        toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
+                        convert_urls: false
+                        relative_urls: false
                     insert_image_button:
                         pick_items:
                             path: ""
@@ -115,7 +119,6 @@ zenario_newsletter:
                     label: 'Add user field:'
                     type: select
                     empty_value: -- Select --
-                    load_values_from_organizer_path: zenario__users/panels/all_fields
                     format_onchange: true
                 test_send_email_address:
                     type: text

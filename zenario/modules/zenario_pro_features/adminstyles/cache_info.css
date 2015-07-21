@@ -2,7 +2,7 @@ div.zenario_cache_info {
 	position: relative;
 	float: right;
 	bottom: 18px;
-	z-index:10;
+	z-index: 9999;
 }
 
 div.zenario_cache_info div {

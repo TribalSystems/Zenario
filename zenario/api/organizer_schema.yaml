@@ -3,7 +3,6 @@
 top_level_page: ref_of_elements_and_properties
 pages:
     - admin_box
-    - advanced_search
     - ajax
     - collection_buttons
     - columns
@@ -83,6 +82,10 @@ common_definitions:
         preFillOrganizerPanel: true
         description: >
             This lets you add a table join to another table
+            
+            
+            This property must be written in your .yaml file.
+            It can't be changed in php.
     
     link_properties: &link_properties
         path:
@@ -92,12 +95,20 @@ common_definitions:
                 The tag-path of a panel to link to.
                 
                 This must be a tag-path; you may not enter a navigation path.
+            
+            
+                This property must be written in your .yaml file.
+                It can't be changed in php.
         refiner:
             type: string
             static: true
             description: >
                 If the panel you are linking has a refiner defined,
                 you can create a link to panel that will use that refiner by entering its name here.
+            
+            
+                This property must be written in your .yaml file.
+                It can't be changed in php.
         unselect_items:
             type: boolean
             description: >
@@ -165,6 +176,10 @@ additionalProperties:
                         description: >
                             If you set a panel on a nav element, an administrator will be taken into
                             the panel when they click on it.
+            
+            
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
                         #properties: *panel_properties #This will be set in dev_tools.js instead
         
         panels:
@@ -195,13 +210,12 @@ additionalProperties:
                     panel_type:
                         type: string
                         static: true
-                        preFillOrganizerPanel: true
                         description: >
                             The panel type to use for this panel.
-                            
-                            You must set this property by writing it in your TUIX files.
-                            You cannot define or modify it in your fillOrganizerPanel()
-                            or preFillOrganizerPanel() methods.
+            
+            
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
                         default: list
                     
                     slidedown_view_microtemplate:
@@ -211,7 +225,13 @@ additionalProperties:
                             next to each item in Organizer, which will cause the microtemplate to appear
                             by sliding down when clicked on.
                             
-                            The toggle button only appears in grid or list view.
+                            The toggle button only appears in list view.
+                    
+                    grid_view_microtemplate:
+                        type: string
+                        description: >
+                            If you enter the name of a microtemplate here, it will be added under the thumbnail for each
+                            item in grid view.
                     
                     db_items:
                         type: object
@@ -231,6 +251,11 @@ additionalProperties:
                                     The name of a table in the database (including the prefix), and an alias.
                                     
                                     E.g. <code>[[DB_NAME_PREFIX]]some_table_name AS t</code>
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
                             id_column:
                                 type: string
                                 static: true
@@ -239,6 +264,11 @@ additionalProperties:
                                     The name of the id-column in your table, which will be used for the ids of the rows in Organizer.
                                     
                                     E.g. t.id
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
                             encode_id_column:
                                 type: boolean
                                 static: true
@@ -250,6 +280,11 @@ additionalProperties:
                                     Note that while the *encoding* will be automatic, the *decoding* is not, and
                                     you'll still need to call decodeItemIdForStorekeeper() manually in the
                                     appropriate places.
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
                             group_by:
                                 type: string
                                 static: true
@@ -259,6 +294,11 @@ additionalProperties:
                                     <code>id_column</code> if not set.
                                     If you've used CONCAT() or some other function name for your <code>id_column</code> then
                                     you should set this to improve the efficiency of the generated SQL statement.
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
                                 default: (defaults to the id_column property)
                             where_statement:
                                 type: string
@@ -266,6 +306,11 @@ additionalProperties:
                                 preFillOrganizerPanel: true
                                 description: >
                                     A WHERE-statement to apply to your query
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
                                 default: WHERE 1=1
                             client_side:
                                 type: boolean
@@ -281,6 +326,10 @@ additionalProperties:
                                     
                                     Filters and quick-filters will always be done on the server and will always trigger an AJAX request
                                     when changed.
+            
+            
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                     
                     columns:
                         type: object
@@ -319,6 +368,11 @@ additionalProperties:
                                 
                                         You do not need to provide this property if you plan to populate this column in
                                         PHP rather than MySQL.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 
                                 searchable:
                                     type: boolean
@@ -335,6 +389,11 @@ additionalProperties:
                                         • If it is not set, then the searching will be done in MySQL on the
                                             server, and will only work on columns that are in the database (and
                                             not columns computed in PHP).
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 ascii_only:
                                     type: boolean
                                     static: true
@@ -342,6 +401,11 @@ additionalProperties:
                                     description: >
                                         You must flag any database columns that use the ascii characterset rather than UTF-8 with this
                                         property to avoid a database error when searching for multilingual characters.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 
                                 search_column:
                                     type: string
@@ -349,6 +413,11 @@ additionalProperties:
                                     preFillOrganizerPanel: true
                                     description: >
                                         Allows you to specify a different column definition to use for searches.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                     default: (defaults to the db_column property)
                                 sort_column:
                                     type: string
@@ -356,13 +425,23 @@ additionalProperties:
                                     preFillOrganizerPanel: true
                                     description: >
                                         Allows you to specify a different column definition to use when sorting.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                     default: (defaults to the db_column property)
                                 sort_column_desc:
                                     type: string
                                     static: true
                                     preFillOrganizerPanel: true
                                     description: >
-                                        Allows you to specify a different column definition to use when sorting
+                                        Allows you to specify a different column definition to use when sorting.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                         descending.
                                     default: "<code>sort_column</code> DESC"
                                 
@@ -384,6 +463,11 @@ additionalProperties:
                                         be used by confirm messages, label properties, and so on.
                                 
                                         Note that the column's definition will always be sent to the client.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 
                                 item_link:
                                     enum:
@@ -400,11 +484,11 @@ additionalProperties:
                                     default: text
                                     description: >
                                         This lets you define the data-format of a column.
-                                        
-                                        
-                                        You must set this property by writing it in your TUIX files
-                                        or your preFillOrganizerPanel() method.
-                                        You cannot define or modify it in your preFillOrganizerPanel() method.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 filter_format:
                                     type: string
                                     static: true
@@ -416,10 +500,11 @@ additionalProperties:
                                         This property lets you override the format of a column for the
                                         filter logic. For example, you could have a column that appears as
                                         a count, but is filtered as a yes_or_no column.
-                                        
-                                        You must set this property by writing it in your TUIX files
-                                        or your preFillOrganizerPanel() method.
-                                        You cannot define or modify it in your preFillOrganizerPanel() method.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 
                                 values:
                                     type: object
@@ -486,24 +571,83 @@ additionalProperties:
                                         • If it is not set, then the searching will be done in MySQL on the
                                             server, and will only work on columns that are in the database (and
                                             not columns computed in PHP).
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 disallow_filtering:
                                     type: boolean
                                     static: true
                                     preFillOrganizerPanel: true
                                     description: >
                                         Allows you to disallow filtering on a column.
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
+                                
+                                tag_colors:
+                                    type: object
+                                    description: >
+                                        This property is used by the "images_with_tags" panel type. It turns a
+                                        column with comma-separated values into a list of coloured tags.
+                                        
+                                        If set, it needs to be an array of values (as keys) to colour names (as values).
+                                        Any missing values will default to blue.
+                                        
+                                        This works from version 7.0.6 onwards.
+                                    additionalProperties:
+                                        enum:
+                                            - blue
+                                            - red
+                                            - green
+                                            - orange
+                                            - yellow
+                                            - violet
+                                            - grey
+                                        default: blue
+                                
+                                get_tags_from_column:
+                                    type: string
+                                    default: (defaults to the current column)
+                                    description: >
+                                        This lets you use the value of a different column for the tags by
+                                        entering the code-name of another column.
+                                        
+                                        If you don't set the get_tags_from_column property then the tags will
+                                        be displayed instead of the current value.
+                                        
+                                        If you do set the get_tags_from_column property then the tags will
+                                        be displayed below the current value, and the height of each row will
+                                        be made larger to accommodate this.
                     
                     default_sort_column:
                         type: string
                         static: true
                         description: >
                             The code-name of a column (not the name in SQL) to use as the default sort column.
+    
+    
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
                         default: name
                     default_sort_desc:
                         type: boolean
                         static: true
                         description: >
                             If this property is set, your panel will sort its items in descending order by default.
+    
+    
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
+                    
+                    subheading_column:
+                        type: string
+                        description: >
+                            If you are using the list_with_subheadings panel type then you should enter
+                            the code-name of a column to use as a subheading into this property.
                     
                     quick_filter_buttons:
                         type: object
@@ -516,6 +660,9 @@ additionalProperties:
                                 -
                                     required:
                                         - css_class
+                                -
+                                    required:
+                                        - hide_when_children_are_not_visible
                                 -
                                     required:
                                         - label
@@ -531,8 +678,22 @@ additionalProperties:
                                     description: >
                                         A tooltip for this button
                                 
+                                parent:
+                                    type: string
+                                    description: >
+                                        Enter the name of another quick filter button here to make your button appear
+                                        under the named button as a dropdown.
+                                        
+                                        There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                                
                                 hidden: *hidden
                                 visible_if: *visible_if
+                                
+                                hide_when_children_are_not_visible:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be hidden when it has no
+                                        visible children.
                                 
                                 disabled:
                                     type: boolean
@@ -566,11 +727,6 @@ additionalProperties:
                                         You cannot define or modify it in your fillOrganizerPanel()
                                         or preFillOrganizerPanel() methods.
                                 
-                                parent:
-                                    type: string
-                                    description: >
-                                        If you enter the name of another quick filter button here, this button
-                                        will appear as a drop-down when the admin hovers their mouse over the named button.
                                 column:
                                     type: string
                                     description: >
@@ -661,6 +817,11 @@ additionalProperties:
                                             t.some_column_name IN [[REFINER_IDS]]
                                 
                                         Refiners will only work with panels with a <code>db_items</code> property
+            
+            
+                                        This property must be written in your .yaml file,
+                                        or set in your preFillOrganizerPanel() method.
+                                        It can't be changed in your fillOrganizerPanel() method.
                                 table_join: *table_join
                                 sql_when_searching:
                                     type: string
@@ -668,6 +829,10 @@ additionalProperties:
                                     description: >
                                         If the Admin has entered a search query in the search box and you have set
                                         this property, the CMS will use this SQL instead of your <code>sql</code> property.
+    
+    
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 table_join_when_searching:
                                     type: string
                                     static: true
@@ -675,6 +840,10 @@ additionalProperties:
                                         If the Admin has entered a search query in the search box and you have set
                                         this property, the CMS will use this table join instead of your <code>table_join</code>
                                         property.
+    
+    
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 allow_unauthenticated_xml_access:
                                     type: boolean
                                     static: true
@@ -683,52 +852,20 @@ additionalProperties:
                                         properties, if you wish visitors to see this refiner without needing to be logged in
                                         as an Admin, you must also add the allow_unauthenticated_xml_access property
                                         to this refiner.
-                                use_different_view_options:
-                                    type: boolean
-                                    static: true
-                                    description: >
-                                        If you set this property, the view options for this refiner will differ to the
-                                        view options that the panel normally uses.
-                                
-                                        This means two things. Firstly, if an Admin makes any changes to their view
-                                        options on a panel using this refiner, the saved options will be stored
-                                        against this refiner rather than against the panel as is normally the case.
-                                
-                                        Secondly, it means that you can change the value of the <code>view_mode</code> property
-                                        (for panels) or the <code>always_show</code> or <code>show_by_default</code> properties (for columns)
-                                        in your PHP methods when this refiner is active, and have the changes only
-                                        affect the view options for this refiner.
-                                use_different_view_options_per_refiner_id:
-                                    type: boolean
-                                    static: true
-                                    description: >
-                                        This works in the same way as the <code>use_different_view_options</code> property, except
-                                        that the view options will differ again for each different value of this
-                                        refiner.
-                                
-                                        You should only use this option when a refiner has only a few possible
-                                        values, otherwise it will create a lot of clutter in an Admin's Organizer
-                                        preferences.
-                                use_different_view_options_per_id_in_previous_refiner:
-                                    type: string
-                                    static: true
-                                    description: >
-                                        This works in the same way as the <code>use_different_view_options_per_refiner_id</code> property,
-                                        except you can specify the name of a refiner on a previous panel
-                                        that was accessed before this one. (Unlike the last two properties this isn't a
-                                        boolean property; you need to specify the name of a refiner that was used on a
-                                        previous panel.)
-                                
-                                        Note that if the names of the refiners match, it's possible for one or more
-                                        refiners with the <code>use_different_view_options_per_id_in_previous_refiner</code>
-                                        property set to share the same view options as a refiner with the
-                                        <code>use_different_view_options_per_refiner_id</code> property set.
+    
+    
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                     
                     refiner_required:
                         type: boolean
                         static: true
                         description: >
                             Setting this property flags that this panel shouldn't be shown without a refiner.
+
+
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
                     
                     items:
                         type: object
@@ -853,6 +990,10 @@ additionalProperties:
                                 
                                         If the link is to a refiner, the id of the item they click on will be used as the
                                         refinerId.
+    
+    
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 
                                 panel:
                                     type: object
@@ -900,6 +1041,10 @@ additionalProperties:
                             
                                     If the link is to a refiner, the id of the item they click on will be used as the
                                     refinerId.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                     
                     no_items_message:
                         type: string
@@ -958,6 +1103,9 @@ additionalProperties:
                                         - help
                                 -
                                     required:
+                                        - hide_when_children_are_not_visible
+                                -
+                                    required:
                                         - link
                                 -
                                     required:
@@ -985,8 +1133,23 @@ additionalProperties:
                                     type: string
                                     description: >
                                         A tooltip for this button
+                                
+                                parent:
+                                    type: string
+                                    description: >
+                                        Enter the name of another collection button here to make your button appear
+                                        under the named button as a dropdown.
+                                        
+                                        There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                                
                                 hidden: *hidden
                                 visible_if: *visible_if
+                                
+                                hide_when_children_are_not_visible:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be hidden when it has no
+                                        visible children.
                                 
                                 disabled:
                                     type: boolean
@@ -1238,6 +1401,10 @@ additionalProperties:
                                     description: >
                                         If you set a link on a collection button, an administrator will be taken to the
                                         specified location in Organizer when they click on it.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 
                                 panel:
                                     type: object
@@ -1468,8 +1635,7 @@ additionalProperties:
                                                 Currently only works for item buttons and collection buttons, and not inline buttons.
                                         request: *request
                         
-                                       
-                    
+                                      
                     item_buttons:
                         type: object
                         description: >
@@ -1497,7 +1663,13 @@ additionalProperties:
                                         - help
                                 -
                                     required:
+                                        - hide_when_children_are_not_visible
+                                -
+                                    required:
                                         - link
+                                -
+                                    required:
+                                        - organizer_quick
                                 -
                                     required:
                                         - panel
@@ -1525,10 +1697,10 @@ additionalProperties:
                                 parent:
                                     type: string
                                     description: >
-                                        Enter the codename/property name of another button into this property
-                                        to cause your button to appear underneath that button as a dropdown.
+                                        Enter the name of another item button here to make your button appear
+                                        under the named button as a dropdown.
                                         
-                                        There's a limit of 2 levels; you can't have a dropdown inside a dropdown.
+                                        There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
                                 
                                 hidden: *hidden
                                 visible_if: *visible_if
@@ -1548,6 +1720,12 @@ additionalProperties:
                                         At least one item must match for the button to be shown.
                                         
                                         See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                hide_when_children_are_not_visible:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be hidden when it has no
+                                        visible children.
                                 
                                 disabled:
                                     type: boolean
@@ -1698,6 +1876,10 @@ additionalProperties:
                                         specified location in Organizer when they click on it.
                                 
                                         If you specify a refiner, the id of the item selected will be used as the refiner id.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 
                                 panel:
                                     type: object
@@ -1708,6 +1890,164 @@ additionalProperties:
                         
                                 popout: *popout
                                 upload: *upload
+                                
+                                
+                    inline_buttons:
+                        type: object
+                        description: >
+                            Inline buttons appear next to each item, and are intended to be for actions that apply to the item they are next to.
+                        additionalProperties:
+                            type: object            
+                            oneOf:
+                                -
+                                    required:
+                                        - ajax
+                                -
+                                    required:
+                                        - admin_box
+                                -
+                                    required:
+                                        - call_js_function
+                                -
+                                    required:
+                                        - navigation_path
+                                -
+                                    required:
+                                        - frontend_link
+                                -
+                                    required:
+                                        - help
+                                -
+                                    required:
+                                        - link
+                                -
+                                    required:
+                                        - organizer_quick
+                                -
+                                    required:
+                                        - popout
+                            properties:
+                                ord: *ord
+                                css_class: *css_class
+                                tooltip:
+                                    type: string
+                                    description: >
+                                        A tooltip for this button
+                                
+                                hidden: *hidden
+                                visible_if: *visible_if
+                                
+                                disabled:
+                                    type: boolean
+                                    description: >
+                                        If you set this property, the button will be disabled.
+                                
+                                disabled_if:
+                                    type: string
+                                    description: >
+                                        A snippet of JavaScript code to be evaluated.
+                                        
+                                        If the code provided evaluates to <code>true</code> the button will be disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                disabled_tooltip:
+                                    type: string
+                                    default: (defaults to the tooltip property)
+                                    description: >
+                                        A tooltip for this button if it is disabled.
+                                        
+                                        See http://zenar.io/visibility-in-tuix for examples.
+                                
+                                #Item Buttons share the following child-properties with Collection Buttons
+                                hide_in_select_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Select Mode.
+                                select_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Select Mode.
+                                hide_in_quick_mode:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when in Quick Mode.
+                                quick_mode_only:
+                                    type: boolean
+                                    description: >
+                                        Do not show this button when not in Quick Mode.
+                                        
+                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+                                        this button will appear in both Select Mode and Quick Mode.
+                                only_show_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Only show the button if the named refiner has been applied.
+                                
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                hide_on_refiner:
+                                    type:
+                                        - string
+                                        - object
+                                    description: >
+                                        Hide the button if the named refiner has been applied.
+                                        
+                                        This takes the name of a refiner as a string, or you
+                                        can use an associative array of refiner names as keys.
+                                
+                                #In addition, an Item Button should have one (and only one) of the following properties as an action:
+                                ajax: *ajax
+                                call_js_function: *call_js_function
+                                organizer_quick: *organizer_quick
+                                admin_box: *admin_box
+                        
+                                navigation_path:
+                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
+                                    type: string
+                                    description: >
+                                        This property allows you to create a button that takes you to a specified navigation path in Organizer when pressed.
+                                
+                                        Be aware that this will be a one-way link; as you are entering a navigation path, you will override any existing
+                                        navigation history with the history from the navigation path.
+                                
+                                        If a panel has column named navigation_path, the value of that column will be used
+                                        instead of this property.
+                                frontend_link:
+                                    # Needs a different explanation for item/inline buttons; e.g. it's a boolean that gets its value form the column
+                                    type: string
+                                    description: >
+                                        This property allows you to link to the front end by providing a URL.
+                                
+                                        You can provide an external URL (which will always open in a new window),
+                                        or an internal link relative to the CMS root directory.
+                                
+                                        If a panel has column named frontend_link, the value of that column will be used
+                                        instead of this property.
+                                
+                                help: *help
+                                
+                                link:
+                                    type: object
+                                    static: true
+                                    required:
+                                        - path
+                                    properties: *link_properties
+                                    description: >
+                                        If you set a link on an item or inline button, an administrator will be taken to the
+                                        specified location in Organizer when they click on it.
+                                
+                                        If you specify a refiner, the id of the item selected will be used as the refiner id.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
+                                
+                                popout: *popout
+
+                    
                     
                     hidden_nav:
                         type: object
@@ -1744,6 +2084,10 @@ additionalProperties:
                                 static: true
                                 description: >
                                     The codename/property name of a column from <code>columns</code> that defines the ordinal.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                         
                         description: >
                             Setting this object enables reordering in the list, hierarchy and hierarchy_with_lazy_load
@@ -1760,6 +2104,10 @@ additionalProperties:
                                     the parent_id.
                                     
                                     Defaults to "parent_id" if not set.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                             
                             #Note: This used to be reorder.hierarchy_column
                             db_column:
@@ -1775,6 +2123,10 @@ additionalProperties:
                                     
                                     If you've already defined the SQL under db_items then you don't have to repeat it
                                     here and can ommit this property.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                             
                             #Note: This used to be reorder.hierarchy_depth
                             max_depth:
@@ -1899,6 +2251,10 @@ additionalProperties:
                                     specified location in Organizer when they click on it.
                             
                                     You would normally link to a refiner; e.g. a refiner that shows trashed/archived items.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                             
                             panel:
                                 type: object
@@ -1934,6 +2290,10 @@ additionalProperties:
                                 description: >
                                     Setting this property allows data for a panel to be shown in XML form without
                                     checking to see if an Admin is logged in.
+
+
+                                    This property must be written in your .yaml file.
+                                    It can't be changed in php.
                         
                         description: |
                             Forces Organizer to output data in XML format, rather than in JSON format.
@@ -1983,30 +2343,17 @@ additionalProperties:
                             location instead.
                             
                             This must be a tag-path; you may not enter a navigation path.
+
+
+                            This property must be written in your .yaml file.
+                            It can't be changed in php.
                         default: (intelligent default)
                     
-                    advanced_search:
-                        type: boolean
-                        description: |
-                            Deprecated functionality.
-                
                 #This will be merged with the properties property above in dev_tools.js
                 merge:
                     item_buttons:
                         additionalProperties:
                             properties:
-                                organizer_quick:
-                                    properties:
-                                        path:
-                                            type: string
-                                            description: >
-                                                The path of the panel in Organizer that you wish to show.
-                                        
-                                                You may enter either a tag path or a navigation path, but if you enter a
-                                                navigation path you cannot leave the min_path and target_path properties unset.
-                                                
-                                                If you need to use the id of the currently selected item in the path,
-                                                you may use [[id]] to merge it in.
                                 combine_items:
                                     description: >
                                         A combine items button will display Organizer in select mode when clicked,
@@ -2035,6 +2382,44 @@ additionalProperties:
                                                 A phrase for the choose button if multiple items were selected initially, the
                                                 <code>allow_no_selection</code> property is set, and if no items are selected in Select Mode.
                                             default: (defaults to the one_to_no_selection_choose_phrase property)
+                                organizer_quick:
+                                    properties:
+                                        path:
+                                            type: string
+                                            description: >
+                                                The path of the panel in Organizer that you wish to show.
+                                        
+                                                You may enter either a tag path or a navigation path, but if you enter a
+                                                navigation path you cannot leave the min_path and target_path properties unset.
+                                                
+                                                If you need to use the id of the currently selected item in the path,
+                                                you may use [[id]] to merge it in.
+                                popout:
+                                    type: object
+                                    description: >
+                                        This property allows you to open a Pop-out window when an Admin clicks on your button.
+                                        A typical usage would be to display a bigger version of an image or movie.
+                                
+                                        This is implemented using the Colorbox library.
+                            
+                                        If a panel has column(s) called id, filename or checksum, 
+                                        the values of these columns for the currently selected item will
+                                        be added onto the end of the URL specified in the <code>href</code> property as requests.
+                    inline_buttons:
+                        additionalProperties:
+                            properties:
+                                organizer_quick:
+                                    properties:
+                                        path:
+                                            type: string
+                                            description: >
+                                                The path of the panel in Organizer that you wish to show.
+                                        
+                                                You may enter either a tag path or a navigation path, but if you enter a
+                                                navigation path you cannot leave the min_path and target_path properties unset.
+                                                
+                                                If you need to use the id of the currently selected item in the path,
+                                                you may use [[id]] to merge it in.
                                 popout:
                                     type: object
                                     description: >

@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: true
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Content Summary List
 description: |
     <p>

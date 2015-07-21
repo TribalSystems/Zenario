@@ -51,10 +51,10 @@ class zenario_common_features__organizer__page_preview_sizes extends module_base
 			}
 		} elseif (post('reorder')) {
 			foreach (explode(',', $ids) as $id) {
-				if (isset($_POST['item__'.$id])) {
+				if (isset($_POST['ordinals'][$id])) {
 					$sql = "
 						UPDATE ". DB_NAME_PREFIX. "page_preview_sizes 
-						SET ordinal = ".sqlEscape($_POST['item__'. $id])."
+						SET ordinal = ".sqlEscape($_POST['ordinals'][$id])."
 						WHERE id = ". (int)$id;
 					sqlUpdate($sql);
 				}

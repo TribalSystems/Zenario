@@ -1,0 +1,13 @@
+<span class="tag_name">
+	{{m.tag|escape}}
+</span>
+
+<br>
+&nbsp; &nbsp;
+	internal CMS property (meta-information added by the CMS)
+
+<% if (m.internalCMSProperty.description) { %>
+	<span class="tooltip_desc">
+		{{marked(m.internalCMSProperty.description, {breaks: true})}}
+	</span>
+<% } %>

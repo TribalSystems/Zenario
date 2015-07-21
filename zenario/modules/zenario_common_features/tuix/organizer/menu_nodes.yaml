@@ -53,6 +53,7 @@ zenario__menu:
                                                          ON cmh.ancestor_id = [[REFINER__CHILDREN]]
                                                         AND cmh.child_id != [[REFINER__CHILDREN]]
                                                         AND cmh.child_id = mi.id
+            label_format_for_picked_items: '[[section_name]] | [[name]]'
             columns:
                 mid:
                     db_column: mi.id
@@ -155,15 +156,15 @@ zenario__menu:
                     tooltip: View in front-end
                     frontend_link:
                         exists: Yes
-                    with_columns_set:
-                        frontend_link: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
                     tooltip: View in floating box
                     popout:
                         iframe: Yes
-                    with_columns_set:
-                        frontend_link: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 create_child:
                     priv: _PRIV_ADD_MENU_ITEM

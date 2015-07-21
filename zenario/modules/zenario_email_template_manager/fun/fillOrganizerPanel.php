@@ -73,7 +73,6 @@ switch ($path) {
 			}
 		}
 
-
 		foreach($panel['items'] as &$item) {
 			$item['cell_css_classes'] = array();
 			if ($item['status']=='success') {
@@ -84,7 +83,17 @@ switch ($path) {
 				$item['status'] = adminPhrase('Failed Sending');
 			}
 		}
-
-		
+		break;
+	
+	case 'zenario__modules/panels/plugins':
+		if ($refinerName == 'email_address_setting') {
+			$panel['title'] = adminPhrase('Summary of email addresses used by plugins');
+			$panel['no_items_message'] = adminPhrase('There are no plugins that send emails');
+			$panel['columns']['plugin']['show_by_default'] = true;
+			$panel['columns']['plugin']['ord'] = 0.5;
+			$panel['bold_columns_in_list_view'] = 'plugin';
+		} else {
+			unset($panel['columns']['plugin_email_address']);
+		}
 		break;
 }

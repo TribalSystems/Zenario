@@ -35,10 +35,12 @@ class zenario_common_features__organizer__image_tags extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		foreach ($panel['items'] as &$item) {
+		if (in($mode, 'full', 'quick', 'select')) {
+			$panel['columns']['name']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
+		
+			foreach ($panel['items'] as &$item) {
 			
-			//When showing the Organizer panel, try to find an image to show for each tag
-			if (in($mode, 'full', 'quick', 'select')) {
+				//When showing the Organizer panel, try to find an image to show for each tag
 				//Prefer images that haven't been used for many other tags
 				$sql = "
 					SELECT itl1.image_id, COUNT(itl2.tag_id)

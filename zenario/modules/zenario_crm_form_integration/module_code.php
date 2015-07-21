@@ -125,10 +125,10 @@ class zenario_crm_form_integration extends module_base_class {
 					$ids = explode(',', $ids);
 					
 					foreach ($ids as $id) {
-						if (post('item__'. $id)) {
+						if (!empty($_POST['ordinals'][$id])) {
 							$sql = "
 								UPDATE ".DB_NAME_PREFIX.ZENARIO_CRM_FORM_INTEGRATION_PREFIX."form_crm_fields SET
-									ordinal = ". (int) post('item__'. $id). "
+									ordinal = ". (int) $_POST['ordinals'][$id]. "
 								WHERE form_field_id = ". (int) $id;
 							sqlUpdate($sql);
 						}
@@ -632,7 +632,7 @@ class zenario_crm_form_integration extends module_base_class {
 		}
 	}
 	
-	public static function eventUserFormSubmitted($data, $rawData, $fromProperties, $fieldIdValueLink) {
+	public static function eventUserFormSubmitted($data, $rawData, $fromProperties, $fieldIdValueLink, $responseId = false) {
 		$formId = $fromProperties['user_form_id'];
 		$formCrmData = self::getFormCrmData($formId);
 		$data=array();
@@ -730,12 +730,12 @@ class zenario_crm_form_integration extends module_base_class {
 			}
 		}
 		
-		self::submitCrmCustomValues($url, $data);
+		self::submitCrmCustomValues($url, $data, $responseId);
 		return true;
 	}
 	
 	
-	public static function submitCrmCustomValues($url, $data){
+	public static function submitCrmCustomValues($url, $data, $responseId){
 		$options = array(
 			'http' => array(
 				'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
@@ -744,7 +744,10 @@ class zenario_crm_form_integration extends module_base_class {
 			),
 		);
 		$context  = stream_context_create($options);
-		$result = file_get_contents($url, false, $context);
+		$result = @file_get_contents($url, false, $context);
+		if ($responseId && ($result !== false)) {
+			updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_response', array('crm_response' => $result), $responseId);
+		}
 	}
 	
 	//FormCrmData

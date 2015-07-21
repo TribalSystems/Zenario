@@ -158,7 +158,6 @@ function getSmartGroupDetails($smartGroupId) {
 	return getRow('smart_groups',
 			array(
 					'name',
-					'values',
 					'created_on',
 					'created_by',
 					'last_modified_on',
@@ -167,73 +166,24 @@ function getSmartGroupDetails($smartGroupId) {
 			, $smartGroupId);
 }
 
-function smartGroupInclusionsDescription($values) {
-	$pieces = array();
-	foreach (explode(',', arrayKey($values, 'first_tab/indexes')) as $index) {
-		if ($index && (arrayKey($values, 'first_tab/rule_type_' . $index)=='group')) {
-			$groups = array();
-			foreach (explode(',', arrayKey($values, 'first_tab/rule_group_picker_' . $index)) as $groupId) {
-				if ($groupId) {
-					$groups[] = datasetFieldDBColumn($groupId);
-				}
-			}
-			$pieces[] = adminPhrase("in group" . (count($groups)>1?'s (':' ') . "[[groups_list]]" . (count($groups)>1?')':''),
-					array	(
-							'groups_list' =>  implode(arrayKey($values, 'first_tab/rule_logic_' . $index)=='all'?' AND ': ' OR ', $groups)
-					)
-			);
-		}
-	}
-	return implode(' AND ', $pieces);
-}
 
-function smartGroupExclusionsDescription($values) {
-	$rv = '';
-	if (arrayKey($values, 'exclude/rule_type')=='group') {
-		$groups = array();
-		foreach (explode(',', arrayKey($values, 'exclude/rule_group_picker')) as $groupId) {
-			if ($groupId) {
-				$groups[] = datasetFieldDBColumn($groupId);
-			}
-		}
 
-		$rv = adminPhrase("in group" . (count($groups)>1?'s (':' ') . "[[groups_list]]" . (count($groups)>1?')':''),
-				array	(
-						'groups_list' =>  implode(arrayKey($values, 'exlude/rule_logic')=='all'?' AND ': ' OR ', $groups)
-				)
-		);
-	}
-	return $rv;
-}
-
-function smartGroupSQL($smartGroupId, &$whereStatement, &$joins) {
-	if ($json = getRow('smart_groups', 'values', $smartGroupId)) {
-		return advancedSearchSQL($whereStatement, $joins, 'zenario__users/panels/users', $json, $smartGroupId);
-	}
-	return false;
+function smartGroupSQL($smartGroupId, $usersTableAlias = 'u', $customTableAlias = 'ucd') {
+	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
 function countSmartGroupMembers($smartGroupId) {
-
-	$sql = "
-		SELECT COUNT(DISTINCT u.id)
-		FROM ". DB_NAME_PREFIX. "users AS u";
-
-	$whereStatement = "
-		WHERE TRUE";
 	
-	$joins = array();
-
-	if (smartGroupSQL($smartGroupId, $whereStatement, $joins)) {
-			
-		foreach ($joins as $join => $dummy) {
-			$sql .= "
-				". $join;
-		}
-			
-		$sql .= $whereStatement;
+	if ($sql = smartGroupSQL($smartGroupId)) {
+		$sql = "
+			SELECT COUNT(DISTINCT u.id)
+			FROM ". DB_NAME_PREFIX. "users AS u
+			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+			   ON ucd.user_id = u.id
+			WHERE TRUE
+			". $sql;
 		
-		if (($result = sqlQuery($sql))
+		if (($result = sqlSelect($sql))
 		 && ($row = sqlFetchRow($result))) {
 			return $row[0];
 		}
@@ -242,24 +192,6 @@ function countSmartGroupMembers($smartGroupId) {
 	return 0;
 }
 
-function optOutOfSmartGroup($smartGroupId, $userId, $method) {
-	setRow(
-	'smart_group_opt_outs',
-	array('opted_out_on' => now(), 'opt_out_method' => $method),
-	array('smart_group_id' => $smartGroupId, 'user_id' => $userId));
-}
-
-function cancelOptOutOfSmartGroup($smartGroupId, $userId) {
-	deleteRow(
-	'smart_group_opt_outs',
-	array('smart_group_id' => $smartGroupId, 'user_id' => $userId));
-}
-
-function hasOptedOutOfSmartGroup($smartGroupId, $userId) {
-	return checkRowExists(
-			'smart_group_opt_outs',
-			array('smart_group_id' => $smartGroupId, 'user_id' => $userId));
-}
 
 
 //An API function to check if a user is valid.
@@ -506,7 +438,7 @@ function saveUser($values, $id = false, $doSave = true) {
 
 
 
-function logUserIn($userId) {
+function logUserIn($userId, $impersonate = false) {
 	
 	//Get details on this user
 	$user = getRow('users', array('id', 'first_name', 'last_name', 'screen_name', 'email', 'password'), $userId);
@@ -515,42 +447,41 @@ function logUserIn($userId) {
 	$user['login_hash'] = $user['id']. '_'. md5(httpHost(). $user['id']. $user['screen_name']. $user['email']. $user['password']);
 	unset($user['password']);
 	
-	//Update their last login time
-	$sql = "
-		UPDATE " . DB_NAME_PREFIX . "users SET
-			session_id = '" . session_id() . "',
-			ip = '" . visitorIP() . "',
-			last_login = NOW()
-		WHERE id = ". (int) $userId;
-	sqlUpdate($sql);
+	if (!$impersonate) {
+		//Update their last login time
+		$sql = "
+			UPDATE " . DB_NAME_PREFIX . "users SET
+				session_id = '" . session_id() . "',
+				ip = '" . visitorIP() . "',
+				last_login = NOW()
+			WHERE id = ". (int) $userId;
+		sqlUpdate($sql);
+		
 	
-
-	if(setting('sign_in_access_log'))
-	{
-	require_once CMS_ROOT. 'zenario/libraries/mit/browser/lib/browser.php';
-	$browser = new Browser();
-	
-	$sql = "
-		INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
-		    user_id = ". (int)  sqlEscape($userId).",
-			screen_name = '". sqlEscape($user['screen_name']). "',
-			first_name = '". sqlEscape($user['first_name']). "',
-			last_name = '". sqlEscape($user['last_name']). "',
-			email = '". sqlEscape($user['email']). "',
-			login_datetime = NOW(),
-			ip = '". sqlEscape(visitorIP()). "',
-			browser = '". sqlEscape($browser->getBrowser()). "',
-			browser_version = '". sqlEscape($browser->getVersion()). "',
-			platform = '". sqlEscape($browser->getPlatform()). "'";
-	sqlQuery($sql);
+		if(setting('sign_in_access_log'))
+		{
+		require_once CMS_ROOT. 'zenario/libraries/mit/browser/lib/browser.php';
+		$browser = new Browser();
+		
+		$sql = "
+			INSERT INTO ". DB_NAME_PREFIX. "user_signin_log SET
+				user_id = ". (int)  sqlEscape($userId).",
+				screen_name = '". sqlEscape($user['screen_name']). "',
+				first_name = '". sqlEscape($user['first_name']). "',
+				last_name = '". sqlEscape($user['last_name']). "',
+				email = '". sqlEscape($user['email']). "',
+				login_datetime = NOW(),
+				ip = '". sqlEscape(visitorIP()). "',
+				browser = '". sqlEscape($browser->getBrowser()). "',
+				browser_version = '". sqlEscape($browser->getVersion()). "',
+				platform = '". sqlEscape($browser->getPlatform()). "'";
+		sqlQuery($sql);
+		}
+		sendSignal("eventUserLoggedIn",array("user_id" => $userId));
 	}
-	
 	
 	$_SESSION["extranetUserID"] = $userId;
 	$_SESSION["extranetUser_firstname"] = $user['first_name'];
-	
-	
-	sendSignal("eventUserLoggedIn",array("user_id" => $userId));
 	
 	return $user;
 }

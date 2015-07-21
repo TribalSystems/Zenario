@@ -49,7 +49,9 @@ class zenario_common_features__admin_boxes__custom_tab extends module_base_class
 		}
 		
 		//List all possible parent fields...
-		$fields['details/parent_field_id']['values'] = listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false);
+		$fields['details/parent_field_id']['values'] =
+			listCustomFields($box['key']['dataset_id'], false, 'boolean_and_groups_only', false, true);
+			//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
 		
 		//...but exclude any fields on this tab!
 		if ($box['key']['id']) {

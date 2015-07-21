@@ -95,7 +95,7 @@ switch ($path) {
 			
 			foreach (array('collection_buttons', 'item_buttons') as $tag) {
 				foreach ($panel[$tag] as $name => &$button) {
-					if (!isInfoTag($name)) {
+					if (is_array($button)) {
 						if (substr($name, 0, 20) != 'zenario_newsletter__') {
 							$button['hidden'] = true;
 						}

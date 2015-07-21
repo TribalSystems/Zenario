@@ -99,7 +99,7 @@ class zenario_extranet_user_profile_view extends module_base_class {
 				$C[$cName][] = htmlspecialchars($cValue);
 			}
 			foreach ($C as $K=>$V) {
-				$this->subSections[$K] = issetArrayKey($userDetails, $K);
+				$this->subSections[$K] = true;
 				$this->mergeFields[$K] = implode(', ', $V);
 			}
 

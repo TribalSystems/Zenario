@@ -142,10 +142,8 @@
 	position: absolute !important;
 }
 
-#zenario_fbAdminAdvancedSearch,
 #zenario_fbAdminColumnFilter,
 #zenario_fbAdminViewModeOptions,
-#zenario_fbAdminAdvancedSearch__overlay,
 #zenario_fbAdminColumnFilter__overlay,
 #zenario_fbAdminViewModeOptions__overlay {
 	z-index: 2001;
@@ -628,4 +626,88 @@ input, textarea, button {
 }
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_smartphone {
 	background:url('../admin/images/page_preview_icons/mobile-list-icon.png') no-repeat -15px center;
+}
+
+
+
+/*
+	Tag colours
+*/
+
+
+label.zenario_tag,
+#zenario_fbAdminInner label.zenario_tag {
+	font-weight: normal;
+	font-family: Verdana,Arial,Helvetica,sans-serif;
+	font-size: 9px;
+	height: 9px;
+	line-height: 23px;
+	padding: 5px 5px 5px 0;
+	margin-left: 5px;
+	margin-right: 2px;
+	color: white;
+	background-color: #027dc9;
+}
+
+label.zenario_tag::before {
+	content: '';
+	border-color: transparent #027dc9;
+	border-style: solid;
+	border-width: 5px 5px 5px 0;
+	position: relative;
+	right: 5px;
+}
+
+label.zenario_tag_red,
+#zenario_fbAdminInner label.zenario_tag_red {
+	background-color: #e50707;
+	border-color: #e50707;
+}
+label.zenario_tag_red::before {
+	border-color: transparent #e50707;
+}
+
+label.zenario_tag_green,
+#zenario_fbAdminInner label.zenario_tag_green {
+	background-color: #05b106;
+	border-color: #05b106;
+}
+label.zenario_tag_green::before {
+	border-color: transparent #05b106;
+}
+
+label.zenario_tag_orange,
+#zenario_fbAdminInner label.zenario_tag_orange {
+	background-color: #ec590f;
+	border-color: #ec590f;
+}
+label.zenario_tag_orange::before {
+	border-color: transparent #ec590f;
+}
+
+label.zenario_tag_yellow,
+#zenario_fbAdminInner label.zenario_tag_yellow {
+	background-color: #c4b400;
+	border-color: #c4b400;
+}
+label.zenario_tag_yellow::before {
+	border-color: transparent #c4b400;
+}
+
+label.zenario_tag_violet,
+#zenario_fbAdminInner label.zenario_tag_violet {
+	background-color: #a600c4;
+	border-color: #a600c4;
+}
+label.zenario_tag_violet::before {
+	border-color: transparent #a600c4;
+}
+
+label.zenario_tag_grey,
+#zenario_fbAdminInner label.zenario_tag_grey {
+	background-color: #6f6f6f;
+	border-color: #6f6f6f;
+}
+label.zenario_tag_grey::before {
+	border-color: transparent #6f6f6f;
 }

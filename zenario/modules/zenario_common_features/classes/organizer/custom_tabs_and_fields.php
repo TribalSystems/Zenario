@@ -55,7 +55,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 				 && is_array($tags[$dataset['extends_admin_box']]['tabs'])) {
 					$tabCount = 0;
 					foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabName => $tab) {
-						if (!isInfoTag($tabName)) {
+						if (is_array($tab)) {
 							
 							$panel['items'][$tabName] = array(
 								'is_tab' => true,
@@ -73,7 +73,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 							 && is_array($tab['fields'])) {
 								$fieldCount = 0;
 								foreach ($tab['fields'] as $fieldName => $field) {
-									if (!isInfoTag($fieldName)) {
+									if (is_array($field)) {
 										
 										$id = '___system_field___'. $tabName. '___'. $fieldName;
 										
@@ -265,8 +265,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 				
 					$details = array(
 						'id' => $id,
-						'parent' => request('parent_id__'. $id),
-						'ord' => request('ordinal__'. $id));
+						'parent' => arrayKey($_POST, 'parent_ids', $id),
+						'ord' => arrayKey($_POST, 'ordinals', $id));
 				
 					if (chopPrefixOffOfString($id, '__custom_tab_') !== false) {
 						$details['is_field'] = false;

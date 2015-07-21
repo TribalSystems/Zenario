@@ -221,14 +221,6 @@ if (needRevision(30600)) {
 	revision(30600);
 }
 
-//Populate the short checksum field
-if (needRevision(30625)) {
-	setSetting('short_checksum_length', 6);
-	updateShortChecksums(true);
-	
-	revision(30625);
-}
-
 //Set the "archived" flag in the inline_images table
 if (needRevision(30700)) {
 	flagImagesInArchivedVersions();
@@ -254,86 +246,202 @@ if (needRevision(30731)) {
 	revision(30731);
 }
 
-//Update the copie
-if (needRevision(30840)) {
+//Update Organizer's image thumbnails
+if (needRevision(31200)) {
 	$docstoreDir = setting('docstore_dir');
-
-	$skWidth = 180;
-	$skHeight = 130;
-	$skListWidth = 24;
-	$skListHeight = 23;
-
-	$sql = "
-		SELECT id, location, path, filename, data, mime_type, width, height
-		FROM ". DB_NAME_PREFIX. "files
-		WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')
-		  AND width != 0
-		  AND height != 0
-		  AND (organizer_data IS NULL
-			OR organizer_width > ". (int) $skWidth. "
-			OR organizer_height > ". (int) $skHeight. "
-			OR (	width > ". (int) $skWidth. "
-				AND height > ". (int) $skHeight. "
-				AND organizer_width < ". (int) $skWidth. "
-				AND organizer_height < ". (int) $skHeight. "
-		))";
-	$result = sqlQuery($sql);
-
-	while($img = sqlFetchAssoc($result)) {
-		if ($img['location'] == 'docstore') {
-			if ($docstoreDir && is_file($docstoreDir. '/'. $img['path'])) {
-				$img['data'] = file_get_contents($docstoreDir. '/'. $img['path']. '/'. $img['filename']);
-			} else {
-				continue;
-			}
-		}
 	
-		resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $skWidth, $skHeight);
-		$img['data'] = "
-			UPDATE ". DB_NAME_PREFIX. "files SET
-				organizer_data = '". sqlEscape($img['data']). "',
-				organizer_width = ". (int) $img['width']. ",
-				organizer_height = ". (int) $img['height']. "
-			WHERE id = ". (int) $img['id'];
-		sqlUpdate($img['data']);
-		unset($img);
-	}
+	foreach (array(
+		array('thumbnail_180x130_data', 'thumbnail_180x130_width', 'thumbnail_180x130_height', 180, 130),
+		array('thumbnail_64x64_data', 'thumbnail_64x64_width', 'thumbnail_64x64_height', 64, 64),
+		array('thumbnail_24x23_data', 'thumbnail_24x23_width', 'thumbnail_24x23_height', 24, 23)
+	) as $c) {
 
-	$sql = "
-		SELECT id, location, path, filename, data, mime_type, width, height
-		FROM ". DB_NAME_PREFIX. "files
-		WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')
-		  AND width != 0
-		  AND height != 0
-		  AND (organizer_list_data IS NULL
-			OR organizer_list_width > ". (int) $skListWidth. "
-			OR organizer_list_height > ". (int) $skListHeight. "
-			OR (	width > ". (int) $skListWidth. "
-				AND height > ". (int) $skListHeight. "
-				AND organizer_list_width < ". (int) $skListWidth. "
-				AND organizer_list_height < ". (int) $skListHeight. "
-		))";
-	$result = sqlQuery($sql);
+		$sql = "
+			SELECT id, location, path, filename, data, mime_type, width, height
+			FROM ". DB_NAME_PREFIX. "files
+			WHERE mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')
+			  AND width != 0
+			  AND height != 0
+			  AND (`". sqlEscape($c[0]). "` IS NULL
+				OR `". sqlEscape($c[1]). "` > ". (int) $c[3]. "
+				OR `". sqlEscape($c[2]). "` > ". (int) $c[4]. "
+				OR (	width > ". (int) $c[3]. "
+					AND height > ". (int) $c[4]. "
+					AND `". sqlEscape($c[1]). "` < ". (int) $c[3]. "
+					AND `". sqlEscape($c[2]). "` < ". (int) $c[4]. "
+			))";
+		$result = sqlQuery($sql);
 
-	while($img = sqlFetchAssoc($result)) {
-		if ($img['location'] == 'docstore') {
-			if ($docstoreDir && is_file($docstoreDir. '/'. $img['path'])) {
-				$img['data'] = file_get_contents($docstoreDir. '/'. $img['path']. '/'. $img['filename']);
-			} else {
-				continue;
+		while($img = sqlFetchAssoc($result)) {
+			if ($img['location'] == 'docstore') {
+				if ($docstoreDir && is_file($docstoreDir. '/'. $img['path'])) {
+					$img['data'] = file_get_contents($docstoreDir. '/'. $img['path']. '/'. $img['filename']);
+				} else {
+					continue;
+				}
 			}
-		}
 	
-		resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $skListWidth, $skListHeight);
-		$img['data'] = "
-			UPDATE ". DB_NAME_PREFIX. "files SET
-				organizer_list_data = '". sqlEscape($img['data']). "',
-				organizer_list_width = ". (int) $img['width']. ",
-				organizer_list_height = ". (int) $img['height']. "
-			WHERE id = ". (int) $img['id'];
-		sqlUpdate($img['data']);
-		unset($img);
+			resizeImageString($img['data'], $img['mime_type'], $img['width'], $img['height'], $c[3], $c[4]);
+			$img['data'] = "
+				UPDATE ". DB_NAME_PREFIX. "files SET
+					`". sqlEscape($c[0]). "` = '". sqlEscape($img['data']). "',
+					`". sqlEscape($c[1]). "` = ". (int) $img['width']. ",
+					`". sqlEscape($c[2]). "` = ". (int) $img['height']. "
+				WHERE id = ". (int) $img['id'];
+			sqlUpdate($img['data']);
+			unset($img);
+		}
 	}
 	
-	revision(30840);
+	revision(31200);
 }
+
+//Populate the short checksum field
+if (needRevision(31255)) {
+	updateRow('files', array('short_checksum' => null), array());
+	setSetting('short_checksum_length', 5);
+	updateShortChecksums();
+	
+	revision(31255);
+}
+
+//The directory structure for the cache/public/private directories has changed slightly.
+//Attempt to remove the last access date for the cleanDownloads() function
+//to force it to rerun and create any new directories the next time it is called.
+if (needRevision(31260)) {
+	if (@file_exists(CMS_ROOT. 'cache/stats/clean_downloads/accessed')) {
+		@unlink(CMS_ROOT. 'cache/stats/clean_downloads/accessed');
+	}
+	
+	revision(31260);
+}
+
+
+//Force the yaml files to be rescanned
+if (needRevision(31410)) {
+	setSetting('yaml_files_last_changed', '');
+	
+	revision(31410);
+}
+
+// Update news content type if exists to have categories by default
+if (needRevision(31520)) {
+	
+	if (checkRowExists('content_types', array('content_type_id' => 'news'))) {
+		updateRow('content_types', array('enable_categories' => 1), array('content_type_id' => 'news'));
+	}
+	revision(31520);
+}
+
+// Force old site disabled messages that mention Tribiq to be updated
+if (needRevision(31542)) {
+	
+	if (strpos(setting('site_disabled_title'), 'Welcome to Tribiq CMS') !== false) {
+		setSetting('site_disabled_title', 'Welcome');
+	}
+	if (strpos(setting('site_disabled_message'), 'A Tribiq CMS site') !== false) {
+		setSetting('site_disabled_message', '<p>A site is being built at this location.</p><p><span class="x-small">If you are the Site Administrator please <a href="[[admin_link]]">click here</a> to manage your site.</span></p>');
+	}
+	
+	revision(31542);
+}
+
+
+//Convert smart groups from the old format to the new formats
+//(Note that this code is a reworking of the old zenario_users::advancedSearchTableJoins() function
+// found in 7.0.5 and earlier)
+if (needRevision(31740)) {
+	
+	$result = getRows('smart_groups', array('id', 'values'), array());
+	while ($sg = sqlFetchAssoc($result)) {
+		$ord = 0;
+		
+		if ($sg['values'] && ($values = json_decode($sg['values'], true))) {
+			
+			foreach (explode(',', arrayKey($values, 'first_tab','indexes')) as $index) {
+				if (arrayKey($values, 'first_tab','rule_type_' . $index) == 'characteristic') {
+					if ($fieldId = arrayKey($values, 'first_tab','rule_characteristic_picker_' . $index)) {
+						$fieldValue = arrayKey($values, 'first_tab','rule_characteristic_values_picker_' . $index);
+						
+						insertRow('smart_group_rules', array(
+							'smart_group_id' => $sg['id'],
+							'ord' => ++$ord,
+							'field_id' => $fieldId,
+							'value' => $fieldValue
+						));
+					}
+				}
+				
+				if (arrayKey($values, 'first_tab' , 'rule_type_' . $index) == 'group') {
+					if ($groups = arrayKey($values, 'first_tab', 'rule_group_picker_' . $index)) {
+						$groups = explode(',', $groups);
+						array_filter($groups);
+						$groupCount = count($groups);
+						$groupLogic = arrayKey($values, 'first_tab' , 'rule_logic_' . $index);
+						
+						if ($groupLogic == 'any' && $groupCount > 1) {
+						
+							insertRow('smart_group_rules', array(
+								'smart_group_id' => $sg['id'],
+								'ord' => ++$ord,
+								'field_id' => $groups[0],
+								'field2_id' => arrayKey($groups, 1),
+								'field3_id' => arrayKey($groups, 2)
+							));
+						} else {
+							foreach ($groups as $groupId) {
+								insertRow('smart_group_rules', array(
+									'smart_group_id' => $sg['id'],
+									'ord' => ++$ord,
+									'field_id' => $groupId
+								));
+							}
+						}
+					}
+				}
+			}
+			
+			
+			if (arrayKey($values, 'exclude','enable') ) {
+				if (arrayKey($values, 'exclude','rule_type') == 'characteristic') {
+					if ($fieldId = (arrayKey($values, 'exclude','rule_characteristic_picker'))) {
+						$fieldValue = arrayKey($values, 'exclude','rule_characteristic_values_picker');
+						
+						insertRow('smart_group_rules', array(
+							'smart_group_id' => $sg['id'],
+							'ord' => ++$ord,
+							'field_id' => $fieldId,
+							'value' => $fieldValue,
+							'not' => 1
+						));
+					}
+				}
+				
+				if (arrayKey($values, 'exclude' , 'rule_type') == 'group') {
+					if ($groups = arrayKey($values, 'exclude', 'rule_group_picker')) {
+						$groups = explode(',', $groups);
+						array_filter($groups);
+						
+						foreach ($groups as $groupId) {
+							insertRow('smart_group_rules', array(
+								'smart_group_id' => $sg['id'],
+								'ord' => ++$ord,
+								'field_id' => $groupId,
+								'not' => 1
+							));
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	revision(31740);
+}
+
+revision( 31750
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
+	DROP COLUMN `values`
+_sql
+);

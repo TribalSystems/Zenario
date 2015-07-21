@@ -37,13 +37,6 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'site_settings.fillAdminBox');
 	
 	
-	case 'advanced_search':
-		if (!empty($box['tabs']['first_tab']['fields']['name']['value'])) {
-			$box['title'] = adminPhrase('Editing/running the advanced search "[[value]]".', $box['tabs']['first_tab']['fields']['name']);
-		}
-		
-		break;
-		
 	case 'zenario_publish':
 		
 		$status = getModuleStatusByClassName('zenario_scheduled_task_manager');
@@ -114,6 +107,17 @@ switch ($path) {
 			setting('translations_hide_language_code')?
 				$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__hide']
 			 :	$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__show'];
+		
+		
+		//If every language has a specific domain name, there's no point in showing the
+		//lang_code_in_url field as it will never be used.
+		$langSpecificDomainsUsed = checkRowExists('languages', array('domain' => array('!' => '')));
+		$langSpecificDomainsNotUsed = checkRowExists('languages', array('domain' => ''));
+		
+		if ($langSpecificDomainsUsed && !$langSpecificDomainsNotUsed) {
+			$box['tabs']['meta_data']['fields']['lang_code_in_url']['hidden'] =
+			$box['tabs']['meta_data']['fields']['lang_code_in_url_dummy']['hidden'] = true;
+		}
 		
 		
 		getLanguageSelectListOptions($box['tabs']['meta_data']['fields']['language_id']);
@@ -822,7 +826,11 @@ switch ($path) {
 			'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['id']. '//';
 		
 		foreach (getContentTypeDetails($box['key']['id']) as $col => $value) {
-			$box['tabs']['details']['fields'][$col]['value'] = $value;
+			if ($col == 'enable_categories') {
+				$box['tabs']['details']['fields'][$col]['value'] = $value ? 'enabled' : 'disabled';
+			} else {
+				$box['tabs']['details']['fields'][$col]['value'] = $value;
+			}
 		}
 		
 		switch ($box['key']['id']) {

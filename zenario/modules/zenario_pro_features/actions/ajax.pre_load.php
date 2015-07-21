@@ -43,7 +43,7 @@ function pageCacheDir(&$requests, $type = 'ajax') {
 //Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set, as they're probably about to be automatically logged in
 if (!isset($_SESSION['admin_logged_into_site'])
  && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))
- && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showIframe', 'showRSS', 'showSlot')) {
+ && in(request('method_call'), 'refreshPlugin', 'showFloatingBox', 'showRSS', 'showSlot')) {
  	
 	$chToLoadStatus = array();
 	$chToLoadStatus['u'] = '';
@@ -84,7 +84,7 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	
 	foreach ($_COOKIE as $request => &$value) {
 		if (substr($request, 0, 11) != 'can_cache__' && substr($request, 0, 2) != '__'
-		 && !in($request, 'cookies_accepted', 'is_returning', 'PHPSESSID', 'tinymcePasteText')) {
+		 && !in($request, 'cookies_accepted', '_ga', '_gat', 'is_returning', 'PHPSESSID', 'tinymcePasteText')) {
 			$chToLoadStatus['c'] = 'c';
 			break;
 		}

@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__image extends module_base_class {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (!$details = getRow('files', array('filename', 'width', 'height', 'size', 'alt_tag', 'title', 'floating_box_title'), $box['key']['id'])) {
+		if (!$details = getRow('files', array('filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title'), $box['key']['id'])) {
 			exit;
 		}
 		
@@ -46,7 +46,6 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 		
 		$box['tabs']['details']['fields']['filename']['value'] = $details['filename'];
 		$box['tabs']['details']['fields']['alt_tag']['value'] = $details['alt_tag'];
-		$box['tabs']['details']['fields']['title']['value'] = $details['title'];
 		$box['tabs']['details']['fields']['floating_box_title']['value'] = $details['floating_box_title'];
 		
 		
@@ -69,25 +68,10 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 				$pickedTagNames[] = $tag['name'];
 			}
 		}
-		
-		
-		///*
-		//$tagIdsToNames = getRowsArray('image_tags', 'name', array(), 'name');
-		//$pickedTagIds = getRowsArray('image_tag_link', 'tag_id', array('image_id' => $box['key']['id']));
-		//
-		//foreach ($pickedTagIds as 
-		//
-		//foreach ($tagIdsToNames as $tagId => $tagName) {
-		//	if (isset($pickedTagIds[$tagId])) {
-		//		$pickedTagNames[$tagName] = true;
-		//	}
-		//	$tagNames[$tagName] = $tagName;
-		//}*/
-		//
-		//var_dump($tagNames, $pickedTagNames/*, $tagIdsToNames, $pickedTagIds*/); exit;
 
 		
 		$box['tabs']['details']['fields']['tags']['value'] = implode(',', $pickedTagNames);
+		$box['tabs']['details']['fields']['tags']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
 		
 		$box['tabs']['details']['fields']['tags']['values'] =
 		$box['tabs']['details']['fields']['new_tag']['values'] = $tagNames;
@@ -137,7 +121,6 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 			array(
 				'filename' => $values['details/filename'],
 				'alt_tag' => $values['details/alt_tag'],
-				'title' => $values['details/title'],
 				'floating_box_title' => $values['details/floating_box_title']),
 			$box['key']['id']);
 		

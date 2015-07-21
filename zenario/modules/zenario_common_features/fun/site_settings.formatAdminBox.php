@@ -28,10 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (isset($box['tabs']['urls']['fields']['mod_rewrite_suffix'])) {
-	$box['tabs']['urls']['fields']['mod_rewrite_suffix']['hidden'] = !engToBooleanArray($values, 'urls/mod_rewrite_enabled');
-}
-
 if (isset($box['tabs']['debug']['fields']['debug_override_email_address'])) {
 	$box['tabs']['debug']['fields']['debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
 }

@@ -1570,3 +1570,24 @@ body.ie .zenario_promo_menu__default_style ul li:hover .columns_wrap {
     background:#273040;
     text-decoration:none;
 }
+
+/* Common styles: Workstream
+--------------------------------------------------------------------------------------------------*/
+.workstream_forms_recurring,
+.workstream_print_forms_wrapper h2 {
+	margin-bottom: 25px;
+}
+
+.workstream_print_forms_wrapper .id {
+	margin-bottom: 10px;
+	width: 40%;
+}
+
+.workstream_forms_recurring select {
+	margin-bottom: 10px;
+}
+
+.workstream_forms_recurring .submit,
+.workstream_forms_projects .submit {
+	margin-top: 10px;
+}

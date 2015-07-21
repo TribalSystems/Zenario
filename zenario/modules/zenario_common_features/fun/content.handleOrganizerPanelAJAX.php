@@ -289,6 +289,14 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 		}
 	}
 
+} elseif (post('delete_archives') && checkPriv('_PRIV_TRASH_CONTENT_ITEM')) {
+	foreach (explode(',', $ids) as $id) {
+		$cID = $cType = false;
+		if (getCIDAndCTypeFromTagId($cID, $cType, $id)) {
+			deleteArchive($cID, $cType);
+		}
+	}
+
 //
 // Translation functionality
 //

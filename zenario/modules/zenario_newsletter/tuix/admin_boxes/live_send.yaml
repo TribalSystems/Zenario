@@ -1,0 +1,37 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_live_send:
+    priv: _PRIV_SEND_NEWSLETTER
+    key:
+        id: ""
+    max_height: 160
+    hide_tab_bar: true
+    save_button_message: Send
+    cancel_button_message: Cancel
+    tabs:
+        send:
+            edit_mode:
+                enabled: true
+            fields:
+                desc:
+                    full_width: true
+                    pre_field_html: '<div class="zenario_fbWarning">'
+                    snippet:
+                        html: |
+                            Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient(s)? Click-throughs counts will be reset.
+                    post_field_html: '</div>'
+                admin_options:
+                    type: radios
+                    values:
+                        myself:
+                            label: Send me a copy of the email
+                        all_admins:
+                            label: Send all [n] administrators a copy of the email
+                        none:
+                            label: Don't send to administrators
+                    value: myself
+                note:
+                    full_width: true
+                    snippet:
+                        html: |
+                            This newsletter will be moved to the archive when sent to recipients

@@ -10,4 +10,10 @@ revision( 2
 		PRIMARY KEY (id)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
+
+); revision( 7
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_ERROR_LOG_PREFIX]]error_log
+	MODIFY COLUMN referrer_url text
+_sql
 );

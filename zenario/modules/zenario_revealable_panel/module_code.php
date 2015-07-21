@@ -39,7 +39,7 @@ class zenario_revealable_panel extends zenario_plugin_nest {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		//Revert to normal nest behaviour when showing one specific Egg for the showFloatingBox/showIframe/showRSS methods
+		//Revert to normal nest behaviour when showing one specific Egg for the showFloatingBox/showRSS methods
 		if ($this->specificEgg()) {
 			return zenario_plugin_nest::init();
 		

@@ -164,8 +164,8 @@ zenario__modules:
                 path: zenario__modules/panels/modules
                 refiner: content_type_modules
         management_modues:
-            label: Managing modules
-            tooltip: Modules that add additional management to organizer
+            label: Organizer modules
+            tooltip: Modules that add additional management to Organizer
             link:
                 path: zenario__modules/panels/modules
                 refiner: management_modues

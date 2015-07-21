@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: Pro, ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Extranet Password Reminder
 description: |
     <p>This Module allows registered Extranet Users who have forgotten their Password and/or Screen Name to retrieve their details by entering their email address.</p>

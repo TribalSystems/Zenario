@@ -22,6 +22,9 @@ zenario_newsletter_template:
                 body:
                     full_width: Yes
                     type: editor
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
                     style: 'width: 98%;'
                     rows: "30"
                     insert_image_button:

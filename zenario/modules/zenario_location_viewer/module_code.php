@@ -41,21 +41,26 @@ class zenario_location_viewer extends module_base_class {
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = true);
 		
 		$this->forcePageReload();
-		if ($this->setting('location_source_mode') == 'location_from_selector') {
-			$locationId = $this->getLocationId();
-		} else {
+		if ($this->setting('location_source_mode') == 'location_from_url') {
 			$this->registerGetRequest('l_id');
 			
 			if(!($locationId = (int)get('l_id'))) {
 				$this->noLocationUrlIdPassed= true;
 				return true;
 			}
+		} elseif ($this->setting('location_source_mode') == 'location_from_organizer') {
+			$locationId = $this->setting('location');
+		} else {
+			$locationId = $this->getLocationId();
+			
 		}
 		$this->locationDetails = zenario_location_manager::getLocationDetails($locationId);
  		if ($this->locationDetails) {
  			$this->locationImage = getRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_images', 'image_id', array('location_id' => $this->locationDetails['id'], 'sticky_flag' => 1));
 			
-			if ($this->setting('location_source_mode') == 'location_from_selector') {
+			if ($this->setting('location_source_mode') == 'location_from_selector'
+				|| $this->setting('location_source_mode') == 'location_from_organizer'
+			) {
 				$this->callScript('zenario_location_viewer', 'initMap', 'object_in_' . $this->containerId,arrayKey($this->locationDetails,'latitude'),arrayKey($this->locationDetails,'longitude'),arrayKey($this->locationDetails,'map_zoom'));
 			}
 			return true;
@@ -93,7 +98,9 @@ class zenario_location_viewer extends module_base_class {
      	$contactArray = array();
      	
 		if ($this->locationDetails){
-			if ($this->setting('location_source_mode') == 'location_from_selector') {
+			if ($this->setting('location_source_mode') == 'location_from_selector' 
+				|| $this->setting('location_source_mode') == 'location_from_organizer'
+			) {
 				$output = '<div id="object_in_' . $this->containerId.'" style="height: ' . $this->setting("map_height") . 'px; width: ' . $this->setting("map_width") . 'px;"></div>';
 	
 				$this->mergeArray['cID'] = $this->cID;
@@ -287,7 +294,7 @@ class zenario_location_viewer extends module_base_class {
 			
 		} elseif ($this->noLocationFound) {
 			if ($this->setting('location_source_mode') == 'location_from_selector') {
-				if(adminId()){
+				if(adminId() && $this->checkFrameworkSectionExists('no_location_selected')){
 					$section = 'no_location_selected';
 					$this->mergeArray = array();
 					$this->framework($section,$this->mergeArray);
@@ -323,29 +330,23 @@ class zenario_location_viewer extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				if ($values['location_source_mode'] == "location_from_selector") {
-					$fields['location_plugin_mode']['hidden'] = true;
-					$fields['location_user']['hidden'] = true;
-					$fields['location']['hidden'] = false;
-					$fields['map_width']['hidden'] = false;
-					$fields['map_height']['hidden'] = false;
-					$fields['max_location_image_width']['hidden'] = false;
-					$fields['max_location_image_height']['hidden'] = false;
+				
+				$fields['location_plugin_mode']['hidden'] = 
+					$values['location_source_mode'] != 'location_from_url';
+				
+				$fields['location_user']['hidden'] = 
+					(!inc('zenario_organization_manager')) || ($values['location_source_mode'] != 'location_from_url');
+				
+				$fields['map_width']['hidden'] = 
+				$fields['map_height']['hidden'] = 
+				$fields['max_location_image_width']['hidden'] = 
+				$fields['max_location_image_height']['hidden'] = 
+					$values['location_source_mode'] == 'location_from_url';
 					
-					
-				} elseif ($values['location_source_mode'] == "location_from_url") {
-					$fields['location_plugin_mode']['hidden'] = false;
-					$fields['location_user']['hidden'] = false;
-					$fields['location']['hidden'] = true;
-					$fields['map_width']['hidden'] = true;
-					$fields['map_height']['hidden'] = true;
-					$fields['max_location_image_width']['hidden'] = true;
-					$fields['max_location_image_height']['hidden'] = true;
-					
-				}
-				if(!(inc('zenario_organization_manager'))) {
-					$fields['location_user']['hidden'] = true;
-				}
+				$fields['location']['hidden'] = 
+					$values['location_source_mode'] != 'location_from_organizer';
+				
+				
 				break;
 		}
 	}

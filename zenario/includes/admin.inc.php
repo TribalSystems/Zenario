@@ -113,13 +113,17 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 		$mrg = getPluginInstanceDetails($instanceId);
 		$mrg['instance_name'] = htmlspecialchars($mrg['instance_name']);
 		$mrg['content_items'] = checkInstancesUsage($instanceId, $publishedOnly = false, $itemLayerOnly = true);
-		$mrg['layouts'] = checkInstancesUsageOnLayouts($instanceId);
+		
+		$getPluginsUsageOnLayouts = getPluginsUsageOnLayouts($instanceId);
+		$mrg['layouts_active'] = $getPluginsUsageOnLayouts['active'];
+		$mrg['layouts_archived'] = $getPluginsUsageOnLayouts['archived'];
+		
 		$mrg['plugins_link'] = htmlspecialchars($skLink. $pluginsLink);
 		$mrg['content_items_link'] = htmlspecialchars($skLink. '#zenario__modules/panels/plugins/item_buttons/usage_item//'. (int) $instanceId. '//');
-		$mrg['layouts_link'] = $skLink. htmlspecialchars('#zenario__modules/panels/plugins/item_buttons/usage_template//'. (int) $instanceId. '//');
+		$mrg['layouts_link'] = $skLink. htmlspecialchars('#zenario__modules/panels/plugins/item_buttons/usage_layouts//'. (int) $instanceId. '//');
 		
 		//Not used on any layouts
-		if (!$mrg['layouts']) {
+		if (!$mrg['layouts_active'] && !$mrg['layouts_archived']) {
 			//Not used on any content items
 			if (!$mrg['content_items']) {
 				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>', $mrg);
@@ -136,7 +140,7 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 			}
 		
 		//Just used on this layout
-		} elseif ($mrg['layouts'] == 1 && $level == 2) {
+		} elseif (($mrg['layouts_active'] + $mrg['layouts_archived']) == 1 && $level == 2) {
 			//Not used on any content items
 			if (!$mrg['content_items']) {
 				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on this layout only', $mrg);
@@ -153,19 +157,35 @@ function fillAdminSlotControlPluginInfo($moduleId, $instanceId, $isVersionContro
 			}
 		
 		} else {
+			
+			if ($mrg['layouts_archived']) {
+				if ($mrg['layouts_active'] == 1) {
+					$mrg['layouts'] = adminPhrase('1 layout (and [[layouts_archived]] archived)', $mrg);
+				} else {
+					$mrg['layouts'] = adminPhrase('[[layouts_active]] layouts (and [[layouts_archived]] archived)', $mrg);
+				}
+			} else {
+				if ($mrg['layouts_active'] == 1) {
+					$mrg['layouts'] = adminPhrase('1 layout', $mrg);
+				} else {
+					$mrg['layouts'] = adminPhrase('[[layouts_active]] layouts', $mrg);
+				}
+			}
+				
+			
 			//Not used on any content items
 			if (!$mrg['content_items']) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]] layouts</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a>', $mrg);
 			
 			//Used on this content item only
 			} elseif ($mrg['content_items'] == 1 && $level == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]] layouts</a> and on this content item', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on this content item', $mrg);
 			
 			} elseif ($mrg['content_items'] == 1) {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]] layouts</a> and on <a href="[[content_items_link]]">1 content item</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on <a href="[[content_items_link]]">1 content item</a>', $mrg);
 			
 			} else {
-				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]] layouts</a> and on <a href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
+				$info['reusable_plugin_details']['label'] = adminPhrase('Plugin: <a href="[[plugins_link]]">[[instance_name]]</a>, used on <a href="[[layouts_link]]">[[layouts]]</a> and on <a href="[[content_items_link]]">[[content_items]] content items</a>', $mrg);
 			}
 		}
 	}
@@ -527,6 +547,13 @@ function addAbsURLsToAdminBoxField(&$field) {
 						$quote. 'zenario/file.php',
 						$quote. htmlspecialchars(absCMSDirURL()). 'zenario/file.php',
 						$field[$value]);
+				
+				//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
+				$field[$value] = 
+					str_replace(
+						$quote. htmlspecialchars(SUBDIRECTORY). 'zenario/file.php',
+						$quote. htmlspecialchars(absCMSDirURL()). 'zenario/file.php',
+						$field[$value]);
 			}
 		}
 	}
@@ -534,6 +561,7 @@ function addAbsURLsToAdminBoxField(&$field) {
 
 //Workaround for problems with absolute and relative URLs in TinyMCE:
 	//Second, convert all absolute URLs to relative URLs when saving
+//Note: when saving emails/newsletters, you should use addAbsURLsToAdminBoxField() again and not this one!
 function stripAbsURLsFromAdminBoxField(&$field) {
 	foreach (array('value', 'current_value') as $value) {
 		if (isset($field[$value])) {
@@ -542,6 +570,13 @@ function stripAbsURLsFromAdminBoxField(&$field) {
 					str_replace(
 						$quote. htmlspecialchars(absCMSDirURL()),
 						$quote,
+						$field[$value]);
+				
+				//Attempt to work around a bug in the editor where the subdirectory gets added in before the URL
+				$field[$value] = 
+					str_replace(
+						$quote. htmlspecialchars(SUBDIRECTORY). 'zenario/file.php',
+						$quote. 'zenario/file.php',
 						$field[$value]);
 			}
 		}
@@ -598,6 +633,7 @@ function deleteUnusedImage($imageId, $onlyDeleteUnusedArchivedImages = false) {
 			if (!$image['archived']) {
 				updateRow('files', array('archived' => 1), $imageId);
 			}
+			deletePublicImage($imageId);
 		
 		} else {
 			//Otherwise delete it straight away
@@ -717,10 +753,40 @@ function deleteVersion($cID, $cType, $cVersion) {
 	deleteVersionControlledPluginSettings($cID, $cType, $cVersion);
 }
 
-function deleteArchive($cID, $cType, $cVersion) {
-	for ($v = $cVersion; $v > 0; --$v) {
-		deleteVersion($cID, $cType, $v);
+//Delete all of the archived versions of a content item before a specificied version,
+//or if no version is specified, delete all archived versions
+function deleteArchive($cID, $cType, $cVersion = false) {
+	
+	//If no version is specified, look for the most recent archived version
+	if (!$cVersion) {
+		if ($content = getRow('content', array('admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType))) {
+			array_map('intval', $content);
+			if ($content['visitor_version']) {
+				$cVersion = min($content) - 1;
+			} else {
+				$cVersion = $content['admin_version'] - 1;
+			}
+		}
 	}
+	
+	if (!$cVersion) {
+		return;
+	}
+	
+	$sql = "
+		SELECT MIN(version)
+		FROM ". DB_NAME_PREFIX. "versions
+		WHERE id = ". (int) $cID. "
+		  AND type = '". sqlEscape($cType). "'";
+	
+	if (($result = sqlSelect($sql))
+	 && ($row = sqlFetchRow($result))
+	 && ($v = (int) $row[0])) {
+		for (; $v <= $cVersion; ++$v) {
+			deleteVersion($cID, $cType, $v);
+		}
+	}
+	
 	flagImagesInArchivedVersions($cID, $cType);
 }
 
@@ -740,7 +806,7 @@ function deleteContentItem($cID, $cType) {
 	setRow('content', array('status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''), $content);
 }
 
-function trashContent($cID, $cType, $adminId = false) {
+function trashContent($cID, $cType, $adminId = false, $mode = false) {
 	
 	if (!$adminId) {
 		$adminId = session('admin_userid');
@@ -753,7 +819,7 @@ function trashContent($cID, $cType, $adminId = false) {
 	removeItemFromMenu($cID, $cType);
 	removeEquivalence($cID, $cType);
 	flagImagesInArchivedVersions($cID, $cType);
-	removeItemFromPluginSettings('content', $cID, $cType);
+	removeItemFromPluginSettings('content', $cID, $cType, $mode);
 	
 	sendSignal("eventContentTrashed",array("cID" => $cID,"cType" => $cType));
 }
@@ -836,51 +902,92 @@ function removeItemFromMenu($cID, $cType) {
 	}
 }
 
-function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '') {
-	$sql = "
-		DELETE
-		FROM ". DB_NAME_PREFIX. "plugin_settings
-		WHERE dangling_cross_references = 'remove'
-		  AND foreign_key_to = '". sqlEscape($keyTo). "'
-		  AND foreign_key_id = ". (int) $keyId. "
-		  AND foreign_key_char = '". sqlEscape($keyChar). "'";
-	sqlQuery($sql);
+function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode = false) {
 	
-	$sql = "
-		SELECT
-			pi.module_id,
-			m.class_name,
-			ps.instance_id,
-			ps.nest,
-			pi.content_id,
-			pi.content_type,
-			pi.content_version,
-			pi.slot_name
-		FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
-		INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
-		   ON pi.id = ps.instance_id
-		INNER JOIN ". DB_NAME_PREFIX. "modules AS m
-		   ON m.id = pi.module_id
-		WHERE dangling_cross_references = 'delete_instance'
-		  AND foreign_key_to = '". sqlEscape($keyTo). "'
-		  AND foreign_key_id = ". (int) $keyId. "
-		  AND foreign_key_char = '". sqlEscape($keyChar). "'";
-	
-	$result = sqlQuery($sql);
-	while ($row = sqlFetchAssoc($result)) {
-		if ($row['nest']) {
-			if (inc($row['class_name'])) {
-				//Delete this egg from the nest
-				call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['nest'], $row['instance_id']);
+	if ($mode == 'remove') {
+		$sql = "
+			DELETE
+			FROM ". DB_NAME_PREFIX. "plugin_settings
+			WHERE foreign_key_to = '". sqlEscape($keyTo). "'
+			  AND foreign_key_id = ". (int) $keyId. "
+			  AND foreign_key_char = '". sqlEscape($keyChar). "'";
+		sqlQuery($sql);
+	} elseif ($mode == 'delete_instance') {
+		$sql = "
+			SELECT
+				pi.module_id,
+				m.class_name,
+				ps.instance_id,
+				ps.nest,
+				pi.content_id,
+				pi.content_type,
+				pi.content_version,
+				pi.slot_name
+			FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
+			INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+			   ON pi.id = ps.instance_id
+			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+			   ON m.id = pi.module_id
+			WHERE foreign_key_to = '". sqlEscape($keyTo). "'
+			  AND foreign_key_id = ". (int) $keyId. "
+			  AND foreign_key_char = '". sqlEscape($keyChar). "'";
+		$result = sqlQuery($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			if ($row['nest']) {
+				if (inc($row['class_name'])) {
+					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['nest'], $row['instance_id']);
+				}
+			} else {
+				//Delete this instance
+				deletePluginInstance($row['instance_id']);
 			}
+		}
+	} else {
+		$sql = "
+			DELETE
+			FROM ". DB_NAME_PREFIX. "plugin_settings
+			WHERE dangling_cross_references = 'remove'
+			  AND foreign_key_to = '". sqlEscape($keyTo). "'
+			  AND foreign_key_id = ". (int) $keyId. "
+			  AND foreign_key_char = '". sqlEscape($keyChar). "'";
+		sqlQuery($sql);
+	
+		$sql = "
+			SELECT
+				pi.module_id,
+				m.class_name,
+				ps.instance_id,
+				ps.nest,
+				pi.content_id,
+				pi.content_type,
+				pi.content_version,
+				pi.slot_name
+			FROM ". DB_NAME_PREFIX. "plugin_settings AS ps
+			INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
+			   ON pi.id = ps.instance_id
+			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+			   ON m.id = pi.module_id
+			WHERE dangling_cross_references = 'delete_instance'
+			  AND foreign_key_to = '". sqlEscape($keyTo). "'
+			  AND foreign_key_id = ". (int) $keyId. "
+			  AND foreign_key_char = '". sqlEscape($keyChar). "'";
 		
-		} elseif ($row['content_id']) {
-			//Clear the settings for this version controlled module
-			deleteRow('plugin_settings', array('instance_id' => $row['instance_id']));
-		
-		} else {
-			//Delete this instance
-			deletePluginInstance($row['instance_id']);
+		$result = sqlQuery($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			if ($row['nest']) {
+				if (inc($row['class_name'])) {
+					//Delete this egg from the nest
+					call_user_func(array($row['class_name'], 'removePlugin'), $row['class_name'], $row['nest'], $row['instance_id']);
+				}
+			
+			} elseif ($row['content_id']) {
+				//Clear the settings for this version controlled module
+				deleteRow('plugin_settings', array('instance_id' => $row['instance_id']));
+			
+			} else {
+				//Delete this instance
+				deletePluginInstance($row['instance_id']);
+			}
 		}
 	}
 }
@@ -945,6 +1052,25 @@ function allowHide($cID, $cType, $status = false) {
 
 function rerenderWorkingCopyImages($workingCopyImages = true, $thumbnailWorkingCopyImages = true, $removeOldWorkingCopies = false, $jpegOnly = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
+}
+
+function getImageTagColours($byId = true, $byName = true) {
+	
+	$tagColours = array();
+	$lastColour = false;
+	$sql = "
+		SELECT id, name, color
+		FROM ". DB_NAME_PREFIX. "image_tags
+		WHERE color != 'blue'
+		ORDER BY color";
+	
+	$result = sqlSelect($sql);
+	while ($tag = sqlFetchAssoc($result)) {
+		if ($byId) $tagColours[$tag['id']] = $tag['color'];
+		if ($byName) $tagColours[$tag['name']] = $tag['color'];
+	}
+	
+	return $tagColours;
 }
 
 
@@ -1381,11 +1507,7 @@ function adminLogoutOnclick() {
 			adminPhrase('Are you sure you want to logout?');
 	}
 	
-	$url = 'zenario/admin/welcome.php?task=logout';
-	
-	if (cms_core::$cID && cms_core::$cType) {
-		$url .= '&cID='. cms_core::$cID. '&cType='. cms_core::$cType;
-	}
+	$url = 'zenario/admin/welcome.php?task=logout&'. http_build_query(importantGetRequests(true));
 	
 	return 
 	
@@ -1426,26 +1548,19 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 	$duplicating = (bool) $sourceTemplateId;
 	
 	$values = array();
-	if (isset($submission['skin_id'])) {
-		$values['skin_id'] = $submission['skin_id'];
+	foreach (array(
+		'skin_id', 'css_class', 'bg_image_id', 'bg_color', 'bg_repeat', 'bg_position',
+		'name', 'cols', 'min_width', 'max_width', 'fluid', 'responsive'
+	) as $var) {
+		if (isset($submission[$var])) {
+			$values[$var] = $submission[$var];
+		}
 	}
-	if (isset($submission['css_class'])) {
-		$values['css_class'] = $submission['css_class'];
+	if (isset($submission['minWidth'])) {
+		$values['min_width'] = $submission['minWidth'];
 	}
-	if (isset($submission['bg_image_id'])) {
-		$values['bg_image_id'] = $submission['bg_image_id'];
-	}
-	if (isset($submission['bg_color'])) {
-		$values['bg_color'] = $submission['bg_color'];
-	}
-	if (isset($submission['bg_repeat'])) {
-		$values['bg_repeat'] = $submission['bg_repeat'];
-	}
-	if (isset($submission['bg_position'])) {
-		$values['bg_position'] = $submission['bg_position'];
-	}
-	if (isset($submission['name'])) {
-		$values['name'] = $submission['name'];
+	if (isset($submission['maxWidth'])) {
+		$values['max_width'] = $submission['maxWidth'];
 	}
 	
 	if (isset($submission['content_type'])) {
@@ -1920,7 +2035,24 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 			
 				//If possble, try to use the UNIX shell
 				if (PHP_OS == 'Linux') {
-					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					//On Linux it's possible to set a timeout, so do so.
+					$output = array();
+					$status = false;
+					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
+					
+					//If the statement times out, then I will assume this was because the file system indexes were out of
+					//date and the find statement took a long time.
+					//If the indexes were out of date then it probably means that the code has just changed, so we'll handle
+					//the time out by assuming that it indicates a change.
+					if ($status == 124) {
+						$changed = true;
+						
+						//Temporarily clear all of the "last changed" settings to make sure we don't run
+						//any more "exec('find')"s in this script
+						setSetting('css_js_html_files_last_changed', '', false, false);
+						setSetting('php_files_last_changed', '', false, false);
+						setSetting('yaml_files_last_changed', '', false, false);
+					}
 					$useFallback = false;
 			
 				} elseif (PHP_OS == 'Darwin') {
@@ -3371,29 +3503,29 @@ function renameInstance(&$instanceId, &$nest, $newName, $createNewInstance, $cID
 }
 
 //Check how many content items use a Library plugin
-function checkInstancesUsageOnLayouts($instanceIds, $activeOnly = true) {
+function getPluginsUsageOnLayouts($instanceIds) {
 	
-	$usage = 0;
-	if ($instanceIds) {
-		$sql = "
-			SELECT COUNT(DISTINCT l.layout_id)
-			FROM ". DB_NAME_PREFIX. "plugin_layout_link AS l
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
-			   ON t.layout_id = l.layout_id
-			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS s
-			   ON s.family_name = t.family_name
-			  AND s.file_base_name = t.file_base_name
-			  AND s.slot_name = l.slot_name
-			WHERE l.instance_id IN (". preg_replace('/[^\d,]/', '', $instanceIds). ")";
+	$usage = array('active' => 0, 'archived' => 0);
+	
+	$sql = "
+		SELECT l.status, COUNT(DISTINCT l.layout_id)
+		FROM ". DB_NAME_PREFIX. "plugin_layout_link AS pll
+		INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+		   ON l.layout_id = pll.layout_id
+		INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS s
+		   ON s.family_name = l.family_name
+		  AND s.file_base_name = l.file_base_name
+		  AND s.slot_name = pll.slot_name
+		WHERE pll.instance_id IN (". inEscape($instanceIds, 'numeric'). ")
+		GROUP BY l.status";
 		
-		if ($activeOnly) {
-			$sql .= "
-			  AND t.status = 'active'";
+	$result = sqlQuery($sql);
+	while ($row = sqlFetchRow($result)) {
+		if ($row[0] == 'active') {
+			$usage['active'] = $row[1];
+		} else {
+			$usage['archived'] = $row[1];
 		}
-		
-		$result = sqlQuery($sql);
-		$row = sqlFetchRow($result);
-		$usage += $row[0];
 	}
 	
 	return $usage;
@@ -3406,14 +3538,14 @@ function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnl
 	if (!$itemLayerOnly) {
 		$sql2 = "
 			SELECT l.layout_id
-			FROM ". DB_NAME_PREFIX. "plugin_layout_link AS l
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
-			   ON t.layout_id = l.layout_id
+			FROM ". DB_NAME_PREFIX. "plugin_layout_link AS pll
+			INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+			   ON l.layout_id = pll.layout_id
 			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS s
-			   ON s.family_name = t.family_name
-			  AND s.file_base_name = t.file_base_name
-			  AND s.slot_name = l.slot_name
-			WHERE l.instance_id IN (". inEscape($instanceIds, 'numeric'). ")";
+			   ON s.family_name = l.family_name
+			  AND s.file_base_name = l.file_base_name
+			  AND s.slot_name = pll.slot_name
+			WHERE pll.instance_id IN (". inEscape($instanceIds, 'numeric'). ")";
 		
 		$result = sqlQuery($sql2);
 		while ($row = sqlFetchRow($result)) {
@@ -5123,110 +5255,11 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 
 
 
-function deleteImage($id) {
-	$sql = "DELETE 
-			FROM " . DB_NAME_PREFIX . "images
-			WHERE id = " . (int) $id;
-			
-	$result = sqlQuery($sql);
-}
-
-function deleteImageByCheckSum($checksum, $cID = false, $cType = false, $cVersion = false) {
-	$sql = "
-		DELETE 
-		FROM ". DB_NAME_PREFIX. "images
-		WHERE checksum_inc_name = '". sqlEscape($checksum). "'";
-	
-	if ($cID) {
-		if (!$cVersion) {
-			$cVersion = getLatestVersion($cID, $cType);
-		}
-		
-		$sql .= "
-			AND content_item_id = ". (int) $cID. "
-			AND content_item_type = '". sqlEscape($cType). "'
-			AND content_item_version = ". (int) $cVersion;
-	}
-			
-	$result = sqlQuery($sql);
-}
-
-function deleteMovieByCheckSum($checksum, $cID = false, $cType = false, $cVersion = false) {
-	$sql = "
-		DELETE 
-		FROM ". DB_NAME_PREFIX. "movies
-		WHERE checksum_inc_name = '". sqlEscape($checksum). "'";
-	
-	if ($cID) {
-		if (!$cVersion) {
-			$cVersion = getLatestVersion($cID, $cType);
-		}
-		
-		$sql .= "
-			AND content_item_id = ". (int) $cID. "
-			AND content_item_type = '". sqlEscape($cType). "'
-			AND content_item_version = ". (int) $cVersion;
-	}
-			
-	$result = sqlQuery($sql);
-}
 
 
 
 
 
-
-//Include extranet functionality
-function getGroupDBDetails($groupId) {
-
-	$sql = "
-		SELECT id, name, public, allow_opt_in_opt_out, members_are_employees, active
-		FROM ". DB_NAME_PREFIX. "groups
-		WHERE id = ". (int) $groupId;
-	
-	$result = sqlQuery($sql);
-	return sqlFetchAssoc($result);
-}
-
-
-
-
-
-
-//Validate the input to a form about user details
-function validateGroup($groupDetails) {
-	
-	$errArray = array();
-	
-	if(isset($groupDetails['name']) && !$groupDetails['name']) {
-		$errArray[] = adminPhrase('_MSG_ENTER_NAME_GROUP');
-	}
-	
-	if (isset($groupDetails['name']) && alreadyExistsGroupName($groupDetails['name'], $groupDetails['groupId'])) {
-		$errArray[] = adminPhrase('_MSG_NAME_GROUP_ALREADY_EXISTS');
-	}
-	
-	return array('valid' => !count($errArray), 'errArray' => $errArray);
-}
-
-
-function alreadyExistsGroupName($name,  $groupId = false) {
-	$groupId =  $groupId;
-	$sql = "
-		SELECT name
-		FROM ".DB_NAME_PREFIX."groups
-		WHERE name = '" . sqlEscape( $name ) . "'";
-	if ($groupId) {
-		$sql .= "
-			AND id <> " . (int) $groupId;
-	}
-	$result = sqlQuery($sql);
-	if ( $row = sqlFetchArray( $result ) ) {
-		return true;
-	} else {
-		return false;
-	}
-}
 
 //Smart group description function 
 function getSmartGroupDescription($smartGroupId) {
@@ -5310,7 +5343,7 @@ function registerDataset(
 			array('table' => $table));
 }
 
-function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '') {
+function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false) {
 	
 	if ($dbColumn === false) {
 		$dbColumn = $fieldName;
@@ -5334,7 +5367,8 @@ function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $db
 				'type' => $type,
 				'db_column' => $dbColumn,
 				'validation' => $validation,
-				'values_source' => $valuesSource),
+				'values_source' => $valuesSource,
+				'fundamental' => $fundamental),
 			$fieldId
 		);
 		
@@ -5350,7 +5384,8 @@ function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $db
 					'tab_name' => $tabName,
 					'field_name' => $fieldName,
 					'validation' => $validation,
-					'values_source' => $valuesSource),
+					'values_source' => $valuesSource,
+					'fundamental' => $fundamental),
 				array('dataset_id' => $datasetId, 'db_column' => $dbColumn, 'is_system_field' => 1));
 	}
 }
@@ -5437,13 +5472,19 @@ function getDatasetFieldDefinition($type) {
 	}
 }
 
-function listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true) {
+function listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false) {
 	$dataset = getDatasetDetails($dataset);
 	
-	$key = array('dataset_id' => $dataset['id']);
+	$key = array();
 	
 	if (is_array($filter)) {
-		$key['type'] = $filter;
+		if (isset($filter['type'])
+		 || isset($filter['values_source'])) {
+			$key = $filter;
+		} else {
+			$key['type'] = $filter;
+		}
+	
 	} else {
 		switch ($filter) {
 			//enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field')
@@ -5458,11 +5499,6 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 		
 			case 'text_only':
 				$key['type'] = array('text', 'textarea', 'url');
-				break;
-		
-			case 'country_only':
-				$key['type'] = array('centralised_radios', 'centralised_select');
-				$key['values_source'] = 'zenario_country_manager::getActiveCountries';
 				break;
 		
 			case 'boolean_and_groups_only':
@@ -5481,34 +5517,55 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 	if ($customOnly) {
 		$key['is_system_field'] = 0;
 	}
+	$key['dataset_id'] = $dataset['id'];
 	
 	if ($flat) {
-		$columns = array('label', 'field_name');
+		$columns = array('is_system_field', 'label', 'default_label');
 	} else {
-		$columns = true;
+		$columns = array('tab_name', 'is_system_field', 'fundamental', 'field_name', 'type', 'db_column', 'label', 'default_label', 'ord');
 	}
 	
-	$fields = getRowsArray('custom_dataset_fields', $columns, $key, array('field_name', 'label'));
-	
-	$i = 0;
+	$fields = getRowsArray('custom_dataset_fields', $columns, $key, 'ord');
+	$existingParents = array();
 	foreach ($fields as &$field) {
-		if (!$customOnly) {
-			if ($field['label'] && $field['field_name']) {
-				$field['label'] = adminPhrase('System field [[field_name]] ("[[label]]")', $field);
-			
-			} elseif ($field['field_name']) {
-				$field['label'] = adminPhrase('System field [[field_name]]', $field);
-			} else {
-				$field['label'] = adminPhrase('Custom field "[[label]]"', $field);
-			}
+		if ($field['is_system_field'] && $field['label'] == '') {
+			$field['label'] = $field['default_label'];
 		}
 		
 		if ($flat) {
 			$field = $field['label'];
 		} else {
-			$field['ord'] = ++$i;
+			if ($useOptGroups) {
+				$existingParents[$field['parent'] = 'tab__'. $field['tab_name']] = true;
+			}
 		}
 	}
+	
+	
+	//Add opt-groups for each tab
+	if ($useOptGroups) {
+		foreach (getRowsArray('custom_dataset_tabs', array('is_system_field', 'name', 'label', 'default_label', 'ord'), array()) as $tab) {
+			
+			if ($hideEmptyOptGroupParents && empty($existingParents['tab__'. $tab['name']])) {
+				continue;
+			}
+			
+			if ($tab['is_system_field'] && $tab['label'] == '') {
+				$tab['label'] = $tab['default_label'];
+			}
+			
+			$fields['tab__'. $tab['name']] = $tab;
+			
+			//Add an invisible child as a little hack to force these to be optgroups even if there are
+			//no other children
+			$fields['dummy_child__'. $tab['name']] = array(
+				'label' => '',
+				'parent' => 'tab__'. $tab['name'],
+				'hidden' => true
+			);
+		}
+	}
+	
 	
 	return $fields;
 }
@@ -5657,7 +5714,7 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 		
 		//Add a key if needed
 		if ($field['type'] != 'checkboxes'
-		 && ($field['sortable'])) {
+		 && ($field['create_index'])) {
 			$sql = "
 				ALTER TABLE `". DB_NAME_PREFIX. sqlEscape($dataset['table']). "`
 				ADD KEY (`". sqlEscape($field['db_column']). "`";
@@ -5673,48 +5730,28 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 }
 
 
-//Admin AJAX functions
-function zenarioAJAXShortenPath($path, $type) {
-	if (false) {
-		$path =
-			str_replace('/panel/', '/',
-			str_replace('/panels/', '/',
-			str_replace('/nav/', '/',
-			str_replace('/collection_buttons/', '/',
-			str_replace('/item_buttons/', '/',
-			str_replace('/inline_buttons/', '/',
-			str_replace('/hidden_nav/', '/',
-			str_replace('/items/', '/',
-				$path
-			))))))));
-	}
-	
-	return $path;
-}
-
-
 
 //A recursive function that comes up with a list of all of the Organizer paths that a TUIX file references
 function logTUIXFileContentsR(&$paths, &$tags, $type, $path = '') {
 	
 	if (is_array($tags)) {
 		if (!empty($tags['panel'])) {
-			$shortPath = zenarioAJAXShortenPath($path. '/panel', $type);
+			$recordedPath = $path. '/panel';
 			
 			if (!empty($tags['panel']['panel_type'])) {
-				$paths[$shortPath] = $tags['panel']['panel_type'];
+				$paths[$recordedPath] = $tags['panel']['panel_type'];
 			} else {
-				$paths[$shortPath] = 'list';
+				$paths[$recordedPath] = 'list';
 			}
 		}
 		if (!empty($tags['panels']) && is_array($tags['panels'])) {
 			foreach ($tags['panels'] as $panelName => &$panel) {
-				$shortPath = zenarioAJAXShortenPath($path. '/panels/'. $panelName, $type);
+				$recordedPath = $path. '/panels/'. $panelName;
 				
 				if (!empty($panel['panel_type'])) {
-					$paths[$shortPath] = $panel['panel_type'];
+					$paths[$recordedPath] = $panel['panel_type'];
 				} else {
-					$paths[$shortPath] = 'list';
+					$paths[$recordedPath] = 'list';
 				}
 			}
 		}
@@ -5737,7 +5774,10 @@ function logTUIXFileContentsR(&$paths, &$tags, $type, $path = '') {
 
 //This function scans the Module directory for Modules with certain TUIX files, reads them, and turns them into a php array
 	//You should initialise $modules and $tags to empty arrays before calling this function.
-function loadTUIX(&$modules, &$tags, $type, $requestedPath = '', $settingGroup = '', $compatibilityClassNames = false) {
+function loadTUIX(
+	&$modules, &$tags, $type, $requestedPath = '', $settingGroup = '', $compatibilityClassNames = false,
+	$runningModulesOnly = true, $exitIfError = true
+) {
 	$modules = array();
 	$tags = array();
 	
@@ -5755,7 +5795,9 @@ function loadTUIX(&$modules, &$tags, $type, $requestedPath = '', $settingGroup =
 	
 	} else {
 		//Try to check the tuix_file_contents table to see which files we need to include
-		foreach (modulesAndTUIXFiles($type, $requestedPath, $settingGroup, true, true, $compatibilityClassNames) as $module) {
+		foreach (modulesAndTUIXFiles(
+			$type, $requestedPath, $settingGroup, true, true, $compatibilityClassNames, $runningModulesOnly
+		) as $module) {
 			if (empty($modules[$module['class_name']])) {
 				setModulePrefix($module);
 				
@@ -5827,126 +5869,16 @@ function loadTUIX(&$modules, &$tags, $type, $requestedPath = '', $settingGroup =
 	
 	//Readjust the start to get rid of the outer tag
 	if (!isset($tags[$type])) {
-		echo adminPhrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', array('path' => $requestedPath));
-		exit;
+		if ($exitIfError) {
+			echo adminPhrase('The requested path "[[path]]" was not found in the system. If you have just updated or added files to the CMS, you will need to reload the page.', array('path' => $requestedPath));
+			exit;
+		} else {
+			$tags = array();
+		}
 	}
 	$tags = $tags[$type];
 }
 
-function tuixCacheDir($path) {
-	
-	$strlen = strlen(CMS_ROOT);
-	if (substr($path, 0, $strlen) == CMS_ROOT) {
-		$path = substr($path, $strlen);
-	}
-	$path = str_replace('/tuix/', '/', $path);
-	$path = str_replace('/zenario/', '/', $path);
-	
-	$dir = dirname($path);
-	$dir = str_replace('%', ' ', rawurlencode($dir));
-	$file = basename($path);
-	$file = explode('.', $file, 2);
-	$file = $file[0];
-	
-	cleanDownloads();
-	return createCacheDir($dir, $type = 'tuix', $onlyForCurrentVisitor = true, $ip = false). $file. '.json';
-}
-
-
-function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
-	$type = explode('.', $path);
-	$type = $type[count($type) - 1];
-	
-	//Attempt to use a cached copy of this TUIX file
-		//JSON is a lot faster to read than the other formats, so for speed purposes we create cached JSON copies of files
-	$cachePath = false;
-	if ($useCache || $updateCache) {
-		$cachePath = tuixCacheDir($path);
-	}
-	if ($useCache && $cachePath
-	 && file_exists($path)
-	 && file_exists($cachePath)
-	 && filemtime($cachePath) > filemtime($path)
-	 && ($tags = json_decode(file_get_contents($cachePath), true))) {
-		return $tags;
-	}
-	
-	switch ($type) {
-		case 'xml':
-			$xml = simplexml_load_file($path);
-			
-			$tags = array();
-			zenarioReadTUIXFileR($tags, $xml);
-			
-			//Hack to get the 
-			
-			break;
-			
-		case 'yml':
-		case 'yaml':
-			
-			$contents = file_get_contents($path);
-			
-			if ($contents === false) {
-				echo 'Could not read file '. $path;
-				exit;
-			
-			} else
-			if ((preg_match("/[\n\r](\t* +\t|\t+ {4})/", "\n". $contents) !== 0)
-			 || (preg_match("/[\n\r](\t+[^\t])/", "\n". $contents) === 1
-			 &&  preg_match("/[\n\r]( +[^ ])/", "\n". $contents) === 1)) {
-				echo 'The YAML file '. $path. ' contains a mixture of tabs and spaces for indentation and cannot be read';
-				exit;
-			}
-			
-			if (defined('USE_NATIVE_YAML_EXTENSION') && function_exists('yaml_parse')) {
-				
-				$parsedContents = '';
-				foreach (preg_split("/([\n\r][ \t]+)/", $contents, -1, PREG_SPLIT_DELIM_CAPTURE) as $i => $line) {
-					if ($i % 2) {
-						$parsedContents .= str_replace("\t", '    ', $line);
-					} else {
-						$parsedContents .= $line;
-					}
-				}
-				
-				$tags = yaml_parse($parsedContents);
-				unset($parsedContents);
-				
-			} else {
-				require_once CMS_ROOT. 'zenario/libraries/mit/spyc/Spyc.php';
-				$tags = Spyc::YAMLLoad($path);
-			}
-			unset($contents);
-			
-			break;
-			
-		default:
-			$tags = array();
-	}
-	
-	if (!is_array($tags) || $tags === NULL) {
-		echo 'Error in file '. $path;
-		exit;
-	}
-	
-	//Backwards compatability hack so that Modules created before we moved the
-	//site settings don't immediately break!
-	if (!empty($tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel'])
-	 && empty($tags['zenario__administration']['panels']['site_settings'])) {
-		$tags['zenario__administration']['panels']['site_settings'] =
-			$tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel'];
-		unset($tags['zenario__administration']['nav']['configure_settings']['panel']['items']['settings']['panel']);
-	}
-	
-	//Save this array in the cache as a JSON file, for faster loading next time
-	if ($updateCache && $cachePath) {
-		@file_put_contents($cachePath, json_encode($tags));
-		@chmod($cachePath, 0666);
-	}
-	
-	return $tags;
-}
 
 function zenarioReadTUIXFileR(&$tags, &$xml) {
 	$lastKey = null;
@@ -6018,7 +5950,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 		if ($isPanel) {
 			//Record the link to this panel.
 			//Note that I'm stripping the "organizer/" from the start of the URL, and the final "/" from the end
-			array_unshift($goodURLs, zenarioAJAXShortenPath($url, $type));
+			array_unshift($goodURLs, $url);
 		
 			//If the current tag is a panel, and we have a specific path requested, don't include it if it is not on the requested path
 			if ($requestedPath && (strlen($requestedPath) < ($sl = strlen($goodURLs[0])) || substr($requestedPath, 0, $sl) != $goodURLs[0])) {
@@ -6102,13 +6034,6 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 						$includeThisSubTree = true;
 					}
 					break;
-				case 'use_different_view_options':
-				case 'use_different_view_options_per_refiner_id':
-				case 'use_different_view_options_per_id_in_previous_refiner':
-					if ($parentsParent == 'refiners') {
-						$includeThisSubTree = true;
-					}
-					break;
 			}
 		}
 		
@@ -6121,7 +6046,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 		} elseif ($settingGroup === true) {
 			
 		//Filter by setting group
-		} elseif ($requestedPath == 'plugin_settings' || $requestedPath == 'site_settings' || $requestedPath == 'advanced_search') {
+		} elseif ($requestedPath == 'plugin_settings' || $requestedPath == 'site_settings') {
 			//Check attributes for keys and values.
 			//For module Settings, use the "module_class_name" attribute to only show the related settings
 			//However compatilibity now includes inheriting module Settings, so include module Settings from
@@ -6136,13 +6061,6 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 			if ($requestedPath == 'site_settings'
 			 && !empty($par['setting_group'])
 			 && $par['setting_group'] != $settingGroup) {
-				$goFurther = false;
-			
-			//For Advanced Searches, only show fields for the current Storekeepr Path
-			} else
-			if ($requestedPath == 'advanced_search'
-			 && !empty($par['organizer_path'])
-			 && $par['organizer_path'] != $settingGroup) {
 				$goFurther = false;
 			}
 		}
@@ -6175,14 +6093,58 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 	}
 	
 	
-	//Note down which module owns this tag
+	//In certain places, we need to note down which module owns this element
 	$isEmptyArray = false;
 	if (!(isset($tags[$tag]) && is_array($tags[$tag]))) {
 		$isEmptyArray = true;
+		
+		//Everything that:
+			//Launches an AJAX request
+			//May need to be customised using fillOrganizerPanel(), fillAdminBox(), etc...
+		//will need the class name written down so we know which module's method to call.
 		if ($moduleClassName) {
-			$tags[$tag] = array('class_name' => $moduleClassName);
+			$addClass = false;
+			if ($type == 'organizer') {
+				if ($tag == 'ajax'
+				 || $parent == 'db_items'
+				 || $parent == 'columns'
+				 || $parent == 'collection_buttons'
+				 || $parent == 'inline_buttons'
+				 || $parent == 'item_buttons'
+				 || $parent == 'quick_filter_buttons'
+				 || $tag == 'combine_items'
+				 || $parent == 'refiners'
+				 || $parent == 'panels'
+				 || $tag == 'panel'
+				 || $tag == 'pick_items'
+				 || $tag == 'reorder'
+				 || $tag == 'upload'
+				 || $tag === false) {
+					$addClass = true;
+				}
+		
+			} elseif ($type == 'admin_boxes') {
+				if ($parentsParent === false
+				 || $parent == 'tabs'
+				 || $parent == 'fields') {
+					$addClass = true;
+				}
+		
+			} elseif ($type == 'admin_toolbar') {
+				if ($tag == 'ajax'
+				 || $parent == 'buttons'
+				 || $tag == 'pick_items'
+				 || $parent == 'toolbars') {
+					$addClass = true;
+				}
+			}
+			
+			if ($addClass) {
+				$tags[$tag] = array('class_name' => $moduleClassName);
+			}
 		}
 	}
+	
 	
 	//Recursively scan each child-tag
 	$children = 0;
@@ -6256,27 +6218,26 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		$path .= ($path? '/' : ''). $parentKey;
 	}
 	
+	
+	//Work out whether we should automatically add an "ord" property to the elements we find. This is needed
+	//in some places to keep things in the right order.
+	//However we need to be careful not to add "ord" properties to everything, as if they are inserted into
+	//a list of objects that would accidentally add a new dummy object into the list!
 	$count = 0;
 	$noPrivs = array();
-	
-	$countItems = false;
 	$orderItems = false;
+	
 	if ($mode == 'csv' || $mode == 'xml') {
-		//Don't count or order anything
+		//Don't order anything
 		
 	} elseif ($type == 'organizer') {
-		$countItems = $parentKey === false
-					|| $parentKey == 'items'
-					|| $parentKey == 'panels'
+		$orderItems = (!$requestedPath && $parentKey === false)
 					|| $parentKey == 'columns'
-					|| $parentKey == 'hidden_nav'
 					|| $parentKey == 'item_buttons'
 					|| $parentKey == 'inline_buttons'
 					|| $parentKey == 'collection_buttons'
 					|| $parentKey == 'quick_filter_buttons'
 					|| $parentKey == 'nav';
-		
-		$orderItems = $countItems && $parentKey != 'items';
 	
 	} elseif ($type == 'admin_boxes' || $type == 'welcome') {
 		$orderItems = $parentKey == 'tabs'
@@ -6316,7 +6277,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 			} elseif (!zenarioParseTUIX2($value, $removedColumns, $type, $mode, $requestedPath, $path, (string) $key, $parentKey, $parentParentKey)) {
 				$noPrivs[] = $key;
 			
-			} elseif (is_array($value) && ($countItems || $orderItems)) {
+			} elseif (is_array($value) && ($orderItems)) {
 				++$count;
 				
 				if ($orderItems
@@ -6330,47 +6291,6 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 			unset($tags[$key]);
 		}
 		unset($tags['priv']);
-		
-		//Add counts to items, buttons and top/second level items
-		if ($countItems && !isset($tags['count']) && $countItems) {
-			$tags['count'] = $count;
-		}
-		
-		//Strip the class_name tag out except where needed
-		if ($type == 'organizer') {
-			if ($parentKey != 'ajax'
-			 && $parentParentKey != 'columns'
-			 && $parentParentKey != 'collection_buttons'
-			 && $parentParentKey != 'inline_buttons'
-			 && $parentParentKey != 'item_buttons'
-			 && $parentParentKey != 'quick_filter_buttons'
-			 && $parentKey != 'combine_items'
-			 && $parentParentKey != 'refiners'
-			 && $parentKey != 'pick_items'
-			 && $parentKey != 'reorder'
-			 && $parentKey != 'upload'
-			 && $parentKey !== false) {
-				unset($tags['class_name']);
-			}
-		
-		} elseif ($type == 'admin_boxes') {
-			if ($parentKey !== false
-			 && $parentParentKey != 'tabs'
-			 && $parentParentKey != 'fields') {
-				unset($tags['class_name']);
-			}
-		
-		} elseif ($type == 'admin_toolbar') {
-			if ($parentKey != 'ajax'
-			 && $parentParentKey != 'buttons'
-			 && $parentKey != 'pick_items'
-			 && $parentParentKey != 'toolbars') {
-				unset($tags['class_name']);
-			}
-		
-		} elseif ($type == 'help' || $type == 'welcome') {
-			unset($tags['class_name']);
-		}
 		
 		//Don't send any SQL to the client
 		if ($type == 'organizer') {
@@ -6440,7 +6360,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 			} elseif (($parentParentKey === false || $parentParentKey == 'panel' || $parentParentParentKey == 'panels') && $parentKey == 'columns') {
 				//If this is a Organizer request for a specific panel, get a list of columns for that
 				//panel that are server side only, so that we can later remove these from the output.
-				if (zenarioAJAXShortenPath($path, $type) == $requestedPath. '/columns') {
+				if ($path == $requestedPath. '/columns') {
 					$removedColumns = array();
 					foreach ($tags as $key => &$value) {
 						if (is_array($value) && engToBoolean(arrayKey($value, 'server_side_only'))) {

@@ -75,6 +75,7 @@ additionalProperties:
     type: object
     required:
         - key
+        - tabs
     properties:
         title:
             type: string
@@ -247,6 +248,7 @@ additionalProperties:
                 type: object
                 required:
                     - label
+                    - fields
                 properties:
                     ord: *ord
                     label:
@@ -393,6 +395,10 @@ additionalProperties:
                                 -
                                     required:
                                         - upload
+                            
+                            #Note: it's legal for pick_items and upload to appear together
+                            #There's a small hack in the devTools.validate() function to add this exception.
+                            
                             forbidden_if_true:
                                 full_width:
                                     - row_class
@@ -412,6 +418,12 @@ additionalProperties:
                                     type: string
                                     description: >
                                         A label for the field. Won't be HTML escaped.
+                                label_class:
+                                    type: string
+                                    description: >
+                                        This property allows you to place a CSS class name on the field's label.
+                                        
+                                        This works from version 7.0.6 onwards.
                                 full_width:
                                     type: boolean
                                     description: >
@@ -796,7 +808,28 @@ additionalProperties:
                                             description: >
                                                 An error message to display in a file picker if a .ico file is not chosen.
                                                 This works from version 7.0.5 onwards.
+                                
+                                indeterminate:
+                                    type: boolean
+                                    description: >
+                                        You can set this to true to set the indeterminate property of a checkbox-type field.
                                         
+                                        When the admin clicks on the checkbox, it will automatically remove this property.
+                                        
+                                        This works from version 7.0.6 onwards.
+                                indeterminates:
+                                    type: object
+                                    additionalProperties:
+                                        type: boolean
+                                    description: >
+                                        Where you have a checkboxes-type field, you can use this to set the indeterminate property
+                                        for each checkbox individually.
+                                        To do this, enter the id of each value into this object.
+                                        
+                                        When the admin clicks on a checkbox, it will automatically remove the property.
+                                        
+                                        This works from version 7.0.6 onwards.
+                                
                                 multiple_edit:
                                     type: object
                                     description: >
@@ -862,10 +895,14 @@ additionalProperties:
                                     type: object
                                     static: true
                                     description: >
-                                        If this Admin Box defines your Module's Plugin Settings, you will need to set this
+                                        If this Admin Box defines your module's plugin settings, you will need to set this
                                         property for each field you wish to be loaded and saved.
                                         
                                         You can have fields without this property if you wish, but these will not be loaded or saved.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                     required:
                                         - name
                                     properties:
@@ -875,23 +912,27 @@ additionalProperties:
                                             description: >
                                                 The code-name of this Plugin Setting.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
-                                                
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         value:
                                             type: *variable
                                             static: true
                                             description: >
                                                 The default value for this Plugin Setting.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
-                                                
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
                                                 
                                                 As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
                                                 property from the field itself.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         is_searchable_content:
                                             type: boolean
                                             static: true
@@ -901,7 +942,16 @@ additionalProperties:
                                                 
                                                 This only applies for version controlled plugins, as the search always ignores plugins in the library.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
+                                        
+                                        is_email_address:
+                                            type: boolean
+                                            description: >
+                                                Marks this field as an email address field when marked as true for a plugin setting. 
+                                                If it contains an email address it'll show in the Plugin emails organizer panel.
+                                        
                                         translate:
                                             type: boolean
                                             static: true
@@ -909,7 +959,9 @@ additionalProperties:
                                                 This property marks that this setting contains text that should be translated when translating
                                                 into a different language.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         
                                         foreign_key_to:
                                             enum:
@@ -936,7 +988,9 @@ additionalProperties:
                                                 
                                                 Some Modules may add other values that you can use here.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         dangling_cross_references:
                                             enum:
                                                 - keep
@@ -968,6 +1022,10 @@ additionalProperties:
                                                 
                                                 Note that if an Admin exports a Content Item as HTML and then imports it,
                                                 this will break the reference, and this option will do nothing.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         use_value_for_plugin_name:
                                             type: integer
                                             static: true
@@ -983,15 +1041,23 @@ additionalProperties:
                                                 marked more than one field with <code>use_value_for_plugin_name</code>. I.e., a field
                                                 marked with a 1 will be used instead of a field marked with a 2, unless the
                                                 first field was hidden or empty.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                 
                                 site_setting:
                                     type: object
                                     static: true
                                     description: >
-                                        If this Admin Box defines your Module's Site Settings, you will need to set this
+                                        If this Admin Box defines your module's site settings, you will need to set this
                                         property for each field you wish to be loaded and saved.
                                         
                                         You can have fields without this property if you wish, but these will not be loaded or saved.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                     required:
                                         - name
                                     properties:
@@ -1001,23 +1067,27 @@ additionalProperties:
                                             description: >
                                                 The code-name of this Site Setting.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
-                                                
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                         value:
                                             type: *variable
                                             static: true
                                             description: >
                                                 The default value for this Site Setting.
                                                 
-                                                You must define this property in your TUIX file and not your PHP code.
-                                                
                                                 This value is read when your Module is installed or a database update for your Module is applied.
                                                 If you change it you will need to increment your Module's revision number.
                                                 
                                                 As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
                                                 property from the field itself.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
                                 
                                 values:
                                     type: object
@@ -1046,6 +1116,8 @@ additionalProperties:
                                                 description: >
                                                     This is used for hierarchal checkboxes.
                                                     You can enter the key/saved value of another value here to create a parent/child relationship.
+                                                    
+                                                    From version 7.0.6 onwards you can also use this for values in select lists.
                                             
                                             pre_field_html:
                                                 type: string
@@ -1061,15 +1133,19 @@ additionalProperties:
                                                     Places a piece of text below this option in italics. (Doesn't apply to select list values.)
                                                     Won't be HTML escaped.
                                             
+                                            disabled:
+                                                type: boolean
+                                                description: >
+                                                    Makes a select list option disabled
+                                                    
+                                                    This works from version 7.0.6 onwards.
+                                                    
                                             accesskey:
                                                 type: *stringy
                                                 description: Sets the accesskey HTML attribute on a checkbox or radio option.
                                             class:
                                                 type: string
                                                 description: Sets the class HTML attribute on a checkbox or radio option.
-                                            cols:
-                                                type: number
-                                                description: Sets the cols HTML attribute on a checkbox or radio option.
                                             dir:
                                                 type: string
                                                 description: Sets the dir HTML attribute on a checkbox or radio option.
@@ -1136,9 +1212,12 @@ additionalProperties:
                                     type: number
                                     default: 1
                                     description: >
-                                        The number of columns to display checkboxes/radiogroups in.
+                                        On a pick items, checkboxes or radio group field, this property
+                                        set the number of columns to display the values in.
+                                        The default is just to use one column.
                                         
-                                        This property only applies to checkboxes and radios.
+                                        On a textarea field, this property sets the number of columns on the textarea.
+                                        The default is to use the default width from the stylesheet.
                                 
                                 name:
                                     type: string
@@ -1158,6 +1237,27 @@ additionalProperties:
                                         Creating an empty value makes it clear when the value in the a Select List
                                         is empty, and stops the first value being automatically selected when
                                         editing.
+                                
+                                tag_colors:
+                                    type: object
+                                    description: >
+                                        This property allows you to colour and tag the labels of a multiple checkboxes,
+                                        pick items or radios-type field.
+                                        
+                                        If set, it needs to be an array of values (as keys) to colour names (as values).
+                                        Any missing values will default to blue.
+                                        
+                                        This works from version 7.0.6 onwards.
+                                    additionalProperties:
+                                        enum:
+                                            - blue
+                                            - red
+                                            - green
+                                            - orange
+                                            - yellow
+                                            - violet
+                                            - grey
+                                        default: blue
                                 
                                 slider:
                                     type: object
@@ -1206,170 +1306,206 @@ additionalProperties:
                                             description: >
                                                 Inline styles to add to the slider.
                                     
-                                    pressed:
-                                        type: boolean
-                                        modified_by_cms: true
-                                        html_description: |
-                                            <p>There are two types of button field available in the Admin Box toolkit (submit buttons and toggle buttons), which can be pressed by an Administrator. If an&nbsp;Administrator presses a button then the <code>pressed</code> boolean property will be set to true.</p>
-                                            <h2>Submit Buttons</h2>
-                                            <p>The 'submit' type buttons act as if they always have the <code>validate_onchange</code> property set; when they are pressed&nbsp;the client will change the value of the <code>pressed</code> property to true, then call the validation function.</p>
-                                            <p>When the field is next redrawn after the validation, the client then automatically unsets the <code>pressed</code> property.</p>
-                                            <p>Note that this will only ever submit your admin box for validation,and never for saving.The 'save' button at the bottom of the box should be used to submit for saving.</p>
-                                            <h2>Toggle Buttons</h2>
-                                            <p>For 'toggle' type buttons, the client will toggle the value of <code>pressed</code> between false and true each time the Admin presses this button.</p>
-                                            <p>Before Zenario&nbsp;version 6.0.4,&nbsp;'toggle' type buttons acted as if they always had the&nbsp;<code>format_onchange</code> property set; when they were pressed the client changed the value of the <code>pressed</code> property, then called the format function.</p>
-                                            <p>From version 6.0.4 and onwards, you must add either the&nbsp;<code>redraw_onchange</code>,&nbsp;<code>format_onchange</code>,&nbsp;<code>validate_onchange</code> or <code>quick_validate_onchange</code> properties to make a&nbsp;<code>span</code>'toggle' type button to do something when the Admin presses it.</span></p>
-                                            <h2>PHP Good Practice</h2>
-                                            <p>As the value of the <code>pressed</code> may not be set in PHP, you should check it using <code>!empty()</code>, <code>isset()</code>, <code>arrayKey()</code>, <code>issetArrayKey()</code> or a similar function to avoid a PHP warning.</p>
-                                    can_be_pressed_in_view_mode:
-                                        type: boolean
+                                pressed:
+                                    type: boolean
+                                    modified_by_cms: true
+                                    html_description: |
+                                        <p>There are two types of button field available in the Admin Box toolkit (submit buttons and toggle buttons), which can be pressed by an Administrator. If an&nbsp;Administrator presses a button then the <code>pressed</code> boolean property will be set to true.</p>
+                                        <h2>Submit Buttons</h2>
+                                        <p>The 'submit' type buttons act as if they always have the <code>validate_onchange</code> property set; when they are pressed&nbsp;the client will change the value of the <code>pressed</code> property to true, then call the validation function.</p>
+                                        <p>When the field is next redrawn after the validation, the client then automatically unsets the <code>pressed</code> property.</p>
+                                        <p>Note that this will only ever submit your admin box for validation,and never for saving.The 'save' button at the bottom of the box should be used to submit for saving.</p>
+                                        <h2>Toggle Buttons</h2>
+                                        <p>For 'toggle' type buttons, the client will toggle the value of <code>pressed</code> between false and true each time the Admin presses this button.</p>
+                                        <p>Before Zenario&nbsp;version 6.0.4,&nbsp;'toggle' type buttons acted as if they always had the&nbsp;<code>format_onchange</code> property set; when they were pressed the client changed the value of the <code>pressed</code> property, then called the format function.</p>
+                                        <p>From version 6.0.4 and onwards, you must add either the&nbsp;<code>redraw_onchange</code>,&nbsp;<code>format_onchange</code>,&nbsp;<code>validate_onchange</code> or <code>quick_validate_onchange</code> properties to make a&nbsp;<code>span</code>'toggle' type button to do something when the Admin presses it.</span></p>
+                                        <h2>PHP Good Practice</h2>
+                                        <p>As the value of the <code>pressed</code> may not be set in PHP, you should check it using <code>!empty()</code>, <code>isset()</code>, <code>arrayKey()</code>, <code>issetArrayKey()</code> or a similar function to avoid a PHP warning.</p>
+                                can_be_pressed_in_view_mode:
+                                    type: boolean
+                                    description: >
+                                        Setting this property allows a submit or toggle button to be pressed in view
+                                        mode.
+                                
+                                language:
+                                    type: string
+                                    description: >
+                                        If you create a code_editor type field, you can set the language to enable syntax-highlighting.
+                                        
+                                        E.g. html, css, javascript, twig...
+                                        
+                                        You can also enter a filename to auto-detect the language from the extension.
+                                        
+                                        The Ace Editor (http://ace.c9.io/) is used to power these fields, and the language can be any
+                                        language that Ace supports.
+                                
+                                color_picker_options:
+                                    type: object
+                                    description: >
+                                        If you create a color_picker type field, which are implemented using the spectrum library,
+                                        you can pass an options object using this property.
+                                        
+                                        See http://bgrins.github.io/spectrum/ for the available options.
+                                
+                                colour_picker_options:
+                                    type: object
+                                    description: >
+                                        Alias of color_picker_options. (But note you can't use both.)
+                                
+                                insert_image_button:
+                                    type:
+                                        - boolean
+                                        - object
+                                    description: >
+                                        Setting this property lets you add an "insert image" button to a HTML editor.
+                                        
+                                        You can either let the Admin type out the URL, or you can provide a Organizer picker to let
+                                        them choose an image from Organizer.
+                                        
+                                        The syntax for the picker is similar to that for a pick items field, except that you must ensure
+                                        that the id of an image from the files table is selected.
+                                    required:
+                                        - pick_items
+                                    properties:
+                                        pick_items: *pick_items
+                                insert_link_button:
+                                    type:
+                                        - boolean
+                                        - object
+                                    description: >
+                                        Setting this property lets you add an "insert link" button to a HTML editor.
+                                        
+                                        You can either let the Admin type out the URL, or you can provide a Organizer picker to let
+                                        them choose a content item from Organizer.
+                                        
+                                        The syntax for the picker is similar to that for a pick items field, except that you must ensure
+                                        that a content item is selected.
+                                    properties:
+                                        pick_items: *pick_items
+                                
+                                editor_options:
+                                    type: object
+                                    properties:
+                                    additionalProperties:
+                                        type: *variable
                                         description: >
-                                            Setting this property allows a submit or toggle button to be pressed in view
-                                            mode.
+                                            An option to pass to TinyMCE.
+                                    description: >
+                                        The HTML editor fields are implemented using the TinyMCE library.
+                                        If you need to set any custom options then you can pass them in here.
+                                        
+                                        Some intelligent defaults are set, depending on whether the field is
+                                        readonly, and whether the insert_image_button or insert_link_button
+                                        properties are set.
+                                        
+                                        This works from version 7.0.6 onwards.
+
+                                return_key_presses_button:
+                                    type: *stringy
+                                    description: >
+                                        This property takes the name of a button on this tab - ideally a toggle or
+                                        submit type field.
+                                        
+                                        If an Admin presses the return key on their keyboard, the CMS will simulate
+                                        a click on the named button.
                                     
-                                    language:
-                                        type: string
-                                        description: >
-                                            If you create a code_editor type field, you can set the language to enable syntax-highlighting.
-                                            
-                                            E.g. html, css, javascript, twig...
-                                            
-                                            You can also enter a filename to auto-detect the language from the extension.
-                                            
-                                            The Ace Editor (http://ace.c9.io/) is used to power these fields, and the language can be any
-                                            language that Ace supports.
-                                    
-                                    color_picker_options:
-                                        type: object
-                                        description: >
-                                            If you create a color_picker type field, which are implemented using the spectrum library,
-                                            you can pass an options object using this property.
-                                            
-                                            See http://bgrins.github.io/spectrum/ for the available options.
-                                    
-                                    colour_picker_options:
-                                        type: object
-                                        description: >
-                                            Alias of color_picker_options. (But note you can't use both.)
-                                    
-                                    insert_image_button:
-                                        type:
-                                            - boolean
-                                            - object
-                                        description: >
-                                            Setting this property lets you add an "insert image" button to a HTML editor.
-                                            
-                                            You can either let the Admin type out the URL, or you can provide a Organizer picker to let
-                                            them choose an image from Organizer.
-                                            
-                                            The syntax for the picker is similar to that for a pick items field, except that you must ensure
-                                            that the id of an image from the files table is selected.
-                                        required:
-                                            - pick_items
-                                        properties:
-                                            pick_items: *pick_items
-                                    insert_link_button:
-                                        type:
-                                            - boolean
-                                            - object
-                                        description: >
-                                            Setting this property lets you add an "insert link" button to a HTML editor.
-                                            
-                                            You can either let the Admin type out the URL, or you can provide a Organizer picker to let
-                                            them choose a content item from Organizer.
-                                            
-                                            The syntax for the picker is similar to that for a pick items field, except that you must ensure
-                                            that a content item is selected.
-                                        required:
-                                            - pick_items
-                                        properties:
-                                            pick_items: *pick_items
-                                    
-                                    style:
-                                        type: string
-                                        description: >
-                                            Adds an inline style to the field (and also applies to code and html editors).
-                                            For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    
-                                    cols:
-                                        type: integer
-                                        description: Sets the cols HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    rows:
-                                        type: integer
-                                        description: Sets the rows HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    size:
-                                        type: integer
-                                        description: Sets the size HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    maxlength:
-                                        type: integer
-                                        description: Sets the maxlength HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    accesskey:
-                                        type: *stringy
-                                        description: Sets the accesskey HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    class:
-                                        type: string
-                                        description: Sets the class HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    dir:
-                                        type: string
-                                        description: Sets the dir HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    tabindex:
-                                        type: integer
-                                        description: Sets the tabindex HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    title:
-                                        type: string
-                                        description: Sets the title HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onblur:
-                                        type: string
-                                        description: Sets the onblur HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onchange:
-                                        type: string
-                                        description: Sets the onchange HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onclick:
-                                        type: string
-                                        description: Sets the onclick HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    ondblclick:
-                                        type: string
-                                        description: Sets the ondblclick HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onfocus:
-                                        type: string
-                                        description: Sets the onfocus HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onmousedown:
-                                        type: string
-                                        description: Sets the onmousedown HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onmousemove:
-                                        type: string
-                                        description: Sets the onmousemove HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onmouseout:
-                                        type: string
-                                        description: Sets the onmouseout HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onmouseover:
-                                        type: string
-                                        description: Sets the onmouseover HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onmouseup:
-                                        type: string
-                                        description: Sets the onmouseup HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onkeydown:
-                                        type: string
-                                        description: Sets the onkeydown HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onkeypress:
-                                        type: string
-                                        description: Sets the onkeypress HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onkeyup:
-                                        type: string
-                                        description: Sets the onkeyup HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    onselect:
-                                        type: string
-                                        description: Sets the onselect HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                    
-                                    
-                                    return_key_presses_button:
-                                        type: *stringy
-                                        description: >
-                                            This property takes the name of a button on this tab - ideally a toggle or
-                                            submit type field.
-                                            
-                                            If an Admin presses the return key on their keyboard, the CMS will simulate
-                                            a click on the named button.
+                                style:
+                                    type: string
+                                    description: >
+                                        Adds an inline style to the field (and also applies to code and html editors).
+                                        For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                        
+                                rows:
+                                    type: integer
+                                    description: Sets the rows HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                size:
+                                    type: integer
+                                    description: Sets the size HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                maxlength:
+                                    type: integer
+                                    description: Sets the maxlength HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                accesskey:
+                                    type: *stringy
+                                    description: Sets the accesskey HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                class:
+                                    type: string
+                                    description: Sets the class HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                dir:
+                                    type: string
+                                    description: Sets the dir HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                tabindex:
+                                    type: integer
+                                    description: Sets the tabindex HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                title:
+                                    type: string
+                                    description: Sets the title HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onblur:
+                                    type: string
+                                    description: Sets the onblur HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onchange:
+                                    type: string
+                                    description: Sets the onchange HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onclick:
+                                    type: string
+                                    description: Sets the onclick HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                ondblclick:
+                                    type: string
+                                    description: Sets the ondblclick HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onfocus:
+                                    type: string
+                                    description: Sets the onfocus HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onmousedown:
+                                    type: string
+                                    description: Sets the onmousedown HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onmousemove:
+                                    type: string
+                                    description: Sets the onmousemove HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onmouseout:
+                                    type: string
+                                    description: Sets the onmouseout HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onmouseover:
+                                    type: string
+                                    description: Sets the onmouseover HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onmouseup:
+                                    type: string
+                                    description: Sets the onmouseup HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onkeydown:
+                                    type: string
+                                    description: Sets the onkeydown HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onkeypress:
+                                    type: string
+                                    description: Sets the onkeypress HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onkeyup:
+                                    type: string
+                                    description: Sets the onkeyup HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                onselect:
+                                    type: string
+                                    description: Sets the onselect HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                
+                                autocomplete:
+                                    type: string
+                                    description: Sets the autocomplete HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                autofocus:
+                                    type: string
+                                    description: Sets the autofocus HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                max:
+                                    type: string
+                                    description: Sets the max HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                min:
+                                    type: string
+                                    description: Sets the min HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                pattern:
+                                    type: string
+                                    description: Sets the pattern HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                placeholder:
+                                    type: string
+                                    description: Sets the placeholder HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                required:
+                                    type: string
+                                    description: Sets the required HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                step:
+                                    type: string
+                                    description: Sets the step HTML 5 attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
                                                 
                             forbidden_if_true:
                                 pick_items:
@@ -1445,5 +1581,21 @@ additionalProperties:
                                     - onkeypress
                                     - onkeyup
                                     - onselect
+        
+        module_class_name:
+            type: string
+            description: >
+                    When defining your module's plugin settings, you will need to set this
+                    property in your .yaml file to indicate that the tabs and fields inside this file
+                    are only for your module.
+        
+        setting_group:
+            type: string
+            description: >
+                    When defining your module's site settings, you will need to set this
+                    property in your .yaml file to indicate that the tabs and fields inside this file
+                    are only for a specific settings group.
+                
+            
                                             
         

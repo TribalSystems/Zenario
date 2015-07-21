@@ -184,6 +184,7 @@ function loadSiteConfig() {
 			
 			if ($row['page_type'] == 'zenario_home') {
 				cms_core::$homeCID = $row['id'];
+				cms_core::$homeEquivId = $row['equiv_id'];
 				cms_core::$homeCType = $row['type'];
 			}
 			
@@ -194,7 +195,15 @@ function loadSiteConfig() {
 	}
 	
 	//Load a list of languages whose phrases need translating
-	cms_core::$translateLanguages = getRowsArray('languages', 'translate_phrases', array('translate_phrases' => 1));
+	cms_core::$langs = getRowsArray('languages', array('translate_phrases', 'domain'), array());
+	foreach (cms_core::$langs as &$lang) {
+		$lang['translate_phrases'] = (bool) $lang['translate_phrases'];
+		
+		//Don't allow language specific domains if no primary domain has been set
+		if (empty(cms_core::$siteConfig['primary_domain'])) {
+			$lang['domain'] = '';
+		}
+	}
 	
 	//Check whether we should show error messages or not
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
@@ -387,7 +396,24 @@ function checkForChangesInPhpFiles() {
 			
 				//If possble, try to use the UNIX shell
 				if (PHP_OS == 'Linux') {
-					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					//On Linux it's possible to set a timeout, so do so.
+					$output = array();
+					$status = false;
+					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
+					
+					//If the statement times out, then I will assume this was because the file system indexes were out of
+					//date and the find statement took a long time.
+					//If the indexes were out of date then it probably means that the code has just changed, so we'll handle
+					//the time out by assuming that it indicates a change.
+					if ($status == 124) {
+						$changed = true;
+						
+						//Temporarily clear all of the "last changed" settings to make sure we don't run
+						//any more "exec('find')"s in this script
+						setSetting('css_js_html_files_last_changed', '', false, false);
+						setSetting('php_files_last_changed', '', false, false);
+						setSetting('yaml_files_last_changed', '', false, false);
+					}
 					$useFallback = false;
 				
 				} elseif (PHP_OS == 'Darwin') {
@@ -471,7 +497,24 @@ function checkForChangesInYamlFiles() {
 			
 				//If possble, try to use the UNIX shell
 				if (PHP_OS == 'Linux') {
-					$changed = exec('find -L . -newermt @'. (int) $lastChanged. $find);
+					//On Linux it's possible to set a timeout, so do so.
+					$output = array();
+					$status = false;
+					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
+					
+					//If the statement times out, then I will assume this was because the file system indexes were out of
+					//date and the find statement took a long time.
+					//If the indexes were out of date then it probably means that the code has just changed, so we'll handle
+					//the time out by assuming that it indicates a change.
+					if ($status == 124) {
+						$changed = true;
+						
+						//Temporarily clear all of the "last changed" settings to make sure we don't run
+						//any more "exec('find')"s in this script
+						setSetting('css_js_html_files_last_changed', '', false, false);
+						setSetting('php_files_last_changed', '', false, false);
+						setSetting('yaml_files_last_changed', '', false, false);
+					}
 					$useFallback = false;
 				
 				} elseif (PHP_OS == 'Darwin') {
@@ -618,9 +661,6 @@ function checkForChangesInYamlFiles() {
 										if ($path == 'plugin_settings' && !empty($tag['module_class_name'])) {
 											$settingGroup = $tag['module_class_name'];
 									
-										} elseif ($path == 'advanced_search' && !empty($tag['organizer_path'])) {
-											$settingGroup = $tag['organizer_path'];
-									
 										} elseif ($path == 'site_settings' && !empty($tag['setting_group'])) {
 											$settingGroup = $tag['setting_group'];
 										}
@@ -651,9 +691,9 @@ function checkForChangesInYamlFiles() {
 				}
 			}
 		}
-	
-	
-	
+		
+		
+		
 		//Loop through the array we've generated, and take actions as appropriate
 		foreach ($tuixFiles as $key => &$tuixFile) {
 			foreach ($tuixFile as $key2 => $tf) {
@@ -690,10 +730,82 @@ function checkForChangesInYamlFiles() {
 			}
 		}
 		
+		
+		$datasets = getRowsArray('custom_datasets', 'id');
+		foreach ($datasets as $datasetId) {
+			saveSystemFieldsFromTUIX($datasetId);
+		}
+		
+		
 		setSetting('yaml_files_last_changed', $time);
 		setSetting('yaml_version', hash64(setting('site_id'). $time));
 	}
 }
+
+
+function saveSystemFieldsFromTUIX($datasetId) {
+	$dataset = getDatasetDetails($datasetId);
+	//If this extends a system admin box, load the system tabs and fields
+	if ($dataset['extends_admin_box']
+	 && checkRowExists('tuix_file_contents', array('type' => 'admin_boxes', 'path' => $dataset['extends_admin_box']))) {
+		$moduleFilesLoaded = array();
+		$tags = array();
+		
+		loadTUIX(
+			$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box'],
+			$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = false, $exitIfError = true
+		);
+		
+		if (!empty($tags[$dataset['extends_admin_box']]['tabs'])
+			 && is_array($tags[$dataset['extends_admin_box']]['tabs'])) {
+			$tabCount = 0;
+			foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabName => $tab) {
+				if (is_array($tab)) {
+					++$tabCount;
+					$tabDetails = getRow('custom_dataset_tabs', true, array('dataset_id' => $datasetId, 'name' => $tabName));
+					$values = array(
+						'is_system_field' => 1,
+						'default_label' => ifNull(arrayKey($tab, 'dataset_label'), arrayKey($tab, 'label'), '')
+					);
+					if (!$tabDetails || !$tabDetails['ord']) {
+						$values['ord'] = (float)ifNull(arrayKey($tab, 'ord'), $tabCount);
+					}
+					setRow('custom_dataset_tabs', 
+						$values,
+						array(
+							'dataset_id' => $datasetId, 
+							'name' => $tabName));
+					if (!empty($tab['fields'])
+						 && is_array($tab['fields'])) {
+						$fieldCount = 0;
+						foreach ($tab['fields'] as $fieldName => $field) {
+							if (is_array($field)) {
+								++$fieldCount;
+								
+								$fieldDetails = getRow('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'tab_name' => $tabName, 'is_system_field' => 1, 'field_name' => $fieldName));
+								$values = array(
+									'default_label' => ifNull(arrayKey($field, 'dataset_label'), arrayKey($field, 'label'), ''),
+									'is_system_field' => 1
+								);
+								if (!$fieldDetails || !$fieldDetails['ord']) {
+									$values['ord'] = (float) ifNull(arrayKey($field, 'ord'), $fieldCount);
+								}
+								setRow('custom_dataset_fields',
+									$values,
+									array(
+										'dataset_id' => $datasetId, 
+										'tab_name' => $tabName, 
+										'field_name' => $fieldName));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
 
 //Get all existing modules
 function getModules($onlyGetRunningPlugins = false, $ignoreUninstalledPlugins = false, $dbUpdateSafemode = false, $orderBy = false) {

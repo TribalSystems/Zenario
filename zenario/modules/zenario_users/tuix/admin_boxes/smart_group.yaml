@@ -1,0 +1,170 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_smart_group:
+    priv: _PRIV_CREATE_GROUP
+    key:
+        id: ""
+        num_rules: 1
+    hide_tab_bar: true
+    title: Creating a smart group
+    tabs:
+        smart_group:
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                name: 
+                    label: "Smart group name:"
+                    type: text
+                    maxlength: 50
+                    style: |
+                        width: 25em;
+                    validation: 
+                        required: Please enter a name
+                info: 
+                    full_width: "1"
+                    snippet: 
+                        html: |
+                            <p>
+                                Define which users are included by adding rules.
+                                Users will appear in this smart group when they match ALL of the rules below.
+                                If no rules, then all users will be included.
+                            </p>
+                members: 
+                    ord: 999999
+                    label: "Users that match these rules:"
+                    type: text
+                    read_only: true
+                    style: |
+                        width: 5em;
+                    value: 0
+            
+            custom_template_fields:
+                type__znz:
+                    ord: 10znz01
+                    custom_n: znz
+                    type: select
+                    empty_value: ' -- Select -- '
+                    values:
+                        group:
+                            ord: 100001
+                            label: Group
+                        flag:
+                            ord: 100002
+                            label: Flag
+                        list:
+                            ord: 100003
+                            label: Radio or list
+                    format_onchange: true
+                
+                is_isnt_in__znz:
+                    ord: 10znz02
+                    custom_n: znz
+                    same_row: true
+                    type: select
+                    values:
+                        is:
+                            label: member of
+                        is_one_of:
+                            label: member of one of
+                        isnt:
+                            label: not a member of
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group'
+                    format_onchange: true
+                
+                is_isnt_set__znz:
+                    ord: 10znz03
+                    custom_n: znz
+                    same_row: true
+                    type: select
+                    values:
+                        is:
+                            label: is set
+                        isnt:
+                            label: is not set
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'flag'
+                    format_onchange: true
+                
+                field__znz:
+                    ord: 10znz04
+                    custom_n: znz
+                    same_row: true
+                    type: select
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'flag' ||
+                        zenarioAB.value('type__znz') == 'group' ||
+                        zenarioAB.value('type__znz') == 'list'
+                    format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please select a field
+                
+                field2__znz:
+                    ord: 10znz05
+                    custom_n: znz
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of'
+                    format_onchange: true
+                
+                field3__znz:
+                    ord: 10znz06
+                    custom_n: znz
+                    same_row: true
+                    pre_field_html: ' or&nbsp;'
+                    type: select
+                    empty_value: ' -- Select -- '
+                    visible_if: |
+                        zenarioAB.value('type__znz') == 'group' &&
+                        zenarioAB.value('is_isnt_in__znz') == 'is_one_of'
+                    format_onchange: true
+                
+                
+                is_isnt__znz:
+                    ord: 10znz07
+                    custom_n: znz
+                    same_row: true
+                    type: select
+                    values:
+                        is:
+                            label: is
+                        isnt:
+                            label: is not
+                    visible_if: |
+                        zenarioAB.value('type__znz') &&
+                        zenarioAB.value('type__znz') != 'flag' &&
+                        zenarioAB.value('type__znz') != 'group'
+                    format_onchange: true
+                
+                value__znz:
+                    ord: 10znz08
+                    custom_n: znz
+                    same_row: true
+                    type: select
+                    empty_value: ' -- Select -- '
+                    validation:
+                        required_if_not_hidden: Please select a value
+                    format_onchange: true
+                
+                remove__znz:
+                    ord: 10znz09
+                    custom_n: znz
+                    same_row: true
+                    type: submit
+                    value: '-'
+                    visible_if: |
+                        zenarioAB.value('type__znz') || znz > 1
+                add__znz:
+                    ord: 10znz10
+                    custom_n: znz
+                    same_row: true
+                    type: submit
+                    value: '+'
+                    visible_if: |
+                        zenarioAB.value('type__znz') && znz == zenarioAB.tuix.key.num_rules

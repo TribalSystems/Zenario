@@ -40,13 +40,14 @@ foreach ($box['tabs'] as $tabName => &$tab) {
 	$workingCopyImages = $thumbnailWorkingCopyImages = false;
 	$jpegOnly = true;
 	
-	if (!isInfoTag($tabName) && engToBooleanArray($box, 'tabs', $tabName, 'edit_mode', 'on')) {
+	if (is_array($tab) && engToBooleanArray($tab, 'edit_mode', 'on')) {
 		foreach ($tab['fields'] as $fieldName => &$field) {
-			if (!isInfoTag($fieldName)) {
+			if (is_array($field)) {
 				if (!arrayKey($field, 'read_only') && $setting = arrayKey($field, 'site_setting', 'name')) {
 					
 					//Get the value of the setting. Hidden fields should count as being empty
-					if (engToBooleanArray($box, 'tabs', $tabName, 'fields', $fieldName, 'hidden')) {
+					if (engToBooleanArray($field, 'hidden')
+					 || engToBooleanArray($field, '_was_hidden_before')) {
 						$value = '';
 					} else {
 						$value = arrayKey($values, $tabName. '/'. $fieldName);

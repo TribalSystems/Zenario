@@ -32,14 +32,21 @@ class zenario_common_features__admin_boxes__image_tag extends module_base_class 
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		$box['title'] = adminPhrase('Renaming the tag "[[id]]".', $box['key']);
-		$values['details/name'] = $box['key']['id'];
+		if ($box['key']['id']) {
+			if (!$details = getRow('image_tags', true, array('name' => $box['key']['id']))) {
+				echo adminPhrase('Could not find a tag with the name "[[name]]"', $details);
+				exit;
+			}
+			
+			$box['title'] = adminPhrase('Editing the tag "[[name]]".', $details);
+			$values['details/name'] = $details['name'];
+			$values['details/color'] = $details['color'];
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
 		if ($values['details/name'] == $box['key']['id']) {
-			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a different name.');
 		} elseif (checkRowExists('image_tags', array('name' => $values['details/name']))) {
 			$box['tabs']['details']['errors'][] = adminPhrase('A tag name with this name already exists.');
 		}
@@ -48,8 +55,15 @@ class zenario_common_features__admin_boxes__image_tag extends module_base_class 
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_MEDIA');
 		
-		updateRow('image_tags', array('name' => $values['details/name']), array('name' => $box['key']['id']));
+		$ids = array();
+		if ($box['key']['id']) {
+			$ids = array('name' => $box['key']['id']);
+		}
 		
-		$box['key']['id'] = $values['details/name'];
+		setRow(
+			'image_tags',
+			array('name' => $values['details/name'], 'color' => $values['details/color']),
+			$ids
+		);
 	}
 }

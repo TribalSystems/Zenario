@@ -55,7 +55,7 @@ zenario__layouts:
                     db_column: s.family_name
                     show_by_default: Yes
                     searchable: Yes
-                usage_template:
+                usage_layouts:
                     title: Usage in Layouts
                     db_column: |
                         IF (s.`type` = 'usable',

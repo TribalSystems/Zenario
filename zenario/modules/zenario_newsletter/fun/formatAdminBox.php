@@ -29,7 +29,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 switch ($path) {
+	case 'zenario_newsletter_template':
+		
+		addAbsURLsToAdminBoxField($box['tabs']['details']['fields']['body']);
+		
+		break;
+		
+		
 	case 'zenario_newsletter':
+		addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
 		
 		$box['tabs']['meta_data']['notices']['test_send_error']['show'] =
 		$box['tabs']['meta_data']['notices']['test_send_sucesses']['show'] =

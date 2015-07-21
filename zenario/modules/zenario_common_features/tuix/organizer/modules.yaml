@@ -226,7 +226,7 @@ zenario__modules:
                         path: zenario__modules/panels/plugins
                         branch: true
                         refiner: plugin
-                usage_template:
+                usage_layouts:
                     parent: view_dropdown
                     label: "Layouts with module's plugins"
                     traits:

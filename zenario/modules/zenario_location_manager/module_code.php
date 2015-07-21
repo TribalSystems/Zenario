@@ -97,11 +97,12 @@ class zenario_location_manager extends module_base_class {
 				$panel['title'] = 'Content items of the type "HTML page"';
 			}
 			
-		} elseif ($path=="zenario__locations/panel" || $path=="zenario__locations/panels/map") {
+		} elseif ($path=="zenario__locations/panel") {
 			// Add dataset ID to import button
 			$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
 			$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
 			$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
+			$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
 				$dataset['id'];
 			
 			$admins = array();
@@ -845,7 +846,7 @@ class zenario_location_manager extends module_base_class {
 					$saveValues['last_updated'] = now();
 					$saveValues['last_updated_admin_id'] = session('admin_userid');
 
-					$box['key']['id'] = $locationId = setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));			
+					$box['key']['id'] = $locationId = setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));
 
 					if ($values['details/country'] && $values['details/region']){
 						$this->addRegionToLocation($values['details/region'],$locationId);
@@ -1435,10 +1436,6 @@ $zip->addFile($thisdir . "/too.php","/testfromfile.php");
 echo "numfiles: " . $zip->numFiles . "\n";
 echo "status:" . $zip->status . "\n";
 $zip->close();
-					
-					
-					
-				
 					exit;
 			}
 		}
@@ -2362,9 +2359,14 @@ $zip->close();
 	}
 	
 	public static function eventContentDeleted ($cID,$cType,$cVersion) {
-		updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",
+		//check to see if status is trashed or deleted
+		$contentStatus = getRow('content', 'status', array('equiv_id' => $cID, 'type'=> $cType));
+		
+		if($contentStatus == 'deleted' || $contentStatus == 'trashed') {
+			updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",
 					array("equiv_id" => null,"content_type" => null),
 						array("equiv_id" => $cID,"content_type" => $cType));
+		}
 	}
 
 	public static function eventLocationDeleted ($locationId) {

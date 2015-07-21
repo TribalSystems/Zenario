@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (is_array(arrayKey($box,'tabs'))) {
 	foreach ($box['tabs'] as $tabName => &$tab) {
-		if (!isInfoTag($tabName)) {
+		if (is_array($tab)) {
 			foreach ($tab['fields'] as &$field) {
 				if ($setting = arrayKey($field, 'site_setting', 'name')) {
 					$field['value'] = setting($setting);
@@ -72,6 +72,31 @@ if (isset($box['tabs']['default_language']['fields']['default_language'])) {
 
 if (isset($box['tabs']['urls']['fields']['mod_rewrite_suffix'])) {
 	$box['tabs']['urls']['fields']['mod_rewrite_suffix']['values'] = array('.htm' => '.htm', '.html' => '.html');
+	
+	//Hide/show different options and notes, depending on whether language specific domains are
+	//used, and whether every language has a language specific URL
+	if (getNumLanguages() > 1) {
+		
+		$langSpecificDomainsUsed = checkRowExists('languages', array('domain' => array('!' => '')));
+		$langSpecificDomainsNotUsed = checkRowExists('languages', array('domain' => ''));
+		
+		if ($langSpecificDomainsUsed) {
+			if ($langSpecificDomainsNotUsed) {
+				$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+			} else {
+				$box['tabs']['urls']['fields']['translations_hide_language_code']['hidden'] =
+				$box['tabs']['urls']['fields']['note_a']['hidden'] =
+				$box['tabs']['urls']['fields']['note_b']['hidden'] =
+				$box['tabs']['urls']['fields']['note_c']['hidden'] = true;
+			}
+		} else {
+			$box['tabs']['urls']['fields']['note_c']['hidden'] =
+			$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+		}
+	} else {
+		$box['tabs']['urls']['fields']['note_c']['hidden'] =
+		$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+	}
 }
 
 if (isset($box['tabs']['dates']['fields']['vis_date_format_short'])) {
@@ -142,6 +167,25 @@ if (isset($box['tabs']['template_dir']['fields']['template_dir'])) {
 	$box['tabs']['template_dir']['fields']['template_dir']['value'] = CMS_ROOT. 'zenario_custom/templates/grid_templates';
 }
 
+//
+if (isset($box['tabs']['cookies']['fields']['cookie_domain'])) {
+	if ($domain = setting('primary_domain')) {
+		$domain = explode('.', $domain);
+		
+		$count = count($domain);
+		while ($count >= 2) {
+			
+			$subdomain = implode('.', array_slice($domain, -$count));
+			
+			$box['tabs']['cookies']['fields']['cookie_domain']['values'][$subdomain] =
+				adminPhrase('Cookies are shared across [[subdomain]] and all subdomains',
+					array('subdomain' => $subdomain));
+			
+			--$count;
+		}
+	}
+}
+
 //On multisite sites, don't allow local Admins to change the directory paths
 if (globalDBDefined() && !session('admin_global_id')) {
 	foreach (array('backup_dir', 'docstore_dir') as $dir) {
@@ -152,11 +196,11 @@ if (globalDBDefined() && !session('admin_global_id')) {
 }
 
 //Hack to stop a buggy error message from appearing if the admin never opens the second tab on the branding FAB,
-//as the _h_js property was never set by the JavaScript on the client side.
-//Fix this problem by setting the _h_js property for the field.
+//as the _was_hidden_before property was never set by the JavaScript on the client side.
+//Fix this problem by setting the _was_hidden_before property for the field.
 if (isset($box['tabs']['og']['fields']['organizer_favicon'])) {
 	if ($values['og/organizer_favicon'] != 'custom') {
-		$fields['og/custom_organizer_favicon']['_h_js'] = true;
+		$fields['og/custom_organizer_favicon']['_was_hidden_before'] = true;
 	}
 }
 

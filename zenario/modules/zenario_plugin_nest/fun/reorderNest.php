@@ -31,8 +31,9 @@ if (!$keepTabsOneToOneWithPlugins) {
 	//Change the ordinal of the Tabs and Eggs to exactly the ordinal that was submitted.
 	//We will then rely on the resync function to sort out any quirks
 	foreach (explode(',', $ids) as $id) {
-		if (post('item__'. $id)) {
-			$tabOrd = explode('.', post('item__'. $id));
+		if (!empty($_POST['ordinals'][$id])) {
+			
+			$tabOrd = explode('.', $_POST['ordinals'][$id]);
 			
 			updateRow(
 				'nested_plugins',
@@ -52,7 +53,7 @@ if (!$keepTabsOneToOneWithPlugins) {
 	while ($row = sqlFetchAssoc($result)) {
 		$idsToTabs[$row['id']] = $row['tab'];
 		
-		if (!is_array($tabsToIds[$row['tab']])) {
+		if (empty($tabsToIds[$row['tab']])) {
 			$tabsToIds[$row['tab']] = array();
 		}
 		$tabsToIds[$row['tab']][] = $row['id'];
@@ -62,8 +63,10 @@ if (!$keepTabsOneToOneWithPlugins) {
 	
 	$changedTabs = array();
 	foreach (explode(',', $ids) as $id) {
-		if (post('item__'. $id) && isset($idsToTabs[$id])) {
-			$tabOrd = explode('.', post('item__'. $id));
+		if (!empty($_POST['ordinals'][$id])
+		 && isset($idsToTabs[$id])) {
+			
+			$tabOrd = explode('.', $_POST['ordinals'][$id]);
 			$tab = (int) arrayKey($tabOrd, 0);
 			
 			if ($tab != $idsToTabs[$id]) {
@@ -75,5 +78,3 @@ if (!$keepTabsOneToOneWithPlugins) {
 	}
 }
 
-
-?>

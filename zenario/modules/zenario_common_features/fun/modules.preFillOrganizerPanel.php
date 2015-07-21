@@ -29,3 +29,20 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 addNewModules();
+
+switch ($refinerName) {
+	case 'nestable_only':
+	case 'nestable_wireframes_only':
+		//Don't show the "all_instances" options for Plugin Nests
+		$panel['collection_buttons']['all_instances']['hidden'] =
+		$panel['collection_buttons']['all_instances']['hidden'] = true;
+	
+	case 'phrases_only':
+	case 'slotable_only':
+	case 'wireframe_only':
+		//Don't show the filters if picking a plugin
+		$panel['quick_filter_buttons']['all']['hidden'] =
+		$panel['quick_filter_buttons']['module_not_initialized']['hidden'] =
+		$panel['quick_filter_buttons']['module_running']['hidden'] =
+		$panel['quick_filter_buttons']['module_suspended']['hidden'] = true;
+}

@@ -1,0 +1,76 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_menu_responsive_multilevel_2
+    tabs:
+        first_tab:
+            fields:
+                menu_show_admin_add_button:
+                    hidden: true
+        animations:
+            ord: 1.1
+            label: Animations
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            Set the options for the animation when nodes appear and disappear.
+                easing_effect:
+                    plugin_setting:
+                        name: easing_effect
+                    label: 'Easing effect:'
+                    type: select
+                    value: easeInOutQuint
+                    values:
+                        easeInSine: easeInSine
+                        easeOutSine: easeOutSine
+                        easeInOutSine: easeInOutSine
+                        easeInQuad: easeInQuad
+                        easeOutQuad: easeOutQuad
+                        easeInOutQuad: easeInOutQuad
+                        easeInCubic: easeInCubic
+                        easeOutCubic: easeOutCubic
+                        easeInOutCubic: easeInOutCubic
+                        easeInQuart: easeInQuart
+                        easeOutQuart: easeOutQuart
+                        easeInOutQuart: easeInOutQuart
+                        easeInQuint: easeInQuint
+                        easeOutQuint: easeOutQuint
+                        easeInOutQuint: easeInOutQuint
+                        easeInExpo: easeInExpo
+                        easeOutExpo: easeOutExpo
+                        easeInOutExpo: easeInOutExpo
+                        easeInCirc: easeInCirc
+                        easeOutCirc: easeOutCirc
+                        easeInOutCirc: easeInOutCirc
+                        easeInBack: easeInBack
+                        easeOutBack: easeOutBack
+                        easeInOutBack: easeInOutBack
+                        easeInElastic: easeInElastic
+                        easeOutElastic: easeOutElastic
+                        easeInOutElastic: easeInOutElastic
+                        easeInBounce: easeInBounce
+                        easeOutBounce: easeOutBounce
+                        easeInOutBounce: easeInOutBounce
+                        linear: linear
+                    note_below: |
+                        Please see
+                        <a href="http://api.jqueryui.com/easings/" target="_blank">
+                            http://api.jqueryui.com/easings/</a>
+                        for more information.
+                anim_speed:
+                    plugin_setting:
+                        name: anim_speed
+                    label: 'Animation speed:'
+                    type: radios
+                    value: medium
+                    values:
+                        slow:
+                            ord: 1
+                            label: Slow
+                        medium:
+                            ord: 2
+                            label: Medium
+                        fast:
+                            ord: 3
+                            label: Fast

@@ -31,8 +31,10 @@ class zenario_slideshow_2 extends module_base_class {
 	
 	public $slideData = array();
 	public $placeholderCSS = '';
+	public $allowCaching = true;
 	
 	public function init() {
+		
 		if ($userId = userId()) {
 			$userDetails = getUserDetails($userId);
 		}
@@ -64,6 +66,7 @@ class zenario_slideshow_2 extends module_base_class {
 						{
 							unset($this->slideData["slides"][$index]);
 						}
+						
 					} elseif ($userId) {
 						switch($slide['slide_visibility']) {
 							case 'logged_in_with_field':
@@ -92,6 +95,9 @@ class zenario_slideshow_2 extends module_base_class {
 								unset($this->slideData["slides"][$index]);
 								break;
 						}
+					}
+					if ($slide['slide_visibility'] != 'everyone') {
+						$this->allowCaching = false;
 					}
 				}
 				// Generate slide link if internal
@@ -186,6 +192,12 @@ class zenario_slideshow_2 extends module_base_class {
 				$this->instanceId,
 				$settings);
 		}
+		
+		$this->allowCaching(
+			$atAll = $this->allowCaching, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+		$this->clearCacheBy(
+			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = true, $clearByModuleData = true);
+		
 		return true;
 	}
 	
@@ -275,10 +287,19 @@ class zenario_slideshow_2 extends module_base_class {
 				if (empty($errors)) {
 					
 					// Delete currently saved slides if not in save data.
-					$ids = getRowsArray(ZENARIO_SLIDESHOW_2_PREFIX. "slides", "id", array('instance_id' => $this->instanceId));
-					foreach ($ids as $key => $id) {
-						if (array_search($id, $ordinals) === false) {
-							deleteRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("id" => $id));
+					$ids = getRowsArray(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array('image_id'), array('instance_id' => $this->instanceId));
+					foreach ($ids as $key => $slideDetails) {
+						if (array_search($key, $ordinals) === false) {
+							deleteRow(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array("id" => $key));
+							if (!checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX . 'slides', array('instance_id' => $this->instanceId, 'image_id' => $slideDetails['image_id']))) {
+								deleteRow('inline_images', 
+									array(
+										'image_id' => $slideDetails['image_id'],
+										'foreign_key_to' => 'library_plugin', 
+										'foreign_key_id' => $this->instanceId
+									)
+								);
+							}
 						}
 					}
 					
@@ -353,17 +374,6 @@ class zenario_slideshow_2 extends module_base_class {
 							$this->saveImageForSlide($newKey, $value, "mobile_image_id");
 						}
 					}
-					
-					// Delete all unused images from slideshow pot
-					$fileIds = getRowsArray("files", "id", array("usage" => "slideshow"));
-					foreach($fileIds as $fileId) {
-						if (!checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("image_id" => $fileId))
-							&& !checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("rollover_image_id" => $fileId))
-							&& !checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("mobile_image_id" => $fileId))) {
-							
-							deleteRow("files", array("id" => $fileId));
-						}
-					}
 				}
 				header('Content-Type: text/javascript; charset=UTF-8');
 				echo json_encode($errors);
@@ -375,6 +385,7 @@ class zenario_slideshow_2 extends module_base_class {
 	public function saveImageForSlide($key, $value, $image_id) {
 		
 		if (isset($value[$image_id]) && $value[$image_id] !== NULL) {
+			
 			switch($image_id) {
 				case "rollover_image_id":
 					$prefix = "r_";
@@ -390,19 +401,29 @@ class zenario_slideshow_2 extends module_base_class {
 			if ($value[$image_id] == 0) {
 				// new uploaded image
 				$path = getPathOfUploadedFileInCacheDir($value[$prefix. "cache_id"]);
-				if ($id = addFileToDatabase("slideshow", $path)) {
+				if ($id = addFileToDatabase("image", $path)) {
 					updateRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides", 
 						array($image_id => $id),
 						array("id" => $key));
 				}
 			} else {
-				if ($id = copyFileInDatabase("slideshow", $value[$image_id], $value[$prefix. "filename"])) {
+				if ($id = copyFileInDatabase("image", $value[$image_id], $value[$prefix. "filename"])) {
 					// new image from organizer
 					updateRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides",
 						array($image_id => $id),
 						array("id" => $key));
 				}
 			}
+			
+			setRow('inline_images', 
+				array('in_use' => 1), 
+				array(
+					'image_id' => $id, 
+					'foreign_key_to' => 'library_plugin', 
+					'foreign_key_id' => $this->instanceId
+				)
+			);
+			
 		} else {
 			updateRow(ZENARIO_SLIDESHOW_2_PREFIX. "slides", 
 				array($image_id => NULL),
@@ -641,6 +662,7 @@ class zenario_slideshow_2 extends module_base_class {
 	}
 	
 	public static function eventPluginInstanceDeleted($instanceId) {
+		// Delete slides
 		deleteRow(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array('instance_id' => $instanceId));
 	}
 	

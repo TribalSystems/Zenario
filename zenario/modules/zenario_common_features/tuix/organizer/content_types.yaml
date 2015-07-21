@@ -85,7 +85,7 @@ zenario__content:
                     css_class: zenario_ib_warning
                     tooltip: |
                         The template file for the default layout is missing!
-                    visible_if_for_all_selected_items: |
+                    visible_if: >
                         item.default_tf_missing
             
             collection_buttons:

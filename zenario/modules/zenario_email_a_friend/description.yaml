@@ -3,7 +3,7 @@
 author_name: Zenario
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Email a friend
 description: |
     <p>This Module provides a link that visitors can use to:</p>

@@ -8,12 +8,12 @@
 			<a href="#zenario__content/panels/content/refiners/your_work_in_progress////" onclick="zenarioO.go('zenario__content/panels/content/refiners/your_work_in_progress////'); return false;">
 				<% if (!i) { %>
 					You have no content items in progress
-				<% } else if (m.items.count <= i) { %>
+				<% } else if (m.__item_count__ <= i) { %>
 					View in panel
-				<% } else if (m.items.count == i + 1) { %>
+				<% } else if (m.__item_count__ == i + 1) { %>
 					1 more item...
 				<% } else { %>
-					{{m.items.count - i|escape}} more items...
+					{{m.__item_count__ - i|escape}} more items...
 				<% } %>
 			</a>
 		</li>

@@ -32,8 +32,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $directories = array(
 	'cache' => array(
-		'pages' => 2 * 60 * 60,
+		'images' => 2 * 60 * 60,
 		'frameworks' => -1,
+		'pages' => 2 * 60 * 60,
 		'stats' => -1,
 		'tuix' => -1,
 		'uploads' => 1 * 60 * 60
@@ -44,7 +45,8 @@ $directories = array(
 		'files' => 2 * 60 * 60
 	), 
 	'public' => array(
-		'downloads' => -1
+		'downloads' => -1,
+		'images' => -1
 	)
 );
 
@@ -122,16 +124,6 @@ foreach ($directories as $mainDir => $subDirs) {
 			}
 		}
 	}
-}
-
-
-if (cms_core::$lastDB) {
-	//Delete any temporary files left over from WYSIWYG Editor uploads
-	$sql = "
-		DELETE FROM ". DB_NAME_PREFIX. "files
-		WHERE `usage` = 'editor_temp_file'
-		  AND created_datetime < DATE_SUB(NOW(), INTERVAL 1 DAY)";
-	sqlSelect($sql);
 }
 
 

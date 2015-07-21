@@ -22,7 +22,7 @@ plugin_settings:
                 enable_remember_me:
                     plugin_setting:
                         name: enable_remember_me
-                    label: 'Offer to remember screen name:'
+                    label: 'Offer to remember screen name or email:'
                     type: checkbox
                     value: "1"
                     side_note: Allow User to have his screen name stored using a cookie.

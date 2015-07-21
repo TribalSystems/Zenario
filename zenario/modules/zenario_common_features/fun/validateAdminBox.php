@@ -443,6 +443,12 @@ switch ($path) {
 		
 		if (!$newDocumentName ){
 			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a filename.');
+		} else {
+			// Stop forward slashes being used in filenames
+			$slashPos = strpos($newDocumentName, '/');
+			if ($slashPos !== false) {
+				$box['tabs']['details']['errors'][] = adminPhrase('Your filename cannot contain forward slashes (/).');
+			}
 		}
 		
 		//$fileNameAlreadyExists=checkRowExists('documents', array('type' => 'file','folder_id' => $parentfolderId,'filename'=>$newDocumentName));

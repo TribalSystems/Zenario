@@ -81,6 +81,11 @@ if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
 	$submission['param_1'] = $hide_by_static_method ? $values['advanced/menu__param_1'] : '';
 	$submission['param_2'] = $hide_by_static_method ? $values['advanced/menu__param_2'] : '';
 	
+	$overwrite_menu_text_by_static_method = $values['advanced/overwrite_menu_text_by_static_method'];
+	$submission['menu_text_module_class_name'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__module_class_name'] : '';
+	$submission['menu_text_method_name'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__method_name'] : '';
+	$submission['menu_text_param_1'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__param_1'] : '';
+	$submission['menu_text_param_2'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__param_2'] : '';
 	
 	if ($imageId = $values['advanced/image_id']) {
 		if ($path = getPathOfUploadedFileInCacheDir($imageId)) {

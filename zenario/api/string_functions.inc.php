@@ -34,6 +34,21 @@ function addAmp($request) {
 	}
 }
 
+function addQu($request) {
+	if ($request != '') {
+		switch (substr($request, 0, 1)) {
+			case '?':
+				return $request;
+			case '&':
+				return '?'. substr($request, 1);
+			default:
+				return '?'. $request;
+		}
+	} else {
+		return $request;
+	}
+}
+
 function base64($text) {
 	return rtrim(strtr(base64_encode($text), '+/', '-_'), '=');
 }
@@ -120,11 +135,13 @@ function ifNull($a, $b, $c = null) {
 	return $a? $a : ($b? $b : $c);
 }
 
+//No longer used as of 7.0.6!
 function isInfoTag($tagName) {
-	return $tagName === 'back_link'
-		|| $tagName === 'class_name'
-		|| $tagName === 'count'
-		|| $tagName === 'ord';
+	return false;
+	//return $tagName === 'back_link'
+	//	|| $tagName === 'class_name'
+	//	|| $tagName === 'count'
+	//	|| $tagName === 'ord';
 }
 
 function jsEscape($text) {

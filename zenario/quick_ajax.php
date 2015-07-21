@@ -31,17 +31,6 @@ header('Content-Type: text/plain; charset=UTF-8');
 require 'liteheader.inc.php';
 
 
-if (!empty($_GET['redirect'])) {
-	$query = $_GET;
-	unset($query['redirect']);
-	
-	header(
-		'location: '. SUBDIRECTORY. 'zenario/'. $_GET['redirect']. '?'. http_build_query($query),
-		true, 301);
-
-	exit;
-}
-
 //Check a few basic tables have been created. Exit if not.
 if (!defined('DBHOST')
  || (!connectLocalDB())
@@ -85,6 +74,8 @@ if (!empty($_REQUEST['_get_data_revision'])) {
 	session_start();
 	
 	require CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	require_once CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
+	
 	if ($_REQUEST['accept_cookies']) {
 		setCookieConsent();
 	} else {

@@ -33,4 +33,6 @@ tv4.addLanguage('en', {
 	//Unrecognised properties
 	OBJECT_ADDITIONAL_PROPERTIES: 'Warning: unrecognised property. You probably have a typo in the property name.\n' +
 		'If you are trying to add your own meta-data, please prefix your custom property names with "custom_" to avoid this warning.\n'
+	
+	, STATIC_PROPERTY: 'This property cannot be changed in your php code'
 });

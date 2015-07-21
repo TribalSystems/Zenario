@@ -50,7 +50,9 @@ switch ($path) {
 			$box['tabs']['tab']['fields']['tab_visibility']['value'] = 'everyone';
 		}
 		
-		$box['tabs']['tab']['fields']['tab__field_id']['values'] = listCustomFields('users', false, 'group_boolean_and_list_only', false);
+		$box['tabs']['tab']['fields']['tab__field_id']['values'] =
+			listCustomFields('users', false, 'group_boolean_and_list_only', false, true);
+		//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
 		
 		break;
 }

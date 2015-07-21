@@ -55,7 +55,7 @@ zenario__content:
                 css_class: content_chained_double
             columns:
                 tag:
-                    title: Tag
+                    title: ID/alias
                     width: large
                     searchable: Yes
                     db_column: c.tag_id
@@ -177,6 +177,19 @@ zenario__content:
                     format: date
                 lock_owner_id:
                     db_column: c.lock_owner_id
+                archives_exist:
+                    width: medium
+                    title: 'Archives exist?'
+                    db_column: |
+                        c.status != 'first_draft' AND (
+                            SELECT 1
+                            FROM [[DB_NAME_PREFIX]]versions AS pv
+                            WHERE pv.id = c.id
+                              AND pv.type = c.type
+                              AND pv.version NOT IN (c.visitor_version, c.admin_version)
+                            LIMIT 1
+                        )
+                    format: yes_or_no
                 layout:
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
@@ -223,15 +236,15 @@ zenario__content:
                     tooltip: View in Front-end window
                     frontend_link:
                         exists: Yes
-                    with_columns_set:
-                        frontend_link: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
                     tooltip: View in floating box
                     popout:
                         iframe: Yes
-                    with_columns_set:
-                        frontend_link: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 settings:
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -434,18 +447,28 @@ zenario__content:
                         trashable: Yes
                     without_traits:
                         ghost: Yes
+                    admin_box:
+                        path: zenario_trash
+                delete_archives:
+                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    parent: action_dropdown
+                    hide_in_select_mode: true
+                    label: Delete archived versions
+                    multiple_select: true
                     ajax:
                         confirm:
                             message: |
-                                This action will move the Content Item "[[tag]]" to the Trash. It will no longer be available to site visitors.
-                                                                
-                                                                Are you sure you wish to proceed?
+                                Are you sure you wish to delete any archived versions of "[[tag]]"?
+                                
+                                This cannot be undone.
                             multiple_select_message: |
-                                This action will move the selected Content Items to the Trash. They will no longer be available to site visitors.
-                                                                
-                                                                Are you sure you wish to proceed?
-                            button_message: Move to the Trash
+                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                
+                                This cannot be undone.
+                            button_message: Delete archived versions
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            trash: "1"
+                            delete_archives: 1
+                    visible_if_for_any_selected_items: |
+                        item.archives_exist

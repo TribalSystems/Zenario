@@ -3,9 +3,9 @@
 zenario__administration:
     panels:
         spare_domains:
-            title: Spare Domain Names
+            title: Domain name redirects
             no_items_message: |
-                When a Spare Domain Name is defined visitors to that Domain Name are redirected to a specified Content Item
+                When a Domain name redirect is defined visitors to that Domain Name are redirected to a specified Content Item
                                             under the Primary Domain.
             view_mode: list
             db_items:
@@ -42,8 +42,8 @@ zenario__administration:
                     tooltip: Go to content item in front-end window
                     frontend_link:
                         exists: Yes
-                    with_columns_set:
-                        frontend_link: Yes
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
@@ -56,7 +56,7 @@ zenario__administration:
                     hide_in_select_mode: Yes
                     ajax:
                         confirm:
-                            message: 'Are you sure that you wish to delete the Spare Domain Name "[[frontend_link]]"?'
+                            message: 'Are you sure that you wish to delete the domain name redirect "[[frontend_link]]"?'
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

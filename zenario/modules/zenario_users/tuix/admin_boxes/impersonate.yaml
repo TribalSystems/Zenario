@@ -21,7 +21,12 @@ zenario__impersonate:
                         stay_logged_in:
                             label: 'Maintain your login'
                     value: logout
-    max_height: 100
+                set_keep_me_logged_in_cookie:
+                    label: Set "Keep me logged in" cookie
+                    type: checkbox
+                    side_note: |
+                        Sets a cookie in your browser to keep you logged in as the impersonated user.
+    max_height: 120
     hide_tab_bar: true
     save_button_message: Impersonate this user
     cancel_button_message: Cancel

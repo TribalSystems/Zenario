@@ -43,7 +43,7 @@ if (isset($box['tabs']['speed']['fields']['cookie_free_domain'])) {
 				$path = 'zenario/quick_ajax.php';
 				$post = array('_get_data_revision' => 1, 'admin' => 1);
 				if ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)) {
-					if ($cookieFreeDomainCheck = curl(($cookieFreeDomain = 'http://'. $values['speed/cookie_free_domain']. SUBDIRECTORY). $path, $post)) {
+					if ($cookieFreeDomainCheck = curl(($cookieFreeDomain = httpOrHttps(). $values['speed/cookie_free_domain']. SUBDIRECTORY). $path, $post)) {
 						if ($thisDomainCheck == $cookieFreeDomainCheck) {
 							//Success, looks correct
 						} else {
@@ -52,8 +52,6 @@ if (isset($box['tabs']['speed']['fields']['cookie_free_domain'])) {
 					} else {
 						$box['tabs']['speed']['errors'][] = adminPhrase('A CURL request to [[domain]] failed. Either this is an invalid URL or Zenario is not at this location.', array('domain' => $cookieFreeDomain));
 					}
-				} else {
-					$box['tabs']['speed']['errors'][] = adminPhrase('The CMS could not use CURL to check that the domain is working properly. Please enable CURL on your server to continue.');
 				}
 			} else {
 				$box['tabs']['speed']['errors'][] = adminPhrase('The cookie-free domain must be a different domain to the primary domain.');

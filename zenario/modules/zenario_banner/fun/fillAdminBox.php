@@ -53,10 +53,6 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['changed'] = true;
 		}
 		
-		if (!empty($box['tabs']['first_tab']['fields']['image_title']['value'])) {
-			$box['tabs']['first_tab']['fields']['image_title']['multiple_edit']['changed'] = true;
-		}
-		
 		if (!empty($box['tabs']['first_tab']['fields']['floating_box_title']['value'])) {
 			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['changed'] = true;
 		}

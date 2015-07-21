@@ -41,6 +41,10 @@ switch ($path) {
 		
 		$adminDetails = getAdminDetails(adminId());
 		$box['tabs']['meta_data']['fields']['test_send_email_address']['value'] = $adminDetails['admin_email'];
+		$box['tabs']['meta_data']['fields']['add_user_field']['values'] =
+			listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		
+		
 		
 		if ($box['key']['id']) {
 			$details = $this->loadDetails($box['key']['id']);
@@ -150,4 +154,39 @@ switch ($path) {
 				= '<div id="delete_account_info">Preview: ' . $box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span></div>';
 		
 		break;
+	case 'zenario_live_send':
+		if ($id = $box['key']['id']) {
+			$recipients = self::newsletterRecipients($id, 'count');
+			$newsletter = $this->loadDetails($id);
+			$fields['send/desc']['snippet']['html'] = nAdminPhrase(
+				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient? Click-throughs counts will be reset.',
+				'Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipients? Click-throughs counts will be reset.',
+				$recipients,
+				array('newsletter_name' => $newsletter['newsletter_name'], 'recipients' => $recipients));
+				
+			$sql = '
+				SELECT COUNT(*) 
+				FROM '.DB_NAME_PREFIX.'admins
+				WHERE status = \'active\'';
+			$result = sqlSelect($sql);
+			$row = sqlFetchRow($result);
+			
+			if ($row[0] > 1) {
+				$fields['send/admin_options']['values']['all_admins']['label'] = adminPhrase(
+					'Send all [[count]] administrators a copy of the email', 
+					array('count' => $row[0]));
+			} else {
+				unset($fields['send/admin_options']['values']['all_admins']);
+			}
+		}
+		break;
+	
+	
+	case 'site_settings':
+		switch($settingGroup) {
+			case 'zenario_newsletter__site_settings_group':
+				$box['tabs']['zenario_newsletter__site_settings']['fields']['zenario_newsletter__all_newsletters_opt_out']['values'] =
+					listCustomFields('users', $flat = false, 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true);
+
+		}
 }

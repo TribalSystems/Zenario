@@ -58,10 +58,18 @@ incJS('zenario/js/panel_type_grid');
 incJS('zenario/js/panel_type_list');
 incJS('zenario/js/panel_type_list_or_grid');
 incJS('zenario/js/panel_type_list_with_totals');
+incJS('zenario/js/panel_type_list_with_totals_on_refiners');
+incJS('zenario/js/panel_type_list_with_subheadings');
 incJS('zenario/js/panel_type_hierarchy');
 incJS('zenario/js/panel_type_hierarchy_with_lazy_load');
 
+incJS('zenario/js/panel_type_images_with_tags');
+incJS('zenario/js/panel_type_images_with_tags_or_grid');
+
 incJS('zenario/js/panel_type_calendar');
+incJS('zenario/js/panel_type_calendar_user_timers');
 
 incJS('zenario/js/panel_type_google_map');
 incJS('zenario/js/panel_type_google_map_or_list');
+
+incJS('zenario/js/panel_type_form_builder');

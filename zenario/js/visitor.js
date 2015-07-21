@@ -198,13 +198,13 @@ zenario.goToURL = function(URL, useChromeFix) {
 };
 
 //A version of nonAsyncAJAX for modules
-zenario.handlePluginAJAX = function(moduleName, requests, post, json, useCache) {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?__pluginName__=' + moduleName + '&method_call=handleAJAX' + zenario.urlRequest(requests), post, json, useCache);
-};
+//As this uses zenario.nonAsyncAJAX() we should start to avoid using this from now on...
+zenario.moduleNonAsyncAJAX =
 
-//As above, but fetch by class name
+//Some old deprecated names
+zenario.handlePluginAJAX =
 zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCache) {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?__pluginClassName__=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests), post, json, useCache);
+	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?moduleClassName=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests), post, json, useCache);
 };
 
 //Listen out for changes to the hash on the URL, to add support for browser back buttons and AJAX reloading
@@ -222,7 +222,7 @@ zenario.checkForHashChanges = function(timed) {
 		var hash = document.location.hash.substr(1);
 		
 		//If this is an Organizer window, go to that location
-		if (zenarioA.storekeeperWindow && zenarioO.init) {
+		if (zenarioA.isFullOrganizerWindow && zenarioO.init) {
 			
 			if (hash.substr(0, 1) == '/') {
 				hash = hash.substr(1);

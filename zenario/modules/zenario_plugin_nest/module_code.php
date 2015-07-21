@@ -558,12 +558,11 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	
-	//Allow one specific Egg to be shown for the showFloatingBox/showIframe/showRSS methods
+	//Allow one specific Egg to be shown for the showFloatingBox/showRSS methods
 	protected function specificEgg() {
 		return
 			request('method_call') == 'handlePluginAJAX'
 		 || request('method_call') == 'showFloatingBox'
-		 || request('method_call') == 'showIframe'
 		 || request('method_call') == 'showRSS'?
 				(int) request('eggId')
 			 :	false;

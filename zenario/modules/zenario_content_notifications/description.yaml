@@ -4,7 +4,7 @@ author_name: Zenario
 copyright_info: © Tribal Limited
 editions: ProBusiness, Enterprise
 start_running_on_install: false
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 display_name: Content Notifications
 description: |
     <p>This module provides tools for team administration, so that: (i) Administrators who are authors only, can have a publish-request button; and (ii) Administrators can ask to receive an automated email whenever content items are published.</p>

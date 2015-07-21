@@ -1,4 +1,19 @@
-<div id="organizer_list_view" class="organizer_list_view">
+<div
+	id="organizer_list_view"
+	class="
+		organizer_list_view
+		
+		<% if (m.useTallRows) { %>
+			organizer_list_view_with_tall_rows
+			<% zenarioO.firstColWidth = 39 + 39 * m.maxNumberOfInlineButtons; %>
+		
+		<% } else { %>
+			organizer_list_view_with_short_rows
+			<% zenarioO.firstColWidth = 39 + 39 * m.maxNumberOfInlineButtons; %>
+		<% } %>
+	"
+>
+
 	<div class="organizer_header">
 		<div class="organizer_row">
 			<div id="organizer_non_sortable_resizeable_cols" class="organizer_non_sortable_resizeable_cols">
@@ -16,7 +31,7 @@
 						</div>
 					<% } %>
 				</div>
-				<div class="organizer_cell action_column firstcol" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;">&nbsp;</div>
+				<div class="organizer_cell action_column firstcol" style="width: {{zenarioO.firstColWidth}}px;">&nbsp;</div>
 			</div>
 			<div class="organizer_sort_and_resize_wrapper" style="width: {{m.totalWidth|escape}}px;">
 				{{zenarioA.microTemplate('zenario_organizer_list_header', m.columns)}}

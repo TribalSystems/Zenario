@@ -27,7 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 $key = array('instance_id' => $instanceId);
 
 switch ($mode) {
@@ -137,5 +136,3 @@ while ($row = sqlFetchAssoc($result)) {
 		array('instance_id' => $instanceId, 'id' => $row['id']));
 }
 
-
-?>

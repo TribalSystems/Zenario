@@ -41,6 +41,16 @@ zenario_content_type_details:
                         one_to_one_choose_phrase: Choose Layout
                         select_phrase: Select Layout...
                         hide_remove_button: Yes
+                enable_categories:
+                    label: 'Support for Categories'
+                    type: radios
+                    values:
+                        enabled:
+                            ord: 1
+                            label: 'Enabled'
+                        disabled:
+                            ord: 2
+                            label: 'Disabled'
                 description_field:
                     label: 'Description field:'
                     type: radios

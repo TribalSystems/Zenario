@@ -15,22 +15,34 @@ sections:
                 ord: 18
                 css_class: zenario_at_icon_layout
                 tooptip: Content Item Layout
-            alias:
-                ord: 20
-                css_class: zenario_at_icon_alias zenario_at_icon_has_alias
-                tooltip: ""
-            no_alias:
-                ord: 21
-                css_class: zenario_at_icon_alias zenario_at_icon_no_alias
-                tooltip: This content item does not have an alias
             language_id:
-                ord: 30
+                ord: 19
                 css_class: zenario_at_icon_language
                 label: ""
+            alias_dropdown:
+                ord: 20
+                css_class: zenario_at_icon_alias
+                #css_class: zenario_at_icon_alias zenario_at_icon_no_alias
+            go_to_alias:
+                ord: 21
+                parent: alias_dropdown
+                label: Go to content item via its alias
+            no_alias:
+                ord: 22
+                parent: alias_dropdown
+                tooltip: This content item does not have an alias
+            alias:
+                ord: 23
+                parent: alias_dropdown
+                label: Edit alias
+                admin_box:
+                    path: zenario_alias
             title:
                 ord: 40
                 css_class: zenario_at_icon_title
                 tooltip: ""
+                admin_box:
+                    path: zenario_content
             version_3:
                 ord: 50
                 hidden: true

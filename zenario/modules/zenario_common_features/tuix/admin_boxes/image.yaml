@@ -29,6 +29,7 @@ zenario_image:
                         multiple_select: true
                         hide_select_button: true
                         nothing_selected_phrase: No tags set
+                    cols: 4
                 new_tag:
                     type: text
                     maxlength: 15
@@ -71,10 +72,6 @@ zenario_image:
                 alt_tag:
                     label: 'Default alt-tag:'
                     type: text
-                title:
-                    label: 'Default title attribute:'
-                    type: text
-                    note_below: This will be used to add tooltips to the image.
                 floating_box_title:
                     label: 'Default floating box title:'
                     type: editor

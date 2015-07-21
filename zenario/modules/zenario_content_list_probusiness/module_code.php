@@ -138,6 +138,14 @@ class zenario_content_list_probusiness extends zenario_content_list {
 			$this->showInMenuMode();
 		}
 		
+		if ($this->setting('show_author_image')) {
+			$sql .= '
+			LEFT JOIN '.DB_NAME_PREFIX.'admins AS ad
+				ON v.writer_id = ad.id
+			LEFT JOIN '.DB_NAME_PREFIX.'files AS fi
+				ON ad.image_id = fi.id';
+		}
+		
 		return $sql;
 	}
 	

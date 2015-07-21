@@ -1,0 +1,399 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario__administration:
+    panels:
+        custom_tabs_and_fields_gui:
+            
+            
+            edit_form_fields:
+                tab: details
+                tabs:
+                    details:
+                        label: Details
+                        edit_mode:
+                            enabled: true
+                            on: true
+                        fields:
+                            label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 64
+                                validation:
+                                    required: 'Please enter a label'
+                                onkeyup: |
+                                    if (!editFormFields.tuix.key.id) {
+                                        zenario.get('db_column').value =
+                                            this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
+                                    }
+                                note_below: |
+                                    The text of the label that appears before the field.
+                            db_column:
+                                label: 'Code name:'
+                                type: text
+                                maxlength: 64
+                                validation:
+                                    required: 'Please enter a code name'
+                                note_below: |
+                                    This will be used for the name of the column in the database.
+                            protected:
+                                priv: _PRIV_PROTECT_UNPROTECT_DATASET_FIELD
+                                label: 'Protected'
+                                type: checkbox
+                                note_below: 'Protected fields cannot be deleted'
+                                format_onchange: true
+                    display:
+                        label: Display
+                        edit_mode:
+                            enabled: Yes
+                        fields:
+                            parent_id:
+                                label: 'Conditional display on field:'
+                                type: select
+                                empty_value: " -- No conditional display -- "
+                            width:
+                                visible_if: "({editor:1,text:1,textarea:1})[editFormFields.value('type', 'details')]"
+                                label: 'Width of the field on the admin box:'
+                                type: select
+                                empty_value: " -- Default width -- "
+                                values: 
+                                    1:
+                                        ord: 1
+                                        label: 1 character (em)
+                                    5:
+                                        ord: 2
+                                        label: 5 characters (em)
+                                    10:
+                                        ord: 3
+                                        label: 10 characters (em)
+                                    25:
+                                        ord: 4
+                                        label: 25 characters (em)
+                                    40:
+                                        ord: 5
+                                        label: 40 characters (em)
+                                    56:
+                                        ord: 6
+                                        label: 56 characters (em)
+                            height:
+                                visible_if: "({editor:1,textarea:1})[editFormFields.value('type', 'details')]"
+                                label: 'Height of the field on the admin box:'
+                                type: select
+                                empty_value: " -- Default rows -- "
+                                values: 
+                                    3:
+                                        ord: 1
+                                        label: 3 rows
+                                    5:
+                                        ord: 2
+                                        label: 5 rows
+                                    10: 
+                                        ord: 3
+                                        label: 10 rows
+                                    20: 
+                                        ord: 4
+                                        label: 20 rows
+                            note_below:
+                                label: 'Help text:'
+                                type: text
+                                note_below: |
+                                    This is a message to administrators that explains what to enter for the field.
+                                    For example, like this message.
+                            
+                    validation:
+                        label: Validation
+                        edit_mode:
+                            enabled: Yes
+                        fields:
+                            required:
+                                label: 'Required'
+                                type: checkbox
+                                redraw_onchange: true
+                                note_below: |
+                                    An administrator will not be able to save a record until all of the required fields are complete.
+                            required_message:
+                                visible_if: "editFormFields.value('required')"
+                                label: 'Message if not complete:'
+                                type: text
+                            validation:
+                                visible_if: "({text:1})[editFormFields.value('type', 'details')]"
+                                label: 'Validation:'
+                                type: radios
+                                value: none
+                                values:
+                                    none:
+                                        label: 'None'
+                                    email:
+                                        label: 'Email'
+                                        note_below: 'Must be a valid email address'
+                                    emails:
+                                        label: 'Multiple emails'
+                                        note_below: 'Must be a comma-seperated list of valid email addresses'
+                                    no_spaces:
+                                        label: 'No spaces allowed'
+                                        note_below: 'May not contain spaces'
+                                    numeric:
+                                        label: 'Numeric'
+                                        note_below: 'Must be a number'
+                                    screen_name:
+                                        label: 'Screen name'
+                                        note_below: 'Only word characters, digits and spaces are allowed'
+                                redraw_onchange: true
+                                note_below: |
+                                    An administrator will not be able to save a record if this field does not match the validation rule chosen.
+                            validation_message:
+                                visible_if: "({text:1})[editFormFields.value('type', 'details')] && editFormFields.value('validation') && editFormFields.value('validation') != 'none'"
+                                label: 'Message if not valid:'
+                                type: text
+                            
+                    organizer:
+                        label: Organizer
+                        edit_mode:
+                            enabled: Yes
+                        fields:
+                            show_in_organizer:
+                                label: 'Show in Organizer panel'
+                                type: checkbox
+                                redraw_onchange: true
+                            searchable:
+                                visible_if: "editFormFields.value('show_in_organizer') == 1"
+                                label: 'Searchable'
+                                type: checkbox
+                            sortable:
+                                visible_if: "editFormFields.value('show_in_organizer') == 1"
+                                label: 'Sortable'
+                                type: checkbox
+                            visibility:
+                                visible_if: "editFormFields.value('show_in_organizer') == 1"
+                                label: 'Visibility:'
+                                type: select
+                                empty_value: 'Hide by default'
+                                values:
+                                    1:
+                                        ord: 1
+                                        label: 'Show by default'
+                                    2:
+                                        ord: 1
+                                        label: 'Always show'
+                                note_below: "Administrators will not be able to hide this field in Organizer if it is set to &quot;Always show&quot;."
+                            
+                            
+                    lov:
+                        visible_if: "({checkboxes:1,radios:1,select:1})[editFormFields.value('type', 'details')]"
+                        label: Values
+                        edit_mode:
+                            enabled: true
+                            always_on: true
+                            enable_revert: false
+                        fields:
+                            add_num:
+                                ord: 100001
+                                type: select
+                                hidden: true
+                                value: 1
+                                values:
+                                    1:
+                                        ord: 1
+                                        label: 'Add 1 more value'
+                                    2:
+                                        ord: 2
+                                        label: 'Add 2 more values'
+                                    5:
+                                        ord: 5
+                                        label: 'Add 5 more values'
+                                    10:
+                                        ord: 10
+                                        label: 'Add 10 more values'
+                            add:
+                                #same_row: true
+                                ord: 100002
+                                type: submit
+                                value: Add a value
+                        
+                        custom__template_fields:
+                            label:
+                                type: text
+                            id:
+                                same_row: true
+                                type: hidden
+                            delete:
+                                same_row: true
+                                type: submit
+                                value: 'X'
+                                onclick: >
+                                    if (!confirm('Are you sure you wish to delete this value?')) {
+                                        return false;
+                                    }
+                            nudge_down:
+                                same_row: true
+                                type: submit
+                                value: 'v'
+                            nudge_up:
+                                same_row: true
+                                type: submit
+                                value: '^'
+            edit_form_tabs:
+                tab: details  
+                tabs:
+                    details:
+                        edit_mode:
+                            enabled: true
+                            on: true
+                        fields:
+                            label:
+                                label: 'Label:'
+                                type: text
+                                maxlength: 32
+                                validation:
+                                    required: 'Please enter a label'
+            
+            
+            
+            disable_periodic_refresh: Yes
+            refiners:
+               dataset_id: {}
+            refiner_required: true
+            
+            items: {}
+            default_sort_column: label
+            columns:
+                ordinal:
+                    title: Ordinal
+                    align_right: Yes
+                    width: xxsmall
+                db_column:
+                    title: Database Column
+                    searchable: Yes
+                    width: medium
+                parents:
+                    title: Parent fields
+                    show_by_default: Yes
+                    width: large
+                label:
+                    title: Label
+                    searchable: true
+                    show_by_default: Yes
+                    width: medium
+                type:
+                    title: Type
+                    format: enum
+                    values:
+                        group: 'Group'
+                        checkbox: 'Single checkbox'
+                        checkboxes: 'Multiple checkboxes'
+                        date: 'Date'
+                        editor: 'Editor'
+                        radios: 'Multiple radio-buttons'
+                        select: 'Select list'
+                        text: 'Text'
+                        textarea: 'Textarea'
+                        url: 'URL'
+                        tab: 'Tab'
+                        system_field: 'System field'
+                        system_tab: 'System tab'
+                    show_by_default: Yes
+                    width: medium
+                user_count:
+                    title: Count of records with this field set
+                    show_by_default: Yes
+                    width: xxsmall
+                protected:
+                    title: Protected
+                    width: xxsmall
+                    format: yes_or_no
+            
+            panel_type: form_builder
+            
+            collection_buttons:
+                create_new_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    css_class: zenario_create_a_new
+                    label: Create a tab
+                    admin_box:
+                        path: zenario_custom_tab
+                    hide_in_select_mode: Yes
+            
+            item_buttons:
+                create_new_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_tab
+                    css_class: zenario_create_a_new
+                    label: Create field on selected tab
+                    admin_box:
+                        path: zenario_custom_field
+                    hide_in_select_mode: Yes
+                
+                edit_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_field && !item.is_system
+                    label: Edit custom field properties
+                    admin_box:
+                        path: zenario_custom_field
+                    hide_in_select_mode: Yes
+                
+                edit_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Rename tab
+                    visible_if_for_all_selected_items: |
+                        item.is_tab && !item.is_system
+                    admin_box:
+                        path: zenario_custom_tab
+                    hide_in_select_mode: Yes
+                
+                edit_system_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Rename tab
+                    visible_if_for_all_selected_items: |
+                        !item.is_field && item.is_system
+                    admin_box:
+                        path: zenario_custom_system_tab
+                    hide_in_select_mode: Yes
+                
+                edit_system_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Edit system field properties
+                    visible_if_for_all_selected_items: |
+                        item.is_field && item.is_system
+                    admin_box:
+                        path: zenario_custom_system_field
+                    hide_in_select_mode: Yes
+                
+                delete_tab:
+                    priv: _PRIV_MANAGE_DATASET
+                    label: Delete tab
+                    visible_if_for_all_selected_items: |
+                        item.is_tab && !item.is_system && !item.has_children
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the tab "[[label]]"?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_tab: 1
+                    hide_in_select_mode: Yes
+                
+                delete_field:
+                    priv: _PRIV_MANAGE_DATASET
+                    visible_if_for_all_selected_items: |
+                        item.is_field && !item.is_system
+                    label: Delete
+                    disabled_if_for_any_selected_items: |
+                        item.protected
+                    disabled_tooltip: 'Protected fields cannot be deleted'
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete the field "[[label]]" (database column "[[db_column]]")?
+                                
+                                There are [[user_count]] records(s) in which this field is populated.
+                                
+                                This action cannot be undone.
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_field: 1
+                    hide_in_select_mode: Yes

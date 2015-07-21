@@ -210,7 +210,7 @@ if ($getUploadedFileInCacheDir) {
 } else {
 
 	//If this is a file for a content item, check that the visitor can see the current content item
-	//Again, this is a little slower than it colud be, as you need to exchange session information. It's only intended
+	//Again, this is a little slower than it could be, as you need to exchange session information. It's only intended
 	//as a fallback if the cache/ directory isn't writable.
 	if ($usage == 'content') {
 		$hasPerms = false;
@@ -291,10 +291,13 @@ if ($getUploadedFileInCacheDir) {
 
 	//If this is a Storekeeper thumbnail then we'll grab the image data up straight away.
 	if (isset($_GET['og'])) {
-		$sql .= "organizer_data AS data";
+		$sql .= "thumbnail_180x130_data AS data";
+
+	} elseif (isset($_GET['ogt'])) {
+		$sql .= "thumbnail_64x64_data AS data";
 
 	} elseif (isset($_GET['ogl'])) {
-		$sql .= "organizer_list_data AS data";
+		$sql .= "thumbnail_24x23_data AS data";
 
 	//If this is content, then we'll also grab the data straight away as there should be no need to manipulate it.
 	} elseif ($usage == 'content') {
@@ -311,10 +314,6 @@ if ($getUploadedFileInCacheDir) {
 			mime_type,
 			width,
 			height,
-			organizer_list_data, organizer_list_width, organizer_list_height,
-			organizer_data, organizer_width, organizer_height,
-			working_copy_data, working_copy_width, working_copy_height,
-			working_copy_2_data, working_copy_2_width, working_copy_2_height,
 			size
 		FROM ". DB_NAME_PREFIX . "files";
 

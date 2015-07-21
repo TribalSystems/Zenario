@@ -107,9 +107,10 @@ if (checkPriv()) {
 //Attempt to get this page.
 $cID = $cType = $content = $version = $redirectNeeded = false;
 resolveContentItemFromRequest($cID, $cType, $redirectNeeded);
+//var_dump($cID, $cType, $redirectNeeded, linkToItem($cID, $cType)); exit;
 
-if ($redirectNeeded && empty($_POST)) {
-	header('location: '. linkToItem($cID, $cType), true, 302);
+if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())) {
+	header('location: '. linkToItem($cID, $cType), true, $redirectNeeded);
 	exit;
 }
 $status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
@@ -181,7 +182,10 @@ foreach (cms_core::$editions as $className => $dirName) {
 $hideLayout = false;
 $specificSlot = false;
 $specificInstance = false;
-if (request('method_call') == 'showIframe' && (request('instanceId') || request('slotName'))) {
+
+if (!empty($_REQUEST['method_call'])
+ && ($_REQUEST['method_call'] == 'showSingleSlot' || $_REQUEST['method_call'] == 'showIframe')
+ && (request('instanceId') || request('slotName'))) {
 	$specificSlot = request('slotName');
 	$specificInstance = request('instanceId');
 	$hideLayout = $specificSlot && request('hideLayout');
@@ -202,7 +206,7 @@ foreach (cms_core::$editions as $className => $dirName) {
 }
 
 
-$canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, true, true, primaryDomain());
+$canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, true, true, true);
 
 
 $specialPage = isSpecialPage(cms_core::$cID, cms_core::$cType);
@@ -223,6 +227,12 @@ echo
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>', htmlspecialchars(cms_core::$pageTitle), '</title>
 <link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>';
+
+//If we were to include a <base> tag, this would be a more reliable way of handling relative URLs
+//on pages with slashes in their alias. However using the <base> tag will break links to #anchors that
+//may be on the page.
+//echo '
+//<base href="', htmlspecialchars(absCMSDirURL()), '" />';
 
 // Add hreflang tags
 if (getNumLanguages() > 1) {
@@ -248,7 +258,7 @@ if (getNumLanguages() > 1) {
 		$result = sqlSelect($sql);
 		if (sqlNumRows($result) > 1) {
 			while($row = sqlFetchAssoc($result)) {
-				$pageLink = linkToItem($row['id'], $row['type'], true, '', false, true, true, primaryDomain());
+				$pageLink = linkToItem($row['id'], $row['type'], true, '', false, true, true, true);
 				echo '
 <link rel="alternate" href="'. htmlspecialchars($pageLink). '" hreflang="'. htmlspecialchars($row['language_id']). '">';
 			}
@@ -364,7 +374,7 @@ if ($specificInstance || $specificSlot) {
 				'<a href="zenario/admin/organizer.php">Go to Organizer</a>',
 			'</div>';
 		
-		if (!checkPriv()) {
+		if (!checkPriv() && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
 			reportDatabaseError($msg);
 		}
 	}

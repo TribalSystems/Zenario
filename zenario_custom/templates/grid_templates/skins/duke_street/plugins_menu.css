@@ -156,3 +156,14 @@
 	 
 	.dl-menuwrapper li > a:not(:only-child):after {
 	}
+	
+	
+	
+	.zenario_menu_reponsive_multilevel_2 .menu-collapser {
+	    background: none;
+	    text-shadow: none;
+	}
+	
+	.zenario_menu_reponsive_multilevel_2 .collapse-button {
+	    left: 8px;
+	}

@@ -16,34 +16,47 @@ zenario__modules:
                 name:
                     title: Name
                     db_column: pi.name
-                    searchable: Yes
-                    show_by_default: Yes
+                    searchable: true
+                    show_by_default: true
                 module_id:
                     db_column: plg.id
                 plugin:
                     title: Module
                     db_column: plg.display_name
                     table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
-                    searchable: Yes
+                    searchable: true
                 module_class_name:
                     db_column: plg.class_name
                     table_join: '[[DB_NAME_PREFIX]]modules AS plg ON plg.id = pi.module_id'
                 framework:
                     title: Framework
                     db_column: pi.framework
-                usage_template:
+                usage_layouts:
                     title: Usage on layouts
-                    show_by_default: Yes
+                    show_by_default: true
                     db_column: |
                         (
-                            SELECT COUNT(DISTINCT pitl.layout_id)
-                            FROM [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                            WHERE pitl.instance_id = pi.id
+                            SELECT COUNT(DISTINCT pll.layout_id)
+                            FROM [[DB_NAME_PREFIX]]plugin_layout_link AS pll
+                            INNER JOIN [[DB_NAME_PREFIX]]layouts AS l
+                               ON l.layout_id = pll.layout_id
+                            WHERE pll.instance_id = pi.id
+                              AND l.status = 'active'
                         )
                     width: small
-                    align_right: Yes
+                    align_right: true
+                usage_archived_layouts:
+                    db_column: |
+                        (
+                            SELECT COUNT(DISTINCT pll.layout_id)
+                            FROM [[DB_NAME_PREFIX]]plugin_layout_link AS pll
+                            INNER JOIN [[DB_NAME_PREFIX]]layouts AS l
+                               ON l.layout_id = pll.layout_id
+                            WHERE pll.instance_id = pi.id
+                              AND l.status = 'suspended'
+                        )
                 usage_item:
-                    show_by_default: Yes
+                    show_by_default: true
                     title: Usage on items
                     db_column: |
                         (
@@ -78,7 +91,7 @@ zenario__modules:
                         )
                     table_join: ""
                     width: small
-                    align_right: Yes
+                    align_right: true
                 filename:
                     db_column: img_f.filename
                     table_join: |
@@ -100,7 +113,7 @@ zenario__modules:
                           AND img_f.`usage` = 'image'
                           AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
                 mime_type:
-                    server_side_only: Yes
+                    server_side_only: true
                     db_column: img_f.mime_type
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
@@ -125,7 +138,7 @@ zenario__modules:
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: Properties
+                    label: Edit plugin settings
                     admin_box:
                         path: plugin_settings
                 framework_and_css:
@@ -135,8 +148,8 @@ zenario__modules:
                         path: plugin_css_and_framework
                 view_dropdown:
                     label: View
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view:
                     parent: view_dropdown
                     label: View image
@@ -146,45 +159,45 @@ zenario__modules:
                         options:
                             type: image
                     traits:
-                        has_image: Yes
-                usage_template:
+                        has_image: true
+                usage_layouts:
                     parent: view_dropdown
                     label: "Layouts using this plugin"
                     traits:
-                        in_use: Yes
-                    hide_in_select_mode: Yes
+                        in_use: true
+                    hide_in_select_mode: true
                     link:
                         path: zenario__layouts/panels/layouts
-                        branch: Yes
+                        branch: true
                         refiner: plugin_instance_usage
                     width: xsmall
-                    align_right: Yes
+                    align_right: true
                 usage_item:
                     parent: view_dropdown
                     label: "Items using this plugin"
                     traits:
-                        in_use: Yes
-                    hide_in_select_mode: Yes
+                        in_use: true
+                    hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: Yes
+                        branch: true
                         refiner: plugin_instance_usage
                     width: xsmall
-                    align_right: Yes
+                    align_right: true
                 view_content_items:
                     parent: view_dropdown
                     label: Effective usage
                     traits:
-                        in_use: Yes
-                    hide_in_select_mode: Yes
+                        in_use: true
+                    hide_in_select_mode: true
                     link:
                         path: zenario__content/panels/content
-                        branch: Yes
+                        branch: true
                         refiner: plugin_instance_effective_usage
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 rename:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
@@ -203,9 +216,9 @@ zenario__modules:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     ord: "99"
                     label: Delete
-                    multiple_select: Yes
-                    hide_in_select_mode: Yes
-                    visible_if_for_all_selected_items: item.usage_item == 0 && item.usage_template == 0
+                    multiple_select: true
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: item.usage_item == 0 && item.usage_layouts == 0
                     ajax:
                         confirm:
                             message: |
@@ -222,12 +235,12 @@ zenario__modules:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     ord: "99"
                     label: Delete
-                    hide_in_select_mode: Yes
-                    visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_template > 0
+                    hide_in_select_mode: true
+                    visible_if_for_all_selected_items: item.usage_item > 0 || item.usage_layouts > 0
                     ajax:
                         confirm:
                             message: |
-                                This plugin is currently used on [[usage_item]] content item(s) and [[usage_template]] layout(s).
+                                This plugin is currently used on [[usage_item]] content item(s) and [[usage_layouts]] layout(s).
                                 
                                 Deleting it will remove it from these content items and layouts, and this may have an immediate effect on published pages.
                                 

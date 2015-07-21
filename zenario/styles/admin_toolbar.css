@@ -37,7 +37,7 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
-	background-image:url('../admin/images/sprites/org-icons-1.png');
+	background-image:url('../admin/images/sprites/org-icons-v2.png');
 }
 
 #zenario_at_wrap {
@@ -442,6 +442,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a {
 	background-position:-762px -112px;
+	cursor: pointer;
 }
 
 #zenario_at .zenario_at_tabs .zenario_toolbar .zenario_left,
@@ -575,17 +576,14 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	padding:0px;
 }
 
-#zenario_at ul li ul {
-	width: 200px;
-}
-
 #zenario_at ul li ul li {
 	padding: 4px 0;
 	border-top:1px solid #DCDCDC;
 	margin:0 5px;
 }
 
-#zenario_at ul li ul li:first-child {
+#zenario_at ul li ul li:first-child,
+ {
 	border-top:0;
 }
 
@@ -598,13 +596,136 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	left: 100%;
 }
 
+
 #zenario_at ul ul,
-#zenario_at ul li:hover ul ul {
+#zenario_at ul li:hover ul ul,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul {
 	display: none;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias:hover ul {
+	display:block;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul {
+  position: absolute;
+  top: 30px;
+  width: auto;
+  right: -8px;
+}
+
+#zenario_at .zenario_at_status_icons_container ul li a {
+  padding: 7px 5px 7px 7px;
+}
+
+.zenario_at_button_with_children ul li:first-child {
+  border-top: 0;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul::before {
+  right: 6px;
+  border-color: #333 transparent;
+  border-style: solid;
+  border-width: 0 12px 12px;
+  bottom: 100%;
+  content: "";
+  height: 0;
+  position: absolute;
+  width: 0;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul::after {
+  right: 8px;
+  border-color: #f6f6f6 transparent;
+  border-style: solid;
+  border-width: 0 10px 10px;
+  bottom: 100%;
+  content: "";
+  height: 0;
+  position: absolute;
+  width: 0;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias {
+  position: relative;
 }
 
 #zenario_at ul li:hover ul {
 	display: block;
+}
+
+.zenario_at_button_with_children ul li a {
+	width: 160px!important;
+	margin-right: 5px;
+	cursor: pointer;
+}
+
+.zenario_at_icon_alias.zenario_at_button_with_children ul li a {
+	width: 150px!important;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul li span {
+    float:none;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias ul li a {
+	background:none;
+}
+
+.zenario_at_button_with_children ul {
+	background: #f6f6f6;
+	border: 1px solid #333;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: 0 0 3px 0 #888;
+	box-shadow: 0 0 3px 0 #888;
+}
+
+/*.zenario_at_button_with_children ul:after {
+	border-color: #F6F6F6 transparent;
+	border-style: solid;
+	border-width: 0 10px 10px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	left: 60px;
+	width: 0;
+}
+
+.zenario_at_button_with_children ul:before {
+	border-color: #333 transparent;
+	border-style: solid;
+	border-width: 0 12px 12px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	left: 58px;
+	width: 0;
+}*/
+
+.zenario_at_status_icons .zenario_at_button_with_children ul li {
+	background: none!important;
+	padding: 4px 0;
+}
+
+.zenario_at_status_icons .zenario_at_button_with_children ul li a {
+	height: auto!important;
+	border-top: 1px solid #dcdcdc;
+}
+
+.zenario_at_button_with_children ul li:first-child {
+	border-top: 0;
+}
+
+.zenario_at_button_with_children ul li a:hover {
+	color: #0581A4!important;
+}
+
+.zenario_at_button_with_children ul li span:hover {
+	color: #0581A4;
 }
 
 #zenario_at ul ul {
@@ -699,6 +820,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_title {
 	font-family: 'Courier New',Courier,monospace;
 	font-size:12px;
+	cursor: pointer;
 }
 
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_version {
@@ -712,10 +834,19 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	float:left;
 }
 
-#zenario_at #zenario_at_lower_section .zenario_at_infobar_version,
 #zenario_at #zenario_at_lower_section .zenario_at_infobar_layout_usage {
 	margin-left:4%;
 	float:right;
+}
+
+#zenario_at #zenario_at_lower_section .zenario_at_infobar_version {
+	margon-left: 0;
+	float: right;
+	width: 49%;
+}
+
+.zenario_at_button_with_children ul li {
+	display: block;
 }
 
 /* end new toolbar */

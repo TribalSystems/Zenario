@@ -1,0 +1,44 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_trash:
+    priv: _PRIV_TRASH_CONTENT_ITEM
+    key:
+        id: ""
+        cID: ""
+        cType: ""
+    tabs:
+        trash:
+            edit_mode:
+                enabled: true
+                always_on: true
+                enable_revert: false
+            fields:
+                desc:
+                    full_width: true
+                    pre_field_html: '<div class="zenario_fbWarning">'
+                    snippet:
+                        html: |
+                            <p>
+                                Trashing this content item will remove it from the site. It will no longer be visible to site visitors.
+                            </p><br/><p>
+                                You can recover a trashed item in Organizer, go to Content and then click on the trash can.
+                            </p><br/><p>
+                                Are you sure you wish to proceed?
+                            </p>
+                    post_field_html: '</div>'
+                links_warning:
+                    snippet:
+                        html:
+                trash_options:
+                    type: radios
+                    values:
+                        remove:
+                            label: 'Delete the link used by the plugin(s)'
+                        delete_instance:
+                            label: 'Delete the plugin(s)'
+                    value: remove
+                    hidden: true
+    max_height: 150
+    hide_tab_bar: true
+    save_button_message: Trash
+    cancel_button_message: Cancel

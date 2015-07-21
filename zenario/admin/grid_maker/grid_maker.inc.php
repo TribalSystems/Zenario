@@ -57,22 +57,21 @@ public static function round($n) {
 }
 
 
-public static function checkForRenamedSlots(&$data, &$oldToNewNames) {
+public static function checkForRenamedSlots(&$data, &$newNames, &$oldToNewNames) {
 	
 	//Loop through the current grouping, looking for more cells and possibly more groupings
 	foreach ($data['cells'] as &$cell) {
 		//Keep checking groupings recursively
 		if (!empty($cell['cells'])) {
-			zenario_grid_maker::checkForRenamedSlots($cell, $oldToNewNames);
+			zenario_grid_maker::checkForRenamedSlots($cell, $newNames, $oldToNewNames);
 		
 		//Check for renamed slots
 		} else
 		if (!empty($cell['name'])) {
-			//$newNames[$cell['name']] = true;
+			$newNames[$cell['name']] = $cell['name'];
 			
 			if (!empty($cell['oName']) && $cell['name'] != $cell['oName']) {
 				$oldToNewNames[$cell['oName']] = $cell['name'];
-				//$newToOldNames[$cell['name']] = $cell['oName'];
 			}
 		}
 		
@@ -480,6 +479,17 @@ static $respClasses = array(
 public static function generateHTML(&$html, &$data) {
 	
 	$html .= "<". "?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?". ">";
+	
+	$meta = array();
+	foreach (array('cols', 'minWidth', 'maxWidth', 'fluid', 'responsive') as $var) {
+		if (isset($data[$var])) {
+			$meta[$var] = $data[$var];
+		} else {
+			$meta[$var] = 0;
+		}
+	}
+	
+	$html .= "\n\n<script type=\"text/javascript\">\n\tzenarioGrid = ". json_encode($meta). ";\n</script>";
 	
 	$html .= "\n\n<". '?php if (file_exists(CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\')) {';
 	$html .= "\n\t". 'require CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\';';

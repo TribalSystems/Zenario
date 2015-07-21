@@ -332,7 +332,7 @@ class zenario_email_template_manager extends module_base_class {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		//...your PHP code...//
+		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {

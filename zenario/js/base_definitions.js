@@ -34,7 +34,8 @@
 	//Create encapsulated objects in advance for all of Zenario's libraries
 	var zenario = window.zenario = createLibrary(''),
 		zenarioA = window.zenarioA = createLibrary('A'),
-		zenarioAB = window.zenarioAB = createLibrary('AB'),
+		zenarioAF = window.zenarioAF = createLibrary('AF'),
+		zenarioAB = window.zenarioAB = new zenarioAF(),
 		zenarioAT = window.zenarioAT = createLibrary('AT'),
 		zenarioO = window.zenarioO = createLibrary('O');
 	

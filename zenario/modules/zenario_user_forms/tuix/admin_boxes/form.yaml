@@ -23,13 +23,13 @@ zenario_user_admin_box_form:
                     label: 'Action after form submission:'
                     type: radios
                     values:
-                        none:
-                            label: 'Stay on form'
-                        redirect_after_submission:
-                            label: 'Redirect to a thank you page'
                         show_success_message:
                             label: 'Only show a success message'
-                    value: none
+                        redirect_after_submission:
+                            label: 'Redirect to a thank you page'
+                        none:
+                            label: 'Stay on form'
+                    value: show_success_message
                     format_onchange: true
                     
                 redirect_location:
@@ -116,7 +116,6 @@ zenario_user_admin_box_form:
                 line_br_1:
                     snippet:
                         html: <hr />
-                
                 save_data:
                     label: 'Create user/contact record'
                     type: checkbox
@@ -147,7 +146,6 @@ zenario_user_admin_box_form:
                 add_user_to_group:
                     label: 'Add user/contact to group:'
                     type: select
-                    load_values_from_organizer_path: zenario__users/panels/groups_only
                     empty_value: ' -- Select -- '
                 duplicate_submission_html:
                     snippet:
@@ -161,8 +159,21 @@ zenario_user_admin_box_form:
                         overwrite:
                             label: 'Overwrite old record'
                         ignore:
-                            label: 'Don’t update'
+                            label: "Don't update"
+                        stop:
+                            label: "Don't allow submission"
                     value: merge
+                    format_onchange: true
+                
+                duplicate_email_address_error_message:
+                    label: 'Dupliate email error message:'
+                    type: text
+                    maxlength: 255
+                    side_note: |
+                        The error message that a user will see if the form has already been submitted with this email address
+                    validation:
+                        required_if_not_hidden: Please enter a duplicate email error message
+                
                 create_another_form_submission_record:
                     label: 'Create another form submission log record'
                     type: checkbox
@@ -206,6 +217,7 @@ zenario_user_admin_box_form:
                         Enter a comma separated list of administrator emails to send this email to.
                     validation:
                         required_if_not_hidden: Please enter one or more admin email addresses.
+                    is_email_address: true
                 admin_email_options:
                     type: radios
                     values:
@@ -232,20 +244,22 @@ zenario_user_admin_box_form:
                     label: 'Optional "reply-to"'
                     type: checkbox
                     format_onchange: true
+                    side_note: When set, you can directly reply to the users email address in your email client
                 # BEGIN reply_to options
                 reply_to_email_field:
                     label: 'Reply-to email using:'
                     type: select
                     validation:
                         required_if_not_hidden: Please select a reply-to email field
+                    side_note: Select the form field in which the user enters their email address
                 reply_to_first_name:
                     label: 'Reply-to first name using:'
                     type: select
-                    validation:
-                        required_if_not_hidden: Please select a reply-to first name
+                    side_note: Select the form field in which the user enters their first name
                 reply_to_last_name:
                     label: 'Reply-to last name using:'
                     type: select
+                    side_note: Select the form field in which the user enters their last name
                 # END reply_to options
                 # END send_email_to_admin options
                 line_br_4:

@@ -12,5 +12,5 @@ editions: ProBusiness, Enterprise
 required_cms_version: 7.0.3
 author_name: Zenario
 copyright_info: © Tribal Limited
-license_info: Modified BSD License
+license_info: 'Modified BSD License'
 keywords: 404, error, log, access

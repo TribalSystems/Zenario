@@ -45,16 +45,14 @@ if ($dir = moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
 		if (isset($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'])
 		 && is_array($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'])) {
 			foreach ($tags['admin_boxes']['zenario_admin']['tabs']['permissions']['fields'] as $fieldName => &$field) {
-				if (!isInfoTag($fieldName)) {
+				if (is_array($field)) {
 				
 					if (!empty($field['type']) && $field['type'] == 'checkbox') {
 						$perms[$fieldName] = true;
 					
 					} elseif ((empty($field['type']) || $field['type'] == 'checkboxes') && !empty($field['values'])) {
 						foreach ($field['values'] as $perm => &$dummy) {
-							if (!isInfoTag($perm)) {
-								$perms[$perm] = true;
-							}
+							$perms[$perm] = true;
 						}
 					}
 				}

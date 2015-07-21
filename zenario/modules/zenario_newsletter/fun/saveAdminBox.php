@@ -30,6 +30,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario_newsletter_template':
+		
+		addAbsURLsToAdminBoxField($box['tabs']['details']['fields']['body']);
+		
+		
 		$record = array(
 			'name' => $values['details/name'],
 			'body' => $values['details/body']);
@@ -68,6 +72,10 @@ switch ($path) {
 		
 		
 		if (engToBooleanArray($box['tabs']['meta_data'], 'edit_mode', 'on')) {
+			
+			addAbsURLsToAdminBoxField($box['tabs']['meta_data']['fields']['body']);
+			
+			
 			$id = $box['key']['id'];
 			$record = array(
 					'newsletter_name' => $values['meta_data/newsletter_name'],
@@ -135,9 +143,64 @@ switch ($path) {
 				}
 			}
 		}
+		break;
+	
+	case 'zenario_live_send':
 		
-		
-		
-		
+		//Send the newsletter
+		if (($ids = $box['key']['id']) && checkPriv('_PRIV_SEND_NEWSLETTER') && zenario_newsletter::checkIfNewsletterIsADraft($ids)) {
+			
+			//If the admin is trying to send this newsletter, try to populate its recipients table
+			if (!zenario_newsletter::newsletterRecipients($ids, 'populate')) {
+				echo adminPhrase('This Newsletter has no recipients to send to.');
+			
+			} else {
+				//Update it to the "_IN_PROGRESS" state
+				$smartGroupDescriptions = array();
+				foreach ( getRowsArray(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link', 'smart_group_id', array('newsletter_id' => $ids)) as $smartGroupId )  {
+					$smartGroupDescriptions[] = getSmartGroupDescription($smartGroupId);
+				}
+				$smartGroupDescriptions = (count($smartGroupDescriptions)>1?'(':'') . adminPhrase(implode(") OR (", $smartGroupDescriptions )) . (count($smartGroupDescriptions)>1?')':'');
+				
+				
+				$sql = 
+					"UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters set
+						status = '_IN_PROGRESS',
+						date_sent = NOW(),
+						sent_by_id = ". (int) $_SESSION['admin_userid']. ",
+						smart_group_descriptions_when_sent_out = " . ($smartGroupDescriptions?("'" . sqlEscape($smartGroupDescriptions) . "'"): 'NULL' ) . ",
+						url = '". sqlEscape(zenario_newsletter::getTrackerURL()). "'
+					WHERE id = ". (int) $ids;
+				sqlQuery($sql);
+				
+				
+				//Is the Scheduled Task set up and running?
+				if (!windowsServer()) {
+					if (inc('zenario_scheduled_task_manager')) {
+						if (zenario_scheduled_task_manager::checkScheduledTaskRunning('jobSendNewsletters')) {
+							//Rely on the Scheduled Task to send the newsletter
+							echo '<!--Message_Type:Success-->
+								<p>', adminPhrase('This Newsletter will commence sending within the next 5 minutes.'), '</p>
+								<p>', adminPhrase('This may take some time. You can view the Newsletter Outbox to check live sending progress, or the Newsletter Archive to view the receipt status of this Newsletter by User.'), '</p>
+								<p><a href="#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/process//', (int) $ids, '//" onclick="zenarioA.closeFloatingBox();">', adminPhrase('View Outbox.'), '</a></p>';
+							
+							return;
+						}
+					}
+				}
+				
+				//Is the server a Windows Server? Is the Scheduled Task Manager Module not running?
+				//If so: sorry; no batch sending :(
+				//We shall have to try and send all of the newsletters now, in this request
+				set_time_limit(60 * 10);
+				self::sendNewsletterToAdmins($ids, $values['send/admin_options']);
+				self::sendNewsletter($ids, true);
+				
+				echo '<!--Message_Type:Success-->
+					<p>', adminPhrase('Newsletter Sent.'), '</p>
+					<p><a href="#zenario__email_template_manager/panels/newsletters/refiners/drafts////collection_buttons/archive//', (int) $ids, '//" onclick="zenarioA.closeFloatingBox();">', adminPhrase('View Sent Newsletter in Archive.'), '</a></p>';
+				exit;
+			}
+		}
 		break;
 }

@@ -3,7 +3,8 @@ zenario_user_form_response:
     title: "Form response"
     hide_tab_bar: Yes
     key:
-        id: ""
+        id: ''
+        form_id: ''
     tabs:
         form_fields:
             label: Fields
@@ -13,3 +14,7 @@ zenario_user_form_response:
                 response_datetime:
                     label: 'Date/Time Responded'
                     type: text
+                crm_response:
+                    label: 'CRM response'
+                    type: textarea
+                    ord: 99999

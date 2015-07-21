@@ -60,5 +60,36 @@ if ($values['settings/detect']) {
 	}
 }
 
+if ($values['settings/use_domain'] && setting('primary_domain') && getNumLanguages() > 1) {
+	if (!$values['settings/domain']) {
+		$box['tabs']['settings']['errors'][] = adminPhrase('Please enter a domain.');
+	
+	} elseif (!aliasURLIsValid($values['settings/domain'])) {
+		$box['tabs']['settings']['errors'][] = adminPhrase('Please enter a valid domain.');
+	
+	} elseif (checkRowExists('languages', array('id' => array('!' => $box['key']['id']), 'domain' => $values['settings/domain']))) {
+		$box['tabs']['settings']['errors'][] = adminPhrase('The domain "[[settings/domain]]" is already used by another language.', $values);
+	
+	} elseif (checkRowExists('spare_domain_names', $values['settings/domain'])) {
+		$box['tabs']['settings']['errors'][] = adminPhrase('The domain "[[settings/domain]]" is already used as a spare domain name.', $values);
+	
+	} elseif ($values['settings/domain'] != primaryDomain()) {
+		$path = 'zenario/quick_ajax.php';
+		$post = array('_get_data_revision' => 1, 'admin' => 1);
+		if ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)) {
+			if ($cookieFreeDomainCheck = curl(($domain = httpOrHttps(). $values['settings/domain']. SUBDIRECTORY). $path, $post)) {
+				if ($thisDomainCheck == $cookieFreeDomainCheck) {
+					//Success, looks correct
+				} else {
+					$box['tabs']['settings']['errors'][] = adminPhrase('[[domain]] is pointing to a different site, or possibly an out-of-date copy of this site.', array('domain' => $domain));
+				}
+			} else {
+				$box['tabs']['settings']['errors'][] = adminPhrase('A CURL request to [[domain]] failed. Either this is an invalid URL or Zenario is not at this location.', array('domain' => $domain));
+			}
+		}
+	}
+}
+
+
 
 return false;

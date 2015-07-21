@@ -66,6 +66,7 @@ echo '"', $attributes, '>';
 if (!$showPreview) {
 	echo '
 <script type="text/javascript">
+	window.zenarioGrid = {};
 	document.body.className = document.body.className.replace(\'no_\', \'\');
 </script>';
 }

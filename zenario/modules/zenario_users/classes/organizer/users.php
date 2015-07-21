@@ -43,13 +43,9 @@ class zenario_users__organizer__users extends zenario_users {
 		if ($refinerName == 'smart_group') {
 			$joins = array();
 				
-			if (($sg = getRow('smart_groups', array('id', 'name' , 'values'), $refinerId))
-			&& (advancedSearchSQL($panel['refiners']['smart_group']['sql'], $joins, 'zenario__users/panels/users', $sg['values'], $sg['id']))) {
-		
-				foreach ($joins as $join => $dummy) {
-					$panel['refiners']['smart_group']['table_join'] .= "
-				". $join;
-				}
+			if (($sg = getSmartGroupDetails($refinerId))
+			 && ($sql = smartGroupSQL($refinerId, 'u', 'custom'))) {
+				$panel['refiners']['smart_group']['sql'] = "TRUE ". $sql;
 		
 				$panel['title'] = adminPhrase('Users in Smart Group "[[name]]"', $sg);
 					
@@ -57,10 +53,8 @@ class zenario_users__organizer__users extends zenario_users {
 				$panel['refiners']['smart_group']['sql'] = "FALSE";
 		
 				$panel['title'] = adminPhrase('Users in Smart Group');
-				$panel['no_items_message'] = adminPhrase('There is a problem with this advanced search and it cannot be displayed.');
+				$panel['no_items_message'] = adminPhrase('There is a problem with this smart group and it cannot be displayed.');
 			}
-				
-			unset($panel['advanced_search']);
 		} else {
 			unset($panel['columns']['opted_out']);
 			unset($panel['columns']['opted_out_on']);
@@ -69,9 +63,10 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		// Add dataset ID to import button
+		// Add dataset ID to import and export buttons
 		$dataset = getDatasetDetails('users');
 		$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
+		$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
 		$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
 			$dataset['id'];
 		
@@ -139,9 +134,18 @@ class zenario_users__organizer__users extends zenario_users {
 			
 			// Get a users groups
 			$groups = getUserGroups($id);
+			$firstGroupMessage = '';
+			$counter = 0;
 			foreach ($groups as $id => &$value) {
 				$value = $groupNames[$id];
+				if (++$counter == 1) {
+					$firstGroupMessage .= $value;
+				}
 			}
+			if ($firstGroupMessage && count($groups) > 1) {
+				$firstGroupMessage .= ' and ' . (count($groups) - 1) . ' other groups';
+			}
+			$item['first_group'] = $firstGroupMessage;
 			$item['groups'] = implode(', ', $groups);
 		}
 	
@@ -151,8 +155,8 @@ class zenario_users__organizer__users extends zenario_users {
 				
 			$panel['title'] = adminPhrase('Members of the Group "[[label]]"', $groupDetails);
 			$panel['no_items_message'] = adminPhrase('This Group has no members.');
-			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the User "[[identifier]]" from the Group "[[label]]"?', $groupDetails);
-			$panel['item_buttons']['remove_users_from_group']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Users from the Group "[[label]]"?', $groupDetails);
+			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the User "[[identifier]]" from the Group "[[label]]"?', $groupDetails);
+			$panel['item_buttons']['remove_users_from_this_group']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Users from the Group "[[label]]"?', $groupDetails);
 		}
 	
 		//Don't show the "Create User" or "Delete User" or "Import" buttons on a refiner
@@ -162,10 +166,9 @@ class zenario_users__organizer__users extends zenario_users {
 			unset($panel['collection_buttons']['import_dropdown']);
 		}
 	
-		if ($refinerName != 'group_members') {
-			unset($panel['collection_buttons']['add_user_to_group']);
-		} else {
-			unset($panel['item_buttons']['add_users_to_group']);
+		if ($refinerName == 'group_members') {
+			unset($panel['item_buttons']['add_users_to_groups']);
+			unset($panel['item_buttons']['remove_users_from_groups']);
 		}
 		
 		if ($refinerName == 'smart_group') {
@@ -211,19 +214,12 @@ class zenario_users__organizer__users extends zenario_users {
 				deleteUser($id);
 			}
 	
-		} elseif (post('remove_users_from_group') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
+		} elseif (post('remove_users_from_this_group') && post('refiner__group_members') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
 			foreach (explode(',', $ids) as $id) {
-				addUserToGroup($id, $refinerId, $remove = true);
+				addUserToGroup($id, post('refiner__group_members'), $remove = true);
 			}
 	
-		} elseif (post('add_users_to_group') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
-			foreach (explode(',', $ids) as $userId) {
-				foreach (explode(',', $ids2) as $groupId) {
-					addUserToGroup($userId, $groupId);
-				}
-			}
-	
-		} elseif (post('add_user_to_group') && post('refiner__group_members') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
+		} elseif (post('add_user_to_this_group') && post('refiner__group_members') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
 			foreach (explode(',', $ids) as $userId) {
 				addUserToGroup($userId, post('refiner__group_members'));
 			}
@@ -254,18 +250,6 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 			
 			deleteUnusedImagesByUsage('user');
-		
-		} elseif (post('opt_out') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP') && $refinerName == 'smart_group' && $refinerId) {
-			foreach (explode(',', $ids) as $id) {
-				if (!hasOptedOutOfSmartGroup($refinerId, $id)) {
-					optOutOfSmartGroup($refinerId, $id, 'admin');
-				}
-			}
-		
-		} elseif (post('remove_opt_out') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP') && $refinerName == 'smart_group' && $refinerId) {
-			foreach (explode(',', $ids) as $id) {
-				cancelOptOutOfSmartGroup($refinerId, $id);
-			}
 		}
 	}
 }

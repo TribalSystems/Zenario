@@ -87,7 +87,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	var that = this,
 		ordinals = {},
 		i, id, item, items, parentId,
-		m = zenarioO.getPanelItems(true),
+		m = this.getMergeFieldsForItemsAndColumns(),
 		ordCol = this.ordinalColumn(),
 		parentIdColumn = this.parentIdColumn();
 	
@@ -281,8 +281,6 @@ methods.showButtons = function($buttons) {
 		$buttons.find('#organizer_applyButton')
 			.click(function() {
 				that.scanNewHier(true);
-				zenarioO.enableInteraction();
-				zenarioO.reload();
 			});
 		
 		$buttons.find('#organizer_cancelButton')
@@ -370,16 +368,14 @@ methods.scanNewHier = function(doSave) {
 			saves = '';
 		
 		actionRequests.hierarchy = true;
+		actionRequests.ordinals = {};
+		actionRequests.parent_ids = {};
 		
 		foreach (changes as id) {
 			saves += (saves? ',' : '') + id;
-			actionRequests['parent_id__' + id] = changes[id].parentId;
-			
+			actionRequests.parent_ids[id] = changes[id].parentId;
+			actionRequests.ordinals[id] = changes[id].ordinal;
 			actionRequests.reorder = true;
-			actionRequests['ordinal__' + id] = changes[id].ordinal;
-			
-			//Backwards compatability
-			actionRequests['item__' + id] = changes[id].ordinal;
 			
 			//Update the current data
 			this.tuix.items[id][ordCol] = changes[id].ordinal
@@ -397,14 +393,16 @@ methods.scanNewHier = function(doSave) {
 		delete zenario.rev;
 		
 		//Save the data
-		var message = zenario.nonAsyncAJAX(
+		zenario.ajax(
 			URLBasePath + actionTarget,
 			actionRequests
-		);
-		
-		if (message) {
-			zenarioA.showMessage(message);
-		}
+		).after(function(message) {
+			if (message) {
+				zenarioA.showMessage(message);
+			}
+			zenarioO.enableInteraction();
+			zenarioO.reload();
+		});
 	}
 };
 

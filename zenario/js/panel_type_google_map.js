@@ -99,30 +99,28 @@ methods.showPanel = function($header, $panel, $footer) {
 	map = new google.maps.Map(document.getElementById('organizer_google_map'), mapOptions);
 	
 	// Add locations to google map
-	for (var key in items) {
-		if (items.hasOwnProperty(key) && !zenarioO.isInfoTag(key)) {
-			itemsCount++;
-			if (items[key][lat] && items[key][lng]) {
-				itemsWithLatLng++;
-				position = new google.maps.LatLng(items[key][lat], items[key][lng]);
-				marker = new google.maps.Marker({
-					position: position,
-					map: map,
-					icon: this.offIconURL
-				});
-				
-				if (this.selectedItems[key]) {
-					marker.icon = this.onIconURL;
-				}
-				
-				bounds.extend(position);
-				
-				// Select a location on single click
-				google.maps.event.addListener(marker, 'click', this.makeSelectItemCallback(items[key], marker));
-				
-				// Open properties admin box on double click
-				google.maps.event.addListener(marker, 'dblclick', this.makeOpenAdminBoxCallback(items[key], marker, dblClickItemButton));
+	foreach (items as var key => var item) {
+		itemsCount++;
+		if (item[lat] && item[lng]) {
+			itemsWithLatLng++;
+			position = new google.maps.LatLng(item[lat], item[lng]);
+			marker = new google.maps.Marker({
+				position: position,
+				map: map,
+				icon: this.offIconURL
+			});
+			
+			if (this.selectedItems[key]) {
+				marker.icon = this.onIconURL;
 			}
+			
+			bounds.extend(position);
+			
+			// Select a location on single click
+			google.maps.event.addListener(marker, 'click', this.makeSelectItemCallback(item, marker));
+			
+			// Open properties admin box on double click
+			google.maps.event.addListener(marker, 'dblclick', this.makeOpenAdminBoxCallback(item, marker, dblClickItemButton));
 		}
 	}
 	if (itemsWithLatLng) {

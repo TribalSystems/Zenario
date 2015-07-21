@@ -153,10 +153,31 @@ class zenario_extranet_registration extends zenario_extranet {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
-			case 'zenario__users/panels/zenario_extranet_registration__codes':
+			case 'zenario__users/panels/zenario_extranet_registration__code_groups':
 				if ($refinerName == 'code_id') {
 					$code = $this->getCode($refinerId);
-					$panel['title'] = "Groups for the Code \"" . $code['code'] . "\"";
+					$panel['title'] = adminPhrase('Groups for the Code "[[code]]"', $code);
+					
+					//Create an "add group" button for each group not yet associated with the code
+					foreach (listCustomFields('users', $flat = false, 'groups_only', $customOnly = true) as $groupId => $group) {
+						if (!checkRowExists(
+							ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
+							array('code_id' => $refinerId, 'group_id' => $groupId)
+						)) {
+							$panel['collection_buttons'][] = array(
+								'class_name' => 'zenario_extranet_registration',
+								'parent' => 'add_group_to_code',
+								'label' => $group['label'],
+								'ajax' => array(
+									'class_name' => 'zenario_extranet_registration',
+									'request' => array(
+										'action' => 'add_group_to_code',
+										'group_id' => $groupId
+									)
+								)
+							);
+						}
+					}
 				}
 				break;
 		}
@@ -166,6 +187,10 @@ class zenario_extranet_registration extends zenario_extranet {
 		switch($path) {
 			case 'plugin_settings':
 				$fields['set_timer_on_new_users']['hidden'] = !inc('zenario_user_timers');
+				$box['tabs']['user_characteristics']['fields']['select_characteristics_for_new_users']['values'] =
+					listCustomFields('users', $flat = false, array('checkbox', 'checkboxes'), $customOnly = true, $useOptGroups = true);
+				$box['tabs']['groups']['fields']['select_group_for_new_users']['values'] =
+					listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
 				break;
 			case "zenario_extranet_registration__codes":
 				if (!empty($box['key']['id'])) {
@@ -649,9 +674,9 @@ class zenario_extranet_registration extends zenario_extranet {
 				}
 				if ($values['select_characteristics_for_new_users']) {
 					$fieldType = getRow('custom_dataset_fields', 'type', $values['select_characteristics_for_new_users']);
-					if(($fieldType == 'checkboxes' )|| ($fieldType == 'radios')) {
+					if ($fieldType == 'checkboxes') {
 						$fields['select_characteristic_values_for_new_users']['hidden'] = false;
-						$fields['select_characteristic_values_for_new_users']['values'] = getRowsArray('custom_dataset_field_values', 'label', array('field_id' => $values['select_characteristics_for_new_users']));
+						$fields['select_characteristic_values_for_new_users']['values'] = getDatasetFieldLOV($values['select_characteristics_for_new_users']);
 					} else {
 						$fields['select_characteristic_values_for_new_users']['hidden'] = true;
 					}
@@ -674,12 +699,10 @@ class zenario_extranet_registration extends zenario_extranet {
 		switch ($path) {
 			case "zenario__users/panels/zenario_extranet_registration__code_groups":
 				if (post('action') == 'add_group_to_code') {
-					foreach (explode(',', $ids) as $id) {
-						$sql = "REPLACE INTO " . DB_NAME_PREFIX . ZENARIO_EXTRANET_REGISTRATION_PREFIX. "code_groups
-								SET code_id = " . (int) $refinerId . ",
-									group_id = " . (int) $id;
-						$result = sqlQuery($sql);
-					}
+					setRow(
+						ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'code_groups',
+						array(),
+						array('code_id' => $refinerId, 'group_id' => post('group_id')));
 				}
 	
 				if (post('action') == 'remove_group_from_code') {

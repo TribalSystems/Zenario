@@ -164,7 +164,7 @@ echo '
 			zenarioO.size()
 		});
 		
-		zenarioA.storekeeperWindow = true;
+		zenarioA.isFullOrganizerWindow = true;
 	</script>';
 
 ?>

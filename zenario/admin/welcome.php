@@ -178,8 +178,8 @@ if ($installed) {
 	connectLocalDB();
 	
 	
-	//From version 7.0.4 of the CMS, we'll only support updating from version 7.0.1 onwards.
-	//Check for versions of Tribiq CMS/Zenario before 7.0.1
+	//From version 7.0.4 of the CMS, we'll only support updating from version 7.0.2 onwards.
+	//Check for versions of Tribiq CMS/Zenario before 7.0.2
 	$sql = "
 		SELECT 1
 		FROM ". DB_NAME_PREFIX. "local_revision_numbers
@@ -244,7 +244,7 @@ CMSWritePageFoot('../', 'welcome', false, false);
 $logoURL = $logoWidth = $logoHeight = false;
 if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
- && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'organizer_width'"))
+ && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
  && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
 	
@@ -268,8 +268,9 @@ $allowedTasks = array(
 
 echo '
 <script type="text/javascript">
-	zenarioAB.welcome = true;
-	zenarioAB.templatePrefix = "zenario_welcome";
+	zenarioAB.isFAB = true;
+	zenarioAB.isWelcomePage = true;
+	zenarioAB.mtPrefix = "zenario_welcome";
 	zenarioAB.task = "', arrayKey($allowedTasks, request('task')), '";
 	zenarioAB.getRequest = ', json_encode($_GET), ';
 	

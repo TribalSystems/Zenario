@@ -82,10 +82,21 @@ zenario__languages:
                             This panel lists all of the phrases that exist on your site. If your site is multilingual, then a phrase's  translation will display on the page in the corresponding language.
                             
                             A phrase cannot be created in organizer, for a phrase to be added it must be found in a plugin's framework or created as a plugin's setting. In both cases, the phrase needs to be viewed by a visitor to be added to this panel.
+                import_phrases:
+                    label: Re-import phrases from config files
+                    hide_in_select_mode: Yes
+                    ajax:
+                        confirm:
+                            message: 
+                            button_message: Re-import
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            import_phrases: 1
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_LANGUAGE
-                    label: Properties
+                    label: Edit phrase
                     admin_box:
                         path: zenario_phrase
                 merge:

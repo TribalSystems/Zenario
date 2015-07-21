@@ -63,6 +63,32 @@ Added a workaround for a problem where PHP might turn perfectly valid numbers in
 	}
 	
 
+Added some functionality to flag static properties:
+  Replaced:
+		|| this.validateObject(data, schema)
+  With:
+		|| this.validateObject(data, schema)
+		|| this.flagStaticProperties(data, schema)
+	
+  Replaced:
+ValidatorContext.prototype.validateObject = function validateObject(data, schema) {
+  With:
+ValidatorContext.prototype.flagStaticProperties = function flagStaticProperties(data, schema) {
+	if (schema['static']
+	 && !schema.preFillOrganizerPanel) {
+		return this.createError(ErrorCodes.STATIC_PROPERTY, {});
+	}
+	return null;
+}
+ValidatorContext.prototype.validateObject = function validateObject(data, schema) {
+	
+  Replaced:
+	ARRAY_ADDITIONAL_ITEMS: 403
+  With:
+	ARRAY_ADDITIONAL_ITEMS: 403
+	, STATIC_PROPERTY: 500
+	
+
 
 Added validateObjectDependenciesIfTrue() and validateObjectForbiddenIfTrue() as copies of validateObjectDependencies():
   Replaced:

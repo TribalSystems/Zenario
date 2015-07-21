@@ -243,31 +243,5 @@ class module_base_class extends zenario_api {
 	) {
 		//...your PHP code...//
 	}
-	
-	public static function advancedSearchWhereStatement($path, $values, $tablePrefix) {
-		
-		//...your PHP code...//
-		
-		return '';
-	}
-	
-	public static function advancedSearchTableJoins($path, $values, $tablePrefix) {
-		
-		//...your PHP code...//
-		
-		return array();
-	}
-	
-	public static function smartGroupInclusionsDescription($values) {
-		//...your PHP code...//
-
-		return '';
-	}
-
-	public static function smartGroupExclusionsDescription($values) {
-		//...your PHP code...//
-
-		return '';
-	}
 
 }

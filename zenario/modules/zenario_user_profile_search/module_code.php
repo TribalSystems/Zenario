@@ -33,15 +33,15 @@ class zenario_user_profile_search extends module_base_class {
 	protected $rowCount = 0;
 	protected $rowsPerPage = 10;
 	protected $pageCount = 0;
-	protected $sections = array();
 	protected $results = array();
-	protected $mergeFields = array();
 	protected $country_id_to_search = '';
 	protected $name_to_search = '';
 	protected $keywords_to_search = '';
 	protected $search_fields = array();
 	protected $select_fields = array();
 	protected $popup_fields = array();
+	
+	protected $data = array();
 	
 	public function init(){
 		$this->country_id_to_search = request('country_id_to_search');
@@ -52,53 +52,32 @@ class zenario_user_profile_search extends module_base_class {
 		if(!$this->rowsPerPage){
 			$this->rowsPerPage = 10;
 		}
+		
+		$this->data['Column_Count'] = $this->setting('search_results_columns_page');
+		$this->data['countries'] = $this->getCountryOptions();
+		
+		
+		if ($this->checkRowsExist()) {
+			$this->setPagination(
+					 '&country_id_to_search=' . urlencode($this->country_id_to_search)
+					.'&name_to_search=' . urlencode($this->name_to_search)
+					.'&keywords_to_search=' . urlencode($this->keywords_to_search)
+					.'&doSearch=1');
+			$this->fetchRows();
+			
+			
+			$this->data['results'] = $this->results;
+		} else {
+			$this->data['No_Rows'] = true;
+		}
+		$this->data['Open_Form'] = $this->openForm('return zenario_user_profile_search_submit(this);', '', false, false, true, $usePost = true);
+		$this->data['Close_Form'] = $this->closeForm();
+		
 		return true;
 	}
 	
 	public function showSlot() {
-		
-		if ($this->checkRowsExist()) {
-			$this->sections['HasResults'] = true;
-				
-			$this->setPagination(
-					'&country_id_to_search=' . urlencode($this->country_id_to_search)
-					.'&name_to_search=' . urlencode($this->name_to_search)
-					.'&keywords_to_search=' . urlencode($this->keywords_to_search)
-					. '&doSearch=1');
-			$this->fetchRows();
-				
-		} else {
-			$this->sections['No_Rows'] = true;
-		}
-		
-		$this->mergeFields['Open_Form'] = $this->openForm('return zenario_user_profile_search_submit(this);', 
-					'', false, false, true, $usePost = true);
-		$this->mergeFields['Close_Form'] = $this->closeForm();		
-		
-		if($this->framework == 'standard') {
-			$this->frameworkHead('Outer', 'Results', $this->mergeFields, $this->sections);
-			
-			$select_fields = $this->getUserFields();
-			foreach ($this->results as $row) {
-				
-				$html = zenario_user_forms::drawUserForm((int)$this->setting('result_listing_form'), $row['id'], true);
-				$this->framework('Results', array('UserForm' => $html));
-				/*
-				$this->frameworkHead('Results', 'UserFields', $row);
-				
-				foreach($select_fields as $field) {
-					$this->framework('Show_' . $field['type'], array('label' => $field['label'], 'value' => $row[$field['db_column']] ));
-				}
-				$this->frameworkFoot('Results', 'UserFields', $row);
-				*/
-			}
-			
-			$this->frameworkFoot('Outer', 'Results', $this->mergeFields, $this->sections);
-	
-		} else {
-			$this->sections['Results'] = &$this->results;
-			$this->framework('Outer', $this->mergeFields, $this->sections);
-		}
+		$this->twigFramework($this->data);
 	}
 	
 	protected function setPagination($url_params) {
@@ -120,37 +99,55 @@ class zenario_user_profile_search extends module_base_class {
 				$pages[$p] = '&page='. $p . $url_params;
 			}
 	
-			$this->mergeFields['Pagination'] = '';
+			$this->data['Pagination'] = '';
 			$this->pagination(
 					'pagination_style',
 					$this->page, $pages,
-					$this->mergeFields['Pagination']);
+					$this->data['Pagination']);
+		}
+	}
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		switch ($path) {
+			case 'plugin_settings':
+				$filter = array();
+				$filter['type'] = array('centralised_radios', 'centralised_select');
+				$filter['values_source'] = 'zenario_country_manager::getActiveCountries';
+				$fields['first_tab/country_search_user_characteristic']['values'] =
+					listCustomFields('users', $flat = false, $filter, $customOnly = true, $useOptGroups = true);
+				
+				$filter = array();
+				$filter['type'] = 'text';
+				$lov = listCustomFields('users', $flat = false, $filter, $customOnly = false, $useOptGroups = true, $hideEmptyOptGroupParents = true);
+				
+				//Note: these are multi-checkboxes fields. I want to show the tabs, but I don't want
+				//people to be able to select them
+				foreach ($lov as &$v) {
+					if (empty($v['parent'])) {
+						$v['readonly'] =
+						$v['disabled'] = true;
+						$v['style'] = 'display: none;';
+					}
+				}
+				
+				$fields['first_tab/keyword_user_characteristics']['values'] =
+				$fields['first_tab/name_user_characteristics']['values'] = $lov;
+				break;
 		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$this->showHideImageOptions($fields, $values, 'photo_list', empty($values['result_listing_form']));
-		$this->showHideImageOptions($fields, $values, 'photo_popup', empty($values['popup_profile_form']));
-	}
-	
-	public static function getUserFormFields($form_id){
-		$dataset = getDatasetDetails('users');
-		$sql = "SELECT cdf.* FROM ". DB_NAME_PREFIX. "custom_dataset_fields cdf
-				INNER JOIN ". DB_NAME_PREFIX. "user_form_fields uf
-						ON cdf.id = uf.user_field_id AND uf.user_form_id=" . (int) $form_id. "
-				WHERE cdf.dataset_id = ". (int)$dataset['id']. "
-				ORDER BY uf.ordinal";
-		$result = sqlQuery($sql);
-		$rv = array();
-		while($row = sqlFetchAssoc($result)) {
-			$rv[] = $row;
+		switch ($path) {
+			case 'plugin_settings':
+				$this->showHideImageOptions($fields, $values, 'photo_list', false);
+				$this->showHideImageOptions($fields, $values, 'photo_popup', false);
+				break;
 		}
-		return count($rv) ? $rv : false;
 	}
 	
 	public function getCountryOptions(){
 		$search_fields = $this->getSearchFields();
-		if($country_field = $search_fields['country']) {
+		if ($country_field = $search_fields['country']) {
 			$sql = "SELECT cmc.id, IFNULL(vs.local_text, CONCAT('_COUNTRY_NAME_', cmc.id)) as name
 				FROM " . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
 				AS cmc LEFT JOIN ' . DB_NAME_PREFIX . "visitor_phrases AS vs
@@ -162,17 +159,14 @@ class zenario_user_profile_search extends module_base_class {
 				ORDER BY 2";
 			
 			$result = sqlQuery($sql);
-				
 			$options = array();
-			$options[0] =  $this->phrase('_ANYWHERE_IN_THE_WORLD');
-				
+			$options[0] = array('id' => 0, 'name' => $this->phrase('_ANYWHERE_IN_THE_WORLD'));
 			while($row = sqlFetchAssoc($result)){
-				$options[$row['id']] = htmlspecialchars($row['name']);
+				$options[$row['id']] = $row;
 			}
 		} else {
 			$options = array();
 		}
-			
 		return $options;
 	}
 	
@@ -181,21 +175,61 @@ class zenario_user_profile_search extends module_base_class {
 	}
 	
 	protected function getSelectFields(){
+		$dataset = getDatasetDetails('users');
 		if(!count($this->select_fields)) {
-			$form_id = (int)$this->setting('result_listing_form');
-			if($form_id) {
-				$this->select_fields = zenario_user_profile_search::getUserFormFields($form_id);
-			}
+			$this->select_fields = getRowsArray('custom_dataset_fields', 
+				true, 
+				array(
+					'db_column' => 
+						array(
+							'first_name', 
+							'last_name', 
+							'company_name', 
+							'bus_country_id',
+						),
+					'dataset_id' => $dataset['id']
+				)
+			);
 		}
 		return $this->select_fields;
 	}
 
-	protected function getPopupFields(){
+	protected function getPopupFields() {
+		$dataset = getDatasetDetails('users');
 		if(!count($this->popup_fields)) {
-			$form_id = (int)$this->setting('popup_profile_form');
-			if($form_id) {
-				$this->popup_fields = zenario_user_profile_search::getUserFormFields($form_id);
-			}
+			$this->popup_fields = getRowsArray('custom_dataset_fields', 
+				true, 
+				array(
+					'db_column' => 
+						array(
+							'salutation',
+							'first_name', 
+							'last_name', 
+							'email',
+							'company_name', 
+							'bus_country_id',
+							'job_title',
+							'job_type',
+							'company_name',
+							'job_department',
+							'address1',
+							'address2',
+							'city',
+							'state',
+							'postcode',
+							'bus_country_id',
+							'mobile',
+							'phone',
+							'interests',
+							'skills_expertise',
+							'summary_of_my_business',
+							'linkedin',
+							'languages_spoken',
+							'other_languages_spoken'
+						),
+					'dataset_id' => $dataset['id']
+				)
+			);
 		}
 		return $this->popup_fields;
 	}
@@ -239,60 +273,40 @@ class zenario_user_profile_search extends module_base_class {
 	
 	
 	protected function selectColumns() {
-		$sql = "SELECT u.id, u.image_id, CONCAT(u.first_name, ' ', u.last_name) as first_name_last_name";
-		
+		$sql = "SELECT u.id, u.image_id";
 		
 		$select_fields = $this->getUserFields();
 		
-		$x = 0;
 		foreach($select_fields as $field) {
-			echo "\n";
-			//be aware of increment this counter on the function selectFrom
-			$x++;
-			$table_prefix = $this->getUserFieldPrefix($field);
 			
 			if ($field['type'] == 'checkboxes') {
-				/*
-				$sql .= ",(SELECT GROUP_CONCAT(ucv.label SEPARATOR ', ')
-						FROM " . DB_NAME_PREFIX . 'custom_dataset_values_link cdvl
-						INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_field_values cdfv 
-							ON cdvl.value_id = cdfv.id
-							AND cdfv.field_id ='. $field['id'] .
-							' WHERE cdvl.linking_id = u.id GROUP BY cdfv.field_id) as `' . 
-						$field['db_column'] . '`';
-					*/
+				$sql .= ',
+					(
+						SELECT GROUP_CONCAT(v.label SEPARATOR ", ")
+						FROM ' . DB_NAME_PREFIX . 'custom_dataset_field_values v
+						INNER JOIN ' . DB_NAME_PREFIX . 'custom_dataset_values_link l
+							ON v.id = l.value_id
+						WHERE v.field_id = ' . (int)$field['id'] . '
+							AND l.linking_id = u.id
+					) AS ' . sqlEscape($field['db_column']) . '
+				';
 			} else {
+				$table_prefix = $this->getUserFieldPrefix($field);
 				$sql .= ',' . $table_prefix . '.`' . $field['db_column'] . '`';
 			}
 		}
-		
-		//print_r($sql);
 		
 		return $sql;
 	}
 	
 	protected function selectFrom() {
-		$sql = " FROM " . DB_NAME_PREFIX . "users u
+		$dataset = getDatasetDetails('users');
+		
+		$sql = "FROM " . DB_NAME_PREFIX . "users u
 				INNER JOIN " . DB_NAME_PREFIX . "users_custom_data uc
-					ON u.id = uc.user_id AND u.status = 'active' ";
+					ON u.id = uc.user_id AND u.status = 'active'";
 		
 		$select_fields = $this->getUserFields();
-		$x = 0;
-		/*
-		foreach($select_fields as $field) {
-			//be aware of increment order on the function selectColumns
-			$x++;
-			switch($field['type']) {
-				case 'list_single_select':
-						$table_prefix = $this->getUserFieldPrefix($field);
-						$sql .= ' LEFT JOIN ' . DB_NAME_PREFIX . 'user_characteristic_values ucv' . $x 
-							. ' ON ' . $table_prefix . '.`' . $field['name'] . '`=ucv' . $x . 'id';
-					break;
-			}
-		}
-		*/
-		$sql .= ' WHERE 1=1 ';
-		
 		$search_fields = $this->getSearchFields();
 		
 		$country_id_to_search = request('country_id_to_search');
@@ -300,9 +314,8 @@ class zenario_user_profile_search extends module_base_class {
 			$table_prefix = $this->getUserFieldPrefix($country_field);
 			$sql .= ' AND ' . $table_prefix . '.`' . $country_field['name'] 
 				. "`='" . sqlEscape($country_id_to_search) . "' ";
-			
-			$this->mergeFields['country_id_to_search'] = $country_id_to_search;
 		}
+		$this->data['country_id_to_search'] = $country_id_to_search;
 		
 		$name_to_search = request('name_to_search');
 		if($name_to_search && ($name_fields = $search_fields['name_fields'])) {
@@ -321,7 +334,7 @@ class zenario_user_profile_search extends module_base_class {
 				$sql .= ' AND (' . $sql_names . ') ';
 			}
 			
-			$this->mergeFields['name_to_search'] = $name_to_search;
+			$this->data['name_to_search'] = $name_to_search;
 		}
 		
 		$keywords_to_search = request('keywords_to_search');
@@ -341,14 +354,15 @@ class zenario_user_profile_search extends module_base_class {
 				$sql .= ' AND (' . $sql_keywords . ') ';
 			}
 			
-			$this->mergeFields['keywords_to_search'] = $keywords_to_search;
+			$this->data['keywords_to_search'] = $keywords_to_search;
 		}
 		
 		return $sql;
 	}
 	
 	protected function selectOrder() {
-		$order_by = ' ORDER BY ';
+		$order_by = ' GROUP BY u.id ';
+		$order_by .= ' ORDER BY ';
 		if(!$this->name_to_search && !$this->keywords_to_search){
 			$order_by .= ' u.last_login desc ';
 		} else {
@@ -361,10 +375,12 @@ class zenario_user_profile_search extends module_base_class {
 		$sql = "SELECT COUNT(*) ". $this->selectFrom();
 		$result = sqlQuery($sql);
 		$row = sqlFetchRow($result);
-		return $this->rowCount = $row[0];
+		
+		$this->rowCount = $row[0];
+		return $row[0];
 	}
 	
-	protected function getUerImage($image_id, $img_prefix){
+	protected function getUserImage($image_id, $img_prefix){
 		$url = '';
 		$width = $this->setting($img_prefix . '_width');
 		$height = $this->setting($img_prefix . '_height');
@@ -374,28 +390,27 @@ class zenario_user_profile_search extends module_base_class {
 	}
 	
 	protected function fetchRows() {
-		$sql = 	$this->selectColumns().
+		$sql = $this->selectColumns().
 		$this->selectFrom().
 		$this->selectOrder();
 		
-		
 		$result = sqlQuery($sql);
-		$this->sections['HasResults'] = true;
+		$rowsCount = sqlNumRows($result);
+		
 		$select_fields = $this->getUserFields();
 		$count = 0;
-		$setting_cols = $this->setting('search_results_columns_page');
-		while($row = sqlFetchAssoc($result)){
+		while ($row = sqlFetchAssoc($result)) {
 			++$count;
 			$record = array('id' => $row['id']);
 			
 			if($image_id = $row['image_id']) {
-				$record['Photo_Listing'] = $this->getUerImage($image_id, 'photo_list');
-				$record['Photo_Popup'] = $this->getUerImage($image_id, 'photo_popup');
+				$record['Photo_Listing'] = $this->getUserImage($image_id, 'photo_list');
+				$record['Photo_Popup'] = $this->getUserImage($image_id, 'photo_popup');
 			}
 			
 			foreach($select_fields as $field) {
 				$field_name = $field['db_column'];
-				switch($field['type']){ // change
+				switch($field['type']){
 					case 'group':
 					case 'boolean':
 						$record[$field_name] = $row[$field_name] ? 'Yes' : 'No';
@@ -406,15 +421,18 @@ class zenario_user_profile_search extends module_base_class {
 						$record[$field_name] = $row[$field_name];
 						break;
 						
-					case 'country':
-						$record[$field_name] = zenario_country_manager::getEnglishCountryName($row[$field_name]);
-						break;
-						
 					default:
 						$record[$field_name] = htmlspecialchars($row[$field_name]);
 				}
 			}
-			$record['StartNewRow'] = ($count % $setting_cols) == 0;
+			if ($record['bus_country_id']) {
+				$record['bus_country_id'] = phrase('_COUNTRY_NAME_' . $record['bus_country_id'], array(), 'zenario_country_manager');
+			}
+			
+			if ($rowsCount == $count) {
+				$record['last_result'] = true;
+			}
+			
 			$this->results[] = $record;
 		}
 	}

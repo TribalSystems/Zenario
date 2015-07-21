@@ -74,6 +74,10 @@ zenario__languages:
                     show_by_default: Yes
                     align_right: Yes
                     width: xsmall
+                domain:
+                    title: Domain
+                    searchable: Yes
+                    db_column: l.domain
                 homepage_id:
                     title: Homepage
                     item_link: content_item

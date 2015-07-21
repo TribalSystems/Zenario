@@ -36,6 +36,11 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 				$box['tabs']['security']['fields']['admin_use_ssl']['read_only'] = true;
 			}
 		}
+		$fields['zenario_pro_features__caching/limit_caching_debug_info_by_ip']['note_below'] = 
+			'Only shows caching debug info when pages are viewed from your current IP address (' . visitorIP() . ').';
+		if (isset($box['tabs']['zenario_pro_features__caching'])) {
+			$values['zenario_pro_features__caching/limit_caching_debug_info_by_ip'] = (bool)setting('limit_caching_debug_info_by_ip');
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -68,6 +73,9 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 				$box['tabs']['zenario_pro_features__caching']['fields']['cache_plugins']['read_only'] =
 				$box['tabs']['zenario_pro_features__caching']['fields']['caching_debug_info']['read_only'] = false;
 			}
+			
+			$fields['zenario_pro_features__caching/limit_caching_debug_info_by_ip']['hidden'] = 
+				!$values['zenario_pro_features__caching/caching_debug_info'];
 				
 			/* This is to allow clear cache without compress_web_pages & cache_web_pages
 			 * if (!$values['speed/compress_web_pages'] || !$values['zenario_pro_features__caching/cache_web_pages']) {
@@ -159,6 +167,14 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 		if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBooleanArray($box, 'tabs', 'zenario_pro_features__caching', 'edit_mode', 'on')) {
 			//Empty the cache if so
 			zenario_pro_features::clearCacheOnShutdown($clearAll = true);
+			
+			// Save the current users IP address if option checked
+			$value = false;
+			if ($values['zenario_pro_features__caching/caching_debug_info']
+				&& $values['zenario_pro_features__caching/limit_caching_debug_info_by_ip']) {
+				$value = visitorIP();
+			}
+			setSetting('limit_caching_debug_info_by_ip', $value);
 		}
 	}
 }

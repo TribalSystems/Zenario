@@ -38,32 +38,6 @@ class zenario_users extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		} else {
-			switch ($path) {
-				case 'zenario__users/panels/all_fields':
-					$panel['items'] = listCustomFields('users', false, false, false);
-					break;
-				
-				case 'zenario__users/panels/boolean_and_list_only':
-					$panel['items'] = listCustomFields('users', false, 'boolean_and_list_only');
-					break;
-				
-				case 'zenario__users/panels/text_only':
-					$panel['items'] = listCustomFields('users', false, 'text_only');
-					break;
-				
-				case 'zenario__users/panels/country_only':
-					$panel['items'] = listCustomFields('users', false, 'country_only');
-					break;
-				
-				case 'zenario__users/panels/boolean_and_groups_only':
-					$panel['items'] = listCustomFields('users', false, 'boolean_and_groups_only');
-					break;
-				
-				case 'zenario__users/panels/groups_only':
-					$panel['items'] = listCustomFields('users', false, 'groups_only');
-					break;
-			}
 		}
 	}
 	
@@ -267,166 +241,9 @@ class zenario_users extends module_base_class {
 	
 	
 	
-	public static function advancedSearchTableJoins($path, $values, $tablePrefix) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	public static function advancedSearchWhereStatement($path, $values, $tablePrefix) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	
 	
 	//Various API and internal functions
 	
-
-	
-
-	
-	public function createSmartGroupFieldSet(&$box, $index) {
-		$myfields = &$box['tabs']['first_tab']['fields'];
-		
-		$rule_key = 'rule_type_' . $index;
-		$myfields[$rule_key] = $myfields['rule_type'];
-		$myfields[$rule_key]['ord'] = 101 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$rule_key = 'rule_delete_' . $index;
-		$myfields[$rule_key] = $myfields['rule_delete'];
-		$myfields[$rule_key]['ord'] = 102 + $index * 10;
-		$myfields[$rule_key]['value'] = adminPhrase("Delete rule");
-		
-		$rule_key = 'rule_group_picker_' . $index;
-		$myfields[$rule_key] = $myfields['rule_group_picker'];
-		$myfields[$rule_key]['ord'] = 103 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$rule_key = 'rule_characteristic_picker_' . $index;
-		$myfields[$rule_key] = $myfields['rule_characteristic_picker'];
-		$myfields[$rule_key]['ord'] = 104 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$rule_key = 'rule_characteristic_values_picker_' . $index;
-		$myfields[$rule_key] = $myfields['rule_characteristic_values_picker'];
-		$myfields[$rule_key]['ord'] = 105 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$rule_key = 'rule_logic_' . $index;
-		$myfields[$rule_key] = $myfields['rule_logic'];
-		$myfields[$rule_key]['ord'] = 106 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$rule_key = 'rule_separator_' . $index;
-		$myfields[$rule_key] = $myfields['rule_separator'];
-		$myfields[$rule_key]['ord'] = 107 + $index * 10;
-		unset($myfields[$rule_key]['value']);
-		unset($myfields[$rule_key]['current_value']);
-		
-		$myfields['rule_create']['ord'] = 108 + $index * 10;
-		$myfields['rule_create']['value'] = "Create rule";
-		
-	}
-	
-	public function deleteSmartGroupFieldSet(&$box, $index, $prevIndex) {
-		$myfields = &$box['tabs']['first_tab']['fields'];
-		unset($myfields['rule_type_' . $index]);
-		unset($myfields['rule_delete_' . $index]);
-		unset($myfields['rule_group_picker_' . $index]);
-		unset($myfields['rule_logic_' . $index]);
-		unset($myfields['rule_separator_' . $index]);
-		
-		$rule_key = 'rule_separator_' . $prevIndex;
-		if (isset($myfields[$rule_key])) {
-			$myfields[$rule_key]['hidden'] = 'true';
-		}
-		
-		unset($myfields['rule_characteristic_picker_' . $index]);
-		unset($myfields['rule_characteristic_values_picker_' . $index]);
-		
-	}
-
-	public static function smartGroupInclusionsDescription($values) {
-		$pieces = array();
-		$indexes = explode(',', arrayKey($values, 'first_tab', 'indexes'));
-		foreach ($indexes as $index) {
-			if ($index && (arrayKey($values, 'first_tab', 'rule_type_'. $index)=='characteristic')) {
-				$pieces[] = self::smartGroupDescriptionCharacteristic($values, 'first_tab', $index);
-			}
-			if ($index && (arrayKey($values, 'first_tab', 'rule_type_' . $index)=='group')) {
-				$groups = array();
-				foreach (explode(',', arrayKey($values, 'first_tab', 'rule_group_picker_' . $index)) as $groupId) {
-					if ($groupId) {
-						$groups[] = '"' . getGroupLabel($groupId) . '"';		
-					}
-				}
-				$pieces[] = adminPhrase("in group" . (count($groups)>1?'s (':' ') . "[[groups_list]]" . (count($groups)>1?')':''),
-												array	(
-														'groups_list' =>  implode(arrayKey($values, 'first_tab', 'rule_logic_' . $index)=='all'?' AND ': ' OR ', $groups)
-														)
-												);
-			}
-		}
-		return implode(' AND ', $pieces);
-	}
-	
-	public static function smartGroupExclusionsDescription($values) {
-		$rv = '';
-		if (arrayKey($values, 'exclude', 'rule_type')=='characteristic') {
-			$rv = self::smartGroupDescriptionCharacteristic($values, 'exclude', 0);
-		}
-		
-		if (arrayKey($values, 'exclude', 'rule_type')=='group') {
-			$groups = array();
-			foreach (explode(',', arrayKey($values, 'exclude', 'rule_group_picker')) as $groupId) {
-				if ($groupId) {
-					$groups[] = '"' . getGroupLabel($groupId) .'"';
-				}
-			}
-		
-			$rv = adminPhrase("in group" . (count($groups)>1?'s (':' ') . "[[groups_list]]" . (count($groups)>1?')':''),
-					array	(
-							'groups_list' =>  implode(arrayKey($values, 'exlude', 'rule_logic')=='all'?' AND ': ' OR ', $groups)
-					)
-			);
-		}
-		
-		return $rv;
-	}
-		
-	public static function smartGroupDescriptionCharacteristic($values, $tab, $index) {
-		$index_idx = ($index?('_' . $index):'');
-		$C = zenario_users::getCharacteristic(arrayKey($values, $tab , 'rule_characteristic_picker' .  $index_idx));
-		switch ($C['type']) {
-			case 'list_single_select':
-			case 'list_multi_select':
-				$VIds = explode(',', arrayKey($values, $tab , 'rule_characteristic_values_picker' .  $index_idx));
-				foreach ($VIds as $VId) {
-					if ($VId) {
-						$V = zenario_users::getCharacteristicValue($VId);
-						$VNames[] = '"' . $V['label'] . '"';
-					}
-				}
-				return adminPhrase("with characteristic [[characteristic_name]] set to " . (count($VNames)>1?'(':'') ."[[characterisic_values]]" . (count($VNames)>1?')':''),
-						array(
-								'characteristic_name' => '"' . $C['label'] . '"',
-								'characterisic_values' => implode(arrayKey($values, $tab , 'rule_logic' .  $index_idx)=='all'?' AND ': ' OR ', $VNames)
-						)
-				);
-				break;
-			case 'boolean':
-				return adminPhrase("with characteristic [[characteristic_name]]", array('characteristic_name' => '"' . $C['label'] . '"'));
-				break;
-		}
-	}
-
-
 	protected static function setupGroupOrUserCheckboxes($table, $idCol, $equivId, $cType) {
 		return inEscape(getRowsArray($table, $idCol, array('equiv_id' => $equivId, 'content_type' => $cType)), true);
 	}
@@ -473,7 +290,7 @@ class zenario_users extends module_base_class {
 		}
 	}
 	
-	protected function impersonateUser($userId, $logAdminOut = false) {
+	protected function impersonateUser($userId, $logAdminOut = false, $setCookie = false) {
 		//Log the admin out of admin mode
 		if ($logAdminOut) {
 			require_once CMS_ROOT.  'zenario/includes/admin.inc.php';
@@ -481,11 +298,11 @@ class zenario_users extends module_base_class {
 		}
 		
 		//Log the admin in as the target user
-		$details = getUserDetails($userId);
-	
+		$user = logUserIn($userId, true);
 		$_SESSION["extranetUserImpersonated"] = true;
-		$_SESSION["extranetUserID"] = $userId;
-		$_SESSION["extranetUser_firstname"] = $details['first_name'];
+		if ($setCookie) {
+			setcookie('LOG_ME_IN_COOKIE', $user['login_hash'], time()+8640000, '/', cookieDomain());
+		}
 	}
 		
 	protected function loggedInAsParentFor($userId){

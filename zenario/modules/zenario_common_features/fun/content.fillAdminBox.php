@@ -168,6 +168,8 @@ if (!$box['key']['target_menu_section']) {
 	$box['tabs']['meta_data']['fields']['menu_parent_path']['value'] = getMenuPath($box['key']['target_menu_parent']);
 }
 
+$contentType = getRow('content_types', true, $box['key']['cType']);
+
 $content = $version = $status = $tag = false;
 if ($path == 'zenario_quick_create') {
 	//Specific Logic to Quick Create
@@ -251,7 +253,7 @@ if ($path == 'zenario_quick_create') {
 			$box['tabs']['css']['fields']['bg_repeat']['value'] = $version['bg_repeat'];
 			$box['tabs']['file']['fields']['file']['value'] = $version['file_id'];
 			
-			if ($box['key']['cID'] && getRow('content_types', 'enable_summary_auto_update', $box['key']['cType'])) {
+			if ($box['key']['cID'] && $contentType['enable_summary_auto_update']) {
 				$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['value'] =
 				$box['tabs']['meta_data']['fields']['lock_summary_edit_mode']['value'] = $version['lock_summary'];
 				$box['tabs']['meta_data']['fields']['lock_summary_view_mode']['hidden'] =
@@ -315,7 +317,7 @@ if (!$version) {
 		} else {
 			$box['key']['cType'] = ifNull($box['key']['target_cType'], $box['key']['cType'], 'html');
 		}
-		$layoutId = getRow('content_types', 'default_layout_id', array('content_type_id' => $box['key']['cType']));
+		$layoutId = $contentType['default_layout_id'];
 	}
 	
 	if (isset($box['tabs']['meta_data']['fields']['layout_id']) && empty($box['tabs']['meta_data']['fields']['layout_id']['value'])) {
@@ -392,7 +394,7 @@ if (isset($box['tabs']['categories']['fields']['desc'])) {
 //Turn edit mode on if we will be creating a new Content Item
 if (!$box['key']['cID'] || $box['key']['cID'] != $box['key']['source_cID']) {
 	foreach ($box['tabs'] as $i => &$tab) {
-		if (!isInfoTag($i) && isset($tab['edit_mode'])) {
+		if (is_array($tab) && isset($tab['edit_mode'])) {
 			$tab['edit_mode']['enabled'] = true;
 			$tab['edit_mode']['on'] = true;
 			$tab['edit_mode']['always_on'] = true;
@@ -405,14 +407,14 @@ if (!$box['key']['cID'] || $box['key']['cID'] != $box['key']['source_cID']) {
 	   && ($box['key']['cVersion'] < $content['admin_version'] || !checkPriv('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType']))
 ) {
 	foreach ($box['tabs'] as $i => &$tab) {
-		if (!isInfoTag($i) && isset($tab['edit_mode'])) {
+		if (is_array($tab) && isset($tab['edit_mode'])) {
 			$tab['edit_mode']['enabled'] = false;
 		}
 	}
 
 } else {
 	foreach ($box['tabs'] as $i => &$tab) {
-		if (!isInfoTag($i) && isset($tab['edit_mode'])) {
+		if (is_array($tab) && isset($tab['edit_mode'])) {
 			$tab['edit_mode']['enabled'] = true;
 		}
 	}
@@ -485,6 +487,11 @@ if (isset($box['tabs']['content1'])) {
 				getContent($box['key']['source_cID'], $box['key']['cType'], $box['key']['source_cVersion'], $slot);
 		}
 	}
+}
+
+// Hide categories if not enabled by cType
+if (!$contentType['enable_categories']) {
+	$box['tabs']['categories']['hidden'] = true;
 }
 
 

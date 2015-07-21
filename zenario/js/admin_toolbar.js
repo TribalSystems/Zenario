@@ -345,7 +345,7 @@ zenarioAT.action2 = function() {
 				zenarioA.showMessage(message);
 			} else {
 				//...or refresh the page
-				zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType));
+				zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));
 			}
 		}, 'text');
 	}
@@ -391,17 +391,17 @@ zenarioAT.draw = function() {
 	}
 	
 	//Loop through each section
-	foreach (zenarioAT.tuix.sections as var section) {
-		if (!zenarioAT.isInfoTag(section) && zenarioAT.tuix.sections[section]) {
+	foreach (zenarioAT.tuix.sections as var section => var thisSection) {
+		if (thisSection) {
 			var bi = -1,
 				buttons = [],
 				buttonsPos = {},
 				parent;
 			
-			if (!zenarioA.hidden(zenarioAT.tuix.sections[section]) && zenarioAT.sortedButtons[section]) {
+			if (!zenarioA.hidden(thisSection) && zenarioAT.sortedButtons[section]) {
 				foreach (zenarioAT.sortedButtons[section] as var buttonOrdinal) {
 					var i = zenarioAT.sortedButtons[section][buttonOrdinal],
-						button = zenarioAT.tuix.sections[section].buttons[i];
+						button = thisSection.buttons[i];
 					
 					if (zenarioA.hidden(button, true)) {
 						continue;
@@ -436,7 +436,7 @@ zenarioAT.draw = function() {
 				
 				//Add parent/child relationships
 				foreach (buttonsPos as var i) {
-					if (parent = zenarioAT.tuix.sections[section].buttons[i].parent) {
+					if (parent = thisSection.buttons[i].parent) {
 						if ((bi = buttonsPos[parent]) !== undefined) {
 							if (!buttons[bi].children) {
 								buttons[bi].children = [];
@@ -447,7 +447,7 @@ zenarioAT.draw = function() {
 					}
 				}
 				for (bi = buttons.length - 1; bi >= 0; --bi) {
-					var button = zenarioAT.tuix.sections[section].buttons[buttons[bi].id];
+					var button = thisSection.buttons[buttons[bi].id];
 					if (button.parent || (engToBoolean(button.hide_when_children_are_not_visible) && !buttons[bi].children)) {
 						buttons.splice(bi, 1);
 					}
@@ -479,21 +479,15 @@ zenarioAT.setTitle = function(title, className) {
 
 //  Sorting Functions  //
 
-//refine tags added by the CMS for location/tracking purposes
-zenarioAT.isInfoTag = function(i) {
-	return i == 'class_name'
-		|| i == 'ord';
-};
-
 zenarioAT.sort = function() {
 	//Build arrays to sort, containing:
 		//0: actual index
 		//1: The value to sort by
 	zenarioAT.sortedToolbars = [];
 	if (zenarioAT.tuix.toolbars) {
-		foreach (zenarioAT.tuix.toolbars as var i) {
-			if (!zenarioAT.isInfoTag(i) && zenarioAT.tuix.toolbars[i]) {
-				zenarioAT.sortedToolbars.push([i, zenarioAT.tuix.toolbars[i].ord]);
+		foreach (zenarioAT.tuix.toolbars as var i => var thisToolbar) {
+			if (thisToolbar) {
+				zenarioAT.sortedToolbars.push([i, thisToolbar.ord]);
 			}
 		}
 	}
@@ -507,8 +501,8 @@ zenarioAT.sort = function() {
 	}
 	
 	zenarioAT.sortedButtons = {};
-	foreach (zenarioAT.tuix.sections as var section) {
-		if (!zenarioAT.isInfoTag(section) && zenarioAT.tuix.sections[section]) {
+	foreach (zenarioAT.tuix.sections as var section => var thisSection) {
+		if (thisSection) {
 			zenarioAT.sortButtons(section);
 		}
 	}
@@ -520,9 +514,9 @@ zenarioAT.sortButtons = function(section) {
 		//1: The value to sort by
 	zenarioAT.sortedButtons[section] = [];
 	if (zenarioAT.tuix.sections[section].buttons) {
-		foreach (zenarioAT.tuix.sections[section].buttons as var i) {
-			if (!zenarioAT.isInfoTag(i) && zenarioAT.tuix.sections[section].buttons[i]) {
-				zenarioAT.sortedButtons[section].push([i, zenarioAT.tuix.sections[section].buttons[i].ord]);
+		foreach (zenarioAT.tuix.sections[section].buttons as var i => var button) {
+			if (button) {
+				zenarioAT.sortedButtons[section].push([i, button.ord]);
 			}
 		}
 	}

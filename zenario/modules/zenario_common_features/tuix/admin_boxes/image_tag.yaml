@@ -5,7 +5,8 @@ zenario_image_tag:
     key:
         id: ""
     hide_tab_bar: true
-    max_height: 100
+    max_height: 175
+    title: Creating a tag
     tabs:
         details:
             edit_mode:
@@ -32,3 +33,30 @@ zenario_image_tag:
                             Tag names cannot contain spaces.
                         screen_name: |
                             Tag names can contain only alphanumeric characters, underscores or hyphens.
+                color:
+                    label: 'Color:'
+                    type: radios
+                    values:
+                        blue:
+                            label: Blue
+                        green:
+                            label: Green
+                        grey:
+                            label: Grey
+                        orange:
+                            label: Orange
+                        red:
+                            label: Red
+                        violet:
+                            label: Violet
+                        yellow:
+                            label: Yellow
+                    tag_colors:
+                        blue: blue
+                        red: red
+                        green: green
+                        orange: orange
+                        yellow: yellow
+                        violet: violet
+                        grey: grey
+                    cols: 4

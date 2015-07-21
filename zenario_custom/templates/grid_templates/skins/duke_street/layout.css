@@ -7,7 +7,8 @@ html, body {
 }
 
 body .zenario_skin {
-	background:#7A8080;
+	/* background:#7A8080; */
+	background:#ffffff;
 }
 
 .zenario_skin {
@@ -66,33 +67,6 @@ body .zenario_skin {
 
 .Grid_Footer .Footer_Area .slot .zenario_slot .zenario_slot {
 	margin-bottom:0;
-}
-
-/*  Default slot sizes
---------------------------------------------------------------------------------------------------*/
-
-body.zenario_adminLoggedIn .medium_slot .zenario_slot,
-body.zenario_pageMode_preview .medium_slot,
-body.zenario_pageMode_menu .medium_slot {
-	min-height: 150px;
-}
-
-body.zenario_adminLoggedIn .large_slot .zenario_slot,
-body.zenario_pageMode_preview .large_slot,
-body.zenario_pageMode_menu .large_slot {
-	min-height: 225px;
-}
-
-body.zenario_adminLoggedIn .xlarge_slot .zenario_slot,
-body.zenario_pageMode_preview .xlarge_slot,
-body.zenario_pageMode_menu .xlarge_slot {
-	min-height: 300px;
-}
-
-body.zenario_adminLoggedIn .xxlarge_slot .zenario_slot,
-body.zenario_pageMode_preview .xxlarge_slot,
-body.zenario_pageMode_menu .xxlarge_slot {
-	min-height: 375px;
 }
 
 body.zenario_adminLoggedIn .zenario_slotWithNoContents .zenario_slot {

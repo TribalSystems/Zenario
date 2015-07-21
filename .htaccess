@@ -3,26 +3,26 @@ Options -Indexes
 <IfModule mod_rewrite.c>
 	RewriteEngine On
 	
+	# Redirect admin/ to zenario/admin/
+	RewriteRule ^admin$ zenario/redirect.php?redirect=admin/ [L]
+	RewriteRule ^admin/(.*)$ zenario/redirect.php?redirect=admin/$1 [L,QSA]
+
+	# Correct any bad relative-URLs
+	RewriteRule ^[\/,A-Za-z0-9~_-]*\/(public|private|zenario|zenario_custom|zenario_extra_modules)/(.*)$ zenario/redirect.php?redirectdir=$1&redirect=$2 [L,QSA]
+	
+	
 	# Favicons
 	RewriteRule ^favicon.ico$ zenario/file.php?usage=favicon [L]
 	
-	# Redirect admin/ to zenario/admin/
-	RewriteRule ^admin$ zenario/quick_ajax.php?redirect=admin/ [L]
-	RewriteRule ^admin/(.*)$ zenario/quick_ajax.php?redirect=admin/$1 [L,QSA]
-	
-	# Correct any links created from before version 7:
-	RewriteRule ^tribiq/(.*)$ zenario/quick_ajax.php?redirect=$1 [L,QSA]
-	
-
 	# Friendly URLs:
-	RewriteRule ^([,A-Za-z0-9~_-]+)$ index.php?cID=$1 [L]
-	RewriteRule ^([,A-Za-z0-9~_-]+)\.html?$ index.php?cID=$1 [L]
+	RewriteCond %{REQUEST_URI} !/(admin|public|private|zenario|zenario_custom|zenario_extra_modules|purchased_downloads)/
+	RewriteRule ^([\/,A-Za-z0-9~_-]+)(|\.htm|\.html)$ index.php?cID=$1 [L,QSA]
 	
 	# Download Now links:
-	RewriteRule ^([,A-Za-z0-9~_-]+)\.download$ index.php?cID=$1&download=1 [L]
+	RewriteRule ^([\/,A-Za-z0-9~_-]+)\.download$ index.php?cID=$1&download=1 [L]
 	
 	# RSS feeds:
-	RewriteRule ^([,A-Za-z0-9~_-]+)\.rss$ index.php?cID=$1&method_call=showRSS [L]
+	RewriteRule ^([\/,A-Za-z0-9~_-]+)\.rss$ index.php?cID=$1&method_call=showRSS [L]
 	
 	# A friendly URL for the XML sitemap:
 	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
@@ -37,23 +37,17 @@ Options -Indexes
 	# Remove cached pages and stats from public view:
 	RewriteRule ^cache/.*$ - [F,NC]
 
-	# Remove backup, docstore and dropbox directories from public view if they were placed here:
+	# Remove the build, backup and docstore directories from public view if they were placed here:
+	RewriteRule ^build/.*$ - [F,NC]
 	RewriteRule ^backup/.*$ - [F,NC]
 	RewriteRule ^docstore/.*$ - [F,NC]
-	RewriteRule ^dropbox/.*$ - [F,NC]
 	
-	# Remove module descriptions, frameworks, phrases and tuix files from public view:
-	RewriteRule ^zenario_custom/frameworks/.*/framework\.html$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/admin_phrase_codes/.*$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/description\.xml$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/framework\.html$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/phrases/.*$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/tuix/.*\.xml$ - [F,NC]
-	RewriteRule ^zenario.*/?modules/.*/tuix/.*\.yaml$ - [F,NC]
+	# Remove yaml files, phrases and custom frameworks from public view:
+	RewriteRule ^zenario.*\.yaml$ - [F,NC]
+	RewriteRule ^zenario.*/phrases/.*$ - [F,NC]
+	RewriteRule ^zenario.*/admin_phrase_codes/.*$ - [F,NC]
+	RewriteRule ^zenario_custom/frameworks/.*\.html$ - [F,NC]
 	
-	# Remove the api, build, documentation and svn directories from public view:
+	# Remove any svn directories from public view:
 	RewriteRule .*\.svn.*$ - [F,NC]
-	RewriteRule ^build/.*$ - [F,NC]
-	RewriteRule ^zenario/api/.*\.xml$ - [F,NC]
-	RewriteRule ^zenario/api/.*\.yaml$ - [F,NC]
 </IfModule>

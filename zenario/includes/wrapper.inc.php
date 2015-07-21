@@ -55,6 +55,27 @@ if (!function_exists('includeCSSFile')) {
 }
 
 
+function outputRulesForSlotMinHeights() {
+	echo '
+.container .medium_slot .zenario_slot {
+	min-height: 150px;
+}
+
+.container .large_slot .zenario_slot {
+	min-height: 225px;
+}
+
+.container .xlarge_slot .zenario_slot {
+	min-height: 300px;
+}
+
+.container .xxlarge_slot .zenario_slot {
+	min-height: 375px;
+}';
+}
+
+
+
 function includeSkinFiles(&$req) {
 	
 	//If a layout has been specified, and it has a grid CSS, output that grid CSS

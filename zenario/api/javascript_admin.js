@@ -118,7 +118,7 @@ zenario.lib(function(
 	
 		$('#zenario_now_loading').clearQueue().hide();
 		$('#zenario_now_saving').clearQueue().hide();
-		if (zenarioAB.welcome) {
+		if (zenarioAB.isWelcomePage) {
 			$('#zenario_now_installing').clearQueue().hide();
 		}
 	
@@ -141,20 +141,13 @@ zenario.lib(function(
 			moduleClassName = 'zenario_common_features',
 			requests = {infoBox: 1},
 			url = URLBasePath + 'zenario/ajax.php?__pluginClassName__=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests);
-	
-		if (html = zenario.checkSessionStorage(url)) {
-			zenarioA.infoBox2(html);
-	
-		} else {
-			zenarioA.showAJAXLoader();
-			$.get(url, function(html) {
-				zenarioA.hideAJAXLoader();
-				if (!zenarioA.loggedOut(html)) {
-					zenario.setSessionStorage(html, url);
-					zenarioA.infoBox2(html);
-				}
-			}, 'text');
-		}
+		
+		
+		zenarioA.showAJAXLoader();
+		zenario.ajax(url, false, true, false).after(function(data) {
+			zenarioA.hideAJAXLoader();
+			zenarioA.openBox(zenarioA.microTemplate('zenario_info_box', data), 'zenario_fbAdminInfoBox', 'AdminInfoBox', undefined, 405, undefined, undefined, false, true, '.zenario_infoBoxHead', false);
+		});
 	};
 
 	zenarioA.closeInfoBox = function() {
@@ -267,15 +260,15 @@ zenario.lib(function(
 			
 			if (zenarioO.init
 			 && zenarioO.path
-			 && zenarioA.storekeeperWindow) {
+			 && zenarioA.isFullOrganizerWindow) {
 				buttonsHTML =
 					'<input type="button" value="' + phrase.logIn + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">' +
 					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(URLBasePath);"/>';
 			} else {
 				buttonsHTML = 
 					'<input type="button" value="' + phrase.logIn + '" class="submit_selected"' +
-					' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, \'\', true));">' +
-					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType));"/>';
+					' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));">' +
+					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));"/>';
 		
 			}
 			
@@ -321,13 +314,13 @@ zenario.lib(function(
 
 	zenarioA.showHelp = function(selector) {
 		var intro = introJs(),
-			$fbsk = $('#zenario_fbog'),
+			$fbog = $('#zenario_fbog'),
 			$els = $(selector),
 			steps = [],
 			data;
 	
 		//Hack to get intro.js working with Organizer
-		$fbsk.addClass('zenario_introjs_fixPosition');
+		$fbog.addClass('zenario_introjs_fixPosition');
 	
 		//For each element, convert it into the format needed by intro.js
 		$els.each(function(i, el) {
@@ -355,7 +348,7 @@ zenario.lib(function(
 	
 		intro.onexit(function() {
 			//Hack to get intro.js working with Organizer
-			$fbsk.removeClass('zenario_introjs_fixPosition');
+			$fbog.removeClass('zenario_introjs_fixPosition');
 		});
 	};
 

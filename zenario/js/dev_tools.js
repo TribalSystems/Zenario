@@ -53,15 +53,24 @@ zenario.lib(function(
 
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
-	ord: true,
-	count: true,
-	class_name: true,
-	_h: true,
-	_h_js: true,
-	_sync: true,
-	_path_here: true,
-	__page__: true,
-	__item_sort_order__: true
+	class_name: {description: 'This property tracks which module created each element.'},
+	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
+	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
+	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'},
+	__page__: {description: 'If pagination is being applied on the server, this will contain the current page number.'},
+	__item_count__: {description: 'If pagination is being applied on the server, this will contain the total number of items (not just the number of items on the current page).'},
+	__item_parents__: {description: 'If a panel uses lazy loading in hierarchy view, this object contains all of the item ids that have children.'},
+	__item_sort_order__: {description: 'If sorting is being applied on the server, this will contain a sorted array of item ids.'}
+};
+devTools.deprecatedTraitProperties = {
+	traits: true,
+	without_traits: true,
+	with_columns_set: true,
+	without_columns_set: true,
+	one_with_traits: true,
+	one_without_traits: true,
+	one_with_columns_set: true,
+	one_without_columns_set: true
 };
 
 //A little hack to turn on flagging undefined additional properties in tv4
@@ -96,6 +105,14 @@ devTools.init = function(mode, schemaName, schema, skMap) {
 			//this problem by only using three recursions.
 		if (mode == 'zenarioO') {
 			var panel = schema.additionalProperties.properties.panels.additionalProperties;
+			
+			//Set the panel types definition to an enum that contains all possible options
+			if (windowOpener
+			 && windowOpener.zenarioO
+			 && windowOpener.zenarioO.panelTypes) {
+			 	delete panel.properties.panel_type.type
+			 	panel.properties.panel_type['enum'] = _.keys(window.opener.zenarioO.panelTypes);
+			}
 			
 			//Merge in a few things
 			$.extend(true, panel.properties, panel.merge);
@@ -192,22 +209,36 @@ devTools.init = function(mode, schemaName, schema, skMap) {
 		if (lastRow != pos.row) {
 			//lastToken = e.editor.session.getTokenAt(pos.row, pos.column) 
 			
-			devTools.locatePosition(pos, function(path, data) {
-				var sche = devTools.drillDownIntoSchema(path, data);
-				sche.tag = path.split('/').pop();
-				text = '';
-			
-				if (sche.exact) {
-					text = zenarioA.microTemplate('zenario_dev_tools_tooltip', sche);
-				} else {
-					if (devTools.internalCMSProperties[sche.tag]) {
-						text = '<strong>Internal CMS property</strong>';
-					} else {
-						text = '';
+			if (devTools.format == 'yaml') {
+				devTools.locatePosition(pos, function(path, data) {
+					var sche = devTools.drillDownIntoSchema(path, data);
+				
+					if (sche.parent) {
+						devTools.formatRequiredPropertiesInSchema(sche.parent);
 					}
-				}
+				
+					sche.tag = path.split('/').pop();
+					sche.isRequired =
+						sche.parent
+					 && sche.parent.requiredProperties
+					 && sche.parent.requiredProperties[sche.tag];
+			
+					text = '';
+					if (sche.exact) {
+						text = zenarioA.microTemplate('zenario_dev_tools_tooltip', sche);
+					} else {
+						if (sche.internalCMSProperty = devTools.internalCMSProperties[sche.tag]) {
+							text = zenarioA.microTemplate('zenario_dev_tools_internal_property_tooltip', sche);
+						} else {
+							text = '';
+						}
+					}
+					$tooltip.html(text);
+				});
+			} else {
+				text = '';
 				$tooltip.html(text);
-			});
+			}
 			
 			lastRow = pos.row;
 		}
@@ -277,7 +308,8 @@ devTools.load = function() {
 			paths,
 			files = {},
 			file,
-			url;
+			url,
+			post;
 		
 		foreach (modules as module) {
 			if (paths = modules[module].paths) {
@@ -287,23 +319,26 @@ devTools.load = function() {
 			}
 		}
 		
-		url = 'zenario/admin/dev_tools/ajax.php?mode=' + encodeURIComponent(devTools.mode) + '&load_tuix_files=' + encodeURIComponent(JSON.stringify(files));
+		url = 'zenario/admin/dev_tools/ajax.php?mode=' + encodeURIComponent(devTools.mode);
+		post = {load_tuix_files: JSON.stringify(files)};
 		
-		if (data = zenario.nonAsyncAJAX(url, false, true)) {
-			foreach (modules as module) {
-				if (paths = modules[module].paths) {
-					foreach (paths as file) {
-						if (data[module + '.' + file]) {
-							data[module + '.' + file].path = paths[file];
-							devTools.focus.files[module + '.' + file] = data[module + '.' + file];
+		zenario.ajax(url, post, true).after(function(data) {
+			if (data) {
+				foreach (modules as module) {
+					if (paths = modules[module].paths) {
+						foreach (paths as file) {
+							if (data[module + '.' + file]) {
+								data[module + '.' + file].path = paths[file];
+								devTools.focus.files[module + '.' + file] = data[module + '.' + file];
+							}
 						}
 					}
 				}
 			}
-		}
-		
-		devTools.draw();
-		zenarioA.nowDoingSomething(false);
+			
+			devTools.draw();
+			zenarioA.nowDoingSomething(false);
+		});
 	});
 };
 
@@ -407,16 +442,19 @@ devTools.updateEditor = function() {
 	//}
 	devTools.lastView = view;
 	
+	//Add some extra black lines to the bottom of the editor in some views,
+	//as a hack to let people read tooltips that go off the bottom of the page!
+	var padding = '\n\n\n\n';
 	
 	//Show the current TUIX
 	if (view == 'current') {
-		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].focus, format));
+		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].focus, format) + padding);
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
 	
 	//Show the merged source
 	} else if (view == 'combined') {
-		editor.setValue(devTools.toFormat(devTools.focus.tuix, format));
+		editor.setValue(devTools.toFormat(devTools.focus.tuix, format) + padding);
 		//editor.setReadOnly(true);
 		devTools.rootPath = devTools.tagPath;
 	
@@ -554,7 +592,7 @@ devTools.arrayToList = function(array) {
 
 
 //This function will return true if the object data contains a keys/a tag path of path
-devTools.checkPathIsInData = function(path, data) {
+devTools.checkPathIsInData = function(path, data, returnValue) {
 	
 	var i,
 		tags = path.split('/');
@@ -572,7 +610,11 @@ devTools.checkPathIsInData = function(path, data) {
 		}
 	}
 	
-	return true;
+	if (returnValue) {
+		return data;
+	} else {
+		return true;
+	}
 };
 
 //This will loop through all of
@@ -695,7 +737,7 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 					sche.schema = sche.schema.additionalProperties;
 				
 				} else {
-					return devTools.drillDownIntoSchema2(sche);
+					return devTools.formatRequiredPropertiesInSchema(sche);
 				}
 				
 				if (isLocalPath > 0) {
@@ -731,10 +773,10 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 	}
 	
 	sche.exact = true;
-	return devTools.drillDownIntoSchema2(sche);
+	return devTools.formatRequiredPropertiesInSchema(sche);
 };
 
-devTools.drillDownIntoSchema2 = function(sche) {
+devTools.formatRequiredPropertiesInSchema = function(sche) {
 	var i;
 	
 	sche.requiredProperties = {};
@@ -749,7 +791,7 @@ devTools.drillDownIntoSchema2 = function(sche) {
 	}
 	
 	if (sche.object) {
-		sche.object = devTools.drillDownIntoSchema2(sche.object);
+		sche.object = devTools.formatRequiredPropertiesInSchema(sche.object);
 	}
 	
 	
@@ -776,7 +818,8 @@ devTools.validate = function() {
 		sche = devTools.drillDownIntoSchema(),
 		data,
 		line,
-		annotations = [];
+		annotations = [],
+		e, error, result;
 	
 	if (!sche.exact) {
 		session.setAnnotations([]);
@@ -785,23 +828,56 @@ devTools.validate = function() {
 	
 	if (data = devTools.fromFormat(editor.getValue(), devTools.format)) {
 		
-		var result = tv4.validateMultiple(data, sche.schema);
+		result = tv4.validateMultiple(data, sche.schema);
 		
 		if (result.errors
 		 && result.errors.length) {
-			for (var e = 0; e < result.errors.length; ++e) {
+		 	
+		 	foreach (result.errors as e => error) {
+				
 				var code = result.errors[e].code,
 					path = result.errors[e].dataPath,
 					tag = path.split('/').pop(),
 					message = result.errors[e].message,
 					type = 'error';
 				
+				//It's legal for pick_items and upload to appear together for FAB fields
+				if (code == 12
+				 && devTools.mode == 'zenarioAB'
+				 && message == 'Propeties pick_items and upload may not appear together') {
+					continue;
+				}
+				
 				if (path.substr(0, 1) == '/') {
 					path = path.substr(1);
 				}
 				
+				//Checks for static properties
+				//The code we've added in tv4.js only checks to see if they are there.
+				//We need some logic here to actually check if they've been changed.
+				if (code == 500) {
+					
+					var staticValue = devTools.checkPathIsInData(path, devTools.focus.tuix, true),
+						currentValue = devTools.checkPathIsInData(path, windowOpener[devTools.mode].focus, true);
+					
+					//If there are no changes, then don't flag the error.
+					if (typeof staticValue == 'object'
+					 || typeof currentValue == 'object'
+					 || staticValue == currentValue) {
+						continue;
+					}
+				}
+				
+				//Show a warning if the old properties for traits have been used.
+				//(These still exist in the system so they still work, but we'd rather move people away from them.)
+				if (devTools.mode == 'zenarioO'
+				 && ((code == 0 && message == 'Found type object, expected boolean/number/string/null')
+				  || (code == 303 && devTools.deprecatedTraitProperties[tag]))) {
+					type = 'warning';
+					message = 'Traits are deprecated! Please use visible_if, visible_if_for_all_selected_items or visible_if_for_any_selected_items on your buttons instead.';
+				
 				//Logic for unrecognised properties
-				if (code == 303) {
+				} else if (code == 303) {
 					
 					//Ignore properties called "custom"
 					if (('' + tag).substr(0, 7) == 'custom_') {
@@ -1171,9 +1247,12 @@ devTools.showSidebar = function(path, data) {
 	$sidebar.removeClass('sidebarEmpty').addClass('sidebarFull');
 	devTools.sizePropertyTable();
 	
-	zenarioA.tooltips('#sidebar_inner a[title]');
-	zenarioA.tooltips('#sidebar_inner ul[title]');
-	zenarioA.tooltips('#sidebar_inner input[title]');
+	zenarioA.tooltips('#sidebar_inner tr[title]', {
+		tooltipClass: 'zenario_devtools_tooltip',
+		position: {my: 'right top+2', at: 'left center', collision: 'flipfit'},
+		show: false,
+		hide: false
+	});
 };
 
 devTools.sizePropertyTable = function() {

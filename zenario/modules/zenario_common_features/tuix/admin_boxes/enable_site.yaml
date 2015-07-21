@@ -26,6 +26,9 @@ zenario_enable_site:
                 site_disabled_message: 
                     label: "Message:"
                     type: editor
+                    editor_options:
+                        convert_urls: false
+                        relative_urls: false
                     rows: 4
                     cols: 80
                 enable_site: 

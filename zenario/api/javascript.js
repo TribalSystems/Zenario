@@ -68,14 +68,100 @@ zenario.moduleBaseClass = function(
 	*/
 	
 	//Launch an AJAX request to your Plugin's handleAJAX placeholder method
+	//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
 	this.AJAX = function(requests, post, useCache) {
-		return zenario.handlePluginAJAX(this.moduleClassName, requests, post, false, useCache);
+		return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, false, useCache);
 	};
 	 
 	//Launch a JSON request to your Plugin's handleAJAX placeholder method
+	//Warning: This uses zenario.nonAsyncAJAX() so is deprecated!
 	this.JSON = function(requests, post, useCache) {
-		return zenario.handlePluginAJAX(this.moduleClassName, requests, post, true, useCache);
+		return zenario.moduleNonAsyncAJAX(this.moduleClassName, requests, post, true, useCache);
 	};
+	
+	
+	
+
+	
+	this.AJAXLink = function(requests) {
+		return URLBasePath + 'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=handleAJAX' + zenario.urlRequest(requests);
+	}
+	
+	this.pluginAJAXLink = function(slotNameOrContainedElement, requests) {
+		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
+			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
+		
+		return URLBasePath + 
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=handlePluginAJAX' +
+			'&cID=' + zenario.cID +
+			'&cType=' + zenario.cType +
+		  (zenario.adminId?
+			'&cVersion=' + zenario.cVersion
+		   : '') +
+			'&instanceId=' + instanceId +
+			'&slotName=' + slotName +
+			zenario.urlRequest(requests);
+	}
+	
+	this.showFileLink = function(requests) {
+		return URLBasePath + 
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showFile' +
+			zenario.urlRequest(requests);
+	}
+	
+	this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
+		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
+			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
+		
+		return URLBasePath + 
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showFloatingBox' +
+			'&cID=' + zenario.cID +
+			'&cType=' + zenario.cType +
+		  (zenario.adminId?
+			'&cVersion=' + zenario.cVersion
+		   : '') +
+			'&instanceId=' + instanceId +
+			'&slotName=' + slotName +
+			zenario.urlRequest(requests);
+	}
+	
+	this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout) {
+		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
+			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
+		
+		if (hideLayout === undefined) {
+			hideLayout = true;
+		}
+		
+		return zenario.linkToItem(zenario.cID, zenario.cType,
+			'moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showSingleSlot' +
+			(hideLayout? '&hideLayout=1' : '') +
+		  (zenario.adminId?
+			'&cVersion=' + zenario.cVersion
+		   : '') +
+			'&instanceId=' + instanceId +
+			'&slotName=' + slotName +
+			zenario.urlRequest(requests));
+	}
+	
+	this.showImageLink = function(requests) {
+		return URLBasePath + 
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showImage' +
+			zenario.urlRequest(requests);
+	}
+	
+	this.showStandalonePageLink = function(requests) {
+		return URLBasePath + 
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showStandalonePage' +
+			zenario.urlRequest(requests);
+	}
+	
+	
+	
+	
+	
+	
+	
 	
 	/**
 	* The floatingBoxAnchor() method allows Plugin Developers to create a hyperlink which calls a

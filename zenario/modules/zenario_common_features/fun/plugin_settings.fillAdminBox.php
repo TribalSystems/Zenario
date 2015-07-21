@@ -112,6 +112,7 @@ if ($box['key']['isVersionControlled']) {
 	}
 }
 
+$title = '';
 
 switch ($path) {
 	case 'plugin_settings':
@@ -158,7 +159,7 @@ switch ($path) {
 		}
 
 		foreach ($box['tabs'] as $tabName => &$tab) {
-			if (!isInfoTag($tabName)) {
+			if (is_array($tab)) {
 				if (!$canEdit) {
 					$tab['edit_mode'] = array('enabled' => false);
 				} else {
@@ -172,7 +173,7 @@ switch ($path) {
 				}
 		
 				foreach ($tab['fields'] as $fieldName => &$field) {
-					if (!isInfoTag($fieldName)) {
+					if (is_array($field)) {
 						if (!empty($field['plugin_setting']['name']) && isset($valuesInDB[$field['plugin_setting']['name']])) {
 							$field['value'] = $valuesInDB[$field['plugin_setting']['name']];
 						}
@@ -197,30 +198,35 @@ switch ($path) {
 			}
 		}
 		
-		/*
-		//Check to see if there are any non-hidden fields, and any editable fields, on the first tab
-		$shownFields = false;
-		$editableFields = false;
-		foreach ($box['tabs']['first_tab']['fields'] as $tagName => &$field) {
-			if (!isInfoTag($tagName)) {
-				if (!engToBooleanArray($field, 'hidden')) {
-					$shownFields = true;
-				}
-				if (!engToBooleanArray($field, 'read_only')) {
-					$editableFields = true;
-				}
-			}
-		}
-
-		//If not, don't show it
-		if (!$shownFields) {
-			$box['tabs']['first_tab']['hidden'] = true;
-
-		} elseif (!$editableFields) {
-			$box['tabs']['first_tab']['edit_mode']['enabled'] = false;
-		}
-		*/
 		
+		// Get admin box title
+		if ($box['key']['nest'] && $box['key']['isVersionControlled']) {
+			$title = 
+				adminPhrase('Editing a plugin of the "[[module]]" module, in the [[nest]]',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
+						  'nest' => htmlspecialchars($instanceName)));
+		
+		} elseif ($box['key']['nest']) {
+			$title = 
+				adminPhrase('Editing a plugin of the "[[module]]" module, in the nest "[[nest]]"',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
+						  'nest' => htmlspecialchars($instanceName)));
+		
+		} elseif ($box['key']['isVersionControlled']) {
+			$title = 
+				adminPhrase('Editing the [[module]]',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
+		
+		} elseif ($box['key']['instanceId']) {
+			$title = 
+				adminPhrase('Editing a plugin of the module "[[module]]"',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
+		
+		} else {
+			$title = 
+				adminPhrase('Creating a plugin of the "[[module]]" module',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
+		}
 		break;
 
 
@@ -326,50 +332,41 @@ switch ($path) {
 		}
 		
 		if ($skinDescriptionFilePath) {
-			$fields['last_tab/css_class']['note_below'] =
+			$fields['last_tab/css_class']['side_note'] =
 				adminPhrase('Add CSS classes by picking existing ones from the list or by writing your own in the text box. A designer can add new styles to this list by editing the [[path]] file.', array('path' => $skinDescriptionFilePath));
 		} else {
-			$fields['last_tab/css_class']['note_below'] =
+			$fields['last_tab/css_class']['side_note'] =
 				adminPhrase('Add CSS classes by picking existing ones from the list or by writing your own in the text box.');
 		}
 		
+		// Get admin box title
+		if ($box['key']['nest'] && $box['key']['isVersionControlled']) {
+			$title = 
+				adminPhrase('Framework & CSS for a plugin of the "[[module]]" module, in the [[nest]]',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
+						  'nest' => htmlspecialchars($instanceName)));
+		
+		} elseif ($box['key']['nest']) {
+			$title = 
+				adminPhrase('Framework & CSS for a plugin of the "[[module]]" module, in the nest "[[nest]]"',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
+						  'nest' => htmlspecialchars($instanceName)));
+		
+		} elseif ($box['key']['isVersionControlled']) {
+			$title = 
+				adminPhrase('Framework & CSS for the [[module]]',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
+		
+		} else {
+			$title = 
+				adminPhrase('Framework & CSS for a plugin of the module "[[module]]"',
+					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
+		}
 		
 		break;
 }
 
 
-
-
-
-
-
-if ($box['key']['nest'] && $box['key']['isVersionControlled']) {
-	$box['title'] = 
-		adminPhrase('Editing a plugin of the "[[module]]" module, in the [[nest]]',
-			array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
-				  'nest' => htmlspecialchars($instanceName)));
-
-} elseif ($box['key']['nest']) {
-	$box['title'] = 
-		adminPhrase('Editing a plugin of the "[[module]]" module, in the nest "[[nest]]"',
-			array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId'])),
-				  'nest' => htmlspecialchars($instanceName)));
-
-} elseif ($box['key']['isVersionControlled']) {
-	$box['title'] = 
-		adminPhrase('Editing the [[module]]',
-			array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
-
-} elseif ($box['key']['instanceId']) {
-	$box['title'] = 
-		adminPhrase('Editing a plugin of the module "[[module]]"',
-			array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
-
-} else {
-	$box['title'] = 
-		adminPhrase('Creating a plugin of the "[[module]]" module',
-			array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
-}
-
+$box['title'] = $title;
 
 return false;
