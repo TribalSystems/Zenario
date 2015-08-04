@@ -69,7 +69,7 @@ zenarioG.lastToast = false;
 
 
 
-zenarioG.init = function(data, layoutId, layoutName) {
+zenarioG.init = function(data, layoutId, layoutName, familyName) {
 	if (typeof data == 'object') {
 		zenarioG.data = data;
 	} else {
@@ -83,7 +83,7 @@ zenarioG.init = function(data, layoutId, layoutName) {
 		zenarioG.layoutId = layoutId;
 	}
 	
-	zenarioG.checkData();
+	zenarioG.checkData(layoutName, familyName);
 	zenarioG.checkDataR(zenarioG.data.cells);
 	zenarioG.rememberNames(zenarioG.data.cells);
 	
@@ -296,15 +296,23 @@ zenarioG.rememberNames = function(cells) {
 	}
 };
 
-zenarioG.checkData = function() {
+zenarioG.checkData = function(layoutName, familyName) {
 	var scale,
+		cols,
 		i, j, k;
 	
 	if (!zenarioG.data) {
-		zenarioG.data = {};
-	}
+		zenarioG.data = {cells: []};
 	
-	if (!zenarioG.data.cells) {
+	//Attempt to catch a case where data in an old format is loaded
+	} else if (_.isArray(zenarioG.data) ) {
+		zenarioG.data = {cells: zenarioG.data};
+		
+		if (familyName && (cols = 1*familyName.replace(/\D/g, ''))) {
+			zenarioG.data.cols = cols;
+		}
+	
+	} else if (!zenarioG.data.cells) {
 		zenarioG.data.cells = [];
 	}
 	

@@ -78,7 +78,7 @@ echo '
 		   && ($path = $layout['family_name']. '/'. $layout['filename'])
 		   )
 		  || (request('c')
-		   && ($path = decodeItemIdForStorekeeper(request('c')))
+		   && ($path = decodeItemIdForStorekeeper(request('c')). '.tpl.php')
 		   && ($layout = explode('/', $path, 2))
 		   && (!empty($layout[1]))
 		   && ($layout['family_name'] = $layout[0])
@@ -93,7 +93,7 @@ echo '
 			echo json_encode($data);
 			
 			//Pass the Skin Id if one was successfully loaded, and also pass the Filename
-			echo ", ". (int) $layoutId,  ", '". jsEscape(substr($layout['filename'], 0, -8)), "'";
+			echo ", ". (int) $layoutId,  ", '". jsEscape(substr($layout['filename'], 0, -8)), "', '". jsEscape($layout['family_name']), "'";
 		
 		} else {
 			echo "'{}'";

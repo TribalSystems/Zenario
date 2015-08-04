@@ -23,7 +23,7 @@ body .zenario_skin {
 	background:#17202B;
 }
 
-.zenario_adminLoggedIn .Grid_Header {
+.zenario_adminLoggedIn .Grid_Header .Top_Area {
 	margin-top:1px;
 }
 

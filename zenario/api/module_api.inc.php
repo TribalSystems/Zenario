@@ -1151,7 +1151,6 @@ class zenario_api {
 							for ($k = 1; $k <= (int) $_POST[$attributes['name']. '__n']; ++$k) {
 								if (isset($_POST[$attributes['name']. '__'. $k])) {
 									$post .= ($post === ''? '' : ','). $_POST[$attributes['name']. '__'. $k];
-									++$k;
 								}
 							}
 							

@@ -185,28 +185,6 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_datasets` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]disused_custom_phrases`;
-CREATE TABLE `[[DB_NAME_PREFIX]]disused_custom_phrases` (
-  `code` varchar(100) NOT NULL DEFAULT '',
-  `language_id` varchar(15) NOT NULL DEFAULT '',
-  `module_class_name` varchar(200) NOT NULL,
-  `local_text` text NOT NULL,
-  `instance_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `nest` int(10) unsigned NOT NULL DEFAULT '0',
-  `content_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `content_type` varchar(20) NOT NULL DEFAULT '',
-  `content_alias` varchar(75) NOT NULL DEFAULT '',
-  KEY `code` (`code`),
-  KEY `language_id` (`language_id`),
-  KEY `module_class_name` (`module_class_name`),
-  KEY `instance_id` (`instance_id`),
-  KEY `nest` (`nest`),
-  KEY `content_id` (`content_id`),
-  KEY `content_type` (`content_type`),
-  KEY `content_alias` (`content_alias`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_tag_link`;
 CREATE TABLE `[[DB_NAME_PREFIX]]document_tag_link` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

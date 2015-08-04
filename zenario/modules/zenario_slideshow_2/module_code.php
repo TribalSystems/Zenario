@@ -66,47 +66,47 @@ class zenario_slideshow_2 extends module_base_class {
 				if (!is_array($slide)) {
 					continue;
 				}
-				// Hide hidden slides
-				if ($slide['hidden']) {
-					unset($this->slideData["slides"][$index]);
-					continue;
-				}
-				
-				
-				if ($slide['slide_visibility'] == 'call_static_method') {
-					if (!(inc($slide['plugin_class'])
-						&& (method_exists($slide['plugin_class'], $slide['method_name']))
-						&& (call_user_func(array($slide['plugin_class'], $slide['method_name']),$slide['param_1'], $slide['param_2']))))
-					{
+				// Hide hidden slides if no admin is logged in
+				if (!adminId()) {
+					if ($slide['hidden']) {
 						unset($this->slideData["slides"][$index]);
+						continue;
 					}
-				} elseif ($userId) {
-					switch($slide['slide_visibility']) {
-						case 'logged_in_with_field':
-						case 'logged_in_without_field':
-							$fieldValue = getDatasetFieldValue($userId, $slide['field_id']);
-							$fieldMatches = (bool)$fieldValue;
-							if ($fieldValue != 1) {
-								$fieldMatches = false;
-							}
-							if ($slide['slide_visibility'] != 'logged_in_with_field') {
-								$fieldMatches = !$fieldMatches;
-							}
-							if (!$fieldMatches) {
+					if ($slide['slide_visibility'] == 'call_static_method') {
+						if (!(inc($slide['plugin_class'])
+							&& (method_exists($slide['plugin_class'], $slide['method_name']))
+							&& (call_user_func(array($slide['plugin_class'], $slide['method_name']),$slide['param_1'], $slide['param_2']))))
+						{
+							unset($this->slideData["slides"][$index]);
+						}
+					} elseif ($userId) {
+						switch($slide['slide_visibility']) {
+							case 'logged_in_with_field':
+							case 'logged_in_without_field':
+								$fieldValue = getDatasetFieldValue($userId, $slide['field_id']);
+								$fieldMatches = (bool)$fieldValue;
+								if ($fieldValue != 1) {
+									$fieldMatches = false;
+								}
+								if ($slide['slide_visibility'] != 'logged_in_with_field') {
+									$fieldMatches = !$fieldMatches;
+								}
+								if (!$fieldMatches) {
+									unset($this->slideData["slides"][$index]);
+								}
+								break;
+							case 'logged_out':
 								unset($this->slideData["slides"][$index]);
-							}
-							break;
-						case 'logged_out':
-							unset($this->slideData["slides"][$index]);
-							break;
-					}
-				} else {
-					switch($slide['slide_visibility']) {
-						case 'logged_in_with_field':
-						case 'logged_in_without_field':
-						case 'logged_id':
-							unset($this->slideData["slides"][$index]);
-							break;
+								break;
+						}
+					} else {
+						switch($slide['slide_visibility']) {
+							case 'logged_in_with_field':
+							case 'logged_in_without_field':
+							case 'logged_id':
+								unset($this->slideData["slides"][$index]);
+								break;
+						}
 					}
 				}
 				

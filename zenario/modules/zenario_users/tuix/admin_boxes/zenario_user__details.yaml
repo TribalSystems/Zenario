@@ -36,7 +36,7 @@ zenario_user__details:
                     values: 
                         contact: 
                             ord: 1
-                            label: Contact only
+                            label: Contact
                             tooltip: A user who cannot log in (for data capture or mailing purpose only)
                         pending: 
                             ord: 2
@@ -44,7 +44,7 @@ zenario_user__details:
                             tooltip: A user who needs activation by an administrator before logging in
                         active: 
                             ord: 3
-                            label: Active extranet user
+                            label: Extranet user (active)
                             tooltip: "A user who can immediately log in to the site's extranet area"
                         suspended: 
                             ord: 4

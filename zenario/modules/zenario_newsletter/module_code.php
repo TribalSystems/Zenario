@@ -169,7 +169,7 @@ class zenario_newsletter extends module_base_class {
 		
 		if ($cField) {
 			$sql .= "
-			   AND noo.user_id IS NULL";
+			  AND noo.user_id IS NULL";
 		}
 
 		return $sql;
@@ -250,6 +250,8 @@ class zenario_newsletter extends module_base_class {
 			//Send the test email with the current Admin's details, rather than a User.
 			$user['first_name'] = $adminDetails['admin_first_name'];
 			$user['last_name'] = $adminDetails['admin_last_name'];
+			$user['admin_account'] = true;
+			
 			//The admins table doesn't have a title field.
 			$user['title'] = adminPhrase('(Title)');
 		}
@@ -271,7 +273,7 @@ class zenario_newsletter extends module_base_class {
 	//Attempt to get details of a user from their email address
 	function getDetailsFromEmail($email) {
 		$sql = "
-			SELECT salutation, salutation as title, first_name, last_name
+			SELECT id, salutation, salutation as title, first_name, last_name
 			FROM ". DB_NAME_PREFIX. "users
 			WHERE email = '". sqlEscape($email). "'";
 		
@@ -341,7 +343,7 @@ class zenario_newsletter extends module_base_class {
 			$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $admin, $newsletter['url']);
 			$emailOverriddenBy = false;
 			sendEmail(
-				$newsletterSubject,
+				$newsletterSubject. ' - ADMIN COPY',
 				$newsletterBody,
 				$admin['email'], 
 				$emailOverriddenBy,

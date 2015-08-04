@@ -1044,6 +1044,13 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 				//Was the install successful?
 				if (empty($box['tabs'][7]['errors'])) {
 					
+					//Define the main email address for the remaining run of this script
+					//(This is just needed this once; the next time a script run this should
+					// be defined by the config file.)
+					if (!defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+						define('EMAIL_ADDRESS_GLOBAL_SUPPORT', $merge['EMAIL_ADDRESS_GLOBAL_SUPPORT']);
+					}
+					
 					//Populate the Modules table with all of the Modules in the system,
 					//and install and run any Modules that should running by default.
 					addNewModules($skipIfFilesystemHasNotChanged = false, $runModulesOnInstall = true, $dbUpdateSafeMode = true);
