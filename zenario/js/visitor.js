@@ -1232,7 +1232,7 @@ zenario.captcha = function(publicKey, divId, hideAudio) {
 	
 	if (!window.Recaptcha) {
 		$.getScript(
-			'http://www.google.com/recaptcha/api/js/recaptcha_ajax.js',
+			zenario.httpOrhttps() + 'www.google.com/recaptcha/api/js/recaptcha_ajax.js',
 			function() {
 				Recaptcha.create(publicKey, divId, RecaptchaOptions);
 			}

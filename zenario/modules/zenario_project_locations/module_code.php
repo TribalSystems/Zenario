@@ -89,13 +89,18 @@ class zenario_project_locations extends module_base_class {
 		if($this->country_id){	
 
 			$sql = "SELECT
-					R.id, IFNULL(vs.local_text, R.name) as name
-							FROM ". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids "
-										. " INNER JOIN " . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
-								ON ids.region_id = R.id and ids.country_id='" . sqlEscape($this->country_id) . "'
-									LEFT JOIN " . DB_NAME_PREFIX . "visitor_phrases AS vs
-										ON R.name = vs.code
-										AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'";
+						R.id, IFNULL(vs.local_text, R.name) as name
+					FROM 
+						". DB_NAME_PREFIX . ZENARIO_PROJECT_LOCATIONS_PREFIX . "project_locations AS ids
+					INNER JOIN 
+						". DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_regions R
+					ON 
+						ids.region_id = R.id and ids.country_id='" . sqlEscape($this->country_id) . "'
+					LEFT JOIN 
+						". DB_NAME_PREFIX . "visitor_phrases AS vs
+					ON 
+						R.name = vs.code AND vs.language_id = '" . sqlEscape(cms_core::$langId) . "'
+					ORDER BY 2";
 		
 			$result = sqlQuery($sql);
 //			$options = array();

@@ -227,7 +227,6 @@ class zenario_menu extends module_base_class {
 		}
 	}
 	
-	
 	//Draw the wrapping around a Menu Node, then draw the Menu Node,
 	//then call drawMenu() on its children
 	function drawMenuLink($i, &$row, $recurseCount, $maxI) {

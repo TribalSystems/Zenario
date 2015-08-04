@@ -55,7 +55,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 	
 	var html = '';
 	html += '<div id="slider1_container_'+instanceId+'"\
-				class="slideshow_container" style="visibility: hidden; position: relative; top: 0px; left: 0px; width:'+width+'px; height:'+height+'px;">\
+				class="slideshow_container" style="visibility: hidden; position: relative; top: 0px; left: 0px; width:'+width+'px; height:'+height+'px; overflow: hidden;">\
 				<div u="loading"></div>\
 				<div u="slides" id="slides_container_'+instanceId+'" class="" style="cursor: '+cursorStyle+'; position: absolute; overflow: hidden; left: 0px; top: 0px; width:'+width+'px; height:'+height+'px;">';
 	var count = 1;
@@ -186,7 +186,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 				resizeWidth = Math.min(bodyWidth, parseInt(width));
 			}
 			if (resizeWidth) {
-				jssor_slider1.$SetScaleWidth(resizeWidth);
+				jssor_slider1.$ScaleWidth(resizeWidth);
 			} else {
 				window.setTimeout(ScaleSlider, 30);
 			}

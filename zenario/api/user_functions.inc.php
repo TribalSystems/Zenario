@@ -443,6 +443,25 @@ function saveUser($values, $id = false, $doSave = true) {
 		}
 	}
 	
+	
+	//Ensure salutation first_name, last_name are not too long
+	if (!empty($values['salutation'])) {
+		if (strlen($values['salutation']) > 25) {
+			$e->add('salutation', 'Your Salutation cannot be more than 25 characters long.');
+		}
+	}
+	if (!empty($values['first_name'])) {
+		if (strlen($values['first_name']) > 100) {
+			$e->add('first_name', 'Your First Name cannot be more than 100 characters long.');
+		}
+	}
+	if (!empty($values['last_name'])) {
+		if (strlen($values['last_name']) > 100) {
+			$e->add('last_name', 'Your Last Name cannot be more than 100 characters long.');
+		}
+	}
+	
+	
 	if (!$id) {
 		$values['created_date'] = now();
 	}

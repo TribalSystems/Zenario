@@ -95,7 +95,25 @@ class zenario_image_container extends zenario_banner {
 	}
 	
 	public function addToPageHead() {
-		echo "\n<style type=\"text/css\">\n", $this->generateStyles(), "\n</style>\n";
+		//Note: Old versions of IE need media-queries in stylesheets, they won't work inline on the page.
+		$oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
+			|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
+		
+		if ($oldIE) {
+			echo '
+				<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>';
+		} else {
+			echo '
+				<style type="text/css">', $this->generateStyles(), '</style>';
+		}
+	}
+	
+	public function handlePluginAJAX() {
+		if (get('generateStyles')) {
+			header('Content-Type: text/css; charset=UTF-8');
+			echo $this->generateStyles();
+		}
 	}
 	
 	public function generateStyles() {

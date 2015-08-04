@@ -59,5 +59,3 @@ plugin_settings:
                         hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select a content item
-                            
-                        

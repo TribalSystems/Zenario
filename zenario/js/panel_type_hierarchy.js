@@ -214,6 +214,8 @@ methods.setupHierarchy = function($header, $panel, $footer) {
 		$dd.on('change', function() {
 			if (that.changingHierarchy = that.scanNewHier(false)) {
 				zenarioO.disableInteraction();
+			} else {
+				zenarioO.enableInteraction();
 			}
 			zenarioO.setButtons();
 		});

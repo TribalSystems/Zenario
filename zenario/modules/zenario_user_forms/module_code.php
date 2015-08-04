@@ -518,6 +518,23 @@ class zenario_user_forms extends module_base_class {
 						if (!empty($field['placeholder'])) {
 							$html .= ' placeholder="'.htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) .'"';
 						}
+						
+						$maxlength = 255;
+						switch ($field['db_column']) {
+							case 'salutation':
+								$maxlength = 25;
+								break;
+							case 'screen_name':
+							case 'password':
+								$maxlength = 50;
+								break;
+							case 'first_name':
+							case 'last_name':
+							case 'email':
+								$maxlength = 100;
+								break;
+						}
+						$html .= ' maxlength="'.$maxlength.'" ';
 						$html .= '/>';
 					}
 					
@@ -713,7 +730,12 @@ class zenario_user_forms extends module_base_class {
 						break;
 					case 'checkboxes':
 						$isChecked = false;
-						foreach (getDatasetFieldLOV($userFieldId) as $valueId => $label) {
+						if ($userFieldId) {
+							$valuesList = getDatasetFieldLOV($userFieldId);
+						} else {
+							$valuesList = self::getUnlinkedFieldLOV($fieldId);
+						}
+						foreach ($valuesList as $valueId => $label) {
 							if (isset($data[$valueId. '_' . $fieldName])) {
 								$isChecked = true;
 								break;
@@ -721,7 +743,7 @@ class zenario_user_forms extends module_base_class {
 						}
 						
 						if (!$isChecked) {
-							$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate));
+							$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 						}
 						break;
 					case 'text':

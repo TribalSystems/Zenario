@@ -38,7 +38,7 @@ if (request('method_call') == 'refreshPlugin') {
 		'zenario_captcha_'. $this->slotName,
 		!setting('google_recaptcha_show_audio_challenge'));
 } else {
-	$html = recaptcha_get_html($publickey, null, substr(arrayKey($_SERVER, 'SCRIPT_URI'), 0, 5) == 'https');
+	$html = recaptcha_get_html($publickey, null, httpOrhttps() == 'https://');
 	
 	if (!setting('google_recaptcha_show_audio_challenge')) {
 		$this->callScript('zenario', 'captchaHideAudio');

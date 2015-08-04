@@ -633,9 +633,12 @@ function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
 function updateDocumentPlainTextExtract($fileId, &$extract, &$img_file_id) {
 	$errors = array();
 	$extract = array('extract' => '', 'extract_wordcount' => 0);
-	$filePath = CMS_ROOT. fileLink($fileId);
+	
+	$filePath = docstoreFilePath($fileId);
+	
 	plainTextExtract($filePath, $extract['extract']);
 	$extract['extract_wordcount'] = str_word_count($extract['extract']);
+	
 	if ($img_file = createPpdfFirstPageScreenshotPng($filePath)) {
 		$img_base_name = basename($filePath) . '.png';
 		$img_file_id = addFileToDatabase('documents', $img_file, $img_base_name, true, true);

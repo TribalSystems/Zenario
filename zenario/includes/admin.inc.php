@@ -6258,6 +6258,10 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		if ($type == 'storekeeper' || $type == 'organizer') {
 			if ($parentKey != 'ajax'
 			 && $parentParentKey != 'columns'
+			 && $parentParentKey != 'collection_buttons'
+			 && $parentParentKey != 'inline_buttons'
+			 && $parentParentKey != 'item_buttons'
+			 && $parentParentKey != 'quick_filter_buttons'
 			 && $parentKey != 'combine_items'
 			 && $parentParentKey != 'refiners'
 			 && $parentKey != 'pick_items'

@@ -84,7 +84,7 @@ class zenario_location_viewer extends module_base_class {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-				<script src="http://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
+				<script src="https://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
 		}
 	}
 	

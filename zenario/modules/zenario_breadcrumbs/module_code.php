@@ -98,4 +98,9 @@ class zenario_breadcrumbs extends zenario_menu {
 		
 		zenario_menu::drawMenu($menuArray, $recurseCount);
 	}
+	
+	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		// Overwrite zenario_menu fillAdminBox to do nothing
+	}
 }
