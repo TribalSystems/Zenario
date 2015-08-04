@@ -540,8 +540,8 @@ function logUserIn($userId) {
 	//Update their last login time
 	$sql = "
 		UPDATE " . DB_NAME_PREFIX . "users SET
-			session_id = '" . session_id() . "',
-			ip = '" . visitorIP() . "',
+			session_id = '". sqlEscape(session_id()). "',
+			ip = '". sqlEscape(visitorIP()). "',
 			last_login = NOW()
 		WHERE id = ". (int) $userId;
 	sqlUpdate($sql);
