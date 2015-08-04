@@ -57,7 +57,9 @@ function httpHostWithoutPort() {
 //Attempt to check whether we are in http or https, and return a value appropriately
 //If the USE_FORWARDED_IP constant is set we should try to check the HTTP_X_FORWARDED_PROTO variable.
 function httpOrhttps() {
-	if ((defined('USE_FORWARDED_IP')
+	if ((isset($_SERVER['HTTPS'])
+	  && engToBoolean($_SERVER['HTTPS']))
+	 || (defined('USE_FORWARDED_IP')
 	  && constant('USE_FORWARDED_IP')
 	  && !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
 	  && substr($_SERVER['HTTP_X_FORWARDED_PROTO'], 0, 5) == 'https')

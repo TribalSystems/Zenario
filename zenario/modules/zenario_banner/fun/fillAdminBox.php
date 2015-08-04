@@ -46,10 +46,6 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['rollover_image']['pick_items']['target_path'] =
 				'zenario__content/hidden_nav/media/panel/hidden_nav/inline_images_for_content/panel';
 			
-			if (!$box['key']['nest']) {
-				unset($box['tabs']['text']);
-			}
-			
 		}
 		
 		$box['first_display'] = true;

@@ -1009,8 +1009,9 @@ zenarioG.drawEditor = function(
 		} else {
 			if (!cells[i].name) {
 				cells[i].name = zenarioG.uniqueRandomName();
-			} else if (!zenarioG.names[cells[i].name]) {
-				zenarioG.names[cells[i].name] = true;
+			
+			} else if (!zenarioG.checkIfNameUsed(cells[i].name)) {
+				zenarioG.registerNewName(cells[i].name);
 				++zenarioG.randomNameCount;
 			}
 			
@@ -1993,14 +1994,14 @@ zenarioG.saveProperties = function(el, params) {
 				$('#zenario_grid_error').html(phrase.gridErrorNameFormat).slideDown();
 				return;
 		
-			} else if (params.name != data.cells[i].name && zenarioG.names[params.name]) {
+			} else if (params.name != data.cells[i].name && zenarioG.checkIfNameUsed(params.name)) {
 				$('#zenario_grid_error').html(phrase.gridErrorNameInUse).slideDown();
 				return;
 			}
 			
 			//Rename the slot
 			delete zenarioG.names[data.cells[i].name];
-			zenarioG.names[params.name] = true;
+			zenarioG.registerNewName(params.name);
 		}
 		
 		foreach (params as var j) {
@@ -2038,11 +2039,19 @@ zenarioG.uniqueRandomName = function() {
 	
 	do {
 		name = zenarioG.randomName(length);
-	} while (zenarioG.names[name]);
+	} while (zenarioG.checkIfNameUsed(name));
 	
 	zenarioG.names[name] = true;
 	++zenarioG.randomNameCount;
 	return name;
+};
+
+zenarioG.checkIfNameUsed = function(name) {
+	return zenarioG.names[name.toLowerCase()] !== undefined;
+};
+
+zenarioG.registerNewName = function(name) {
+	return zenarioG.names[name.toLowerCase()] = name;
 };
 
 //Redraw the editor

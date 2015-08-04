@@ -391,16 +391,10 @@ class zenario_banner extends module_base_class {
 			if (isset($controls['actions']['settings'])) {
 				$controls['actions']['banner_edit_title'] = array(
 					'ord' => 1.1,
-					'label' => adminPhrase('Edit title & HTML'),
+					'label' => adminPhrase('Edit title & HTML (inline)'),
 					'page_modes' => $controls['actions']['settings']['page_modes'],
 					'onclick' => htmlspecialchars_decode($this->editTitleInlineOnClick()));
-				$label = adminPhrase('Add image/hyperlink');
-				if (getRow('plugin_settings', 'value', 
-					array('instance_id' => $this->instanceId, 'name' => 'image', 'nest' => $this->eggId)))
-				{
-					$label = adminPhrase('Edit image/hyperlink');
-				}
-				$controls['actions']['settings']['label'] = $label;
+				$controls['actions']['settings']['label'] = adminPhrase('Edit contents (admin box)');
 			}
 		}
 	}

@@ -834,23 +834,30 @@ if (needRevision(23265)) {
 		&& ($result2 = sqlQuery($sql))
 		&& (sqlFetchRow($result2))) continue;
 			
-		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `$characteristic_name` $column_type";
-		$results = sqlSelect($sql);
+		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `". sqlEscape($characteristic_name). "` $column_type";
+		$results = sqlQuery($sql);
 			
 		if($characteristic_type == 'boolean') {
 			//boolean values are true if they exist in characteristic_user_link
-			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a 
-				SET a.`$characteristic_name`=IFNULL(
-					(SELECT 1 FROM " . DB_NAME_PREFIX . "characteristic_user_link as cul
-					WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id
-					), 0)";
+			$sql = "
+				UPDATE " . DB_NAME_PREFIX . "users_custom_data As a 
+				SET a.`". sqlEscape($characteristic_name). "` = IFNULL(
+					(
+						SELECT 1
+						FROM " . DB_NAME_PREFIX . "characteristic_user_link as cul
+						WHERE cul.user_id = a.user_id
+						  AND cul.characteristic_id = ". (int) $characteristic_id. "
+						LIMIT 1
+					),
+					0
+				)";
 		
 		} else {
 			//text and date values
-			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`$characteristic_name`=(
+			$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`". sqlEscape($characteristic_name). "`=(
 				SELECT ucv.name FROM " . DB_NAME_PREFIX . "user_characteristic_values AS ucv,"
 				. DB_NAME_PREFIX . "characteristic_user_link as cul
-				WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id
+				WHERE cul.user_id=a.user_id AND cul.characteristic_id=". (int) $characteristic_id. "
 				AND ucv.id = cul.characteristic_value_id)";				
 		}
 		sqlQuery($sql);
@@ -861,7 +868,7 @@ if (needRevision(23265)) {
 			WHERE id IN(
 				SELECT cul.characteristic_value_id FROM " . DB_NAME_PREFIX
 				. "characteristic_user_link as cul
-				WHERE cul.characteristic_id=$characteristic_id)";
+				WHERE cul.characteristic_id=". (int) $characteristic_id. ")";
 			sqlQuery($sql);
 		}
 	}
@@ -880,13 +887,13 @@ if (needRevision(23265)) {
 			continue;
 		}
 		
-		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `$characteristic_name` int(10) NOT NULL DEFAULT 0";
+		$sql = "ALTER TABLE " . DB_NAME_PREFIX . "users_custom_data ADD `". sqlEscape($characteristic_name). "` int(10) NOT NULL DEFAULT 0";
 		sqlQuery($sql);
 		
-		$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`$characteristic_name`=(
+		$sql = "UPDATE " . DB_NAME_PREFIX . "users_custom_data As a SET a.`". sqlEscape($characteristic_name). "`=(
 			SELECT cul.characteristic_value_id FROM " . DB_NAME_PREFIX
 			. "characteristic_user_link as cul
-			WHERE cul.user_id=a.user_id AND cul.characteristic_id=$characteristic_id)";
+			WHERE cul.user_id=a.user_id AND cul.characteristic_id=". (int) $characteristic_id. ")";
 		sqlQuery($sql);			
 	}
 
