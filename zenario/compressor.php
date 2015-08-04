@@ -57,31 +57,43 @@ useCache($ETag);
 useGZIP();
 
 //This is written for images, but use it to cover loose .js, .css and .ico files too
-switch ($_GET['e']) {
+switch (strtolower($_GET['e'])) {
+	case 'bmp':
+		$mimeType = 'image/bmp';
+		break;
+
 	case 'css':
-	case 'CSS':
 		$mimeType = 'text/css';
 		break;
 
+	case 'gif':
+		$mimeType = 'image/gif';
+		break;
+
 	case 'ico':
-	case 'ICO':
 		$mimeType = 'image/vnd.microsoft.icon';
 		break;
 
+	case 'jpg':
+	case 'jpeg':
+		$mimeType = 'image/jpeg';
+		break;
+
 	case 'js':
-	case 'JS':
 		$mimeType = 'text/javascript';
 		break;
 
+	case 'png':
+		$mimeType = 'image/png';
+		break;
+
 	case 'woff':
-	case 'WOFF':
 		header('Access-Control-Allow-Origin: *');
 		$mimeType = 'application/font-woff';
 		break;
 	
 	default:
-		$details = getimagesize($path);
-		$mimeType = $details['mime'];
+		exit;
 }
 
 header('Content-Type: '. $mimeType);
