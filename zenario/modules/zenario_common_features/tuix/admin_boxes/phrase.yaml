@@ -10,6 +10,8 @@ zenario_phrase:
         module_class_name: ""
         is_code: false
         translation: false
+        loadCountryName: false
+        loadRegionName: false
     hide_tab_bar: true
     tabs:
         phrase:
@@ -22,7 +24,7 @@ zenario_phrase:
                 module:
                     label: 'Module:'
                     pick_items:
-                        path: zenario__modules/panels/modules/refiners/phrases_only////
+                        path: zenario__modules/panels/modules
                         target_path: zenario__modules/panels/modules
                         min_path: zenario__modules/panels/modules
                         max_path: zenario__modules/panels/modules

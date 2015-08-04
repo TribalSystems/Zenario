@@ -32,11 +32,25 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		
+		//Show phrases for the country manager
+		if ($box['key']['loadCountryName'] && inc('zenario_country_manager')) {
+			$details = array(
+				'code' => '_COUNTRY_NAME_'. $box['key']['id'],
+				'module_class_name' => 'zenario_country_manager');
+			
+		} elseif ($box['key']['loadRegionName'] && inc('zenario_country_manager')) {
+			$details = array(
+				'code' => zenario_country_manager::getEnglishRegionName($box['key']['id']),
+				'module_class_name' => 'zenario_country_manager');
+		
+		} else {
+		 	$details = getRow('visitor_phrases', array('code', 'module_class_name'), $box['key']['id']);
+		}
+		
 		//From 7.0.3 we not longer offer the ability to create a new phrase using this box,
 		//so exit if this isn't an existing phrase
-		if (!$box['key']['id']
-		 || !is_numeric($box['key']['id'])
-		 || !($details = getRow('visitor_phrases', array('code', 'module_class_name', 'language_id'), $box['key']['id']))) {
+		if (empty($details)) {
 			exit;
 		}
 		

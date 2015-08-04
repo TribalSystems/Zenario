@@ -413,7 +413,7 @@ function deleteCacheDir($dir, $subDirLimit = 0) {
 		}
 	}
 	
-	return @rmdir($dir) && $allGone;
+	return $allGone && @rmdir($dir);
 }
 
 //Check whether we are allowed to call exec()

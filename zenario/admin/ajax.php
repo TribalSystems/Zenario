@@ -133,18 +133,18 @@ function adminBoxSyncStoragePath(&$box) {
 	}
 	
 	if (empty($box['_sync']['cache_dir'])
-	 || !is_dir(CMS_ROOT. 'cache/uploads/'. preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']))) {
+	 || !is_dir(CMS_ROOT. 'cache/fabs/'. preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']))) {
 		$box['_sync']['cache_dir'] =
 			createRandomDir(
-				8, $type = 'uploads', false, false,
+				8, $type = 'fabs', false, false,
 				$prefix = 'ab_'. hash64(json_encode($box), 8). '_');
 	}
 	
 	if (!empty($box['_sync']['cache_dir'])) {
-		$box['_sync']['cache_dir'] = str_replace('cache/uploads/', '', $box['_sync']['cache_dir']);
+		$box['_sync']['cache_dir'] = str_replace('cache/fabs/', '', $box['_sync']['cache_dir']);
 		$box['_sync']['cache_dir'] = preg_replace('/[^\\w-]/', '', $box['_sync']['cache_dir']);
-		touch(CMS_ROOT. 'cache/uploads/'. $box['_sync']['cache_dir']. '/accessed');
-		return CMS_ROOT. 'cache/uploads/'. $box['_sync']['cache_dir']. '/ab.json';
+		touch(CMS_ROOT. 'cache/fabs/'. $box['_sync']['cache_dir']. '/accessed');
+		return CMS_ROOT. 'cache/fabs/'. $box['_sync']['cache_dir']. '/ab.json';
 	
 	} else {
 		return false;

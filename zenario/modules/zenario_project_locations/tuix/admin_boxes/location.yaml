@@ -41,10 +41,10 @@ zenario_project_locations__project:
                 contractor_name:
                     label: 'Contractor name:'
                     type: text
-                address1:
+                address_line_1:
                     label: 'Address line 1:'
                     type: text
-                address2:
+                address_line_2:
                     label: 'Address line 2:'
                     type: text
                 locality:

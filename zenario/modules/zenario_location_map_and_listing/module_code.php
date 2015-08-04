@@ -163,6 +163,8 @@ class zenario_location_map_and_listing extends module_base_class {
 			  AND loc.country_id = '". sqlEscape($this->data['country_id']). "'";
 		}
 		
+		$sql .= "AND (loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL) AND (loc.latitude <> 0 AND loc.longitude <> 0)";
+		
 		$sql .= "
 			ORDER BY name";
 		

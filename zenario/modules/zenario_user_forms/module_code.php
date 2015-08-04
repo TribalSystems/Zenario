@@ -1555,7 +1555,7 @@ class zenario_user_forms extends module_base_class {
 				$fieldData['value'] = absCMSDirURL().fileLink($fieldData['internal_value']);
 			}
 			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
-				$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
+				$fieldData['value'] = $fieldData['value'];
 			}
 			$emailMergeFields[$fieldData['db_column']] = $fieldData['value'];
 		}

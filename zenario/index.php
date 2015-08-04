@@ -107,10 +107,9 @@ if (checkPriv()) {
 //Attempt to get this page.
 $cID = $cType = $content = $version = $redirectNeeded = false;
 resolveContentItemFromRequest($cID, $cType, $redirectNeeded);
-//var_dump($cID, $cType, $redirectNeeded, linkToItem($cID, $cType)); exit;
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())) {
-	header('location: '. linkToItem($cID, $cType), true, $redirectNeeded);
+	header('location: '. ifNull(linkToItem($cID, $cType), SUBDIRECTORY), true, $redirectNeeded);
 	exit;
 }
 $status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));

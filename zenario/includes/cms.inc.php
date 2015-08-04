@@ -1013,7 +1013,7 @@ function getContentLang($cID, $cType = false) {
 //n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
 function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 	$alias = '';
-	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = false;
+	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $aliasInURL = false;
 
 	//If there is a menu id in the request, try to get the Content Item from that
 	if (!empty($_REQUEST['mID']) && ($menu = getContentFromMenu($_REQUEST['mID'], 2))) {
@@ -1065,7 +1065,9 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		
 		//Check for slashes in the alias
 		if (strpos($alias, '/') !== false) {
-			$slashes = explode('/', $alias);
+			
+			$aliasInURL = trim($alias, '/');
+			$slashes = explode('/', $aliasInURL);
 			
 			//For multilingual sites, check the first part of the URL for the requested language code.
 			//(Except if a language-specific domain was used above, in which case skip this.)
@@ -1077,16 +1079,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			}
 			
 			//Use the last bit of the URL to find the page.
-			//Note that I am writing this using a while-loop to catch the case
-			//where there are trailing slashes
-			$alias = '';
-			while (!empty($slashes)) {
-				$alias = array_pop($slashes);
-				
-				if ($alias != '') {
-					break;
-				}
-			}
+			$alias = array_pop($slashes);
 			
 			//Anything in the middle are the other aliases in the menu tree; currently these are just visual
 			//and are ignored.
@@ -1097,7 +1090,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		
 			if (!empty($alias[1])) {
 				//Don't allow a language specific domain name *and* the language code in a comma
-				if ($reqLangId) {
+				if ($languageSpecificDomain) {
 					$redirectNeeded = 301;
 				}
 				
@@ -1145,7 +1138,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		//Link by tag id
 		} elseif (getCIDAndCTypeFromTagId($cID, $cType, $alias)) {
 			//Allow tag ids with language codes, but redirect them to the correct URL
-			if ($reqLangId) {
+			if ($reqLangId && !$languageSpecificDomain) {
 				langEquivalentItem($cID, $cType, $reqLangId);
 				$redirectNeeded = 301;
 			}
@@ -1184,7 +1177,11 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 				return;
 			
 			//If there was only one result for that alias, we can use this straight away
-			} elseif (!$row2) {
+			//If there was a language specified and there was only one match for that language, we're also good to go
+			} elseif ($row && (
+				!$row2
+			 || ($reqLangId && $reqLangId == $row['language_id'] && $reqLangId != $row2['language_id'])
+			)) {
 				$cID = $row['id'];
 				$cType = $row['type'];
 				
@@ -1192,14 +1189,22 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 				if ($reqLangId && $reqLangId != $row['language_id']) {
 					langEquivalentItem($cID, $cType, $reqLangId);
 					$redirectNeeded = 301;
-				}
 				
-				return;
+				//If this was a hierarchical URL, but hierarchical URLs are disabled,
+				//we should redirect back to a page with a flat URL
+				} elseif ($aliasInURL !== false && !setting('mod_rewrite_slashes')) {
+					$redirectNeeded = 301;
+				
+				//If this was a hierarchical URL, check the URL was correct and redirect if not
+				} elseif ($aliasInURL !== false) {
+					$hierarchicalAlias = addHierarchicalAlias($row['equiv_id'], $row['type'], $row['language_id'], $alias);
+				
+					if ($aliasInURL != $hierarchicalAlias
+					 && $aliasInURL != $row['language_id']. '/'. $hierarchicalAlias) {
+						$redirectNeeded = 301;
+					}
+				}
 			
-			//If there was a language specified and there was only one match for that language, we're also good to go
-			} elseif ($reqLangId && $reqLangId == $row['language_id'] && $reqLangId != $row2['language_id']) {
-				$cID = $row['id'];
-				$cType = $row['type'];
 				return;
 			
 			} else {
@@ -2671,50 +2676,7 @@ function linkToItem(
 	
 	//If enabled in the site settings, attempt to add the full menu tree into the friendly URL
 	if ($useAlias && $mod_rewrite_slashes) {
-		
-		//Try to get the menu node that this content item is for, and check if it has a parent to follow
-		$sql = "
-			SELECT id, parent_id, section_id
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			WHERE m.equiv_id = ". (int) $equivId. "
-			  AND m.content_type = '" . sqlEscape($cType) . "'
-			  AND m.target_loc = 'int'
-			ORDER BY m.redundancy = 'primary' DESC
-			LIMIT 1";
-		$result = sqlQuery($sql);
-		
-		if (($menu = sqlFetchAssoc($result))
-		 && ($menu['parent_id'])) {
-			
-			//Loop through the menu structure above. Where a content item has an alias,
-			//add it into the URL.
-			//Note that we should not add the same alias twice in a row - this may happen
-			//if a content item has a secondary menu node
-			$sql = "
-				SELECT c.alias
-				FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
-				INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
-				   ON m.id = mh.ancestor_id
-				  AND m.target_loc = 'int'
-				INNER JOIN ". DB_NAME_PREFIX. "content AS c
-				   ON c.equiv_id = m.equiv_id
-				  AND c.type = m.content_type
-				  AND c.language_id = '" . sqlEscape($languageId) . "'
-				WHERE mh.section_id = ". (int) $menu['section_id']. "
-				  AND mh.child_id = ". (int) $menu['parent_id']. "
-				ORDER BY mh.separation ASC";
-			$result = sqlQuery($sql);
-			
-			$lastAlias = $alias;
-			while ($menu = sqlFetchAssoc($result)) {
-				if ($menu['alias'] != '') {
-					if ($menu['alias'] != $lastAlias) {
-						$aliasOrCID = $menu['alias']. '/'. $aliasOrCID;
-						$lastAlias = $menu['alias'];
-					}
-				}
-			}
-		}
+		$aliasOrCID = addHierarchicalAlias($equivId, $cType, $languageId, $aliasOrCID);
 	}
 	
 	//If we're allowed slashes in the URL, and we need to add the language code,
@@ -2746,6 +2708,55 @@ function linkToItem(
 	} else {
 		return $fullPath. indexDotPHP(!$fullPath). "?cID=". $aliasOrCID. ($request? addAmp($request) : '');
 	}
+}
+
+function addHierarchicalAlias($equivId, $cType, $languageId, $alias) {
+	
+	//Try to get the menu node that this content item is for, and check if it has a parent to follow
+	$sql = "
+		SELECT id, parent_id, section_id
+		FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+		WHERE m.equiv_id = ". (int) $equivId. "
+		  AND m.content_type = '" . sqlEscape($cType) . "'
+		  AND m.target_loc = 'int'
+		ORDER BY m.redundancy = 'primary' DESC
+		LIMIT 1";
+	$result = sqlQuery($sql);
+	
+	if (($menu = sqlFetchAssoc($result))
+	 && ($menu['parent_id'])) {
+		
+		//Loop through the menu structure above. Where a content item has an alias,
+		//add it into the URL.
+		//Note that we should not add the same alias twice in a row - this may happen
+		//if a content item has a secondary menu node
+		$sql = "
+			SELECT c.alias
+			FROM ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
+			   ON m.id = mh.ancestor_id
+			  AND m.target_loc = 'int'
+			INNER JOIN ". DB_NAME_PREFIX. "content AS c
+			   ON c.equiv_id = m.equiv_id
+			  AND c.type = m.content_type
+			  AND c.language_id = '" . sqlEscape($languageId) . "'
+			WHERE mh.section_id = ". (int) $menu['section_id']. "
+			  AND mh.child_id = ". (int) $menu['parent_id']. "
+			ORDER BY mh.separation ASC";
+		$result = sqlQuery($sql);
+		
+		$lastAlias = $alias;
+		while ($menu = sqlFetchAssoc($result)) {
+			if ($menu['alias'] != '') {
+				if ($menu['alias'] != $lastAlias) {
+					$alias = $menu['alias']. '/'. $alias;
+					$lastAlias = $menu['alias'];
+				}
+			}
+		}
+	}
+	
+	return $alias;
 }
 
 function showAdminTitle($titleAdmin, $info="") {
@@ -3416,7 +3427,7 @@ function cleanDownloads() {
 					$timeA = $timeM;
 				}
 			
-				if ($timeA < $time - $lifetime) {
+				if ($timeA > $time - $lifetime) {
 					//If it was run in the last 5 minutes, don't run it again now...
 					define('ZENARIO_CLEANED_DOWNLOADS', true);
 					return true;

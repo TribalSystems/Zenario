@@ -428,7 +428,7 @@ class zenario_project_locations extends module_base_class {
 				}			
 				if (setting("zenario_project_locations__address1")) {
 					//$fields['name']['validation']=array();
-					$fields['address1']['validation']['required_if_not_hidden']='Please type in an address';
+					$fields['address_line_1']['validation']['required_if_not_hidden']='Please type in an address';
 				}			
 				if (setting("zenario_project_locations__locality")) {
 					//$fields['name']['validation']=array();

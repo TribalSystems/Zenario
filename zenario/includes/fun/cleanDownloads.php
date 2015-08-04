@@ -30,9 +30,15 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 
+//Define the directory tree in the following format:
+	//$mainDir => $subDir => $lifetime
+
 $directories = array(
 	'cache' => array(
-		'images' => 2 * 60 * 60,
+		'downloads' => -2,
+		'images' => -2,
+		'fabs' => 4 * 60 * 60,
+		'files' => -2,
 		'frameworks' => -1,
 		'pages' => 2 * 60 * 60,
 		'stats' => -1,
@@ -50,6 +56,11 @@ $directories = array(
 	)
 );
 
+//If they are older than $lifetime, files and their containing directories should be deleted.
+//A $lifetime of -1 means they should be permenant and never deleted
+//A $lifetime of -2 is for old deprecated/unused directories that should be immediately deleted
+
+
 //Loop through each temporary directory, looking to clean each up
 foreach ($directories as $mainDir => $subDirs) {
 
@@ -63,20 +74,29 @@ foreach ($directories as $mainDir => $subDirs) {
 	}
 
 	foreach ($subDirs as $type => $lifetime) {
-	
+		
+		//Check if the main directory is writable
 		if (!is_writable(CMS_ROOT. $mainDir. '/')) {
 			define('ZENARIO_CLEANED_DOWNLOADS', false);
 			return false;
 	
-		//Check if it is there, and create it if it is not
+		//Check if the sub-directory is there
 		} elseif (!is_dir($dir = CMS_ROOT. $mainDir. '/'. $type. '/')) {
-			if (!@mkdir($dir)) {
-				define('ZENARIO_CLEANED_DOWNLOADS', false);
-				return false;
+			
+			//If it's not there, and this was one of the old unused directories, then that's good!
+			if ($lifetime == -2) {
+				continue;
+			
+			//Otherwise we should try and create it.
+			} else {
+				if (!@mkdir($dir)) {
+					define('ZENARIO_CLEANED_DOWNLOADS', false);
+					return false;
+				}
+				@chmod($dir, 0777);
 			}
-			@chmod($dir, 0777);
 	
-		} elseif (!is_writable($dir)) {
+		} elseif (!is_writable($dir) && $lifetime != -2) {
 			define('ZENARIO_CLEANED_DOWNLOADS', false);
 			return false;
 	
@@ -121,6 +141,12 @@ foreach ($directories as $mainDir => $subDirs) {
 						}
 					}
 				}
+			}
+			
+			//Attempt to tidy up and delete old/decprecated directories if they are empty so
+			//people browsing the file system don't get confused by them
+			if ($lifetime == -2) {
+				deleteCacheDir($dir);
 			}
 		}
 	}

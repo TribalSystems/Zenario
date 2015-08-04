@@ -43,26 +43,6 @@ zenario__languages:
 					path: zenario__languages/panels/regions
 					branch: Yes
 					refiner: country_code_filter
-			hidden_nav:
-				country_id_to_phrase_id:
-					panel:
-						db_items:
-							table: '[[DB_NAME_PREFIX]]visitor_phrases AS vp'
-							id_column: vp.id
-						refiners:
-							country_id_to_phrase_id:
-								sql: |
-									vp.module_class_name = 'zenario_country_manager'
-																				AND vp.language_id = [[FOCUSED_LANGUAGE_ID]]
-																				AND vp.code = CONCAT('_COUNTRY_NAME_', [[REFINER_ID]])
-						refiner_required: Yes
-						item:
-							link:
-								path: zenario__languages/nav/vlp/vlp_chained/panel
-								branch: Yes
-								refiner: translations
-						allow_bypass: Yes
-						return_if_empty: Yes
 			collection_buttons:
 				create_country:
 					priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -88,10 +68,10 @@ zenario__languages:
 					hide_in_select_mode: Yes
 					traits:
 						show_localizations: Yes
-					link:
-						path: zenario__languages/nav/zenario__countries/hidden_nav/country_id_to_phrase_id/panel
-						branch: Yes
-						refiner: country_id_to_phrase_id
+					admin_box:
+						path: zenario_phrase
+						key:
+							loadCountryName: true
 				action_dropdown:
 					label: Actions
 					multiple_select: Yes
@@ -213,11 +193,10 @@ zenario__languages:
 					hide_in_select_mode: Yes
 					traits:
 						show_localizations: Yes
-					link:
-						path: >
-							zenario__languages/zenario__countries/regions/region_id_to_phrase_id
-						branch: Yes
-						refiner: region_id_to_phrase_id
+					admin_box:
+						path: zenario_phrase
+						key:
+							loadRegionName: true
 				remove_region:
 					priv: _PRIV_PUBLISH_CONTENT_ITEM
 					label: Delete
@@ -237,28 +216,3 @@ zenario__languages:
 							action: delete_region
 					traits:
 						can_delete_region: Yes
-			hidden_nav:
-				region_id_to_phrase_id:
-					panel:
-						db_items:
-							table: |
-								[[DB_NAME_PREFIX]]visitor_phrases AS vp
-								INNER JOIN 
-									[[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_regions r 
-								ON
-									vp.code = r.name
-							id_column: vp.id
-						refiners:
-							region_id_to_phrase_id:
-								sql: |
-									vp.module_class_name = 'zenario_country_manager'
-									AND vp.language_id = [[FOCUSED_LANGUAGE_ID]]
-									AND r.id =  [[REFINER_ID]]
-						refiner_required: Yes
-						item:
-							link:
-								path: zenario__languages/nav/vlp/vlp_chained/panel
-								branch: Yes
-								refiner: translations
-						allow_bypass: Yes
-						return_if_empty: Yes
