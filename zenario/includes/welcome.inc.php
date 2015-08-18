@@ -217,7 +217,7 @@ function checkConfigFileExists() {
 }
 
 function compareVersionNumber($actual, $required) {
-	return ('_'. str_replace('.', '00', (string) $actual)) >= ('_'. str_replace('.', '00', (string) $required));
+	return version_compare($actual, $required, '>=');
 }
 
 
