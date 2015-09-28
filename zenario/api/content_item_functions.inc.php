@@ -50,7 +50,7 @@ function getEquivIdAndCTypeFromTagId(&$equivId, &$cType, $tagId) {
 }
 
 function contentVersion($cID, $cType) {
-	return getRow('content', checkPriv()? 'admin_version' : 'visitor_version', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', checkPriv()? 'admin_version' : 'visitor_version', array('id' => $cID, 'type' => $cType));
 }
 
 //Get an item's title
@@ -65,7 +65,7 @@ function contentVersion($cID, $cType) {
 function isDraft($statusOrCID, $cType = false, $cVersion = false) {
 	
 	if (is_numeric($statusOrCID) && $cType) {
-		if (!($content = getRow('content', array('admin_version', 'status'), array('id' => $statusOrCID, 'type' => $cType)))
+		if (!($content = getRow('content_items', array('admin_version', 'status'), array('id' => $statusOrCID, 'type' => $cType)))
 		 || ($cVersion && $cVersion != $content['admin_version'])) {
 			return false;
 		}
@@ -82,7 +82,7 @@ function isDraft($statusOrCID, $cType = false, $cVersion = false) {
 function isPublished($statusOrCID, $cType = false, $cVersion = false) {
 	
 	if (is_numeric($statusOrCID) && $cType) {
-		if (!($content = getRow('content', array('visitor_version', 'status'), array('id' => $statusOrCID, 'type' => $cType)))
+		if (!($content = getRow('content_items', array('visitor_version', 'status'), array('id' => $statusOrCID, 'type' => $cType)))
 		 || ($cVersion && $cVersion != $content['visitor_version'])) {
 			return false;
 		}
@@ -107,8 +107,8 @@ function sqlToSearchContentTable($hidePrivateItems = true, $onlyShow = false, $e
 
 
 	$sql = "
-		FROM ". DB_NAME_PREFIX. "versions AS v
-		INNER JOIN ". DB_NAME_PREFIX. "content AS c
+		FROM ". DB_NAME_PREFIX. "content_item_versions AS v
+		INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 		   ON v.id = c.id
 		  AND v.type = c.type
 		INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc

@@ -104,7 +104,7 @@ if (!empty($box['key']['target_menu_section'])
 if ($box['key']['translate']) {
 	$equivId = equivId($box['key']['source_cID'], $box['key']['cType']);
 	
-	if (checkRowExists('content', array('equiv_id' => $equivId, 'type' => $box['key']['cType'], 'language_id' => $values['meta_data/language_id']))) {
+	if (checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $box['key']['cType'], 'language_id' => $values['meta_data/language_id']))) {
 		$box['tabs']['meta_data']['errors'][] = adminPhrase('This translation already exists.');
 	}
 }

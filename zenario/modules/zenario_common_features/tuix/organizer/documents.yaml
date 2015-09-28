@@ -13,7 +13,9 @@ zenario__content:
                 id_column: d.id
                 client_side: true
             
-            panel_type: hierarchy_with_lazy_load
+            panel_type: hierarchy_documents
+            #panel_type: hierarchy_with_lazy_load
+            
             reorder:
                 column: ordinal
                 hierarchy_view_mode: parent_ids_and_ordinals
@@ -21,81 +23,87 @@ zenario__content:
             
             hierarchy:
                 column: folder_id
-                #db_column: d.folder_id
             
             disable_periodic_refresh: true
             default_sort_column: name
             no_items_message: There are no documents or folders
             columns:
+                
                 id:
                     title: ID
+                    format: id
                     searchable: true
                     db_column: d.id
-                    show_by_default: false
                     align_right: true
                     width: xxsmall
                 ordinal:
                     title: Ordinal
                     db_column: d.ordinal
-                    show_by_default: false
                     align_right: true
                     width: xxsmall
                 type:
-                    title: Type
                     searchable: true
                     db_column: d.type
-                    show_by_default: false
                 folder_id:
-                    title: Folder ID
                     db_column: d.folder_id
-                    show_by_default: false
                     align_right: true
                     width: xxsmall
                 name:
                     title: Name
                     db_column: "concat(ifNull(d.filename, \'\'), ifNull(d.folder_name, \'\'))"
-                    show_by_default: true
                     width: xxlarge
                     searchable: true
+                    show_by_default: true
+                    css_class: 'zenario_document_title'
+                    
+                    document_line_number: 1
                 filesize:
-                    title: File size
+                    title: Filesize
                     width: small
                     show_by_default: true
+                    
+                    document_line_number: 1
+                privacy:
+                    title: Privacy
+                    db_column: d.privacy
+                    show_by_default: true
+                    css_class: "zenario_document_sub_fields"
+                    
+                    format: enum
+                    values:
+                        auto: Hidden
+                        public: Public
+                        private: Private
+                    
+                    document_line_number: 2
                 date_uploaded:
                     title: Date uploaded
                     db_column: d.file_datetime
-                    format: datetime
-                    show_by_default: Yes
-                    align_right: true
-                    width: xxsmall
-                folder_file_count:
-                    title: Files and folder count
+                    show_by_default: true
+                    css_class: "zenario_document_sub_fields"
+                    
+                    document_line_number: 2
+                extract_wordcount:
+                    title: Extract wordcount
+                    db_column: d.extract_wordcount
+                    show_by_default: true
+                    css_class: "zenario_document_sub_fields"
+                    
+                    document_line_number: 2
+                folder_file_count: {}
                 has_image:
-                    title: Has image
                     db_column: d.thumbnail_id
                     width: xxsmall
                     format: yes_or_no
                 plaintext_extract_details:
                     title: Extract text
                     width: xxlarge
+                
                 dont_autoset_metadata:
-                    title: Protected from auto-set
                     db_column: d.dont_autoset_metadata
                     width: small
                     format: yes_or_no
             collection_buttons:
-            #    upload:
-            #        hide_in_select_mode: true
-            #        label: Upload a document
-            #        css_class: zenario_create_a_new
-            #        tooltip: |
-            #            <p>Upload one or multiple files to the Dropbox.</p>
-            #            <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
-            #        upload:
-            #            multi: true
-            #            drag_and_drop: true
-            #            request:
-            #                upload: "1"
                 upload:
                     hide_in_select_mode: true
                     label: Upload a document
@@ -113,22 +121,22 @@ zenario__content:
                     label: Re-order
                     admin_box:
                         path: zenario_reorder_documents
-                        
+                
+                document_tags:
+                    hide_in_select_mode: true
+                    label: Manage tags
+                    link:
+                        path: zenario__content/panels/document_tags
+                document_rules:
+                    hide_in_select_mode: true
+                    label: Manage rules
+                    link:
+                        path: zenario__content/panels/document_rules
+                    tooltip: >
+                        Set rules to automatically set a document's metadata
+                        based on its filename (advanced)
                 
             item_buttons:
-                #upload:
-                #    label: Upload to selected folder
-                #    css_class: zenario_create_a_new
-                #    tooltip: |
-                #        <p>Upload one or multiple files to the Dropbox.</p>
-                #        <p>(You will need to ftp the file to the dropbox directory if it is too big.)</p>
-                #    upload:
-                #        multi: true
-                #        drag_and_drop: true
-                #        request:
-                #            upload: "1"
-                #    traits:
-                #        is_folder: true
                 upload:
                     hide_in_select_mode: true
                     label: Upload to selected folder
@@ -146,14 +154,7 @@ zenario__content:
                             add_folder: true
                     traits:
                         is_folder: true
-                    
-                #folder_details:
-                #    hide_in_select_mode: true
-                #    label: Rename
-                #    admin_box:
-                #        path: zenario_document_folder
-                #    traits:
-                #        is_folder: true
+                
                 view_tags:
                     hide_in_select_mode: true
                     label: Edit document metadata
@@ -294,7 +295,14 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_document_move
-                        
+                
+                upload_replacement_document:
+                    parent: actions_dropdown
+                    hide_in_select_mode: true
+                    label: Upload replacement document
+                    admin_box:
+                        path: zenario_upload_replacement_document
+                
                 delete_file:
                     hide_in_select_mode: true
                     label: Delete
@@ -313,18 +321,24 @@ zenario__content:
                             delete: true
                 generate_public_link:
                     parent: actions_dropdown
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     label: Generate public link
                     multiple_select: false
                     without_traits:
                         is_folder: true
                         public_link: true
                     ajax: 
+                        confirm:
+                            message: Are you sure you want to generate a public link for this document? Anyone with the URL will be able to access this document.
+                            button_message: Generate public link
+                            cancel_button_message: Cancel
+                            message_type: question
                         request: 
                             generate_public_link: true
+                            
                 view_public_link:
                     parent: actions_dropdown
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     label: View public link
                     multiple_select: false
                     traits:
@@ -336,7 +350,7 @@ zenario__content:
                             generate_public_link: true
                 delete_public_link:
                     parent: actions_dropdown
-                    hide_in_select_mode: true
+                    hide_in_select_mode: false
                     label: Delete public link
                     multiple_select: true
                     traits:
@@ -344,6 +358,11 @@ zenario__content:
                     without_traits:
                         is_folder: true
                     ajax: 
+                        confirm:
+                            message: Are you sure you want to delete the public link for this document? Anyone with the URL will be unable to access this document.
+                            button_message: Delete public link
+                            cancel_button_message: Cancel
+                            message_type: question
                         request: 
                             delete_public_link: true
                 delete_folder:

@@ -28,52 +28,8 @@
 
 
 /*  
- *  This file can be used as a header file.
- *  It will include the full library of functions in the CMS, except for admin functions.
- *  It will not connect to the database.
+ *  This file will include the full library of functions in the CMS, except for admin functions.
  */
-
-
-//Standard include file Header
-if (!defined('NOT_ACCESSED_DIRECTLY')) {
-	if (extension_loaded('mbstring')) mb_internal_encoding('UTF-8');
-	
-	//Attempt to set the working directory to the CMS Root, if it is not already
-	//Note that I am using $_SERVER['SCRIPT_FILENAME'] and not __DIR__ to do this
-	//because I want to resolve the relative URL when symlinks are used.
-	$isFilelimit = 0;
-	$dirname = $_SERVER['SCRIPT_FILENAME'];
-	
-	do {
-		if (is_null($dirname) 
-		 || ++$isFilelimit > 9) {
-			echo
-				'Could not resolve where the "zenario/" directory is.', "\n",
-				'This could be a problem with a symlink, ',
-				'or could be because you are trying to call this file from terminal ',
-				'(which it is not designed to do).', "\n";
-			exit;
-		} else {
-			chdir($dirname = dirname($dirname));
-		}
-	} while (!is_file('zenario/visitorheader.inc.php'));
-	
-	if (!defined('CMS_ROOT')) {
-		define('CMS_ROOT', $dirname. '/');
-	}
-	
-	//Define a constant to mark than any further include files have been legitamately included
-	define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
-	define('NOT_ACCESSED_DIRECTLY', true);
-	unset($isFilelimit);
-	unset($dirname);
-}
-
-
-if (!is_file(CMS_ROOT. 'zenario/visitorheader.inc.php')) {
-	echo 'Your CMS_ROOT value is not correctly set. \''. CMS_ROOT. '\' is not the correct path to the CMS.';
-	exit;
-}
 
 
 //Attempt to calculate the SUBDIRECTORY, if not set already
@@ -114,7 +70,6 @@ if (!defined('SUBDIRECTORY')) {
 
 
 //Add includes from the CMS
-require_once CMS_ROOT. 'zenario/cacheheader.inc.php';
 require CMS_ROOT. 'zenario/api/admin_functions.inc.php';
 require CMS_ROOT. 'zenario/api/array_and_object_functions.inc.php';
 require CMS_ROOT. 'zenario/api/content_item_functions.inc.php';
@@ -132,14 +87,11 @@ function getLatestRevisionNumber() {
 }
 
 //Get the CMS version number from latest_revision_no.inc.php
-//Also attempt to guess whether this is a dev site or an on-demand site
+//Also attempt to guess whether this is a build or an on-demand site
 function getCMSVersionNumber() {
 	
-	if (file_exists(CMS_ROOT. 'developer.txt')) {
-		return ZENARIO_CMS_VERSION. ' (dev)';
-	
-	} elseif (is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')) {
-		return ZENARIO_CMS_VERSION. ' On-Demand';
+	if (is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')) {
+		return ZENARIO_CMS_VERSION. ' (svn)';
 	
 	} else {
 		return ZENARIO_CMS_VERSION;
@@ -193,10 +145,34 @@ function showCookieConsentBox() {
 					unset($importantGetRequests['cType']);
 				}
 		}
+	
+		//Add the logo
+		$logoURL = $logoWidth = $logoHeight = false;
+		if (setting('admin_link_logo') == 'custom'
+		 && (imageLink($logoWidth, $logoHeight, $logoURL, setting('admin_link_custom_logo'), 50, 50))) {
+	
+			if (strpos($logoURL, '://') === false) {
+				$logoURL = absCMSDirURL(). $logoURL;
+			}
+		} else {
+			$logoURL = absCMSDirURL(). 'zenario/admin/images/zenario_admin_link_logo.png';
+			$logoWidth = 25;
+			$logoHeight = 19;
+		}
 		
 		echo '
-			<div class="admin_link">
-				<a href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '">', adminPhrase('Login'), '</a>
+			<div class="admin_login_link">
+				<a
+					class="clear_admin_cookie"
+					href="zenario/quick_ajax.php?clear_admin_cookie=1"
+					onclick="
+						return confirm(\'', (adminPhrase('Are you sure you wish to remove the admin login link?\n\nGo to /admin to login if the admin link is not visible.')), '\');
+					"
+				></a>
+				<a class="admin_login_link" href="', htmlspecialchars($url. http_build_query($importantGetRequests)), '">
+					<img src="', htmlspecialchars($logoURL), '" width="', (int) $logoWidth, '" height="', (int) $logoHeight, '" alt="', adminPhrase('Admin login logo'), '"/><br/>
+					', adminPhrase('Login'), '
+				</a>
 			</div>';
 		
 		//Never allow a page with an "Admin" link to be cached...
@@ -559,6 +535,14 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 				echo 'Could not read file '. $path;
 				exit;
 			
+			//Check for a byte order mark at the start of the file.
+			//Also use PREG's parser to check that the file was UTF8
+			} else
+			if (pack('CCC', 0xef, 0xbb, 0xbf) === substr($contents, 0, 3)
+			 || preg_match('/./u', $contents) === false) {
+				echo $path. ' was not saved using UTF-8 encoding. You must change it to UFT-8, and you must not use a Byte Order Mark.';
+				exit;
+			
 			} else
 			if ((preg_match("/[\n\r](\t* +\t|\t+ {4})/", "\n". $contents) !== 0)
 			 || (preg_match("/[\n\r](\t+[^\t])/", "\n". $contents) === 1
@@ -713,7 +697,7 @@ function importantGetRequests($includeCIDAndType = false) {
 function checkPriv($action = false, $editCID = false, $editCType = false, $editCVersion = 'latest', $welcomePage = false) {
 	if (isset($_SESSION['admin_logged_into_site'])) {
 		//If the Admin is not logged in to this site, then they shouldn't have Admin rights here
-		if ($_SESSION['admin_logged_into_site'] != httpHost(). SUBDIRECTORY. setting('site_id')) {
+		if ($_SESSION['admin_logged_into_site'] != COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
 			return false;
 		}
 		
@@ -741,7 +725,7 @@ function checkPriv($action = false, $editCID = false, $editCType = false, $editC
 			
 			//Otherwise look the current status, version and checkout-owner up from the database
 			} else {
-				$content = getRow('content', array('status', 'admin_version', 'lock_owner_id'), array('id' => $editCID, 'type' => $editCType));
+				$content = getRow('content_items', array('status', 'admin_version', 'lock_owner_id'), array('id' => $editCID, 'type' => $editCType));
 				if (!$content
 				 || $content['status'] == 'deleted'
 				 || ($content['lock_owner_id'] && $content['lock_owner_id'] != session('admin_userid'))) {
@@ -763,9 +747,13 @@ function checkPriv($action = false, $editCID = false, $editCType = false, $editC
 		if ($action === false) {
 			return true;
 		
+		//If the Admin has the "_ALL" permission, grant every check
+		} elseif (!empty($_SESSION['privs']['_ALL'])) {
+			return true;
+		
 		//Otherwise check if the Admin has this specific privilege
 		} else {
-			return !empty($_SESSION['privs']['_ALL']) || !empty($_SESSION['privs'][$action]);
+			return !empty($_SESSION['privs'][$action]);
 		}
 	} else {
 		return false;
@@ -804,10 +792,9 @@ function unsetAdminSession($destorySession = true) {
 	unset($_SESSION['privs']);
 	
 	if ($destorySession) {
-		if (session('admin_logged_into_site') == httpHost(). SUBDIRECTORY. setting('site_id')) {
+		if (session('admin_logged_into_site') == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
 			if (isset($_COOKIE[session_name()])) {
-				setcookie(session_name(), '', time() - 42000, '/');
-				setcookie(session_name(), '', time() - 42000, '/', cookieDomain());
+				clearCookie(session_name());
 			}
 		}
 		
@@ -1006,7 +993,7 @@ function isSpecialPage($cID, $cType) {
 }
 
 function getContentLang($cID, $cType = false) {
-	return getRow('content', 'language_id', array('id' => $cID, 'type' => ifNull($cType, 'html')));
+	return getRow('content_items', 'language_id', array('id' => $cID, 'type' => ifNull($cType, 'html')));
 }
 
 //Try to work out what content item is being accessed
@@ -1151,7 +1138,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			//Attempt to look up a page with this alias
 			$sql = "
 				SELECT id, type, equiv_id, language_id
-				FROM ". DB_NAME_PREFIX. "content
+				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE alias = '". sqlEscape($alias). "'
 				  AND status NOT IN ('trashed', 'deleted')
 				ORDER BY language_id";
@@ -1235,7 +1222,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 	//Look at the languages that we have for the requested translation.
 	$sql = "
 		SELECT c.id, c.type, c.equiv_id, c.language_id, c.alias, l.detect, l.detect_lang_codes
-		FROM ". DB_NAME_PREFIX. "content AS c
+		FROM ". DB_NAME_PREFIX. "content_items AS c
 		INNER JOIN ". DB_NAME_PREFIX. "languages AS l
 		   ON c.language_id = l.id
 		WHERE c.equiv_id = ". (int) $equivId. "
@@ -1322,7 +1309,7 @@ function getShowableContent(&$content, &$version, $cID, $cType = 'html', $reques
 			'publication_date', 'published_datetime', 'created_datetime',
 			'rss_slot_name', 'rss_nest');
 		
-		$version = getRow('versions', $versionColumns, array('id' => $content['id'], 'type' => $content['type'], 'version' => $versionNumber));
+		$version = getRow('content_item_versions', $versionColumns, array('id' => $content['id'], 'type' => $content['type'], 'version' => $versionNumber));
 		$versionNumber = true;
 	}
 	
@@ -1336,12 +1323,12 @@ function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion
 	} else {
 		
 		$translationChainColumns = array(
-			'equiv_id', 'type', 'privacy', 'log_user_access');
+			'equiv_id', 'type', 'privacy');
 		$contentColumns = array(
 			'equiv_id', 'id', 'type', 'language_id', 'alias',
 			'visitor_version', 'admin_version', 'status', 'lock_owner_id');
 		
-		if ((!$content = getRow('content', $contentColumns, array('id' => $cID, 'type' => ifNull($cType, 'html'))))
+		if ((!$content = getRow('content_items', $contentColumns, array('id' => $cID, 'type' => ifNull($cType, 'html'))))
 		 || (!$chain = getRow('translation_chains', $translationChainColumns, array('equiv_id' => $content['equiv_id'], 'type' => $content['type'])))) {
 			return false;
 		}
@@ -1438,12 +1425,12 @@ function checkPermAndGetShowableContent(&$content, $cID, $cType, $requestVersion
 		} else {
 			//Version number was specified in the URL; but first check to see if it exists
 			if ($requestVersion) {
-				if (checkRowExists('versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $requestVersion))) {
+				if (checkRowExists('content_item_versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $requestVersion))) {
 					return (int) $requestVersion;
 				}
 			
 			} else {
-				if (checkRowExists('versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']))) {
+				if (checkRowExists('content_item_versions', array('id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version']))) {
 					return $content['admin_version'];
 				}
 			}
@@ -1525,7 +1512,7 @@ function setShowableContent(&$content, &$version) {
 }
 
 function contentItemAlias($cID, $cType) {
-	return getRow('content', 'alias', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', 'alias', array('id' => $cID, 'type' => $cType));
 }
 
 function contentItemTemplateId($cID, $cType, $cVersion = false) {
@@ -1534,7 +1521,7 @@ function contentItemTemplateId($cID, $cType, $cVersion = false) {
 		$cVersion = getLatestVersion($cID, $cType);
 	}
 	
-	return getRow('versions', 'layout_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	return getRow('content_item_versions', 'layout_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function templateSkinId($template, $fallback = false) {
@@ -1561,7 +1548,7 @@ function templateSkinId($template, $fallback = false) {
 function getLatestContentID($cType) {
 	$sql = "
 		SELECT MAX(id)
-		FROM ". DB_NAME_PREFIX. "content
+		FROM ". DB_NAME_PREFIX. "content_items
 		WHERE type = '". sqlEscape($cType). "'";
 
 	$result = sqlQuery($sql);
@@ -1570,15 +1557,15 @@ function getLatestContentID($cType) {
 }
 
 function getPublishedVersion($cID, $cType) {
-	return getRow('content', 'visitor_version', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', 'visitor_version', array('id' => $cID, 'type' => $cType));
 }
 
 function getLatestVersion($cID, $cType) {
-	return getRow('content', 'admin_version', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', 'admin_version', array('id' => $cID, 'type' => $cType));
 }
 
 function getAppropriateVersion($cID, $cType) {
-	return getRow('content', checkPriv()? 'admin_version' : 'visitor_version', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', checkPriv()? 'admin_version' : 'visitor_version', array('id' => $cID, 'type' => $cType));
 }
 
 
@@ -1591,12 +1578,12 @@ function getItemTitle($cID, $cType, $cVersion = false) {
 	if ($cID == cms_core::$cID && $cType == cms_core::$cType && $cVersion == cms_core::$cVersion) {
 		return cms_core::$pageTitle;
 	} else {
-		return getRow('versions', 'title', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		return getRow('content_item_versions', 'title', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	}
 }
 
 function getItemDescription($cID, $cType, $cVersion) {
-	return getRow('versions', 'description', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	return getRow('content_item_versions', 'description', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function formatTagFromTagId($tagId) {
@@ -1613,7 +1600,7 @@ function formatTag($cID, $cType, $alias = -1, $langId = false, $neverAddLanguage
 	$friendlyURL = '';
 	
 	if ($alias === -1) {
-		$content = getRow('content', array('alias', 'language_id'), array('id' => $cID, 'type' => $cType));
+		$content = getRow('content_items', array('alias', 'language_id'), array('id' => $cID, 'type' => $cType));
 		$alias = $content['alias'];
 	}
 	
@@ -1625,7 +1612,7 @@ function formatTag($cID, $cType, $alias = -1, $langId = false, $neverAddLanguage
 	 && getNumLanguages() > 1) {
 		if (!$langId) {
 			if (!$content) {
-				$content = getRow('content', array('alias', 'language_id'), array('id' => $cID, 'type' => $cType));
+				$content = getRow('content_items', array('alias', 'language_id'), array('id' => $cID, 'type' => $cType));
 			}
 			$langId = $content['language_id'];
 		}
@@ -1943,7 +1930,7 @@ function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectio
 				m.invisible,
 				m.rel_tag,
 				m.css_class
-			FROM ". DB_NAME_PREFIX. "content AS c
+			FROM ". DB_NAME_PREFIX. "content_items AS c
 			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 			   ON m.equiv_id = c.equiv_id
 			  AND m.content_type = c.type
@@ -2030,7 +2017,7 @@ function getMenuInLanguage($mID, $langId) {
 		FROM ". DB_NAME_PREFIX. "menu_text AS t
 		INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 		   ON m.id = t.menu_id
-		LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+		LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 		   ON m.equiv_id = c.id
 		  AND m.content_type = c.type
 		  AND m.target_loc = 'int'
@@ -2090,10 +2077,30 @@ function getMenuNodeDetails($mID, $langId = false) {
 		if ($row['equiv_id'] && $row['content_type']) {
 			$row['content_id'] = $row['equiv_id'];
 			langEquivalentItem($row['content_id'], $row['content_type'], $langId);
+			
+			if (isMenuNodeUnique($row['redundancy'], $row['equiv_id'], $row['content_type'])) {
+				$row['redundancy'] = 'unique';
+			}
 		}
 	}
 	
 	return $row;
+}
+
+function isMenuNodeUnique($redundancy, $equiv_id, $content_type) {
+	if ($redundancy == 'primary') {
+		$sql = '
+			SELECT COUNT(*)
+			FROM ' . DB_NAME_PREFIX . 'menu_nodes
+			WHERE equiv_id = ' . (int)$equiv_id . '
+			AND content_type = "'. sqlEscape($content_type) . '"';
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		if ($row[0] == 1) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function getMenuName($mID, $langId = false) {
@@ -2170,7 +2177,7 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 		if (!$row['visitor_version']) {
 			//If a Menu Node is translated, but a Content Item does not have a translation, try to link to a Content Item in the default Language
 			if (!$row['cID'] && $row['cType'] && $row['equiv_id']) {
-				if ($content = getRow('content', array('alias', 'visitor_version'), array('id' => $row['equiv_id'], 'type' => $row['cType']))) {
+				if ($content = getRow('content_items', array('alias', 'visitor_version'), array('id' => $row['equiv_id'], 'type' => $row['cType']))) {
 					$row['cID'] = $row['equiv_id'];
 					$row['alias'] = $content['alias'];
 					$row['visitor_version'] = $content['visitor_version'];
@@ -2197,6 +2204,63 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 		}
 	}
 	return $row['target_loc'] != 'none';
+}
+
+
+function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
+	
+	$sql = "
+		SELECT
+			m.id AS mID,
+			t.name,
+			m.target_loc,
+			m.open_in_new_window,
+			m.anchor,
+			m.module_class_name,
+			m.method_name,
+			m.param_1,
+			m.param_2,
+			m.equiv_id,
+			c.id AS cID,
+			m.content_type AS cType,
+			c.alias,
+			m.use_download_page,
+			m.hide_private_item,
+			t.ext_url,
+			c.visitor_version,
+			m.invisible,
+			m.accesskey,
+			m.ordinal,
+			m.rel_tag,
+			m.image_id,
+			m.rollover_image_id,
+			m.css_class,
+			t.descriptive_text,
+			m.menu_text_module_class_name,
+			m.menu_text_method_name,
+			m.menu_text_param_1,
+			m.menu_text_param_2
+		FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+		INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
+		   ON t.menu_id = m.id
+		  AND t.language_id = '". sqlEscape($language). "'
+		LEFT JOIN ".DB_NAME_PREFIX."content_items AS c
+		   ON m.target_loc = 'int'
+		  AND m.equiv_id = c.equiv_id
+		  AND m.content_type = c.type
+		  AND c.language_id = '". sqlEscape($language). "'
+		WHERE m.parent_id = ". (int) $parentMenuId. "
+		  AND m.section_id = ". (int) $sectionId;
+	
+	if (!$showInvisibleMenuItems) {
+		$sql .= "
+		  AND m.invisible != 1";
+	}
+
+	$sql .= "
+		ORDER BY m.ordinal";
+	
+	return sqlQuery($sql);
 }
 
 
@@ -2227,7 +2291,7 @@ function getMenuStructure(
 	//Look up all of the Menu Items on this level
 	$rows = array();
 	if ($showMissingMenuNodes && $language != setting('default_language')) {
-		$result = cms_core::lookForMenuItems($parentMenuId, setting('default_language'), $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+		$result = lookForMenuItems($parentMenuId, setting('default_language'), $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
 		while ($row = sqlFetchAssoc($result)) {
 			if (empty($row['css_class'])) {
 				$row['css_class'] = 'missing';
@@ -2239,7 +2303,7 @@ function getMenuStructure(
 		}
 	}
 	
-	$result = cms_core::lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+	$result = lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
 	while ($row = sqlFetchAssoc($result)) {
 		$rows[$row['mID']] = $row;
 	}
@@ -2382,9 +2446,9 @@ function getMenuStructure(
 					//Otherwise if we're not recursing, check that at least one of the children are in fact visible to the current Visitor
 					} else {
 						$row['children'] = false;
-						$result2 = cms_core::lookForMenuItems($row['mID'], $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
+						$result2 = lookForMenuItems($row['mID'], $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems);
 						while ($row2 = sqlFetchAssoc($result2)) {
-							if ($row2['target_loc'] != 'none' && empty($row2['invisible']) && shouldShowMenuItem($row2, $cachingRestrictions)) {
+							if ($row2['target_loc'] != 'none' && (empty($row2['invisible']) || $showInvisibleMenuItems) && shouldShowMenuItem($row2, $cachingRestrictions)) {
 								$row['children'] = true;
 								break;
 							}
@@ -2498,6 +2562,10 @@ function linkToItem(
 		$fullPath = true;
 	}
 	
+	if (is_array($request)) {
+		$request = http_build_query($request);
+	}
+	
 	
 	$adminMode = !empty($_SESSION['admin_logged_into_site']) && checkPriv();
 	$mod_rewrite_enabled = setting('mod_rewrite_enabled');
@@ -2548,7 +2616,7 @@ function linkToItem(
 	)) {
 		$result = sqlSelect("
 			SELECT alias, equiv_id, language_id, lang_code_in_url
-			FROM ". DB_NAME_PREFIX. "content
+			FROM ". DB_NAME_PREFIX. "content_items
 			WHERE id = ". (int) $cID. "
 			  AND type = '". sqlEscape($cType). "'"
 		);
@@ -2648,7 +2716,7 @@ function linkToItem(
 			} else {
 				$sql = "
 					SELECT 1
-					FROM ". DB_NAME_PREFIX. "content
+					FROM ". DB_NAME_PREFIX. "content_items
 					WHERE alias = '". sqlEscape($alias). "'
 					LIMIT 2";
 				$result = sqlQuery($sql);
@@ -2736,7 +2804,7 @@ function addHierarchicalAlias($equivId, $cType, $languageId, $alias) {
 			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 			   ON m.id = mh.ancestor_id
 			  AND m.target_loc = 'int'
-			INNER JOIN ". DB_NAME_PREFIX. "content AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 			   ON c.equiv_id = m.equiv_id
 			  AND c.type = m.content_type
 			  AND c.language_id = '" . sqlEscape($languageId) . "'
@@ -3042,22 +3110,11 @@ function getDatasetFieldLOV($field, $flat = true) {
 	
 	$lov = array();
 	if (chopPrefixOffOfString($field['type'], 'centralised_')) {
-		if ($field['values_source']
-		 && ($source = explode('::', $field['values_source'], 3))
-		 && (!empty($source[0]))
-		 && (!empty($source[1]))
-		 && (!isset($source[2]))
-		 && (inc($source[0]))) {
-			$filter = false;
-			$listMode = ZENARIO_CENTRALISED_LIST_MODE_LIST;
-			if (isset($field['values_source_filter'])) {
-				$filter = $field['values_source_filter'];
-				if ($filter !== '') {
-					$listMode = ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST;
-				}
-			}
-			$lov = call_user_func($source, $listMode, $filter);
-			
+		$filter = false;
+		if (isset($field['values_source_filter'])) {
+			$filter = $field['values_source_filter'];
+		}
+		if ($lov = getCentralisedListValues($field['values_source'], $filter)) {
 			if (!$flat) {
 				cms_core::$dbupCurrentRevision = 0;
 				array_walk($lov, 'getDatasetFieldLOVFlatArrayToLabeled');
@@ -3209,7 +3266,7 @@ function getGroupPrivateName($group_id) {
 
 //CONTENT TYPE
 function getContentStatus($cID, $cType) {
-	return getRow('content', 'status', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', 'status', array('id' => $cID, 'type' => $cType));
 }
 
 
@@ -3328,22 +3385,34 @@ function resizeImageString(&$image, $mime_type, &$width, &$height, $maxWidth, $m
 /* Documents */
 
 
-function createRandomDir($length, $type = 'downloads', $onlyForCurrentVisitor = true, $ip = -1, $prefix = '') {
+function createRandomDir($length, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1, $prefix = '') {
 	return createCacheDir($prefix. randomString($length), $type, $onlyForCurrentVisitor, $ip);
 }
 
 
-function createCacheDir($dir, $type = 'downloads', $onlyForCurrentVisitor = true, $ip = -1, $mainDir = false) {
+function createCacheDir($dir, $type = 'private/downloads', $onlyForCurrentVisitor = true, $ip = -1) {
 	
-	if (!$mainDir) {
-		if ($type == 'downloads' || $type == 'images' || $type == 'files') {
-			$mainDir = 'private';
-		} else {
-			$mainDir = 'cache';
-		}
+	switch ($type) {
+		//Migrate some old formats of the $type input
+		case 'frameworks':
+		case 'pages':
+		case 'stats':
+		case 'tuix':
+		case 'uploads':
+			$path = 'cache/'. $type. '/';
+			break;
+		
+		case 'downloads':
+		case 'images':
+		case 'files':
+			$path = 'private/'. $type. '/';
+			break;
+		
+		default:
+			$path = $type. '/';
 	}
 	
-	$fullPath = CMS_ROOT. ($path = $mainDir. '/'. $type. '/');
+	$fullPath = CMS_ROOT. $path;
 	
 	if (!is_dir($fullPath) || !is_writable($fullPath)) {
 		return false;
@@ -3500,7 +3569,7 @@ function getCategoryName($id) {
 }
 
 function getContentItemLayout($cID, $cType, $cVersion) {
-	return getRow('versions', 'layout_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	return getRow('content_item_versions', 'layout_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function getContentItemCategories($cID, $cType, $publicOnly = false, $langId = false, $sql = false) {
@@ -3802,7 +3871,7 @@ function seedRandomNumberGeneratorIfNeeded() {
 	}
 }
 
-//Generate a random string of numbers and letter
+//Generate a random string of numbers and letters
 function randomString($requiredLength = 12) {
 	
 	seedRandomNumberGeneratorIfNeeded();
@@ -3813,27 +3882,21 @@ function randomString($requiredLength = 12) {
 		$stringOut .= base64(pack('I', mt_rand()));
 	}
 	return substr($stringOut, 0, $requiredLength);
+}
+
+//Generate a string from a specific set of characters
+	//By default I've stripped out vowels, just in case a swearword is randomly generated.
+	//Also "1"s look too much like "l"s and "0"s look too much like "o"s so I've removed those too for clarity.
+function randomStringFromSet($requiredLength = 12, $set = 'BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz23456789') {
+	$lettersToUse = str_split($set);
+	$max = count($lettersToUse) - 1;
 	
-	
-	/*	Old logic:
-	//Only use certain characters. (I've stripped out vowels, just in case a swearword
-	//is randomly generated. Also 1s look too much like ls and 0s look too much like os
-	$lettersToUse = str_split('BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz23456789');
 	$stringOut = '';
-	
-	//Loop while our output string is still too short
-	while (strlen($stringOut) < $requiredLength) {
-		//Generate a random number, convert it into lots of little numbers between 0 and
-		//49 (our string of characters above is 50 long), convert each to one of the characters
-		//from our string of characters, then append each to the output string
-		foreach(str_split((string) mt_rand(), 2) as $chunk) {
-			$stringOut .= $lettersToUse[((int) $chunk) % 50];
-		}
+	for ($i = 0; $i < $requiredLength; ++$i) {
+		$stringOut .= $lettersToUse[mt_rand(0, $max)];
 	}
 	
-	//We might have made out string too long, chop it if needed and return it.
-	return substr($stringOut, 0, $requiredLength);
-	*/
+	return $stringOut;
 }
 
 
@@ -4730,7 +4793,7 @@ function assocArrayToXML ($data) {
 
 
 function equivId($cID, $cType) {
-	return getRow('content', 'equiv_id', array('id' => $cID, 'type' => $cType));
+	return getRow('content_items', 'equiv_id', array('id' => $cID, 'type' => $cType));
 }
 
 function langEquivalentItem(&$cID, &$cType, $langId = false) {
@@ -4757,7 +4820,7 @@ function langEquivalentItem(&$cID, &$cType, $langId = false) {
 	
 	$sql = "
 		SELECT id, equiv_id, language_id
-		FROM ". DB_NAME_PREFIX. "content
+		FROM ". DB_NAME_PREFIX. "content_items
 		WHERE id = ". (int) $cID. "
 		  AND type = '". sqlEscape($cType). "'";
 	$result = sqlQuery($sql);
@@ -4766,7 +4829,7 @@ function langEquivalentItem(&$cID, &$cType, $langId = false) {
 		if ($langId != $row['language_id']) {
 			$sql = "
 				SELECT id
-				FROM ". DB_NAME_PREFIX. "content
+				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE equiv_id = ". (int) $row['equiv_id']. "
 				  AND type = '". sqlEscape($cType). "'
 				  AND language_id = '". sqlEscape($langId). "'";
@@ -4789,7 +4852,7 @@ function equivalences($cID, $cType, $includeCurrent = true, $equivId = false) {
 	}
 	
 	$result = getRows(
-		'content',
+		'content_items',
 		array('id', 'type', 'language_id', 'equiv_id', 'status'),
 		array('equiv_id' => $equivId, 'type' => $cType),
 		'language_id');
@@ -4804,3 +4867,19 @@ function equivalences($cID, $cType, $includeCurrent = true, $equivId = false) {
 	return $equivs;
 }
 
+function getCentralisedListValues($valuesSource, $filter = false) {
+	if ($valuesSource
+		&& ($source = explode('::', $valuesSource, 3))
+		&& (!empty($source[0]))
+		&& (!empty($source[1]))
+		&& (!isset($source[2]))
+		&& (inc($source[0]))
+	) {
+		$listMode = ZENARIO_CENTRALISED_LIST_MODE_LIST;
+		if ($filter !== false && $filter !== '') {
+			$listMode = ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST;
+		}
+		return call_user_func($source, $listMode, $filter);
+	}
+	return array();
+}

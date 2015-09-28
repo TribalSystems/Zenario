@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -70,19 +70,27 @@ methods.init = function() {
 		that = this,
 		panelTypeA = this.returnPanelTypeA(),
 		panelTypeB = this.returnPanelTypeB(),
+		panelTypeC = this.returnPanelTypeC(),
 		pia = this.pia = new panelTypeA,
 		pib = this.pib = new panelTypeB,
+		pic = this.pic = panelTypeC && (new panelTypeC),
 		methods = {};
 	
 	//Get a combined list of all of the methods and properties from the parent classes
 	//Note: we must NOT use "hasOwnProperty" (or any shortcut function to hasOwnProperty) because we
 	//want all of the methods the class has, including its parent methods
-	for (methodName in pia) {
-		methods[methodName] = typeof pia[methodName];
-	}
-	for (methodName in pib) {
-		methods[methodName] = typeof pib[methodName];
-	}
+			for (methodName in pia) {
+				methods[methodName] = typeof pia[methodName];
+			}
+			for (methodName in pib) {
+				methods[methodName] = typeof pib[methodName];
+			}
+	if(pic) for (methodName in pic) {
+				methods[methodName] = typeof pic[methodName];
+			}
+	
+	//Check the local storage to check which view was last viewed
+	this.view = zenario.sGetItem(true, 'view_for_' + this.path) || this.returnDefaultView();
 	
 	//Loop through each of them, setting up pointers to them
 	foreach (methods as methodName => type) {
@@ -107,7 +115,10 @@ methods.init = function() {
 								that[methodName] = function() {
 									var rv;
 								
-									if (that.altView) {
+									if (that.view == 'C' && pic) {
+										rv = pic[methodName].apply(pic, arguments);
+									} else
+									if (that.view == 'B') {
 										rv = pib[methodName].apply(pib, arguments);
 									} else {
 										rv = pia[methodName].apply(pia, arguments);
@@ -121,14 +132,18 @@ methods.init = function() {
 							//For the "cmsSets" methods, always call both of the parent methods
 							} else if (methodName.match(/^cmsSets/)) {
 								that[methodName] = function() {
-									pib[methodName].apply(pib, arguments);
-									pia[methodName].apply(pia, arguments);
+											pib[methodName].apply(pib, arguments);
+											pia[methodName].apply(pia, arguments);
+									if(pic) pic[methodName].apply(pic, arguments);
 								};
 							
 							//If this class does not have a method, just call one of the parent methods
 							} else {
 								that[methodName] = function() {
-									if (that.altView) {
+									if (that.view == 'C' && pic) {
+										return pic[methodName].apply(pic, arguments);
+									} else
+									if (that.view == 'B') {
 										return pib[methodName].apply(pib, arguments);
 									} else {
 										return pia[methodName].apply(pia, arguments);
@@ -143,16 +158,17 @@ methods.init = function() {
 	
 	
 	
-	//Check the local storage to check whether grid or list view was last used.
-	this.altView = zenario.sGetItem(true, 'view_for_' + this.path);
 	
 	//Init both parent classes, as zenarioO.initNewPanelInstance() would
-	this.pia.cmsSetsPath(this.path);
-	this.pib.cmsSetsPath(this.path);
-	this.pia.cmsSetsRefiner(this.refiner);
-	this.pib.cmsSetsRefiner(this.refiner);
-	this.pia.init();
-	this.pib.init();
+			this.pia.cmsSetsPath(this.path);
+			this.pib.cmsSetsPath(this.path);
+	if(pic) this.pic.cmsSetsPath(this.path);
+			this.pia.cmsSetsRefiner(this.refiner);
+			this.pib.cmsSetsRefiner(this.refiner);
+	if(pic) this.pic.cmsSetsRefiner(this.refiner);
+			this.pia.init();
+			this.pib.init();
+	if(pic) this.pic.init();
 };
 
 methods.cmsSetsPath = function(path) {
@@ -169,20 +185,27 @@ methods.showPanel = function($header, $panel, $footer) {
 	this.setSwitchButton($header, $panel, $footer);
 };
 
-methods.changeViewMode = function(altView) {
-	//If the view mode is changed, remember the last value in the local storage
-	zenario.sSetItem(true, 'view_for_' + this.path, this.altView = altView);
-	
-	
-	var selectedItems;
-	if (altView) {
-		selectedItems = this.pia.returnSelectedItems();
-		this.pib.cmsSetsSelectedItems(selectedItems);
-	} else {
+methods.changeViewMode = function(view) {
+							
+	if (this.view == 'C' && this.pic) {
+		selectedItems = this.pic.returnSelectedItems();
+	} else if (this.view == 'B') {
 		selectedItems = this.pib.returnSelectedItems();
-		this.pia.cmsSetsSelectedItems(selectedItems);
+	} else {
+		selectedItems = this.pia.returnSelectedItems();
 	}
 	
+	//Remember the last value in the local storage
+	zenario.sSetItem(true, 'view_for_' + this.path, this.view = view);
+
+	if (this.view == 'C' && this.pic) {
+		this.pic.cmsSetsSelectedItems(selectedItems);
+	} else if (this.view == 'B') {
+		this.pib.cmsSetsSelectedItems(selectedItems);
+	} else {
+		this.pia.cmsSetsSelectedItems(selectedItems);
+	}
+
 	//Refresh the panel to show things in the new view
 	zenarioO.refresh();
 };
@@ -190,28 +213,30 @@ methods.changeViewMode = function(altView) {
 //Setup the switch view button at the top right of Organizer
 methods.setSwitchButton = function($header, $panel, $footer) {
 	var that = this,
-		$switchButton = $header.find('#organizer_switch_view'),
+		$switchButtons = $header.find('#organizer_switch_view_wrap'),
 		tooltip,
 		cssClass,
-		selectedItems;
+		pic = this.pic,
+		m = {buttons: []};
 	
-	if (this.altView) {
-		$switchButton.click(function() {
-			that.changeViewMode('');
-		});
-		tooltip = this.returnSwitchButtonTooltipA();
-		cssClass = this.returnSwitchButtonCSSClassA();
-		
+			m.buttons.push({id: 'zenario_organizer_switch_view_a', css_class: this.returnSwitchButtonCSSClassA(), tooltip: this.returnSwitchButtonTooltipA()});
+			m.buttons.push({id: 'zenario_organizer_switch_view_b', css_class: this.returnSwitchButtonCSSClassB(), tooltip: this.returnSwitchButtonTooltipB()});
+	if(pic) m.buttons.push({id: 'zenario_organizer_switch_view_c', css_class: this.returnSwitchButtonCSSClassC(), tooltip: this.returnSwitchButtonTooltipC()});
+
+	if (this.view == 'C' && this.pic) {
+		m.buttons[2].selected = true;
+	} else if (this.view == 'B') {
+		m.buttons[1].selected = true;
 	} else {
-		$switchButton.click(function() {
-			that.changeViewMode('1');
-		});
-		tooltip = this.returnSwitchButtonTooltipB();
-		cssClass = this.returnSwitchButtonCSSClassB();
+		m.buttons[0].selected = true;
 	}
+
+	$switchButtons.show().html(zenarioA.microTemplate('zenario_organizer_switch_view_wrap', m));
+	zenarioA.tooltips($switchButtons);
 	
-	$switchButton.show().attr('class', cssClass);
-	zenarioA.tooltips($switchButton, {items: '*', content: tooltip});
+			$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { that.changeViewMode('A'); });
+			$switchButtons.find('#zenario_organizer_switch_view_b').click(function() { that.changeViewMode('B'); });
+	if(pic) $switchButtons.find('#zenario_organizer_switch_view_c').click(function() { that.changeViewMode('C'); });
 };
 
 
@@ -229,6 +254,10 @@ methods.returnPanelTypeB = function() {
 	return panelTypes.grid;
 };
 
+methods.returnPanelTypeC = function() {
+	return false;
+};
+
 methods.returnSwitchButtonCSSClassA = function() {
 	return 'organizer_switch_to_list_view';
 };
@@ -237,12 +266,24 @@ methods.returnSwitchButtonCSSClassB = function() {
 	return 'organizer_switch_to_grid_view';
 };
 
+methods.returnSwitchButtonCSSClassC = function() {
+	return '';
+};
+
 methods.returnSwitchButtonTooltipA = function() {
 	return 'List view';
 };
 
 methods.returnSwitchButtonTooltipB = function() {
 	return 'Grid view';
+};
+
+methods.returnSwitchButtonTooltipC = function() {
+	return '';
+};
+
+methods.returnDefaultView = function() {
+	return 'A';
 };
 
 

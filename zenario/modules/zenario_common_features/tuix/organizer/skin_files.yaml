@@ -9,13 +9,20 @@ zenario__layouts:
                 name:
                     title: Filename
                     show_by_default: true
+                    
+                    # Note - this is the default sort column so it will be sorted.
+                    # I'm just setting the disallow_sorting optoin as a hack to stop
+                    # people from sorting descending on it.
+                    disallow_sorting: true
                 path:
                     title: Path
                     show_by_default: true
+                    disallow_sorting: true
                 filesize:
                     title: Size
                     format: filesize
                     show_by_default: true
+                    disallow_sorting: true
             refiners:
                 skin:
                     exists: true
@@ -34,6 +41,12 @@ zenario__layouts:
                     branch: true
                     refiner: subpath
                 tooltip_when_link_is_active: 'View files in the sub-directory &quot;[[name]]&quot;'
+            collection_buttons:
+                help:
+                    label: Help
+                    help:
+                        message: ''
+                        html: true
             item_buttons:
                 view_dropdown:
                     label: View

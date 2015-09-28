@@ -24,23 +24,23 @@ diagnostics:
                     full_width: true
                     snippet:
                         html: Directories
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_dirs:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 dir_1:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Backup Storage Area
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_1:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_1_blurb:
                     full_width: true
                     row_class: sub_field
@@ -49,29 +49,28 @@ diagnostics:
                             If you wish to store site backups on your server, you should create a directory
                             on your server in which to keep them.
                             It should start with a slash, but do not add a trailing slash.
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 backup_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
-                    onkeyup: zenarioAB.quickValidateWelcomePage(500);
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 backup_dir_status:
                     full_width: true
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 dir_2:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Document Secure Store (Docstore)
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_2:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_2_blurb:
                     full_width: true
                     row_class: sub_field
@@ -80,30 +79,29 @@ diagnostics:
                             You should create a directory on your server where Documents can be stored by the CMS.
                             Please enter the absolute path to the directory.
                             It should start with a slash, but do not add a trailing slash.
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 docstore_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
-                    onkeyup: zenarioAB.quickValidateWelcomePage(500);
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 docstore_dir_status:
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 dir_4:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Templates Directory
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_4:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_4_blurb:
                     full_width: true
                     row_class: sub_field
@@ -112,30 +110,30 @@ diagnostics:
                             Zenario uses template files to form the layout of web pages.
                             These may be edited by an administrator, and Zenario writes them to the following directory.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 template_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 template_dir_status:
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 dir_5:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Cache Directory
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_5:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_5_blurb:
                     full_width: true
                     row_class: sub_field
@@ -143,30 +141,30 @@ diagnostics:
                         html: |
                             Zenario can store generated files in a cache directory to speed up performance and reduce load on the database.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 cache_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 cache_dir_status:
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 dir_6:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Private Directory
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_6:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_6_blurb:
                     full_width: true
                     row_class: sub_field
@@ -175,30 +173,30 @@ diagnostics:
                             Zenario uses a cache directory to store documents and images temporarily
                             while they are downloaded by users.
                             Please ensure it exists and is writable by the web server:
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 private_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 private_dir_status:
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 dir_7:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Public Directory
-                    visible_if: zenarioAB.togglePressed(2)
+                    visible_if: zenarioAW.togglePressed(2)
                 show_dir_7:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(2, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_7_blurb:
                     full_width: true
                     row_class: sub_field
@@ -206,45 +204,56 @@ diagnostics:
                         html: |
                             Zenario uses a directory to store documents that are publicly available.
                             This directory MUST be writable by the web server.
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 public_dir:
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 public_dir_status:
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 site:
                     full_width: true
                     snippet:
                         html: Your site
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_site:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     hide_on_install: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 site_special_pages_unpublished:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: "&nbsp;"
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 site_disabled:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: "&nbsp;"
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
+                site_description_missing:
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            This site's description file is missing.
+                            Please create the <code>zenario_custom/site_description.yaml</code> file,
+                            e.g. by copying or symlinking one of the files in
+                            <code>zenario/api/sample_site_descriptions/</code>
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
                 spare_domains_without_primary_domain:
                     full_width: true
                     row_class: sub_level
@@ -253,7 +262,7 @@ diagnostics:
                             Spare Domain Names have been created for this site, but they will not function because no Primary Domain is defined.
                             Please go to <em>Configuration -&gt; Site settings -&gt; Primary Domain</em> in Organizer to define a Primary Domain.
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 errors_not_shown:
                     full_width: true
                     row_class: sub_level
@@ -265,18 +274,34 @@ diagnostics:
                             set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
                             in your <code>zenario_siteconfig.php</code> file.
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed()
-                email_addresses_not_overridden:
+                    visible_if: zenarioAW.togglePressed()
+                email_addresses_overridden:
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site looks like a developer installation
-                            (the tell-tale file <code>developer.txt</code> exists),
-                            but you do not have &ldquo;Email debug mode&rdquo; enabled under
+                            You have &ldquo;Email debug mode&rdquo; enabled under
                             <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                     hide_on_install: true
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
+                #email_addresses_not_overridden:
+                #    full_width: true
+                #    row_class: sub_level
+                #    snippet:
+                #        html: |
+                #            Your site looks like a developer installation
+                #            (the tell-tale file <code>developer.txt</code> exists),
+                #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
+                #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
+                #    hide_on_install: true
+                #    visible_if: zenarioAW.togglePressed()
+                bad_extra_module_symlinks:
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: ''
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
                 mr_warning_1:
                     full_width: true
                     row_class: warning
@@ -288,7 +313,7 @@ diagnostics:
                             and that your Zenario directory contains the .htaccess file.
                     hide_on_install: true
                     visible_if: |
-                        zenarioAB.togglePressed() && !zenarioA.isHtaccessWorking()
+                        zenarioAW.togglePressed() && !zenarioA.isHtaccessWorking()
                 sub_table_close:
                     snippet:
                         html: ""

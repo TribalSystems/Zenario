@@ -54,7 +54,20 @@ if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id']))) {
 	if ($menu['target_loc'] == 'int' && $menu['equiv_id'] && $menu['content_type']) {
 		$box['tabs']['text']['fields']['target_loc']['value'] = 'int';
 		$box['tabs']['text']['fields']['hyperlink_target']['value'] = $menu['content_type']. '_'. $menu['equiv_id'];
-	
+		
+		$warning = '';
+		$tag = $menu['content_type']. '_'. $menu['equiv_id'];
+		$mergeFields = array('tag' => $tag);
+		if ($menu['redundancy'] == 'primary') {
+			$warning = 'This is a primary menu node. This means that there are other menu nodes that link to the content item [[tag]].';
+		} elseif ($menu['redundancy'] == 'secondary') {
+			$primaryNodeId = getRow('menu_nodes', 'id', array('equiv_id' => $menu['equiv_id'], 'content_type' => $menu['content_type'], 'redundancy' => 'primary'));
+			$node_path = getMenuPath($primaryNodeId);
+			$warning = 'This is a secondary menu node. This means that it links to the same content item ([[tag]]) as the menu node "[[node_path]]"';
+			$mergeFields['node_path'] = $node_path;
+		}
+		$box['tabs']['text']['fields']['warning']['snippet']['html'] = adminPhrase($warning, $mergeFields);
+		
 	} elseif ($menu['target_loc'] == 'ext') {
 		$box['tabs']['text']['fields']['target_loc']['value'] = 'ext';
 	}

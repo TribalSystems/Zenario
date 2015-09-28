@@ -59,4 +59,13 @@ revision(151, "
 		". (int) adminId(). ",
 		0
 	)
-");
+"
+); revision(178,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_common_features'
+	WHERE `code` = 'zenario_common_features__notification_to_new_admin'
+_sql
+
+);

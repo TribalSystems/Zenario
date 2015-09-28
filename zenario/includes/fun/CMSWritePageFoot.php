@@ -29,12 +29,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 $isWelcome = $mode === true || $mode === 'welcome';
+$isWizard = $mode === 'wizard';
+$isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
 
-if (!$isWelcome && $cookieFreeDomain = cookieFreeDomain()) {
+if (!$isWelcomeOrWizard && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
 
 } elseif (cms_core::$mustUseFullPath) {
@@ -42,25 +44,29 @@ if (!$isWelcome && $cookieFreeDomain = cookieFreeDomain()) {
 }
 
 
-//Write the URLBasePath to the page
-echo '
-<script type="text/javascript">
-	var zenarioCSSJSVersionNumber = "'. setting('css_js_version'). '";
-	var URLBasePath = "', jsEscape(httpOrhttps(). $_SERVER["HTTP_HOST"] . SUBDIRECTORY), '";
-</script>';
-
-
-//Add JS needed for the CMS
+//Write the URLBasePath to the page, and add JS needed for the CMS
 echo '
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.visitor.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'js/inc.js.php?v=', $v, $gz, '"></script>';
+
+<!--[if IE 9]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=9"></script><![endif]-->
+<!--[if IE 8]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=8"></script><![endif]-->
+<!--[if lte IE 7]><script type="text/javascript" src="', $prefix, 'js/ie.wrapper.js.php?ie=7"></script><![endif]-->
+
+<script type="text/javascript">
+	var zenarioCSSJSVersionNumber = "'. setting('css_js_version'). '";
+	var URLBasePath = "', jsEscape(httpOrhttps(). $_SERVER["HTTP_HOST"] . SUBDIRECTORY), '";
+</script>
+<script type="text/javascript" src="', $prefix, 'js/visitor.wrapper.js.php?v=', $v, $gz, '"></script>';
+
 	
 //Add JS needed for the CMS in Admin mode
-if ($isWelcome || checkPriv()) {
+if ($isWelcomeOrWizard || checkPriv()) {
 	
-	if (!$isWelcome) {
+	if (!$isWelcomeOrWizard) {
 		checkForChangesInPhpFiles();
+	}
+	if (!$isWelcome) {
 		checkForChangesInYamlFiles();
 	}
 	
@@ -70,7 +76,7 @@ if ($isWelcome || checkPriv()) {
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
-<script type="text/javascript" src="', $prefix, 'js/inc-admin.js.php?v=', $v, $gz, '"></script>';
+<script type="text/javascript" src="', $prefix, 'js/admin.wrapper.js.php?v=', $v, $gz, '"></script>';
 	
 	if (setting('dropbox_api_key')) {
 		echo '
@@ -96,7 +102,7 @@ if ($isWelcome || checkPriv()) {
 			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
 			   ON m.class_name = tfc.module_class_name
 			  AND m.status = 'module_running'
-			WHERE tfc.panel_type IN ('google_map', 'google_map_or_list')
+			WHERE tfc.panel_type IN ('google_map', 'list_or_grid_or_google_map')
 			LIMIT 1";
 		
 		if (($result = sqlSelect($sql)) && (sqlFetchRow($result))) {
@@ -105,7 +111,7 @@ if ($isWelcome || checkPriv()) {
 		}
 		
 		echo '
-<script type="text/javascript" src="', $prefix, 'js/inc-organizer.js.php?v=', $v, $gz, '"></script>';
+<script type="text/javascript" src="', $prefix, 'js/organizer.wrapper.js.php?v=', $v, $gz, '"></script>';
 		
 		echo '
 <script type="text/javascript">';
@@ -122,7 +128,7 @@ if ($isWelcome || checkPriv()) {
 		
 			echo '
 </script>
-<script type="text/javascript" src="', $prefix, 'js/plugin.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
+<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
 }
 if (cms_core::$cID && $includeAdminToolbar && checkPriv()) {
@@ -152,15 +158,10 @@ if (cms_core::$cType) {
 	zenario.cType = "', jsEscape(cms_core::$cType), '";';
 }
 
-if (!$isWelcome && checkPriv()) {
+if (!$isWelcomeOrWizard && checkPriv()) {
 	if (cms_core::$cVersion) {
 		echo '
 		zenario.cVersion = ', (int) cms_core::$cVersion, ';';
-	}
-	
-	if (checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
-		echo '
-		zenario.showDevTools = true;';
 	}
 	
 	$settings = array();
@@ -178,6 +179,17 @@ if (!$isWelcome && checkPriv()) {
 			}
 		}
 	}
+	$adminSettings = array();
+	if (!empty(cms_core::$adminSettings)) {
+		foreach (cms_core::$adminSettings as $setting => &$value) {
+			if ($value
+			 && (/*$setting == '...'
+			  || $setting == '...'
+			  || */is_numeric($value))) {
+				$adminSettings[$setting] = cms_core::$adminSettings[$setting];
+			}
+		}
+	}
 	
 	
 	echo '
@@ -186,6 +198,7 @@ if (!$isWelcome && checkPriv()) {
 	zenarioA.slotWandOn = ', engToBoolean(session('admin_slot_wand')), ';
 	zenarioA.showGridOn = ', engToBoolean(session('admin_show_grid')), ';
 	zenarioA.siteSettings = ', json_encode($settings), ';
+	zenarioA.adminSettings = ', json_encode($adminSettings), ';
 	zenarioA.importantGetRequests = ', json_encode(importantGetRequests()), ';';
 	
 	
@@ -213,11 +226,7 @@ if (cms_core::$skinId) {
 	echo "\n	zenario.skinId = ", (int) cms_core::$skinId, ";";
 }
 
-if (!$isWelcome) {
-	if (setting('mod_rewrite_suffix') !== false) {
-		echo '
-	zenario.suffix = "', urlencode(setting('mod_rewrite_suffix')), '";';
-	}
+if (!$isWelcomeOrWizard) {
 	echo '
 	zenario.useGZ = ', (int) setting('compress_web_pages'), ';';
 }
@@ -227,13 +236,13 @@ echo '
 
 
 //Add JS needed for modules
-if (!$isWelcome && cms_core::$pluginJS) {
+if (!$isWelcomeOrWizard && cms_core::$pluginJS) {
 	if (checkPriv()) {
 		cms_core::$pluginJS .= '&amp;admin=1';
 	}
 	
 	echo '
-<script type="text/javascript" src="', $prefix, 'js/plugin.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
+<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
 }
 
 //Are there Plugins on this page..?
@@ -308,7 +317,7 @@ if (checkPriv() && cms_core::$cID) {
 	
 	if ($jsModuleIds) {
 		echo '
-<script type="text/javascript" src="', $prefix, 'js/plugin.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
+<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
 	}
 	
 	//If we've just made a draft, and there's a callback, perform the callback
@@ -344,7 +353,7 @@ if (cms_core::$cID) {
 	
 	$sql = "
 		SELECT foot_html, foot_cc, foot_visitor_only, foot_overwrite
-		FROM ". DB_NAME_PREFIX. "versions
+		FROM ". DB_NAME_PREFIX. "content_item_versions
 		WHERE id = ". (int) cms_core::$cID. "
 		  AND type = '". sqlEscape(cms_core::$cType). "'
 		  AND version = ". (int) cms_core::$cVersion;

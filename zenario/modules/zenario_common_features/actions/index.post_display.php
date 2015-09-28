@@ -37,5 +37,5 @@ if (cms_core::$rss
  && empty($_REQUEST['instanceId'])
  && ($rss = explode('_', cms_core::$rss, 2))
  && (!empty($rss[1]))) {
-	setRow('versions', array('rss_slot_name' => $rss[1], 'rss_nest' => (int) $rss[0]), array('id' => cms_core::$cID, 'type' => cms_core::$cType, 'version' => cms_core::$cVersion));
+	setRow('content_item_versions', array('rss_slot_name' => $rss[1], 'rss_nest' => (int) $rss[0]), array('id' => cms_core::$cID, 'type' => cms_core::$cType, 'version' => cms_core::$cVersion));
 }

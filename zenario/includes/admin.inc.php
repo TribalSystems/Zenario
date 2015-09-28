@@ -294,14 +294,14 @@ function updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAs
 	}
 	
 	$version['last_author_id'] = session('admin_userid');
-	updateRow('versions', $version, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	updateRow('content_item_versions', $version, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function checkIfVersionChanged($cIDOrVersion, $cType = false, $cVersion = false) {
 	
 	if (is_numeric($cIDOrVersion)) {
 		$cIDOrVersion = getRow(
-			'versions',
+			'content_item_versions',
 			array('last_author_id', 'last_modified_datetime', 'creating_author_id', 'created_datetime'),
 			array('id' => $cIDOrVersion, 'type' => $cType, 'version' => $cVersion));
 	}
@@ -317,9 +317,9 @@ function publishContent($cID, $cType, $adminId = false) {
 		$adminId = session('admin_userid');
 	}
 	
-	if (!($content = getRow('content', array('admin_version', 'alias', 'status'), array('id' => $cID, 'type' => $cType)))
+	if (!($content = getRow('content_items', array('admin_version', 'alias', 'status'), array('id' => $cID, 'type' => $cType)))
 	 || !($cVersion = $content['admin_version'])
-	 || !($version = getRow('versions', array('publication_date'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))) {
+	 || !($version = getRow('content_item_versions', array('publication_date'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))) {
 		return false;
 	}
 	
@@ -339,11 +339,11 @@ function publishContent($cID, $cType, $adminId = false) {
 		$version['publication_date'] = now();
 	}
 	
-	updateRow('content', $content, array('id' => $cID, 'type' => $cType));
-	updateRow('versions', $version, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	updateRow('content_items', $content, array('id' => $cID, 'type' => $cType));
+	updateRow('content_item_versions', $version, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	
 	removeUnusedVersionControlledPluginSettings($cID, $cType, $content['admin_version']);
-	syncInlineFileContentLink($cID, $cType, $content['admin_version']);
+	syncInlineFileContentLink($cID, $cType, $content['admin_version'], true);
 	
 	cms_core::publishContent($cID, $cType, $cVersion, $cVersion-1, $adminId);
 	
@@ -379,10 +379,10 @@ function flagImagesInArchivedVersions($cID = false, $cType = false) {
 		FROM ". DB_NAME_PREFIX. "inline_images AS ii
 		INNER JOIN ". DB_NAME_PREFIX. "files AS f
 		   ON ii.image_id = f.id
-		LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+		LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 		   ON ii.foreign_key_id = c.id
 		  AND ii.foreign_key_char = c.type
-		LEFT JOIN ". DB_NAME_PREFIX. "versions AS v
+		LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 		   ON ii.foreign_key_id = v.id
 		  AND ii.foreign_key_char = v.type
 		  AND ii.foreign_key_version = v.version
@@ -586,7 +586,7 @@ function stripAbsURLsFromAdminBoxField(&$field) {
 
 //Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
 //Note there is simmilar logic in zenario/admin/db_updates/data_conversion/local.inc.php for migration
-function syncInlineFileContentLink($cID, $cType, $cVersion) {
+function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -686,7 +686,7 @@ function deleteUnusedBackgroundImages() {
 		FROM ". DB_NAME_PREFIX. "files AS f
 		LEFT JOIN ". DB_NAME_PREFIX. "layouts AS l
 		   ON l.bg_image_id = f.id
-		LEFT JOIN ". DB_NAME_PREFIX. "versions AS v
+		LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 		   ON v.bg_image_id = f.id
 		WHERE l.bg_image_id IS NULL
 		  AND v.bg_image_id IS NULL
@@ -701,7 +701,7 @@ function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = fal
 		$adminId = session('admin_userid');
 	}
 	
-	$content = getRow('content', array('status', 'admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType));
+	$content = getRow('content_items', array('status', 'admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType));
 	$cVersion = $content['admin_version'];
 	$content['lock_owner_id'] = 0;
 	$content['locked_datetime'] = null;
@@ -726,7 +726,7 @@ function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = fal
 	}
 	
 	
-	updateRow('content', $content, array('id' => $cID, 'type' => $cType));
+	updateRow('content_items', $content, array('id' => $cID, 'type' => $cType));
 	
 	//Add a safety catch, that logically should never be reached, but is there just so we don't delete the current version
 	if ($cVersion == $content['visitor_version']) {
@@ -746,7 +746,7 @@ function deleteDraft($cID, $cType, $allowCompleteDeletion = true, $adminId = fal
 }
 
 function deleteVersion($cID, $cType, $cVersion) {
-	deleteRow('versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	deleteRow('content_item_versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	deleteRow('plugin_item_link', array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
 	deleteRow('content_cache', array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
 	
@@ -759,7 +759,7 @@ function deleteArchive($cID, $cType, $cVersion = false) {
 	
 	//If no version is specified, look for the most recent archived version
 	if (!$cVersion) {
-		if ($content = getRow('content', array('admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType))) {
+		if ($content = getRow('content_items', array('admin_version', 'visitor_version'), array('id' => $cID, 'type' => $cType))) {
 			array_map('intval', $content);
 			if ($content['visitor_version']) {
 				$cVersion = min($content) - 1;
@@ -775,7 +775,7 @@ function deleteArchive($cID, $cType, $cVersion = false) {
 	
 	$sql = "
 		SELECT MIN(version)
-		FROM ". DB_NAME_PREFIX. "versions
+		FROM ". DB_NAME_PREFIX. "content_item_versions
 		WHERE id = ". (int) $cID. "
 		  AND type = '". sqlEscape($cType). "'";
 	
@@ -793,7 +793,7 @@ function deleteArchive($cID, $cType, $cVersion = false) {
 function deleteContentItem($cID, $cType) {
 	$content = array('id' => $cID, 'type' => $cType);
 	
-	$result = getRows('versions', array('id', 'type', 'version'), $content);
+	$result = getRows('content_item_versions', array('id', 'type', 'version'), $content);
 	while ($version = sqlFetchAssoc($result)) {
 		deleteVersion($version['id'], $version['type'], $version['version']);
 		sendSignal('eventContentDeleted',array('cID' => $version['id'], 'cType' => $version['type'], 'cVersion' => $version['version']));
@@ -803,7 +803,7 @@ function deleteContentItem($cID, $cType) {
 	removeEquivalence($cID, $cType);
 	flagImagesInArchivedVersions($cID, $cType);
 	removeItemFromPluginSettings('content', $cID, $cType);
-	setRow('content', array('status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''), $content);
+	setRow('content_items', array('status' => 'deleted', 'admin_version' => 0, 'visitor_version' => 0, 'alias' => ''), $content);
 }
 
 function trashContent($cID, $cType, $adminId = false, $mode = false) {
@@ -812,9 +812,9 @@ function trashContent($cID, $cType, $adminId = false, $mode = false) {
 		$adminId = session('admin_userid');
 	}
 
-	$cVersion = getRow('content', 'admin_version', array('id' => $cID, 'type' => $cType));
-	updateRow('content', array('visitor_version' => 0, 'status' => 'trashed', 'alias' => ''), array('id' => $cID, 'type' => $cType));
-	updateRow('versions', array('concealer_id' => $adminId, 'concealed_datetime' => now()), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	$cVersion = getRow('content_items', 'admin_version', array('id' => $cID, 'type' => $cType));
+	updateRow('content_items', array('visitor_version' => 0, 'status' => 'trashed', 'alias' => ''), array('id' => $cID, 'type' => $cType));
+	updateRow('content_item_versions', array('concealer_id' => $adminId, 'concealed_datetime' => now()), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	
 	removeItemFromMenu($cID, $cType);
 	removeEquivalence($cID, $cType);
@@ -832,18 +832,18 @@ function hideContent($cID, $cType, $adminId = false) {
 	}
 	
 	//If this a draft that's not been modified since the previous version, delete the draft
-	$content = getRow('content', array('status', 'admin_version'), array('id' => $cID, 'type' => $cType));
+	$content = getRow('content_items', array('status', 'admin_version'), array('id' => $cID, 'type' => $cType));
 	$oldStatus = $content['status'];
 	
 	if (($oldStatus == 'published_with_draft' || $oldStatus == 'hidden_with_draft' || $oldStatus == 'trashed_with_draft')
 	 && !contentLastModifiedBy($cID, $cType)) {
 		deleteDraft($cID, $cType, $allowCompleteDeletion = false);
-		$content = getRow('content', array('status', 'admin_version'), array('id' => $cID, 'type' => $cType));
+		$content = getRow('content_items', array('status', 'admin_version'), array('id' => $cID, 'type' => $cType));
 	}
 	
 	//Update the Content Item's status to "hidden"
-	updateRow('content', array('visitor_version' => 0, 'status' => 'hidden', 'lock_owner_id' => 0), array('id' => $cID, 'type' => $cType));
-	updateRow('versions', array('concealer_id' => $adminId, 'concealed_datetime' => now()), array('id' => $cID, 'type' => $cType, 'version' => $content['admin_version']));
+	updateRow('content_items', array('visitor_version' => 0, 'status' => 'hidden', 'lock_owner_id' => 0), array('id' => $cID, 'type' => $cType));
+	updateRow('content_item_versions', array('concealer_id' => $adminId, 'concealed_datetime' => now()), array('id' => $cID, 'type' => $cType, 'version' => $content['admin_version']));
 	
 	flagImagesInArchivedVersions($cID, $cType);
 	hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, 'hidden');
@@ -995,7 +995,7 @@ function removeItemFromPluginSettings($keyTo, $keyId = 0, $keyChar = '', $mode =
 //Check if a Content Item is in a state where it could be deleted/trashed/hidden. Note that these functions don't check for locks.
 function allowDelete($cID, $cType, $status = false) {
 	if (!$status) {
-		$status = getRow('content', 'status', array('id' => $cID, 'type' => $cType));
+		$status = getRow('content_items', 'status', array('id' => $cID, 'type' => $cType));
 	}
 	
 	if ($status == 'first_draft') {
@@ -1012,7 +1012,7 @@ function allowTrash($cID, $cType, $status = false, $lastModified = false) {
 		return false;
 	} else {
 		if ($status === false) {
-			$status = getRow('content', 'status', array('id' => $cID, 'type' => $cType));
+			$status = getRow('content_items', 'status', array('id' => $cID, 'type' => $cType));
 		}
 		
 		if ($status == 'published'
@@ -1033,7 +1033,7 @@ function allowHide($cID, $cType, $status = false) {
 		return false;
 	} else {
 		if ($status === false) {
-			$status = getRow('content', 'status', array('id' => $cID, 'type' => $cType));
+			$status = getRow('content_items', 'status', array('id' => $cID, 'type' => $cType));
 		}
 		
 		return
@@ -1083,7 +1083,7 @@ function allowDeleteLanguage($langId) {
 
 function deleteLanguage($langId) {
 	//Remove all of the Content Items in a Language
-	$result = getRows('content', array('id', 'type'), array('language_id' => $langId));
+	$result = getRows('content_items', array('id', 'type'), array('language_id' => $langId));
 	while ($content = sqlFetchAssoc($result)) {
 		deleteContentItem($content['id'], $content['type']);
 	}
@@ -1112,7 +1112,7 @@ function deleteLanguage($langId) {
 function contentLastModifiedBy($cID, $cType) {
 	$sql = "
 		SELECT last_author_id
-		FROM ". DB_NAME_PREFIX. "versions
+		FROM ". DB_NAME_PREFIX. "content_item_versions
 		WHERE id = ". (int) $cID. "
 		  AND type = '". sqlEscape($cType). "'
 		ORDER BY version DESC
@@ -1130,7 +1130,7 @@ function importPhrasesForModule($moduleClassName, $langId = false) {
 
 	//Check if this Module uses the old Visitor phrases system, with phrases in CSV files
 	if ($path = moduleDir($moduleClassName, 'phrases/', true)) {
-		$importFiles = scanModulePhraseDir($moduleClassName);
+		$importFiles = scanModulePhraseDir($moduleClassName, 'language id');
 		if (!empty($importFiles)) {
 	
 			//Check which languages this site uses
@@ -1158,7 +1158,8 @@ function importPhrasesForModule($moduleClassName, $langId = false) {
 					}
 			
 					if ($bestMatch) {
-						importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $installedLang, $adding = false, $scanning = false, $forceLanguageIdOverride = true);
+						$languageIdFound = false;
+						importVisitorLanguagePack(CMS_ROOT. $path. $bestMatch, $languageIdFound, $adding = false, $scanning = false, $forceLanguageIdOverride = $installedLang);
 					}
 				}
 			}
@@ -1303,7 +1304,7 @@ function validateAlias($alias, $cID = false, $cType = false, $equivId = false) {
 		
 		$sql = "
 			SELECT id, type
-			FROM ". DB_NAME_PREFIX. "content
+			FROM ". DB_NAME_PREFIX. "content_items
 			WHERE alias = '". sqlEscape($alias). "'";
 		
 		if ($equivId && $cType) {
@@ -1365,7 +1366,22 @@ function loadAdminPerms(&$perms, $adminId) {
 }
 
 function saveAdminPerms(&$perms, $adminId) {
-	require funIncPath(__FILE__, __FUNCTION__);
+	//Add/remove each permission from the database for this Admin.
+	foreach ($perms as $perm => $set) {
+		if ($set) {
+			setRow('action_admin_link', array(), array('action_name' => $perm, 'admin_id' => $adminId));
+		} else {
+			deleteRow('action_admin_link', array('action_name' => $perm, 'admin_id' => $adminId));
+		}
+	}
+
+
+	//Set the modification date
+	$sql = "
+		UPDATE ". DB_NAME_PREFIX. "admins SET
+			modified_date = NOW()
+		WHERE id = ". (int) $adminId;
+	sqlQuery($sql);
 }
 
 function deleteAdmin($admin_id, $undo = false) {
@@ -1566,7 +1582,7 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 	if (isset($submission['content_type'])) {
 		if (!$layoutId
 		 || $duplicating
-		 || (!checkRowExists('versions', array('layout_id' => $layoutId)) && !checkRowExists('content_types', array('default_layout_id' => $layoutId)))) {
+		 || (!checkRowExists('content_item_versions', array('layout_id' => $layoutId)) && !checkRowExists('content_types', array('default_layout_id' => $layoutId)))) {
 			$values['content_type'] = $submission['content_type'];
 		}
 	}
@@ -2217,7 +2233,9 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 											'display_name' => ifNull(arrayKey($desc, 'display_name'), $row['name']),
 											'type' => ifNull(arrayKey($desc, 'type'), 'usable'),
 											'extension_of_skin' => arrayKey($desc, 'extension_of_skin'),
-											'css_class' => arrayKey($desc, 'css_class')),
+											'css_class' => arrayKey($desc, 'css_class'),
+											'background_selector' => ifNull(arrayKey($desc, 'background_selector'), 'body')
+										),
 										$row);
 								}
 							}
@@ -2277,7 +2295,7 @@ function checkSkinInUse($skinId) {
 
 function checkLayoutInUse($layoutId) {
 	return
-		checkRowExists('versions', array('layout_id' => $layoutId));
+		checkRowExists('content_item_versions', array('layout_id' => $layoutId));
 }
 
 function generateLayoutFileBaseName($layoutName) {
@@ -2903,7 +2921,7 @@ function setupCategoryCheckboxes(&$field, $showTotals = false, $cID = false, $cT
 			$sql = "
 				SELECT COUNT(DISTINCT c.id, c.type)
 				FROM ". DB_NAME_PREFIX. "category_item_link AS cil
-				INNER JOIN ". DB_NAME_PREFIX. "content AS c
+				INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 				   ON c.equiv_id = cil.equiv_id
 				  AND c.type = cil.content_type
 				  AND c.status NOT IN ('trashed','deleted')
@@ -3561,8 +3579,8 @@ function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnl
 	if ($instanceIds) {
 		$sql = "
 			SELECT COUNT(DISTINCT c.tag_id) AS ciu_". (int) $instanceIds. "_". engToBoolean($publishedOnly). "_". engToBoolean($itemLayerOnly). "
-			FROM ". DB_NAME_PREFIX. "content AS c
-			INNER JOIN ". DB_NAME_PREFIX. "versions as v
+			FROM ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
 			   ON c.id = v.id
 			  AND c.type = v.type";
 		
@@ -3686,8 +3704,8 @@ function deleteVersionControlledPluginSettings($cID, $cType, $cVersion) {
 function checkTemplateUsage($layoutId, $templateFamily = false, $publishedOnly = false, $skinId = false) {
 	$sql = "
 		SELECT COUNT(DISTINCT c.tag_id) AS ctu_". (int) $layoutId. "_". engToBoolean($templateFamily). "_". engToBoolean($publishedOnly). "_". (int) $skinId. "
-		FROM ". DB_NAME_PREFIX. "content AS c
-		INNER JOIN ". DB_NAME_PREFIX. "versions as v
+		FROM ". DB_NAME_PREFIX. "content_items AS c
+		INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
 		   ON c.id = v.id
 		  AND c.type = v.type";
 	
@@ -3992,27 +4010,30 @@ function importVisitorPhrase($languageId, $moduleClass, $phraseCode, $localText,
 
 
 //Given an uploaded XML file, pharse that file looking for visitor language phrases
-function importVisitorLanguagePack($file, &$languageId, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false) {
+function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
 
-function scanModulePhraseDir($moduleName, $scanMode = true) {
+function scanModulePhraseDir($moduleName, $scanMode) {
 	$importFiles = array();
 	if ($path = moduleDir($moduleName, 'phrases/', true)) {
 		foreach (scandir($path) as $file) {
 			if (is_file($path. $file) && substr($file, 0, 1) != '.') {
-				$numberOf = importVisitorLanguagePack($path. $file, $languageId, $adding = true, $scanMode);
+				
+				$languageIdFound = false;
+				$numberOf = importVisitorLanguagePack($path. $file, $languageIdFound, $adding = true, $scanMode);
+				
 				if (!$numberOf['upload_error']) {
 					if ($scanMode === 'number and file') {
 						$numberOf['file'] = $file;
-						$importFiles[$languageId] = $numberOf;
+						$importFiles[$languageIdFound] = $numberOf;
 					
 					} elseif ($scanMode === 'full scan') {
-						$importFiles[$languageId] = $numberOf['added'];
+						$importFiles[$languageIdFound] = $numberOf['added'];
 					
 					} else {
-						$importFiles[$languageId] = $file;
+						$importFiles[$languageIdFound] = $file;
 					}
 				}
 			}
@@ -4444,7 +4465,7 @@ function pluginMainSlot($cID, $cType, $cVersion, $moduleId = false, $limitToOne 
 	
 	$sql = "
 		SELECT tsl.slot_name
-		FROM ". DB_NAME_PREFIX. "versions AS v
+		FROM ". DB_NAME_PREFIX. "content_item_versions AS v
 		INNER JOIN ". DB_NAME_PREFIX. "layouts AS t
 		   ON t.layout_id = ". ((int) $forceLayoutId? (int) $forceLayoutId : "v.layout_id"). "
 		INNER JOIN ". DB_NAME_PREFIX. "template_slot_link AS tsl
@@ -5510,7 +5531,26 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 				break;
 		
 			default:
-				$key['type'] = array('!' => 'other_system_field');
+				if (in_array($filter, 
+					array(
+						'group',
+						'checkbox',
+						'checkboxes',
+						'date',
+						'editor',
+						'radios',
+						'centralised_radios',
+						'select',
+						'centralised_select',
+						'text',
+						'textarea',
+						'url'
+					)
+				)) {
+					$key['type'] = $filter;
+				} else {
+					$key['type'] = array('!' => 'other_system_field');
+				}
 		}
 	}
 	
@@ -5544,7 +5584,7 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 	
 	//Add opt-groups for each tab
 	if ($useOptGroups) {
-		foreach (getRowsArray('custom_dataset_tabs', array('is_system_field', 'name', 'label', 'default_label', 'ord'), array()) as $tab) {
+		foreach (getRowsArray('custom_dataset_tabs', array('is_system_field', 'name', 'label', 'default_label', 'ord'), array('dataset_id' => $dataset['id'])) as $tab) {
 			
 			if ($hideEmptyOptGroupParents && empty($existingParents['tab__'. $tab['name']])) {
 				continue;
@@ -6123,7 +6163,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 					$addClass = true;
 				}
 		
-			} elseif ($type == 'admin_boxes') {
+			} elseif ($type == 'admin_boxes' || $type == 'wizards') {
 				if ($parentsParent === false
 				 || $parent == 'tabs'
 				 || $parent == 'fields') {
@@ -6239,7 +6279,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 					|| $parentKey == 'quick_filter_buttons'
 					|| $parentKey == 'nav';
 	
-	} elseif ($type == 'admin_boxes' || $type == 'welcome') {
+	} elseif ($type == 'admin_boxes' || $type == 'welcome' || $type == 'wizards') {
 		$orderItems = $parentKey == 'tabs'
 					|| $parentKey == 'fields'
 					|| $parentKey == 'values';
@@ -6295,7 +6335,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		//Don't send any SQL to the client
 		if ($type == 'organizer') {
 			if ($parentKey === false || $parentKey == 'panel' || $parentParentKey = 'panels') {
-				if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
+				if (!adminSetting('show_dev_tools')) {
 					if (isset($tags['db_items'])) {
 						$db_items = array();
 						foreach (array('client_side', 'encode_id_column') as $tag) {
@@ -6424,17 +6464,17 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 	}
 	
 	//Try to get the cID for the default Language
-	$default = getRow('content', array('id', 'alias'), array('equiv_id' => $equiv1, 'type' => $cType, 'language_id' => setting('default_language')));
+	$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv1, 'type' => $cType, 'language_id' => setting('default_language')));
 	
 	if (!$default && $equiv2) {
-		$default = getRow('content', array('id', 'alias'), array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => setting('default_language')));
+		$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => setting('default_language')));
 	}
 	
 	//If we are merging two different equivs, check the merge will not give us any overlaps
 	if ($equiv1 && $equiv2 && $equiv1 != $equiv2) {
-		$result = getRows('content', 'language_id', array('equiv_id' => $equiv1, 'type' => $cType));
+		$result = getRows('content_items', 'language_id', array('equiv_id' => $equiv1, 'type' => $cType));
 		while ($row = sqlFetchAssoc($result)) {
-			if (checkRowExists('content', array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => $row['language_id']))) {
+			if (checkRowExists('content_items', array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => $row['language_id']))) {
 				return false;
 			}
 		}
@@ -6452,12 +6492,12 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 			if ($currentEquivId && $newEquivId && $currentEquivId != $newEquivId) {
 				//Automaticaly update the aliases of any newly added Content Items if they don't currently have aliases
 				if (!empty($default['alias'])) {
-					updateRow('content', array('alias' => $default['alias']), array('equiv_id' => $currentEquivId, 'type' => $cType, 'alias' => ''));
+					updateRow('content_items', array('alias' => $default['alias']), array('equiv_id' => $currentEquivId, 'type' => $cType, 'alias' => ''));
 				}
 				
 				//Change the old equivId to the new equivId
 				updateRow('categories', array('landing_page_equiv_id' => $newEquivId), array('landing_page_equiv_id' => $currentEquivId, 'landing_page_content_type' => $cType));
-				updateRow('content', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'type' => $cType));
+				updateRow('content_items', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'type' => $cType));
 				updateRow('menu_nodes', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'content_type' => $cType));
 				updateRow('special_pages', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'content_type' => $cType));
 				
@@ -6476,7 +6516,7 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 }
 
 function tidyTranslationsTable($equivId, $cType) {
-	if (!checkRowExists('content', array('equiv_id' => $equivId, 'type' => $cType))) {
+	if (!checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType))) {
 		deleteRow('translation_chains', array('equiv_id' => $equivId, 'type' => $cType));
 		deleteRow('category_item_link', array('equiv_id' => $equivId, 'content_type' => $cType));
 		deleteRow('group_content_link', array('equiv_id' => $equivId, 'content_type' => $cType));
@@ -6540,7 +6580,7 @@ function allowRemoveEquivalence($cID, $cType) {
 function removeEquivalence($cID, $cType) {
 	
 	
-	$content = getRow('content', array('alias', 'equiv_id', 'tag_id'), array('id' => $cID, 'type' => $cType));
+	$content = getRow('content_items', array('alias', 'equiv_id', 'tag_id'), array('id' => $cID, 'type' => $cType));
 	
 	//Two cases here:
 	if ($content['equiv_id'] != $cID) {
@@ -6550,18 +6590,18 @@ function removeEquivalence($cID, $cType) {
 		$vals['equiv_id'] = $cID;
 		
 		//Check if another Content Item is using this alias; if so, we need to remove the alias.
-		if ($content['alias'] && checkRowExists('content', array('alias' => $content['alias'], 'tag_id' => array('!' => $content['tag_id'])))) {
+		if ($content['alias'] && checkRowExists('content_items', array('alias' => $content['alias'], 'tag_id' => array('!' => $content['tag_id'])))) {
 			$vals['alias'] = '';
 		}
 		
-		updateRow('content', $vals, array('id' => $cID, 'type' => $cType));
+		updateRow('content_items', $vals, array('id' => $cID, 'type' => $cType));
 		copyTranslationsTable($content['equiv_id'], $vals['equiv_id'], $cType);
 	
 	} else {
 		//2. This Content Item is the default language.
 		//   In this case, we only need change its equiv_id for everything *else*
 		$newEquivId = false;
-		$result = getRows('content', array('id', 'alias'), array('equiv_id' => $content['equiv_id'], 'type' => $cType));
+		$result = getRows('content_items', array('id', 'alias'), array('equiv_id' => $content['equiv_id'], 'type' => $cType));
 		while ($row = sqlFetchAssoc($result)) {
 			if ($row['id'] != $cID) {
 				if (!$newEquivId) {
@@ -6574,7 +6614,7 @@ function removeEquivalence($cID, $cType) {
 					$vals['alias'] = '';
 				}
 				
-				updateRow('content', $vals, array('id' => $row['id'], 'type' => $cType));
+				updateRow('content_items', $vals, array('id' => $row['id'], 'type' => $cType));
 			}
 		}
 		if ($newEquivId) {
@@ -6583,3 +6623,13 @@ function removeEquivalence($cID, $cType) {
 	}
 }
 
+
+function getCentralisedLists() {
+	$centralisedLists = array();
+	$result = getRows('centralised_lists', array('module_class_name', 'method_name', 'label'), array(), 'label');
+	while ($row = sqlFetchAssoc($result)) {
+		$method = $row['module_class_name'] . '::' . $row['method_name'];
+		$centralisedLists[$method] = $row['label'];
+	}
+	return $centralisedLists;
+}

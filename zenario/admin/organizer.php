@@ -39,22 +39,10 @@ if (!checkPriv()) {
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 $prefix = '../';
 CMSWritePageHead($prefix, 'organizer');
-
-
-
-
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
-	echo '
-	<style type="text/css">
-		html {
-			overflow: hidden;
-		}
-	</style>';
-}
 
 
 echo '</head>';
@@ -148,6 +136,9 @@ if (get('openingInstance') && get('openingPath')) {
 		window.zenarioOOpeningPath = "', preg_replace('@[^\w-/]@', '', get('openingPath')), '";';
 }
 
+$adminAuthType = getRow('admins', 'authtype', adminId());
+$show_help_tour_next_time = (($adminAuthType == 'local') && adminSetting('show_help_tour_next_time'));
+
 echo '
 		zenarioA.fromCID = ', (int) get('fromCID'), ';
 		zenarioA.fromCType = "', preg_replace('/\W/', '', get('fromCType')), '";
@@ -158,14 +149,37 @@ echo '
 		zenarioO.topLeftHTML = \'', jsEscape($topLeftHTML), '\';
 		zenarioO.topRightHTML = \'', jsEscape($topRightHTML), '\';
 		
+		zenarioA.seen_help_tour = ', (int)isset($_SESSION['seen_help_tour']) ,'
+		zenarioA.show_help_tour_next_time = ', (int)$show_help_tour_next_time, ';
+		
 		$(function() {
 			zenarioO.open(zenarioA.getSKBodyClass(), undefined, undefined, undefined, 0, true, true, false, false);
 			zenarioO.init();
-			zenarioO.size()
+			zenarioO.size();
 		});
 		
-		zenarioA.isFullOrganizerWindow = true;
+		zenarioA.isFullOrganizerWindow = true;';
+
+
+//If a toast was displayed shortly before Organizer was reloaded for some reason,
+//atttempt to display it again.
+if (!empty($_SESSION['_remember_toast'])
+ && json_decode($_SESSION['_remember_toast'])) {
+ 	
+ 	echo '
+ 		zenarioA.toast(', $_SESSION['_remember_toast'], ');';
+ 	//N.b. this should already be json_encoded so I don't need to escape this, but I still need
+ 	//the call to json_decode() above to check it is actually valid JSON and not a XSS attack!
+}
+unset($_SESSION['_remember_toast']);
+
+
+echo '
 	</script>';
+
+if (!isset($_SESSION['seen_help_tour'])) {
+	$_SESSION['seen_help_tour'] = true;
+}
 
 ?>
 </body>

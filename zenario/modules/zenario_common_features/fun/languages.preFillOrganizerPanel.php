@@ -58,8 +58,6 @@ if ($refinerName == 'plugin') {
 
 } else {
 	unset($panel['view_content']);
-	unset($panel['item_buttons']['import']);
-	unset($panel['item_buttons']['export']);
 	unset($panel['item_buttons']['delete']);
 	unset($panel['collection_buttons']['add']);
 	$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_languages_enabled'];
@@ -86,5 +84,6 @@ _text
 if (in($mode, 'select', 'quick')) {
 	unset($panel['popout_message']);
 }
+
 
 return false;

@@ -41,7 +41,7 @@ if ($usage == 'email'
 	$usage = 'image';
 }
 
-require 'cacheheader.inc.php';
+require 'basicheader.inc.php';
 
 //If a checksum was given, we can cache this file
 if ($checksum) {
@@ -60,19 +60,24 @@ useGZIP();
 //Storekeeper views should have an admin header; 
 if (isset($_GET['og'])
  || isset($_GET['ogl'])
+ || isset($_GET['ogt'])
  || isset($_GET['closeup'])
  || isset($_GET['popout'])
  || isset($_GET['adminDownload'])) {
-	require CMS_ROOT. 'zenario/adminheader.inc.php';
-	$adminBackend = true;
+	
+	startSession();
+	if (empty($_SESSION['running_a_wizard'])) {
+		require CMS_ROOT. 'zenario/adminheader.inc.php';
+		$adminBackend = true;
+	} else {
+		require 'visitorheader.inc.php';
+		require CMS_ROOT. 'zenario/includes/admin.inc.php';
+	}
+	
 	
 //All other usage should use the visitor header
 } else {
-	//For files associated with a Content Item, we'll need to check permissions and so we'll need access to the session
-	if ($usage == 'content') {
-		session_start();
-	}
-	
+	//For files associated with a Content Item, we'll need to check permissions
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
 }
 
@@ -123,7 +128,7 @@ if ($usage == 'user' && request('user_id')) {
 } elseif ($usage == 'template' && request('layout_id')) {
 	$id = getRow('layouts', 'image_id', request('layout_id'));
 
-} elseif ($adminBackend && empty($_GET['usage']) && !empty($_GET['id'])) {
+} elseif ($adminBackend && !empty($_GET['id'])) {
 	$id = $_GET['id'];
 }
 
@@ -137,6 +142,11 @@ if (isset($_GET['og'])) {
 } elseif (isset($_GET['ogl'])) {
 	$width = 24;
 	$height = 23;
+
+//Generate or load a larger thumbnail for Storekeeper
+} elseif (isset($_GET['ogt'])) {
+	$width = 64;
+	$height = 64;
 
 //Generate a close-up view for Storekeeper
 } elseif (isset($_GET['closeup']) && checkPriv()) {
@@ -153,7 +163,7 @@ if (isset($_GET['og'])) {
 	//If this is a resized image, check if this resize is allowed
 	//Note that using the session for each image is quite slow, so it's better to make sure that your cache/ directory is writable
 	//and not use this fallback logic!
-	session_start();
+	startSession();
 	if (!isset($_SESSION['zenario_allowed_files'][$checksum])) {
 		header('HTTP/1.0 404 Not Found');
 		exit;
@@ -218,7 +228,7 @@ if ($getUploadedFileInCacheDir) {
 		$sql = "
 			SELECT v.id, v.type, v.version, v.file_id, v.filename
 			FROM ". DB_NAME_PREFIX. "files AS f
-			INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 			   ON v.file_id = f.id";
 
 		if (request('cID') && request('cType')) {
@@ -242,7 +252,7 @@ if ($getUploadedFileInCacheDir) {
 
 		} elseif ($checksum) {
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "content AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = ". (checkPriv()? "c.admin_version" : "c.visitor_version"). "

@@ -44,14 +44,24 @@
 			class="image {{m.image_css_class|escape}}
 			
 				<% if (m.image) { %>
-					<% if (zenarioO.tuix.item_buttons && zenarioO.tuix.item_buttons.view_image) { %>
+					<% var ibs = zenarioO.tuix.item_buttons, nbs = zenarioO.tuix.inline_buttons, items = {}; items[m.id] = true; %>
+					
+					<% if (ibs && ibs.view_image && !zenarioO.checkButtonHidden(ibs.view_image, items)) { %>
+						
 						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view_image', '{{m.id|escape}}');
-					<% } else if (zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons.view_image) { %>
+					
+					<% } else if (nbs && nbs.view_image && !zenarioO.checkButtonHidden(nbs.view_image, items)) { %>
+						
 						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view_image', '{{m.id|escape}}');
-					<% } else if (zenarioO.tuix.item_buttons && zenarioO.tuix.item_buttons.view) { %>
+					
+					<% } else if (ibs && ibs.view && !zenarioO.checkButtonHidden(ibs.view, items)) { %>
+						
 						organizer_clickable_thumbnail_image" onclick="zenarioO.itemButtonClick('view', '{{m.id|escape}}');
-					<% } else if (zenarioO.tuix.inline_buttons && zenarioO.tuix.inline_buttons.view) { %>
+					
+					<% } else if (nbs && nbs.view && !zenarioO.checkButtonHidden(nbs.view, items)) { %>
+						
 						organizer_clickable_thumbnail_image" onclick="zenarioO.inlineButtonClick('view', '{{m.id|escape}}');
+					
 					<% } %>
 				
 					" style="background-image: url('{{m.image|escape}}'); background-position: left center;

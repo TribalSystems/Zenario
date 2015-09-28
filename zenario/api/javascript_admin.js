@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
 */
 
 
@@ -118,8 +118,10 @@ zenario.lib(function(
 	
 		$('#zenario_now_loading').clearQueue().hide();
 		$('#zenario_now_saving').clearQueue().hide();
-		if (zenarioAB.isWelcomePage) {
-			$('#zenario_now_installing').clearQueue().hide();
+		
+		var $zenario_now_installing = $('#zenario_now_installing');
+		if ($zenario_now_installing.length) {
+			$zenario_now_installing.clearQueue().hide();
 		}
 	
 		if (something) {
@@ -161,7 +163,7 @@ zenario.lib(function(
 		if (message) {
 			message = '' + message;
 		} else {
-			message = (zenario.showDevTools? phrase.errorTimedOutDev : phrase.errorTimedOut);
+			message = (zenarioA.adminSettings.show_dev_tools? phrase.errorTimedOutDev : phrase.errorTimedOut);
 		}
 	
 		if (buttonsHTML === undefined) {
@@ -200,6 +202,7 @@ zenario.lib(function(
 			if (message) {
 				alert(message);
 			}
+			zenarioA.rememberToast();
 		
 			zenarioA.uploading = false;
 			zenarioO.setWrapperClass('uploading', zenarioA.uploading);
@@ -228,6 +231,7 @@ zenario.lib(function(
 	
 		//Go somewhere
 		} else if (message.substr(0, 14) == '<!--Go_To_URL:' && (end = message.indexOf('-->')) != -1) {
+			zenarioA.rememberToast();
 			zenario.goToURL(zenario.addBasePath(message.substr(14, end - 14)), true);
 			message = message.substr(end + 3);
 			hadCommand = true;
@@ -262,11 +266,11 @@ zenario.lib(function(
 			 && zenarioO.path
 			 && zenarioA.isFullOrganizerWindow) {
 				buttonsHTML =
-					'<input type="button" value="' + phrase.logIn + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">' +
+					'<input type="button" value="' + phrase.login + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">' +
 					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(URLBasePath);"/>';
 			} else {
 				buttonsHTML = 
-					'<input type="button" value="' + phrase.logIn + '" class="submit_selected"' +
+					'<input type="button" value="' + phrase.login + '" class="submit_selected"' +
 					' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));">' +
 					'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));"/>';
 		
@@ -299,7 +303,6 @@ zenario.lib(function(
 	zenarioA.notification = function(message) {
 	
 		get('zenario_notification').style.display = '';
-		get('zenario_notification').style.top = zenario.scrollTop() + 'px';
 		get('zenario_notification').innerHTML = '<div><h1>' + zenario.htmlspecialchars(message) + '</h1></div>';
 	
 		$('#zenario_notification div')
@@ -350,6 +353,117 @@ zenario.lib(function(
 			//Hack to get intro.js working with Organizer
 			$fbog.removeClass('zenario_introjs_fixPosition');
 		});
+	};
+	
+	zenarioA.showTutorial = function(nav, auto) {
+	
+		if (!nav && zenarioO.currentTopLevelPath) {
+			nav = zenarioO.currentTopLevelPath.substr(0, zenarioO.currentTopLevelPath.indexOf('/'));
+		}
+		var videos = {},
+			m = {
+				videos: [],
+				show_help_tour_next_time: zenarioA.show_help_tour_next_time,
+				auto: auto
+			};
+		
+		// Get all tutorial videos
+		for (var key in zenarioO.map) {
+			if (zenarioO.map.hasOwnProperty(key) 
+				&& typeof(zenarioO.map[key]) == 'object'
+				&& zenarioO.map[key].youtube_video_id
+			) {
+				videos[key] = {
+					id: zenarioO.map[key].youtube_video_id,
+					title: zenarioO.map[key].youtube_thumbnail_title
+				};
+			}
+		}
+		
+		// If there is a video for the current nav
+		if (nav && videos[nav]) {
+			
+			// Put videos in array with current nav first
+			m.main_video_id = videos[nav].id;
+			m.main_video_title = videos[nav].title;
+			m.videos.push(videos[nav]);
+			delete videos[nav];
+		}
+		
+		// Add other videos
+		for (var key in videos) {
+			if (videos.hasOwnProperty(key)) {
+				m.videos.push(videos[key]);
+			}
+		}
+		
+		if(auto == true && m.main_video_id == undefined) {
+			return;
+		}
+			
+		// Open tutorial
+		var html = zenarioA.microTemplate('zenario_tutorial', m);
+		$.colorbox({
+			width: 964,
+			height: 791,
+			html: html,
+			className: 'zenario_tutorial_cbox',
+			overlayClose: false,
+			escKey: false,
+			onComplete: function() {
+				if (m.videos.length > 0) {
+					// Init slideshow
+					var options = {
+						$FillMode: 1,
+						$SlideDuration: 300,                                //[Optional] Specifies default duration (swipe) for slide in milliseconds, default value is 500
+						$MinDragOffsetToSlide: 20,                          //[Optional] Minimum drag offset to trigger slide , default value is 20
+						$SlideWidth: 200,                                   //[Optional] Width of every slide in pixels, default value is width of 'slides' container
+						$SlideHeight: 150,                                //[Optional] Height of every slide in pixels, default value is height of 'slides' container
+						$SlideSpacing: 75, 					                //[Optional] Space between each slide in pixels, default value is 0
+						$DisplayPieces: 3,                                  //[Optional] Number of pieces to display (the slideshow would be disabled if the value is set to greater than 1), the default value is 1
+						$ParkingPosition: 0,                              //[Optional] The offset position to park slide (this options applys only when slideshow disabled), default value is 0.
+						$UISearchMode: 1,                                   //[Optional] The way (0 parellel, 1 recursive, default value is 1) to search UI components (slides container, loading screen, navigator container, arrow navigator container, thumbnail navigator container etc).
+						$PlayOrientation: 1,                                //[Optional] Orientation to play slide (for auto play, navigation), 1 horizental, 2 vertical, default value is 1
+						$DragOrientation: 1                                //[Optional] Orientation to drag slide, 0 no drag, 1 horizental, 2 vertical, 3 either, default value is 1 (Note that the $DragOrientation should be the same as $PlayOrientation when $DisplayPieces is greater than 1, or parking position is not 0)
+						
+						//$BulletNavigatorOptions: {                                //[Optional] Options to specify and enable navigator or not
+						//	$Class: $JssorBulletNavigator$,                       //[Required] Class to create navigator instance
+						//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+						//	$AutoCenter: 1,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+						//	$Steps: 1,                                      //[Optional] Steps to go for each navigation request, default value is 1
+						//	$Lanes: 1,                                      //[Optional] Specify lanes to arrange items, default value is 1
+						//	$SpacingX: 0,                                   //[Optional] Horizontal space between each item in pixel, default value is 0
+						//	$SpacingY: 0,                                   //[Optional] Vertical space between each item in pixel, default value is 0
+						//	$Orientation: 1                                 //[Optional] The orientation of the navigator, 1 horizontal, 2 vertical, default value is 1
+						//},
+						
+						//$ArrowNavigatorOptions: {
+						//	$Class: $JssorArrowNavigator$,              //[Requried] Class to create arrow navigator instance
+						//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+						//	$AutoCenter: 2,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+						//	$Steps: 1                                    //[Optional] Steps to go for each navigation request, default value is 1
+						//}
+						
+					};
+					var jssor_slider1 = new $JssorSlider$("zenario_tutorial_other_videos", options);
+				}
+            }
+		});
+	};
+	
+	zenarioA.clickOtherTutorialVideo = function(id, title) {
+		var m = {
+				main_video_id: id
+			},
+			html = zenarioA.microTemplate('zenario_tutorial_main_video', m);
+		$('#zenario_tutorial_video_banner').html(title);
+		$('#zenario_tutorial_main_video').html(html);
+	};
+	
+	zenarioA.toggleShowHelpTourNextTime = function() {
+		var val = $('#zenario_show_help_tour_next_time').prop('checked') ? 1 : 0,
+			url = URLBasePath + 'zenario/admin/quick_ajax.php?_show_help_tour_next_time=' + val;
+		zenario.ajax(url);
 	};
 
 	//Get information on a single item from Storekeeper 

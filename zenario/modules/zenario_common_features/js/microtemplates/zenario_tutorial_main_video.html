@@ -1,0 +1,7 @@
+<% if (m.main_video_id) { %>
+	 <iframe width="560" height="315" src="https://www.youtube.com/embed/{{m.main_video_id|escape}}?showinfo=0" frameborder="0" allowfullscreen></iframe>
+<% } else { %>
+	<div class="no_video">
+		<p>Sorry there is no video currently available for this area</p>
+	</div>
+<% } %>

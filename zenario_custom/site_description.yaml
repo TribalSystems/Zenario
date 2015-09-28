@@ -21,3 +21,23 @@ max_local_administrators: 0
 
 # The max number of languages that can be created on this site (0 means no limit):
 max_enabled_languages: 0
+
+
+# Style formats are class names that can be selected in the WYSIWYG Editor
+# under the Styles menu.
+# 
+# See http://www.tinymce.com/wiki.php/Configuration:style_formats for more information.
+email_style_formats:
+    -
+        title: 'Bold text'
+        inline: b
+    -
+        title: 'Red text'
+        inline: span
+        styles:
+            color: '#ff0000'
+    -
+        title: 'Red header'
+        block: h1
+        styles:
+            color: '#ff0000'

@@ -63,7 +63,7 @@ switch ($path) {
 				}
 			}
 			
-			updateRow('content', $cols, $key);
+			updateRow('content_items', $cols, $key);
 		}
 		
 		break;
@@ -124,7 +124,7 @@ switch ($path) {
 				changeContentItemLayout($cID, $cType, $cVersion, $values['layout_id']);
 				
 				//Mark this version as updated
-				updateVersion($cID, $cType, $cVersion);
+				updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAsEditsMade = true);
 			}
 		}
 		
@@ -210,12 +210,12 @@ switch ($path) {
 				} else {
 					// Publish at a later date
 					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
-					$cVersion = getRow('content', 'admin_version', array('id' => $cID, 'type' => $cType));
-					updateRow('versions', array('scheduled_publish_datetime'=>$scheduled_publish_datetime), array('id' =>$cID, 'type'=>$cType, 'version'=>$cVersion));
+					$cVersion = getRow('content_items', 'admin_version', array('id' => $cID, 'type' => $cType));
+					updateRow('content_item_versions', array('scheduled_publish_datetime'=>$scheduled_publish_datetime), array('id' =>$cID, 'type'=>$cType, 'version'=>$cVersion));
 					
 					// Lock content item
 					$adminId = session('admin_userid');
-					updateRow('content', array('lock_owner_id'=>$adminId, 'locked_datetime'=>date('Y-m-d H:i:s')), array('id' =>$cID, 'type'=>$cType));
+					updateRow('content_items', array('lock_owner_id'=>$adminId, 'locked_datetime'=>date('Y-m-d H:i:s')), array('id' =>$cID, 'type'=>$cType));
 				}
 			}
 		}
@@ -336,11 +336,11 @@ switch ($path) {
 			}
 			// Sort order
 			if($radioSortBy == 'ascending'){
-					$sql .= ' ASC';
-				}elseif($radioSortBy == 'descending'){
-					$sql .= ' DESC';
-				}
-			$documentData = array();
+				$sql .= ' ASC';
+			}elseif($radioSortBy == 'descending'){
+				$sql .= ' DESC';
+			}
+			$datasetResult = array();
 			$result = sqlSelect($sql);
 			while($row = sqlFetchAssoc($result)) {
 				$datasetResult[] = $row;
@@ -352,9 +352,7 @@ switch ($path) {
 				$i++;
 			}
 		}
-		
-	
-	break;
+		break;
 	
 	case 'zenario_document_tag':
 		$box['key']['id'] = 
@@ -366,10 +364,12 @@ switch ($path) {
 		break;
 	
 	case 'zenario_document_properties':
+	
 		$id = (int)$box['key']['id'];
 		$documentId = $box['key']['id'];
+		$documentTitle = $values['details/document_title'];
 		
-		$document = getRow('documents', array('filename', 'file_id'), array('id' => $documentId));
+		$document = getRow('documents', array('filename', 'file_id', 'title'), array('id' => $documentId));
 		$file = getRow('files', 
 						array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
 						$document['file_id']);
@@ -389,40 +389,39 @@ switch ($path) {
 			
 			updateRow('documents', array('filename' => $documentName), array('id' => $documentId));
 		}
-
+		
+		if($document['title'] != $documentTitle) {
+			updateRow('documents', array('title' => $documentTitle), array('id' => $documentId));
+		}
+		
+		// Save document thumbnail image
 		$old_image = getRowsArray('documents',
 									'file_id',
 									array('id' => $id)
 									);
-		$new_image = explode(',',$values['zenario_common_feature__upload']);
-		//Remove the old image
+		$new_image = $values['zenario_common_feature__upload'];
 		
-		/*
-		foreach ($old_image as $image_id) {
-			if (!in_array($image_id, $new_image)) {
-				deleteRow('documents', array('id' => $id));
-				deleteFile($image_id);
-			}
-		}*/
-		
-		foreach ($new_image as $file) {
-			if (!in_array($file, $old_image)) {
-				if ($path = getPathOfUploadedFileInCacheDir($file)) {
+		if ($new_image) {
+			if (!in_array($new_image, $old_image)) {
+				if ($path = getPathOfUploadedFileInCacheDir($new_image)) {
 					$fileId = addFileToDocstoreDir('document_thumbnail', $path);
 					$fileDetails = array();
 					$fileDetails['thumbnail_id'] = $fileId;
 					//update thumbnail
 					setRow('documents', $fileDetails, $id);
-					
 				}
 			}
+		} elseif ($box['key']['delete_thumbnail']) {
+			updateRow('documents', array('thumbnail_id' => 0), array('id' => $documentId));
 		}
 	
-	
-		deleteRow('document_tag_link', array('document_id' => $box['key']['id']));
+		// Save document tags
+		deleteRow('document_tag_link', array('document_id' => $documentId));
 		$tagIds = explode(',', $values['details/tags']);
 		foreach ($tagIds as $tagId) {
-			setRow('document_tag_link', array('tag_id' => $tagId, 'document_id' => $box['key']['id']), array('tag_id' => $tagId, 'document_id' => $box['key']['id']));
+			setRow('document_tag_link', 
+				array('tag_id' => $tagId, 'document_id' => $documentId), 
+				array('tag_id' => $tagId, 'document_id' => $documentId));
 		}
 		break;
 		
@@ -448,8 +447,8 @@ switch ($path) {
 			$documentData = array();
 			$sql = '
 				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id, v.created_datetime, v.filename
-				FROM '.DB_NAME_PREFIX.'content AS c
-				INNER JOIN '.DB_NAME_PREFIX.'versions AS v
+				FROM '.DB_NAME_PREFIX.'content_items AS c
+				INNER JOIN '.DB_NAME_PREFIX.'content_item_versions AS v
 					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
 				WHERE c.tag_id = "'.sqlEscape($tagId).'"';
 			$result = sqlSelect($sql);
@@ -495,7 +494,7 @@ switch ($path) {
 			$succeeded++;
 			
 			// Hide document
-			updateRow('content', array('status' => 'hidden'), array('tag_id' => $tagId));
+			updateRow('content_items', array('status' => 'hidden'), array('tag_id' => $tagId));
 			$ordinal++;
 		}
 		// Code to show success messages after migrating documents
@@ -615,38 +614,34 @@ switch ($path) {
 		
 		
 		case 'zenario_document_upload':
-	
 			$documentsUploaded = explode(',',$values['upload_document/document__upload']);
 			$currentDateTime = date("Y-m-d H:i:s");
+			$isFolder = getRow('documents', 'id', array('id' => $box['key']['id'], 'type' => 'folder'));
+			$sql = '
+				SELECT MAX(ordinal) + 1
+				FROM ' . DB_NAME_PREFIX . 'documents
+				WHERE folder_id = ' . (int)($isFolder ? $isFolder : 0);
+			$result = sqlSelect($sql);
+			$row = sqlFetchRow($result);
+			$maxOrdinal = $row[0] ? $row[0] : 1;
 			foreach ($documentsUploaded  as $document) {
 				$filepath = getPathOfUploadedFileInCacheDir($document);
 				$filename = basename(getPathOfUploadedFileInCacheDir($document));
 				
 				if ($filepath && $filename) {
 					$documentId = addFileToDatabase('hierarchial_file', $filepath, $filename,false,false,true);
-					
-				
-				//avoid more than one id.
-				/*	if ($existingFile = getRow('documents', array('id'), array('file_id' => $documentId))) {
-						echo "This file has already been uploaded to the files directory!";
-						$box['key']['id'] = $documentId;
-						return;
-					}
-				*/
 				
 					$documentProperties = array(
 						'type' =>'file',
 						'file_id' => $documentId,
 						'folder_id' => 0,
-						'filename'=>$filename,
+						'filename' => $filename,
 						'file_datetime' => $currentDateTime,
-						'ordinal' => 0);
-					
+						'ordinal' => $maxOrdinal++);
 					
 					$extraProperties = self::addExtractToDocument($documentId);
 					$documentProperties = array_merge($documentProperties, $extraProperties);
 			
-					$isFolder= getRow('documents', array('id'), array('id' => $box['key']['id'],'type'=>'folder'));
 					if ($isFolder) {
 						$documentProperties['folder_id'] = $box['key']['id'];
 					}
@@ -654,16 +649,9 @@ switch ($path) {
 					if ($documentId = insertRow('documents', $documentProperties)) {
 						self::processDocumentRules($documentId);
 					}
-					
-					//update on document table file document
-					//setRow('documents', array('filename' => $filename), array('id' => $documentId));
-					
-					//$box['key']['id'] = $documentId;
-					//return;
 				}
 			}
-		$box['key']['id'] = $documentId;
-		return;
+			$box['key']['id'] = $documentId;
 		break;
 		
 }

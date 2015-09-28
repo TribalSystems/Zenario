@@ -31,7 +31,7 @@ class zenario_users__organizer__content extends zenario_users {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		foreach ($panel['items'] as $id => &$item) {
-			if (!empty($item['log_user_access']) && in($item['privacy'], 'all_extranet_users', 'group_members', 'specific_users')) {
+			if (setting('log_user_access') && in($item['privacy'], 'all_extranet_users', 'group_members', 'specific_users')) {
 				$item['traits']['log_access'] = true;
 			}
 		}

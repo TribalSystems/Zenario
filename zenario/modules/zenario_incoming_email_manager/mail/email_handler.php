@@ -33,8 +33,8 @@ if (empty($_SERVER['RECIPIENT']) || empty($_SERVER['USER']) || empty($argv[0]) |
 }
 
 //Set up the directory path
-if (!file_exists(($cmsRoot = dirname(dirname(dirname(dirname($argv[0])))). '/'). 'zenario/cacheheader.inc.php')
- && !file_exists(($cmsRoot = dirname($cmsRoot). '/'). 'zenario/cacheheader.inc.php')) {
+if (!file_exists(($cmsRoot = dirname(dirname(dirname(dirname($argv[0])))). '/'). 'zenario/basicheader.inc.php')
+ && !file_exists(($cmsRoot = dirname($cmsRoot). '/'). 'zenario/basicheader.inc.php')) {
 	exit;
 }
 

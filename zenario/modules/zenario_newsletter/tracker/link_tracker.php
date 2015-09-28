@@ -54,6 +54,13 @@ if ($urlNLink
 			WHERE tracker_hash = '". sqlEscape($urlT). "'
 			  AND time_clicked_through IS NULL";
 		sqlQuery($sql);
+		
+		$sql = "
+			UPDATE ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link SET
+				time_received = NOW()
+			WHERE tracker_hash = '". sqlEscape($_GET['t']). "'";
+		sqlQuery($sql);
+		
 	} else {
 		
 		echo phrase('Page not found - there my be a problem with your email link');

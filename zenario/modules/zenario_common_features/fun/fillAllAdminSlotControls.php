@@ -183,7 +183,7 @@ if (!$moduleId) {
 	if (!$couldChange || $level == 1 || $isVersionControlled) {
 		unset($controls['actions']['insert_reusable_on_item_layer']);
 	}
-	if (!$couldChange || $isVersionControlled) {
+	if (!$couldChange/* || $isVersionControlled*/) {
 		unset($controls['actions']['replace_reusable_on_item_layer']);
 	}
 	if (!$couldChange || ($level == 1 && !$overriddenPlugin) || $isVersionControlled) {
@@ -229,7 +229,7 @@ if (!$moduleId) {
 	
 	//Don't allow wireframe plugins to be replaced
 	if ($isVersionControlled) {
-		unset($controls['actions']['replace_reusable_on_item_layer']);
+		/*unset($controls['actions']['replace_reusable_on_item_layer']);*/
 		unset($controls['actions']['insert_reusable_on_item_layer']);
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
 	}
@@ -255,12 +255,24 @@ if ($overriddenPlugin) {
 		unset($controls['overridden_actions']['remove_from_layout_layer']);
 	}
 	
+	
 	//Don't allow wireframe plugins to be replaced
 	if ($overriddenIsVersionControlled) {
 		unset($controls['actions']['insert_reusable_on_layout_layer']);
 	}
 	
+	
 } else {
 	unset($controls['overridden_info']);
 	unset($controls['overridden_actions']);
+}
+
+if (isset($controls['actions']['replace_reusable_on_item_layer'])) {
+	if ($level == 2) {
+		$replace = 'true';
+	} else {
+		$replace = 'false';
+	}
+	$controls['actions']['replace_reusable_on_item_layer']['onclick'] =
+		str_replace('[[overides_layout]]', $replace, $controls['actions']['replace_reusable_on_item_layer']['onclick']);
 }

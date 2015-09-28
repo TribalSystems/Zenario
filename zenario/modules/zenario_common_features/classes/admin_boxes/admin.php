@@ -30,19 +30,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__admin_boxes__admin extends module_base_class {
 
-	protected function fillFieldValues(&$fields, &$rec){
-		foreach($rec as $k => $v){
-			$fields[$k]['value'] = $v;
-		}
-	}
-
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
 		if ($box['key']['view_profile']) {
 			$box['key']['id'] = adminId();
 		}
 
 		if ($box['key']['id']) {
-			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id', 'image_id'), $box['key']['id'])) {
+			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id', 'image_id', 'is_client_account'), $box['key']['id'])) {
 				exit;
 
 			} elseif ($details['authtype'] != 'local') {
@@ -60,17 +55,34 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 				$box['tabs']['details']['edit_mode']['enabled'] = true;
 				$box['tabs']['permissions']['edit_mode']['enabled'] = true;
 			}
+			
+			//Load this admin's settings
+			if (is_array(arrayKey($box,'tabs'))) {
+				foreach ($box['tabs'] as $tabName => &$tab) {
+					if (is_array($tab)) {
+						foreach ($tab['fields'] as &$field) {
+							if (($settingName = arrayKey($field, 'admin_setting', 'name'))
+							 && (false !== ($settingValue = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']))))) {
+								$field['value'] = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']));
+							}
+						}
+					}
+				}
+			}
 
 			$box['key']['authtype'] = $details['authtype'];
 			$box['key']['global_id'] = $details['global_id'];
 			$box['title'] = adminPhrase('Managing Administrator "[[username]]"', $details);
+			
 			
 			$values['username'] = $details['username'];
 			$values['first_name'] = $details['first_name'];
 			$values['last_name'] = $details['last_name'];
 			$values['email'] = $details['email'];
 			$values['image'] = $details['image_id'];
-
+			$values['is_client_account'] = $details['is_client_account'];
+			
+			
 			//Get a list of permissions that an Admin is in
 			$perms = array();
 			loadAdminPerms($perms, $box['key']['id']);
@@ -123,7 +135,23 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			$box['tabs']['details']['edit_mode']['enable_revert'] =
 			$box['tabs']['password']['edit_mode']['enable_revert'] =
 			$box['tabs']['permissions']['edit_mode']['enable_revert'] = false;
+			$values['is_client_account'] = true;
 		}
+		
+		$adminAuthType = getRow('admins', 'authtype', adminId());
+		if ($adminAuthType == 'local') {
+			$fields['is_client_account']['disabled'] = true;
+		}
+		$limit = siteDescription('max_local_administrators');
+		$limitCount = (int)$limit;
+		if (!$limit) {
+			$limit = 'unlimited';
+		}
+		$fields['details/is_client_account']['note_below'] = nAdminPhrase(
+			'If checked, the Administrator is a client account. This site allows for [[limit]] local administrator.', 
+			'If checked, the Administrator is a client account. This site allows for [[limit]] local administrators.', 
+			$limitCount,
+			array('limit' => $limit));
 
 		return false;
 	}
@@ -138,7 +166,8 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			 && is_array($field)
 			 && !empty($field['type'])) {
 				
-				//Hide every other field if the "This administrator has every possible permission" option is checked
+				//Hide every other field if the "This administrator has every possible permission" option is checked.
+				//(Except for the dev tools, which is a hard-coded exception.)
 				if ($values['permissions/everything'] == 'everything') {
 					$field['hidden'] = true;
 				
@@ -287,9 +316,13 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 		return false;
 	}
-
+	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (!$box['key']['id'] && !zenario_common_features::canCreateAdditionalAdmins()) {
+			return false;
+		}
+		
 		//Work out if we will be changing the Admin's password
 		$tab = false;
 		((!$box['key']['id'] && $tab = 'details') || (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on') && $tab = 'password'));
@@ -301,6 +334,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 					'first_name' => $values['details/first_name'],
 					'last_name' => $values['details/last_name'],
 					'email' => $values['details/email']);
+			
+			$adminAuthType = getRow('admins', 'authtype', adminId());
+			if ($adminAuthType == 'super') {
+				$details['is_client_account'] = $values['details/is_client_account'];
+			}
 			
 			if ($values['details/image'] && ($filepath = getPathOfUploadedFileInCacheDir($values['details/image']))) {
 				$image_id = addFileToDatabase('admin', $filepath, false, true);
@@ -383,6 +421,28 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			if ($box['key']['id'] == adminId()) {
 				setAdminSession(adminId());
 				$box['popout_message'] = '<!--Reload_Storekeeper-->';
+			}
+		}
+		
+		//Save admin settings
+		foreach ($box['tabs'] as $tabName => &$tab) {
+			if (is_array($tab) && engToBooleanArray($tab, 'edit_mode', 'on')) {
+				foreach ($tab['fields'] as $fieldName => &$field) {
+					if (is_array($field)) {
+						if (!arrayKey($field, 'read_only') && $settingName = arrayKey($field, 'admin_setting', 'name')) {
+					
+							//Get the value of the setting. Hidden fields should count as being empty
+							if (engToBooleanArray($field, 'hidden')
+							 || engToBooleanArray($field, '_was_hidden_before')) {
+								$value = '';
+							} else {
+								$value = arrayKey($values, $tabName. '/'. $fieldName);
+							}
+							
+							setRow('admin_settings', array('value' => $value), array('name' => $settingName, 'admin_id' => $box['key']['id']));
+						}
+					}
+				}
 			}
 		}
 

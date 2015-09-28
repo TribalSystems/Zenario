@@ -32,7 +32,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //This Plugin displays an image; it is intended to be used at the top of a page to display a Masthead
 class zenario_banner extends module_base_class {
 	
-	protected static $bannerNo = 0;
 	protected $mergeFields = array();
 	protected $subSections = array();
 	protected $empty = false;
@@ -183,6 +182,36 @@ class zenario_banner extends module_base_class {
 		  && $cID
 		  && ($imageId = itemStickyImageId($cID, $cType)))) {
 			
+			$cols = array();
+			if (!$this->setting('alt_tag')) {
+				$cols[] = 'alt_tag';
+			}
+			
+			if ($fancyboxLink && !$this->setting('floating_box_title')) {
+				$cols[] = 'floating_box_title';
+			}
+			
+			if (!empty($cols)) {
+				$image = getRow('files', $cols, $imageId);
+			}
+			
+			if ($this->setting('alt_tag')) {
+				$alt_tag = htmlspecialchars($this->setting('alt_tag'));
+			} else {
+				$alt_tag = htmlspecialchars($image['alt_tag']);
+			}
+			$this->mergeFields['Image_Alt'] = $alt_tag;
+			
+			if ($fancyboxLink) {
+				if ($this->setting('floating_box_title')) {
+					$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
+					$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
+				} else {
+					$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
+					$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
+				}
+			}
+			
 			if (imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'))) {
 				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
 					$this->clearCacheBy(
@@ -211,9 +240,11 @@ class zenario_banner extends module_base_class {
 					
 					$this->mergeFields['Image_Style'] .= ' id="'. $this->containerId. '_img" ';
 					
+					
+					
 					$this->mergeFields['Rollover_Images'] =
-						'<img id="'. $this->containerId. '_rollout" alt="rollout '. ++zenario_banner::$bannerNo. '" src="'. htmlspecialchars($url). '" style="width: 1px; height: 1px; visibility: hidden;"/>'.
-						'<img id="'. $this->containerId. '_rollover" alt="rollover '. zenario_banner::$bannerNo. '" src="'. htmlspecialchars($url2). '" style="width: 1px; height: 1px; visibility: hidden;"/>';
+						'<img id="'. $this->containerId. '_rollout" alt="'. $alt_tag. '" src="'. htmlspecialchars($url). '" style="width: 1px; height: 1px; visibility: hidden;"/>'.
+						'<img id="'. $this->containerId. '_rollover" alt="'. $alt_tag. '" src="'. htmlspecialchars($url2). '" style="width: 1px; height: 1px; visibility: hidden;"/>';
 					
 					$this->mergeFields['Wrap'] =
 						'onmouseout="get(\''. $this->containerId. '_img\').src = get(\''. $this->containerId. '_rollout\').src;" '.
@@ -298,40 +329,6 @@ class zenario_banner extends module_base_class {
 				if (!$this->isVersionControlled) {
 					if ($this->setting('translate_text')) {
 						$this->mergeFields['More_Link_Text'] = $this->phrase($this->mergeFields['More_Link_Text']);
-					}
-				}
-			}
-			
-			
-			
-			if ($imageId) {
-				$cols = array();
-				
-				if (!$this->setting('alt_tag')) {
-					$cols[] = 'alt_tag';
-				}
-				
-				if ($fancyboxLink && !$this->setting('floating_box_title')) {
-					$cols[] = 'floating_box_title';
-				}
-				
-				if (!empty($cols)) {
-					$image = getRow('files', $cols, $imageId);
-				}
-				
-				if ($this->setting('alt_tag')) {
-					$this->mergeFields['Image_Alt'] = htmlspecialchars($this->setting('alt_tag'));
-				} else {
-					$this->mergeFields['Image_Alt'] = htmlspecialchars($image['alt_tag']);
-				}
-				
-				if ($fancyboxLink) {
-					if ($this->setting('floating_box_title')) {
-						$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-						$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($this->setting('floating_box_title')). '"';
-					} else {
-						$this->mergeFields['Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
-						$this->mergeFields['Image_Link_Href'] .= ' data-box-title="'. htmlspecialchars($image['floating_box_title']). '"';
 					}
 				}
 			}

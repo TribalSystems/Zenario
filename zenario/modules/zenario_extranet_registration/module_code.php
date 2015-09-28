@@ -53,6 +53,15 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->objects['Registration_Title'] = $this->phrase($this->setting('registration_title'));
 		}
 		
+		// Set other text
+		$this->objects['Register_Button_Text'] = $this->phrase($this->setting('register_button_text'));
+		$this->objects['Resend_Verification_Email_Link_Text'] = $this->phrase($this->setting('resend_verification_email_link_text'));
+		$this->objects['Resend_Verification_Email_Link_Description'] = $this->phrase($this->setting('resend_verification_email_link_description'));
+		$this->objects['Go_Back_To_Login_Text'] = $this->phrase($this->setting('go_back_to_login_text'));
+		$this->objects['Thank_You_Verify_Email_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_verify_email_text')));
+		$this->objects['Thank_You_Wait_For_Activation_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_wait_for_activation_text')));
+		$this->objects['Thank_You_Verify_Email_Resent_Text'] = $this->phrase(nl2br($this->setting('register_thank_you_verify_email_resent_text')));
+		
 		if (!canSetCookie() && setting('cookie_consent_for_extranet') == 'required') {
 			requireCookieConsent();
 			$this->message = $this->phrase('_PLEASE_ACCEPT_COOKIES');
@@ -70,6 +79,10 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->subSections['Choose_Screen_Name'] = true;
 			}
 			
+			if ($this->setting('user_email_verification')) {
+				$this->subSections['Second_Email'] = true;
+			}
+			
 			if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')) {
 				$this->subSections['Ts_And_Cs_Section'] = true;
 				$cID = $cType = false;
@@ -80,7 +93,11 @@ class zenario_extranet_registration extends zenario_extranet {
 			}
 			
 			if (!empty($_SESSION['extranetUserID'])) {
-				$this->mode = 'modeLoggedIn';
+				if (get('confirm_email') && $this->isEmailAddressVerified($_SESSION['extranetUserID'])) {
+					$this->mode = 'modeVerificationAlreadyDone';
+				} else {
+					$this->mode = 'modeLoggedIn';
+				}
 			} elseif (post('extranet_resend') && ($this->setting('initial_email_address_status')=='not_verified')) {
 				$this->validateFormFields('Resend_Form');
 				$user = $this->getDetailsFromEmail(post('email'));
@@ -187,9 +204,9 @@ class zenario_extranet_registration extends zenario_extranet {
 		switch($path) {
 			case 'plugin_settings':
 				$fields['set_timer_on_new_users']['hidden'] = !inc('zenario_user_timers');
-				$box['tabs']['user_characteristics']['fields']['select_characteristics_for_new_users']['values'] =
+				$box['tabs']['first_tab']['fields']['select_characteristics_for_new_users']['values'] =
 					listCustomFields('users', $flat = false, array('checkbox', 'checkboxes'), $customOnly = true, $useOptGroups = true);
-				$box['tabs']['groups']['fields']['select_group_for_new_users']['values'] =
+				$box['tabs']['first_tab']['fields']['select_group_for_new_users']['values'] =
 					listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
 				break;
 			case "zenario_extranet_registration__codes":
@@ -288,6 +305,15 @@ class zenario_extranet_registration extends zenario_extranet {
 
 	protected function addUserRecord(){
 		$fields = $this->validateFormFields('Registration_Form');
+		
+		if ($this->setting('user_email_verification')) {
+			if (!post('email_confirm')) {
+				$this->errors[] = array('Error' => $this->phrase('Please re-enter your email address.'));
+			} elseif (post('email') != post('email_confirm')) {
+				$this->errors[] = array('Error' => $this->phrase('The email addresses you entered do not match.'));
+			}
+		}
+		
 		if ($this->errors){
 			return false;
 		}
@@ -335,12 +361,24 @@ class zenario_extranet_registration extends zenario_extranet {
 		$sql = 'SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users';
 		$result = sqlQuery($sql);
 		while ($column = sqlFetchAssoc($result)) {
-			if (isset($fields[$column['Field']])) {
+			if (isset($fields[$column['Field']]) && ($column['Key'] != 'PRI')) {
 				$fields2[$column['Field']] = $fields[$column['Field']];
 			}
 		}
-		
 		$userId = saveUser($fields2);
+		
+		// Save custom fields from frameworks
+		$customFields = array();
+		$sql = 'SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users_custom_data';
+		$result = sqlQuery($sql);
+		while ($column = sqlFetchAssoc($result)) {
+			if (isset($fields[$column['Field']]) && ($column['Key'] != 'PRI')) {
+				$customFields[$column['Field']] = $fields[$column['Field']];
+			}
+		}
+		if ($customFields) {
+			setRow('users_custom_data', $customFields, $userId);
+		}
 		
 		// Set a group or checkbox value for a user
 		if ($this->setting('set_characteristics_on_new_users') && $this->setting('select_characteristics_for_new_users')) {

@@ -104,9 +104,10 @@ function primaryDomain() {
 	}
 }
 
+//Warning: this is deprecated, please use setCookieOnCookieDomain() instead!
 function cookieDomain() {
-	if (setting('cookie_domain')) {
-		return setting('cookie_domain');
+	if (COOKIE_DOMAIN) {
+		return COOKIE_DOMAIN;
 	
 	} else {
 		return httpHost();

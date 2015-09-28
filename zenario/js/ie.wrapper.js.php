@@ -1,0 +1,87 @@
+<?php
+/*
+ * Copyright (c) 2015, Tribal Limited
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Zenario, Tribal Limited nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL TRIBAL LTD BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+header('Content-Type: text/javascript; charset=UTF-8');
+require '../basicheader.inc.php';
+
+$ie = '';
+if (!empty($_GET['ie'])) {
+	$ie = (int) $_GET['ie'];
+}
+
+useCache('zenario-inc-js-ie-'. $ie. '-'. LATEST_REVISION_NO);
+
+
+//Run pre-load actions
+foreach (cms_core::$editions as $className => $dirName) {
+	if ($action = moduleDir($dirName, 'actions/wrapper.pre_load.php', true)) {
+		require $action;
+	}
+}
+
+
+function incJS($file) {
+	if (file_exists($file. '.pack.js')) {
+		require $file. '.pack.js';
+	} elseif (file_exists($file. '.min.js')) {
+		require $file. '.min.js';
+	} elseif (file_exists($file. '.js')) {
+		require $file. '.js';
+	}
+	
+	echo "\n/**/\n";
+}
+
+switch ($ie) {
+	case 7:
+		echo '
+			try {
+				document.execCommand("BackgroundImageCache", false, true);
+			} catch(err) {}';
+		incJS('zenario/libraries/public_domain/json/json2');
+	
+	case 8:
+		echo '
+			if (!Date.now) {
+				Date.now = function() {
+					return new Date().valueOf();
+				};
+			}';
+		incJS('zenario/libraries/mit/split/split');
+	
+	case 9:
+		incJS('zenario/libraries/mit/jquery/jquery.placeholder');
+}
+
+
+//Run post-display actions
+foreach (cms_core::$editions as $className => $dirName) {
+	if ($action = moduleDir($dirName, 'actions/wrapper.post_display.php', true)) {
+		require $action;
+	}
+}

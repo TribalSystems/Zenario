@@ -15,11 +15,11 @@ zenario__content:
             no_items_message: No content items have been created.
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]content AS c
+                    [[DB_NAME_PREFIX]]content_items AS c
                     INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
                        ON c.equiv_id = tc.equiv_id
                       AND c.type = tc.type
-                    INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+                    INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
                        ON c.id = v.id
                       AND c.type = v.type
                       AND c.admin_version = v.version
@@ -97,17 +97,17 @@ zenario__content:
                         languages_chained.language_id IS NULL
                                                 AND equivs_chained.equiv_id IS NULL
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with
+                        INNER JOIN [[DB_NAME_PREFIX]]content_items AS chain_with
                                                    ON chain_with.tag_id = [[COMBINE_ITEM]]
                                                   AND chain_with.type = c.type
-                                                INNER JOIN [[DB_NAME_PREFIX]]content AS chain_with_equiv
+                                                INNER JOIN [[DB_NAME_PREFIX]]content_items AS chain_with_equiv
                                                    ON chain_with_equiv.equiv_id = chain_with.equiv_id
                                                   AND chain_with_equiv.type = chain_with.type
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content AS languages_chained
+                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS languages_chained
                                                    ON languages_chained.equiv_id = chain_with.equiv_id
                                                   AND languages_chained.type = chain_with.type
                                                   AND languages_chained.language_id = c.language_id
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content AS equivs_chained
+                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS equivs_chained
                                                    ON equivs_chained.type = chain_with.type
                                                   AND equivs_chained.equiv_id = c.equiv_id
                                                   AND equivs_chained.language_id = chain_with_equiv.language_id
@@ -130,7 +130,7 @@ zenario__content:
                                                   AND sp.content_type = c.type
                 find_duplicates:
                     sql: |
-                        (select count(*) FROM [[DB_NAME_PREFIX]]versions as vfcd INNER JOIN [[DB_NAME_PREFIX]]content AS cfcd 
+                        (select count(*) FROM [[DB_NAME_PREFIX]]content_item_versions as vfcd INNER JOIN [[DB_NAME_PREFIX]]content_items AS cfcd 
                             ON cfcd.id = vfcd.id AND cfcd.type = vfcd.type AND cfcd.admin_version = vfcd.version
                             AND cfcd.admin_version = cfcd.visitor_version WHERE vfcd.file_id = f.id) > 1
     
@@ -382,7 +382,7 @@ zenario__content:
                     db_column: |
                         c.status != 'first_draft' AND (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]versions AS pv
+                            FROM [[DB_NAME_PREFIX]]content_item_versions AS pv
                             WHERE pv.id = c.id
                               AND pv.type = c.type
                               AND pv.version NOT IN (c.visitor_version, c.admin_version)
@@ -497,10 +497,10 @@ zenario__content:
                         branch: true
                         path: zenario__content/panels/content
                         refiner: find_duplicates
-                #export:
-                #    tooltip: Export in CSV
-                #    label: Export
-                #    do_csv_export: true
+                export:
+                    label: Export
+                    admin_box:
+                        path: zenario_export_content_items
                 help:
                     label: Help
                     help:
@@ -509,6 +509,31 @@ zenario__content:
                             This panel shows all of the content items of your site in a
                             list view.
             inline_buttons:
+                public_permission:
+                    css_class: public_permission_inline
+                    tooltip: "Visible to: Publicly visible"
+                    visible_if: >
+                        (item.privacy == 'public')
+                private_permission:
+                    css_class: private_permission_inline
+                    tooltip: "Visible to: Private visibility, can be viewed by all extranet users"
+                    visible_if: >
+                        (item.privacy == 'all_extranet_users')
+                no_regular_access_permission:
+                    css_class: no_regular_access_permission_inline
+                    tooltip: "Visible to: No regular access"
+                    visible_if: >
+                        (item.privacy == 'no_access')
+                group_members_permission:
+                    css_class: group_members_inline
+                    tooltip: "Private visibility, can only be viewed by selected group(s)"
+                    visible_if: >
+                        (item.privacy == 'group_members')
+                specific_users_permission:
+                    css_class: group_members_inline
+                    tooltip: "Private visibility, can only be viewed by selected user(s)"
+                    visible_if: >
+                        (item.privacy == 'specific_users')
                 view_frontend:
                     css_class: view_frontend
                     tooltip: Go to content item in front-end window
@@ -525,6 +550,13 @@ zenario__content:
                     call_js_function:
                         encapsulated_object: zenarioA
                         function: showPagePreview
+                    visible_if: >
+                        zenario.engToBoolean(item.frontend_link)
+                view_frontend:
+                    css_class: view_frontend
+                    tooltip: Go to content item in front-end window
+                    frontend_link:
+                        exists: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
             item_buttons:
@@ -562,7 +594,7 @@ zenario__content:
                         refiner: zenario_trans__chained_in_link
                 images:
                     parent: view_dropdown
-                    label: Images in this content item
+                    label: Images attached to this content item
                     link:
                         path: zenario__content/panels/inline_images_for_content
                         branch: true
@@ -610,10 +642,6 @@ zenario__content:
                     hide_when_children_are_not_visible: true
                     visible_if_for_all_selected_items: >
                         item.enable_categories == 1
-                layout_dropdown:
-                    label: Layout
-                    multiple_select: true
-                    hide_when_children_are_not_visible: true
                 view_dropdown:
                     label: View
                     multiple_select: true
@@ -720,23 +748,6 @@ zenario__content:
                             message_type: warning
                         request:
                             unlock: "1"
-                    
-                layout:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                    parent: layout_dropdown
-                    label: Change layout
-                    multiple_select: true
-                    admin_box:
-                        path: zenario_content_layout
-                    without_traits:
-                        ghost: true
-                view_slots:
-                    parent: layout_dropdown
-                    label: View item's slots
-                    link:
-                        path: zenario__content/panels/slots
-                        branch: true
-                        refiner: content_item
                 categories_add:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     parent: category_dropdown
@@ -797,6 +808,31 @@ zenario__content:
                         key:
                             mode: foot
                             level: item
+                                    
+                layout:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    parent: property_dropdown
+                    label: Change layout
+                    multiple_select: true
+                    admin_box:
+                        path: zenario_content_layout
+                    #combine_items:
+                    #    path: zenario__layouts/panels/layouts
+                    #    target_path: zenario__layouts/panels/layouts
+                    #    min_path: zenario__layouts/panels/layouts
+                    #    one_to_one_choose_phrase: Add selected location to this sector
+                    #    request:
+                    #        action: add_location
+                    without_traits:
+                        ghost: true
+                    
+                view_slots:
+                    parent: property_dropdown
+                    label: View item's slots
+                    link:
+                        path: zenario__content/panels/slots
+                        branch: true
+                        refiner: content_item
                 
                 quick_add_to_menu:
                     parent: action_dropdown

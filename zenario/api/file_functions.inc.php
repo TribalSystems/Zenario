@@ -150,7 +150,7 @@ function contentFileLink(&$url, $cID, $cType, $cVersion) {
 	$url = false;
 	
 	//Check that this file exists
-	if (!($version = getRow('versions', array('filename', 'file_id'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))
+	if (!($version = getRow('content_item_versions', array('filename', 'file_id'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))
 	 || !($file = getRow('files', array('mime_type', 'checksum', 'filename', 'location', 'path'), $version['file_id']))) {
 		return $url = false;
 	}
@@ -266,22 +266,74 @@ function documentMimeType($file) {
 	return ifNull(getRow('document_types', 'mime_type', array('type' => strtolower($type))), 'application/octet-stream');
 }
 
-function fileLink($fileId, $hash = false) {
+
+
+function getDocumentFileLink($file, $documentPrivacy, $pagePrivacy, $documentId = false) {
+	$frontLink = false;
+	if ($file['filename']) {
+		// If document has no explicit privacy setting, the page privacy decides the link
+		$path = docstoreFilePath($file['id'], false);
+		if ($documentPrivacy == 'auto') {
+			if (($pagePrivacy == 'public') && !windowsServer() && $path) {
+				$frontLink = createFilePublicLink($file, $path);
+			} else {
+				$frontLink = createFilePrivateLink($file['id']);
+				$pagePrivacy = 'private';
+			}
+			if ($documentId) {
+				updateRow('documents', array('privacy' => $pagePrivacy), $documentId);
+			}
+		// Create link for public document
+		} elseif ($documentPrivacy == 'public' && !windowsServer() && $path) {
+			$frontLink = createFilePublicLink($file, $path);
+		// Create link for private document
+		} else {
+			$frontLink = createFilePrivateLink($file['id']);
+		}
+	}
+	return $frontLink;
+}
+
+function createFilePublicLink($file, $path) {
+	$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
+	$symFolder =  CMS_ROOT . $dirPath;
+	$symPath = $symFolder . '/' . $file['filename'];
+	$frontLink = $dirPath . '/' . $file['filename'];
+	
+	if (!file_exists($symPath)) {
+		if(!file_exists($symFolder)) {
+			mkdir($symFolder);
+		}
+		symlink($path, $symPath);
+	}
+	return $frontLink;
+}
+
+function createFilePrivateLink($fileId) {
+	return fileLink($fileId, hash64($fileId. '_'. randomString(10)), 'downloads');
+}
+
+
+function fileLink($fileId, $hash = false, $type = 'files') {
 	//Check that this file exists
 	if (!$fileId
-	 || !($file = getRow('files', array('usage', 'checksum', 'filename', 'location', 'path'), $fileId))) {
+	 || !($file = getRow('files', array('usage', 'short_checksum', 'checksum', 'filename', 'location', 'path'), $fileId))) {
 		return false;
 	}
 	
 	//Workout a hash for the file
 	if (!$hash) {
-		$hash = $file['checksum'];
+		if (chopPrefixOffOfString($type, 'public/')) {
+			$hash = $file['short_checksum'];
+		} else {
+			$hash = $file['checksum'];
+		}
 	}
 	
 	//Try to get a directory in the cache dir
 	$path = false;
 	if (cleanDownloads()) {
-		$path = createCacheDir($hash, 'files', false);
+		$path = createCacheDir($hash, $type, false);
 	}
 	
 	//Otherwise attempt to create the resized version in the cache directory
@@ -417,11 +469,11 @@ function imageLink(
 		//If this image should be in the public directory, try to create friendly and logical directory structure
 		if ($image['privacy'] == 'public') {
 			//We'll try to create a subdirectory inside public/images/ using the short checksum as the name
-			$path = createCacheDir($image['short_checksum'], 'images', false, -1, 'public');
+			$path = createCacheDir($image['short_checksum'], 'public/images', false);
 			
 			//If this is a resize, we'll put the resize in another subdirectory using the code above as the name
 			if ($path && $imageNeedsToBeResized) {
-				$path = createCacheDir($image['short_checksum']. '/'. $settingCode, 'images', false, -1, 'public');
+				$path = createCacheDir($image['short_checksum']. '/'. $settingCode, 'public/images', false);
 			}
 		
 		//If the image should be in the private directory, don't worry about a friendly URL and
@@ -568,7 +620,7 @@ function itemStickyImageId($cID, $cType, $cVersion = false) {
 		}
 	}
 	
-	return getRow('versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+	return getRow('content_item_versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 }
 
 function itemStickyImageLink(
@@ -718,7 +770,7 @@ function plainTextExtract($file, &$extract) {
 
 function updatePlainTextExtract($cID, $cType, $cVersion, $fileId = false) {
 	if ($fileId === false) {
-		$fileId = getRow('versions', 'file_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		$fileId = getRow('content_item_versions', 'file_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	}
 	
 	$success = false;
@@ -759,4 +811,39 @@ function getPathOfUploadedFileInCacheDir($string) {
 	} else {
 		return false;
 	}
+}
+
+function fileSizeConvert($bytes) {
+	$bytes = floatval($bytes);
+		$arBytes = array(
+			0 => array(
+				"UNIT" => "TB",
+				"VALUE" => pow(1024, 4)
+			),
+			1 => array(
+				"UNIT" => "GB",
+				"VALUE" => pow(1024, 3)
+			),
+			2 => array(
+				"UNIT" => "MB",
+				"VALUE" => pow(1024, 2)
+			),
+			3 => array(
+				"UNIT" => "KB",
+				"VALUE" => 1024
+			),
+			4 => array(
+				"UNIT" => "bytes",
+				"VALUE" => 1
+			),
+		);
+	
+	foreach($arBytes as $arItem) {
+		if($bytes >= $arItem["VALUE"]) {
+			$result = $bytes / $arItem["VALUE"];
+			$result = strval(round($result, 2)). " " .$arItem["UNIT"];
+			break;
+		}
+	}
+	return $result;
 }

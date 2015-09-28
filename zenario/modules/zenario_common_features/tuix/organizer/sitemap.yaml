@@ -13,11 +13,11 @@ zenario__content:
                     only_show_items_tag: Yes
                 db_items:
                     table: >
-                        [[DB_NAME_PREFIX]]content AS c
+                        [[DB_NAME_PREFIX]]content_items AS c
                         INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
                            ON c.equiv_id = tc.equiv_id
                           AND c.type = tc.type
-                        INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+                        INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
                            ON c.id = v.id
                           AND c.type = v.type
                           AND c.visitor_version = v.version

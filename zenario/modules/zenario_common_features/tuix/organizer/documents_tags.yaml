@@ -16,6 +16,7 @@ zenario__content:
             columns:
                 id:
                     title: ID
+                    format: id
                     searchable: Yes
                     db_column: dt.id
                     show_by_default: false

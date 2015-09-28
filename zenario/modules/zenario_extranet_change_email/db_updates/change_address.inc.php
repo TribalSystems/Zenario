@@ -69,4 +69,13 @@ revision(4, "
 		 0
 		)
 ");
+revision(30,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_change_email'
+	WHERE `code` = 'zenario_extranet_change_email__to_user_email_change_en'
+_sql
+
+);
 

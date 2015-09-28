@@ -32,7 +32,7 @@ if (empty($_GET['type'])) {
 
 
 header('Content-Type: text/javascript; charset=UTF-8');
-require 'cacheheader.inc.php';
+require 'basicheader.inc.php';
 
 //Ensure that the site name and subdirectory are part of the ETag, as modules can have different ids on different servers
 $ETag = 'zenario-cookie_message-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST"]. '-'. $_GET['type'];
@@ -41,7 +41,7 @@ $ETag = 'zenario-cookie_message-'. LATEST_REVISION_NO. '--'. $_SERVER["HTTP_HOST
 useCache($ETag);
 useGZIP(isset($_GET['gz']) && $_GET['gz']);
 
-require CMS_ROOT. 'zenario/liteheader.inc.php';
+require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 loadSiteConfig();
 

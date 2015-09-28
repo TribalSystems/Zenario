@@ -15,7 +15,9 @@ zenario__content:
                 template:
                     exists: true
             refiner_required: true
-            view_mode: list
+            
+            panel_type: slot_reload_on_change
+            
             columns:
                 slotname:
                     title: Slot

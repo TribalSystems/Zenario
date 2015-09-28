@@ -849,6 +849,7 @@
 	background-color:#FFF;
 }
 
+
 #zenario_fbAdminInner input.zenario_textbox_noborder,
 #zenario_fbAdminInner input.zenario_textbox_noborder:disabled,
 #zenario_fbAdminInner textarea.zenario_textbox_noborder,
@@ -1513,14 +1514,15 @@ body.ie9 #zenario_fbAdminInner .div_table .zenario_side_note_wrap {
 	cursor:default;
 }
 
-#zenario_fbAdminInner .div_table .zenario_ab_row__field_type_picker:hover .zenario_side_note_wrap {
+#zenario_fbAdminInner .div_table .div_table_row:hover .zenario_side_note_wrap {
 	opacity: 0;
-    visibility: hidden;
+	visibility: hidden;
 }
 
-#zenario_fbAdminInner .div_table .zenario_ab_row__field_type_picker .zenario_radio_or_checkbox:hover .zenario_side_note_wrap {
-    opacity: 1;
-    visibility: visible;
+#zenario_fbAdminInner .div_table .div_table_row .zenario_radio_or_checkbox:hover .zenario_side_note_wrap,
+#zenario_fbAdminInner .div_table .div_table_row .div_table_column:hover .zenario_side_note_wrap_for_field {
+	opacity: 1;
+	visibility: visible;
 }
 
 body.ie8 #zenario_fbAdminInner .div_table .div_table_row:hover .zenario_side_note_wrap,
@@ -1802,6 +1804,7 @@ body.ie6 .zenario_now h1 {
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label#label_for__perm_manage,
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label#label_for__perm_edit_users,
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label#label_for___PRIV_BACKUP_SITE,
+#zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label#label_for___PRIV_VIEW_DEV_TOOLS,
 #zenario_fbAdminInner .zenario_ab__zenario_admin div.zenario_perms label#label_for__perm_restore,
 
 #zenario_fbAdminInner .zenario_ab__zenario_admin tr.zenario_hierarchical_perms label#label_for__perm_author_permissions____PRIV_VIEW_CONTENT_ITEM_SETTINGS,
@@ -2922,4 +2925,14 @@ body.ie6 .zenario_now h1 {
 #zenario_fbAdminFloatingBox.zab_zenario__pop_up_note .zenario_input_checkbox {
 	display:inline-block !important;
 	padding-bottom:5px;
+}
+
+#zenario_abtab .zenario_ab__plugin_css_and_framework .zenario_side_note {
+	/*width: 180px;*/
+}
+
+.zenario_ab__plugin_settings #name_for_image img,
+.zenario_ab__plugin_settings #name_for_rollover_image img,
+.zenario_ab__plugin_settings #name_for_mobile_image img {
+	cursor: pointer;
 }

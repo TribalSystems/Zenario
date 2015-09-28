@@ -34,7 +34,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.wrapper.js.php for step (3).
 */
 
 zenario.lib(function(
@@ -63,6 +63,8 @@ zenario.getEl = false;
 //As with session('extranetUserID'), anything that changes behaviour by Extranet User should not allow the page to be cached.
 zenario.userId = 0;
 zenario.adminId = 0;
+
+
 
 
 
@@ -179,6 +181,31 @@ methods.checkComplete = function() {
 //	});
 //};
 
+
+
+zenario.loadedLibraries = {};
+zenario.loadLibrary = function(path, callback) {
+	
+	var library;
+	
+	if (library = zenario.loadedLibraries[path]) {
+		if (library.loaded) {
+			callback();
+		} else {
+			library.cb.after(callback);
+		}
+	
+	} else {
+		library = zenario.loadedLibraries[path] = {cb: new zenario.callback, loaded: false};
+	
+		library.cb.after(callback);
+	
+		$.getScript(path, function() {
+			library.loaded = true;
+			library.cb.call();
+		});
+	}
+};
 
 
 
@@ -1183,7 +1210,7 @@ zenario.javaScriptOnPage = new Object();
 zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
 	
 	//Work out the path from the plugin name and the swatch name
-	filePath = 'zenario/js/plugin.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
+	filePath = 'zenario/js/plugin.wrapper.js.php?ids=' + moduleId + '&v=' + zenarioCSSJSVersionNumber;
 	
 	if (zenarioA.init) {
 		filePath += '&admin=1';
@@ -1197,42 +1224,6 @@ zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
 	eval(zenario.nonAsyncAJAX(URLBasePath + filePath));
 	
 	zenario.javaScriptOnPage[filePath] = true;
-};
-
-
-
-//Add a new plugin stylesheet to the page dynamically
-//This is so that if we add a new plugin or switch swatches, the new CSS can be added
-//without needing a page reload
-
-zenario.pluginStyleSheetsOnPage = new Object();
-zenario.addPluginStyleSheet = function(moduleName, swatch) {
-	
-	//Make sure that the stylesheet is not already on the page!
-	if (!zenario.pluginStyleSheetsOnPage[moduleName]) {
-		zenario.pluginStyleSheetsOnPage[moduleName] = new Array();
-	}
-	
-	if (zenario.pluginStyleSheetsOnPage[moduleName][swatch]) {
-		return false;
-	} else {
-		zenario.pluginStyleSheetsOnPage[moduleName][swatch] = true;
-	}
-	
-	//Work out the path from the plugin name and the swatch name
-	var path = 'zenario/styles/plugin.css.php?t=' + encodeURIComponent(moduleName) + ',' + encodeURIComponent(swatch) +
-				'&gz=' + zenario.useGZ + '&v=' + zenarioCSSJSVersionNumber;
-	
-	//Add the new style sheet
-	var newStyleSheet = document.createElement('link');
-	
-	newStyleSheet.type = 'text/css';
-	newStyleSheet.rel = 'stylesheet';
-	newStyleSheet.href = URLBasePath + path;
-	
-	document.getElementsByTagName('head')[0].appendChild(newStyleSheet);
-	
-	return true;
 };
 
 

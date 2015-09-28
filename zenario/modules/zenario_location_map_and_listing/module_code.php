@@ -38,7 +38,8 @@ class zenario_location_map_and_listing extends module_base_class {
 		'locations' => array(),
 		'locations_map_info' => array(),
 		'countries' => array(),
-		'country_id' => '');
+		'country_id' => '',
+		'postcode' => '');
 
 
 
@@ -108,9 +109,23 @@ class zenario_location_map_and_listing extends module_base_class {
 			}
 		}
 		
+		if ($this->setting('enable_postcode_search')) {
+			$this->registerGetRequest('postcode');
+			
+			$this->data['enable_postcode_search'] = true;
+			
+			$this->data['openForm'] = $this->openForm();
+			$this->data['closeForm'] = $this->closeForm();
+			
+			//Use the postcode in the request if there is one...
+			if (!empty($_REQUEST['postcode'])) {
+				$this->data['postcode'] = $_REQUEST['postcode'];
+			}
+		}
+		
 		$this->data['mapId'] = $this->containerId. '_map';
 		$this->data['mapIframeId'] = $this->containerId. '_map_iframe';
-		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(array('display_map' => 1, 'country_id' => $this->data['country_id']));
+		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(array('display_map' => 1, 'country_id' => $this->data['country_id'], 'postcode' => $this->data['postcode']));
 		
 		$this->loadLocations();
 		
@@ -152,10 +167,10 @@ class zenario_location_map_and_listing extends module_base_class {
 				cd.*";
 		}
 		
-		
 		$sql .= "
 			FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
-			". $this->joinOnCustomFields(). "
+			LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+				ON cd.location_id = loc.id
 			WHERE loc.status = 'active'";
 		
 		if ($this->setting('filter_by_country')) {
@@ -163,7 +178,20 @@ class zenario_location_map_and_listing extends module_base_class {
 			  AND loc.country_id = '". sqlEscape($this->data['country_id']). "'";
 		}
 		
-		$sql .= "AND (loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL) AND (loc.latitude <> 0 AND loc.longitude <> 0)";
+		if (!empty($this->fields)) {
+			$sql .= "
+				AND (";
+			foreach($this->fields as $i => $field) {
+				if ($i) {
+					$sql .= " OR ";
+				}		
+				$sql .= "cd.`". sqlEscape($field['db_column']). "` = 1";
+			}
+			$sql .= ")";
+		}
+		
+		$sql .= "
+			AND (loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL) AND (loc.latitude <> 0 AND loc.longitude <> 0)";
 		
 		$sql .= "
 			ORDER BY name";
@@ -176,16 +204,61 @@ class zenario_location_map_and_listing extends module_base_class {
 			$row['listingClick'] = "
 				zenario_location_map_and_listing.listingClick(this, ". (int) $row['id']. ");";
 			
+			$this->data['locations'][] = $row;
+		}
+		
+		// Filter locations by distance to postcode
+		$lat = $lng = $label = $error = false;
+		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode'])) {
+			$json = file_get_contents('http://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($this->data['postcode']) . '&components=postal_code:' .  urlencode($this->data['postcode']));
+			$data = json_decode($json, true);
+			switch ($data['status']) {
+				case 'OK':
+					$lat = $data['results'][0]['geometry']['location']['lat'];
+					$lng = $data['results'][0]['geometry']['location']['lng'];
+					$label =  $data['results'][0]['formatted_address'];
+					$this->data['postcode_search_success'] = true;
+					$this->filterLocationsByLatLng($lat, $lng);
+					break;
+				case 'ZERO_RESULTS':
+					$error = $this->phrase('Unable to find postcode.');
+					break;
+				case 'OVER_QUERY_LIMIT':
+				case 'REQUEST_DENIED':
+				case 'INVALID_REQUEST':
+				case 'UNKNOWN_ERROR':
+					$error = $this->phrase('Unable to lookup postcode. Please try again later.');
+					break;
+			}
+		}
+		
+		$this->data['postcode_error'] = $error;
+		
+		// Hide locations list initally if no filters and setting
+		$hide_locations_list_before_search = $this->setting('hide_locations_list_before_search');
+		if ($hide_locations_list_before_search
+			&& (
+				($this->setting('filter_by_country') && $this->data['country_id'])
+				|| ($this->setting('enable_postcode_search') && $this->data['postcode'] && $this->data['postcode_search_success'])
+			)
+			|| !$hide_locations_list_before_search
+		) {
+			$this->data['show_locations_list'] = true;
+		}
+		
+		foreach ($this->data['locations'] as &$rowr) {
 			foreach ($this->data['tabs'] as $i => &$tab) {
-				if (!empty($row['tab'. $i])) {
-					$tab['locations'][] = $row;
+				if (!empty($rowr['tab'. $i])) {
+					$tab['locations'][] = $rowr;
 					
 					if (!empty($tab['db_column'])) {
-						$row['css_class'] .= ' '. $row['css_class']. '__'. $tab['db_column'];
+						$rowr['css_class'] .= ' '. $rowr['css_class']. '__'. $tab['db_column'];
 					}
 				}
 			}
-			$this->data['locations'][] = $row;
+		}
+		
+		foreach ($this->data['locations'] as $row) {
 			$this->data['locations_map_info'][] = array(
 				'id' => $row['id'],
 				'htmlId' => $row['htmlId'],
@@ -197,34 +270,69 @@ class zenario_location_map_and_listing extends module_base_class {
 				'css_class' => $row['css_class']
 			);
 		}
+		
+		// If searching on postcode, add postcode marker to map
+		if ($this->setting('enable_postcode_search') && !empty($this->data['postcode']) && $lat && $lng && $label) {
+			$htmlId = $this->containerId . '_postcode_placeholder';
+			$placeholder = array(
+				'id' => 'postcode',
+				'htmlId' => $htmlId,
+				'latitude' => $lat,
+				'longitude' => $lng,
+				'map_zoom' => 16,
+				'hide_pin' => false,
+				'name' => $label,
+				'css_class' => 'postcode-marker'
+			);
+			$this->data['locations_map_info'][] = $placeholder;
+		}
 	}
 	
-	protected function joinOnCustomFields() {
-		
-		if (!empty($this->fields) || !empty($this->datasetFields)) {
-			$sql = "
-				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
-					ON cd.location_id = loc.id";
-				
-			if (!empty($this->fields)) {
-				$sql .= "
-					AND (";
-			
-				foreach($this->fields as $i => $field) {
-					if ($i) {
-						$sql .= " OR ";
-					}
-				
-					$sql .= "cd.`". sqlEscape($field['db_column']). "` = 1";
-				}
-			
-				$sql .= ")";
-			}
-			
-			return $sql;
-		} else {
-			return "";
+	protected function filterLocationsByLatLng($lat, $lng) {
+		$distances = array();
+		$locations = array();
+		$showUnits = $this->setting('search_result_distance');
+		$units = false;
+		if ($showUnits == 'km') {
+			$units = 'km';
+		} elseif ($showUnits == 'm') {
+			$units = 'miles';
 		}
+		foreach ($this->data['locations'] as $index => $location) {
+			$distance = self::getDistance($lat, $lng, $location['latitude'], $location['longitude'], $units);
+			$distances[$index] = $distance;
+		}
+		asort($distances);
+		$search_result_count = $this->setting('search_result_count');
+		$count = 1;
+		foreach ($distances as $index => $distance) {
+			$location = $this->data['locations'][$index];
+			if ($count == 1) {
+				$location['nearest'] = true;
+			}
+			if ($units) {
+				$formattedDistance = round($distance, 2);
+				$location['postcode_distance'] = $this->phrase('[[distance]] [[units]]', array('distance' => $formattedDistance, 'units' => $units));
+			}
+			$location['postcode_index'] = $count . '.';
+			$locations[] = $location;
+			if (($search_result_count != 'unlimited') && (++$count > $search_result_count)) {
+				break;
+			}
+		}
+		$this->data['locations'] = $locations;
+	}
+	
+	protected static function getDistance($lat1, $lon1, $lat2, $lon2, $unit) {
+		$theta = $lon1 - $lon2;
+		$dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+		$dist = acos($dist);
+		$dist = rad2deg($dist);
+		$miles = $dist * 60 * 1.1515;
+		if ($unit == 'km') {
+			return $miles * 1.609344;
+		}
+		return $miles;
 	}
 	
 	protected function getCountryList() {
@@ -238,8 +346,23 @@ class zenario_location_map_and_listing extends module_base_class {
 			  AND code IN (
 				SELECT CONCAT('_COUNTRY_NAME_', loc.country_id)
 				FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
-				". $this->joinOnCustomFields(). "
-				WHERE loc.status = 'active'
+				LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
+					ON cd.location_id = loc.id
+				WHERE loc.status = 'active'";
+		
+		if (!empty($this->fields)) {
+			$sql .= "
+				AND (";
+			foreach($this->fields as $i => $field) {
+				if ($i) {
+					$sql .= " OR ";
+				}		
+				$sql .= "cd.`". sqlEscape($field['db_column']). "` = 1";
+			}
+			$sql .= ")";
+		}
+		
+		$sql .= "
 				GROUP BY loc.country_id
 			)
 			ORDER BY local_text";
@@ -252,7 +375,6 @@ class zenario_location_map_and_listing extends module_base_class {
 	}
 
 	public function showSlot() {
-		
 		if (!request('display_map')) {
 			$this->twigFramework($this->data);
 		} else {
@@ -279,7 +401,6 @@ class zenario_location_map_and_listing extends module_base_class {
 						id="', htmlspecialchars(str_replace(' ', '-', $cssClass)), '"
 					></div>';
 			}
-			
 			
 			$this->data['drawingGoogleMap'] = true;
 			$this->twigFramework($this->data);

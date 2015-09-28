@@ -150,13 +150,16 @@ class zenario_extranet extends module_base_class {
 			$this->subSections['Error_Display'] = $this->errors;
 		}
 		
+		$this->getTitleAndLabelMergeFields();
+		
 		$mode = $this->mode;
 		$this->$mode();
 	}
 	
 	// Display a change password form
 	protected function modeChangePassword(){
-		$mergeFields = array();
+		$mergeFields = $this->getTitleAndLabelMergeFields();
+		
 		$subSections = array();
 		$subSections['Password_Error_Display'] = $this->errors;
 		$old_password = !empty($this->old_password) ? $this->old_password : post('old_password');
@@ -279,9 +282,9 @@ class zenario_extranet extends module_base_class {
 		//Set the User's email/screenname cookie on their local machine if requested
 		if (isset($_SESSION['SET_EXTRANET_LOGIN_COOKIE'])) {
 			if (!$useScreenName || $login_with == 'Email') {
-				setcookie('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/', cookieDomain());
+				setCookieOnCookieDomain('COOKIE_LAST_EXTRANET_EMAIL', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 			} else {
-				setcookie('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE'], time()+8640000, '/', cookieDomain());
+				setCookieOnCookieDomain('COOKIE_LAST_EXTRANET_SCREEN_NAME', $_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 			}
 			unset($_SESSION['SET_EXTRANET_LOGIN_COOKIE']);
 		
@@ -297,7 +300,7 @@ class zenario_extranet extends module_base_class {
 		
 		//Set a hash of the User's details in a cookie on their local machine if requested, so they can be logged in automatically
 		if (isset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'])) {
-			setcookie('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE'], time()+8640000, '/', cookieDomain());
+			setCookieOnCookieDomain('LOG_ME_IN_COOKIE', $_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 			unset($_SESSION['SET_EXTRANET_LOG_ME_IN_COOKIE']);
 		
 		//Remove the hash of the User's details if requested
@@ -330,6 +333,32 @@ class zenario_extranet extends module_base_class {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				$defaultLangId = setting('default_language');
+				if (isset($values['email_address_required_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['email_address_required_error_text']), array("code" => "_ERROR_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+				}
+				if (isset($values['password_required_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['password_required_error_text']), array("code" => "_ERROR_EXTRANET_PASSWORD", "language_id" => $defaultLangId));
+				}
+				if (isset($values['invalid_email_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['invalid_email_error_text']), array("code" => "_ERROR_INVALID_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+				}
+				if (isset($values['screen_name_required_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['screen_name_required_error_text']), array("code" => "_ERROR_EXTRANET_SCREEN_NAME", "language_id" => $defaultLangId));
+				}
+				if (isset($values['no_new_password_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['no_new_password_error_text']), array("code" => "_ERROR_NEW_PASSWORD", "language_id" => $defaultLangId));
+				}
+				if (isset($values['no_new_repeat_password_error_text'])) {
+					setRow("visitor_phrases", array("local_text" => $values['no_new_repeat_password_error_text']), array("code" => "_ERROR_REPEAT_NEW_PASSWORD", "language_id" => $defaultLangId));
+				}
+				break;
+		}
+	}
+	
 	//Log a user in after successful validation
 	function logUserIn($userId) {
 		$user = logUserIn($userId);
@@ -355,22 +384,22 @@ class zenario_extranet extends module_base_class {
 	
 	//Handle actions
 	protected function checkLogin() {
-		
 		if ($this->validateFormFields('Login_Form')) {
-			
+			//check if email adrres has been entered
 			//Check if this user exists, their password is correct, and they are active. Only log them in if so.
 			if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
 				$user = getRow('users', array('id', 'password_needs_changing', 'terms_and_conditions_accepted', 'status'), array('email' => post('extranet_email')));
 			} else {
 				$user = getRow('users', array('id', 'password_needs_changing', 'terms_and_conditions_accepted', 'status'), array('screen_name' => post('extranet_screen_name')));
 			}
-			
+		
 			if ($user) {
 				if ($user['status'] != "contact") {
 					if (checkUsersPassword($user['id'], post('extranet_password'))) {
 						//password correct
 						if(request('extranet_terms_and_conditions')){
 							setRow('users', array('terms_and_conditions_accepted'=>1), array('id' => $user['id']));
+							$user['terms_and_conditions_accepted'] = true;
 						}
 						if ($user['status'] == 'active') {
 							if ($user['password_needs_changing']) {
@@ -378,12 +407,13 @@ class zenario_extranet extends module_base_class {
 								$this->mode = 'modeChangePassword';
 								$this->user_id = $user['id'];
 								$this->old_password = post('extranet_password');
-				
+			
 							} elseif ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page') && !$user['terms_and_conditions_accepted']) {
 								//show terms and conditions checkbox
-								$this->errors[] = array('Error' => $this->phrase('It looks like you have not yet accepted our terms and conditions, please accept these to continue using our site.'));
+								$errorMessage = $this->setting('accept_terms_and_conditions_message');
+								$this->errors[] = array('Error' => $errorMessage);
 								$this->showTermsAndConditionsCheckbox = true;
-				
+			
 							} else {
 								//all conditions meet, log user in
 								$this->logUserIn($user['id']);
@@ -430,7 +460,7 @@ class zenario_extranet extends module_base_class {
 					$errorMessage = $this->setting('screen_name_not_in_db_message');
 					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
-				
+			
 			}
 		}
 		
@@ -525,35 +555,72 @@ class zenario_extranet extends module_base_class {
 	
 	function validatePassword($newPassword,$confirmation,$oldPassword=false,$vlpClass=false,$userId = false) {
 		$errors = array();
-	
+		
+		
+		//var_dump($this->setting('new_passwords_do_not_match'));
 		//Look up what their current password is
 		if (trim($oldPassword)==='' && $oldPassword!==false)  {
-			$errors[] = array('Error' => phrase('_ERROR_OLD_PASSWORD', false, $vlpClass));
+			//no password entered
+			$errorMessage = $this->setting('no_password_entered_message');
+			$errors[] = array('Error' => $this->phrase($errorMessage));
 		} elseif ($oldPassword && !checkUsersPassword($userId, $oldPassword)) {
-			$errors[] = array('Error' => phrase('_ERROR_PASS_NOT_VERIFIED', false, $vlpClass));
+			//password incorrect
+			$errorMessage = $this->setting('wrong_password_message');
+			$errors[] = array('Error' => $this->phrase($errorMessage));
 		}
 	
 		if (!$newPassword) {
 			$errors[] = array('Error' => phrase('_ERROR_NEW_PASSWORD', false, $vlpClass));
 		
 		} elseif ($oldPassword && ($newPassword === $oldPassword)) {
-			$errors[] = array('Error' => phrase('_ERROR_NEW_PASSWORD_SAME_AS_OLD', false, $vlpClass));
+			//new password is the same as old
+			$errorMessage = $this->setting('new_password_same_as_old_message');
+			$errors[] = array('Error' => $this->phrase($errorMessage));
 		
 		} elseif (strlen($newPassword) < setting('min_extranet_user_password_length')) {
-			$errors[] = array('Error' => phrase('_ERROR_NEW_PASSWORD_LENGTH', array('min_password_length' => setting('min_extranet_user_password_length')), $vlpClass));
+			//password not long enough
+			$errorMessage = $this->setting('new_password_length_message');
+			$errors[] = array('Error' => $this->phrase($errorMessage, array('min_password_length' => setting('min_extranet_user_password_length'))));
 		
 		} elseif (!$confirmation) {
+			//no repeat password
 			$errors[] = array('Error' => phrase('_ERROR_REPEAT_NEW_PASSWORD', false, $vlpClass));
 		
 		} elseif ($newPassword !== $confirmation) {
-			$errors[] = array('Error' => phrase('_ERROR_NEW_PASSWORD_MATCH', false, $vlpClass));
+			//passwords don't match
+			$errorMessage = $this->setting('new_passwords_do_not_match');
+			$errors[] = array('Error' => $this->phrase($errorMessage));
 	
 		} elseif (!checkPasswordStrength($newPassword,setting('min_extranet_user_password_strength'))) {
-			$errors[] = array('Error' => phrase('_ERROR_NEW_PASSWORD_NOT_STRONG_ENOUGH', false, $vlpClass));
-	
-		}
+			//password not strong enough
+			$errorMessage = $this->setting('new_password_not_strong_enough_message');
+			$errors[] = array('Error' => $this->phrase($errorMessage));
+		
+		} 
+		
+		//if($newPassword && !$confirmation) {
+		//	$errorMessage = $this->setting('no_new_repeat_password_error_text');
+		//	$errors[] = array('Error' => $this->phrase($errorMessage));
+		//}
 	
 		return $errors;
 	}
+	
+	
+	protected function getTitleAndLabelMergeFields() {
+		
+		$mergeFields = array();
+		
+		$this->objects['main_login_heading'] = $mergeFields['main_login_heading'] = $this->phrase($this->setting('main_login_heading'));
+		$this->objects['email_field_label'] = $mergeFields['email_field_label'] = $this->phrase($this->setting('email_field_label'));
+		$this->objects['screen_name_field_label'] = $mergeFields['screen_name_field_label'] = $this->phrase($this->setting('screen_name_field_label'));
+		$this->objects['password_field_label'] = $mergeFields['password_field_label'] = $this->phrase($this->setting('password_field_label'));
+		$this->objects['login_button_text'] = $mergeFields['login_button_text'] = $this->phrase($this->setting('login_button_text'));
+		
+		return $mergeFields;
+		
+	}
+	
+	
 	
 }

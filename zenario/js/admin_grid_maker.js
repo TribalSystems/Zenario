@@ -104,6 +104,8 @@ zenarioG.init = function(data, layoutId, layoutName, familyName) {
 				if (zenarioG.savedAtPos == zenarioG.pos
 				 || confirm(phrase.gridConfirmClose)) {
 					
+					zenarioG.stopPoking();
+					
 					if (windowParent.zenario
 					 && windowParent.zenario.cID) {
 						//If it looks like this is a window opened from the front end, reload the window
@@ -117,6 +119,8 @@ zenarioG.init = function(data, layoutId, layoutName, familyName) {
 			get(closeButtonId).style.display = 'none';
 		}
 	}
+	
+	zenarioG.startPoking();
 };
 
 zenarioG.checkDataNonZero = function(warning, data, prop, defaultValue, min) {
@@ -615,7 +619,8 @@ zenarioG.drawPreview = function() {
 	//I want to set an iframe up so that the preview shows in the iframe.
 	//I would want to use GET, but the grid data can be too large for GET on some servers so I need to use post.
 	//To do this, I need to create a form that's pointed at the iframe, then submit it.
-	$('<form action="' + htmlspecialchars(zenarioG.ajaxURL()) + '" method="post" target="' + gridId + '-iframe"><input name="data" value="' + htmlspecialchars(zenarioG.ajaxData()) + '"/></form>').submit();
+	$('<form action="' + htmlspecialchars(zenarioG.ajaxURL()) + '" method="post" target="' + gridId + '-iframe"><input name="data" value="' + htmlspecialchars(zenarioG.ajaxData()) + '"/></form>')
+		.appendTo('body').hide().submit().remove();
 	
 	$('#' + gridId + '-slider').slider({
 		min: min,
@@ -2198,6 +2203,25 @@ zenarioG.canRedo = function() {
 	return zenarioG.pos < zenarioG.history.length - 1;
 };
 
+
+
+
+zenarioG.stopPoking = function() {
+	if (zenarioG.poking) {
+		clearInterval(zenarioG.poking);
+	}
+	zenarioG.poking = false;
+};
+
+zenarioG.startPoking = function() {
+	if (!zenarioG.poking) {
+		zenarioG.poking = setInterval(zenarioG.poke, 2 * 60 * 1000);
+	}
+};
+
+zenarioG.poke = function() {
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
+};
 
 
 

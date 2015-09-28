@@ -137,28 +137,62 @@ site_settings:
                             <p>
                                 Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
                             </p>
-                            <br/>
-                            <p>
-                                Only accounts for Pending Users will be deleted, where the "Email verified" flag is set to No.
-                            </p>
                 remove_inactive_users:
                     site_setting:
                         name: remove_inactive_users
-                    label: 'Remove inactive pending users'
+                    label: 'Remove inactive unconfirmed users'
                     type: checkbox
                     format_onchange: true
+                    side_note: Accounts for users will be deleted, where the status is Pending and the Email verified flag is set to No.
                 max_days_user_inactive:
                     site_setting:
                         name: max_days_user_inactive
-                    label: 'Maximum days a pending user can exist without confirming their email:'
+                    label: 'Maximum days a unconfirmed user can exist without confirming their email:'
                     type: select
                     values:
-                        2: 2
-                        3: 3
-                        7: 7
-                        14: 14
-                        21: 21
-                        28: 28
-                    value: 28
-                    post_field_html: days
+                        2:
+                            label: 2 days
+                            ord: 1
+                        3:
+                            label: 3 days
+                            ord: 2
+                        7:
+                            label: 7 days
+                            ord: 3
+                        14:
+                            label: 14 days
+                            ord: 4
+                        21:
+                            label: 21 days
+                            ord: 5
+                        28:
+                            label: 28 days
+                            ord: 6
+                        45:
+                            label: 45 days
+                            ord: 7
+                        60:
+                            label: 60 days
+                            ord: 8
+                        90:
+                            label: 90 days
+                            ord: 9
+                    value: 90
                     side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
+        log_access:
+            label: Log access
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+                on: false
+            fields:
+                log_user_access:
+                    site_setting:
+                        name: log_user_access
+                    label: 'Log user access to private content items'
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        <p>
+                            If enabled, all user accesses to private content items will be logged in the <a href="zenario/admin/organizer.php?#zenario__users/panels/access_log">access log panel</a>.
+                        </p>

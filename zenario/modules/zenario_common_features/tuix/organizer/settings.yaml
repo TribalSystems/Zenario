@@ -63,6 +63,11 @@ zenario__administration:
                         Set the location of the Backup and Dropbox
                         directories.
                     keywords: backup directory dropbox directory
+                documents:
+                    name: Documents
+                    desc: >
+                        Settings for documents.
+                    keywords: documents
                 email:
                     name: Email
                     desc: Settings for sending emails.

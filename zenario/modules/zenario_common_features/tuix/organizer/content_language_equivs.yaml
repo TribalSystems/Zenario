@@ -14,11 +14,11 @@ zenario__content:
             no_items_message: No content items have been created.
             db_items:
                 table: >
-                    [[DB_NAME_PREFIX]]content AS c
+                    [[DB_NAME_PREFIX]]content_items AS c
                     INNER JOIN [[DB_NAME_PREFIX]]translation_chains AS tc
                        ON c.equiv_id = tc.equiv_id
                       AND c.type = tc.type
-                    INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+                    INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
                        ON c.id = v.id
                       AND c.type = v.type
                       AND c.admin_version = v.version
@@ -38,7 +38,7 @@ zenario__content:
                 language_equivs:
                     sql: '(c.language_id = [[REFINER__LANGUAGE]] OR (equiv_in_lang.equiv_id IS NULL AND c.id = c.equiv_id))'
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]content AS equiv_in_lang
+                        LEFT JOIN [[DB_NAME_PREFIX]]content_items AS equiv_in_lang
                                                   ON equiv_in_lang.equiv_id = c.equiv_id
                                                  AND equiv_in_lang.type = c.type
                                                  AND equiv_in_lang.language_id = [[REFINER__LANGUAGE]]
@@ -47,7 +47,7 @@ zenario__content:
                         c.type = [[REFINER__CONTENT_TYPE_LANGUAGE_EQUIVS]]
                                                 AND (c.language_id = [[FOCUSED_LANGUAGE_ID]] OR (equiv_in_lang.equiv_id IS NULL AND c.id = c.equiv_id))
                     table_join: |
-                        LEFT JOIN [[DB_NAME_PREFIX]]content AS equiv_in_lang
+                        LEFT JOIN [[DB_NAME_PREFIX]]content_items AS equiv_in_lang
                                                   ON equiv_in_lang.equiv_id = c.equiv_id
                                                  AND equiv_in_lang.type = c.type
                                                  AND equiv_in_lang.language_id = [[FOCUSED_LANGUAGE_ID]]
@@ -184,7 +184,7 @@ zenario__content:
                     db_column: |
                         c.status != 'first_draft' AND (
                             SELECT 1
-                            FROM [[DB_NAME_PREFIX]]versions AS pv
+                            FROM [[DB_NAME_PREFIX]]content_item_versions AS pv
                             WHERE pv.id = c.id
                               AND pv.type = c.type
                               AND pv.version NOT IN (c.visitor_version, c.admin_version)

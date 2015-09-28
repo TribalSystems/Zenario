@@ -113,6 +113,26 @@ function placeMarker (method) {
 	}
 }
 
+function latLngInRange(min,number,max){
+	if ( !isNaN(number) && (number >= min) && (number <= max) ){
+		return true;
+	} else {
+		return false;
+	};
+}
+
+function placeLatLng(lat, lng) {
+	//validate lat lng
+	if (latLngInRange(-90,lat,90) && latLngInRange(-180,lng,180)) {
+		var point = new google.maps.LatLng(lat, lng);
+		placeMarkerAction(point);
+	}
+	else { 
+		alert('Please enter valid latitude/longitude values.');
+	}
+
+}
+
 function geoCode (address) {
 	var geocoder = new google.maps.Geocoder();
 

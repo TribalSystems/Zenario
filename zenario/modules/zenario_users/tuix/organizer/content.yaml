@@ -10,12 +10,6 @@ zenario__content:
                             ON c.equiv_id = gcl.equiv_id
                             AND c.type = gcl.content_type
                     sql: gcl.group_id = [[REFINER_ID]]
-            columns:
-                log_user_access:
-                    title: Log user access
-                    db_column: tc.log_user_access
-                    format: yes_or_no
-                    width: xsmall
             item_buttons:
                 privacy:
                     parent: property_dropdown
@@ -30,7 +24,7 @@ zenario__content:
                     parent: view_dropdown
                     hide_in_select_mode: Yes
                     css_class: log
-                    label: View access log for this content item
+                    label: Access log for this content item
                     link:
                         path: zenario__users/panels/access_log
                         branch: Yes

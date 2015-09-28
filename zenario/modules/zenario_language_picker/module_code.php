@@ -70,7 +70,7 @@ class zenario_language_picker extends module_base_class {
 		
 		foreach ($langs as $langId => &$lang) {
 			if ($this->setting('destination') != 'equiv_only' || $lang['equiv']) {
-				if ($content = getRow('content', array('status', 'alias'), array('id' => $lang['cID'], 'type' => $lang['cType']))) {
+				if ($content = getRow('content_items', array('status', 'alias'), array('id' => $lang['cID'], 'type' => $lang['cType']))) {
 					if (checkPriv() || isPublished($content['status'])) {
 						$this->links[] = array(
 							'Flag_Lang' => htmlspecialchars($lang['flag']),

@@ -35,12 +35,6 @@ zenario_plugin_nest.addJavaScript = function(moduleClassName, moduleId) {
 	}
 }
 
-zenario_plugin_nest.addThemeCSS = function(moduleName, swatch) {
-	if (zenario.addPluginStyleSheet(moduleName, swatch)) {
-		zenario_plugin_nest.needSleep = true;
-	}
-}
-
 zenario_plugin_nest.needSleep = false;
 zenario_plugin_nest.sleep = function() {
 	if (zenario_plugin_nest.needSleep) {

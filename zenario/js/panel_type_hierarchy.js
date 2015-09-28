@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -86,8 +86,8 @@ methods.parentIdColumn = function() {
 methods.showPanel = function($header, $panel, $footer) {
 	var that = this,
 		ordinals = {},
-		i, id, item, items, parentId,
-		m = this.getMergeFieldsForItemsAndColumns(),
+		i, id, item, items, parentId, html,
+		m = this.getItems(),
 		ordCol = this.ordinalColumn(),
 		parentIdColumn = this.parentIdColumn();
 	
@@ -151,8 +151,8 @@ methods.showPanel = function($header, $panel, $footer) {
 		}
 	}
 	
-	
-	$panel.html(zenarioA.microTemplate('zenario_organizer_hierarchy', m));
+	html = this.getHierarchyMicroTemplateHTML(m);
+	$panel.html(html);
 	$panel.show();
 	this.setScroll($panel);
 	
@@ -164,7 +164,13 @@ methods.showPanel = function($header, $panel, $footer) {
 	this.setTooltips($header, $panel, $footer);
 };
 
+methods.getHierarchyMicroTemplateHTML = function(m) {
+	return zenarioA.microTemplate('zenario_organizer_hierarchy', m)
+}
 
+methods.getItems = function() {
+	return this.getMergeFieldsForItemsAndColumns();
+}
 
 methods.setupHierarchy = function($header, $panel, $footer) {
 	var that = this,

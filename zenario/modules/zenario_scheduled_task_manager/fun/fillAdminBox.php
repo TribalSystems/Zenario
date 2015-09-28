@@ -36,7 +36,7 @@ switch ($path) {
 				manager_class_name,
 				job_name, module_id, 0+months AS months, 0+days AS days, hours, minutes, first_n_days_of_month,
 				log_on_action, log_on_no_action, email_on_action,
-				email_on_no_action, email_address_on_no_action, email_address_on_action, email_address_on_error
+				email_on_no_action, email_address_on_no_action, email_address_on_action, email_address_on_error, run_every_minute
 			FROM ". DB_NAME_PREFIX. "jobs
 			WHERE id = ". (int) $box['key']['id'];
 		
@@ -99,6 +99,9 @@ switch ($path) {
 		}
 		$values['time_and_day/start_at_hours'] = rtrim($hours[0], 'h');
 		$values['time_and_day/start_at_minutes'] = rtrim($minutes[0], 'm');
+		if ($details['run_every_minute']) {
+			$frequency = '1m';
+		}
 		$values['time_and_day/frequency'] = $frequency;
 		
 		$box['tabs']['month']['fields']['first_n_days_of_month']['values'] = zenario_scheduled_task_manager::$firstNOptions;

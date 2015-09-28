@@ -13,6 +13,7 @@ zenario__locations:
                 columns:
                     id:
                         title: ID
+                        format: id
                         db_column: id
                         show_by_default: Yes
                         searchable: Yes

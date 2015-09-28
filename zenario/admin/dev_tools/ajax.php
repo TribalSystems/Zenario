@@ -1,7 +1,7 @@
 <?php
 
 require '../../adminheader.inc.php';
-if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
+if (!adminSetting('show_dev_tools')) {
 	exit;
 }
 

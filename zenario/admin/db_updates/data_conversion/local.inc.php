@@ -73,7 +73,7 @@ if (needRevision(28710)) {
 		$sql = "
 			SELECT pi.id, pi.framework, pi.content_id, vp.local_text
 			FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
-			LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+			LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 			   ON pi.content_id = c.id
 			  AND pi.content_type = c.type
 			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp
@@ -122,7 +122,7 @@ if (needRevision(29560)) {
 		FROM ". DB_NAME_PREFIX. "modules AS m
 		INNER JOIN ". DB_NAME_PREFIX. "plugin_instances AS pi
 		   ON pi.module_id = m.id
-		LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+		LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 		   ON pi.content_id = c.id
 		  AND pi.content_type = c.type
 		LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp
@@ -154,13 +154,6 @@ if (needRevision(29560)) {
 }
 
 
-//Set a value for the organizer_title site setting
-if (needRevision(29570)) {
-	setSetting('organizer_title', 'Organizer for '. primaryDomain());
-	revision(29570);
-}
-
-
 if (needRevision(30130)) {
 	foreach (getRowsArray(
 		'documents',
@@ -185,10 +178,6 @@ if (needRevision(30130)) {
 //Rename some old site settings with "storekeeper" in the name
 if (needRevision(30150)) {
 	
-	if (setting('storekeeper_page_size') && !setting('organizer_page_size')) {
-		setSetting('organizer_page_size', setting('storekeeper_page_size'), true, false);
-		deleteRow('site_settings', array('name' => 'storekeeper_page_size'));
-	}
 	if (setting('storekeeper_date_format') && !setting('organizer_date_format')) {
 		setSetting('organizer_date_format', setting('storekeeper_date_format'), true, false);
 		deleteRow('site_settings', array('name' => 'storekeeper_date_format'));
@@ -232,7 +221,7 @@ if (needRevision(30700)) {
 //Scan anything related to a Content Item and sync the inline_images table properly
 if (needRevision(30731)) {
 	
-	$result = getRows('content', array('id', 'type', 'visitor_version', 'admin_version'), array(), array('type', 'id'));
+	$result = getRows('content_items', array('id', 'type', 'visitor_version', 'admin_version'), array(), array('type', 'id'));
 	while ($row = sqlFetchAssoc($result)) {
 		
 		if ($row['visitor_version']) {
@@ -445,3 +434,34 @@ revision( 31750
 	DROP COLUMN `values`
 _sql
 );
+
+// Try to update email templates module_class_name from the code name
+if (needRevision(32025)) {
+	$result = getRows('email_templates', array('id', 'code', 'module_class_name'), array());
+	while ($row = sqlFetchAssoc($result)) {
+		if (!$row['module_class_name']) {
+			$codeParts = explode('__', $row['code']);
+			if ($codeParts) {
+				$class_name = $codeParts[0];
+				if (checkRowExists('modules', array('class_name' => $class_name))) {
+					updateRow('email_templates', array('module_class_name' => $class_name), $row['id']);
+				}
+			}
+		}
+	}
+	revision(32025);
+}
+
+//Migrate the caching site settings to the new format
+if (needRevision(32160)) {
+	
+	if (setting('cache_ajax')) {
+		setSetting('cache_css_js_wrappers', 1);
+		
+		if (setting('cache_web_pages')) {
+			setSetting('caching_enabled', 1);
+		}
+	}
+	
+	revision(32160);
+}

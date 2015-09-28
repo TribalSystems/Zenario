@@ -77,4 +77,11 @@ _sql
 	CHANGE `offset` `offset` int(10) NOT NULL
 _sql
 
+); revision(10
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_PROMO_MENU_PREFIX]]menu_node_feature_image
+	ADD COLUMN `overwrite_alt_tag` varchar(255) DEFAULT NULL
+_sql
+
 );

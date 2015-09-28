@@ -1,4 +1,4 @@
-<% if (zenario.showDevTools) { %>
+<% if (zenarioA.adminSettings.show_dev_tools) { %>
 	<div class="zenario_debug" onclick="zenarioA.debug('zenarioO', true);"><div></div></div>
 <% } %>
 <div id="organizer_topLevelNav">
@@ -13,6 +13,15 @@
 		</div>
 		<div class="organizer_sectionText">
 			{{m.items[m.selected1st].tooltip|escape}}
+		</div>
+		<div 
+			class="open_tutorial_button" 
+			onclick="zenarioA.showTutorial('{{m.items[m.selected1st].id|escape}}')"
+			data-step="0.5"
+			data-position="right"
+			data-intro="<p><strong>Tutorials and help</strong></p><p> To open the help and tutorials window, click here.</p>"
+		>
+			<p>Help?</p>
 		</div>
 	</div>
 	<div class="organizer_2ndLevelNav">

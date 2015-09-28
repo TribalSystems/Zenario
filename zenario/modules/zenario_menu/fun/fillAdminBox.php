@@ -41,5 +41,11 @@ switch ($path) {
 			$box['tabs']['first_tab']['fields']['show_missing_menu_nodes']['hidden'] = true;
 		}
 		
+		if(setting('zenario_menu__allow_overriding_of_invisible_flag_on_menu_nodes')){
+			$box['tabs']['first_tab']['fields']['show_invisible_menu_nodes']['hidden'] = false;
+		}else{
+			$box['tabs']['first_tab']['fields']['show_invisible_menu_nodes']['hidden'] = true;
+		}
+		
 		break;
 }

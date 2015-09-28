@@ -67,8 +67,8 @@ sections:
             edit_grid:
                 priv: _PRIV_EDIT_TEMPLATE_FAMILY
                 hide_in_select_mode: Yes
-                label: Edit layout
-                tooltip: Edit the grid CSS, create and manage slots
+                label: Edit layout with Gridmaker
+                tooltip: Manage slots on this layout, their size and CSS classes, and on which devices they should appear
                 popout:
                     href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
                     width: 100%
@@ -85,17 +85,9 @@ sections:
                     grid: Yes
                 without_columns_set:
                     missing: Yes
-            settings:
-                priv: _PRIV_VIEW_TEMPLATE
-                label: Change skin
-                admin_box:
-                    path: zenario_layout
-                    key:
-                        id: ""
-                without_traits:
-                    unregistered: Yes
             skq:
-                label: Organize layout...
+                label: Organize layouts...
+                tooltip: Define which skin this layout should use, and view other layouts
                 organizer_quick:
                     path: ""
                     target_path: zenario__layouts/panels/layouts

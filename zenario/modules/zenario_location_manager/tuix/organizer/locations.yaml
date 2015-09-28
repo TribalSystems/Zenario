@@ -3,9 +3,9 @@
 zenario__locations:
 	panel:
 		title: Locations
-		no_items_in_search_message: No locations exist, click "Create" to create a location.
+		no_items_message: No locations exist, click "Create" to create a location.
 		
-		panel_type: google_map_or_list
+		panel_type: list_or_grid_or_google_map
 		lat_column: latitude
 		lng_column: longitude
 		double_click_item_button: rename_location
@@ -41,6 +41,7 @@ zenario__locations:
 		columns:
 			id:
 				title: ID
+				format: id
 				db_column: l.id
 				show_by_default: false
 				searchable: Yes
@@ -201,16 +202,21 @@ zenario__locations:
 			checksum:
 				db_column: f.checksum
 			last_updated:
-				title: Date/Time Last Updated
+				title: Date/time last updated
 				db_column: l.last_updated
 				format: datetime
 				show_by_default: No
 			last_updated_by:
-				title: Last Updated By
+				title: Last updated by
 				db_column: l.last_updated_admin_id
 				show_by_default: No
 				searchable: Yes
 				format: enum
+			last_updated_via_import:
+				title: Date/time last updated from import
+				db_column: l.last_updated_via_import
+				format: datetime
+				show_by_default: No
 			on_map:
 				title: On map
 				db_column: '(l.latitude AND l.longitude)'
@@ -241,6 +247,7 @@ zenario__locations:
 				refiner: children_of_location
 		collection_buttons:
 			create_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "1"
 				label: Create a location
 				css_class: zenario_create_a_new
@@ -248,6 +255,7 @@ zenario__locations:
 				admin_box:
 					path: zenario_location_manager__location
 			add_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "1"
 				label: Add a location to this sector
 				pick_items:
@@ -261,6 +269,7 @@ zenario__locations:
 						action: add_location
 				only_show_on_refiner: sector_locations
 			add_child_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				css_class: add
 				ord: "0"
 				label: Add child location here
@@ -277,20 +286,6 @@ zenario__locations:
 					multiple_select: Yes
 					request:
 						action: add_child_location
-			export:
-				label: Export in CSV
-				priv: _PRIV_EXPORT_LOCATIONS
-				hide_in_select_mode: Yes
-				css_class: export
-				ajax:
-					confirm:
-						download: true
-						message: Download these locations?
-						button_message: Download
-						cancel_button_message: Cancel
-					pass_matched_ids: true
-					request:
-						download_csv: true
 			# User dataset import buttons
 			import_dropdown:
 				label: Import
@@ -298,6 +293,7 @@ zenario__locations:
 				hide_when_children_are_not_visible: true
 				ord: 999998
 			import:
+				priv: _PRIV_MANAGE_LOCATIONS
 				label: Start import wizard
 				parent: import_dropdown
 				hide_in_select_mode: true
@@ -306,6 +302,7 @@ zenario__locations:
 					key:
 						dataset: 
 			donwload_sample_file:
+				priv: _PRIV_MANAGE_LOCATIONS
 				label: Download sample file
 				parent: import_dropdown
 				hide_in_select_mode: true
@@ -314,22 +311,25 @@ zenario__locations:
 					key:
 						dataset:
 			export:
-					label: Export
-					admin_box:
-						path: zenario_export_dataset
-						key:
-							dataset:
-					ord: 999999
+				priv: _PRIV_EXPORT_LOCATIONS
+				label: Export
+				admin_box:
+					path: zenario_export_dataset
+					key:
+						dataset:
+				ord: 999999
 			
 			
 		item_buttons:
 			rename_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "1"
 				label: Edit location
 				hide_in_select_mode: Yes
 				admin_box:
 					path: zenario_location_manager__location
 			edit_multiple_locations:
+				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "1"
 				label: Edit multiple...
 				hide_in_select_mode: Yes
@@ -345,6 +345,7 @@ zenario__locations:
 				without_traits:
 					not_in_hierarchy: Yes
 			activate:
+				priv: _PRIV_MANAGE_LOCATIONS
 				label: Activate
 				hide_in_select_mode: Yes
 				ord: "1"
@@ -370,6 +371,7 @@ zenario__locations:
 				multiple_select: Yes
 				hide_when_children_are_not_visible: Yes
 			suspend:
+				priv: _PRIV_MANAGE_LOCATIONS
 				parent: action_dropdown
 				label: Suspend
 				hide_in_select_mode: Yes
@@ -387,6 +389,7 @@ zenario__locations:
 					request:
 						action: suspend_location
 			delete_locations:
+				priv: _PRIV_MANAGE_LOCATIONS
 				parent: action_dropdown
 				label: Delete
 				multiple_select: Yes
@@ -404,6 +407,7 @@ zenario__locations:
 						action: delete_locations
 				hide_in_select_mode: Yes
 			delete_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				parent: action_dropdown
 				label: Delete
 				ajax:
@@ -416,6 +420,7 @@ zenario__locations:
 				hide_in_select_mode: Yes
 			
 			upload_image:
+				priv: _PRIV_MANAGE_LOCATIONS
 				parent: images_dropdown
 				label: Attach image
 				hide_in_select_mode: Yes
@@ -438,6 +443,7 @@ zenario__locations:
 					branch: Yes
 					refiner: location_images
 			remove_location:
+				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "9999"
 				label: Remove selected location from sector
 				only_show_on_refiner: sector_locations
@@ -452,6 +458,7 @@ zenario__locations:
 				multiple_select: Yes
 				hide_in_select_mode: Yes
 			set_parent:
+				priv: _PRIV_MANAGE_LOCATIONS
 				name: Assign location a parent
 				hide_in_select_mode: Yes
 				multiple_select: Yes
@@ -464,7 +471,7 @@ zenario__locations:
 					request:
 						action: assign_new_parent
 			remove_child:
-				php: Yes
+				priv: _PRIV_MANAGE_LOCATIONS
 				name: Make location an orphan
 				multiple_select: No
 				only_show_on_refiner: children_of_location

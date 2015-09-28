@@ -51,3 +51,28 @@ site_settings:
                     empty_value: ' -- Select -- '
                     validation:
                         required: Please select the opt-out (unsubscribe) characteristic.
+
+        styles:
+            label: Pre-defined styles
+            edit_mode:
+                enabled: false
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            These pre-defined styles will be available when composing a newsletter or an email template.
+                            You can add more by editing the <code>zenario_custom/site_description.yaml</code> file.
+                email_style_formats:
+                    type: code_editor
+                    language: yaml
+                    style: |
+                        height: 30em;
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            See
+                                <a href="http://www.tinymce.com/wiki.php/Configuration:style_formats" target="_blank">
+                                    http://www.tinymce.com/wiki.php/Configuration:style_formats</a>
+                            for more information.

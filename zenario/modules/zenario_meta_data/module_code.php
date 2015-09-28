@@ -52,13 +52,13 @@ class zenario_meta_data extends module_base_class {
 	//Attempt to look up the publication_date column from the database.
 	function getContentItemMetaData() {
 		if ($this->setting('show_date') && $this->setting('date_format')){
-			$dates = getRow('versions', array('publication_date'), array('id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion));
+			$dates = getRow('content_item_versions', array('publication_date'), array('id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion));
 			if ($this->mergeFields['Date'] = formatDateNicely($dates['publication_date'], $this->setting('date_format'))) {
 				$this->showSections['show_date'] = true;
 			}
 		}
 		if ($this->setting('show_writer_name')){
-			if ($writerName = getRow('versions', 'writer_name', array('id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion))){
+			if ($writerName = getRow('content_item_versions', 'writer_name', array('id'=>$this->cID, 'type'=>$this->cType, 'version'=>$this->cVersion))){
 				$this->mergeFields['Writer_name'] = htmlspecialchars($writerName);
 				$this->showSections['show_writer_name'] = true;
 			}
@@ -66,7 +66,7 @@ class zenario_meta_data extends module_base_class {
 		if ($this->setting('show_writer_image')){
 			$sql = '
 				SELECT f.id, f.width, f.height, f.alt_tag
-				FROM '.DB_NAME_PREFIX.'versions v
+				FROM '.DB_NAME_PREFIX.'content_item_versions v
 				INNER JOIN '.DB_NAME_PREFIX.'admins a
 					ON v.writer_id = a.id
 				INNER JOIN '.DB_NAME_PREFIX.'files f
@@ -97,7 +97,7 @@ class zenario_meta_data extends module_base_class {
 			}
 		}
 		if ($this->setting('show_summary')){
-			$row = getRow('versions',array('content_summary'),array('id'=>$this->cID,'version'=>$this->cVersion,'type'=>$this->cType));
+			$row = getRow('content_item_versions',array('content_summary'),array('id'=>$this->cID,'version'=>$this->cVersion,'type'=>$this->cType));
 			if ($this->mergeFields['Summary'] = $row['content_summary']){
 				$this->showSections['show_summary'] = true;
 			}

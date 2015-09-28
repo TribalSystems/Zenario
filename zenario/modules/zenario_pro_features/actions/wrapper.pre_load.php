@@ -37,7 +37,7 @@ if (empty($_GET['admin'])) {
 	}
 	
 	
-	$type = str_replace('.php', '', basename($_SERVER['PHP_SELF']));
+	$type = str_replace(array('.cache_wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
 	if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). $type)) {

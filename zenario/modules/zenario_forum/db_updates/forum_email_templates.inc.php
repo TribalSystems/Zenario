@@ -193,3 +193,37 @@ revision(107, "
         0
     )
 ");
+
+revision(140,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_forum'
+	WHERE `code` = 'zenario_forum__to_admin_new_thread_notification_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_forum'
+	WHERE `code` = 'zenario_forum__to_admin_post_notification_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_forum'
+	WHERE `code` = 'zenario_forum__new_thread_subs_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_forum'
+	WHERE `code` = 'zenario_forum__post_subs_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_forum'
+	WHERE `code` = 'zenario_forum__post_report'
+_sql
+
+);

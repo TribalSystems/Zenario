@@ -937,17 +937,9 @@ class zenario_api {
 	public final function start() {
 		//Put a section around the slot and the slot controls in admin mode.
 		//This lets us adjust the look of the slot and the slot controls using CSS.
-		//(Note that IE 8 needs a convoluted hack to use a section tag.)
 		if (checkPriv()) {
-			if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') === false) {
-				echo '
-					<section';
-			} else {
-				echo '
-					<div';
-			}
-			
-			echo ' id="', $this->containerId, '-wrap" class="zenario_slotOuter ', $this->instanceId? 'zenario_slotWithContents' : 'zenario_slotWithNoContents', '">';
+			echo '
+				<section id="', $this->containerId, '-wrap" class="zenario_slotOuter ', $this->instanceId? 'zenario_slotWithContents' : 'zenario_slotWithNoContents', '">';
 		}
 	}
 	
@@ -983,25 +975,8 @@ class zenario_api {
 	public final function end() {
 		//Display the HTML at the end of a slot when in admin mode
 		if (checkPriv()) {
-			if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') === false) {
-				echo '
-					</section>';
-			
-			} else {
-				//Here is the aforementioned hack to get section tags working in IE 8:
-				echo '
-					</div>
-					<script>
-						(function(id) {
-							var s = document.createElement("section"),
-								d = document.getElementById(id);
-							d.parentNode.replaceChild(s, d);
-							s.id = d.id;
-							s.className = d.className;
-							s.innerHTML = d.innerHTML;
-						})("', $this->containerId, '-wrap");
-				   </script>';
-			}
+			echo '
+				</section>';
 		}
 	}
 	
@@ -1147,7 +1122,7 @@ class zenario_api {
 							//Stop the user trying to trick the CMS into submitting a different file in a different location
 							if (!empty($_POST[$attributes['name']])) {
 								if (strpos($_POST[$attributes['name']], '..') !== false
-								 || !preg_match('@^cache/uploads/\w+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
+								 || !preg_match('@^cache/uploads/[\w\-\_]+/[\w\.-]+\.upload$@', $_POST[$attributes['name']])) {
 									unset($_POST[$attributes['name']]);
 								}
 							}

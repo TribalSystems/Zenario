@@ -98,7 +98,7 @@ switch ($path) {
 		$box['tabs']['meta_data']['fields']['alias']['value'] =
 			contentItemAlias($box['key']['cID'], $box['key']['cType']);
 		$box['tabs']['meta_data']['fields']['lang_code_in_url']['value'] =
-			getRow('content', 'lang_code_in_url', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
+			getRow('content_items', 'lang_code_in_url', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
 		
 		$box['tabs']['meta_data']['fields']['update_translations']['value'] =
 			setting('translations_different_aliases')? 'update_this' : 'update_all';
@@ -230,8 +230,8 @@ switch ($path) {
 			//If there is only one unique value then populate it, otherwise show the field as blank.
 			$sql = "
 				SELECT DISTINCT v.layout_id
-				FROM ". DB_NAME_PREFIX. "content AS c
-				INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+				FROM ". DB_NAME_PREFIX. "content_items AS c
+				INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 				   ON c.id = v.id
 				  AND c.type = v.type
 				  AND c.admin_version = v.version
@@ -310,7 +310,7 @@ switch ($path) {
 			$inCats = array();
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content AS c
+				FROM ". DB_NAME_PREFIX. "content_items AS c
 				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
@@ -444,7 +444,7 @@ switch ($path) {
 			$inCats = array();
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content AS c
+				FROM ". DB_NAME_PREFIX. "content_items AS c
 				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
@@ -563,7 +563,7 @@ switch ($path) {
 			$inCats = array();
 			$sql = "
 				SELECT l.category_id, COUNT(DISTINCT c.tag_id) AS cnt
-				FROM ". DB_NAME_PREFIX. "content AS c
+				FROM ". DB_NAME_PREFIX. "content_items AS c
 				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS l
 				   ON c.equiv_id = l.equiv_id
 				  AND c.type = l.content_type
@@ -686,29 +686,23 @@ switch ($path) {
 		$result = sqlQuery($sql);
 		list($phrases['present']) = sqlFetchRow($result);
 		$phrases['missing'] = $phrases['total'] - $phrases['present'];
+		$phrases['lang'] = getLanguageName($box['key']['id']);
+		$phrases['def_lang'] = getLanguageName(setting('default_language'));
 		
 		
 		$box['tabs']['export']['fields']['desc']['snippet']['html'] =
-			adminPhrase(
-				'This will export all of the Phrases in the Language Pack "[[lang]]".',
-				array('lang' => getLanguageName($box['key']['id'])));
-		
+			adminPhrase('Use this to download a spreadsheet of "[[lang]]" phrases.',$phrases);
 		$box['tabs']['export']['fields']['option']['values']['present'] =
-			adminPhrase('Only existing Phrases ([[present]])', $phrases);
+			adminPhrase('Only include phrases that are present ([[present]])', $phrases);
+		$box['tabs']['export']['fields']['option']['values']['missing'] =
+			adminPhrase('Only include phrases that are missing ([[missing]])', $phrases);
+		$box['tabs']['export']['fields']['option']['values']['all'] =
+			adminPhrase('Include all possible phrases ([[total]])', $phrases);
 		
 		if ($box['key']['id'] != setting('default_language')) {
-			$phrases['def_lang'] = getLanguageName(setting('default_language'));
-			
-			$box['tabs']['export']['fields']['option']['values']['missing'] =
-				adminPhrase('Only missing Phrases ([[missing]]), with [[def_lang]] as a reference', $phrases);
-			$box['tabs']['export']['fields']['option']['values']['all'] =
-				adminPhrase('All possible Phrases ([[total]]), with [[def_lang]] as a reference', $phrases);
-		
-		} else {
-			$box['tabs']['export']['fields']['option']['values']['missing'] =
-				adminPhrase('Only missing Phrases ([[missing]])', $phrases);
-			$box['tabs']['export']['fields']['option']['values']['all'] =
-				adminPhrase('All possible Phrases ([[total]])', $phrases);
+			$box['tabs']['export']['fields']['desc']['snippet']['html'] .=
+				' '.
+				adminPhrase('"[[def_lang]]" will be used as a reference.',$phrases);
 		}
 		
 		break;
@@ -736,26 +730,29 @@ switch ($path) {
 	case 'zenario_document_properties':
 		if ($document_id = $box['key']['id']) {
 			$documentTagsString = '';
-			$documentTags = getRowsArray('document_tag_link', 'tag_id', array('document_id' => $document_id));
-			$documentDetails = getRow('documents',array('file_id', 'thumbnail_id', 'extract', 'extract_wordcount'),  $document_id);
 			
-			$documentName=getRow('documents', 'filename', array('type' => 'file','id' => $document_id));
-			//$documentName = getRow('files', array('filename'), $documentDetails['file_id']);
+			$documentDetails = getRow('documents',array('file_id', 'thumbnail_id', 'extract', 'extract_wordcount', 'title'),  $document_id);
+			$documentName = getRow('documents', 'filename', array('type' => 'file','id' => $document_id));
 			$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', array("filename"=>$documentName));
 			
-			
+			$fields['details/document_title']['value'] = $documentDetails['title'];
 			$fields['details/document_name']['value'] = $documentName;
 			$fileDatetime=getRow('documents', 'file_datetime', array('type' => 'file','id' => $document_id));
 			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
 			
-			foreach ($documentTags as $tag) {
-				$documentTagsString .= $tag . ",";
+			if (setting('enable_document_tags')) {
+				$documentTags = getRowsArray('document_tag_link', 'tag_id', array('document_id' => $document_id));
+				foreach ($documentTags as $tag) {
+					$documentTagsString .= $tag . ",";
+				}
+				$fields['details/tags']['value'] = $documentTagsString;
+				$fields['details/link_to_add_tags']['snippet']['html'] = 
+						adminPhrase('To add or edit document tags click <a[[link]]>this link</a>.',
+							array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"'));
+			} else {
+				$fields['details/tags']['hidden'] = true;
 			}
 			
-			$fields['details/tags']['value'] = $documentTagsString;
-			$fields['details/link_to_add_tags']['snippet']['html'] = 
-					adminPhrase('To add or edit document tags click <a[[link]]>this link</a>.',
-						array('link' => ' href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__content/panels/document_tags'). '" target="_blank"'));
 			$fields['extract/extract_wordcount']['value'] = $documentDetails['extract_wordcount'];
 			$fields['extract/extract']['value'] = ($documentDetails['extract'] ? $documentDetails['extract']: 'No plain-text extract');
 			
@@ -763,9 +760,12 @@ switch ($path) {
 			if (!empty($documentDetails['thumbnail_id'])) {
 				$this->getImageHtmlSnippet($documentDetails['thumbnail_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
 			} else {
+				$fields['upload_image/delete_thumbnail_image']['hidden'] = true;
 				$mimeType = getRow('files', 'mime_type', $documentDetails['file_id']);
 				if ($mimeType == 'image/gif' || $mimeType == 'image/png' || $mimeType == 'image/jpeg' || $mimeType == 'image/pjpeg') {
 					$this->getImageHtmlSnippet($documentDetails['file_id'], $fields['upload_image/thumbnail_image']['snippet']['html']);
+				} else {
+					$fields['upload_image/thumbnail_image']['snippet']['html'] = adminPhrase('No thumbnail avaliable');
 				}
 			}
 			

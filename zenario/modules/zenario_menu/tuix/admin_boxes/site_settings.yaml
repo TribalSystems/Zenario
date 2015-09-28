@@ -1,0 +1,16 @@
+site_settings:
+	setting_group: zenario_menu__site_settings_group
+	title: |
+		Editing menu settings
+	tabs:
+		zenario_menu:
+			class_name: zenario_menu
+			label: "Menu nodes"
+			edit_mode:
+				enabled: true
+			fields:
+				zenario_menu__allow_overriding_of_invisible_flag_on_menu_nodes:
+					site_setting:
+						name: zenario_menu__allow_overriding_of_invisible_flag_on_menu_nodes
+					label: 'Allow overriding of "invisible" flag on menu nodes'
+					type: checkbox

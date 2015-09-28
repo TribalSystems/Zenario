@@ -23,6 +23,7 @@ zenario__user_forms:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: f.id
                     searchable: false
                     show_by_default: true

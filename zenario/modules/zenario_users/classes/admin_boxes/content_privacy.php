@@ -78,7 +78,7 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 					//If we've already failed, stop trying
 					if ($combinedValues !== false) {
 						//Look up the values
-						if ($chain = getRow('translation_chains', array('privacy', 'log_user_access'), array('equiv_id' => $equivId, 'type' => $cType))) {
+						if ($chain = getRow('translation_chains', array('privacy'), array('equiv_id' => $equivId, 'type' => $cType))) {
 							$chain['group_content_link'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
 							$chain['user_content_link'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
 							
@@ -111,7 +111,6 @@ class zenario_users__admin_boxes__content_privacy extends zenario_users {
 		//If all the values match, display them!
 		if (is_array($combinedValues)) {
 			$values['privacy/privacy'] = $chain['privacy'];
-			$values['privacy/log_user_access'] = $chain['log_user_access'];
 			$values['privacy/group_members'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
 			$values['privacy/specific_users'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
 		}

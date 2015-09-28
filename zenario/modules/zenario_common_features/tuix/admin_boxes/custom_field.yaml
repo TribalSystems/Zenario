@@ -103,10 +103,11 @@ zenario_custom_field:
 					type: checkbox
 					note_below: 'Protected fields cannot be deleted'
 					format_onchange: true
-					
+				
 				include_in_export:
 					label: 'Include in export'
 					type: checkbox
+					note_below: 'Include this field when exporting from this dataset.'
 				
 		display:
 			label: Display

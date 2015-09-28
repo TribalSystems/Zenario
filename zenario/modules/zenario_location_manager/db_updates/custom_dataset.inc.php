@@ -102,3 +102,11 @@ if (needRevision(139)) {
 	
 	revision(139);
 }
+
+// Add location status as a dataset system field
+if (needRevision(143)) {
+	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
+	registerDatasetSystemField($dataset['id'], 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
+	revision(143);
+}
+

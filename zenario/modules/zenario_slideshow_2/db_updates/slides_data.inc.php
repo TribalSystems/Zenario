@@ -131,14 +131,14 @@ _sql
 
 
 //If this is a fresh install and the installer has created a library plugin and some slide images,
-//automatically add the 
+//automatically add 3 images (that are hard-coded by filename) to the first slideshow.
 if (needRevision(23)) {
 	if (($moduleId = getModuleId('zenario_slideshow_2'))
 	 && ($instanceId = getRow('plugin_instances', 'id', array('module_id' => $moduleId)))
 	 && (!checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array()))) {
 		$ordinal = 0;
-		foreach (getRowsArray('files', array('id', 'filename'), array('usage' => 'slideshow')) as $image) {
-			$slide = array('ordinal' => ++$ordinal, 'instance_id' => $instanceId, 'image_id' => $image['id']);
+		foreach (getRowsArray('files', array('id', 'filename'), array('usage' => 'image')) as $image) {
+			$slide = array();
 			
 			switch ($image['filename']) {
 				case 'cityscape.jpg':
@@ -153,7 +153,14 @@ if (needRevision(23)) {
 					$slide['slide_title'] = 'Keep clarity';
 					$slide['slide_extra_html'] = 'Use the Organizer button to manage all of your website features.';
 					break;
+				
+				default:
+					continue 2;
 			}
+			
+			$slide['ordinal'] = ++$ordinal;
+			$slide['image_id'] = $image['id'];
+			$slide['instance_id'] = $instanceId;
 			
 			insertRow(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', $slide);
 		}
@@ -184,6 +191,13 @@ _sql
 	DROP COLUMN `extra_html_transition`,
 	ADD COLUMN `transition_code` text DEFAULT NULL,
 	ADD COLUMN `use_transition_code` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+); revision( 33
+
+, <<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_SLIDESHOW_2_PREFIX]]slides
+	ADD COLUMN `slide_more_link_text` varchar(255) DEFAULT '' AFTER `slide_extra_html`
 _sql
 
 );

@@ -29,8 +29,8 @@
 //Allow a plugin to show on a page on its own.
 
 
-require 'cacheheader.inc.php';
-session_start();
+require 'basicheader.inc.php';
+startSession();
 
 
 //Run pre-load actions
@@ -170,6 +170,10 @@ if ($methodCall == 'refreshPlugin'
 	//Look up one or more visitor phrases
 	require 'visitorheader.inc.php';
 	
+	$codes = array();
+	if (isset($_GET['__code__'])) {
+		$codes = explodeDecodeAndTrim($_GET['__code__']);
+	}
 	$languageId = ifNull(get('langId'), session('user_lang'), setting('default_language'));
 	
 	$sql = "
@@ -178,9 +182,9 @@ if ($methodCall == 'refreshPlugin'
 		WHERE language_id = '". sqlEscape($languageId). "'
 		  AND module_class_name = '". sqlEscape(get('__class__')). "'";
 	
-	if (isset($_GET['__code__'])) {
+	if (!empty($codes)) {
 		$sql .= "
-		  AND code IN (". inEscape($_GET['__code__']). ")";
+		  AND code IN (". inEscape($codes). ")";
 	}
 	
 	$phrases = array();
@@ -197,12 +201,10 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	//If this is a logged in administrator, log any missing phrases
-	if (isset($_GET['__code__']) && checkPriv()) {
-		foreach (explode(',', $_GET['__code__']) as $code) {
-			if ($code) {
-				if (!isset($phrases[$code])) {
-					$phrases[$code] = phrase($code, array(), get('__class__'), $languageId, adminPhrase('JavaScript code'));
-				}
+	if (!empty($codes) && checkPriv()) {
+		foreach ($codes as $code) {
+			if (!isset($phrases[$code])) {
+				$phrases[$code] = phrase($code, array(), get('__class__'), $languageId, adminPhrase('JavaScript code'));
 			}
 		}
 	}
@@ -240,7 +242,23 @@ if ($methodCall == 'refreshPlugin'
 	
 
 } elseif ($methodCall == 'handleAdminBoxAJAX') {
-	require 'adminheader.inc.php';
+	require 'visitorheader.inc.php';
+	
+	if (empty($_SESSION['running_a_wizard']) && !checkPriv()) {
+		exit;
+	}
+	
+	require CMS_ROOT. 'zenario/includes/admin.inc.php';
+	handleAdminBoxAJAX();
+
+} elseif ($methodCall == 'handleWizardAJAX') {
+	
+	if (empty($_SESSION['running_a_wizard'])) {
+		exit;
+	}
+	
+	require 'visitorheader.inc.php';
+	require CMS_ROOT. 'zenario/includes/admin.inc.php';
 	handleAdminBoxAJAX();
 
 //Handle any other Admin Mode methods
@@ -266,6 +284,14 @@ if ($methodCall == 'refreshPlugin'
 			exit;
 		}
 	}
+}
+
+
+//If the "Show menu structure in friendly URLs" site setting is enabled,
+//always use the full URL when generating links in an AJAX request, just in case the results
+//are being displayed with a different relative path
+if (setting('mod_rewrite_slashes')) {
+	cms_core::$mustUseFullPath = true;
 }
 
 

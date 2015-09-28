@@ -27,7 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 	/*
 	//This code would add Menu Text for every translation of a Content Item
@@ -40,11 +39,11 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 			e.equiv_id,
 			e.type AS content_type,
 			'secondary' AS redundancy
-		FROM ". DB_NAME_PREFIX. "content AS c
-		INNER JOIN ". DB_NAME_PREFIX. "content AS e
+		FROM ". DB_NAME_PREFIX. "content_items AS c
+		INNER JOIN ". DB_NAME_PREFIX. "content_items AS e
 		   ON e.equiv_id = c.equiv_id
 		  AND e.type = c.type
-		INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+		INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 		   ON v.id = e.id
 		  AND v.type = e.type
 		  AND v.version = e.admin_version
@@ -72,7 +71,6 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 		$menuIds[$menuId] = $menuId;
 	}
 	*/
-	
 	//This code just adds one content item, unless multiple in the same were selected at once
 	$sql = "
 		SELECT
@@ -83,8 +81,8 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 			c.equiv_id,
 			c.type AS content_type,
 			'secondary' AS redundancy
-		FROM ". DB_NAME_PREFIX. "content AS c
-		INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+		FROM ". DB_NAME_PREFIX. "content_items AS c
+		INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 		   ON v.id = c.id
 		  AND v.type = c.type
 		  AND v.version = c.admin_version
@@ -201,7 +199,7 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 	}
 
 } elseif (post('delete_trashed_items') && checkPriv('_PRIV_TRASH_CONTENT_ITEM')) {
-	$result = getRows('content', array('id', 'type'), array('status' => 'trashed'));
+	$result = getRows('content_items', array('id', 'type'), array('status' => 'trashed'));
 	while ($content = sqlFetchAssoc($result)) {
 		deleteContentItem($content['id'], $content['type']);
 	}
@@ -210,7 +208,7 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 	foreach (explode(',', $ids) as $id) {
 		if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 			if (checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
-				updateRow('content', array('lock_owner_id' => session('admin_userid'), 'locked_datetime' => now()), array('id' => $cID, 'type' => $cType));
+				updateRow('content_items', array('lock_owner_id' => session('admin_userid'), 'locked_datetime' => now()), array('id' => $cID, 'type' => $cType));
 			}
 		}
 	}
@@ -218,7 +216,7 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 } elseif (get('unlock')) {
 	foreach (explode(',', $ids) as $id) {
 	if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
-			$contentInfo = getRow('content', array('admin_version', 'lock_owner_id'), array('id'=>$cID, 'type'=>$cType));
+			$contentInfo = getRow('content_items', array('admin_version', 'lock_owner_id'), array('id'=>$cID, 'type'=>$cType));
 			$cVersion = $contentInfo['admin_version'];
 			$adminDetails = getAdminDetails($contentInfo['lock_owner_id']);
 			echo 'Are you sure that you wish to ';
@@ -226,7 +224,7 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 				echo 'force-';
 			}
 			echo 'unlock on this content item? ';
-			if ($date = getRow('versions', 'scheduled_publish_datetime', array('id'=>$cID,'type'=>$cType,'version'=>$cVersion))) {
+			if ($date = getRow('content_item_versions', 'scheduled_publish_datetime', array('id'=>$cID,'type'=>$cType,'version'=>$cVersion))) {
 				echo 'It is scheduled to be published by '.$adminDetails['first_name'].' '.$adminDetails['last_name'].' on '. formatDateTimeNicely($date, 'vis_date_format_long');
 			} else {
 				echo 'Any administrator who has authoring permission will be able to make changes to it.';
@@ -239,16 +237,16 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 	if (getCIDAndCTypeFromTagId($cID, $cType, $ids)) {
 			// Unlock the item & remove scheduled publication
 			if (checkPriv('_PRIV_CANCEL_CHECKOUT') || checkPriv(false, $cID, $cType)) {
-				$cVersion = getRow('content', 'admin_version', array('id'=>$cID, 'type'=>$cType));
-				updateRow('versions', array('scheduled_publish_datetime' => null), array('id'=>$cID,'type'=>$cType,'version'=>$cVersion));
-				updateRow('content', array('lock_owner_id' => 0, 'locked_datetime' => null), array('id' => $cID, 'type' => $cType));
+				$cVersion = getRow('content_items', 'admin_version', array('id'=>$cID, 'type'=>$cType));
+				updateRow('content_item_versions', array('scheduled_publish_datetime' => null), array('id'=>$cID,'type'=>$cType,'version'=>$cVersion));
+				updateRow('content_items', array('lock_owner_id' => 0, 'locked_datetime' => null), array('id' => $cID, 'type' => $cType));
 			}
 		}
 	}
 	
 } elseif ((post('create_draft') || post('unhide')) && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
 	foreach (explode(',', $ids) as $id) {
-		if ($content = getRow('content', array('id', 'type', 'status', 'admin_version', 'visitor_version'), array('tag_id' => $id))) {
+		if ($content = getRow('content_items', array('id', 'type', 'status', 'admin_version', 'visitor_version'), array('tag_id' => $id))) {
 			
 			if (post('create_draft') && isDraft($content['status'])) {
 				continue;
@@ -272,7 +270,7 @@ if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
 } elseif (post('create_draft_by_copying') && checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
 	$sourceCID = $sourceCType = false;
 	if (getCIDAndCTypeFromTagId($sourceCID, $sourceCType, $ids2)
-	 && ($content = getRow('content', array('id', 'type', 'status'), array('tag_id' => $ids)))) {
+	 && ($content = getRow('content_items', array('id', 'type', 'status'), array('tag_id' => $ids)))) {
 		$hasDraft =
 			$content['status'] == 'first_draft'
 		 || $content['status'] == 'published_with_draft'

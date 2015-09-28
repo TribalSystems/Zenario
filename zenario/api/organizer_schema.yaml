@@ -140,6 +140,14 @@ additionalProperties:
         ord: *ord
         hidden: *hidden
         visible_if: *visible_if
+        youtube_video_id:
+            type: string
+            description: >
+                A youtube video URL about this panel. This will be showing in the help tour.
+        youtube_thumbnail_title:
+            type: string
+            description: >
+                The title of the youtube video thumbnail in the help tour.
         
         nav:
             type: object
@@ -232,6 +240,11 @@ additionalProperties:
                         description: >
                             If you enter the name of a microtemplate here, it will be added under the thumbnail for each
                             item in grid view.
+                    
+                    use_tall_rows:
+                        type: boolean
+                        description: >
+                            This is used in list view. If set, taller rows will be used.
                     
                     db_items:
                         type: object
@@ -330,6 +343,31 @@ additionalProperties:
             
                                     This property must be written in your .yaml file.
                                     It can't be changed in php.
+                            
+                            max_limit:
+                                type: number
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    This places an upper limit on the number of rows that Organizer will load
+                                    from the database.
+                                    This is intended as a safe-guard to stop any "out of memory" errors in
+                                    PHP if pagination is not used and a panel contains thousands of rows.
+                                    
+                                    This works from version 7.0.7 onwards.
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
+                                default: 500
+                            
+                            max_limit_hit:
+                                type: boolean
+                                description: >
+                                    The CMS will set this flag to true if more rows than the max_limit were found.
+                                    
+                                    This works from version 7.0.7 onwards.
                     
                     columns:
                         type: object
@@ -484,8 +522,10 @@ additionalProperties:
                                     default: text
                                     description: >
                                         This lets you define the data-format of a column.
-            
-            
+                                        
+                                        See http://zenar.io/ref-organizer_schema-format for more information.
+                                        
+                                        
                                         This property must be written in your .yaml file,
                                         or set in your preFillOrganizerPanel() method.
                                         It can't be changed in your fillOrganizerPanel() method.
@@ -750,6 +790,15 @@ additionalProperties:
                                     description: >
                                         A quick filter will the "remove_filter" property will turn the filters off for a column
                                         when an administrator clicks it.
+                                
+                                clear_all:
+                                    type: boolean
+                                    description: >
+                                        New in version 7.0.7.
+                                        
+                                        Clicking on a quick-filter-button with clear_all set will clear every
+                                        other quick-filter button. (But if this is in a drop-down, only the buttons
+                                        in the drop-down will be affected.)
                                 
                                 hide_in_select_mode:
                                     type: boolean
@@ -1073,6 +1122,39 @@ additionalProperties:
                     
                             Note that this will clash with the <code>popout_message</code> property for Admin Boxes;
                             you can use one or the other, but not both at the same time.
+
+                    toast:
+                        type: object
+                        description: >
+                            This will cause the panel to display a "toaster" at the top right.
+                            
+                            The toastr library is used;
+                            you can see https://github.com/CodeSeven/toastr for more information.
+                        properties:
+                            message:
+                                type: string
+                                description: >
+                                    A message for the toast.
+                            title:
+                                type: string
+                                description: >
+                                    An optional title for the toast.
+                            
+                            message_type:
+                                enum:
+                                    - error
+                                    - warning
+                                    - info
+                                    - success
+                                default: info
+                                description: >
+                                    The type of message. A different styling will be applied for each different type.
+                            
+                            options:
+                                additionalProperties:
+                                    type: *variable
+                                    description: >
+                                        Any additional options to pass to the toastr library.
                     
                     
                     collection_buttons:

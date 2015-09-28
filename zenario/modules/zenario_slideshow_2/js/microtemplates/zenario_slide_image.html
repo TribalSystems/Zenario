@@ -1,5 +1,5 @@
-<li id="zenario_slide_image_{{m.id}}" data-id="{{m.id}}">
-	<div id="slideshow_image_container" onclick="zenario_slideshow_2.selectImage('{{m.id}}', true);">
-		<img src="{{m.image_src_thumbnail_2|e}}" alt="{{m.alt_tag|e}}" id="zenario_slide_{{m.id}}"/>
+<li id="zenario_slide_image_{{m.id|e}}" data-id="{{m.id|e}}">
+	<div onclick="zenario_slideshow_2.selectSlide({{m.id|e}});">
+		<img src="{{m.image_src_thumbnail_2|e}}" alt="{{m.alt_tag|e}}" id="zenario_slide_{{m.id|e}}"/>
 	</div>
 </li>

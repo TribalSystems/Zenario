@@ -73,7 +73,7 @@ if (sqlNumRows($result)>0) {
 	$_SESSION['privs'] = $allowedActions;
 	
 	//Mark the site that they've logged into
-	$_SESSION['admin_logged_into_site'] = httpHost(). SUBDIRECTORY. setting('site_id');
+	$_SESSION['admin_logged_into_site'] = COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id');
 	
 	return true;
 } else {

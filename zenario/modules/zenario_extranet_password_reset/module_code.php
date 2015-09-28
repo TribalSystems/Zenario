@@ -150,5 +150,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			return ($userPasswordResetTimePlusOneDay > $now);
 		}
 	}
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		//overright extranet save
+	}
 
 }

@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
 */
 
 
@@ -53,6 +53,7 @@ zenarioA.menuWandOn = true;
 zenarioA.slotWandOn = false;
 zenarioA.showGridOn = false;
 zenarioA.storekeeperInitTime = 5000;
+zenarioA.adminSettings = {};
 
 zenarioA.tooltipLengthThresholds = {
 	adminBoxTitle: 120,
@@ -288,7 +289,7 @@ zenarioA.getSlotWidth = function($gridspan) {
 
 
 zenarioA.pickNewPluginSlotName = false;
-zenarioA.pickNewPlugin = function(el, slotName, level) {
+zenarioA.pickNewPlugin = function(el, slotName, level, showADifferentPlugin) {
 	el.blur();
 	
 	zenarioA.pickNewPluginSlotName = slotName;
@@ -297,7 +298,8 @@ zenarioA.pickNewPlugin = function(el, slotName, level) {
 	var path = 'zenario__modules/panels/modules/refiners/slotable_only////';
 	
 	//Select the existing module and plugin if possible
-	if (zenario.slots[slotName]
+	if (!showADifferentPlugin
+	 && zenario.slots[slotName]
 	 && zenario.slots[slotName].moduleId
 	 && zenario.slots[slotName].instanceId) {
 		path += 'item//' + zenario.slots[slotName].moduleId + '//' + zenario.slots[slotName].instanceId;
@@ -1082,7 +1084,8 @@ zenarioA.loggedOutIframeCheck = function(message, messageType) {
 
 zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, onOkay) {
 	var defaultModalValue = false,
-		html = '';
+		html,
+		m;
 	
 	
 	if (htmlEscapeMessage) {
@@ -1120,30 +1123,19 @@ zenarioA.floatingBox = function(message, buttonsHTML, messageType, modal, htmlEs
 		modal = defaultModalValue;
 	}
 	
-	html =
-		'<div class="zenario_jqmBor"><div class="zenario_jqmBor"><div class="zenario_jqmBor"><div class="zenario_jqmBor">' +
-			'<div class="zenario_jqmHead"><div></div></div>' +
-			'<div class="zenario_jqmMain"><div class="zenario_jqmMainBor"><div class="zenario_jqmMainBor">' +
-				'<div class="zenario_fbMain">' +
-					'<div class="zenario_jqmWinBor"><div class="zenario_jqmWinBor">' +
-						'<div id="zenario_fbWarning" class="' + messageType + '">' +
-							'<div id="zenario_fbInner">' + message + '</div>' +
-						'</div>' +
-					'</div></div>' +
-					'<div class="zenario_fbButtons" id="zenario_fbMessageButtons" onclick="zenarioA.closeFloatingBox();" onkeyup="' +
-						'if (event.keyCode == 27) {' +
-							'zenarioA.closeFloatingBox();' +
-							'return false;' +
-					'}">' + buttonsHTML + '</div>' +
-				'</div>' +
-			'</div></div></div>' +
-			'<div class="zenario_jqmFoot"></div>' +
-		'</div></div></div></div>';
 	
+	m = {
+		message: message,
+		messageType: messageType,
+		buttonsHTML: buttonsHTML
+	};
+	
+	html = zenarioA.microTemplate('zenario_popout_message', m);
 
 	zenarioA.openBox(html, 'zenario_fbAdmin zenario_prompt', 'AdminMessage', undefined, 550, 50, 17, modal, true, false, false);
 	
 	zenario.addJQueryElements('#zenario_fbAdminMessage ', true);
+	
 	
 	if (onOkay) {
 		var $button = $('#zenario_fbMessageButtons .submit_selected');
@@ -1337,6 +1329,216 @@ zenarioA.addMediaToTinyMCE = function(prefix) {
 };
 
 
+//This function will open Organizer if the user clicks on one of the "file browser" buttons in tinyMCE
+zenarioA.fileBrowser = function(field_name, url, type, win) {
+	
+	//If this is a field in a FAB, try to load the definition of the field
+	var editorId =
+			window.tinyMCE
+		 && tinyMCE.activeEditor
+		 && tinyMCE.activeEditor.id,
+		fabField =
+			editorId
+		 && zenarioAB.tuix
+		 && zenarioAB.tuix.tab
+		 && zenarioAB.tuix.tabs
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
+		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[editorId];
+	
+	//Remember the open window, the name of the file browser's URL field (this will be something like "mceu_48-inp),
+	//and whether we found the FAB field above or not.
+	zenarioA.tinyMCE_win = win;
+	zenarioA.tinyMCE_field = field_name;
+	zenarioA.tinyMCE_fromFAB = !!fabField;
+	
+	//Links to content items. Open the zenario__content/panels/content panel by default,
+	//but if this is a field in a FAB then allow this to be overridden
+	if (type == 'file') {
+		
+		if (fabField
+		 && fabField.insert_link_button
+		 && fabField.insert_link_button.pick_items) {
+			pick_items = fabField.insert_link_button.pick_items;
+		} else {
+			pick_items = {
+				path: 'zenario__content/panels/content',
+				target_path: 'zenario__content/panels/content',
+				min_path: 'zenario__content/panels/content',
+				max_path: 'zenario__content/panels/content',
+				disallow_refiners_looping_on_min_path: false};
+		}
+
+		zenarioA.organizerSelect('zenarioA', 'setLinkURL', false,
+						pick_items.path,
+						pick_items.target_path,
+						pick_items.min_path,
+						pick_items.max_path,
+						pick_items.disallow_refiners_looping_on_min_path,
+						undefined,
+						pick_items.one_to_one_choose_phrase,
+						undefined,
+						true);
+	
+	//Insert an image.
+	//As with links, allow FAB fields to override the destination.
+	//Otherwise, if this if for a WYSIWYG Editor, how the content item's images.
+	//Otherwise, show the image library by default.
+	} else if (type == 'image') {
+		
+		if (fabField
+		 && fabField.insert_link_button
+		 && fabField.insert_link_button.pick_items) {
+			pick_items = fabField.insert_link_button.pick_items;
+		
+		} else
+		if (!fabField
+		 && zenario.cID
+		 && zenario.cType
+		 && window.zenario_wysiwyg_editor
+		 && zenario_wysiwyg_editor.poking) {
+			pick_items = {
+				path: 'zenario__content/panels/content/item_buttons/images//' + zenario.cType + '_' + zenario.cID + '//',
+				target_path: 'zenario__content/panels/inline_images_for_content',
+				min_path: 'zenario__content/panels/inline_images_for_content',
+				max_path: 'zenario__content/panels/inline_images_for_content',
+				disallow_refiners_looping_on_min_path: false};
+		
+		} else {
+			pick_items = {
+				path: 'zenario__content/panels/image_library',
+				target_path: 'zenario__content/panels/image_library',
+				min_path: 'zenario__content/panels/image_library',
+				max_path: false,
+				disallow_refiners_looping_on_min_path: false};
+		}
+
+		zenarioA.organizerSelect('zenarioA', 'setImageURL', false,
+						pick_items.path,
+						pick_items.target_path,
+						pick_items.min_path,
+						pick_items.max_path,
+						pick_items.disallow_refiners_looping_on_min_path,
+						undefined,
+						pick_items.one_to_one_choose_phrase,
+						undefined,
+						true);
+	
+	//Link to a document (currently the link must be to a public document).
+	} else if (type == 'zenario_document') {
+		zenarioA.organizerSelect('zenarioA', 'setDocumentURL', false,
+						'zenario__content/panels/documents',
+						'zenario__content/panels/documents',
+						'zenario__content/panels/documents',
+						'zenario__content/panels/documents',
+						false, undefined, undefined, undefined, true,
+						undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+						{disabled_if: 'item && item.privacy != "public" && item.privacy != "Public"'});
+	}
+};
+
+
+//By default there is only one file browser button. But for links, we want two;
+//the first should be to content items and the second should be to documents.
+//This function hacks about and replaces the single button with two buttons.
+zenarioA.setLinkPickerOnTinyMCE = function() {
+	var $urlField = $('.mce-zenario_link_picker input.mce-textbox'),
+		$picker = $('.mce-zenario_link_picker .mce-open'),
+		$newPicker = $(zenarioA.microTemplate('zenario_tinymce_link_picker', {urlFieldId: $urlField.attr('id')})),
+		urlFieldWidth = $urlField.width(),
+		pickerWidth = $picker.width(),
+		newPickerWidth;
+	
+	$picker.replaceWith($newPicker);
+	
+	newPickerWidth = $newPicker.width();
+	
+	$urlField.width(urlFieldWidth + pickerWidth - newPickerWidth);
+	
+	zenarioA.tooltips(
+		$newPicker.find('button'),
+		{tooltipClass: 'zenario_admin_tooltip zenario_admin_tooltip_over_tinymce'}
+	);
+};
+
+
+//This function sets the value of one of the fields in the TinyMCE forms.
+//It's used after picking something from the file browser
+zenarioA.lastFieldValue = '';
+zenarioA.setEditorField = function(value, el, onlyIfEmpty) {
+	if (el === undefined) {
+		el = (zenarioA.tinyMCE_win || window).document.getElementById(zenarioA.tinyMCE_field);
+	}
+	
+	if (onlyIfEmpty) {
+		if (el.value !== '' && el.value != zenarioA.lastFieldValue) {
+			return;
+		}
+		zenarioA.lastFieldValue = value;
+	}
+	
+	el.value = value;
+	zenario.fireChangeEvent(el);
+};
+
+//This handles the return results of the file browser for a link to a content item
+zenarioA.setLinkURL = function(path, key, row) {
+	
+	//Get the URL via an AJAX program
+	key.getItemURL = 1;
+	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
+	
+	if (zenarioA.loggedOut(URL)) {
+		return;
+	}
+	
+	if (zenarioA.tinyMCE_fromFAB) {
+		URL = URLBasePath + URL;
+	}
+	
+	zenarioA.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
+	zenarioA.setEditorField(URL);
+};
+
+//This handles the return results of the file browser for a link to a public document
+zenarioA.setDocumentURL = function(path, key, row) {
+	var documentURL = row.frontend_link;
+	
+	if (zenarioA.tinyMCE_fromFAB) {
+		documentURL = URLBasePath + documentURL;
+	}
+	
+	zenarioA.setEditorField(row.name, $('.mce-panel input.mce-link_text_to_display')[0]);
+	zenarioA.setEditorField(documentURL);
+}
+
+//This handles the return results of the file browser for an image
+zenarioA.setImageURL = function(path, key, row) {
+
+	var imageURL = 'zenario/file.php?c=' + row.checksum;
+	
+	if (key.usage && key.usage != 'image') {
+		imageURL += '&usage=' + encodeURIComponent(key.usage);
+	}
+	
+	imageURL += '&filename=' + encodeURIComponent(row.filename);
+	
+	if (zenarioA.tinyMCE_fromFAB) {
+		imageURL = URLBasePath + imageURL;
+	}
+	
+	zenarioA.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0]);
+	zenarioA.setEditorField(imageURL);
+};
+
+
+
+
+
+
+
+
+
 zenarioA.skinDesc = undefined;
 zenarioA.getSkinDesc = function() {
 	if (zenarioA.skinDesc === undefined) {
@@ -1352,130 +1554,6 @@ zenarioA.getSkinDesc = function() {
 	
 	return zenarioA.skinDesc;
 };
-
-zenarioA.fileBrowser = function(field_name, url, type, win) {
-	zenarioA.win = win;
-	zenarioA.field_name = field_name;
-	
-	if (type == 'file') {
-		var id = tinyMCE.activeEditor.id,
-			pick_items = {
-				path: 'zenario__content/panels/content',
-				target_path: 'zenario__content/panels/content',
-				min_path: 'zenario__content/panels/content',
-				max_path: 'zenario__content/panels/content',
-				disallow_refiners_looping_on_min_path: false};
-		
-		if (id
-		 && zenarioAB.tuix
-		 && zenarioAB.tuix.tab
-		 && zenarioAB.tuix.tabs
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button.pick_items) {
-			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_link_button.pick_items;
-		}
-
-		zenarioA.organizerSelect('zenarioA', 'setLinkURL', false,
-						pick_items.path,
-						pick_items.target_path,
-						pick_items.min_path,
-						pick_items.max_path,
-						pick_items.disallow_refiners_looping_on_min_path,
-						undefined,
-						pick_items.one_to_one_choose_phrase,
-						undefined,
-						true);
-	
-	} else if (type == 'image') {
-		var id = tinyMCE.activeEditor.id,
-			pick_items = {
-				path: 'zenario__content/panels/image_library',
-				target_path: 'zenario__content/panels/image_library',
-				min_path: 'zenario__content/panels/image_library',
-				max_path: false,
-				disallow_refiners_looping_on_min_path: false};
-		
-		if (id
-		 && zenarioAB.tuix
-		 && zenarioAB.tuix.tab
-		 && zenarioAB.tuix.tabs
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab]
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id]
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button
-		 && zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button.pick_items) {
-			pick_items = zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[id].insert_image_button.pick_items;
-		}
-
-		zenarioA.organizerSelect('zenarioA', 'setImageURL', false,
-						pick_items.path,
-						pick_items.target_path,
-						pick_items.min_path,
-						pick_items.max_path,
-						pick_items.disallow_refiners_looping_on_min_path,
-						undefined,
-						pick_items.one_to_one_choose_phrase,
-						undefined,
-						true);
-	}
-};
-
-
-
-zenarioA.lastFieldValue = '';
-zenarioA.setEditorField = function(value, el, onlyIfEmpty) {
-	if (el === undefined) {
-		el = zenarioA.win.document.getElementById(zenarioA.field_name);
-	}
-	
-	if (onlyIfEmpty) {
-		if (el.value !== '' && el.value != zenarioA.lastFieldValue) {
-			return;
-		}
-		zenarioA.lastFieldValue = value;
-	}
-	
-	el.value = value;
-	zenario.fireChangeEvent(el);
-};
-
-zenarioA.setLinkURL = function(path, key, row) {
-	
-	//Get the URL via an AJAX program
-	key.getItemURL = true;
-	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
-	
-	if (zenarioA.loggedOut(URL)) {
-		return;
-	}
-	
-	zenarioA.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
-	zenarioA.setEditorField(URLBasePath + URL);
-};
-
-zenarioA.setImageURL = function(path, key, row) {
-
-	var imageURL = URLBasePath + 'zenario/file.php?c=' + row.checksum;
-	
-	if (key.usage && key.usage != 'image') {
-		imageURL += '&usage=' + encodeURIComponent(key.usage);
-	}
-	
-	imageURL += '&filename=' + encodeURIComponent(row.filename);
-	
-	zenarioA.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0]);
-	zenarioA.setEditorField(imageURL);
-};
-
-zenarioA.setFlashURL = function(path, key, row) {
-	var flashURL = URLBasePath + 'zenario/file.php?c=' + row.checksum + '&filename=' + encodeURIComponent(row.filename);
-	
-	zenarioA.setEditorField(flashURL);
-};
-
 
 
 zenarioA.formatFilesizeNicely = function(size, precision) {
@@ -2192,6 +2270,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	 && zenarioAT.tuix.sections.edit
 	 && zenarioAT.tuix.sections.edit.buttons
 	 && zenarioAT.tuix.sections.edit.buttons.start_editing
+	 && zenarioAT.tuix.sections.edit.buttons.start_editing.ajax
 	 && !zenarioA.hidden(zenarioAT.tuix.sections.edit.buttons.start_editing)) {
 		
 		//Create a copy of it
@@ -2199,10 +2278,10 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 		
 		delete object.ajax.request.switch_to_edit_mode;
 		
-		//Should we show someone a warning before creating a draft? Or is there a warning for this button?
-		//If so, show a confirmation box with up to three options:
-		if (zenarioA.siteSettings.create_draft_warning || confirmMessage) {
+		//Should we show someone a warning before creating a draft?
+		if (zenarioAT.tuix.sections.edit.buttons.start_editing.ajax.confirm) {
 			
+			//If so, show a confirmation box with up to three options:
 			if (confirmMessage) {
 				confirmMessage += '\n\n' + object.ajax.confirm.message__editing_published;
 			} else {
@@ -2225,6 +2304,21 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 				'<input type="button" class="submit" value="' + htmlspecialchars(object.ajax.confirm.cancel_button_message) + '"/>';
 			
 			object.ajax.confirm.message = '<!--Button_HTML:' + buttonsHTML + '-->' + confirmMessage;
+		
+		//Handle the case where we wouldn't normally show a warning before creating a draft,
+		//but there was still a confirm message to show
+		} else if (confirmMessage) {
+			//Note down which button was clicked on.
+			//This button will be automatically clicked again after the page is reloaded
+			zenarioA.draftSetCallback(aId);
+		
+			//Remove set a confirm prompt
+			object.ajax.confirm = {
+				message: confirmMessage,
+				button_message: confirmButtonText,
+				cancel_button_message: zenarioA.phrase.cancel,
+				message_type: 'warning'
+			};
 			
 		
 		//If not, create the draft straight away
@@ -2316,6 +2410,50 @@ zenarioA.hidden = function(tuixObject, checkJsFunction, item, id) {
 };
 
 
+//A shortcut to the toastr library
+zenarioA.lastToast = false;
+zenarioA.clearLastToast = false;
+zenarioA.toast = function(object) {
+	if (object !== undefined
+	 && _.isObject(object)) {
+		
+		//Remember this toast that we had for the next 60 seconds,
+		//or until another toast comes in
+		if (zenarioA.clearLastToast) {
+			clearTimeout(zenarioA.clearLastToast);
+		}
+		zenarioA.lastToast = JSON.stringify(object);
+		setTimeout(function () {
+			zenarioA.lastToast = false;
+		}, 60000);
+		
+		//Work out what type of toast this is
+		var mt = object.message_type,
+			toast = toastr.info;
+		switch (object.message_type) {
+			case 'error':
+			case 'warning':
+			case 'success':
+				toast = toastr[mt];
+		}
+		
+		//display the toast
+		toast(object.message, object.title, object.options);
+		
+		//Remember to self: the toast function returns a $jQuery element with the toaster,
+		//just in case we ever wanted to do something like add a click event...
+	}
+};
+
+zenarioA.rememberToast = function() {
+	//Check if we just displayed a toast. If so, remember it for next time.
+	if (zenarioA.lastToast) {
+		zenario.nonAsyncAJAX(URLBasePath + 'zenario/admin/quick_ajax.php', {_remember_toast: zenarioA.lastToast});
+	}
+};
+
+
+
 
 zenarioA.checkActionUnique = function(object) {
 	var actions = [],
@@ -2374,6 +2512,8 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		ajaxMethodCall = 'handleOrganizerPanelAJAX';
 	} else if (zenarioCallingLibrary.encapName == 'zenarioAT') {
 		ajaxMethodCall = 'handleAdminToolbarAJAX';
+	} else if (zenarioCallingLibrary.encapName == 'zenarioW') {
+		ajaxMethodCall = 'handleWizardAJAX';
 	} else {
 		ajaxMethodCall = 'handleAdminBoxAJAX';
 	}
@@ -2566,10 +2706,14 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			navigation_path = item.navigation_path;
 		}
 		
-		if (zenarioO.init) {
+		if (zenarioCallingLibrary.encapName == 'zenarioO') {
 			zenarioO.go(navigation_path, -1);
 		} else {
-			zenario.goToURL(zenario.addBasePath('zenario/admin/organizer.php#' + navigation_path));
+			zenario.goToURL(zenario.addBasePath(
+				(window.zenarioATLinks && window.zenarioATLinks.organizer || 'zenario/admin/organizer.php') +
+				'#' +
+				navigation_path
+			));
 		}
 	
 	} else if (object.admin_box) {
@@ -2972,7 +3116,7 @@ zenarioA.sortLogic = function(a, b, prop) {
 
 
 
-zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageRequest) {
+zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageRequest, retry) {
 	try {
 		data = JSON.parse(data);
 		
@@ -2981,8 +3125,22 @@ zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageReques
 		}
 	} catch (e) {
 		//Display an error message if the data couldn't be parsed
-		zenarioA.showMessage(data, true, 'error', false, true);
-		//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage)
+		
+		if (retry) {
+			var buttonsHTML =
+				'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
+			
+			zenarioA.nowDoingSomething();
+			zenarioA.showMessage(data, buttonsHTML, 'error', true, true)
+			
+			$('#zenario_retry').click(function() {
+				setTimeout(retry, 1);
+			});
+			
+		} else {
+			zenarioA.showMessage(data, true, 'error', false, true);
+			//zenarioA.showMessage(message, buttonsHTML, messageType, modal, htmlEscapeMessage)
+		}
 		
 		//Close the AJAX loader if it was open
 		zenarioA.hideAJAXLoader();
@@ -3007,21 +3165,21 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 	
 	if (!zenarioA.unloaded) {
 		var msg = '',
-			buttonsHTML = '',
-			fun;
+			fun,
+			isDev = zenarioA.adminSettings.show_dev_tools;
 		
 		if (statusText) {
 			msg += '<h1><b>' + htmlspecialchars(resp.status + ' ' + statusText) + '</b></h1>';
 		}
 		
 		if (resp.status == 404) {
-			msg += '<p>' +  (zenario.showDevTools? phrase.error404Dev : phrase.error404) + '</p>';
+			msg += '<p>' +  (isDev? phrase.error404Dev : phrase.error404) + '</p>';
 		
 		} else if (resp.status == 500) {
-			msg += '<p>' +  (zenario.showDevTools? phrase.error500Dev : phrase.error500) + '</p>';
+			msg += '<p>' +  (isDev? phrase.error500Dev : phrase.error500) + '</p>';
 		
 		} else if (resp.status == 0 || statusType == 'timeout') {
-			msg += '<p>' +  (zenario.showDevTools? phrase.errorTimedOutDev : phrase.errorTimedOut) + '</p>';
+			msg += '<p>' +  (isDev? phrase.errorTimedOutDev : phrase.errorTimedOut) + '</p>';
 		}
 		
 		if (resp.responseText) {
@@ -3037,7 +3195,7 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 		
 		showErrorMessage = function() {
 			if (resp.zenario_retry) {
-				buttonsHTML =
+				var buttonsHTML =
 					'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
 				
 				zenarioA.nowDoingSomething();

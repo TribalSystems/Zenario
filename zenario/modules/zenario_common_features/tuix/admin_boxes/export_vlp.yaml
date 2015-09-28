@@ -2,23 +2,23 @@
 ---
 zenario_export_vlp:
     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-    title: Exporting Language Phrases to a file
+    title: Exporting phrases
     key:
         id: ""
     max_height: "200"
-    hide_tab_bar: Yes
+    hide_tab_bar: true
     tabs:
         export:
             edit_mode:
-                enabled: Yes
-                always_on: Yes
+                enabled: true
+                always_on: true
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: ""
                 option:
-                    label: 'Export:'
+                    label: 'Include:'
                     type: select
                     values:
                         present: ""
@@ -39,6 +39,6 @@ zenario_export_vlp:
                             ord: "3"
                             label: csv (comma-separated values)
                     value: xlsx
-    download: Yes
+    download: true
     save_button_message: Export
     cancel_button_message: Cancel

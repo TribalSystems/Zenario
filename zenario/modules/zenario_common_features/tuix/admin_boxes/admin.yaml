@@ -11,10 +11,10 @@ zenario_admin:
         details:
             label: Details
             edit_mode:
-                enabled: ""
+                enabled: false
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: "Use this screen to define a new administrator for this site."
                 image:
@@ -80,7 +80,7 @@ zenario_admin:
                     style: 'width: 20em;'
                     visible_if: '!zenarioAB.tuix.key.id'
                 inform_by_email:
-                    label: 'Inform by email:'
+                    label: 'Inform by email'
                     type: checkbox
                     note_below: >
                         If checked, the Administrator will receive an email with the update. 
@@ -92,16 +92,21 @@ zenario_admin:
                         If checked, the Administrator will be prompted to change
                         their password when they next log in.
                     visible_if: '!zenarioAB.tuix.key.id'
+                
+                is_client_account:
+                    label: 'Is client account'
+                    type: checkbox
+                
         password:
             priv: _PRIV_CHANGE_ADMIN_PASSWORD
             visible_if: zenarioAB.tuix.key.id
             label: Password
             edit_mode:
-                enabled: Yes
-                always_on: No
+                enabled: true
+                always_on: false
             fields:
                 desc:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: "Use this screen to change this Admin's password."
                 password:
@@ -135,12 +140,12 @@ zenario_admin:
         permissions:
             label: Permissions
             edit_mode:
-                enabled: ""
-                format_on_revert: Yes
-                format_on_cancel_edit: Yes
+                enabled: false
+                format_on_revert: true
+                format_on_cancel_edit: true
             fields:
                 #desc:
-                #    full_width: Yes
+                #    full_width: true
                 #    snippet:
                 #        html: "Use this screen to set this Admin's permissions."
                 everything:

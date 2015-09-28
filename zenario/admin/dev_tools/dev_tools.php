@@ -1,7 +1,7 @@
 <?php
 
 require '../../adminheader.inc.php';
-if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
+if (!adminSetting('show_dev_tools')) {
 	exit;
 }
 
@@ -46,7 +46,7 @@ CMSWritePageHead($prefix, false, false);
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../../styles/dev_tools.css?v=', $v, '" media="screen"/>';
@@ -64,7 +64,6 @@ echo '
 
 /*
 echo '
-<script type="text/javascript" src="../../libraries/mit/toastr/toastr.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	window.zenarioAdminHasZipPerms = ', engToBoolean(checkPriv('_PRIV_VIEW_TEMPLATE_FAMILY')), ';
 	window.zenarioAdminHasSavePerms = ', engToBoolean(checkPriv('_PRIV_EDIT_TEMPLATE_FAMILY')), ';
@@ -112,14 +111,7 @@ unset($schema['common_definitions']);
 echo '
 <script type="text/javascript" src="doc_tools.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
-<script type="text/javascript">';
-
-if (checkPriv('_PRIV_SAVE_DEV_TOOLS')) {
-	echo '
-	zenario.saveDevTools = true;';
-}
-
-echo '
+<script type="text/javascript">
 	var schema = ', json_encode($schema), ';
 	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaName), '\', schema, ', engToBoolean(get('skMap')), ');
 </script>

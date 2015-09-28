@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-admin.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and admin.wrapper.js.php for step (3).
 */
 
 
@@ -61,7 +61,11 @@ zenarioAT.init = function(firstLoad) {
 	zenarioAT.loadedBefore = true;
 	zenarioAT.loaded = false;
 	
-	var url = URLBasePath + 'zenario/admin/ajax.php?_at=1&_json=1';
+	var url =
+		URLBasePath +
+		'zenario/admin/ajax.php?_at=1&_json=1' +
+		'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
+	
 	zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
 	
 	//Check the local storage, to see if there is an in-date copy of the Admin Toolbar for this item
@@ -422,14 +426,13 @@ zenarioAT.draw = function() {
 					buttons[bi].tooltip = button.tooltip;
 					
 					if (button.navigation_path) {
-						//Maybe implementing this logic (which was copied from Storekeeper) in the front end..?
-						//buttons[bi].href = '#/' + button.navigation_path;
+						buttons[bi].href = zenario.addBasePath(window.zenarioATLinks.organizer + '#' + button.navigation_path);
 					
 					} else if (button.frontend_link) {
 						buttons[bi].href = zenario.addBasePath(button.frontend_link);
 					}
 					
-					if (!buttons[bi].href || !button.navigation_path) {
+					if (!buttons[bi].href) {
 						buttons[bi].onclick = "zenarioAT.clickButton('" + jsEscape(section) + "', '" + jsEscape(i) + "'); return false;";
 					}
 				}
@@ -458,10 +461,10 @@ zenarioAT.draw = function() {
 		}
 	}
 	
-	get('zenario_at').innerHTML = zenarioA.microTemplate('zenario_toolbar', toolbar);
-	zenarioA.tooltips('#zenario_at a[title]');
-	zenarioA.tooltips('#zenario_at div[title]');
-	zenarioA.tooltips('#zenario_at ul ul a[title]', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
+	get('zenario_at_wrap').innerHTML = zenarioA.microTemplate('zenario_toolbar', toolbar);
+	zenarioA.tooltips('#zenario_at_wrap a[title]');
+	zenarioA.tooltips('#zenario_at_wrap div[title]');
+	zenarioA.tooltips('#zenario_at_wrap ul ul a[title]', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
 	zenarioA.setTooltipIfTooLarge('#zenario_at_lower_section .zenario_at_infobar', undefined, zenarioA.tooltipLengthThresholds.adminToolbarTitle);
 };
 

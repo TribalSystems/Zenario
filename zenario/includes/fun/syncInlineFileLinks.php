@@ -90,7 +90,7 @@ for ($i=0; $i < $c; $i += 4) {
 		//Check to see if this is the checksum of an image, with the correct usage set
 		if (!isset($foundChecksums[$checksum])) {
 			$foundChecksums[$checksum] =
-				getRow('files', array('id', 'width', 'height'), array('usage' => $usage, 'checksum' => $checksum));
+				getRow('files', array('id', 'usage', 'privacy', 'width', 'height'), array('usage' => $usage, 'checksum' => $checksum));
 		}
 		$file = $foundChecksums[$checksum];
 		
@@ -101,7 +101,7 @@ for ($i=0; $i < $c; $i += 4) {
 		//and try to copy it over.
 		} else {
 			if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
-				if (($existingFile = getRow('files', array('id', 'width', 'height', 'usage', 'filename'), array('checksum' => $checksum)))
+				if (($existingFile = getRow('files', array('id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'), array('checksum' => $checksum)))
 				 && ($newId = copyFileInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
 					
 					$existingFile['id'] = $newId;
@@ -176,7 +176,7 @@ for ($i=0; $i < $c; $i += 4) {
 		
 		//Mark down each file that was either in the correct format, or that we corrected the format for.
 		if ($file) {
-			$files[$file['id']] = array('id' => $file['id']);
+			$files[$file['id']] = $file;
 		}
 	}
 		

@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -76,7 +76,6 @@ methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
 		if (column.tuix.get_tags_from_column) {
 			//If it's set, load tags from a different column and add them into this cell
 			tags = row.tuix[column.tuix.get_tags_from_column];
-			this.useTallRows = true;
 		} else {
 			//Otherwise remove what was in this cell and replace it with the tags
 			tags = row.tuix[column.id];
@@ -106,13 +105,6 @@ methods.addExtraMergeFieldsForCells = function(data, column, row, cell) {
 		}
 		this.imageTagsById[row.id] =
 		zenarioO.pi.imageTagsById[row.id] = cell.image_tags;
-	}
-};
-
-//Add a flag if we are using the taller rows
-methods.addExtraMergeFields = function(data) {
-	if (this.useTallRows) {
-		data.useTallRows = true;
 	}
 };
 

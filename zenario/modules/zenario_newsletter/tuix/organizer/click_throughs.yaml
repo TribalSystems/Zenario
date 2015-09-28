@@ -17,6 +17,7 @@ zenario__email_template_manager:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: nh.id
                     searchable: Yes
                     show_by_default: No

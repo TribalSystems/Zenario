@@ -28,14 +28,19 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$desc = '';
-
-foreach (getRowsArray(
+$rules = getRowsArray(
 	'smart_group_rules',
 	array('field_id', 'field2_id', 'field3_id', 'not', 'value'),
 	array('smart_group_id' => $smartGroupId),
 	'ord'
-) as $rule) {
+);
+
+if (empty($rules)) {
+	return adminPhrase('All users');
+}
+
+$desc = '';
+foreach ($rules as $rule) {
 	
 	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
 	if ($rule['field_id']
@@ -51,27 +56,31 @@ foreach (getRowsArray(
 		}
 		
 		if ($field['type'] == 'group') {
-			$desc .= 'Member of '. $field['label'];
+			if ($rule['not']) {
+				$desc .= 'Not a member of '. $field['label'];
+			} else {
+				$desc .= 'Member of '. $field['label'];
 		
-			//If you filter by group, an "OR" logic is allowed. Handle this as a special case
-			if ($rule['field2_id'] || $rule['field3_id']) {
+				//If you filter by group, an "OR" logic is allowed. Handle this as a special case
+				if ($rule['field2_id'] || $rule['field3_id']) {
 			
-				if ($rule['field2_id'] && $rule['field3_id']) {
-					$desc .= ', ';
-				} else {
-					$desc .= ' or ';
-				}
+					if ($rule['field2_id'] && $rule['field3_id']) {
+						$desc .= ', ';
+					} else {
+						$desc .= ' or ';
+					}
 			
-				if ($rule['field2_id']) {
-					$desc .= getRow('custom_dataset_fields', 'label', $rule['field2_id']);
-				}
+					if ($rule['field2_id']) {
+						$desc .= getRow('custom_dataset_fields', 'label', $rule['field2_id']);
+					}
 			
-				if ($rule['field2_id'] && $rule['field3_id']) {
-					$desc .= ' or ';
-				}
+					if ($rule['field2_id'] && $rule['field3_id']) {
+						$desc .= ' or ';
+					}
 			
-				if ($rule['field3_id']) {
-					$desc .= getRow('custom_dataset_fields', 'label', $rule['field3_id']);
+					if ($rule['field3_id']) {
+						$desc .= getRow('custom_dataset_fields', 'label', $rule['field3_id']);
+					}
 				}
 			}
 			

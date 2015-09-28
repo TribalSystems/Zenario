@@ -26,5 +26,7 @@ zenario_admin:
                     type: checkboxes
                     full_width: Yes
                     values:
+                        _PRIV_MANAGE_LOCATIONS:
+                            label: Create and edit Locations
                         _PRIV_EXPORT_LOCATIONS:
                             label: Export Locations

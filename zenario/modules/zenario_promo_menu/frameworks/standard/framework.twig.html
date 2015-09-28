@@ -95,7 +95,10 @@
 										{% if (nodeExtraProperties[node1.mID]['link_type'] != 'no_link') %}
 											<a href="{{nodeExtraProperties[node1.mID]['dest_url']|e}}" {% if (nodeExtraProperties[node1.mID]['open_in_new_window'] == 1) %}target="_blank"{% endif %}>
 										{% endif %}
-											<img id="{{containerId|e}}_feature_img" src="{{nodeExtraProperties[node1.mID]['feature_image_link']|e}}"
+											<img 
+												id="{{containerId|e}}_feature_img" 
+												src="{{nodeExtraProperties[node1.mID]['feature_image_link']|e}}"
+												alt="{{nodeExtraProperties[node1.mID]['alt_tag']|e}}"
 											{% if (nodeExtraProperties[node1.mID]['use_rollover_image'] == 1) %}
 											onmouseover="{this.src='{{nodeExtraProperties[node1.mID]['feature_rollover_image_link']}}'};"
 											onmouseout="{this.src='{{nodeExtraProperties[node1.mID]['feature_image_link']}}'};"

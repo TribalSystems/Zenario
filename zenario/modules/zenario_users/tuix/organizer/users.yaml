@@ -38,6 +38,7 @@ zenario__users:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: u.id
                     searchable: true
                     show_by_default: true

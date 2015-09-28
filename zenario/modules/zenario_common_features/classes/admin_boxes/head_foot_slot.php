@@ -64,7 +64,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 		}
 		
 		if ($box['key']['level'] == 'item') {
-			$t['table'] = 'versions';
+			$t['table'] = 'content_item_versions';
 			$t['key'] = array('id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']);
 		} else {
 			$t['table'] = 'layouts';
@@ -163,8 +163,8 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($box['key']['level'] == 'item') {
-			if (!isDraft($box['key']['cID'], $box['key']['cID'])) {
-				createDraft($box['key']['cID'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion']);
+			if (!isDraft($box['key']['cID'], $box['key']['cType'])) {
+				createDraft($box['key']['cID'], $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'], $box['key']['cVersion']);
 			}
 		}
 		

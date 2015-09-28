@@ -29,7 +29,7 @@ zenario__content:
                     db_column: |
                         (
                             SELECT COUNT(DISTINCT c.id, c.type)
-                            FROM [[DB_NAME_PREFIX]]content AS c
+                            FROM [[DB_NAME_PREFIX]]content_items AS c
                             WHERE c.type = ct.content_type_id
                               AND c.status NOT IN ('trashed','deleted')
                         )
@@ -38,6 +38,7 @@ zenario__content:
                     width: xsmall
                 content_type_id:
                     title: ID
+                    format: id
                     searchable: Yes
                     db_column: ct.content_type_id
                 default_tempalte:

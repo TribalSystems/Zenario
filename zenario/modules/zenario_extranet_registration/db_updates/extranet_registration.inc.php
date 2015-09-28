@@ -45,6 +45,7 @@ VALUES
  " .(int)$_SESSION['admin_userid'] . ",
 0)"
 ,
+
 "INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
 (`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
@@ -63,6 +64,7 @@ VALUES
  " .(int)$_SESSION['admin_userid'] . ",
 0)"
 ,
+
 "INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
 (`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
@@ -84,12 +86,13 @@ VALUES
  " .(int)$_SESSION['admin_userid'] . ",
 0)"
 ,
+
 "INSERT IGNORE [[DB_NAME_PREFIX]]email_templates
 (`code`,`template_name`,`subject`,`email_address_from`,`email_name_from`,`body`,`date_created`,`created_by_id`,`allow_attachments`)
 VALUES 
 ('zenario_extranet_registration__to_admin_user_activation_notification_en',
 'To Admin: User activation notification',
-'New user is active',
+'User account activated',
 '" . sqlEscape(setting('email_address_from')) . "',
 '" . sqlEscape(setting('email_name_from')) . "',
 '<p>Dear Admin,</p>
@@ -101,8 +104,8 @@ VALUES
  NOW(),
  " .(int)$_SESSION['admin_userid'] . ",
 0)"
-); 
-revision(82
+
+); revision(82
 
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_EXTRANET_REGISTRATION_PREFIX]]codes`
@@ -127,6 +130,32 @@ _sql
 		`group_id` int(10) unsigned NOT NULL,
 		UNIQUE KEY `code_group` (`code_id`,`group_id`)
 	)ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+); revision(90,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_registration'
+	WHERE `code` = 'zenario_extranet_registration__to_user_email_verification_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_registration'
+	WHERE `code` = 'zenario_extranet_registration__to_admin_user_signup_notification_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_registration'
+	WHERE `code` = 'zenario_extranet_registration__to_user_account_activation_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_registration'
+	WHERE `code` = 'zenario_extranet_registration__to_admin_user_activation_notification_en'
 _sql
 
 );

@@ -65,8 +65,8 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 	}
 }
 
-session_start();
-require 'cacheheader.inc.php';
+require 'basicheader.inc.php';
+startSession();
 
 //Run pre-load actions
 foreach (cms_core::$editions as $className => $dirName) {
@@ -246,7 +246,7 @@ if (getNumLanguages() > 1) {
 	if (!$getRequests) {
 		$sql = "
 			SELECT c.id, c.type, c.language_id
-			FROM ". DB_NAME_PREFIX. "content AS c
+			FROM ". DB_NAME_PREFIX. "content_items AS c
 			INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
 			   ON c.equiv_id = tc.equiv_id
 			  AND c.type = tc.type

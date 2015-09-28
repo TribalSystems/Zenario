@@ -43,7 +43,7 @@ empty_slot:
             onclick: |
                 if (zenarioA.draft(this.id)) {
                     zenarioAT.clickTab('edit');
-                    zenarioA.pickNewPlugin(this, slotName, 1);
+                    zenarioA.pickNewPlugin(this, slotName, 1, [[overides_layout]]);
                 }
                 return false;
         insert_reusable_on_item_layer:

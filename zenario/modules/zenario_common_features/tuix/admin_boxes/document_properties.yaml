@@ -1,9 +1,9 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_document_properties:
-	title: 'Viewing tags for document ""'
 	key: 
 		id: ''
+		delete_thumbnail: ''
 	tabs:
 		details:
 			label: Document metadata
@@ -12,6 +12,10 @@ zenario_document_properties:
 				always_on: Yes
 				enabled: Yes
 			fields:
+				document_title:
+					label: 'Title:'
+					type: text
+					maxlength: "255"
 				document_name:
 					label: 'Filename:'
 					type: text
@@ -40,8 +44,13 @@ zenario_document_properties:
 					full_width: true
 					snippet:
 						html: ''
+				
+				delete_thumbnail_image:
+					value: Delete
+					type: submit
+					class: submit
+				
 				zenario_common_feature__upload:
-				#vws_contract_manager__upload:
 					label: 'Upload new thumbnail image:'
 					upload:
 						multi: false

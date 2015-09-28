@@ -60,5 +60,14 @@ revision(1, "
 		 " .(int) session('admin_userid') . ",
 		 0
 		)
-");
+"
+); revision(40,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_password_reminder'
+	WHERE `code` = 'zenario_extranet_password_reminder__to_user_password_reminder_en'
+_sql
+
+);
 ?>

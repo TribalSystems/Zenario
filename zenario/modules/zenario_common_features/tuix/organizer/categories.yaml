@@ -6,7 +6,7 @@ zenario__content:
             title: Content item categories
             view_mode: list
             disable_grid_view: Yes
-            no_items_in_search_message: No categories have been created. Click "Create" to create a category.
+            no_items_message: No categories have been created. Click "Create" to create a category.
             db_items:
                 table: '[[DB_NAME_PREFIX]]categories AS cat'
                 custom_where_statement_top_level: WHERE cat.parent_id = 0
@@ -42,7 +42,7 @@ zenario__content:
                         (
                             SELECT COUNT(DISTINCT c.id, c.type)
                             FROM [[DB_NAME_PREFIX]]category_item_link AS cil
-                            INNER JOIN [[DB_NAME_PREFIX]]content AS c
+                            INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
                                ON c.equiv_id = cil.equiv_id
                               AND c.type = cil.content_type
                               AND c.status NOT IN ('trashed','deleted')

@@ -5,7 +5,7 @@ zenario__locations:
         sectors:
             panel:
                 title: Sectors (top level)
-                no_items_in_search_message: No sectors defined, click "Define a sector" to create one.
+                no_items_message: No sectors defined, click "Define a sector" to create one.
                 view_mode: list
                 db_items:
                     table: '[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]sectors AS s'

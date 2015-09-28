@@ -35,8 +35,8 @@ $version = $dummyVersion = array('version' => -1, 'head_html' => null, 'foot_htm
 
 switch ($refinerName) {
 	case 'content_item':
-		if (!($content = getRow('content', true, array('tag_id' => $refinerId)))
-		 || !($version = getRow('versions', true, array('id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version'])))
+		if (!($content = getRow('content_items', true, array('tag_id' => $refinerId)))
+		 || !($version = getRow('content_item_versions', true, array('id' => $content['id'], 'type' => $content['type'], 'version' => $content['admin_version'])))
 		 || !($template = getRow('layouts', true, $version['layout_id']))) {
 			exit;
 		}

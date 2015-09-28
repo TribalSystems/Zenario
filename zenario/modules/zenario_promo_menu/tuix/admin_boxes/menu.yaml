@@ -1,4 +1,6 @@
 zenario_menu:
+    key:
+        feature_image_id: ''
     tabs:
         feature_image:
             label: 'Feature image'
@@ -116,6 +118,15 @@ zenario_menu:
                         reorder_items: false
                     value: ""
                     format_onchange: true
+                
+                
+                zenario_promo_menu__overwrite_alt_tag:
+                    multiple_edit:
+                        original_value: ""
+                    label: 'Overwrite image alt-tag'
+                    type: text
+                    maxlength: "255"
+                    value: ""
                 
                 
                 zenario_promo_menu__title:

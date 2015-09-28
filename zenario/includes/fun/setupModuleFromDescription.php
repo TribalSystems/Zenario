@@ -239,13 +239,36 @@ $sql = "
 sqlQuery($sql);
 
 
+//Remove any existing centralised lists
+deleteRow('centralised_lists', array('module_class_name' => $moduleClassName));
+
+//Record any centralised lists the module has
+if (!empty($desc['centralised_lists']) && is_array($desc['centralised_lists'])) {
+	foreach($desc['centralised_lists'] as $centralised_list) {
+		if (!empty($centralised_list['method_name']) && !empty($centralised_list['label'])) {
+			setRow('centralised_lists', 
+				array('label' => $centralised_list['label']), 
+				array(
+					'module_class_name' => $moduleClassName, 
+					'method_name' => $centralised_list['method_name']
+				)
+			);
+		}
+	}
+}
+
+
 //Remove any existing settings
 deleteRow('plugin_setting_defs', array('module_id' => $moduleId));
 deleteRow('plugin_setting_defs', array('module_class_name' => $moduleClassName));
 
 //Loop through every module Setting that a module has in its Admin Box XML file(s)
 if ($dir = moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
-	foreach (array('plugin_settings' => 'plugin_setting', 'site_settings' => 'site_setting') as $path => $settingDef) {
+	foreach (array(
+		'zenario_admin' => 'admin_setting',
+		'plugin_settings' => 'plugin_setting',
+		'site_settings' => 'site_setting'
+	) as $path => $settingDef) {
 		$tags = array();
 		foreach (scandir(CMS_ROOT. $dir) as $file) {
 			if (is_file(CMS_ROOT. $dir. $file) && substr($file, 0, 1) != '.') {
@@ -273,22 +296,32 @@ if ($dir = moduleDir($moduleClassName, 'tuix/admin_boxes/', true)) {
 									$value = $field['value'];
 								}
 								
-								if ($path == 'plugin_settings') {
-									insertRow('plugin_setting_defs',
-										array('module_id' => $moduleId,
-											  'module_class_name' => $moduleClassName,
-											  'name' => $field[$settingDef]['name'],
-											  'default_value' => $value));
+								switch ($settingDef) {
 								
-								} elseif ($path == 'site_settings') {
-									$sql = "
-										INSERT INTO ". DB_NAME_PREFIX. "site_settings SET
-											name = '". sqlEscape($field[$settingDef]['name']). "',
-											value = NULL,
-											default_value = '". sqlEscape((string) $value). "'
-										ON DUPLICATE KEY UPDATE
-											default_value = '". sqlEscape((string) $value). "'";
-									sqlQuery($sql);
+									case 'admin_setting':
+										setRow('admin_setting_defaults',
+											array('default_value' => $value),
+											$field[$settingDef]['name']);
+										break;
+									
+									case 'plugin_setting':
+										insertRow('plugin_setting_defs',
+											array('module_id' => $moduleId,
+												  'module_class_name' => $moduleClassName,
+												  'name' => $field[$settingDef]['name'],
+												  'default_value' => $value));
+										break;
+								
+									case 'site_setting':
+										$sql = "
+											INSERT INTO ". DB_NAME_PREFIX. "site_settings SET
+												name = '". sqlEscape($field[$settingDef]['name']). "',
+												value = NULL,
+												default_value = '". sqlEscape((string) $value). "'
+											ON DUPLICATE KEY UPDATE
+												default_value = '". sqlEscape((string) $value). "'";
+										sqlQuery($sql);
+										break;
 								}
 							}
 						}

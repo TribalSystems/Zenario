@@ -174,7 +174,8 @@ class zenario_users extends module_base_class {
 		//Check whether this content item logs user access
 		if (!empty($_SESSION['extranetUserID'])
 		&& !isset($_SESSION['extranetUserImpersonated'])
-		&& self::doesContentItemLogUserAccess($cID, $cType, $cVersion)) {
+		&& self::doesContentItemLogUserAccess($cID, $cType, $cVersion)
+		&& setting('log_user_access')) {
 	
 			cms_core::$userAccessLogged = true;
 	
@@ -193,11 +194,10 @@ class zenario_users extends module_base_class {
 	
 	//Check if a content item logs user access
 	public static function doesContentItemLogUserAccess($cID, $cType) {
-		return getRow('translation_chains', 'log_user_access', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
+		$privacy = getRow('translation_chains', 'privacy', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
+		return in_array($privacy, array('all_extranet_users', 'group_members', 'specific_users'));
 	}
 	
-	
-
 	
 	public static function  setUserGroupOrBoolean($userId, $characteristic_id, $bool) {
 		$rv = zenario_users::getCharacteristic($characteristic_id);
@@ -217,9 +217,9 @@ class zenario_users extends module_base_class {
 	public function fillAdminToolbar(&$adminToolbar, $cID, $cType, $cVersion) {
 		
 		if (isset($adminToolbar['sections']['history']['buttons']['zenario_users__access_log'])) {
-			$item = getRow('translation_chains', array('privacy', 'log_user_access'), array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
+			$item = getRow('translation_chains', array('privacy'), array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
 		
-			if (!empty($item['log_user_access']) && in($item['privacy'], 'all_extranet_users', 'group_members', 'specific_users')) {
+			if (setting('log_user_access') && in($item['privacy'], 'all_extranet_users', 'group_members', 'specific_users')) {
 				$adminToolbar['sections']['history']['buttons']['zenario_users__access_log']['organizer_quick']['path'] =
 					'zenario__content/panels/content/user_access_log//'. $cType. '_'. $cID. '//';
 		
@@ -269,8 +269,7 @@ class zenario_users extends module_base_class {
 				setRow(
 					'translation_chains',
 					array(
-						'privacy' => $values['privacy/privacy'],
-						'log_user_access' => in($values['privacy/privacy'], 'all_extranet_users', 'group_members', 'specific_users') && $values['privacy/log_user_access']),
+						'privacy' => $values['privacy/privacy']),
 					array('equiv_id' => $equivId, 'type' => $cType));
 				
 				//Update the list of Users
@@ -301,7 +300,7 @@ class zenario_users extends module_base_class {
 		$user = logUserIn($userId, true);
 		$_SESSION["extranetUserImpersonated"] = true;
 		if ($setCookie) {
-			setcookie('LOG_ME_IN_COOKIE', $user['login_hash'], time()+8640000, '/', cookieDomain());
+			setCookieOnCookieDomain('LOG_ME_IN_COOKIE', $user['login_hash']);
 		}
 	}
 		

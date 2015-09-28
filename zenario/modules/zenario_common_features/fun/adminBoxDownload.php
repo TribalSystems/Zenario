@@ -45,51 +45,46 @@ switch ($path) {
 		$currentPluginStatus = 'module_running';
 		
 		$languageId = $box['key']['id'];
-		$useReferenceText = $values['export/option'] != 'existing' && $languageId != setting('default_language');
 		
 		require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
 		$objPHPExcel = new PHPExcel();
+		$sheet = $objPHPExcel->setActiveSheetIndex(0);
 		
 		//Add the language id in
 		$i = 0;
-		$objPHPExcel->setActiveSheetIndex(0)
-			->setCellValueByColumnAndRow(0, ++$i, 'Zenario Language PACK WORKSHEET')
-			->setCellValueByColumnAndRow(2, $i, 'Target Language ID')
-			->setCellValueByColumnAndRow(0, ++$i, '(Do not edit this column)')
-			->setCellValueByColumnAndRow(1, $i, 'To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->')
-			->setCellValueByColumnAndRow(2, $i, $languageId);
+		//$sheet
+		//	->setCellValueByColumnAndRow(0, ++$i, 'Zenario Language PACK WORKSHEET')
+		//	->setCellValueByColumnAndRow(2, $i, 'Target Language ID')
+		//	->setCellValueByColumnAndRow(0, ++$i, '(Do not edit this column)')
+		//	->setCellValueByColumnAndRow(1, $i, 'To create a new Language Pack, change the value of the cell to the right to the ID for the language you are creating ->')
+		//	->setCellValueByColumnAndRow(2, $i, $languageId);
+		//++$i;
 	
 		//Look up all of the codes in the database
 		//Order such that we have all of the core VLPs first, then VLPs grouped by modules
 		$sql = "
 			SELECT
-				codes.module_class_name,
-				codes.code AS `Phrase Code`,";
-		
-		if ($useReferenceText) {
-			$sql .= "
-				reference.local_text AS `Reference Text`,";
-		}
-		
-		$sql .= "
-				phrases.local_text AS `Translation`
+				'". sqlEscape($languageId). "' AS `Language ID`,
+				codes.module_class_name AS `Module`,
+				IF (SUBSTR(codes.code, 1, 1) = '_', codes.code, '') AS `Phrase code`,
+				IF (SUBSTR(codes.code, 1, 1) = '_',
+					IF (SUBSTR(codes.code, 1, 2) = '__', '', reference.local_text),
+					codes.code) AS `Reference text`,
+				phrases.local_text AS `". sqlEscape(getLanguageName($languageId, false)). " translation`
 			FROM (
 				SELECT DISTINCT code, module_class_name
 				FROM ". DB_NAME_PREFIX. "visitor_phrases
+				WHERE code != '__LANGUAGE_FLAG_FILENAME__'
 			) AS codes
 			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS phrases
 			   ON phrases.code = codes.code
 			  AND phrases.module_class_name = codes.module_class_name
-			  AND phrases.language_id = '". sqlEscape($languageId). "'";
-		
-		if ($useReferenceText) {
-			$sql .= "
+			  AND phrases.language_id = '". sqlEscape($languageId). "'
 			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS reference
 			   ON reference.code = codes.code
 			  AND reference.module_class_name = codes.module_class_name
 			  AND reference.language_id = '". sqlEscape(setting('default_language')). "'
 			  AND reference.code != '__LANGUAGE_LOCAL_NAME__'";
-		}
 		
 		if ($values['export/option'] == 'missing') {
 			$sql .= "
@@ -113,47 +108,54 @@ switch ($path) {
 		while ($row = sqlFetchAssoc($result)) {
 			
 			//Check if this is the start of a group of VLPs for a Plugin, and checi if this Plugin is running if so
-			if ($currentModuleClass != $row['module_class_name']) {
-				$currentPluginStatus = getModuleStatusByClassName($row['module_class_name']);
+			if ($currentModuleClass != $row['Module']) {
+				$currentModuleClass = $row['Module'];
+				$currentPluginStatus = getModuleStatusByClassName($row['Module']);
 			}
 			
 			if (!$currentPluginStatus || $currentPluginStatus == 'module_not_initialized') {
-				$currentModuleClass = $row['module_class_name'];
 				continue;
 			}
-				
-			//Check if this is the start of a group of VLPs for a Plugin, and put a header in if so
-			if ($currentModuleClass != $row['module_class_name']) {
-				$currentModuleClass = $row['module_class_name'];
-
-				++$i;
-				$objPHPExcel->setActiveSheetIndex(0)
-					->setCellValueByColumnAndRow(0, ++$i, 'Module')
-					->setCellValueByColumnAndRow(0, ++$i, $currentModuleClass);
-				$columnNamesPrinted = false;
-			}
-			unset($row['module_class_name']);
 			
-			//Print the columns names in the first line
+			//Print the columns headers in the first line
 			if (!$columnNamesPrinted) {
-				$i += 2;
+				++$i;
 				$j = -1;
 				foreach ($row as $key => &$value) {
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValueByColumnAndRow(++$j, $i, $key);
+					$sheet->setCellValueByColumnAndRow(++$j, $i, $key);
 				}
 				
 				$columnNamesPrinted = true;
+			}
+			
+			if ($row['Phrase code'] == '__LANGUAGE_ENGLISH_NAME__') {
+				$row['Reference text'] = adminPhrase('[The name of the language in English, e.g. English, French, German, Spanish...]');
+			} elseif ($row['Phrase code'] == '__LANGUAGE_LOCAL_NAME__') {
+				$row['Reference text'] = adminPhrase('[The name of the language, e.g. Deutsch, English, Español, Français...]');
 			}
 			
 			//Print each row
 			++$i;
 			$j = -1;
 			foreach ($row as $key => &$value) {
-				$objPHPExcel->setActiveSheetIndex(0)->setCellValueByColumnAndRow(++$j, $i, $value);
+				$sheet->setCellValueByColumnAndRow(++$j, $i, $value);
 			}
 		}
 		
-		switch ($extension = $values['export/format']) {
+		$extension = $values['export/format'];
+		if (!in($extension, 'bom_csv', 'csv')) {
+			
+			$sheet->getProtection()->setSheet(true); 
+			$editableBit = $sheet->getStyle('E2:E'. $i);
+			$editableBit->getProtection()->setLocked(PHPExcel_Style_Protection::PROTECTION_UNPROTECTED);
+			$editableBit->applyFromArray(array(
+				'fill' => array(
+					'type' => PHPExcel_Style_Fill::FILL_SOLID,
+					'color' => array('rgb' => 'e0ffe0')
+			)));
+		}
+		
+		switch ($extension) {
 			case 'xls':
 				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 				break;

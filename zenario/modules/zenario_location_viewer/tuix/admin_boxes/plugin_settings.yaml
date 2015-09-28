@@ -30,26 +30,69 @@ plugin_settings:
                             side_note: |
                                 If the URL contains the parameter l_id, use its value to get the ID of the location.
                     value: location_from_selector
-                location_plugin_mode:
+                
+                show_title:
                     plugin_setting:
-                        name: location_plugin_mode
-                    label: 'Plugin mode:'
-                    type: select
-                    values:
-                        location_title:
-                            label: "Location title"
-                            ord: 1
-                        location_info:
-                            label: "Location information"
-                            ord: 2
-                        location_map:
-                            label: "Location map"
-                            ord: 2
-                    value: location_title
+                        name: show_title
+                    label: 'Show location title'
+                    type: checkbox
+                show_details:
+                    plugin_setting:
+                        name: show_details
+                    label: 'Show location details'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
+                    side_note: |
+                        Displays a location's details as defined in the framework.
+                show_image:
+                    plugin_setting:
+                        name: show_image
+                    label: 'Show location image'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
+                    side_note: |
+                        If a location has any images associated with it, the first image will be displayed.
+                
+                max_location_image_width:
+                    plugin_setting:
+                        name: max_location_image_width
+                    pre_field_html: 'width:'
+                    label: 'Maximum image size:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+                    validation:
+                        numeric: The maximum image width must be numeric
+                max_location_image_height:
+                    plugin_setting:
+                        name: max_location_image_height
+                    pre_field_html: '&nbsp;height:'
+                    post_field_html: '&nbsp;pixels'
+                    type: text
+                    size: "5"
+                    same_row: Yes
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+                    validation:
+                        numeric: The maximum image width must be numeric
+                
+                show_map:
+                    plugin_setting:
+                        name: show_map
+                    label: 'Show map'
+                    type: checkbox
+                    value: 1
+                    format_onchange: true
+                    
                 location_user:
                     plugin_setting:
                         name: location_user
-                    label: 'You must be an externet user and have a role at the location to see details?'
+                    label: 'You must be an externet user and have a role at the location to see details'
                     type: checkbox
                 location:
                     label: 'Other Location:'
@@ -64,6 +107,8 @@ plugin_settings:
                         nothing_selected_phrase: No Location selected
                     validation:
                         required_if_not_hidden: You must select a location
+                
+                
                 map_width:
                     label: 'Map size:'
                     pre_field_html: 'width:'
@@ -72,6 +117,8 @@ plugin_settings:
                     type: text
                     value: "500"
                     style: width:50px;
+                    validation:
+                        required_if_not_hidden: Please enter the map width
                 map_height:
                     pre_field_html: '&nbsp;height:'
                     post_field_html: '&nbsp;pixels'
@@ -80,25 +127,6 @@ plugin_settings:
                     plugin_setting:
                         name: map_height
                     value: "500"
+                    validation:
+                        required_if_not_hidden: Please enter the map height
                     style: width:50px;
-                max_location_image_width:
-                    plugin_setting:
-                        name: max_location_image_width
-                    pre_field_html: 'width:'
-                    label: 'Max. Image Size:'
-                    type: text
-                    size: "5"
-                    maxlength: "5"
-                    style: 'width: 50px'
-                    value: "120"
-                max_location_image_height:
-                    plugin_setting:
-                        name: max_location_image_height
-                    pre_field_html: '&nbsp;height:'
-                    post_field_html: '&nbsp;pixels'
-                    type: text
-                    size: "5"
-                    same_row: Yes
-                    maxlength: "5"
-                    style: 'width: 50px'
-                    value: "120"

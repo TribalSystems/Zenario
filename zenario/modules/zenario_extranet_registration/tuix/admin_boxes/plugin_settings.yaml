@@ -12,12 +12,6 @@ plugin_settings:
 					full_width: Yes
 					snippet:
 						html: Configure the initial registration form that is used to create the user account.
-				registration_title:
-					label: 'Title:'
-					type: text
-					plugin_setting:
-						name: registration_title
-					value: 'Create an account'
 				initial_email_address_status:
 					label: 'Verify email address:'
 					type: radios
@@ -51,13 +45,11 @@ plugin_settings:
 					side_note: >
 						Please see the module description to get a full list of merge fields which can be used in the selected email template.
 				enable_notifications_on_user_signup:
-					label: 'Notifications:'
+					label: 'Notify an administrator when a user signs up:'
 					type: checkbox
 					plugin_setting:
 						name: enable_notifications_on_user_signup
 					format_onchange: Yes
-					side_note: >
-						Alert an administrator every time a user completes the form.
 					value: ""
 				user_signup_notification_email_address:
 					label: 'Email address for notifications:'
@@ -85,17 +77,25 @@ plugin_settings:
 					value: >
 						zenario_extranet_registration__to_admin_user_signup_notification_en
 				user_passwords:
-					label: 'User to choose password:'
+					label: 'User to choose password'
 					plugin_setting:
 						name: user_passwords
 					type: checkbox
 					value: "0"
 					side_note: >
-						Allow use to choose a memorable password. Otherwise create a random password. Applies only to extranet users, not Contacts.
+						Allow user to choose a memorable password. Otherwise create a random password. Applies only to extranet users, not Contacts.
+				user_email_verification:
+					label: 'User must enter email twice'
+					plugin_setting:
+						name: user_email_verification
+					type: checkbox
+					value: "0"
+					side_note: >
+						Users must enter their email twice before they can continue.
 				requires_terms_and_conditions:
 					plugin_setting:
 						name: requires_terms_and_conditions
-					label: 'Registration requires terms and conditions to be accepted:'
+					label: 'Registration requires terms and conditions to be accepted'
 					type: checkbox
 					value: ""
 					format_onchange: Yes
@@ -122,11 +122,82 @@ plugin_settings:
 				use_captcha:
 					plugin_setting:
 						name: use_captcha
-					label: 'Show captcha:'
+					label: 'Show captcha'
 					type: checkbox
 					format_onchange: Yes
 					side_note: >
 						Require completion of a captcha to ensure we're dealing with a human.
+				
+				
+				set_characteristics_on_new_users:
+					plugin_setting:
+						name: set_characteristics_on_new_users
+					label: Set a flag when creating the user/contact
+					type: checkbox
+					format_onchange: Yes
+					side_note: >
+						When users or contacts are created with this form, you can specify a characteristic that is set for those users.
+
+				select_characteristics_for_new_users:
+					plugin_setting:
+						name: select_characteristics_for_new_users
+					label: 'Dataset flag:'
+					type: select
+					empty_value: ' -- Select -- '
+					validation:
+						required_if_not_hidden: Please select a dataset flag.
+					format_onchange: Yes
+				
+				select_characteristic_values_for_new_users:
+					plugin_setting:
+						name: select_characteristic_values_for_new_users
+					label: 'Dataset flag values:'
+					type: checkboxes
+					validation:
+						required_if_not_hidden: Please select a value for the dataset flag.
+					
+				set_timer_on_new_users:
+					plugin_setting:
+						name: set_timer_on_new_users
+					label: 'Set a timer:'
+					type: checkbox
+					format_onchange: Yes
+					side_note: >
+						When users or contacts are created with this form, you can specify a timer that is set for those users.
+					
+				timer_for_new_users:
+					plugin_setting:
+						name: timer_for_new_users
+					label: 'User timer:'
+					pick_items:
+						path: zenario__users/hidden_nav/timer_templates/panel/refiners/only_allow_new_users/////
+						min_path: zenario__users/hidden_nav/timer_templates/panel
+						max_path: zenario__users/hidden_nav/timer_templates/panel
+						target_path: zenario__users/hidden_nav/timer_templates/panel
+						select_phrase: Select user timer...
+						hide_remove_button: Yes
+					validation:
+						required_if_not_hidden: Please select a user timer.
+					side_note: >
+						When users or contacts are created with this form, only timers that are open will be applied for those users.
+						
+				add_user_to_group:
+					plugin_setting:
+						name: add_user_to_group
+					label: Add the user to a group
+					type: checkbox
+					format_onchange: true
+					side_note: >
+						When users or contacts are created with this form, you can add that user to a group.
+				select_group_for_new_users:
+					plugin_setting:
+						name: select_group_for_new_users
+					label: 'Group'
+					type: select
+					empty_value: ' -- Select -- '
+					validation:
+						required_if_not_hidden: Please select a group.
+				
 		user_activation:
 			label: User activation
 			fields:
@@ -268,80 +339,7 @@ plugin_settings:
 						name: user_activation_notification_email_address
 					side_note: >
 						Enter the recipient(s) who should be notified. Multiple email addresses can be separated by commas.
-		user_characteristics:
-			label: User characteristics
-			fields:
-				set_characteristics_on_new_users:
-					plugin_setting:
-						name: set_characteristics_on_new_users
-					label: Set a characteristic when creating the user/contact
-					type: checkbox
-					format_onchange: Yes
-					side_note: >
-						When users or contacts are created with this form, you can specify a characteristic that is set for those users.
-
-				select_characteristics_for_new_users:
-					plugin_setting:
-						name: select_characteristics_for_new_users
-					label: 'Characteristic:'
-					type: select
-					empty_value: ' -- Select -- '
-					validation:
-						required_if_not_hidden: Please select a user characteristic.
-					format_onchange: Yes
-				
-				select_characteristic_values_for_new_users:
-					plugin_setting:
-						name: select_characteristic_values_for_new_users
-					label: 'Characteristic values:'
-					type: checkboxes
-					validation:
-						required_if_not_hidden: Please select a value for the user characteristic.
-					
-				set_timer_on_new_users:
-					plugin_setting:
-						name: set_timer_on_new_users
-					label: 'Set a timer:'
-					type: checkbox
-					format_onchange: Yes
-					side_note: >
-						When users or contacts are created with this form, you can specify a timer that is set for those users.
-					
-				timer_for_new_users:
-					plugin_setting:
-						name: timer_for_new_users
-					label: 'User timer:'
-					pick_items:
-						path: zenario__users/hidden_nav/timer_templates/panel/refiners/only_allow_new_users/////
-						min_path: zenario__users/hidden_nav/timer_templates/panel
-						max_path: zenario__users/hidden_nav/timer_templates/panel
-						target_path: zenario__users/hidden_nav/timer_templates/panel
-						select_phrase: Select user timer...
-						hide_remove_button: Yes
-					validation:
-						required_if_not_hidden: Please select a user timer.
-					side_note: >
-						When users or contacts are created with this form, only timers that are open will be applied for those users.
-		groups:
-			label: Groups
-			fields:
-				add_user_to_group:
-					plugin_setting:
-						name: add_user_to_group
-					label: Add the user to a group
-					type: checkbox
-					format_onchange: true
-					side_note: >
-						When users or contacts are created with this form, you can add that user to a group.
-				select_group_for_new_users:
-					plugin_setting:
-						name: select_group_for_new_users
-					label: 'Group'
-					type: select
-					empty_value: ' -- Select -- '
-					validation:
-						required_if_not_hidden: Please select a group.
-						
+		
 		registration_codes:
 			label: Registration Codes
 			fields:
@@ -369,6 +367,76 @@ plugin_settings:
 						Check this box to force the User to enter a valid code
 						before registering.
 					hidden: Yes
+		
+		text:
+			label: Text
+			fields:
+				description:
+					snippet:
+						html: >
+							These settings control the display text of the plugin.
+				registration_title:
+					label: 'Title:'
+					type: text
+					plugin_setting:
+						name: registration_title
+					value: 'Create an account'
+					show_phrase_icon: true
+				register_button_text:
+					label: 'Register button text:'
+					type: text
+					plugin_setting:
+						name: register_button_text
+					value: 'Register'
+					show_phrase_icon: true
+				resend_verification_email_link_text:
+					label: 'Resend verification email link text:'
+					type: text
+					plugin_setting:
+						name: resend_verification_email_link_text
+					value: 'Resend verification email'
+					show_phrase_icon: true
+				resend_verification_email_link_description:
+					label: 'Resend verification email link description:'
+					type: text
+					plugin_setting:
+						name: resend_verification_email_link_description
+					value: 'Use this if you have previously registered but not received your verification email.'
+					show_phrase_icon: true
+				go_back_to_login_text:
+					label: 'Go back to login text:'
+					type: text
+					plugin_setting:
+						name: go_back_to_login_text
+					value: 'Go back to Login'
+					show_phrase_icon: true
+				register_thank_you_verify_email_text:
+					label: 'Register thank you text - verify email:'
+					type: textarea
+					plugin_setting:
+						name: register_thank_you_verify_email_text
+					value: | 
+							Thank you for registering.
+							You have been sent an email with a verification link. You should check your spam/bulk mail if you do not see it soon. Please click the link in the email to verify your account.
+					show_phrase_icon: true
+				register_thank_you_wait_for_activation_text:
+					label: 'Register thank you text - wait for activation:'
+					type: textarea
+					plugin_setting:
+						name: register_thank_you_wait_for_activation_text
+					value: | 
+							Thank you for registering.
+							Your account will need to be manually activated by one of our Administrators before you may log in.
+					show_phrase_icon: true
+				register_thank_you_verify_email_resent_text:
+					label: 'Register thank you text - verify email resent:'
+					type: textarea
+					plugin_setting:
+						name: register_thank_you_verify_email_resent_text
+					value: | 
+							Your verification email has been resent. Please be sure to check your spam/bulk mail folder.
+					show_phrase_icon: true
+		
 		error_messages:
 			label: Error messages
 			fields:

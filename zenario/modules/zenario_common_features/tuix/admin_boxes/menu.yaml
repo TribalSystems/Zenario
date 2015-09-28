@@ -18,8 +18,14 @@ zenario_menu:
             edit_mode:
                 enabled: ""
             fields:
-                description:
+                warning:
                     ord: 0
+                    full_width: Yes
+                    snippet:
+                        html:
+                
+                description:
+                    ord: 0.5
                     full_width: Yes
                     snippet:
                         html: "The navigation hierarchy of this site is comprised of menu nodes. Use this screen to set this menu node's text."

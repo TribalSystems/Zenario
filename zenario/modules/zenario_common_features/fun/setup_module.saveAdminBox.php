@@ -45,44 +45,50 @@ if ($module['status'] != 'module_running') {
 //Update the special pages, creating new ones if needed
 addNeededSpecialPages();
 
-$box['popout_message'] = '';
-
 if ($module['status'] == 'module_not_initialized') {
 	//Check to see if the Module just made any special pages
-	$sp = getRow('special_pages', array('equiv_id', 'content_type'), array('module_class_name' => $module['class_name']));
+	$sql = "
+		SELECT c.id, c.type, c.alias, c.language_id
+		FROM ". DB_NAME_PREFIX. "special_pages AS sp
+		INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
+		   ON c.equiv_id = sp.equiv_id
+		  AND c.type = sp.content_type
+		WHERE sp.module_class_name = '". sqlEscape($module['class_name']). "'
+		ORDER BY c.type, c.equiv_id, c.id";
 	
-	//If the Module just created some special pages, the prompt should like them
-	if (!empty($sp['equiv_id'])) {
-		$box['popout_message'] .= '<!--Message_Type:Warning-->';
+	$contentItems = array();
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		$contentItems[] = $row;
+	}
 	
-		$equivs = equivalences(false, $sp['content_type'], true, $sp['equiv_id']);
-		
-		if (empty($equivs) || count($equivs) < 2) {
-			$box['popout_message'] .=
-				'<p>'. 
-					adminPhrase(
-						'The Module &quot;[[name]]&quot; has created &quot;[[tag]]&quot; as a Special Page. You should review and Publish this Content Item.',
-						array('name' => htmlspecialchars($module['display_name']), 'tag' => htmlspecialchars(formatTag($sp['equiv_id'], $sp['content_type'])))).
-				'</p>';
+	if (!empty($contentItems)) {
+		if (count($contentItems) < 2) {
+			$toastMessage =
+				adminPhrase('&quot;[[tag]]&quot; was created by the [[name]] Module. You should review and publish this content item.',
+					array(
+						'name' => htmlspecialchars($module['display_name']),
+						'tag' => htmlspecialchars(formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $contentItems[0]['language_id']))));
 		
 		} else {
-			$box['popout_message'] .=
-				'<p>'.
-					adminPhrase(
-						'The Module &quot;[[name]]&quot; has created the following Content Items:',
-						array('name' => htmlspecialchars($module['display_name']))).
-				'</p><ul>';
+			$toastMessage =
+				adminPhrase('The following content items were created by the [[name]] Module, you should review and publish them:',
+					array('name' => htmlspecialchars($module['display_name']))).
+				'<ul>';
 			
-			foreach ($equivs as $equiv) {
-				$box['popout_message'] .= '<li>'. htmlspecialchars(formatTag($equiv['id'], $equiv['type'])). '</li>';
+			foreach ($contentItems as $contentItem) {
+				$toastMessage .= '<li>'. htmlspecialchars(formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias'], $contentItem['language_id'])). '</li>';
 			}
 			
-			$box['popout_message'] .=
-				'</ul><p>'.
-					adminPhrase('You should review and Publish these Content Items.').
-				'</p>';
+			$toastMessage .= '</ul>';
 		}
+		
+		$box['toast'] = array(
+			'message' => $toastMessage,
+			'options' => array('timeOut' => 0, 'extendedTimeOut' => 0));
 	}
+	
+	
 	
 	if (!engToBoolean($box['tabs']['confirm']['fields']['grant_perms']['hidden'])
 	 && (($values['confirm/grant_perms'] == 'myself' && !session('admin_global_id')) || $values['confirm/grant_perms'] == 'site_admins')
@@ -105,7 +111,7 @@ if ($module['status'] == 'module_not_initialized') {
 
 //Modules that change Storekeeper will require a Storekeeper reload.
 if (moduleDir($module['class_name'], 'tuix/organizer', true)) {
-	$box['popout_message'] = '<!--Reload_Storekeeper-->'. html_entity_decode(strip_tags($box['popout_message']));
+	$box['popout_message'] = '<!--Reload_Storekeeper-->';
 }
 
 return false;

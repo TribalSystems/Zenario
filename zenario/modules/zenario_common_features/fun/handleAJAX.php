@@ -49,7 +49,7 @@ if (checkPriv()) {
 	
 	if ($tagId = request('slidedown_content_item_req')) {
 		
-		$content = getRow('content', true, array('tag_id' => $tagId));
+		$content = getRow('content_items', true, array('tag_id' => $tagId));
 		
 		
 		//$cID = $cType = false;
@@ -62,7 +62,7 @@ if (checkPriv()) {
                         (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.last_author_id) as last_author,
                         published_datetime, 
                         (SELECT username FROM " . DB_NAME_PREFIX . "admins as a WHERE a.id = v.publisher_id) as publisher
-                    FROM " . DB_NAME_PREFIX . "versions as v 
+                    FROM " . DB_NAME_PREFIX . "content_item_versions as v 
                     WHERE v.tag_id = '" . sqlEscape($tagId) . "'
                     ORDER BY v.version desc
                     LIMIT 5";
@@ -248,7 +248,7 @@ if (checkPriv()) {
 		}
 	
 		//Insert a Reuasble Plugin into a slot
-		if (post('addPluginInstance') && post('level') == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT')) {
+		if (post('addPluginInstance') && post('level') == 1 && checkPriv('_PRIV_MANAGE_ITEM_SLOT', request('cID'), request('cType'), request('cVersion'))) {
 			updatePluginInstanceInItemSlot(post('addPluginInstance'), post('slotName'), post('cID'), post('cType'), post('cVersion'));
 	
 		} elseif (post('addPluginInstance') && post('level') == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
@@ -389,7 +389,7 @@ if (checkPriv()) {
 			} elseif (post('level') == 2 && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT')) {
 				$tables['plugin_layout_link'] = array(array('layout_id' => $layoutId, 'family_name' => $templateFamily));
 				$tables['plugin_instances'] = array();
-				if ($result = getRows('versions', array('id', 'type', 'version'), array('layout_id' => $layoutId))) {
+				if ($result = getRows('content_item_versions', array('id', 'type', 'version'), array('layout_id' => $layoutId))) {
 					while ($row = sqlFetchAssoc($result)) {
 						//if (!checkRowExists('plugin_item_link'
 						$tables['plugin_instances'][] =

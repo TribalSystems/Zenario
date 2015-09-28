@@ -4,37 +4,6 @@ site_settings:
     setting_group: administration
     title: Editing settings for site administration
     tabs:
-        og:
-            label: Organizer
-            edit_mode:
-                enabled: Yes
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: No
-            fields:
-                description:
-                    full_width: Yes
-                    snippet:
-                        html: >
-                            The settings below will affect the behaviour of Organizer
-                            for all administrators.
-                organizer_page_size:
-                    site_setting:
-                        name: organizer_page_size
-                    label: 'Organizer page size:'
-                    type: select
-                    value: "50"
-                    values:
-                        20: "20"
-                        50: "50"
-                        100: "100"
-                        200: "200"
-                    side_note: |
-                        The number of items to show per page.
-                        (This is capped at 50 when using Internet Explorer 7 or earlier, due to speed issues with these browsers.)
-                    validation:
-                        required: Please enter the number of items to show per page.
-                        numeric: The number of items per page must be numeric.
-        
         content_items:
             label: Content items
             edit_mode:

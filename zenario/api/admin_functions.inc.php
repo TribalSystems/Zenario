@@ -27,7 +27,7 @@
  */
 
 function adminId() {
-	if (session('admin_logged_into_site') && session('admin_logged_into_site') == httpHost(). SUBDIRECTORY. setting('site_id')) {
+	if (session('admin_logged_into_site') && session('admin_logged_into_site') == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')) {
 		return session('admin_userid');
 	} else {
 		return false;
@@ -56,4 +56,30 @@ function paginationOptions() {
 	
 	asort($options, SORT_STRING);
 	return $options;
+}
+
+//Get the value of an admin's setting
+function adminSetting($settingName) {
+	if (!isset(cms_core::$adminSettings[$settingName])) {
+		cms_core::$adminSettings[$settingName] =
+			getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => adminId()));
+		
+		if (cms_core::$adminSettings[$settingName] === false) {
+			cms_core::$adminSettings[$settingName] =
+				getRow('admin_setting_defaults', 'default_value', $settingName);
+		}
+	}
+	return cms_core::$adminSettings[$settingName];
+}
+
+//Change an admin's setting
+function setAdminSetting($settingName, $value) {
+	
+	if (!adminId()) {
+		return;
+	}
+	
+	cms_core::$adminSettings[$settingName] = $value;
+	
+	setRow('admin_settings', array('value' => $value), array('name' => $settingName, 'admin_id' => adminId()));
 }

@@ -91,7 +91,9 @@ zenario_user_forms.toggleFieldVisibility = function(
 	});
 };
 
-zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox) {
+zenario_user_forms.submitMultiPageForm = false;
+
+zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox, pageCount) {
 	// Enter key advances to next stage instead of submitting form
 	$('#'+identifier+' :input:not(textarea)').on('keydown', function(event) {
 		if (event.keyCode == 13) {
@@ -102,26 +104,48 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 	
 	// Navigate to next section
 	$('#'+identifier+' input.next').on('click', function(event) {
+		
+		if (zenario_user_forms.submitMultiPageForm) {
+			return;
+		}
+		
 		event.preventDefault();
 		var current = $(this).parent(),
 			next = $(this).parent().next(),
 			currentPageId = current.prop('id'),
 			post = false,
 			pageNo = currentPageId.match(/\d+$/),
-			submitForm = $(this).is('input[type="submit"]');
+			submitForm = $(this).is('input[type="submit"]'),
+			$form;
 		
 		// Entire form should be valid if submitting form
 		if (submitForm) {
-			post = $('#'+identifier).find(':input').serialize();
+			$form = $('#'+identifier);
 		} else {
-			post = $('#'+currentPageId).find(':input').serialize();
+			$form = $('#'+currentPageId);
 		}
 		
-		post += '&_pageNo='+pageNo;
+		// Get fields in form section
+		post = $form.find(':input').serialize();
+		
+		// Add any file fields
+		$form.find(':input[type="file"]').each(function(i, el) {
+			var $el = $(el);
+			post += '&' + $el.prop('name') + '=' + $el.val();
+		});
+		
+		// Add page data
+		post += '&_pageNo='+pageNo+'&_pageCount='+pageCount;
+		
+		var captcha_code = $('#' + containerId + '_math_captcha_input').val();
+		if (captcha_code) {
+			post += '&captcha_code=' + captcha_code;
+		}
 		
 		// Validate fields on current page
 		zenario.ajax(AJAXURL, post).after(function(errors) {
 			errors = JSON.parse(errors);
+			
 			// Remove any old errors from current page
 			$('#'+currentPageId+' div.form_error').remove();
 			if (!_.isEmpty(errors)) {
@@ -129,12 +153,17 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 				var html = '',
 					errorSelector = '';
 				for (fieldId in errors) {
-					errorSelector = '#'+containerId+'_field_'+fieldId;
-					html = '<div class="form_error">'+ errors[fieldId].message +'</div>';
-					if ((errors[fieldId].type == 'checkbox' || errors[fieldId].type == 'group') || !$(errorSelector+' div.field_title').length) {
-						$(errorSelector).append(html);
+					if (fieldId == 'captcha') {
+						html = '<div class="form_error">'+ errors[fieldId] +'</div>';
+						$('#' + containerId + '_math_captcha div.field_title').after(html);
 					} else {
-						$(errorSelector+' div.field_title').after(html);
+						errorSelector = '#'+containerId+'_field_'+fieldId;
+						html = '<div class="form_error">'+ errors[fieldId].message +'</div>';
+						if ((errors[fieldId].type == 'checkbox' || errors[fieldId].type == 'group') || !$(errorSelector+' div.field_title').length) {
+							$(errorSelector).append(html);
+						} else {
+							$(errorSelector+' div.field_title').after(html);
+						}
 					}
 				}
 				var selector = containerId;
@@ -145,7 +174,8 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 			} else {
 				// Submit if final button
 				if (submitForm) {
-					$('#'+identifier+'__form').submit();
+					zenario_user_forms.submitMultiPageForm = true;
+					$('#'+identifier+'__form input:submit').click();
 				} else {
 					current.css('visibility', 'visible');
 					next.show('slide', {direction: 'right'}, 500);

@@ -32,14 +32,9 @@ class zenario_image_container extends zenario_banner {
 	static protected $page_plugin_index_start = 1;
 	static protected $page_plugin_index_end = 0;
 	static protected $all_page_plugin_images = array();
-	protected static $oldIE = false;
 	protected $my_page_plugin_index = 0;
 	
 	public function init(){
-		self::$oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
-					|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
-					|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
-		
 		$result = parent::init();
 		if(!$result) return $result;
 		
@@ -99,14 +94,14 @@ class zenario_image_container extends zenario_banner {
 	}
 	
 	public function addToPageHead() {
-		if (self::$oldIE) {
-			//Note: Old versions of IE need media-queries in stylesheets, they won't work inline on the page.
-			echo '
-				<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>';
-		} else {
-			echo '
-				<style type="text/css">', $this->generateStyles(), '</style>';
-		}
+		//Note: Old versions of IE need media-queries in stylesheets, they won't work inline on the page.
+		echo '
+			<!--[if lte IE 8]>
+				<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>
+			<![endif]-->
+			<!--[if gt IE 8]><!-->
+				<style type="text/css">', $this->generateStyles(), '</style>
+			<!--<![endif]-->';
 	}
 	
 	public function handlePluginAJAX() {

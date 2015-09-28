@@ -91,5 +91,10 @@ if ($values['settings/use_domain'] && setting('primary_domain') && getNumLanguag
 }
 
 
+$maxEnabledLanguageCount = siteDescription('max_enabled_languages');
+$enabledLanguages = getLanguages();
+if ($maxEnabledLanguageCount && (count($enabledLanguages) >= $maxEnabledLanguageCount)) {
+	$box['tabs']['settings']['errors'][] = adminPhrase('The maximun number of enabled languages on this site is [[count]]', array('count' => $maxEnabledLanguageCount));
+}
 
 return false;

@@ -125,15 +125,15 @@ class zenario_ctype_audio extends module_base_class {
 		}
 		
 
-		$contentItemDetails = getRow('versions',array('title','file_id'),array('id'=>$this->targetID,'type'=>$this->targetType,'version'=>$this->targetVersion));
+		$contentItemDetails = getRow('content_item_versions',array('title','file_id'),array('id'=>$this->targetID,'type'=>$this->targetType,'version'=>$this->targetVersion));
 		
 		$subSections['Audio'] = true;
 		$mergeFields['Container_id'] = $this->containerId;
 		$mergeFields['Size'] = formatFilesizeNicely(getRow('files','size',array('id'=> arrayKey($contentItemDetails,'file_id'))), 0, false, 'zenario_ctype_audio');
 		$mergeFields['title'] = arrayKey($contentItemDetails,'title');
 		contentFileLink($url, $this->targetID, $this->targetType, $this->targetVersion);
-		$mergeFields['mp3Path'] = urlencode($url);
-		
+		$mergeFields['mp3Path'] = $url;
+			
 		$this->framework('mp3', $mergeFields, $subSections);
 		
 	}
@@ -259,7 +259,7 @@ class zenario_ctype_audio extends module_base_class {
 									$cID = $cVersion = false;
 									createDraft($cID, false, $cType, $cVersion, false, $languageId);
 									setRow(
-										'versions',
+										'content_item_versions',
 										array('layout_id' => $layoutId, 'title' => $filename, 'filename' => $filename, 'file_id' => $fileId),
 										array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 									$newIds[] = $cType. '_'. $cID;

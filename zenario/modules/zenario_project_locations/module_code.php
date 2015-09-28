@@ -178,11 +178,11 @@ class zenario_project_locations extends module_base_class {
 	protected function selectFrom($for_map='false') {
 		$sql = "
 			FROM ". DB_NAME_PREFIX. ZENARIO_PROJECT_LOCATIONS_PREFIX. "project_locations AS pl
-			LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+			LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 			ON c.equiv_id = pl.equiv_id
 			AND c.type = 'projects'
 			AND c.language_id = '". sqlEscape(cms_core::$langId). "'
-			LEFT JOIN ". DB_NAME_PREFIX. "versions AS v
+			LEFT JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 			ON v.id = c.id
 			AND v.type = c.type
 			AND v.version = c.". (checkPriv()? "admin_version" : "visitor_version");
@@ -428,7 +428,7 @@ class zenario_project_locations extends module_base_class {
 				}			
 				if (setting("zenario_project_locations__address1")) {
 					//$fields['name']['validation']=array();
-					$fields['address_line_1']['validation']['required_if_not_hidden']='Please type in an address';
+					$fields['address1']['validation']['required_if_not_hidden']='Please type in an address';
 				}			
 				if (setting("zenario_project_locations__locality")) {
 					//$fields['name']['validation']=array();
@@ -639,7 +639,7 @@ class zenario_project_locations extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_project_locations__project":
-					$saveValues = array();	
+					$saveValues = array();
 					$saveValues['name'] = $values['name'];
 					$saveValues['summary'] = $values['summary'];
 					$saveValues['client_name'] = $values['client_name'];

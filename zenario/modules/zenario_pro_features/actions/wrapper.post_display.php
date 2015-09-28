@@ -30,8 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 if (cms_core::$canCache 
  && empty($_GET['admin'])
- && setting('compress_web_pages') && setting('cache_web_pages')) {
-	$type = str_replace('.php', '', basename($_SERVER['PHP_SELF']));
+ && setting('caching_enabled') && setting('cache_css_js_wrappers')) {
+	$type = str_replace(array('.cache_wrapper', '.php'), '', basename($_SERVER['PHP_SELF']));
 	$chFile = pageCacheDir($_GET, $type);
 	
 	if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($_GET, $type), 'pages', false))) {

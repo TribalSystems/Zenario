@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 

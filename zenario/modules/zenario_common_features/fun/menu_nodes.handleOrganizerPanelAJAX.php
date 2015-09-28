@@ -175,6 +175,13 @@ if (get('quick_create') && (
 	foreach ($sectionIds as $id => $dummy) {
 		recalcMenuHierarchy($id);
 	}
+} elseif (post('make_primary')) {
+	$menuNodeDetails = getMenuNodeDetails($ids);
+	$submission = array(
+		'equiv_id' => $menuNodeDetails['equiv_id'],
+		'target_loc' => 'int',
+		'content_type' => $menuNodeDetails['content_type'],
+		'redundancy' => 'primary');
+	saveMenuDetails($submission, $ids);
 }
-
 return false;

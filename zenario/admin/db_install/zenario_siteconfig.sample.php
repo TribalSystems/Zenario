@@ -24,7 +24,7 @@ define('DEBUG_USE_STRICT_MODE', true);
 //////////////////////////////////////////////////////////
 
 // These optional parameters allow you to specify a different installation
-// of the CMS and log in here with those administrator accounts:
+// of Zenario and log in to this installation with those administrator accounts:
 //define('DBHOST_GLOBAL', '[[DBHOST_GLOBAL]]');
 //define('DBNAME_GLOBAL', '[[DBNAME_GLOBAL]]');
 //define('DBUSER_GLOBAL', '[[DBUSER_GLOBAL]]');
@@ -50,7 +50,7 @@ define('DEBUG_SEND_EMAIL', true);
  // Directory and file name //
 /////////////////////////////
 
-// If you are running the CMS in a subdirectory please enter this here.
+// If you are running Zenario in a subdirectory please enter this here.
 // If specifed, it MUST start with a / and must end in a /
 // If you are not running in a subdirectory please just enter a /
 define('SUBDIRECTORY', '[[SUBDIRECTORY]]');
@@ -58,6 +58,46 @@ define('SUBDIRECTORY', '[[SUBDIRECTORY]]');
 // The filename of the index file in the root directory.
 // In most cases you don't need to change this.
 define('DIRECTORY_INDEX_FILENAME', 'index.php');
+
+
+  //////////////////////////
+ // Cookies and Sessions //
+//////////////////////////
+
+// If you are using multiple sub-domains for your site, and this value is defined,
+// then cookies set in the browser, an administrator's login, and an extranet user's
+// login will persist across the domain and any sub-domains.
+//
+// For example, a setting of 'example.com' will persist cookies across all sites at
+// *.example.com where '*' means any sub-domain, as well as example.com itself.
+//
+// You should use this if you use a sub-domains to denote languages, such as
+// example.com, en.example.com, de.example.com and fr.example.com.
+// In that case, enter 'example.com' below.
+//
+// Leave this blank if you're not using sub-domains.
+define('COOKIE_DOMAIN', '');
+
+// The length of time (in seconds) that the cookie consent, "remember me" and
+// "Log me in automatically" options last.
+// The default value if not set is 100 days.
+define('COOKIE_TIMEOUT', 8640000);
+
+
+// The length of time (in seconds) to persist the login of administrators and extranet users.
+//
+// I.e. if they do not visit the site for the set time they will be logged out.
+// This will be overridden by the session.cookie_lifetime and/or session.gc_maxlifetime
+// settings in the php.ini file if they are shorter.
+//
+// If non-zero, the user will be logged out after that number of seconds, but they will not
+// be logged out simply by quitting their browser or restarting their PC.
+//
+// If set to 0 then they will be logged out when quitting/restarting, but will otherwise
+// remain logged in until session.cookie_lifetime and/or session.gc_maxlifetime.
+// 
+// Set this to 0 for maximum security.
+define('SESSION_TIMEOUT', 0);
 
 
   /////////////////////
@@ -83,5 +123,5 @@ define('ERROR_REPORTING_LEVEL', (E_ALL & ~E_NOTICE & ~E_STRICT));
 
 // Normally, a visitor's IP Address is read from the $_SERVER['REMOTE_ADDR'] variable.
 // If you are using a load balancer and/or a proxy, you must set this to true so that
-// the CMS will read from the $_SERVER['HTTP_X_FORWARDED_FOR'] variable instead.
+// Zenario will read from the $_SERVER['HTTP_X_FORWARDED_FOR'] variable instead.
 define('USE_FORWARDED_IP', false);

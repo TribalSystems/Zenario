@@ -17,10 +17,10 @@ In Administration Mode, Zenario will run on:
 
 *   Windows with Chrome (stable channel)
 *   Windows with Firefox (release update channel)
-*   Windows with Internet Explorer 8 or higher
+*   Windows with Internet Explorer 10 or higher
 *   Mac OSX with Chrome (stable channel)
 *   Mac OSX with Firefox (release update channel)
-*   Mac OSX with Safari 6 or higher
+*   Mac OSX with Safari 7 or higher
 
 We test on all of the above platforms. Zenario may run on other operating systems and
 browsers, but this is not tested.

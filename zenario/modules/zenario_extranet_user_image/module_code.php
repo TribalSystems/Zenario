@@ -27,10 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-
-
-
 class zenario_extranet_user_image extends module_base_class {
 	
 	protected $mergeFields = array();
@@ -99,6 +95,14 @@ class zenario_extranet_user_image extends module_base_class {
 			$this->mergeFields['Upload_Button_Phrase'] = $this->phrase('_ADD');
 		}
 		
+		$this->mergeFields['Image_Title'] = $this->setting('title');
+		
+		if($this->setting('allow_upload')) {
+			$this->sections['Allow_Upload'] = true;
+			
+			
+		}
+		
 		$this->sections['Remove_Image'] = (bool) ($this->setting('allow_remove') && (!post('extranet_remove_image')));
 		$this->sections['Remove_Image_Confirm'] = (bool) ($this->setting('allow_remove') && post('extranet_remove_image'));
 		$this->sections['New_Image'] = true;
@@ -132,6 +136,26 @@ class zenario_extranet_user_image extends module_base_class {
 			  AND u.image_id IS NULL";
 		
 		sqlQuery($sql);
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+
+		if(!$values['allow_upload']) {
+			$fields['first_tab/min_width']['hidden'] = true;
+			$fields['first_tab/min_height']['hidden'] = true;
+			$fields['first_tab/note_1']['hidden'] = true;
+		} else {
+			$fields['first_tab/min_width']['hidden'] = false;
+			$fields['first_tab/min_height']['hidden'] = false;
+			$fields['first_tab/note_1']['hidden'] = false;
+		}
+
+	}
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if(!$values['allow_upload']) {
+
+		}
 	}
 
 }

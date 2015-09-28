@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-require 'cacheheader.inc.php';
+require 'basicheader.inc.php';
 
 //Get the requested file from the URL
 //Exit if the request was not valid
@@ -87,6 +87,10 @@ switch (strtolower($_GET['e'])) {
 
 	case 'png':
 		$mimeType = 'image/png';
+		break;
+
+	case 'svg':
+		$mimeType = 'image/svg+xml';
 		break;
 
 	case 'woff':

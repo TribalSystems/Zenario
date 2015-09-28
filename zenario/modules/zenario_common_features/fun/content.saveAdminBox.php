@@ -51,7 +51,7 @@ if (engToBoolean($box['tabs']['meta_data']['edit_mode']['on'])
  && checkPriv('_PRIV_EDIT_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 	//Only save aliases for first drafts
 	if (!empty($values['meta_data/alias']) && $box['key']['cVersion'] == 1) {
-		setRow('content', array('alias' => tidyAlias($values['meta_data/alias'])), array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
+		setRow('content_items', array('alias' => tidyAlias($values['meta_data/alias'])), array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
 	}
 	
 	//Create Menu Nodes for first drafts

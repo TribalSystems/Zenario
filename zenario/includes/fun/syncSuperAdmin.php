@@ -128,7 +128,8 @@ if (connectGlobalDB()) {
 					status = 'active',
 					first_name = '". sqlEscape($adminG['first_name']). "',
 					last_name = '". sqlEscape($adminG['last_name']). "',
-					email = '". sqlEscape($adminG['email']). "'";
+					email = '". sqlEscape($adminG['email']). "',
+					is_client_account = 0";
 			sqlUpdate($sql);
 			$adminIdL = sqlInsertId();
 		}

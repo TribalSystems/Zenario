@@ -205,7 +205,7 @@ if (isset($_GET['refiner__trash']) && !get('refiner__template')) {
 }
 
 if ($showTrash) {
-	$panel['trash']['empty'] = !checkRowExists('content', array('status' => 'trashed'));
+	$panel['trash']['empty'] = !checkRowExists('content_items', array('status' => 'trashed'));
 } else {
 	unset($panel['trash']);
 }

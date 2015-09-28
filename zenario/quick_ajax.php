@@ -28,7 +28,8 @@
 
 
 header('Content-Type: text/plain; charset=UTF-8');
-require 'liteheader.inc.php';
+require 'basicheader.inc.php';
+require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 
 
 //Check a few basic tables have been created. Exit if not.
@@ -70,14 +71,19 @@ if (!empty($_REQUEST['_get_data_revision'])) {
 	}
 
 
-} elseif (isset($_REQUEST['accept_cookies'])) {
-	session_start();
+} elseif (!empty($_REQUEST['clear_admin_cookie']) || !empty($_REQUEST['accept_cookies'])) {
+	startSession();
 	
 	require CMS_ROOT. 'zenario/api/system_functions.inc.php';
 	require_once CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 	
-	if ($_REQUEST['accept_cookies']) {
+	if (!empty($_REQUEST['clear_admin_cookie'])) {
+		setCookieOnCookieDomain('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
+		clearCookie('COOKIE_LAST_ADMIN_USER');
+	
+	} elseif (!empty($_REQUEST['accept_cookies'])) {
 		setCookieConsent();
+	
 	} else {
 		setCookieNoConsent();
 	}

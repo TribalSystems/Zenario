@@ -29,7 +29,7 @@
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_9b');
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_9c');
 define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
@@ -68,7 +68,7 @@ macros::$replacements[] = 'for (\2\3 in \1) { if (!zenario.has(\1, \3)) continue
 //Change directory to the CMS root directory
 $prefix = '';
 do {
-	if (is_file($prefix. 'zenario/cacheheader.inc.php')) {
+	if (is_file($prefix. 'zenario/basicheader.inc.php')) {
 		if ($prefix) {
 			chdir($prefix);
 		}

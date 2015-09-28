@@ -29,6 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__menu/panels/menu_nodes':
+		// mass_add_to_menu used in both content and menu nodes
+		if (post('mass_add_to_menu') && checkPriv('_PRIV_ADD_MENU_ITEM')) {
+			// Get tag ID from menu node ID
+			$menuNodeDetails = getMenuNodeDetails($ids);
+			$ids = $menuNodeDetails['content_type'] . '_' . $menuNodeDetails['equiv_id'];
+			return require funIncPath(__FILE__, 'content.handleOrganizerPanelAJAX');
+		}
 		return require funIncPath(__FILE__, 'menu_nodes.handleOrganizerPanelAJAX');
 
 	
@@ -50,7 +57,7 @@ switch ($path) {
 		if (post('delete') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			foreach (explode(',', $ids) as $id) {
 				if (!checkRowExists('content_types', array('default_layout_id' => $id))
-				 && !checkRowExists('versions', array('layout_id' => $id))) {
+				 && !checkRowExists('content_item_versions', array('layout_id' => $id))) {
 					deleteLayout($id, true);
 				}
 			}
@@ -89,9 +96,82 @@ switch ($path) {
 	
 	case 'zenario__content/panels/documents':
 		if (post('reorder') || post('hierarchy')) {
-			//Loop through each moved files
-			//var_dump($_POST);
-			foreach (explode(',', $ids) as $id) {
+			$idsArray = explode(',', $ids);
+			$filenamesInFolder = array();
+			$folderNamesInFolder = array();
+			foreach ($idsArray as $id) {
+				// Foreach moved file
+				if (isset($_POST['parent_ids'][$id])
+					&& ($documentDetails = getRow('documents', array('filename', 'folder_name'), $id))
+				) {
+					$filename = $documentDetails['filename'];
+					$folder_name = $documentDetails['folder_name'];
+					$isFolder = (bool)$folder_name;
+					
+					// Check a file/folder with the same name exists in the database and hasn't moved into the same folder
+					$duplicateNamesFound = false;
+					$parent_id = $_POST['parent_ids'][$id];
+					$sql = '
+						SELECT id
+						FROM ' . DB_NAME_PREFIX . 'documents
+						WHERE 1=1 ';
+					if ($isFolder) {
+						$sql .= ' AND folder_name = "' . sqlEscape($folder_name) . '"';
+					} else {
+						$sql .= ' AND filename = "' . sqlEscape($filename) . '"';
+					}
+					$sql .= '
+						AND folder_id = ' . (int)$parent_id . '
+						AND id != ' . (int)$id;
+					$result = sqlSelect($sql);
+					while ($row = sqlFetchAssoc($result)) {
+						$id2 = $row['id'];
+						if (!isset($_POST['parent_ids'][$id2]) || ($_POST['parent_ids'][$id2] == $parent_id)) {
+							$duplicateNamesFound = true;
+						}
+					}
+					
+					// Check identical named files/folders havn't been moved into the same folder at once
+					if (!$duplicateNamesFound) { 
+						if ($isFolder) {
+							if (isset($folderNamesInFolder[$parent_id][$folder_name])) {
+								$duplicateNamesFound = true;
+							} else {
+								$folderNamesInFolder[$parent_id][$folder_name] = true;
+							}
+						} else {
+							if (isset($filenamesInFolder[$parent_id][$filename])) {
+								$duplicateNamesFound = true;
+							} else {
+								$filenamesInFolder[$parent_id][$filename] = true;
+							}
+						}
+					}
+					
+					if ($duplicateNamesFound) {
+						if ($isFolder) {
+							$type = 'folder';
+							$name = $folder_name;
+						} else {
+							$type = 'file';
+							$name = $filename;
+						}
+						echo '<!--Message_Type:Error-->';
+						if ($parent_id == 0) {
+							$error = adminPhrase('You cannot have more than one [[type]] named "[[name]]" in the root directory', array('name' => $name, 'type' => $type));
+						} else {
+							$problem_folder_name = getRow('documents', 'folder_name', $parent_id);
+							$error = adminPhrase('You cannot have more than one [[type]] named "[[name]]" in the directory "[[folder_name]]"', array('name' => $name, 'folder_name' => $problem_folder_name, 'type' => $type));
+						}
+						echo $error;
+						exit;
+					}
+				}
+			}
+			
+			
+			//Loop through each moved files and save
+			foreach ($idsArray as $id) {
 				//Look up the current id, folder_id and ordinal
 				if ($file = getRow('documents', array('id', 'folder_id', 'ordinal'), $id)) {
 					$cols = array();
@@ -103,24 +183,6 @@ switch ($path) {
 	
 					//Update the folder id if it is different, and remember that we've done this
 					if (isset($_POST['parent_ids'][$id]) && $_POST['parent_ids'][$id] != $file['folder_id']) {
-					
-						$parentFolderId = $_POST['parent_ids'][$id];
-						$newChildId = $id;
-						
-						
-						/*
-						
-						 ****** finish this part *****
-						
-						$type = getRow('documents', array('id', 'type', 'folder_name'), $id)
-						$folderParentIdName
-						
-						
-						if ($type == 'folder'){
-						}
-						var_dump($parentFolderId);
-					
-						*/
 						$cols['folder_id'] = $_POST['parent_ids'][$id];
 						$folder = getRow('documents', array('id', 'type'), $_POST['parent_ids'][$id]);
 						if ($folder['type'] == "file") {
@@ -260,7 +322,7 @@ switch ($path) {
 								$document['file_id']);
 				if($file['filename']) {
 					if (cleanDownloads()) {
-						$dirPath = createCacheDir($file['short_checksum'], 'downloads', false, -1, 'public');
+						$dirPath = createCacheDir($file['short_checksum'], 'public/downloads', false);
 					}
 					if (!$dirPath) {
 						$messageType = 'Error';
@@ -279,6 +341,8 @@ switch ($path) {
 							}
 							symlink($path, $symPath);
 						} 
+						
+						updateRow('documents', array('privacy' => 'public'), $id);
 				
 						$baseURL = absCMSDirURL();
 						
@@ -306,9 +370,6 @@ switch ($path) {
 		}elseif(post('delete_public_link')){
 			
 			foreach (explode(',', $ids) as $id) {
-				//$fileId = getRow('documents', 'file_id', $id);
-				//$document = getRow('documents', array('file_id', 'filename'), $id);
-				
 				$result = self::deleteHierarchicalDocumentPubliclink($id);
 				
 				if ($result === true) {
@@ -339,7 +400,7 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'media.handleOrganizerPanelAJAX');
 	
 	case 'zenario__content/panels/inline_images_for_content':
-		if (!$content = getRow('content', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
+		if (!$content = getRow('content_items', array('id', 'type', 'admin_version'), array('tag_id' => $refinerId))) {
 			exit;
 		
 		} elseif (post('make_sticky') && checkPriv('_PRIV_SET_CONTENT_ITEM_STICKY_IMAGE')) {
@@ -395,21 +456,7 @@ switch ($path) {
 
 	
 	case 'zenario__languages/panels/languages':
-		if (post('import') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
-			
-			if (documentMimeType($_FILES['Filedata']['name']) == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-			 && !extension_loaded('zip')) {
-				echo adminPhrase('Importing or exporting .xlsx files requires the php_zip extension. Please ask your server administrator to enable it.');
-				exit;
-			
-			} else {
-				$languageId = $ids;
-				$numberOf = importVisitorLanguagePack($_FILES['Filedata']['tmp_name'], $languageId, false, false, false, $_FILES['Filedata']['name']);
-				$this->languageImportResults($numberOf);
-				return $languageId;
-			}
-		
-		} elseif (post('delete') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
+		if (post('delete') && checkPriv('_PRIV_MANAGE_LANGUAGE_PHRASE')) {
 			$sql = "
 				DELETE
 				FROM " . DB_NAME_PREFIX . "visitor_phrases
@@ -425,8 +472,7 @@ switch ($path) {
 
 	
 	case 'zenario__languages/panels/phrases':
-	case 'zenario__languages/nav/vlp/vlp_chained/panel':
-		return require funIncPath(__FILE__, 'vlp.handleOrganizerPanelAJAX');
+		return require funIncPath(__FILE__, 'phrases.handleOrganizerPanelAJAX');
 
 	
 	case 'zenario__users/panels/administrators':
@@ -437,7 +483,7 @@ switch ($path) {
 				}
 			}
 		
-		} elseif (post('restore') && checkPriv('_PRIV_DELETE_ADMIN')) {
+		} elseif (post('restore') && checkPriv('_PRIV_DELETE_ADMIN') && self::canCreateAdditionalAdmins()) {
 			foreach (explode(',', $ids) as $id) {
 				deleteAdmin($id, true);
 			}

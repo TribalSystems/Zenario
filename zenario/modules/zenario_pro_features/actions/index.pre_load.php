@@ -81,9 +81,19 @@ if (!empty($_SESSION['cookies_accepted'])) {
 
 
 //Don't allow page caching if an Admin is logged in
-//Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set, as they're probably about to be automatically logged in
+//Also don't allow it if a Visitor is not logged in as an Extranet User, but has the LOG_ME_IN_COOKIE Cookie set,
+//as they're probably about to be automatically logged in
 if (!isset($_SESSION['admin_logged_into_site'])
  && !(empty($_SESSION['extranetUserID']) && isset($_COOKIE['LOG_ME_IN_COOKIE']))) {
+	
+	//Work out what cache-flags to use:
+		//u = extranet user logged in
+		//g = GET request present that is not registered using registerGetRequest() and is not a CMS variable
+		//p = POST request present
+		//s = SESSION variable present that is not in the exception list
+		//c = COOKIE present that is not in the exception list
+	//We can work all of these out exactly except for "g", as registerGetRequest() lets module developers register
+	//anything dynamically. There's a bit of logic later that handles this by checking both cases.
 	
 	$chToSaveStatus = array();
 	$chToSaveStatus['u'] = 'u';
@@ -133,15 +143,19 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	}
 	
 	foreach ($_COOKIE as $request => &$value) {
-		if (substr($request, 0, 11) != 'can_cache__' && substr($request, 0, 2) != '__'
-		 && !in($request, 'cookies_accepted', '_ga', '_gat', 'is_returning', 'PHPSESSID', 'tinymcePasteText')) {
+		if (substr($request, 0, 2) != '__'
+		 && substr($request, 0, 9) != 'PHPSESSID'
+		 && substr($request, 0, 11) != 'can_cache__'
+		 && !in($request, 'cookies_accepted', '_ga', '_gat', 'is_returning', 'tinymcePasteText')) {
 			$chToLoadStatus['c'] = 'c';
 			break;
 		}
 	}
 	
 	
-	
+	//Get two checksums from the GET requests.
+	//$chDirAllRequests is a checksum of every GET request
+	//$chDirKnownRequests is a checksum of just the CMS variable, e.g. cID, cType...
 	$chDirAllRequests = pageCacheDir($chAllRequests);
 	$chDirKnownRequests = pageCacheDir($chKnownRequests);
 
@@ -149,19 +163,27 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	//set the "remember me" option to show the admin login link
 	if (!isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) {
 		
+		//Loop through every possible combination of cache-flag
+		//(I've tried to order this by the most common settings first,
+		//to minimise the number of loops when we have a hit.)
 		for ($chS = 's';; $chS = $chToLoadStatus['s']) {
 				for ($chC = 'c';; $chC = $chToLoadStatus['c']) {
 						for ($chP = 'p';; $chP = $chToLoadStatus['p']) {
 								for ($chG = 'g';; $chG = $chToLoadStatus['g']) {
 										for ($chU = 'u';; $chU = $chToLoadStatus['u']) {
-											
-												if ($chG) {
-													$chFile = $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC;
-												} else {
-													$chFile = $chDirAllRequests. $chU. $chG. $chP. $chS. $chC;
-												}
-											
-												if (file_exists(($chPath = 'cache/pages/'. $chFile. '/'). 'page.html')) {
+												
+												
+												//Plugins can opt out of caching if there are any unrecognised or
+												//unregistered $_GET requests.
+												//If this is the case, then we must insist that the $_GET requests
+												//of the cached page match the current $_GET request - i.e. we
+												//must use $chDirAllRequests.
+												//If this is not the case then we must check both $chDirAllRequests
+												//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
+												//as mentioned above.
+												if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'page.html'))
+												 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'page.html')))) {
+													
 													zenario_page_caching__logStats(array('hits', 'total'));
 													touch($chPath. 'accessed');
 												

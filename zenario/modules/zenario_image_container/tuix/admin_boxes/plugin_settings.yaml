@@ -17,7 +17,7 @@ plugin_settings:
                 show_custom_css_code:
                     plugin_setting:
                         name: show_custom_css_code
-                    label: 'Add custom CSS:'
+                    label: 'Add custom CSS'
                     type: checkbox
                     redraw_onchange: Yes
                 custom_css_code:
@@ -142,7 +142,7 @@ plugin_settings:
                 mobile_show_custom_css_code:
                     plugin_setting:
                         name: mobile_show_custom_css_code
-                    label: 'Add custom CSS:'
+                    label: 'Add custom CSS'
                     type: checkbox
                     redraw_onchange: Yes
                 mobile_custom_css_code:

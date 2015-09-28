@@ -49,117 +49,109 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 		}
 		
 		if (isset($box['tabs']['zenario_pro_features__caching'])) {
-				
-			if (!$values['speed/compress_web_pages']) {
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_web_pages']['value'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_web_pages']['current_value'] = '';
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_web_pages']['read_only'] = true;
-			} else {
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_web_pages']['read_only'] = false;
-			}
-				
-			if (!$values['speed/compress_web_pages'] || !$values['zenario_pro_features__caching/cache_web_pages']) {
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_ajax']['value'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_ajax']['current_value'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_plugins']['value'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_plugins']['current_value'] = '';
-				$box['tabs']['zenario_pro_features__caching']['fields']['caching_debug_info']['value'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['caching_debug_info']['current_value'] = '';
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_ajax']['read_only'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_plugins']['read_only'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['caching_debug_info']['read_only'] = true;
-			} else {
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_ajax']['read_only'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['cache_plugins']['read_only'] =
-				$box['tabs']['zenario_pro_features__caching']['fields']['caching_debug_info']['read_only'] = false;
-			}
 			
-			$fields['zenario_pro_features__caching/limit_caching_debug_info_by_ip']['hidden'] = 
-				!$values['zenario_pro_features__caching/caching_debug_info'];
-				
-			/* This is to allow clear cache without compress_web_pages & cache_web_pages
-			 * if (!$values['speed/compress_web_pages'] || !$values['zenario_pro_features__caching/cache_web_pages']) {
-				$box['tabs']['zenario_pro_features__clear_cache']['hidden'] = true;
-					
-			} else*/ {
-				$box['tabs']['zenario_pro_features__clear_cache']['hidden'] = false;
-		
-				if (isset($box['tabs']['zenario_pro_features__clear_cache']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-					//Manually clear the cache
-					if (!empty($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed'])) {
-						$sql = '';
-						$ids = $values = array();
-						$table = 'site_settings';
-						cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
-						unset($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed']);
-		
-						$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = true;
-					} else {
-						$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = false;
-					}
+			cleanDownloads();
+			if (is_writable(CMS_ROOT. 'public/images')
+			 && is_writable(CMS_ROOT. 'private/images')) {
+				$values['zenario_pro_features__caching/cache_images'] = 1;
+				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_writable']['show'] = true;
+				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_not_writable']['show'] = false;
+			} else {
+				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_writable']['show'] = false;
+				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_not_writable']['show'] = true;
+			}
+	
+			if (isset($box['tabs']['zenario_pro_features__clear_cache']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
+				//Manually clear the cache
+				if (!empty($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed'])) {
+					$sql = '';
+					$ids = $values = array();
+					$table = 'site_settings';
+					cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
+					unset($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed']);
+	
+					$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = true;
+				} else {
+					$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = false;
 				}
-		
-				if (isset($box['tabs']['zenario_pro_features__cache_stats']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-						
-					$reset = false;
-					$dir = CMS_ROOT. 'cache/stats/page_caching/';
-						
-					//Reset the stats
-					if (!empty($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed'])) {
-						$reset = true;
-						foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses', 'from', 'to') as $stat) {
-							if (is_writable($dir. $stat)) {
-								unlink($dir. $stat);
-							} else {
-								$reset = false;
-							}
+			}
+	
+			if (isset($box['tabs']['zenario_pro_features__cache_stats']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
+					
+				$reset = false;
+				$dir = CMS_ROOT. 'cache/stats/page_caching/';
+					
+				//Reset the stats
+				if (!empty($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed'])) {
+					$reset = true;
+					foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses', 'from', 'to') as $stat) {
+						if (is_writable($dir. $stat)) {
+							unlink($dir. $stat);
+						} else {
+							$reset = false;
 						}
-						unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed']);
 					}
-						
-					if ($reset) {
-						$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = true;
-					} else {
-						$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = false;
+					unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed']);
+				}
+					
+				if ($reset) {
+					$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = true;
+				} else {
+					$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = false;
+				}
+					
+				$stats = array();
+				foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses') as $stat) {
+					$stats[$stat] = 0;
+					if (file_exists($dir. $stat)) {
+						$stats[$stat] = (int) trim(file_get_contents($dir. $stat));
 					}
-						
-					$stats = array();
-					foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses') as $stat) {
-						$stats[$stat] = 0;
-						if (file_exists($dir. $stat)) {
-							$stats[$stat] = (int) trim(file_get_contents($dir. $stat));
-						}
-		
-						unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
-						$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
+	
+					unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
+					$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
+				}
+					
+				foreach (array('from', 'to') as $stat) {
+					$stats[$stat] = '';
+					if (file_exists($dir. $stat)) {
+						$stats[$stat] = filemtime($dir. $stat);
 					}
-						
-					foreach (array('from', 'to') as $stat) {
-						$stats[$stat] = '';
-						if (file_exists($dir. $stat)) {
-							$stats[$stat] = filemtime($dir. $stat);
-						}
-		
-						unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
-						$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
-					}
-						
-					unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['current_value']);
-					if ($stats['total'] == 0) {
-						$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = '';
-					} else {
-						$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = round(100 * (float) $stats['hits'] / $stats['total'], 2);
-					}
-						
-					if (file_exists($dir. 'from')) {
-						$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_selected';
-					} else {
-						$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_disabled';
-					}
+	
+					unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
+					$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
+				}
+					
+				unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['current_value']);
+				if ($stats['total'] == 0) {
+					$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = '';
+				} else {
+					$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = round(100 * (float) $stats['hits'] / $stats['total'], 2);
+				}
+					
+				if (file_exists($dir. 'from')) {
+					$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_selected';
+				} else {
+					$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_disabled';
 				}
 			}
 		}
 		
+	}
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		
+		if (isset($box['tabs']['zenario_pro_features__caching'])) {
+			
+			if ($values['zenario_pro_features__caching/caching_enabled']) {
+				if (!$values['zenario_pro_features__caching/cache_web_pages']
+				 && !$values['zenario_pro_features__caching/cache_plugins']
+				 && !$values['zenario_pro_features__caching/cache_css_js_wrappers']
+				 && !$values['zenario_pro_features__caching/cache_ajax']) {
+					$box['tabs']['zenario_pro_features__caching']['errors'][] =
+						adminPhrase('Please select which things you wish to cache.');
+				}
+			}
+			
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

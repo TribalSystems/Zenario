@@ -1,0 +1,45 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_admin:
+    tabs:
+        settings:
+            edit_mode:
+                priv: _PRIV_EDIT_ADMIN
+                enabled: true
+                always_on: true
+            label: Settings
+            fields:
+                #description:
+                #    full_width: Yes
+                #    snippet:
+                #        html: >
+                #            Use this screen to change how this Admin uses Zenario.
+                organizer_page_size:
+                    admin_setting:
+                        name: organizer_page_size
+                    label: 'Organizer page size for this administrator:'
+                    type: select
+                    value: 50
+                    values:
+                        20: 20
+                        50: 50
+                        100: 100
+                        200: 200
+                    side_note: |
+                        The number of items to show per page.
+                    validation:
+                        required: Please enter the number of items to show per page.
+                        numeric: The number of items per page must be numeric.
+                show_help_tour_next_time:
+                    hidden: true
+                    admin_setting:
+                        name: show_help_tour_next_time
+                    type: checkbox
+                    value: 1
+                    label: Show this administrator the help tour when they next open Organizer
+                show_dev_tools:
+                    admin_setting:
+                        name: show_dev_tools
+                    type: checkbox
+                    value: ''
+                    label: Allow this administrator to view the developer tools

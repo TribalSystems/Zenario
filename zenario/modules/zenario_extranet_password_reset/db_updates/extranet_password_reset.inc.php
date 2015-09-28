@@ -55,5 +55,14 @@ revision(1, "
 		 " .(int) session('admin_userid') . ",
 		 0
 		)
-");
+"
+); revision(3,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_extranet_password_reset'
+	WHERE `code` = 'zenario_extranet_password_reset__to_user_password_reset_en'
+_sql
+
+);
 ?>

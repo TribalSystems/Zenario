@@ -31,5 +31,46 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //(i.e. updates that won't be re-run after a site-reset)
 
 
+//Add a flag to identify client and supplier admins
+revision( 31860
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]admins`
+	ADD COLUMN `is_client_account` tinyint(1) NOT NULL DEFAULT 1
+_sql
 
-//There have been no updates since version 7.0.0
+
+//Create a table to store admin settings
+);	revision( 32300
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_settings`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]admin_settings` (
+		`admin_id` int(10) unsigned NOT NULL,
+		`name` varchar(255) NOT NULL DEFAULT '',
+		`value` mediumtext,
+		PRIMARY KEY (`admin_id`, `name`),
+		KEY (`name`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+//Migrate the old _PRIV_VIEW_DEV_TOOLS permission
+, <<<_sql
+	INSERT INTO `[[DB_NAME_PREFIX]]admin_settings`
+	SELECT admin_id, 'show_dev_tools', '1'
+	FROM `[[DB_NAME_PREFIX]]action_admin_link`
+	WHERE action_name = '_PRIV_VIEW_DEV_TOOLS'
+_sql
+
+//Migrate the old organizer_page_size setting
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]admin_settings`
+	SELECT a.id, 'organizer_page_size', IFNULL(s.value, s.default_value)
+	FROM `[[DB_NAME_PREFIX]]admins` AS a
+	INNER JOIN `[[DB_NAME_PREFIX]]site_settings` AS s
+	WHERE name IN ('organizer_page_size', 'storekeeper_page_size')
+_sql
+
+
+);

@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and visitor.wrapper.js.php for step (3).
 */
 
 
@@ -118,7 +118,7 @@ zenario.lib(function(
 		if (1*id == id) {
 			return id;
 		} else {
-			return '~' + encodeURIComponent('' + id).replace(/%/g, '~');
+			return '~' + encodeURIComponent('' + id).replace(/~/g, '%7E').replace(/%/g, '~');
 		}
 	};
 
@@ -145,11 +145,7 @@ zenario.lib(function(
 		}
 	
 		if (typeof text == 'object') {
-			if (text.label) {
-				text = text.label;
-			} else if (text.name) {
-				text = text.name;
-			}
+			text = text.label || text.default_label || text.name || text.field_name;
 		}
 		
 		text = ('' + text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\</g, '&lt;').replace(/>/g, '&gt;');
@@ -237,7 +233,7 @@ zenario.lib(function(
 	//Note that this is deprecated!
 	zenario.nonAsyncAJAX = function(url, post, json, useCache) {
 		
-		//if (zenario.showDevTools
+		//if (zenarioA.adminSettings.show_dev_tools
 		// && window.console
 		// && console.trace) {
 		//	console.trace('Synchronous AJAX request made');
@@ -321,11 +317,11 @@ zenario.lib(function(
 	
 	//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
 	//It returns a zenario.callback object.
-		//Note: The useCache variable is not currently implemented!
-	zenario.ajax = function(url, post, json, useCache) {
+		//Note: The useCache, retry, timeout variables are not currently implemented!
+	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings) {
 		url = zenario.addBasePath(url);
 		
-		var qMark,
+		var qMark, name, setting, options,
 			type = post? 'POST' : 'GET',
 			result = false,
 			parsedResult = false,
@@ -347,7 +343,7 @@ zenario.lib(function(
 			}
 		}
 		
-		$.ajax(url, {
+		options = {
 			data: post,
 			type: type,
 			dataType: 'text',
@@ -375,7 +371,15 @@ zenario.lib(function(
 					cb.call(result);
 				}
 			}
-		});
+		};
+		
+		if (settings !== undefined) {
+			foreach (settings as name => setting) {
+				options[name] = setting;
+			}
+		}
+		
+		$.ajax(url, options);
 		
 		return cb;
 	};
@@ -390,10 +394,13 @@ zenario.lib(function(
 			+ '&langId=' + encodeURIComponent(zenario.langId);
 	
 		if (code !== undefined) {
-			if (typeof code == 'object') {
-				code = code.join(',');
+			url += '&__code__=';
+			
+			if (_.isArray(code)) {
+				url += _.map(code, zenario.encodeItemIdForStorekeeper).join(',');
+			} else {
+				url += zenario.encodeItemIdForStorekeeper(code);
 			}
-			url += '&__code__=' + encodeURIComponent(code);
 		}
 	
 		var phrases = zenario.nonAsyncAJAX(url, false, true, true);
@@ -607,7 +614,7 @@ zenario.lib(function(
 	};
 
 	//Refresh a plugin in a slot
-	zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache) {
+	zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
 	
 		if (scrollToTopOfSlot === undefined) {
 			scrollToTopOfSlot = true;
@@ -667,12 +674,19 @@ zenario.lib(function(
 		var html,
 			url = zenario.pluginAJAXURL(slotName, additionalRequests, instanceId); 
 	
-		if (useCache && (html = zenario.checkSessionStorage(url))) {
+		if (!post && useCache && (html = zenario.checkSessionStorage(url))) {
 			zenario.replacePluginSlotContents(slotName, instanceId, html, additionalRequests, recordInURL, scrollToTopOfSlot);
 		} else {
 			//(I'm using jQuery so that this is done asyncronously)
+			var method = 'GET';
+			if (post) {
+				method = 'POST';
+			}
+			
 			$.ajax({
 				dataType: 'text',
+				data: post,
+				method: method,
 				url: url,
 				success: function(html) {
 					if (useCache) {

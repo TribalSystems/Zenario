@@ -27,50 +27,46 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-$canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, false, '', cms_core::$alias, true, true);
+//Work out the links to open Organizer, and to log out. Make these merge fields.
+$zenarioATLinks = array(
+	'logout' => adminLogoutOnclick(),
+	'organizer' => 'zenario/admin/organizer.php?fromCID='. cms_core::$cID. '&fromCType='. cms_core::$cType);
 
 if (request('zenario_sk_return')) {
-	$skLink = request('zenario_sk_return');
+	$zenarioATLinks['organizer_hash'] = request('zenario_sk_return');
 } else {
-	$skLink = 'zenario__content/panels/content_types/item//'. cms_core::$cType. '//item//'. cms_core::$langId. '//'. cms_core::$cType. '_'. cms_core::$cID;
-	
-}
-
-//Show some tabs while the page is loading.
-//These won't be the real tabs, but we'll copy some of the basic logic the Admin Toolbar uses to come up with a close copy.
-//I'm also attempting to use the HTML code from the microtemplates to get the basic HTML structure roughly right.
-$toolbarTempHTML = '';
-$tabsTempHTML = file_get_contents(moduleDir('zenario_common_features', 'js/microtemplates/zenario_toolbar_tab.html'));
-
-foreach ($toolbars as $toolbar => $details) {
-	$toolbarTempHTML .= str_replace('[[m.label]]', htmlspecialchars($details['label']), $tabsTempHTML);
-}
-
-$toolbarTempHTML =
-	str_replace(array('{{', '{%', '<%'), '<!--',
-		str_replace(array('}}', '%}', '%>'), '-->',
-			str_replace("zenarioA.microTemplate('zenario_toolbar_tab", '-->'. $toolbarTempHTML. '<!--',
-				file_get_contents(moduleDir('zenario_common_features', 'js/microtemplates/zenario_toolbar.html'))
-)));
-
-//Don't show the "bug" icon from the placeholder HTML if this admin doesn't have permission to see the dev tools
-if (!checkPriv('_PRIV_VIEW_DEV_TOOLS')) {
-	$toolbarTempHTML = str_replace('zenario_debug', 'zenario_debug_hidden', $toolbarTempHTML);
+	$zenarioATLinks['organizer_hash'] = 'zenario__content/panels/content_types/item//'. cms_core::$cType. '//item//'. cms_core::$langId. '//'. cms_core::$cType. '_'. cms_core::$cID;
 }
 
 
+//Get the HTML code from the microtemplates to get the basic HTML structure of the Admin Toolbar roughly right.
+$toolbarTempHTML = file_get_contents(moduleDir('zenario_common_features', 'js/microtemplates/zenario_toolbar.html'));
+
+//Add in the merge fields above
+$searches = array();
+$replaces = array();
+foreach ($zenarioATLinks as $key => $value) {
+	$searches[] = '{{zenarioATLinks.'. $key. '}}';
+	$searches[] = '{{zenarioATLinks.'. $key. '|e}}';
+	$searches[] = '{{zenarioATLinks.'. $key. '|escape}}';
+	$replaces[] = $value;
+	$replaces[] = htmlspecialchars($value);
+	$replaces[] = htmlspecialchars($value);
+}
+$toolbarTempHTML = str_replace($searches, $replaces, $toolbarTempHTML);
+
+//Remove all other merge fields.
+$toolbarTempHTML = preg_replace(array('@\{\{.*?\}\}@', '@\{\%.*?\%\}@', '@\<\%.*?\%\>@'), '', $toolbarTempHTML);
+
+//Don't initially show the "bug" icon for the dev tools
+$toolbarTempHTML = str_replace('zenario_debug', 'zenario_debug_hidden', $toolbarTempHTML);
 
 
-
-//Add the Admin Toolbar in Admin Mode
+//Output the temporary HTML to the page, and also note down what the merge fields were for use later in JavaScipt
 echo '
 <div id="zenario_at_wrap" class="zenario_at zenario_toolbar_header"'. $toolbarAttr. '>
-	<div id="zenario_at_organizer_link">
-		<a href="zenario/admin/organizer.php?fromCID=', cms_core::$cID, '&amp;fromCType=', cms_core::$cType, '#', htmlspecialchars($skLink), '" id="zenario_organizer_button" title="', adminPhrase('Go to the Organizer administration back-end for this site'), '" data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}">Organizer</a>
-	</div>
-	<div id="zenario_at_logout_link">
-		<a id="zenario_logout_button" ', adminLogoutOnclick(), ' title="', adminPhrase('Logout'), '" data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"></a>
-	</div>
-	<div id="zenario_at">', $toolbarTempHTML, '</div>
-</div>';
+	', $toolbarTempHTML, '
+</div>
+<script type="text/javascript">
+	var zenarioATLinks = ', json_encode($zenarioATLinks). ';
+</script>';

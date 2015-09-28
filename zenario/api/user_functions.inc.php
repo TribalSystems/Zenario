@@ -59,8 +59,12 @@ function logUserInAutomatically() {
 				}
 			}
 		
-		//Also automatically log out any Users who have been suspended
-		} elseif (!checkRowExists('users', array('id' => (int) $_SESSION['extranetUserID'], 'status' => 'active'))) {
+		//Check the session to see if the extranet user is for a different site that this one.
+		//Also automatically log out any Users who have been suspended.
+		} else
+		if (empty($_SESSION['extranetUser_logged_into_site'])
+		 || $_SESSION['extranetUser_logged_into_site'] != COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id')
+		 || !checkRowExists('users', array('id' => (int) $_SESSION['extranetUserID'], 'status' => 'active'))) {
 			logUserOut();
 		}
 	}
@@ -174,22 +178,17 @@ function smartGroupSQL($smartGroupId, $usersTableAlias = 'u', $customTableAlias 
 
 function countSmartGroupMembers($smartGroupId) {
 	
-	if ($sql = smartGroupSQL($smartGroupId)) {
-		$sql = "
-			SELECT COUNT(DISTINCT u.id)
-			FROM ". DB_NAME_PREFIX. "users AS u
-			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
-			   ON ucd.user_id = u.id
-			WHERE TRUE
-			". $sql;
-		
-		if (($result = sqlSelect($sql))
-		 && ($row = sqlFetchRow($result))) {
-			return $row[0];
-		}
-	}
-
-	return 0;
+	$sql = "
+		SELECT COUNT(DISTINCT u.id)
+		FROM ". DB_NAME_PREFIX. "users AS u
+		LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+		   ON ucd.user_id = u.id
+		WHERE TRUE
+		". smartGroupSQL($smartGroupId);
+	
+	$result = sqlSelect($sql);
+	$row = sqlFetchRow($result);
+	return $row[0];
 }
 
 
@@ -496,11 +495,12 @@ function logUserIn($userId, $impersonate = false) {
 				platform = '". sqlEscape($browser->getPlatform()). "'";
 		sqlQuery($sql);
 		}
-		sendSignal("eventUserLoggedIn",array("user_id" => $userId));
+		sendSignal('eventUserLoggedIn',array('user_id' => $userId));
 	}
 	
-	$_SESSION["extranetUserID"] = $userId;
-	$_SESSION["extranetUser_firstname"] = $user['first_name'];
+	$_SESSION['extranetUserID'] = $userId;
+	$_SESSION['extranetUser_firstname'] = $user['first_name'];
+	$_SESSION['extranetUser_logged_into_site'] = COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id');
 	
 	return $user;
 }

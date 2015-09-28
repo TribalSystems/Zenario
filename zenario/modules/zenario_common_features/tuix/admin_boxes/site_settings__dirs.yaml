@@ -15,7 +15,7 @@ site_settings:
                     snippet:
                         html: |
                             If you wish to store site backups on your server, you should create a directory on your server in which to keep them.
-                                                            It should start with a slash, but do not add a trailing slash.
+                            It should start with a slash, but do not add a trailing slash.
                 backup_dir:
                     site_setting:
                         name: backup_dir
@@ -38,8 +38,8 @@ site_settings:
                     snippet:
                         html: |
                             You should create a directory on your server where documents can be stored by the CMS.
-                                                            Please enter the absolute path to the directory.
-                                                            It should start with a slash, but do not add a trailing slash.
+                            Please enter the absolute path to the directory.
+                            It should start with a slash, but do not add a trailing slash.
                 docstore_dir:
                     site_setting:
                         name: docstore_dir

@@ -57,7 +57,7 @@ zenario_anonymous_comments.load = function(containerId, enableColours, enableIma
 	if (typeof punymce != 'object') {
 		if (!selfCalling) {
 			jQuery.getScript(
-				URLBasePath + 'zenario/js/inc-punymce.js.php?v=' + window.zenarioCSSJSVersionNumber + '&gz=' + zenario.useGZ,
+				URLBasePath + 'zenario/js/punymce.wrapper.js.php?v=' + window.zenarioCSSJSVersionNumber + '&gz=' + zenario.useGZ,
 				function() {
 					punymce.Event._pageInit();
 					zenario_anonymous_comments.load(containerId, enableColours, enableImages, enableEmoticons, enableLinks, true)
@@ -159,7 +159,7 @@ zenario_anonymous_comments.load = function(containerId, enableColours, enableIma
 				cool : ['8)', '8-)']
 			}
 		},
-		content_css: 'zenario/styles/skin.css.php?v=' + encodeURIComponent(window.zenarioCSSJSVersionNumber) + '&id=' + zenario.skinId + '&editor=1' + (zenario.useGZ? '' : '&gz=1')
+		content_css: 'zenario/styles/skin.cache_wrapper.css.php?v=' + encodeURIComponent(window.zenarioCSSJSVersionNumber) + '&id=' + zenario.skinId + '&editor=1' + (zenario.useGZ? '' : '&gz=1')
 	});
 	
 	if (zenario.get('editor__' + containerId + '_f')) {

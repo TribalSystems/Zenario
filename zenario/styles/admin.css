@@ -137,6 +137,10 @@
 	z-index: 2001;
 }
 
+.zenario_debugInfo {
+	display: block;
+}
+
 /*  Hack to get intro.js working with Organizer  */
 #zenario_fbog.zenario_introjs_fixPosition {
 	position: absolute !important;
@@ -455,6 +459,10 @@ body.ie9 .zenario_fbAdminAJAXLoader div {
 	z-index: 400000;
 }
 
+body .zenario_admin_tooltip_over_tinymce {
+	z-index: 65555;
+}
+
 .zenario_admin_tooltip,
 .zenario_admin_tooltip a {
 	color: #FFF !important;
@@ -710,4 +718,54 @@ label.zenario_tag_grey,
 }
 label.zenario_tag_grey::before {
 	border-color: transparent #6f6f6f;
+}
+
+
+/*
+	Placeholder text for WYSIWYG Editors
+*/
+.empty_contenteditable_with_placeholder,
+.mce-content-body {
+	min-height: 80px;
+	margin-top: 10px;
+}
+
+.empty_contenteditable_with_placeholder:before {
+	display: block;
+	content: 'Please enter some text...';
+}
+
+.zenario_slot_being_edited .banner_title_input_box {
+	width: 100%;
+	backgorund-color: #ffffff;
+	color: #000000;
+}
+
+.zenario_slot_being_edited .zenario_banner .banner_text {
+	background-color: #ffffff;
+}
+
+.zenario_slot_being_edited .zenario_banner .banner_text {
+	background-color: #ffffff;
+	/*min-height: 80px;*/
+}
+
+.zenario_slot_being_edited .zenario_banner .banner_text p {
+	color: #000000;
+}
+
+.zenario_slot_being_edited .zenario_banner .banner_text p br { display:none; }
+
+
+/*
+	Make the "toasts" at the top right a bit bigger by default in admin mode,
+	and tweak the opacity and icon position
+*/
+
+#toast-container.toast-top-right>div {
+	width: 365px;
+	font-family: verdana, arial, helvetica;
+    font-size: 13px;
+    opacity: 0.95;
+    background-position: 15px 15px
 }

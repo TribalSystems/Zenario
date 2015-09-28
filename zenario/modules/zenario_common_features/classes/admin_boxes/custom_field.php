@@ -71,7 +71,6 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
 		if (!$box['key']['id']) {
 			exit;
 		}
@@ -214,6 +213,8 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 			$fields['details/protected']['read_only'] = true;
 		}
 		
+		//Fill list of centralised lists
+		$fields['details/values_source']['values'] = getCentralisedLists();
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -373,9 +374,9 @@ class zenario_common_features__admin_boxes__custom_field extends module_base_cla
 				'sortable' => $values['organizer/show_in_organizer'] && $values['organizer/sortable'],
 				'show_by_default' => $values['organizer/show_in_organizer'] && $values['organizer/visibility'] == 1,
 				'always_show' => $values['organizer/show_in_organizer'] && $values['organizer/visibility'] == 2,
-				
 				'label' => $values['details/label'],
-				'include_in_export' => $values['details/include_in_export']);
+				'include_in_export' => $values['details/include_in_export']
+			);
 			
 			//if (checkPriv('_PRIV_PROTECT_DATASET_FIELD')) {
 				$cols['protected'] = $values['details/protected'];

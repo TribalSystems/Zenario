@@ -114,7 +114,7 @@ class zenario_location_listing extends module_base_class {
 		
 		if (!$count) {
 			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+				LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 				   ON c.equiv_id = loc.equiv_id
 				  AND c.type = loc.content_type
 				  AND c.language_id = '". sqlEscape(cms_core::$langId). "'

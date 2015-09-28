@@ -35,18 +35,22 @@
 
 header('Content-Type: text/javascript; charset=UTF-8');
 
-session_start();
-require '../cacheheader.inc.php';
+require '../basicheader.inc.php';
+startSession();
+require CMS_ROOT. 'zenario/includes/cms.inc.php';
+require CMS_ROOT. 'zenario/includes/admin.inc.php';
 require CMS_ROOT. 'zenario/includes/welcome.inc.php';
-require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 
 //Check to see if the CMS is installed
 $freshInstall = $adminId = false;
 $installStatus = 0;
 $installed =
 	checkConfigFileExists()
- && (@include_once CMS_ROOT. 'zenario_siteconfig.php')
  && ($installStatus = 1)
+ && (defined('DBHOST'))
+ && (defined('DBNAME'))
+ && (defined('DBUSER'))
+ && (defined('DBPASS'))
  && (cms_core::$lastDB = cms_core::$localDB = @connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, false))
  && ($result = @cms_core::$localDB->query("SHOW TABLES LIKE '". DB_NAME_PREFIX. "site_settings'"))
  && ($installStatus = 2)
@@ -62,8 +66,6 @@ if (!defined('ERROR_REPORTING_LEVEL')) {
 }
 error_reporting(ERROR_REPORTING_LEVEL);
 
-require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
-require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 
 
 if (request('quickValidate')) {
@@ -90,7 +92,7 @@ if (request('quickValidate')) {
 
 
 
-//Include any xml files in the install directory
+//Include all of the yaml files in the install directory
 $box = array();
 $tags = array();
 $dummy = array();
@@ -123,10 +125,15 @@ if (!$installed) {
 
 if ($installed) {
 	//If the CMS is installed, move on to the login check and then database updates
-	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
-		define('SHOW_SQL_ERRORS_TO_VISITORS', true);
+	
+	if ($freshInstall || $task == 'site_reset') {
+		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
+			define('SHOW_SQL_ERRORS_TO_VISITORS', true);
+		}
+		connectLocalDB();
+	} else {
+		loadSiteConfig();
 	}
-	connectLocalDB();
 	
 	
 	//Log the Admin in automatically if they've just done a fresh install
@@ -150,13 +157,13 @@ if ($installed) {
 	//Otherwise, check that they are trying to log in correctly using ssl if it is requested
 	} elseif (httpOrhttps() != 'https://' && setting('admin_use_ssl')) {
 		//Direct them to the admin domain under ssl if not
-		$box['_location'] = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?'. http_build_query($getRequest);
+		$box['go_to_url'] = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?'. http_build_query($getRequest);
 		$loggedIn = false;
 	
 	//Check that they are logging into the admin domain
 	} elseif (httpHost() != primaryDomain() && httpHostWithoutPort() != primaryDomain()) {
 		//Direct them to the correct domain if not
-		$box['_location'] = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?'. http_build_query($getRequest);
+		$box['go_to_url'] = getGlobalURL(true). SUBDIRECTORY. 'zenario/admin/welcome.php?'. http_build_query($getRequest);
 		$loggedIn = false;
 	
 	//Otherwise, check if the Admin has been logged in, and show the log in section if not
@@ -168,7 +175,7 @@ if ($installed) {
 		
 		//If the Admin is asking to log out, but has already logged out, just redirect them
 		if ($task == 'logout') {
-			$box['_location'] = redirectAdmin($getRequest);
+			$box['go_to_url'] = redirectAdmin($getRequest, true);
 		
 		//Otherwise show the login screen
 		} else {
@@ -179,72 +186,108 @@ if ($installed) {
 	if ($loggedIn) {
 		if ($task == 'logout') {
 			//Log the current admin out
-			unsetAdminSession();
-			$box['_clear_local_storage'] = true;
-			$box['_location'] = redirectAdmin($getRequest);
+			logoutAdminAJAX($box, $getRequest);
 		
 		} else {
-			//Check if database updates are needed
-			$dbUpToDate = !checkIfDBUpdatesAreNeeded($andDoUpdates = false);
+			//Check security tokens unless one of three things are true:
+				//This is a new install
+				//This is a migration from an old site, and the admin_settings table hasn't been created yet
+				//Security tokens are not enabled in the site_description.yaml file
+			if ($freshInstall
+			 || !checkTableDefinition(DB_NAME_PREFIX. 'admin_settings', true)
+			 || !siteDescription('require_security_code_on_admin_login')) {
+				$securityCodeChecked = true;
 			
-			if (!$dbUpToDate) {
-				if (arrayKey($box, 'path') != 'update') {
-					$box = array('path' => 'update');
-				}
-				checkBoxDefinition($box, $tags['update']);
-				
-				$dbUpToDate = updateAJAX($tags, $box, $task);
-			}
-			
-			if ($dbUpToDate) {
+			//Try to get an existing admin cookie, and the corresponding admin setting.
+			//If we find one, check that it's not too old.
+			} else {
 				//Load site settings if they've not already been loaded
 				loadSiteConfig();
 				
-				//Check if a password change is needed/requested
-				$needToChangePassword = ($task == 'change_password' || getRow('admins', 'password_needs_changing', adminId()));
+				//If there's a cookie with the right name, a corresponding admin setting
+				//with the right name, and the time stored in the admin setting is in date,
+				//allow the admin through without running the security code check.
+				zenarioTidySecurityCodes();
+				if (($scsn = zenarioSecurityCodeSettingName())
+				 && ($time = adminSetting($scsn))
+				 && ($time > zenarioSecurityCodeTime(siteDescription('security_code_timeout')))) {
+					$securityCodeChecked = true;
 				
-				if ($needToChangePassword) {
-					if (arrayKey($box, 'path') != 'change_password') {
-						$box = array('path' => 'change_password');
+				//Otherwise we need to send the email with the security code and show the admin the form
+				//to enter it
+				} else {
+					if (arrayKey($box, 'path') != 'security_code') {
+						$box = array('path' => 'security_code');
 					}
-					checkBoxDefinition($box, $tags['change_password']);
-					
-					$needToChangePassword = !changePasswordAJAX($tags, $box, $task);
+					checkBoxDefinition($box, $tags['security_code']);
+				
+					$securityCodeChecked = securityCodeAJAX($tags, $box, $task, $getRequest);
 				}
-				
-				
-				if (!$needToChangePassword) {
-					//Allow the Admin to pass the welcome page at this point
-					$_SESSION['admin_logged_in'] = true;
-					unset($_SESSION['last_item']);
-					
-					if ($task == 'reload_sk' || $task == 'password_changed' || $task == 'site_reset') {
-						//Don't show the diagnostics page if someone is performing the site reset, reload_sk or change password tasks
-						$doneWithDiagnostics = true;
-					} else {
-						//Otherwise show the diagnostics page if there are errors to display
-						if (arrayKey($box, 'path') != 'diagnostics') {
-							$box = array('path' => 'diagnostics');
-						}
-						checkBoxDefinition($box, $tags['diagnostics']);
-						
-						$doneWithDiagnostics = diagnosticsAJAX($tags, $box, $freshInstall);
+			}
+		
+			if ($securityCodeChecked) {
+				//Check if database updates are needed
+				$dbUpToDate = !checkIfDBUpdatesAreNeeded($andDoUpdates = false);
+			
+				if (!$dbUpToDate) {
+					if (arrayKey($box, 'path') != 'update') {
+						$box = array('path' => 'update');
 					}
-					
-					if ($doneWithDiagnostics) {
-						if (arrayKey($box, 'path') != 'congratulations') {
-							$box = array('path' => 'congratulations');
+					checkBoxDefinition($box, $tags['update']);
+				
+					$dbUpToDate = updateAJAX($tags, $box, $task);
+				}
+			
+				if ($dbUpToDate) {
+					//Load site settings if they've not already been loaded
+					loadSiteConfig();
+				
+					//Check if a password change is needed/requested
+					$needToChangePassword = ($task == 'change_password' || getRow('admins', 'password_needs_changing', adminId()));
+				
+					if ($needToChangePassword) {
+						if (arrayKey($box, 'path') != 'change_password') {
+							$box = array('path' => 'change_password');
 						}
-						
-						checkBoxDefinition($box, $tags['congratulations']);
-						
-						if ($task == 'install') {
-							//If the CMS was just installed, show the congrats screen
-							congratulationsAJAX($tags, $box);
-						
+						checkBoxDefinition($box, $tags['change_password']);
+					
+						$needToChangePassword = !changePasswordAJAX($tags, $box, $task);
+					}
+				
+				
+					if (!$needToChangePassword) {
+						//Allow the Admin to pass the welcome page at this point
+						$_SESSION['admin_logged_in'] = true;
+						unset($_SESSION['last_item']);
+					
+						if ($task == 'reload_sk' || $task == 'password_changed' || $task == 'site_reset') {
+							//Don't show the diagnostics page if someone is performing the site reset, reload_sk or change password tasks
+							$doneWithDiagnostics = true;
 						} else {
-							//Otherwise redirect the Admin away from this page
-							$box['_location'] = redirectAdmin($getRequest);
+							//Otherwise show the diagnostics page if there are errors to display
+							if (arrayKey($box, 'path') != 'diagnostics') {
+								$box = array('path' => 'diagnostics');
+							}
+							checkBoxDefinition($box, $tags['diagnostics']);
+						
+							$doneWithDiagnostics = diagnosticsAJAX($tags, $box, $freshInstall);
+						}
+					
+						if ($doneWithDiagnostics) {
+							if (arrayKey($box, 'path') != 'congratulations') {
+								$box = array('path' => 'congratulations');
+							}
+						
+							checkBoxDefinition($box, $tags['congratulations']);
+						
+							if ($task == 'install') {
+								//If the CMS was just installed, show the congrats screen
+								congratulationsAJAX($tags, $box);
+						
+							} else {
+								//Otherwise redirect the Admin away from this page
+								$box['go_to_url'] = redirectAdmin($getRequest);
+							}
 						}
 					}
 				}

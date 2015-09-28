@@ -59,3 +59,13 @@ revision(80, "
         0
     )
 ");
+
+revision(140,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_comments'
+	WHERE `code` = 'zenario_comments__comment_subs_en'
+_sql
+
+);

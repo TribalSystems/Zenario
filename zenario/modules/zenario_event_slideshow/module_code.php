@@ -38,9 +38,9 @@ class zenario_event_slideshow extends module_base_class {
 		$sqlSelect = '
 			SELECT
 				c.id, c.type, c.visitor_version, v.title
-			FROM '.DB_NAME_PREFIX.'content c';
+			FROM '.DB_NAME_PREFIX.'content_items c';
 		$sqlJoins = '
-			INNER JOIN '.DB_NAME_PREFIX.'versions v
+			INNER JOIN '.DB_NAME_PREFIX.'content_item_versions v
 				ON (c.tag_id = v.tag_id) AND (c.visitor_version = v.version)
 			INNER JOIN '.DB_NAME_PREFIX.'translation_chains tc
 				ON (c.equiv_id = tc.equiv_id) AND (c.type = tc.type)

@@ -63,6 +63,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 	
 	
 	private static $frequencyOptions = array(
+		'1m' => array('label' => 'Every minute', 'ord' => 0.5),
 		'5m' => array('label' => 'Every 5 minutes', 'ord' => 1),
 		'10m' => array('label' => 'Every 10 minutes', 'ord' => 2),
 		'15m' => array('label' => 'Every 15 minutes', 'ord' => 3),
@@ -185,7 +186,8 @@ class zenario_scheduled_task_manager extends module_base_class {
 		} else {
 			$sql .= "
 			  AND (
-				status = 'rerun_scheduled'";
+				status = 'rerun_scheduled'
+				OR run_every_minute = 1";
 		
 			if (!$offtime) {
 				$sql .= "

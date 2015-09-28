@@ -36,18 +36,29 @@ switch ($path) {
 			
 		if (engToBooleanArray($box['tabs']['time_and_day'], 'edit_mode', 'on') && empty($box['tabs']['month']['hidden'])) {
 			
+			$columns = array();
+			
 			$days = '';
 			foreach (array('mon','tue','wed','thr','fri','sat','sun') as $day) {
 				if ($values['time_and_day/'. $day]) {
 					$days .= ($days? ',' : ''). $day;
 				}
 			}
+			$columns['days'] = $days;
 			
 			$hours = '';
 			$minutes = '';
 			$startAtHour = $values['time_and_day/start_at_hours'];
 			$startAtMinutes = $values['time_and_day/start_at_minutes'];
 			$frequency = $values['time_and_day/frequency'];
+			
+			// Special case for running every minute
+			$run_every_minute = false;
+			if ($frequency == '1m') {
+				$frequency = '5m';
+				$run_every_minute = true;
+			}
+			$columns['run_every_minute'] = $run_every_minute;
 			
 			if (substr($frequency, -1) == 'h') {
 				$i = rtrim($frequency, 'h');
@@ -63,15 +74,13 @@ switch ($path) {
 				$minutes .= $minute.'m,';
 			}
 			
-			$hours = rtrim($hours,',');
-			$minutes = rtrim($minutes, ',');
+			$columns['hours'] = rtrim($hours,',');
+			$columns['minutes'] = rtrim($minutes, ',');
 			
-			updateRow('jobs',
-				array(
-					'days' => $days,
-					'hours' => $hours,
-					'minutes' => $minutes),
-				$box['key']['id']);
+			
+			
+			
+			updateRow('jobs', $columns, $box['key']['id']);
 		
 		} 
 		

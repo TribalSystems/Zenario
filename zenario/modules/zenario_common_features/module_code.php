@@ -30,52 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features extends module_base_class {
 	
-	public static function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
-	
-		$sql = "
-			SELECT
-				m.id AS mID,
-				t.name,
-				m.target_loc,
-				m.open_in_new_window,
-				m.anchor,
-				m.module_class_name,
-				m.method_name,
-				m.param_1,
-				m.param_2,
-				m.equiv_id,
-				c.id AS cID,
-				m.content_type AS cType,
-				c.alias,
-				m.use_download_page,
-				m.hide_private_item,
-				t.ext_url,
-				c.visitor_version,
-				m.invisible,
-				m.accesskey,
-				m.ordinal,
-				m.rel_tag,
-				m.image_id,
-				m.rollover_image_id,
-				m.menu_text_module_class_name,
-				m.menu_text_method_name,
-				m.menu_text_param_1,
-				m.menu_text_param_2
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
-			   ON t.menu_id = m.id
-			  AND t.language_id = '". sqlEscape($language). "'
-			LEFT JOIN ".DB_NAME_PREFIX."content AS c
-			   ON m.target_loc = 'int'
-			  AND m.equiv_id = c.equiv_id
-			  AND m.content_type = c.type
-			  AND c.language_id = '". sqlEscape($language). "'
-			WHERE m.parent_id = ". (int) $parentMenuId. "
-			  AND m.section_id = ". (int) $sectionId. "
-			ORDER BY m.ordinal";
-		
-		return sqlQuery($sql);
-	}
 	/*
 	public function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
@@ -110,47 +64,16 @@ class zenario_common_features extends module_base_class {
 	
 	*/
 	
-	public function deleteHierarchicalDocumentPubliclink($documentId) {
-		$document = getRow('documents', array('file_id', 'filename'), $documentId);
+	public static function deleteHierarchicalDocumentPubliclink($documentId) {
+		$document = getRow('documents', array('file_id'), $documentId);
+		$file = getRow('files',  array('short_checksum'), $document['file_id']);
 		
-		$fileIdsInDocument = getRowsArray('documents', array('file_id'), array('file_id'=>$document['file_id'], 'filename'=>$document['filename']));
-		$numberFileIds =count($fileIdsInDocument);
-		
-		$file = getRow('files', 
-						array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
-						$document['file_id']);
-		
-		$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
-		$symFolder =  CMS_ROOT . $dirPath;
-		$symPath = $symFolder . '/' . $document['filename'];
-		$frontLink = $dirPath . '/' . $document['filename'];
-		
-		if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
-			if(is_link($symPath)) {
-				$target = readlink($symPath);
-				unlink($symPath);
-				if ($numberFileIds == 1){
-					if (file_exists($symFolder. '/accessed')) {
-						unlink($symFolder. '/accessed');
-					}
-					$empty = true;
-					foreach (scandir($symFolder) as $child) {
-						if (!($child == '.' || $child == '..')) {
-							$empty = false;
-						}
-					}
-					if ($empty) {
-						rmdir($symFolder);
-					} else {
-						return "Unable to delete folder as not empty.";
-					}
-					return true;
-				}
-			} else {
-				return "Does not have public link to delete.";
-			}
+		if (deleteCacheDir(CMS_ROOT. 'public/downloads/'. $file['short_checksum'], 1)) {
+			updateRow('documents', array('privacy' => 'auto'), array('file_id' => $document['file_id']));
+			return true;
+			
 		} else {
-			return "Problem deleting syslink.";
+			return adminPhrase("Unable to public link directory as it is not empty.");
 		}
 	}
 	
@@ -177,7 +100,7 @@ class zenario_common_features extends module_base_class {
 			if($file['filename']) {
 				self::deleteHierarchicalDocumentPubliclink($documentId);
 				//check to see if file used by another document before deleting or used in ctype documents
-				if (($numberFileIds == 1) && !checkRowExists('versions', array('file_id' => $details['file_id']))) {
+				if (($numberFileIds == 1) && !checkRowExists('content_item_versions', array('file_id' => $details['file_id']))) {
 					deleteRow('files', array('id' => $details['file_id']));
 					if ($details['thumbnail_id']) {
 						deleteRow('files', array('id' => $details['thumbnail_id']));
@@ -636,46 +559,11 @@ class zenario_common_features extends module_base_class {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public static function fileSizeConvert($bytes) {
-		$bytes = floatval($bytes);
-			$arBytes = array(
-				0 => array(
-					"UNIT" => "TB",
-					"VALUE" => pow(1024, 4)
-				),
-				1 => array(
-					"UNIT" => "GB",
-					"VALUE" => pow(1024, 3)
-				),
-				2 => array(
-					"UNIT" => "MB",
-					"VALUE" => pow(1024, 2)
-				),
-				3 => array(
-					"UNIT" => "KB",
-					"VALUE" => 1024
-				),
-				4 => array(
-					"UNIT" => "bytes",
-					"VALUE" => 1
-				),
-			);
-		
-		foreach($arBytes as $arItem) {
-			if($bytes >= $arItem["VALUE"]) {
-				$result = $bytes / $arItem["VALUE"];
-				$result = strval(round($result, 2)). " " .$arItem["UNIT"];
-				break;
-			}
-		}
-		return $result;
-	}
-	
 	public static function jobPublishContent($serverTime) {
 		
 		$sql = "
 			SELECT id, type, version
-			FROM ". DB_NAME_PREFIX. "versions
+			FROM ". DB_NAME_PREFIX. "content_item_versions
 			WHERE scheduled_publish_datetime <= STR_TO_DATE('". sqlEscape($serverTime). "', '%Y-%m-%d %H:%i:%s')";
 		$result = sqlQuery($sql);
 		
@@ -684,13 +572,13 @@ class zenario_common_features extends module_base_class {
 			
 			if (isDraft($citem['id'], $citem['type'], $citem['version'])) {
 				// Publish marked draft items
-				$adminId = getRow('content', 'lock_owner_id', array('id'=>$citem['id'], 'type'=>$citem['type']));
+				$adminId = getRow('content_items', 'lock_owner_id', array('id'=>$citem['id'], 'type'=>$citem['type']));
 				publishContent($citem['id'], $citem['type'], $adminId);
 				$action = true;
 				echo adminPhrase('Published Content Item [[tag]]', array('tag' => formatTag($citem['id'], $citem['type']))), "\n";
 				
 				// Update scheduled time
-				updateRow('versions', array('scheduled_publish_datetime'=>NULL), array('id'=>$citem['id'], 'type'=>$citem['type'], 'version'=>$citem['version']));
+				updateRow('content_item_versions', array('scheduled_publish_datetime'=>NULL), array('id'=>$citem['id'], 'type'=>$citem['type'], 'version'=>$citem['version']));
 			}
 		}
 		
@@ -699,6 +587,24 @@ class zenario_common_features extends module_base_class {
 		}
 		
 		return $action;
+	}
+	
+	public static function canCreateAdditionalAdmins() {
+		$limit = siteDescription('max_local_administrators');
+		if ($limit) {
+			$sql = '
+				SELECT COUNT(*)
+				FROM ' . DB_NAME_PREFIX . 'admins
+				WHERE is_client_account = 1
+				AND status = "active"';
+			$result = sqlSelect($sql);
+			$row = sqlFetchRow($result);
+			if ($row[0] >= $limit) {
+				return false;
+				
+			}
+		}
+		return true;
 	}
 	
 }

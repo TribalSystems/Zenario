@@ -1,23 +1,45 @@
-<div class="zenario_at_container zenario_at_tabs_container">
-	<div class="zenario_at_content zenario_at_tabs">
-		{{zenarioA.microTemplate('zenario_toolbar_tab', m.tabs)}}
+
+	<div id="zenario_at_organizer_link">
+		<a
+			href="{{zenarioATLinks.organizer|escape}}#{{zenarioATLinks.organizer_hash|escape}}"
+			id="zenario_organizer_button"
+			title="{{zenarioA.phrase.goToOrganizer}}"
+			data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"
+		>Organizer</a>
 	</div>
-</div>
-<div class="zenario_at_status_icons_container">
-	<div class="zenario_at_status_icons">
-		{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+	<div id="zenario_at_top_left_menu">
+		{{zenarioA.microTemplate('zenario_toolbar_top_left_button', m.sections.top_left_buttons)}}
 	</div>
-</div>
-<div class="zenario_at_container zenario_at_toolbar_container">
-	<div id="zenario_at_toolbars">
-		
-		<% if (zenario.showDevTools) { %>
-			<div class="zenario_debug" onclick="zenarioA.debug('zenarioAT');"><div></div></div>
-		<% } %>
-		
-		<div class="zenario_at_status_button">
-			{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}
+	<div id="zenario_at_logout_link">
+		<a
+			id="zenario_logout_button"
+			{{zenarioATLinks.logout}}
+			title="{{zenarioA.phrase.logout}}"
+			data-tooltip-options="{tooltipClass:\'zenario_admin_tooltip\'}"
+		></a>
+	</div>
+	<div id="zenario_at">
+		<div class="zenario_at_container zenario_at_tabs_container">
+			<div class="zenario_at_content zenario_at_tabs">
+				{{zenarioA.microTemplate('zenario_toolbar_tab', m.tabs)}}
+			</div>
 		</div>
-		{{zenarioA.microTemplate(m.toolbar_microtemplate, m)}}
+		<div class="zenario_at_status_icons_container">
+			<div class="zenario_at_status_icons">
+				{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.icons)}}
+			</div>
+		</div>
+		<div class="zenario_at_container zenario_at_toolbar_container">
+			<div id="zenario_at_toolbars">
+		
+				<% if (zenarioA.adminSettings.show_dev_tools) { %>
+					<div class="zenario_debug" onclick="zenarioA.debug('zenarioAT');"><div></div></div>
+				<% } %>
+		
+				<div class="zenario_at_status_button">
+					{{zenarioA.microTemplate('zenario_toolbar_status_icon', m.sections.status_button)}}
+				</div>
+				{{zenarioA.microTemplate(m.toolbar_microtemplate, m)}}
+			</div>
+		</div>
 	</div>
-</div>

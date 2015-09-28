@@ -49,7 +49,9 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	}
 	
 	var $input = $('<input type="text" id="banner_title_input_box" placeholder="'+zenario_banner.phrase('Title')+'"/>'), 
-		$title = $('div#'+containerId+' div.banner_title h2'), 
+		$title = $('div#'+containerId+' div.banner_title h2'),
+		$editor = $('div#' + editorId),
+		editorContentIsEmpty = $.trim($editor.text()) == '',
 		p, 
 		props = ['color', 'background', 'font-family', 'text-size', 'font-weight', 'font-size', 'font-style']; 
 		
@@ -60,7 +62,12 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	$input.css('border', 'none'); $title.replaceWith($input);
 	
 	zenarioA.getSkinDesc();
-	$('div#' + editorId).tinymce({
+	
+	if (editorContentIsEmpty) {
+		$editor.addClass('empty_contenteditable_with_placeholder');
+	}
+	
+	$editor.tinymce({
 		script_url: URLBasePath + zenarioA.tinyMCEPath,
 
 		plugins: ["advlist autolink lists link charmap hr anchor",
@@ -96,7 +103,22 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 		relative_urls: true,
 		
 		style_formats: zenarioA.skinDesc.style_formats,
-		file_browser_callback: zenario_banner.SK
+		file_browser_callback: zenarioA.fileBrowser,
+		
+		
+		setup: function(editor) {
+			editor.on('keyup', function(e) {
+				var editorContentIsNowEmpty = editor.getContent() == '';
+				
+				if (editorContentIsEmpty && !editorContentIsNowEmpty) {
+					$editor.removeClass('empty_contenteditable_with_placeholder');
+				
+				} else if (!editorContentIsEmpty && editorContentIsNowEmpty) {
+					$editor.addClass('empty_contenteditable_with_placeholder');
+				}
+				editorContentIsEmpty = editorContentIsNowEmpty;
+			});
+		}
 	});
 	
 	window.zenarioEditorSave = function(editor) {
@@ -108,6 +130,8 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	window.zenarioEditorCancel = function(editor) {
 		zenario_banner.close(get(editor.id));
 	};
+	
+	zenario_banner.startPoking();
 }
 
 
@@ -147,47 +171,23 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 }
 
 
-zenario_banner.SK = function(field_name, url, type, win) {
-	
-	zenario_banner.win = win;
-	zenario_banner.field_name = field_name;
-	
-	if (type == 'file') {
-		zenarioA.organizerSelect('zenario_banner', 'setLinkURL', false,
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						false, undefined, undefined, undefined, true);
-	
-	}
-}
 
-zenario_banner.lastFieldValue = '';
-zenario_banner.setEditorField = function(value, el, onlyIfEmpty) {
-	if (el === undefined) {
-		el = zenario_banner.win.document.getElementById(zenario_banner.field_name);
+zenario_banner.stopPoking = function() {
+	if (zenario_banner.poking) {
+		clearInterval(zenario_banner.poking);
 	}
-	
-	if (onlyIfEmpty) {
-		if (el.value !== '' && el.value != zenario_banner.lastFieldValue) {
-			return;
-		}
-		zenario_banner.lastFieldValue = value;
-	}
-	
-	el.value = value;
-	zenario.fireChangeEvent(el);
-}
+	zenario_banner.poking = false;
+};
 
-zenario_banner.setLinkURL = function(path, key, row) {
-	//Get the URL via an AJAX program
-	key.getItemURL = 1;
-	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
-	
-	zenario_banner.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
-	zenario_banner.setEditorField(URL);
-}
+zenario_banner.startPoking = function() {
+	if (!zenario_banner.poking) {
+		zenario_banner.poking = setInterval(zenario_banner.poke, 2 * 60 * 1000);
+	}
+};
+
+zenario_banner.poke = function() {
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
+};
 
 
 
@@ -204,6 +204,8 @@ zenario_banner.close = function(el) {
 }
 
 zenario_banner.doClose = function(slotName) {
+	zenario_banner.stopPoking();
+	
 	$('#zenario_editor_toolbar').html('').hide();
 	zenario_banner.refreshPluginSlot(slotName, undefined, false);
 	

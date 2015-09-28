@@ -24,19 +24,25 @@ plugin_settings:
                 show_parent:
                     plugin_setting:
                         name: show_parent
-                    label: 'Show parent:'
+                    label: 'Show parent button'
                     type: checkbox
                     value: "1"
                 show_previous:
                     plugin_setting:
                         name: show_previous
-                    label: 'Show previous:'
+                    label: 'Show previous button'
                     type: checkbox
                     value: "1"
                 show_next:
                     plugin_setting:
                         name: show_next
-                    label: 'Show next:'
+                    label: 'Show next button'
+                    type: checkbox
+                    value: "1"
+                show_page_link_as_title:
+                    plugin_setting:
+                        name: show_page_link_as_title
+                    label: Show page title as link's title
                     type: checkbox
                     value: "1"
                 min_level:

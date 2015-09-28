@@ -51,3 +51,9 @@ _sql
 		ADD UNIQUE KEY (`file_id`, `user_id`)
 _sql
 );
+revision( 6
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_DOCUMENTS_PREFIX]]user_documents`
+	ADD COLUMN `title` varchar(255) DEFAULT NULL
+_sql
+);

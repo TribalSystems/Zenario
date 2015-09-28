@@ -35,8 +35,27 @@ switch ($path) {
 			$values['details/name'] = $templateDetails['name'];
 			$values['details/body'] = $templateDetails['body'];
 		}
+		
+		$style_formats = siteDescription('email_style_formats');
+		if (!empty($style_formats)) {
+			$box['tabs']['details']['fields']['body']['editor_options']['style_formats'] = $style_formats;
+			$box['tabs']['details']['fields']['body']['editor_options']['toolbar'] =
+				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+		}
+		
 		break;
+	
+	
 	case 'zenario_newsletter':
+		
+		$style_formats = siteDescription('email_style_formats');
+		if (!empty($style_formats)) {
+			$box['tabs']['meta_data']['fields']['body']['editor_options']['style_formats'] = $style_formats;
+			$box['tabs']['meta_data']['fields']['body']['editor_options']['toolbar'] =
+				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
+		}
+		
+		
 		$box['tabs']['unsub_exclude']['fields'] = &$box['tabs']['unsub_exclude']['fields'];
 		
 		$adminDetails = getAdminDetails(adminId());

@@ -443,6 +443,7 @@ body.webkit input {
 }
 
 .welcome div.thickbox_table input#skip,
+.welcome div.thickbox_table input#resend,
 .welcome div.thickbox_table input#ive_done_it
 {
 	margin-right:10px;
@@ -593,6 +594,23 @@ body.webkit input {
 	background:#FCE7E6;
 	font-size:11.5px;
 	margin-bottom: 10px;
+}
+
+.welcome div.thickbox_table .successDisplayRow .messageDisplay {
+	min-height: 20px;
+	padding:6px 10px 6px 10px;
+	margin-bottom:20px;
+	line-height:1.4em;
+	vertical-align:middle;
+	font-size:12px;
+	background-color:#F5F5F5;
+	color:#01AC02;	
+	border:2px solid #01AC02;
+}
+
+.welcome div.thickbox_table .successDisplayRow .messageDisplay div {
+	background:url('../admin/images/icon-success.png') no-repeat left 0;
+	padding-left:25px;
 }
 
 .welcome div.thickbox_table #row__path_status div
@@ -908,4 +926,15 @@ body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me .zena
 
 body.ie #zenario_abtab .zenario_ab_tab__login .zenario_ab_row__remember_me:hover .zenario_note_below {
 	display:block;
+}
+
+
+/*
+	Set the font on the "you were just redirected..." message
+	(which is actually powered by the toast jQuery library)
+*/
+
+#toast-container {
+	font-family: verdana, arial, helvetica;
+    font-size: 13px;
 }

@@ -578,6 +578,10 @@ class zenario_incoming_email_manager extends module_base_class {
 									
 									imap_close($mbox);
 								}
+								
+								//Workaround for a bug in a more recent version of PHP.
+								//We need to clear any errors that might otherwise appear in the output.
+								$imapErrors = imap_errors();
 							}
 						}
 					}

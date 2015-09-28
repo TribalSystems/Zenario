@@ -101,7 +101,7 @@ sqlQuery($sql);
 $result = getRows('content_types', 'content_type_id', array('module_id' => $moduleId), 'content_type_name_en');
 while ($contentType = sqlFetchAssoc($result)) {
 	//Completely delete any Content Item for that Content Type
-	$result2 = getRows('content', array('id', 'type'), array('type' => $contentType['content_type_id']));
+	$result2 = getRows('content_items', array('id', 'type'), array('type' => $contentType['content_type_id']));
 	while ($content = sqlFetchAssoc($result2)) {
 		deleteContentItem($content['id'], $content['type']);
 	}
@@ -113,7 +113,7 @@ while ($contentType = sqlFetchAssoc($result)) {
 $result = getRows('special_pages', array('equiv_id', 'content_type'), array('module_class_name' => $module['class_name']));
 while ($specialPage = sqlFetchAssoc($result)) {
 	//Completely delete the Special Page in every language
-	$result2 = getRows('content', array('id', 'type'), array('equiv_id' => $specialPage['equiv_id'], 'type' => $specialPage['content_type']));
+	$result2 = getRows('content_items', array('id', 'type'), array('equiv_id' => $specialPage['equiv_id'], 'type' => $specialPage['content_type']));
 	while ($content = sqlFetchAssoc($result2)) {
 		deleteContentItem($content['id'], $content['type']);
 	}
@@ -123,6 +123,10 @@ while ($specialPage = sqlFetchAssoc($result)) {
 
 //Unlink this module from any special pages
 updateRow('special_pages', array('module_class_name' => ''), array('module_class_name' => $module['class_name']));
+
+
+//Delete any centralised lists
+deleteRow('centralised_lists', array('module_class_name' => $module['class_name']));
 
 //Delete any records of the module having been installed
 $sql = "

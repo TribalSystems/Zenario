@@ -162,28 +162,21 @@ if (isset($box['tabs']['image_sizes']['fields']['working_copy_image'])) {
 	}
 }
 
+if (isset($box['tabs']['styles']['fields']['email_style_formats'])) {
+	
+	$yaml = array('email_style_formats' => siteDescription('email_style_formats'));
+	
+	if (empty($yaml['email_style_formats'])) {
+		$yaml['email_style_formats'] = array();
+	}
+	
+	require_once CMS_ROOT. 'zenario/libraries/mit/spyc/Spyc.php';
+	$values['email_style_formats'] = Spyc::YAMLDump($yaml, 4);
+}
+
 //Set the value of the template directory
 if (isset($box['tabs']['template_dir']['fields']['template_dir'])) {
 	$box['tabs']['template_dir']['fields']['template_dir']['value'] = CMS_ROOT. 'zenario_custom/templates/grid_templates';
-}
-
-//
-if (isset($box['tabs']['cookies']['fields']['cookie_domain'])) {
-	if ($domain = setting('primary_domain')) {
-		$domain = explode('.', $domain);
-		
-		$count = count($domain);
-		while ($count >= 2) {
-			
-			$subdomain = implode('.', array_slice($domain, -$count));
-			
-			$box['tabs']['cookies']['fields']['cookie_domain']['values'][$subdomain] =
-				adminPhrase('Cookies are shared across [[subdomain]] and all subdomains',
-					array('subdomain' => $subdomain));
-			
-			--$count;
-		}
-	}
 }
 
 //On multisite sites, don't allow local Admins to change the directory paths

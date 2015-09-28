@@ -13,7 +13,8 @@ sections:
                 label: '[Orphaned page]'
             quick_add_to_menu:
                 priv: _PRIV_ADD_MENU_ITEM
-                label: Attach item to menu
+                label: Attach content item to menu
+                css_class: zenario_create_a_new
                 tooltip: >
                     This content item is orphaned (not in the menu). Click to
                     add it to the menu (use its browser title as the menu text).

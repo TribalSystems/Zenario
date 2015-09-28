@@ -9,7 +9,7 @@
 		[cms:section name="Login_Form"]
 			<div>
 			
-				<h2>[cms:phrase code="_SIGN_IN"/]</h2>
+				<h2>[cms:merge name="main_login_heading"/]</h2>
 			
 				[cms:section name="Error_Display"]
 					<div class="extranet_error">[cms:merge name="Error"/]</div>
@@ -17,19 +17,19 @@
 				
 				[cms:section name="Login_with_screen_name"]
 					<div class="extranet_field">
-						<div class="label">[cms:phrase code="_SCREEN_NAME:"/]</div>
+						<div class="label">[cms:merge name="screen_name_field_label"/]</div>
 						[cms:input type="text" name="extranet_screen_name" required="true" class="extranet_text"/]
 					</div>
 				[/cms:section]
 				[cms:section name="Login_with_email"]
 					<div class="extranet_field">
-						<div class="label">[cms:phrase code="_EMAIL:"/]</div>
-						[cms:input type="text" name="extranet_email" pattern="email" required="true" class="extranet_text"/]
+						<div class="label">[cms:merge name="email_field_label"/]</div>
+						[cms:input type="text" name="extranet_email" required="true" pattern="email" class="extranet_text"/]
 					</div>
 				[/cms:section]
 				<div class="extranet_field">
-					<div class="label">[cms:phrase code="_PASSWORD:"/]</div>
-					[cms:input type="password" name="extranet_password" required="true" class="extranet_password"/]
+					<div class="label">[cms:merge name="password_field_label"/]</div>
+					[cms:input type="password" name="extranet_password" required="true"class="extranet_password"/]
 				</div>
 				[cms:section name="Ts_And_Cs_Section"]
 					<div class="extranet_terms_and_conditions">
@@ -37,7 +37,7 @@
 						[cms:input type="checkbox" name="extranet_terms_and_conditions" id="extranet_terms_and_conditions"/]
 					</div>
 				[/cms:section]
-				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="[cms:phrase code='_LOGIN'/]" /></div></div>
+				<div class="extranet_btn"><div class="r"><input type="submit" name="extranet_login" class="login_entry_button i" value="[cms:merge name='login_button_text'/]" /></div></div>
 				
 				[cms:section name="Remember_Me_Section"]
 					<div class="extranet_remember_me">

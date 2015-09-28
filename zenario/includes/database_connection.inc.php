@@ -160,7 +160,12 @@ function loadSiteConfig() {
 		unset($result);
 	}
 	
+	
 	//Load the full site settings.
+	if (!checkTableDefinition(DB_NAME_PREFIX. 'site_settings', true)) {
+		return;
+	}
+	
 	$sql = "
 		SELECT name, IFNULL(value, default_value)
 		FROM ". DB_NAME_PREFIX. "site_settings
@@ -170,11 +175,17 @@ function loadSiteConfig() {
 		cms_core::$siteConfig[$row[0]] = $row[1];
 	}
 	
+	
 	//Load information on the special pages and their language equivalences
+	if (!checkTableDefinition(DB_NAME_PREFIX. 'content_items', true)
+	 || !checkTableDefinition(DB_NAME_PREFIX. 'special_pages', true)) {
+		return;
+	}
+	
 	$sql = "
 		SELECT sp.page_type, c.equiv_id, c.language_id, c.id, c.type
 		FROM ". DB_NAME_PREFIX. "special_pages AS sp
-		INNER JOIN ". DB_NAME_PREFIX. "content AS c
+		INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 		   ON c.equiv_id = sp.equiv_id
 		  AND c.type = sp.content_type";
 	
@@ -194,7 +205,12 @@ function loadSiteConfig() {
 		}
 	}
 	
+	
 	//Load a list of languages whose phrases need translating
+	if (!checkTableDefinition(DB_NAME_PREFIX. 'languages', true)) {
+		return;
+	}
+	
 	cms_core::$langs = getRowsArray('languages', array('translate_phrases', 'domain'), array());
 	foreach (cms_core::$langs as &$lang) {
 		$lang['translate_phrases'] = (bool) $lang['translate_phrases'];
@@ -531,7 +547,7 @@ function checkForChangesInYamlFiles() {
 		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
 		if ($useFallback) {
 			$changed = false;
-			foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer') as $type) {
+			foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'wizards') as $type) {
 				foreach (moduleDirs('tuix/'. $type. '/') as $tuixDir) {
 					chdir(CMS_ROOT. $tuixDir);
 						foreach (array_map('filemtime', scandir('.')) as $mtime) {
@@ -550,7 +566,8 @@ function checkForChangesInYamlFiles() {
 	
 	if ($changed) {
 		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
-		require_once CMS_ROOT. 'zenario/adminheader.inc.php';
+		require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
+		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 		
 		//Scan the TUIX files, and come up with a list of what paths are in what files
 		$tuixFiles = array();
@@ -566,7 +583,7 @@ function checkForChangesInYamlFiles() {
 		}
 	
 		$contents = array();
-		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer') as $type) {
+		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'wizards') as $type) {
 			foreach (moduleDirs('tuix/'. $type. '/') as $moduleClassName => $dir) {
 			
 				foreach (scandir($dir) as $file) {
@@ -887,12 +904,23 @@ function reportDatabaseErrorFromHelperFunction($error) {
 }
 
 //Check a table definition and see which columns are numeric
-function checkTableDefinition($prefixAndTable) {
+function checkTableDefinition($prefixAndTable, $checkExists = false) {
 	$pkCol = false;
 	$exists = false;
 	
 	if (!isset(cms_core::$numericCols[$prefixAndTable])) {
 		cms_core::$numericCols[$prefixAndTable] = array();
+	}
+	
+	if (!cms_core::$lastDB) {
+		return false;
+	}
+	
+	if ($checkExists
+	 && !(($result = sqlSelect("SHOW TABLES LIKE '". sqlEscape($prefixAndTable). "'"))
+	   && (sqlFetchRow($result))
+	)) {
+		return false;
 	}
 	
 	if ($result = sqlSelect('SHOW COLUMNS FROM `'. sqlEscape($prefixAndTable). '`')) {

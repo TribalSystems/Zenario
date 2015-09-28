@@ -13,6 +13,10 @@ zenario_user_documents__user_document_properties:
                 always_on: Yes
                 enabled: Yes
             fields:
+                document_title:
+                    label: 'Title:'
+                    type: text
+                    maxlength: "255"
                 tags:
                     label: 'Document tags:'
                     type: checkboxes

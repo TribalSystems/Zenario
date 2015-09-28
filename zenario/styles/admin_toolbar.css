@@ -40,6 +40,24 @@
 	background-image:url('../admin/images/sprites/org-icons-v2.png');
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
+	width: 22px;
+	height: 22px;
+	display: block;
+	float: right;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a {
+	background-image:url('../admin/images/no-regular-access-admin-toolbar-icon.png');
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
+	background-image:url('../admin/images/password-protected-group-admin-toolbar-icon');
+}
+
 #zenario_at_wrap {
 	background:#F6F6F6;
 	border-bottom:1px solid #CACACA;
@@ -57,34 +75,50 @@
 
 #zenario_at_organizer_link a {
 	display:block;
-	width:110px;
+	width: 50px;
 	height:41px;
 	position:absolute;
-	left:15px;
 	text-align:center;
 	text-transform:uppercase;
 	line-height:36px;
-	font-size:13px;
+	font-size:0;
 	font-weight:bold;
-	color:#E2E2E2;
+	color: transparent; 
 	text-shadow:0 1px 1px #000;
-	border-left:1px solid #B3B3B3;
-	border-right:1px solid #B3B3B3;
+	background:url('../admin/images/zenario-insignia.png') #000 no-repeat center;
+}
 
-	background-color: #000;
-	background-image: -webkit-linear-gradient(bottom, #3a3a3a, #6d6d6d);
-	background-image: -moz-linear-gradient(bottom, #3a3a3a, #6d6d6d);
-	background-image: -o-linear-gradient(bottom, #3a3a3a, #6d6d6d);
-	background-image: -ms-linear-gradient(bottom, #3a3a3a, #6d6d6d);
-	background-image: linear-gradient(to top, #3a3a3a, #6d6d6d);
+#zenario_at_top_left_menu {
+	display: block;
+	height: 41px;
+	position: absolute;
+	left: 50px;
+	z-index: 102;
+}
+
+#zenario_at_top_left_menu ul {
+	display: block;
+	float: left;
+}
+
+#zenario_at_top_left_menu ul li ul,
+#zenario_at_top_left_menu ul li ul::after {
+	display: none;
+	float: none;
+}
+
+
+#zenario_at_top_left_menu ul:hover li ul,
+#zenario_at_top_left_menu ul li ul::after {
+	display: block;
 }
 
 #zenario_at_organizer_link a:hover {
-	background-image: -webkit-linear-gradient(bottom, #1c3840, #007fa3);
-	background-image: -moz-linear-gradient(bottom, #1c3840, #007fa3);
-	background-image: -o-linear-gradient(bottom, #1c3840, #007fa3);
-	background-image: -ms-linear-gradient(bottom, #1c3840, #007fa3);
-	background-image: linear-gradient(to top, #1c3840, #007fa3);
+	background:url('../admin/images/zenario-insignia.png') #545454 no-repeat center;
+	-webkit-transition: background-color 0.3s ease-out;
+	-moz-transition: background-color 0.3s ease-out;
+	-o-transition: background-color 0.3s ease-out;
+	transition: background-color 0.3s ease-out;
 }
 
 #zenario_at_logout_link a {
@@ -270,6 +304,17 @@
 #zenario_at .zenario_at_toolbar_container_top .zenario_at_slot_wand ul li.zenario_toolbar_toggle_on a {
 	background:#323232;
 	color:#FFF;
+}
+
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_menu_node ul .zenario_create_a_new a,
+#zenario_at .zenario_at_toolbar_container_top .zenario_at_menu_node ul .zenario_create_a_new a:hover {
+	background: #ea5900;
+	color: #fff;
+	text-shadow: 0 1px 1px #000;
+	border-radius: 3px;
+	line-height: 20px;
+	padding: 2px 10px 2px 9px;
+	margin: 7px 5px 0px 0px;
 }
 
 #zenario_at .zenario_at_toolbar_container_bottom {
@@ -486,8 +531,8 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	float:left;
 }
 
-#zenario_at ul,
-#zenario_at ul li {
+.zenario_at ul,
+.zenario_at ul li {
 	list-style:none;
 	margin:0;
 	padding:0;
@@ -544,6 +589,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	height:21px;
 	padding:10px 15px 10px 15px;
 	text-decoration:none;
+}
+
+#zenario_at .zenario_at_status_icons_container ul li a {
+	padding: 10px 5px 5px 10px;
 }
 
 #zenario_at ul li ul  {
@@ -608,46 +657,34 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul {
-  position: absolute;
-  top: 30px;
-  width: auto;
-  right: -8px;
-}
-
-#zenario_at .zenario_at_status_icons_container ul li a {
-  padding: 7px 5px 7px 7px;
-}
-
-.zenario_at_button_with_children ul li:first-child {
-  border-top: 0;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul::before {
-  right: 6px;
-  border-color: #333 transparent;
-  border-style: solid;
-  border-width: 0 12px 12px;
-  bottom: 100%;
-  content: "";
-  height: 0;
-  position: absolute;
-  width: 0;
+	position: absolute;
+	top: 30px;
+	width: auto;
+	right: -8px;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul::after {
-  right: 8px;
-  border-color: #f6f6f6 transparent;
-  border-style: solid;
-  border-width: 0 10px 10px;
-  bottom: 100%;
-  content: "";
-  height: 0;
-  position: absolute;
-  width: 0;
+	right:8px;
+	border-color: #f6f6f6 transparent;
+	border-style: solid;
+	border-width: 0 10px 10px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	width: 0;
 }
 
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias {
-  position: relative;
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul::before {
+	right:6px;
+	border-color: #333 transparent;
+	border-style: solid;
+	border-width: 0 12px 12px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	width: 0;
 }
 
 #zenario_at ul li:hover ul {
@@ -672,6 +709,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	background:none;
 }
 
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias {
+	position: relative;
+}
+
 .zenario_at_button_with_children ul {
 	background: #f6f6f6;
 	border: 1px solid #333;
@@ -682,30 +723,6 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	box-shadow: 0 0 3px 0 #888;
 }
 
-/*.zenario_at_button_with_children ul:after {
-	border-color: #F6F6F6 transparent;
-	border-style: solid;
-	border-width: 0 10px 10px;
-	bottom: 100%;
-	content: "";
-	height: 0;
-	position: absolute;
-	left: 60px;
-	width: 0;
-}
-
-.zenario_at_button_with_children ul:before {
-	border-color: #333 transparent;
-	border-style: solid;
-	border-width: 0 12px 12px;
-	bottom: 100%;
-	content: "";
-	height: 0;
-	position: absolute;
-	left: 58px;
-	width: 0;
-}*/
-
 .zenario_at_status_icons .zenario_at_button_with_children ul li {
 	background: none!important;
 	padding: 4px 0;
@@ -714,6 +731,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 .zenario_at_status_icons .zenario_at_button_with_children ul li a {
 	height: auto!important;
 	border-top: 1px solid #dcdcdc;
+}
+
+.zenario_at_status_icons .zenario_at_button_with_children ul li:first-child a {
+	border: 0;
 }
 
 .zenario_at_button_with_children ul li:first-child {
@@ -1427,4 +1448,114 @@ div.zenario_grid_overlay_view .span {
 
 div.zenario_grid_overlay_view .row {
 	height:100%;
+}
+
+.zenario_at_top_left_menu ul {
+	height: 41px!important;
+	background-color: red!important;
+	list-style: none;
+}
+
+#zenario_at_top_left_menu ul li a {
+	background-color: #000000;
+	width: 32px;
+	height: 41px;
+	color: #ffffff;
+	display: block;
+}
+
+#zenario_at_top_left_menu ul li a:hover {
+	background-color: #545454;
+	-webkit-transition: background-color 0.3s ease-out;
+	-moz-transition: background-color 0.3s ease-out;
+	-o-transition: background-color 0.3s ease-out;
+	transition: background-color 0.3s ease-out;
+}
+
+#zenario_at_top_left_menu ul li a span {
+	padding-left: 9px;
+	margin-top: 8px;
+	position: relative;
+	top: 10px;
+	font-size: 12px;
+}
+
+#zenario_at_top_left_menu ul li ul li a span {
+	top: 0;
+	padding-left: 0;
+}
+
+#zenario_at_top_left_menu ul li ul {
+	margin-top: 9px;
+	background-color: #393939;
+	list-style: none;
+}
+
+#zenario_at_top_left_menu ul li ul li a {
+	padding-left: 5px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid grey;
+	height: auto;
+	margin-left: 5px;
+	background-color: #393939;
+	
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_assets a,
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a,
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_users a,
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_flopro_products_manager a {
+	padding-left: 30px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_flopro_products_manager a {
+	
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_assets a {
+	background: url('../../zenario_extra_modules/assetwolf_asset_manager/adminstyles/images/assetwolf-left-bar-icon.png') #393939 no-repeat scroll left;
+	background-position: -5px -5px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a {
+	background: url('../admin/images/menu-navigation-icon.png') #393939 no-repeat scroll left;
+	background-position: -5px 5px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_users a {
+	background: url('../admin/images/users-icon.png') no-repeat left;
+	background-position: -5px -5px;
+}
+
+#zenario_at_top_left_menu ul li ul li a:hover {
+	background-color: #393939;
+	margin-left: 5px!important;
+}
+
+#zenario_at_top_left_menu ul li ul li {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.zenario_admin_toolbar_divider {
+	background-color: #000000;
+	border-left: 1px solid grey;
+	display: block;
+	float: left;
+	width: 1px;
+	height: 41px;
+}
+
+#zenario_at_top_left_menu ul li ul::after {
+	border-color: #393939 transparent;
+	border-style: solid;
+	border-width: 0 10px 10px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	width: 0;
+	top: 40px;
+	left: 6px;
 }

@@ -133,6 +133,24 @@ class module_base_class extends zenario_api {
 	
 	
 	
+	  /////////////////////////////////
+	 //  Methods called by Wizards  //
+	/////////////////////////////////
+	
+	
+	public function fillWizard($path, &$box, &$fields, &$values) {
+		
+		//...your PHP code...//
+	}
+	
+	public function formatWizard($path, &$box, &$fields, &$values, $changes) {
+		
+		//...your PHP code...//
+	}
+	
+	
+	
+	
 	  /////////////////////////////////////
 	 //  Methods called by Admin Boxes  //
 	/////////////////////////////////////

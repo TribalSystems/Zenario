@@ -33,12 +33,14 @@
  *  It will only connect to the database if the CMS has been installed.
  */
 
-require '../cacheheader.inc.php';
+require '../basicheader.inc.php';
+require CMS_ROOT. 'zenario/includes/cms.inc.php';
+require CMS_ROOT. 'zenario/includes/admin.inc.php';
 require CMS_ROOT. 'zenario/includes/welcome.inc.php';
-require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 header('Content-Type: text/html; charset=UTF-8');
 
-//Check to see that the Admin has not copued the CMS on-top of an older version
+//Check for a few files/directories using the old names from version 6.
+//If we see any, show a message explain what needs to be done to upgrade to version 7.
 if (file_exists('tribiq_siteconfig.php')
  || is_dir('my_tribiq_frameworks')
  || is_dir('my_tribiq_modules')
@@ -84,8 +86,11 @@ $freshInstall = false;
 $installStatus = 0;
 $installed =
 	checkConfigFileExists()
- && (@include_once CMS_ROOT. 'zenario_siteconfig.php')
  && ($installStatus = 1)
+ && (defined('DBHOST'))
+ && (defined('DBNAME'))
+ && (defined('DBUSER'))
+ && (defined('DBPASS'))
  && (cms_core::$lastDB = cms_core::$localDB = @connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, false))
  && ($result = @cms_core::$localDB->query("SHOW TABLES LIKE '". DB_NAME_PREFIX. "site_settings'"))
  && ($installStatus = 2)
@@ -95,11 +100,6 @@ $installed =
 if (!$installed) {
 	cms_core::$lastDB = cms_core::$localDB = '';
 }
-
-if (!defined('ERROR_REPORTING_LEVEL')) {
-	define('ERROR_REPORTING_LEVEL', E_ALL & ~E_NOTICE & ~E_STRICT);
-}
-error_reporting(ERROR_REPORTING_LEVEL);
 
 
 //If it is defined, check that the SUBDIRECTORY is correct and warn the admin if not
@@ -138,7 +138,7 @@ if (defined('SUBDIRECTORY')) {
 	}
 }
 
-//Check to see that the Admin has not copued the CMS on-top of an older version
+//Check to see that the Admin has not copied the CMS on-top of an older version
 if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 	foreach (scandir('zenario/admin/db_updates/copy_over_top_check/') as $file) {
 		if (substr($file, 0, 1) != '.' && $file != ZENARIO_CMS_NUMERIC_VERSION. '.txt') {
@@ -162,8 +162,6 @@ if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 
 
 
-require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
-require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 
 
 
@@ -212,8 +210,7 @@ echo
 <head>
 	<title>', adminPhrase('Welcome to Zenario'), '</title>';
 
-checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = htmlspecialchars(rawurlencode(ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO)));
 CMSWritePageHead('../', 'welcome', false);
 
 echo '
@@ -266,13 +263,25 @@ $allowedTasks = array(
 	'restore' => 'restore',
 	'site_reset' => 'site_reset');
 
+
+
+//T9732, Admin login panel, show warning when a redirect from other URL has occurred
+$refererHostWarning = false;
+if (!empty($_SERVER['HTTP_REFERER'])
+ && ($refererHost = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST))
+ && ($refererHost != httpHost())) {
+	$refererHostWarning =
+		//adminPhrase('You were just redirected from "[[refererHost]]" to "[[httpHost]]"',
+		adminPhrase('Your URL has changed. This is the admin login page at "[[httpHost]]", you were previously at "[[refererHost]]".',
+			array('refererHost' => $refererHost, 'httpHost' => httpHost()));
+}
+
+
 echo '
+<script type="text/javascript" src="../js/admin_welcome.min.js?v=', $v, '"></script>
 <script type="text/javascript">
-	zenarioAB.isFAB = true;
-	zenarioAB.isWelcomePage = true;
-	zenarioAB.mtPrefix = "zenario_welcome";
-	zenarioAB.task = "', arrayKey($allowedTasks, request('task')), '";
-	zenarioAB.getRequest = ', json_encode($_GET), ';
+	zenarioAW.task = "', arrayKey($allowedTasks, request('task')), '";
+	zenarioAW.getRequest = ', json_encode($_GET), ';
 	
 	$(document).ready(function () {
 		var msg = "', jsEscape('<!--Logged_Out-->'. adminPhrase('You have been logged out.')), '";
@@ -280,7 +289,8 @@ echo '
 		if (!zenarioA.loggedOutIframeCheck(msg)) {
 			zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
 				if (cookiesEnabled) {
-					zenarioAB.start();
+					zenarioAW.start();
+					zenarioAW.refererHostWarning(', json_encode($refererHostWarning), ');
 				} else {
 					get("no_something").style.display = "block";
 					get("no_cookies").style.display = "inline";

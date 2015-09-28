@@ -86,10 +86,22 @@ class zenario_location_manager extends module_base_class {
 					unset($panel['columns']['score']);
 				}
 				break;
+			case 'zenario__locations/panel':
+				
+				// Get panel type and add filter if map to remove locations without map coordinates
+				if (get('panel_type') === 'google_map') {
+					$panel['db_items']['where_statement'] = '
+						WHERE l.latitude IS NOT NULL 
+						AND l.longitude IS NOT NULL
+					';
+				}
+				
+				break;
 		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
 		if ($path=="zenario__content/panels/content") {
 			if (isset($_GET['refiner__zenario__locations__create_content'])
 			 && isset($panel['collection_buttons']['create']['admin_box'])) {
@@ -104,6 +116,11 @@ class zenario_location_manager extends module_base_class {
 			$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
 			$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
 				$dataset['id'];
+			
+			// If no locations, hide export button
+			if (count($panel['items']) <= 0) {
+				$panel['collection_buttons']['export']['hidden'] = true;
+			}
 			
 			$admins = array();
 			$adminsRaw = getRows("admins",array("id","username","authtype"),array("status" => "active"));
@@ -362,6 +379,7 @@ class zenario_location_manager extends module_base_class {
 	
 		switch ($path) {
 			case "zenario_location_manager__location":
+				exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 				$locationCountriesFinal = zenario_country_manager::getCountryAdminNamesIndexedByISOCode("active");
 				
 				foreach ($locationCountriesFinal as $key => $value) {
@@ -372,7 +390,6 @@ class zenario_location_manager extends module_base_class {
 					$locationDetails = $this->getLocationDetails($box['key']['id']);
                   
                  	$box['title'] = adminPhrase('Editing the location "[[name]]"',array('name' => $locationDetails['description']));
-                        
                     $box['tabs']['images']['fields']['images']['value'] = inEscape(self::locationsImages($box['key']['id']), 'numeric');
 					$box['tabs']['details']['fields']['external_id']['value'] = $locationDetails['external_id'];
                     $box['tabs']['details']['fields']['name']['value'] = $locationDetails['description'];
@@ -442,6 +459,8 @@ class zenario_location_manager extends module_base_class {
 				
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
+				exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
+				
 				$box['title'] = "Editing settings for " . sizeof(explode(",",$box['key']['id'])) . " locations";
 			
 				$locationCountriesFinal = zenario_country_manager::getCountryAdminNamesIndexedByISOCode("active");
@@ -795,6 +814,7 @@ class zenario_location_manager extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_location_manager__location":
+					exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 					$saveValues = array();
 				
 					if (!$values['details/marker_lat']) {
@@ -832,7 +852,7 @@ class zenario_location_manager extends module_base_class {
 					$saveValues['map_center_latitude'] = $values['details/map_center_lat'];
 					$saveValues['map_center_longitude'] = $values['details/map_center_lng'];
 					$saveValues['map_zoom'] = $values['details/zoom'];
-					if ($values['content_item/content_item']) {
+					if (isset($values['content_item/content_item']) && $values['content_item/content_item']) {
 						$contentItemArray = explode("_", $values['content_item/content_item']);
 						if (count($contentItemArray)==2) {
 							$contentItemArray[1] = equivId($contentItemArray[1], $contentItemArray[0]);
@@ -846,7 +866,7 @@ class zenario_location_manager extends module_base_class {
 					$saveValues['last_updated'] = now();
 					$saveValues['last_updated_admin_id'] = session('admin_userid');
 
-					$box['key']['id'] = $locationId = setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));
+					$box['key']['id'] = $locationId = setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));			
 
 					if ($values['details/country'] && $values['details/region']){
 						$this->addRegionToLocation($values['details/region'],$locationId);
@@ -862,8 +882,9 @@ class zenario_location_manager extends module_base_class {
 						}
 					}
 					
+					
 					//Images saving
-					if (engToBooleanArray($box['tabs']['images'], 'edit_mode', 'on')) {
+					if (engToBooleanArray($box['tabs']['images'], 'edit_mode', 'on') && isset($values['images/images'])) {
 					
 						$ord = 0;
 						$sticky = 1;
@@ -878,11 +899,15 @@ class zenario_location_manager extends module_base_class {
 							
 							if ($image_id) {
 								$usedImages[$image_id] = true;
-								updateRow(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', array('ordinal' => ++$ord, 'sticky_flag' => $sticky), array('image_id' => $image_id, 'location_id' => $box['key']['id']));
+								setRow(
+									ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
+									array('ordinal' => ++$ord, 'sticky_flag' => $sticky), 
+									array('image_id' => $image_id, 'location_id' => $box['key']['id'])
+								);
 								$sticky = 0;
 							}
 						}
-					
+						
 						foreach (self::locationsImages($box['key']['id']) as $image_id) {
 							if (empty($usedImages[$image_id])) {
 								self::deleteImage($box['key']['id'], $image_id);
@@ -892,6 +917,7 @@ class zenario_location_manager extends module_base_class {
 				
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
+				exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 				$fieldsToChangeSQL = array();
 				
 				foreach ($changes as $fieldName => $fieldValue) {
@@ -1042,10 +1068,10 @@ class zenario_location_manager extends module_base_class {
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {
 			case 'zenario__locations/panel':
-				
 				if (!empty($_GET['action'])) {
 					switch ($_GET['action']){
 						case 'delete_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$msg = "";
 						
 							$locationDetails = self::getLocationDetails($_GET['id']);
@@ -1102,6 +1128,7 @@ class zenario_location_manager extends module_base_class {
 					switch ($_POST['action']){
 						case 'delete_location':
 						case 'delete_locations':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
 								if (($rv = self::deleteLocation($ID))!=''){
@@ -1111,6 +1138,7 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'activate_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
 								if (($rv = $this->activateLocation($ID))!=''){
@@ -1119,6 +1147,7 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'suspend_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
 								if (($rv = $this->suspendLocation($ID))!=''){
@@ -1127,14 +1156,16 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'add_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							if ($refinerName=="sector_locations") {
 								$IDs = explode(',',$ids);
 								foreach ($IDs as $ID){
 									$this->addLocationToSector($ID,$refinerId);
 								}
 							}
-							break;				
+							break;
 						case 'remove_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							if ($refinerName=="sector_locations") {
 								$IDs = explode(',',$ids);
 								foreach ($IDs as $ID){
@@ -1143,6 +1174,7 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'add_child_location':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$limit=100;
 							$level1=0;
 							$parent = $refinerId;
@@ -1175,6 +1207,7 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'assign_new_parent':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							foreach (explode(",",$ids) as $id) {
 								$limit=100;
 								$level1=0;
@@ -1206,6 +1239,7 @@ class zenario_location_manager extends module_base_class {
 							}
 							break;
 						case 'make_orphan':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>null),array('id'=>(int)$ids));
 							break;						
 					}
@@ -1310,133 +1344,6 @@ class zenario_location_manager extends module_base_class {
 								$result = sqlQuery($sql);		
 						}
 						break;
-			}
-		}
-	}
-	
-	//CSV export functionality
-	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		
-		switch ($path) {
-			case 'zenario__locations/panel':
-				if (request('download_csv')) {
-					
-					//Get a list of the columns in the locations and locations custom data tables
-					$filename = 'locations';
-					$coreTable = ZENARIO_LOCATION_MANAGER_PREFIX . "locations";
-					$custTable = ZENARIO_LOCATION_MANAGER_PREFIX . "locations_custom_data";
-					$coreId = 'id';
-					$custId = 'location_id';
-					checkTableDefinition(DB_NAME_PREFIX. $coreTable);
-					checkTableDefinition(DB_NAME_PREFIX. $custTable);
-					$coreCols = cms_core::$numericCols[DB_NAME_PREFIX. $coreTable];
-					$custCols = cms_core::$numericCols[DB_NAME_PREFIX. $custTable];
-					unset($custCols[$custId]);
-					$coreCols = array_keys($coreCols);
-					$custCols = array_keys($custCols);
-					
-					//Increase the time-limit
-					set_time_limit(60 * 5);
-					
-				
-					//Create a new CSV file
-					//Try to create it in the private/downlaods directory (if this is writable) as this lets us
-					//just redirect the browser to the file in the filesystem when we're done, rather than
-					//having to pipe it out in php.
-					$fileInCacheDir = 
-						($dir = createRandomDir(15, 'downloads', $onlyForCurrentVisitor = setting('restrict_downloads_by_ip')))
-					 && ($filePath = $dir. '/'. $filename. '.csv')
-					 && (touch(CMS_ROOT. $filePath))
-					 && (@chmod($filePath, 0666));
-					
-					//As a fallback, use a file in the tmp directory
-					if (!$fileInCacheDir) {
-						$filePath = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');
-					}
-					
-					
-					//Write the column headers
-					$f = fopen($filePath, 'wb');
-					fputcsv($f, array_merge($coreCols, $custCols));
-				
-					
-					//Come up with a sql statement to export all of the data
-					//If there are any custom columns, we need to join to the custom table and 
-					$sql = "
-						SELECT SQL_NO_CACHE
-							". inEscape($coreCols, 'identifier', 'core');
-					
-					if (!empty($custCols)) {
-						$sql .= ",
-							". inEscape($custCols, 'identifier', 'cust');
-					}
-					
-					$sql .= "
-						FROM ". DB_NAME_PREFIX. $coreTable. " AS core";
-					
-					if (!empty($custCols)) {
-						$sql .= "
-						LEFT JOIN ". DB_NAME_PREFIX. $custTable. " AS cust
-						ON cust.`". $custId. "` = core.`". $coreId. "`";
-					}
-					
-					$sql .= "
-						WHERE core.`". $coreId. "` IN (". inEscape($ids, 'numeric'). ")";
-					$result = sqlSelect($sql);
-					
-					while ($row = sqlFetchRow($result)) {
-						fputcsv($f, $row);
-					}
-				
-				
-					//Finish writing
-					fclose($f);
-					$filesize = filesize(CMS_ROOT. $filePath);
-					
-					//If the file is large, try and zip it
-					if ($filesize > 500000
-					 && $fileInCacheDir
-					 && class_exists('ZipArchive')
-					 && ($zip = new ZipArchive())
-					 && ($zipPath = $dir. '/'. $filename. '.zip')
-					 && ($zip->open(CMS_ROOT. $zipPath, ZipArchive::CREATE) === true)) {
-						
-						$zip->addFile(CMS_ROOT. $filePath, $filename. '.csv');
-						$zip->close();
-						@chmod($zipPath, 0666);
-						
-						header('Content-Type: application/zip');
-						header('Content-Disposition: attachment; filename="'. $filename. '.csv"');
-						header('Content-Length: '. filesize($zipPath)); 
-						header('location: '. absCMSDirURL(). $zipPath);
-					
-					//Otherwise offer the uncompressed file for download
-					} else {
-						header('Content-Type: text/x-csv');
-						header('Content-Disposition: attachment; filename="locations.csv"');
-						header('Content-Length: '. $filesize); 
-					
-						if ($fileInCacheDir) {
-							header('location: '. absCMSDirURL(). $filePath);
-						} else {
-							readfile($filePath);
-						}
-					}
-						
-$zip = new ZipArchive();
-$filename = "./test112.zip";
-
-if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {
-    exit("cannot open <$filename>\n");
-}
-
-$zip->addFromString("testfilephp.txt" . time(), "#1 This is a test string added as testfilephp.txt.\n");
-$zip->addFromString("testfilephp2.txt" . time(), "#2 This is a test string added as testfilephp2.txt.\n");
-$zip->addFile($thisdir . "/too.php","/testfromfile.php");
-echo "numfiles: " . $zip->numFiles . "\n";
-echo "status:" . $zip->status . "\n";
-$zip->close();
-					exit;
 			}
 		}
 	}
@@ -1758,12 +1665,12 @@ $zip->close();
 
 		$sql = "SELECT l.id
 				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations AS l
-				INNER JOIN " . DB_NAME_PREFIX . "content AS c1
+				INNER JOIN " . DB_NAME_PREFIX . "content_items AS c1
 				ON l.equiv_id = c1.id
 				AND l.content_type = c1.type
 				INNER JOIN (
 					SELECT c2.equiv_id
-					FROM " . DB_NAME_PREFIX . "content AS c2
+					FROM " . DB_NAME_PREFIX . "content_items AS c2
 					WHERE c2.id = " . (int) $cID . "
 					AND c2.type = '" . sqlEscape($cType) . "'
 				) AS sub
@@ -2360,7 +2267,7 @@ $zip->close();
 	
 	public static function eventContentDeleted ($cID,$cType,$cVersion) {
 		//check to see if status is trashed or deleted
-		$contentStatus = getRow('content', 'status', array('equiv_id' => $cID, 'type'=> $cType));
+		$contentStatus = getRow('content_items', 'status', array('equiv_id' => $cID, 'type'=> $cType));
 		
 		if($contentStatus == 'deleted' || $contentStatus == 'trashed') {
 			updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",
@@ -2399,5 +2306,18 @@ $zip->close();
             deleteRow( 'files', array('id' => $imageId, 'usage' => 'location'));
         }
     }
+    
+	// Centralised list for location status
+	public static function locationStatus($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array('can_filter' => false);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				return array(
+					'active' => 'Active', 
+					'suspended' => 'Suspended'
+				);
+		}
+	}
 }
 

@@ -156,9 +156,23 @@ class zenario_pro_features extends zenario_common_features {
 	
 		if (!request('method_call')
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
-		&& setting('compress_web_pages') && setting('cache_web_pages') && setting('cache_plugins')) {
+		&& setting('caching_enabled') && setting('cache_plugins')) {
+	
+			//Work out what cache-flags to use:
+				//u = extranet user logged in
+				//g = GET request present that is not registered using registerGetRequest() and is not a CMS variable
+				//p = POST request present
+				//s = SESSION variable present that is not in the exception list
+				//c = COOKIE present that is not in the exception list
+			//We can work all of these out exactly except for "g", as registerGetRequest() lets module developers register
+			//anything dynamically. There's a bit of logic later that handles this by checking both cases.
 	
 			$chToLoadStatus = $GLOBALS['chToLoadStatus'];
+			
+			
+			//Get two checksums from the GET requests.
+			//$chDirAllRequests is a checksum of every GET request
+			//$chDirKnownRequests is a checksum of just the CMS variable, e.g. cID, cType...
 			$chAllRequests = $GLOBALS['chAllRequests'];
 			$chKnownRequests = $GLOBALS['chKnownRequests'];
 				
@@ -171,92 +185,100 @@ class zenario_pro_features extends zenario_common_features {
 			$chDirAllRequests = pageCacheDir($chAllRequests, 'plugin');
 			$chDirKnownRequests = pageCacheDir($chKnownRequests, 'plugin');
 				
+			//Loop through every possible combination of cache-flag
+			//(I've tried to order this by the most common settings first,
+			//to minimise the number of loops when we have a hit.)
 			for ($chS = 's';; $chS = $chToLoadStatus['s']) {
 				for ($chC = 'c';; $chC = $chToLoadStatus['c']) {
 					for ($chP = 'p';; $chP = $chToLoadStatus['p']) {
 						for ($chG = 'g';; $chG = $chToLoadStatus['g']) {
 							for ($chU = 'u';; $chU = $chToLoadStatus['u']) {
 									
-								if ($chG) {
-									$chFile = $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC;
-								} else {
-									$chFile = $chDirAllRequests. $chU. $chG. $chP. $chS. $chC;
-								}
+								//Plugins can opt out of caching if there are any unrecognised or
+								//unregistered $_GET requests.
+								//If this is the case, then we must insist that the $_GET requests
+								//of the cached page match the current $_GET request - i.e. we
+								//must use $chDirAllRequests.
+								//If this is not the case then we must check both $chDirAllRequests
+								//and $chDirKnownRequests as we weren't exactly sure of the value of "g"
+								//in index.pre_load.php.
+								if ((file_exists(($chPath = 'cache/pages/'. $chDirAllRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'plugin.html'))
+								 || ($chG && (file_exists(($chPath = 'cache/pages/'. $chDirKnownRequests. $chU. $chG. $chP. $chS. $chC. '/'). 'plugin.html')))) {
 									
-								if ((file_exists(($chPath = 'cache/pages/'. $chFile. '/'). 'plugin.html'))
-								&& (file_exists($chPath. 'vars'))
-								&& ($slots = unserialize(file_get_contents($chPath. 'vars')))
-								&& (!empty($slots[$slotName]['s']))) {
-									touch($chPath. 'accessed');
+									if ((file_exists($chPath. 'vars'))
+									&& ($slots = unserialize(file_get_contents($chPath. 'vars')))
+									&& (!empty($slots[$slotName]['s']))) {
+										touch($chPath. 'accessed');
 	
-									//If there are cached images on this page, mark that they've been accessed
-									if (file_exists($chPath. 'cached_files')) {
-										foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
-											if (is_dir($cachedImage)) {
-												touch($cachedImage. 'accessed');
-											} else {
-												//Delete the cached copy as its images are missing
-												deleteCacheDir($chPath);
+										//If there are cached images on this page, mark that they've been accessed
+										if (file_exists($chPath. 'cached_files')) {
+											foreach (file($chPath. 'cached_files', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $cachedImage) {
+												if (is_dir($cachedImage)) {
+													touch($cachedImage. 'accessed');
+												} else {
+													//Delete the cached copy as its images are missing
+													deleteCacheDir($chPath);
 												
-												//Continue the loop looking for any more cached copies of this plugin.
-												//Most likely if any exist they will need deleting because their images will be missing too,
-												//and it's a good idea to clean up.
-												continue 2;
+													//Continue the loop looking for any more cached copies of this plugin.
+													//Most likely if any exist they will need deleting because their images will be missing too,
+													//and it's a good idea to clean up.
+													continue 2;
+												}
 											}
 										}
-									}
 	
-									//Create an entry in the slotContents array, and a simple object, for this Slot.
-									//Also do the same for any Nested Plugins.
-									foreach ($slots as $slotNameNestId => &$vars) {
-										if (!empty($vars['s'])) {
+										//Create an entry in the slotContents array, and a simple object, for this Slot.
+										//Also do the same for any Nested Plugins.
+										foreach ($slots as $slotNameNestId => &$vars) {
+											if (!empty($vars['s'])) {
 												
-											$slotContents[$slotNameNestId] = $vars['s'];
+												$slotContents[$slotNameNestId] = $vars['s'];
 	
-											if (!empty($vars['c'])) {
-												$slotContents[$slotNameNestId]['class'] = new zenario_cached_plugin;
-												$slotContents[$slotNameNestId]['class']->filePath = $chPath. 'plugin.html';
+												if (!empty($vars['c'])) {
+													$slotContents[$slotNameNestId]['class'] = new zenario_cached_plugin;
+													$slotContents[$slotNameNestId]['class']->filePath = $chPath. 'plugin.html';
 													
-												if (isset($vars['h'])) {
-													$slotContents[$slotNameNestId]['class']->pageHead = $vars['h'];
-													unset($vars['h']);
-												}
-												if (isset($vars['f'])) {
-													$slotContents[$slotNameNestId]['class']->pageFoot = $vars['f'];
-													unset($vars['f']);
-												}
+													if (isset($vars['h'])) {
+														$slotContents[$slotNameNestId]['class']->pageHead = $vars['h'];
+														unset($vars['h']);
+													}
+													if (isset($vars['f'])) {
+														$slotContents[$slotNameNestId]['class']->pageFoot = $vars['f'];
+														unset($vars['f']);
+													}
 													
-												$slotContents[$slotNameNestId]['class']->setInstanceVariables(array(
-														cms_core::$cID, cms_core::$cType, cms_core::$cVersion, $slotName,
-														arrayKey($slotContents[$slotNameNestId], 'instance_name'), $slotContents[$slotNameNestId]['instance_id'],
-														$slotContents[$slotNameNestId]['class_name'], $slotContents[$slotNameNestId]['vlp_class'],
-														$slotContents[$slotNameNestId]['module_id'],
-														$slotContents[$slotNameNestId]['default_framework'], $slotContents[$slotNameNestId]['framework'],
-														$slotContents[$slotNameNestId]['css_class'],
-														arrayKey($slotContents[$slotNameNestId], 'level'), !empty($slotContents[$slotNameNestId]['content_id'])));
+													$slotContents[$slotNameNestId]['class']->setInstanceVariables(array(
+															cms_core::$cID, cms_core::$cType, cms_core::$cVersion, $slotName,
+															arrayKey($slotContents[$slotNameNestId], 'instance_name'), $slotContents[$slotNameNestId]['instance_id'],
+															$slotContents[$slotNameNestId]['class_name'], $slotContents[$slotNameNestId]['vlp_class'],
+															$slotContents[$slotNameNestId]['module_id'],
+															$slotContents[$slotNameNestId]['default_framework'], $slotContents[$slotNameNestId]['framework'],
+															$slotContents[$slotNameNestId]['css_class'],
+															arrayKey($slotContents[$slotNameNestId], 'level'), !empty($slotContents[$slotNameNestId]['content_id'])));
 	
-												cms_core::$slotContents[$slotNameNestId]['class']->tApiSetCachableVars($vars['c']);
+													cms_core::$slotContents[$slotNameNestId]['class']->tApiSetCachableVars($vars['c']);
 													
-												if (isset(cms_core::$slotContents[$slotNameNestId]['page_title'])) {
-													cms_core::$pageTitle = cms_core::$slotContents[$slotNameNestId]['page_title'];
-												}
-												if (isset(cms_core::$slotContents[$slotNameNestId]['menu_title'])) {
-													cms_core::$menuTitle = cms_core::$slotContents[$slotNameNestId]['menu_title'];
+													if (isset(cms_core::$slotContents[$slotNameNestId]['page_title'])) {
+														cms_core::$pageTitle = cms_core::$slotContents[$slotNameNestId]['page_title'];
+													}
+													if (isset(cms_core::$slotContents[$slotNameNestId]['menu_title'])) {
+														cms_core::$menuTitle = cms_core::$slotContents[$slotNameNestId]['menu_title'];
+													}
+	
+												} else {
+													$slotContents[$slotNameNestId]['init'] =
+													$slotContents[$slotNameNestId]['class'] = false;
 												}
 	
-											} else {
-												$slotContents[$slotNameNestId]['init'] =
-												$slotContents[$slotNameNestId]['class'] = false;
+												$slotContents[$slotNameNestId]['served_from_cache'] = true;
+												cms_core::$cachingInUse = true;
 											}
-	
-											$slotContents[$slotNameNestId]['served_from_cache'] = true;
-											cms_core::$cachingInUse = true;
-										}
 											
-										unset($vars);
-									}
+											unset($vars);
+										}
 	
-									return;
+										return;
+									}
 								}
 									
 								if ($chU == $chToLoadStatus['u']) break;
@@ -285,65 +307,6 @@ class zenario_pro_features extends zenario_common_features {
 			zenario_pro_features::postSlot($slotName, 'showSlot', $useOb = false);
 		}
 	}
-	
-	public static function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
-	
-		$sql = "
-			SELECT
-				m.id AS mID,
-				t.name,
-				m.target_loc,
-				m.open_in_new_window,
-				m.anchor,
-				m.module_class_name,
-				m.method_name,
-				m.param_1,
-				m.param_2,
-				m.equiv_id,
-				c.id AS cID,
-				m.content_type AS cType,
-				c.alias,
-				m.use_download_page,
-				m.hide_private_item,
-				t.ext_url,
-				c.visitor_version,
-				m.invisible,
-				m.accesskey,
-				m.ordinal,
-				m.rel_tag,
-				m.image_id,
-				m.rollover_image_id,
-				m.css_class,
-				t.descriptive_text,
-				m.menu_text_module_class_name,
-				m.menu_text_method_name,
-				m.menu_text_param_1,
-				m.menu_text_param_2
-			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
-			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
-			   ON t.menu_id = m.id
-			  AND t.language_id = '". sqlEscape($language). "'
-			LEFT JOIN ".DB_NAME_PREFIX."content AS c
-			   ON m.target_loc = 'int'
-			  AND m.equiv_id = c.equiv_id
-			  AND m.content_type = c.type
-			  AND c.language_id = '". sqlEscape($language). "'
-			WHERE m.parent_id = ". (int) $parentMenuId. "
-			  AND m.section_id = ". (int) $sectionId;
-		
-		if (!$showInvisibleMenuItems) {
-			$sql .= "
-			  AND m.invisible != 1";
-		}
-	
-		$sql .= "
-			ORDER BY m.ordinal";
-		
-		return sqlQuery($sql);
-	}
-	
-	
-	
 	
 	public function pagSmart($currentPage, &$pages, &$html) {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = false, $showFirstLast = false, $alwaysShowNextPrev = false);
@@ -451,58 +414,73 @@ class zenario_pro_features extends zenario_common_features {
 		
 			$compressed = setting('compress_web_pages')? adminPhrase('Compressed') : adminPhrase('Not Compressed');
 		
-			if (setting('compress_web_pages')
-			&& setting('cache_web_pages')
-			&& setting('cache_ajax')
+			if (setting('caching_enabled')
+			&& setting('cache_css_js_wrappers')
 			&& setting('css_wrappers')
 			&& (setting('css_wrappers') == 'on' || setting('css_wrappers') == 'visitors_only')) {
 				echo '1';
 			}
+			
+			
+			$wrappers = adminPhrase('On');
+			switch (setting('css_wrappers')) {
+				case 'visitors_only':
+					$wrappers = adminPhrase('On for visitors only');
+				case 'on':
+					$wrappers .= ', ';
+					$wrappers .= $compressed;
+					$wrappers .= ', ';
+					$wrappers .= setting('caching_enabled') && setting('cache_css_js_wrappers')?
+									adminPhrase('Cached') : adminPhrase('Not Cached');
+					break;
+				
+				default:
+					$wrappers = adminPhrase('Off');
+			}
+									
 		
 			echo
 			'~',
 			'<h3>',
-			adminPhrase('Accelerator'),
+				adminPhrase('Accelerator'),
 			'</h3>',
 			'<p>',
-			adminPhrase('Web Pages:'),
-			' ',
-			$compressed,
-			', ',
-			setting('compress_web_pages') && setting('cache_web_pages')? adminPhrase('Cached') : adminPhrase('Not Cached'),
+				adminPhrase('Web Pages:'),
+				' ',
+				$compressed,
+				', ',
+				setting('caching_enabled') && setting('cache_web_pages')? adminPhrase('Cached') : adminPhrase('Not Cached'),
 			'</p>',
 			'<p>',
-			adminPhrase('Plugins:'),
-			' ',
-			$compressed,
-			', ',
-			setting('compress_web_pages') && setting('cache_plugins')? adminPhrase('Cached') : adminPhrase('Not Cached'),
+				adminPhrase('Plugins:'),
+				' ',
+				$compressed,
+				', ',
+				setting('caching_enabled') && setting('cache_plugins')? adminPhrase('Cached') : adminPhrase('Not Cached'),
 			'</p>',
 			'<p>',
-			adminPhrase('AJAX and RSS:'),
-			' ',
-			$compressed,
-			', ',
-			setting('compress_web_pages') && setting('cache_ajax')? adminPhrase('Cached') : adminPhrase('Not Cached'),
+				adminPhrase('AJAX and RSS:'),
+				' ',
+				$compressed,
+				', ',
+				setting('caching_enabled') && setting('cache_ajax')? adminPhrase('Cached') : adminPhrase('Not Cached'),
 			'</p>',
 			'<p>',
-			adminPhrase('Other Files:'),
-			' ',
-			'is_htaccess_working',
+				adminPhrase('CSS File Wrappers:'),
+				' ',
+				$wrappers,
 			'</p>',
 			'<p>',
-			adminPhrase('CSS File Wrappers:'),
-			' ',
-			setting('css_wrappers') == 'on'?
-			adminPhrase('On')
-			:	(setting('css_wrappers') == 'visitors_only'? adminPhrase('On for visitors only') : adminPhrase('Off')),
+				adminPhrase('Other Files:'),
+				' ',
+				'is_htaccess_working',
 			'</p>',
 			'<p>',
-			adminPhrase('Cookie-free Domain:'),
-			' ',
-			setting('use_cookie_free_domain') && setting('cookie_free_domain')?
-			htmlspecialchars('http://'. setting('cookie_free_domain'). SUBDIRECTORY)
-			:	adminPhrase('Not Used'),
+				adminPhrase('Cookie-free Domain:'),
+				' ',
+				setting('use_cookie_free_domain') && setting('cookie_free_domain')?
+				htmlspecialchars('http://'. setting('cookie_free_domain'). SUBDIRECTORY)
+				:	adminPhrase('Not Used'),
 			'</p>',
 			'~';
 		
@@ -743,7 +721,7 @@ class zenario_pro_features extends zenario_common_features {
 		
 		//Check if we need to check the cache.
 		//(Note that if we've already declared that we're wiping everything in the cache, then there's no need to keep checking it.)
-		$checkCache = setting('compress_web_pages') && setting('cache_web_pages') && empty(zenario_pro_features::$clearCacheBy['all']);
+		$checkCache = setting('caching_enabled') && empty(zenario_pro_features::$clearCacheBy['all']);
 		
 		//Check if we might need to sync User data
 		$checkUser = ($table == 'users' || !$table) && zenario_pro_features::validateUserSyncSiteConfig();
@@ -859,6 +837,15 @@ class zenario_pro_features extends zenario_common_features {
 						zenario_pro_features::$clearCacheBy['file'] = true;
 						continue;
 					
+					//Documents
+					case 'documents':
+						//If a document id changed, clear anything that links to a file
+						zenario_pro_features::$clearCacheBy['file'] = true;
+						//If we ever implement code snippets instead of links to documents, we will need
+						//to clear the contents of WYSIWYG Editors as well
+						//zenario_pro_features::$clearCacheBy['content'] = true;
+						continue;
+					
 					//Menu
 					case 'menu_nodes':
 					case 'menu_sections':
@@ -898,7 +885,7 @@ class zenario_pro_features extends zenario_common_features {
 						}
 						continue;
 						
-					case 'content':
+					case 'content_items':
 						if (!empty($ids['id']) && !empty($ids['type'])
 						 && !is_array($ids['id']) && !is_array($ids['type'])) {
 							//If we've got exact information on the Content Item, clear the cache intelligently
@@ -923,7 +910,7 @@ class zenario_pro_features extends zenario_common_features {
 						}
 						continue;
 					
-					case 'versions':
+					case 'content_item_versions':
 						if (!empty($ids['id']) && !empty($ids['type']) && !empty($ids['version'])
 						 && !is_array($ids['id']) && !is_array($ids['type']) && !is_array($ids['version'])) {
 							//If we've got exact information on the Content Item, clear the cache intelligently
@@ -1086,7 +1073,7 @@ class zenario_pro_features extends zenario_common_features {
 		if (cms_core::$canCache
 		&& !request('method_call')
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
-		&& setting('compress_web_pages') && setting('cache_web_pages') && setting('cache_plugins')
+		&& setting('caching_enabled') && setting('cache_plugins')
 		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
 				
 			if ($showPlaceholderMethod == 'addToPageHead') {
@@ -1108,7 +1095,7 @@ class zenario_pro_features extends zenario_common_features {
 		if (cms_core::$canCache
 		&& !request('method_call')
 		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
-		&& setting('compress_web_pages') && setting('cache_web_pages') && setting('cache_plugins')
+		&& setting('caching_enabled') && setting('cache_plugins')
 		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
 				
 			if ($showPlaceholderMethod == 'addToPageHead') {
@@ -1270,7 +1257,7 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	public static function eventContentDeleted($cID, $cType, $cVersion) {
-		if (!checkRowExists('versions', array('id' => $cID, 'type' => $cType))) {
+		if (!checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType))) {
 			deleteRow('spare_aliases', array('content_id' => $cID, 'content_type' => $cType));
 		}
 	}

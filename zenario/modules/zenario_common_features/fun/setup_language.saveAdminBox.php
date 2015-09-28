@@ -34,6 +34,9 @@ if (!$langId = $box['key']['id']) {
 	exit;
 }
 
+$cItemsInLangKey = array('language_id' => $box['key']['id'], 'status' => array('!' => 'deleted'));
+$pagesExist = checkRowExists('content_items', $cItemsInLangKey);
+
 
 if (engToBooleanArray($box['tabs']['settings'], 'edit_mode', 'on')) {
 	setRow('languages', array(), $langId);
@@ -90,6 +93,39 @@ addNeededSpecialPages();
 
 //Add any new phrases for this language
 importPhrasesForModules($langId);
+
+//If we're adding a new language (i.e. no content items previously existed), show a message
+//warning the admin what pages were just made.
+if (!$pagesExist) {
+	
+	//Check for the pages that were just made
+	$contentItems = getRowsArray('content_items', array('id', 'type', 'alias'), $cItemsInLangKey, 'id');
+	
+	if (!empty($contentItems)) {
+		if (count($contentItems) < 2) {
+			$toastMessage =
+				adminPhrase(
+					'&quot;[[tag]]&quot; was created as a home page. You should review and publish this content item.',
+					array('tag' => htmlspecialchars(formatTag($contentItems[0]['id'], $contentItems[0]['type'], $contentItems[0]['alias'], $box['key']['id']))));
+		
+		} else {
+			$toastMessage =
+				adminPhrase('The following content items were just created, you should review and publish them:').
+				'<ul>';
+			
+			foreach ($contentItems as $contentItem) {
+				$toastMessage .= '<li>'. htmlspecialchars(formatTag($contentItem['id'], $contentItem['type'], $contentItem['alias'], $box['key']['id'])). '</li>';
+			}
+			
+			$toastMessage .= '</ul>';
+		}
+		
+		$box['toast'] = array(
+			'message' => $toastMessage,
+			'options' => array('timeOut' => 0, 'extendedTimeOut' => 0));
+	}
+
+}
 
 
 //Go to the language in the enabled languages panel.

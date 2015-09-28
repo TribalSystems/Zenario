@@ -7,6 +7,7 @@ pages:
     -jobs
     -signals
     -special_pages
+    -centralised_lists
 
 common_definitions:
     stringy: &stringy
@@ -160,8 +161,8 @@ properties:
         
                     Only the basic descriptive properties, <code>dependencies</code> and <code>inheritance</code> are copied.
         
-                    The <code>content_types</code>, <code>jobs</code>, <code>signals</code> and
-                    <code>special_pages</code> properties are not copied. You must
+                    The <code>content_types</code>, <code>jobs</code>, <code>signals</code>,
+                    <code>special_pages</code> and <code>centralised_lists</code> properties are not copied. You must
                     repeat these properties in your own <code>description.yaml</code> file if you wish to use them.
             
             inherit_frameworks_from_module:
@@ -521,3 +522,19 @@ properties:
                         If you feel that you can make your Special Page look presentable using just
                         the options here, you may wish it to be published straight away to reduce
                         the amount of setup that an Administrator needs to perform.
+    centralised_lists:
+        type: object
+        additionalProperties:
+            type: object
+            required:
+                - method_name
+                - label
+            properties:
+                method_name:
+                    type: string
+                    description: >
+                        The name of the static method that returns the list of values.
+                label:
+                    type: string
+                    description: >
+                        The label of the centralised list.

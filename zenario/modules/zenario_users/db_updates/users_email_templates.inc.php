@@ -72,4 +72,13 @@ revision(6, "
 		 " .(int) session('admin_userid') . ",
 		 0
 		)
-");
+"
+); revision(40,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_users'
+	WHERE `code` = 'zenario_users__to_user_account_activated'
+_sql
+
+);

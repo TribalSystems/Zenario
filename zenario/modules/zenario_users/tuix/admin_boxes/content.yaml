@@ -55,12 +55,6 @@ zenario_content:
                     visible_if: >
                         zenarioAB.value('privacy') == 'specific_users'
                 
-                log_user_access:
-                    label: 'Log User Access:'
-                    type: checkbox
-                    visible_if: >
-                        ({all_extranet_users:1, group_members:1, specific_users:1}[zenarioAB.value('privacy')])
-                
                 no_access:
                     snippet:
                         html: |

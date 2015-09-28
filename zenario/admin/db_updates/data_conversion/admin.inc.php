@@ -29,4 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //This file contains php scripts code for converting user data after some database structure changes
 
-//There have been no updates since version 7.0.0
+// Set all global admins as supplier accounts
+if (needRevision(31862)) {
+	updateRow('admins', array('is_client_account' => 0), array('authtype' => 'super'));
+	revision(31862);
+}

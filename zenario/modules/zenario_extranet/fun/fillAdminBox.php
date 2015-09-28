@@ -30,6 +30,24 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		$box['tabs']['first_tab']['fields']['login_with']['read_only'] = !setting('user_use_screen_name');
+		$defaultLangId = setting('default_language');
+		$values['invalid_email_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_INVALID_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+		
+		$values['screen_name_required_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_EXTRANET_SCREEN_NAME", "language_id" => $defaultLangId));
+		
+		$values['email_address_required_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+			
+		$values['password_required_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_EXTRANET_PASSWORD", "language_id" => $defaultLangId));
+		
+		$values['no_new_password_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_NEW_PASSWORD", "language_id" => $defaultLangId));
+		$values['no_new_repeat_password_error_text'] = 
+			getRow("visitor_phrases", "local_text", array("code" => "_ERROR_REPEAT_NEW_PASSWORD", "language_id" => $defaultLangId));
+			
 		break;
 }
 

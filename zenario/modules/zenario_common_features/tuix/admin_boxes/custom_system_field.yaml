@@ -66,9 +66,11 @@ zenario_custom_system_field:
                     value: 1
                     #read_only: true
                     note_below: 'System fields cannot be deleted'
+                    
                 include_in_export:
                     label: 'Include in export'
                     type: checkbox
+                    note_below: 'Include this field when exporting from this dataset.'
                 
         display:
             label: Display

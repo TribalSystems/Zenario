@@ -673,7 +673,7 @@ body.ie label#search_term_placeholder {
 }
 
 .headerPanel .viewMode div,
-.headerPanel #organizer_switch_view,
+.headerPanel .organizer_switch_view,
 .headerPanel #organizer_refreshRightColumn,
 .headerPanel #organizer_listViewOptionsDropdown {
 	width: 30px;
@@ -758,10 +758,6 @@ body.ie label#search_term_placeholder {
       border-width: 0 1px 0 0;
 }
 
-/*.organizer_subtotal_grouping .organizer_total_wrapper .organizer_total_cell {
-	border-width: 0 0 1px 0;
-}*/
-
 .organizer_total_wrapper span {
     color: #000000;
     text-align: right;
@@ -826,10 +822,10 @@ body.ie6 .headerPanel .secondToolbar {
 .organizer_wrapOuter .logout_button a,
 #organizer_header #organizer_listViewOptionsDropdown a,
 #organizer_header #organizer_refreshRightColumn a,
-.headerPanel .viewMode #organizer_switch_view a,
+.headerPanel .viewMode .organizer_switch_view a,
 .organizer_list_view .organizer_slidedown_view_toggle_closed,
 .organizer_list_view .organizer_slidedown_view_toggle_open {
-	background-image: url('../admin/images/sprites/org-icons-v2.png');
+	background-image: url('../admin/images/sprites/org-icons-v4.png');
 }
 
 #organizer_header #organizer_refreshRightColumn a {
@@ -845,30 +841,28 @@ body.ie6 .headerPanel .secondToolbar {
 	display:none;
 }
 
-.headerPanel .viewMode #organizer_switch_view,
-.headerPanel .viewMode #organizer_switch_view a {
+.headerPanel .viewMode .organizer_switch_view,
+.headerPanel .viewMode .organizer_switch_view a {
 	width: 31px;
 }
 
-.zenario_toolbar_header .toolbar .list_view div#organizer_switch_view {
-	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
-}
-
-.headerPanel .viewMode #organizer_switch_view.organizer_switch_to_list_view a {
+.headerPanel .viewMode .organizer_switch_view.organizer_switch_to_list_view a {
     background-position: -160px -11px;
 }
 
-.headerPanel .viewMode #organizer_switch_view.organizer_switch_to_grid_view a {
+.headerPanel .viewMode .organizer_switch_view.organizer_switch_to_grid_view a {
 	background-position: -110px -11px;
 }
 
+.headerPanel .viewMode .organizer_switch_view.organizer_switch_to_map_view a {
+	background-position: -560px -208px;
+}
 
-/*  Hide the search, filter options, advanced search and view mode buttons when showing a bespoke panel */
-
-body.zenario_organizer_bespoke_panel #organizer_search,
-body.zenario_organizer_bespoke_panel #organizer_viewOptions,
-body.zenario_organizer_bespoke_panel .zenario_toolbar_header .firstToolbar {
-	display: none;
+/*
+	n.b. I am reusing an old icon here; we need a new icon for this!
+*/
+.headerPanel .viewMode .organizer_switch_view.organizer_switch_view_selected {
+	background: url('../admin/images/store_keeper/top-bar-btns-m-over.png') repeat-x 0px 0px;
 }
 
 
@@ -1216,7 +1210,7 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 .zenario_toolbar_header .toolbar a,
 .zenario_toolbar_header .toolbar div {
 	width: 28px;
-	height: 28px;
+	height: 30px;
 }
 
 .zenario_toolbar_header .toolbar div.organizer_button_separator {
@@ -1305,13 +1299,19 @@ body.ie9 #zenario_fbAdminViewModeOptions input.input_toggle {
 	cursor:pointer;
 }
 
-.zenario_debugInfo .organizer_info_box,
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
 	background-image: url('../admin/images/sprites/org-icons-v2.png');
+	background-position: -515px -17px;
+	cursor: pointer;
+}
+
+.zenario_debugInfo .organizer_info_box {
+	background: url('../admin/images/info-icon.png') no-repeat center;
+	cursor: pointer;
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_info_box {
-	background-position:-515px -17px;
+	/*background-position:-515px -17px;*/
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help {
@@ -2179,10 +2179,6 @@ body.ie9 #organizer_preloader_circle div {
 	color: #888;
 	text-decoration:none;
 }
-
-
-
-
 
 /* Quick filter buttons - hastely copied from the above */
 
@@ -3158,8 +3154,18 @@ body.ie8 #organizer_rightColumnContent div.organizer_row .ghost table.item_link 
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_menunode_internal {
+	background: -15px -1695px no-repeat;
+	background-image: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_menunode_internal_unique {
 	background:  -15px -145px no-repeat;
-	background-image: url('../admin/images/sprites/sprite-grid-icons-single-col.png');
+	background-image: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png');
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_menunode_internal_primary {
+	background:  -15px -195px no-repeat;
+	/*background-image: url('../admin/images/sprites/sprite-grid-icons-single-col.png');*/
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_menunode_internal_secondary {
@@ -3199,6 +3205,34 @@ body.ie8 #organizer_rightColumn div.organizer_row div.organizer_cell div.ghost {
 #organizer_rightColumn div.organizer_row div.organizer_cell div.inspect,
 #organizer_rightColumn div.organizer_row div.organizer_cells_items div.inspect {
 	background: url('../admin/images/inline-view-icons-list-view.png') no-repeat;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.public_permission_inline a,
+#organizer_rightColumn div.organizer_row div.organizer_cell div.private_permission_inline a,
+#organizer_rightColumn div.organizer_row div.organizer_cell div.no_regular_access_permission_inline a,
+#organizer_rightColumn div.organizer_row div.organizer_cell div.group_members_inline a,
+#organizer_rightColumn div.organizer_row div.organizer_cell div.specific_users_inline a {
+	cursor: default;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.public_permission_inline {
+	background: url('../admin/images/public-access-inline-icon.png') no-repeat;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.private_permission_inline {
+	background: url('../admin/images/password-protected-all-users-inline-icon.png') no-repeat;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.no_regular_access_permission_inline {
+	background: url('../admin/images/no-regular-access-inline-icon.png') no-repeat;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.group_members_inline {
+	background: url('../admin/images/password-protected-groups-inline-icon.png') no-repeat;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.specific_users_inline {
+	background: url('../admin/images/password-protected-groups-inline-icon.png') no-repeat;
 }
 
 #organizer_rightColumn div.organizer_row div.organizer_cell div.view_frontend,
@@ -4180,14 +4214,12 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	background-color:transparent;
 	background-image: url('../admin/images/sprites/sprite-grid-icons-single-col.png');
 	background-repeat:no-repeat;
-	/*background-position:-16px -92px;*/
 	background-position:-16px -41px;
 }
 
 #organizer_rightColumn .organizer_hierarchy_view .dd3-handle:before {
 	content:'';
 }
-
 
 #organizer_rightColumn .organizer_hierarchy_view button {
 	position:absolute;
@@ -4204,11 +4236,6 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	border:0;
 }
 
-/*#organizer_rightColumn .organizer_hierarchy_view div.organizer_row .organizer_cell_details {
-	width:100%;
-	overflow:hidden;
-}*/
-
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_checkbox_col {
 	display:inline;
 }
@@ -4217,8 +4244,16 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	margin-left:20px;
 }
 
+#organizer_rightColumn .organizer_hierarchy_view .organizer_menu_handle div.organizer_row div.organizer_checkbox_col.organizer_documents_area {
+	margin-left:50px;
+}
+
 #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cell {
 	float:left;
+}
+
+.zenario_organizer_select #organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_documents_area {
+	margin-right: 10px;
 }
 
 #organizer_rightColumn .organizer_hierarchy_view .organizer_cell_items {
@@ -4546,6 +4581,46 @@ table.table-bordered td
 	background:url("../admin/images/document-tag-icon.png") no-repeat center -12px;
 }
 
+/* ---------- Styles for documents section ------------*/
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_file_item.zenario_document_privacy_auto {
+	border: 1px solid #FFA500;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_file_item.zenario_document_privacy_public {
+	border: 1px solid #008000;
+}
+
+#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_file_item.zenario_document_privacy_private {
+	border: 1px solid #0000FF;
+}
+	
+#organizer_rightColumn .organizer_hierarchy_view div.organizer_row div.organizer_cells_items.organizer_documents_items {
+	line-height: 28px;
+	padding: 2px;
+	color: #202020;
+}
+
+.organizer_document_line_outer .zenario_document_title {
+	font-weight: bold;
+}
+
+.organizer_document_line_outer .zenario_document_sub_fields {
+	margin-right: 10px;
+	font-style: italic;
+	color: #696969;
+}
+
+.organizer_document_line_outer.line_2 .organizer_document_line_inner .zenario_document_sub_fields {
+	position: relative;
+	bottom: 5px;
+}
+
+#organizer_rightColumn .organizer_hierarchy_view .organizer_drag_handle.document:hover, 
+#organizer_rightColumn .organizer_hierarchy_view .dd3-handle.document {
+	height: 60px;
+	background-position: -16px -25px;
+}
+
 /* ---------- Styles for tour intro.js  ------------*/
 
 .introjs-tooltip {
@@ -4749,25 +4824,19 @@ table.table-bordered td
 }
 
 /* Image gallery thumbnails */
-/*#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organiser_item_with_image {
-    width: 64px;
-    height: 64px;
+.organizer_list_view_with_tall_rows .listicon .organiser_item_with_image {
+	display: block;
+	float: left;
 }
 
-#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organizer_inline_buttons {
-    display: block;
-    float: left;
-    margin-top: 6px;
+.organizer_list_view_with_tall_rows .listicon .organizer_inline_buttons {
+	width: 60px;
+	display: block;
+	float: right;
+	position: relative;
+	bottom: 45px;
+	left: 4px;
 }
-
-div.organizer_cell.listicon .image {
-    display: block;
-    float: left;
-}
-
-#organizer_rightColumnContent .organizer_list_view_with_tall_rows div.organizer_row div.organizer_cell.listicon .organiser_item_with_image{
-	padding: 0;
-}*/
 
 
 
@@ -4853,11 +4922,6 @@ div.organizer_cell.listicon .image {
 	border: 1px solid #c5c5c5;
 }
 
-/*.organizer_list_view_with_tall_rows .listicon {
-    width: 64px;
-    height: 64px;
-}*/
-
 .organizer_list_view_with_short_rows div.organizer_cell div {
 	display: block;
 	float: left;
@@ -4866,14 +4930,12 @@ div.organizer_cell.listicon .image {
 .organizer_list_view_with_tall_rows .listicon div {
 	width: 64px;
 	height: 48px!important;
+	display: block;
+	float: left;
 }
 
 .organizer_list_view_with_tall_rows .listicon>div {
 	padding-left: 0!important;
-}
-
-.organizer_list_view_with_tall_rows .listicon .organizer_inline_buttons {
-	display: none;
 }
 
 .organizer_slidedown_view table td .slidedown_tags_title {
@@ -4888,4 +4950,294 @@ div.organizer_cell.listicon .image {
 .organizer_slidedown_view table td .organizer_image_tags.slidedown_view {
 	display: block;
 	float: left;
+}
+
+/* Admin box help */
+#row__module_description .div_table_column .module_description * {
+	color: #ffffff;
+	font-size: 11px;
+}
+
+#row__module_description .div_table_column .module_description ul {
+	margin: 15px 0px 15px 30px;
+	list-style-position: inside;
+}
+
+#row__module_description .div_table_column .module_description ul li {
+	list-style: disc;
+	margin: 5px 0px 5px 0px;
+	
+}
+
+#row__module_description .div_table_column .module_description p {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+
+
+
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li a { 
+	min-width:200px;
+	text-align: center;
+}
+
+.label_without_icon.organiser_button_with_children > a { 
+	min-width:0; 
+}
+
+#organizer_collectionPanelButtons_no_items ul li {
+	list-style: none;
+}
+
+#organizer_collectionPanelButtons_no_items ul .zenario_create_a_new a {
+	cursor: pointer;
+	padding: 5px 10px 6px;
+	background: #ea5900;
+	color: #ffffff;
+	border-radius: 3px;
+	-webkit-border-radius: 3px; 
+	-moz-border-radius: 3px; 
+	text-shadow: 0 1px 1px #000;
+	display: inline-block;
+	min-width: 200px;
+}
+
+#organizer_collectionPanelButtons_no_items ul li a {
+	background: #e9e9e9;
+	cursor: pointer;
+	padding: 5px 10px 6px;
+	color: #616161;
+	border-radius: 3px;
+	-webkit-border-radius: 3px; 
+	-moz-border-radius: 3px; 
+	display: inline-block;
+	min-width: 200px;
+}
+
+#organizer_collectionPanelButtons_no_items ul .label_without_icon a {
+	min-width: 200px;
+}
+
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children a {
+	text-align: left;
+	cursor: auto;
+	display:inline-block;
+	min-width: 0;
+	background: url("../admin/images/no_items_arrow_right.png") no-repeat;
+	background-position: right center;
+	padding-right: 15px;
+}
+
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children a,
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul,
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li {
+	display:inline-block;
+}
+
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul li a {
+	background: #e9e9e9;
+	cursor: pointer;
+	padding: 5px 10px 6px;
+	color: #616161;
+	border-radius: 3px;
+	-webkit-border-radius: 3px; 
+	-moz-border-radius: 3px; 
+	font-weight: normal;
+}
+
+#organizer_collectionPanelButtons_no_items ul .organiser_button_with_children ul {
+	padding: 0;
+}
+
+#organizer_rightColumnOptions_no_items {
+	margin-top: 20px;
+}
+
+/* Help tour styling */
+#organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav .organizer_sectionTitleText .open_tutorial_button {
+	cursor: pointer;
+	display: block;
+	height: 25px;
+	width: 67px;
+	background: url("../admin/images/help_btn.png") no-repeat;
+}
+
+#organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav .organizer_sectionTitleText .open_tutorial_button p {
+	position: relative;
+	top: 4px;
+	left: 6px;
+	color: #ffffff;
+}
+
+#organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav .organizer_sectionTitleText .open_tutorial_button {
+	opacity: 1;
+	-webkit-transition: all 0.3s ease-out;
+	-moz-transition: all 0.3s ease-out;
+	-o-transition: all 0.3s ease-out;
+	transition: all 0.3s ease-out;
+}
+
+#organizer_leftColumn .organizer_sectionTitleTextAnd2ndLevelNav .organizer_sectionTitleText .open_tutorial_button:hover {
+	opacity: 0.6;
+}
+
+#zenario_tutorial_main_video {
+	display: block;
+	margin: 0 auto;
+	padding-bottom: 20px;
+	padding-top: 20px;
+}
+
+#zenario_tutorial_main_video iframe,
+#zenario_tutorial_main_video .no_video {
+	display: block;
+	margin: 0 auto;
+}
+
+#zenario_tutorial_main_video .no_video p {
+	text-align: center;
+	color: #ffffff;
+	font-size: 1.2em;
+	margin-top: 149px;
+	margin-bottom: 149px;
+}
+
+.zenario_tutorial .other_videos .no_other_videos p {
+	text-align: center;
+}
+
+.zenario_tutorial {
+	background-color: #F4F4F4;
+}
+
+.zenario_tutorial .help_tour_outer {
+	background-color: #D2ECF8;
+	margin: 0px 10px 10px 10px;
+	min-height: 70px;
+}
+
+.zenario_tutorial .help_tour_outer .help_tour_inner,
+.zenario_tutorial .help_tour_outer .video_start_tour {
+	display: block;
+	float: left;
+}
+
+.zenario_tutorial .help_tour_outer .help_tour_inner .help_tour_message {
+	font-weight: 700;
+	font-size: 12px;
+	margin: 15px 30px 10px 50px;
+}
+
+.zenario_tutorial .help_tour_outer .help_tour_inner .auto_open_option {
+	margin: 0px 30px 0px 47px;
+}
+
+.zenario_tutorial .help_tour_outer .video_start_tour .start_button {
+	background: url("../admin/images/start-tour-btn-off.png") no-repeat;
+	display: block;
+	height: 50px;
+	width: 160px;
+	color: transparent;
+	cursor: pointer;
+	margin-top: 15px;
+}
+
+.zenario_tutorial .help_tour_outer .video_start_tour .start_button:hover {
+	background: url("../admin/images/start_tour_btn_on.png") no-repeat;
+}
+
+.zenario_tutorial .video_end {
+	clear: both;
+}
+
+.zenario_tutorial .main_video {
+	background-color: #000000;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .zenario_slideshow_wrapper {
+	margin-top: 20px;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .no_other_videos {
+	line-height: 150px;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .no_other_videos p {
+	font-size: 16px;
+	font-weight: 700;
+	margin: 0;
+	text-align: center;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .organizer_slideshow #navigator {
+	position: relative;
+	top: 170px;
+	display: none;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .slides {
+	left: 70px;
+	width: 85%;
+	top: 20px;
+}
+
+.zenario_tutorial .other_videos #zenario_tutorial_other_videos .slides .video {
+	background: url('../libraries/mit/jssor/images/icon-play-black.png') no-repeat center;
+}
+
+.zenario_tutorial .zenario_tutorial_video_banner {
+	height: 40px;
+	width: 97%; 
+	background-color: #333333;
+}
+
+.zenario_tutorial .zenario_tutorial_video_banner h1,
+.zenario_tutorial .zenario_tutorial_video_banner {
+	color:  #ffffff;
+	font-size: 1.2em;
+	font-weight: 700;
+	margin: 0;
+	padding: 0;
+	line-height: 40px;
+	text-align: left;
+	padding-left: 3%;
+}
+
+.zenario_tutorial_cbox #cboxTitle { 
+	display: none!important;
+}
+
+.zenario_tutorial_cbox #cboxLoadedContent {
+	margin-bottom:0;
+}
+
+.zenario_tutorial_cbox #cboxContent {
+   background: #F4F4F4;
+}
+
+span.video_title {
+    position: absolute;
+    bottom: 0;
+    background: #333;
+    display: block;
+    padding: 2px 8px;
+    color: #fff;
+    text-align: center;
+    left: 0;
+    right: 0;
+}
+
+.zenario_tutorial_cbox #cboxClose {
+  position: absolute;
+  top: 9px;
+  right: 8px;
+  display: block;
+  width: 23px;
+  height: 23px;
+  text-indent: -9999px;
+}
+
+#organizer_collectionPanelButtons_no_items ul {
+	padding-left: 0;
 }

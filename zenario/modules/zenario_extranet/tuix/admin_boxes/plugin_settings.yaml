@@ -35,6 +35,48 @@ plugin_settings:
                     note_below: >
                         Allow User to stay logged in using a cookie until they
                         manually log out.
+                
+                
+                label_description:
+                    full_width: Yes
+                    snippet:
+                        html: >
+                            The settings below allow you to control the headings and field labels.
+                main_login_heading:
+                    plugin_setting:
+                        name: main_login_heading
+                    label: 'Main heading:'
+                    type: text
+                    value: "Sign in"
+                    show_phrase_icon: true
+                email_field_label:
+                    plugin_setting:
+                        name: email_field_label
+                    label: 'Email field label:'
+                    type: text
+                    value: "Your Email:"
+                    show_phrase_icon: true
+                screen_name_field_label:
+                    plugin_setting:
+                        name: screen_name_field_label
+                    label: 'Screen name field label:'
+                    type: text
+                    value: "Your Screen Name:"
+                    show_phrase_icon: true
+                password_field_label:
+                    plugin_setting:
+                        name: password_field_label
+                    label: 'Password field label:'
+                    type: text
+                    value: "Your Password:"
+                    show_phrase_icon: true
+                login_button_text:
+                    plugin_setting:
+                        name: login_button_text
+                    label: 'Login button text:'
+                    type: text
+                    value: "Login"
+                    show_phrase_icon: true
         welcome_back_page:
             label: Action after login
             fields:
@@ -120,6 +162,26 @@ plugin_settings:
                         html: >
                             These settings control what the user sees if the login 
                             process fails.
+                email_address_required_error_text:
+                    label: 'If no email address is entered:'
+                    type: text
+                    value: "Please enter your email address."
+                    show_phrase_icon: true
+                password_required_error_text:
+                    label: 'If no password is entered:'
+                    type: text
+                    value: "Please enter your password."
+                    show_phrase_icon: true
+                screen_name_required_error_text:
+                    label: 'If no screen name is entered:'
+                    type: text
+                    show_phrase_icon: true
+                    value: "Please enter your screen name."
+                invalid_email_error_text:
+                    label: 'If email enter is not in vaild format:'
+                    type: text
+                    show_phrase_icon: true
+                    value: "Please enter a valid email address"
                 email_not_in_db_message:
                     plugin_setting:
                         name: email_not_in_db_message
@@ -168,5 +230,57 @@ plugin_settings:
                     label: 'If email entered is a contact not a extranet user:'
                     type: text
                     value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
+                    show_phrase_icon: true
+                accept_terms_and_conditions_message:
+                    plugin_setting:
+                        name: accept_terms_and_conditions_message
+                    label: "If user hasn't accepted terms and conditions:"
+                    type: text
+                    value: "It looks like you have not yet accepted our terms and conditions, please accept these to continue using our site."
+                    show_phrase_icon: true
+                
+                
+                sub_description:
+                    full_width: Yes
+                    snippet:
+                        html: "Error messages for changing password:"
+                
+                no_new_password_error_text:
+                    label: 'If no new password is entered:'
+                    type: text
+                    value: "Please enter new password."
+                    show_phrase_icon: true
+                no_new_repeat_password_error_text:
+                    label: 'If no new repeat password is entered:'
+                    type: text
+                    value: "Please repeat your new Password."
+                    show_phrase_icon: true
+                new_passwords_do_not_match:
+                    plugin_setting:
+                        name: new_passwords_do_not_match
+                    label: 'If the new password and repeat new password fields do not match:'
+                    type: text
+                    value: "Your repeated Password does not match."
+                    show_phrase_icon: true
+                new_password_length_message:
+                    plugin_setting:
+                        name: new_password_length_message
+                    label: 'If new password is not over min length:'
+                    type: text
+                    value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
+                    show_phrase_icon: true
+                new_password_not_strong_enough_message:
+                    plugin_setting:
+                        name: new_password_not_strong_enough_message
+                    label: 'If new password is not stong enough:'
+                    type: text
+                    value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
+                    show_phrase_icon: true
+                new_password_same_as_old_message:
+                    plugin_setting:
+                        name: new_password_same_as_old_message
+                    label: 'If new password is the same as the old password:'
+                    type: text
+                    value: "Your new Password is the same as your old Password."
                     show_phrase_icon: true
 

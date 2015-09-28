@@ -120,7 +120,7 @@ class zenario_user_documents extends module_base_class {
 						$item['name'] = substr($item['name'], 0, 10) . "..." .  substr($item['name'], -15);
 					}
 					if ($fileId && docstoreFilePath($fileId)) {
-						$item['filesize'] = zenario_common_features::fileSizeConvert(filesize(docstoreFilePath($fileId)));
+						$item['filesize'] = fileSizeConvert(filesize(docstoreFilePath($fileId)));
 					}
 				}
 				break;
@@ -161,10 +161,14 @@ class zenario_user_documents extends module_base_class {
 				$documentTagsString = '';
 				$documentTags = getRowsArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_document_tag_link', 'tag_id', array('user_document_id' => $box['key']['id']));
 				$fileId = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents','file_id',  $box['key']['id']);
+				$documentTitle = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents','title',  $box['key']['id']);
 				$documentName = getRow('files', array('filename'), $fileId);
 				$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', $documentName);
 				foreach ($documentTags as $tag) {
 					$documentTagsString .= $tag . ",";
+				}
+				if($documentTitle) {
+					$values['details/document_title'] = $documentTitle;
 				}
 		
 				$fields['details/tags']['value'] = $documentTagsString;
@@ -183,7 +187,9 @@ class zenario_user_documents extends module_base_class {
 				foreach ($tagIds as $tagId) {
 					setRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_document_tag_link', array('tag_id' => $tagId, 'user_document_id' => $box['key']['id']), array('tag_id' => $tagId, 'user_document_id' => $box['key']['id']));
 				}
-				break;
+				updateRow(ZENARIO_USER_DOCUMENTS_PREFIX . 'user_documents', array('title' => $values['details/document_title']), array('id' => $box['key']['id']));
+
+			break;
 		}
 	}
 	

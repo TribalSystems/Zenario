@@ -66,7 +66,12 @@ zenario__layouts:
                                                         ),
                                                         NULL
                                                     )
+                    align_right: Yes
                     show_by_default: Yes
+                status:
+                    title: Status
+                    show_by_default: Yes
+                    width: xlarge
                 extension_of_skin:
                     db_column: s.extension_of_skin
                 extension_of_skin_display_name:

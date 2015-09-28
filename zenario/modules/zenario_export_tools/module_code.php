@@ -136,8 +136,8 @@ class zenario_export_tools extends module_base_class {
 				if (empty($box['tabs']['import']['errors'])) {
 					$box['confirm']['show'] =
 						$targetCType != $box['key']['cType']
-					 || getRow('content', 'equiv_id', array('id' => $targetCID, 'type' => $targetCType))
-					 	!= getRow('content', 'equiv_id', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
+					 || getRow('content_items', 'equiv_id', array('id' => $targetCID, 'type' => $targetCType))
+					 	!= getRow('content_items', 'equiv_id', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
 				}
 				
 				break;
@@ -190,10 +190,12 @@ class zenario_export_tools extends module_base_class {
 				if ($post['key'] && $post['target']) {
 					if (zenario_export_tools::createExportFile($post['q'], false, false, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
 						
-						$headers = array('X-HTTP-Method-Override: GET');
 						$url = 'https://www.googleapis.com/language/translate/v2';
+						$options = array(
+							CURLOPT_HTTPHEADER => array('X-HTTP-Method-Override: GET'),
+							CURLOPT_SSL_VERIFYPEER => false);
 						
-						if ($responce = curl($url, $post, $headers)) {
+						if ($responce = curl($url, $post, $options)) {
 							if ($json = json_decode($responce, true)) {
 								if (isset($json['data']['translations'][0]['translatedText'])) {
 									
@@ -223,7 +225,7 @@ class zenario_export_tools extends module_base_class {
 							$test['target'] = 'de';
 							$test['key'] = $post['key'];
 							
-							if (curl($url, $test, $headers)) {
+							if (curl($url, $test, $options)) {
 								if ($values['translate/lang_from'] && $values['translate/lang_from'] != 0) {
 									echo adminPhrase('Google Translate could not translate this text, and returned an unknown error.');
 								} else {
@@ -252,7 +254,7 @@ class zenario_export_tools extends module_base_class {
 				$f = false;
 				$isXML = $values['export/format'] == 'xml';
 				$encodeHTMLAtt = $values['export/format'] == 'html_settings_encoded';
-				if ($content = getRow('content', array('alias', 'tag_id'), array('id' => $box['key']['cID'], 'type' => $box['key']['cType']))) {
+				if ($content = getRow('content_items', array('alias', 'tag_id'), array('id' => $box['key']['cID'], 'type' => $box['key']['cType']))) {
 					if (zenario_export_tools::createExportFile($f, $isXML, $encodeHTMLAtt, $box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
 						if ($isXML) {
 							header('Content-Type: text/xml; charset=UTF-8');
@@ -272,8 +274,8 @@ class zenario_export_tools extends module_base_class {
 	}
 	
 	public static function createExportFile(&$f, $isXML, $encodeHTMLAtt, $cID, $cType, $cVersion, $targetCID = false, $targetCType = false) {
-		if (($content = getRow('content', true, array('id' => $cID, 'type' => $cType)))
-		 && ($version = getRow('versions', true, array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))
+		if (($content = getRow('content_items', true, array('id' => $cID, 'type' => $cType)))
+		 && ($version = getRow('content_item_versions', true, array('id' => $cID, 'type' => $cType, 'version' => $cVersion)))
 		 && ($template = getRow('layouts', array('family_name', 'file_base_name', 'name'), $version['layout_id']))) {
 			
 			if ($isXML) {
@@ -840,7 +842,7 @@ class zenario_export_tools extends module_base_class {
 			}
 			
 			//Check which Content Item we are updating, and stop if we can't find the target
-			if (!$cID || !$cType || !checkRowExists('content', array('id' => $cID, 'type' => $cType))) {
+			if (!$cID || !$cType || !checkRowExists('content_items', array('id' => $cID, 'type' => $cType))) {
 				$error = adminPhrase('The target Content Item could not be found.');
 				return false;
 			
@@ -860,7 +862,7 @@ class zenario_export_tools extends module_base_class {
 				$cVersion = getLatestVersion($cID, $cType);
 			}
 			
-			$content = getRow('content', true, array('id' => $cID, 'type' => $cType));
+			$content = getRow('content_items', true, array('id' => $cID, 'type' => $cType));
 
 			
 			//Try to save the names of Menu Nodes from the exports

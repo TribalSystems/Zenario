@@ -30,6 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__impersonate extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		// Show a warning if debug mode if off
+		if (!setting('debug_override_enable')) {
+			$fields['impersonate/warning']['hidden'] = false;
+			$box['max_height'] = 200;
+		}
 		$fields['impersonate/desc']['snippet']['html'] = adminPhrase('This action will log you in as user "[[name]]", so that you will see the site as the user sees it.', array('name' => getUserIdentifier($box['key']['id'])));
 	}
 	

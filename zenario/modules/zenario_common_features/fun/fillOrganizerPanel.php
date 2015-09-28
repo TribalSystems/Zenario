@@ -57,6 +57,10 @@ switch ($path) {
 		break;
 	case 'zenario__content/panels/documents':
 		
+		if (!setting('enable_document_tags')) {
+			unset($panel['collection_buttons']['document_tags']);
+		}
+		
 		if (isset($panel['item_buttons']['autoset'])
 		 && !checkRowExists('document_rules', array())) {
 			$panel['item_buttons']['autoset']['disabled'] = true;
@@ -75,6 +79,8 @@ switch ($path) {
 				if (!$item['folder_file_count']) {
 					$item['traits']['is_empty_folder'] = true;
 				}
+				$item['extract_wordcount'] = 
+				$item['privacy'] = '';
 			} else {
 			
 			/* if one document has public link */
@@ -83,23 +89,20 @@ switch ($path) {
 				$file = getRow('files', 
 								array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
 								$document['file_id']);
+				
 				if($document['filename']) {
 					$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
 					$frontLink = $dirPath . '/' . $document['filename'];
 					$symPath = CMS_ROOT . $frontLink;
 					$symFolder =  CMS_ROOT . $dirPath;
 					
-					if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
-							if(is_link($symPath)) {
-								$publicLink = true;
-							}else{
-								$publicLink = false;
-							}
+					if (is_file($symPath)) {
+						$item['traits']['public_link'] = true;
+						$item['frontend_link'] = $frontLink;
+						$publicLink = true;
 					}
 				}
-				if (isset($publicLink) && $publicLink){
-					$item['traits']['public_link'] = $publicLink;
-				}
+				
 				//change icon
 				$item['css_class'] = 'zenario_file_item';
 				$sql = "
@@ -117,7 +120,7 @@ switch ($path) {
 				}
 				$item['plaintext_extract_details'] = 'Word count: '.$documentDetails['extract_wordcount'].$documentDetails['extract'];
 				$fileId = $documentDetails['file_id'];
-				if ($fileId) {
+				if ($fileId && empty($item['frontend_link'])) {
 					$filePath = fileLink($fileId);
 					$item['frontend_link'] = $filePath;
 				}
@@ -127,12 +130,31 @@ switch ($path) {
 				}
 			}
 			$item['tooltip'] = $item['name'];
-			if (strlen($item['name']) > 30) {
-				$item['name'] = substr($item['name'], 0, 10) . "..." .  substr($item['name'], -15);
+			if (strlen($item['name']) > 50) {
+				$item['name'] = substr($item['name'], 0, 25) . "..." .  substr($item['name'], -25);
 			}
 			if ($fileId && docstoreFilePath($fileId)) {
-				$item['filesize'] = self::fileSizeConvert(filesize(docstoreFilePath($fileId)));
+				$item['filesize'] = fileSizeConvert(filesize(docstoreFilePath($fileId)));
 			}
+			$item['css_class'] .= ' zenario_document_privacy_' . $item['privacy'];
+			
+			if ($item['date_uploaded']) {
+				$item['date_uploaded'] = adminPhrase('Uploaded [[date]]', array('date' => formatDateTimeNicely($item['date_uploaded'], '_MEDIUM')));
+			}
+			if ($item['extract_wordcount']) {
+				$item['extract_wordcount'] = nAdminPhrase(
+					'[[extract_wordcount]] word', 
+					'[[extract_wordcount]] words',
+					$item['extract_wordcount'],
+					$item
+				);
+			} else {
+				$item['extract_wordcount'] = '';
+			}
+		}
+		
+		if (count($panel['items']) <= 0) {
+			unset($panel['collection_buttons']['reorder_root']);
 		}
 		
 		break;
@@ -153,7 +175,14 @@ switch ($path) {
 			
 			} elseif ($item['menu_id']) {
 				if ($item['target_loc'] == 'int' && $item['internal_target']) {
-					if ($item['redundancy'] == 'primary') {
+					
+					if (isMenuNodeUnique($item['redundancy'], $item['equiv_id'], $item['content_type'])) {
+						$item['redundancy'] = 'unique';
+					}
+					
+					if ($item['redundancy'] == 'unique') {
+						$item['css_class'] = 'zenario_menunode_internal_unique';
+					} elseif ($item['redundancy'] == 'primary') {
 						$item['css_class'] = 'zenario_menunode_internal';
 					} else {
 						$item['css_class'] = 'zenario_menunode_internal_secondary';
@@ -290,7 +319,7 @@ switch ($path) {
 				}
 				$item['summary'] = $summary;
 				
-				if (!checkRowExists('content_types', array('default_layout_id' => $id)) && !checkRowExists('versions', array('layout_id' => $id))) {
+				if (!checkRowExists('content_types', array('default_layout_id' => $id)) && !checkRowExists('content_item_versions', array('layout_id' => $id))) {
 					$item['traits']['deletable'] = true;
 				
 				}
@@ -305,7 +334,7 @@ switch ($path) {
 				
 			//Non-numeric ids are the Family and Filenames of Template Files that have no layouts created
 			} else {
-				$item['name'] = adminPhrase('[[Unregistered template file]]');
+				$item['name'] = str_replace('.tpl.php', '', $item['template_filename']);
 				$item['usage_status'] = $item['status'];
 				$item['traits']['unregistered'] = true;
 			}
@@ -325,15 +354,39 @@ switch ($path) {
 		
 		} elseif ($refinerName == 'usable_in_template_family'
 		 && $templateFamily = decodeItemIdForStorekeeper(get('refiner__usable_in_template_family'))) {
-			$panel['title'] = adminPhrase('SKins in the template directory "[[family]]"', array('family' => $templateFamily));
-			$panel['no_items_message'] = adminPhrase('There are no usable skin for this template directory.');
+			$panel['title'] = adminPhrase('Skins in the template directory "[[family]]"', array('family' => $templateFamily));
+			$panel['no_items_message'] = adminPhrase('There are no usable skins for this template directory.');
 			unset($panel['columns']['family_name']['title']);
+		}
+		
+		foreach ($panel['items'] as &$item) {
+			$status = '';
+			if ($item['missing'] && $item['usage_layouts']) {
+				$status = adminPhrase('Skin is missing from the file system but is referred to by some layouts');
+			} elseif (!$item['missing'] && $item['usage_layouts']) {
+				$status = adminPhrase('Skin was found in the file system and is referred to by some layouts');
+			} elseif ($item['missing'] && !$item['usage_layouts']) {
+				$status = adminPhrase('Skin is missing from the file system and is not referred to by any layouts');
+			} elseif (!$item['missing'] && !$item['usage_layouts']) {
+				$status = adminPhrase('Skin was found in the file system but is not referred to by any layouts');
+			}
+			$item['status'] = $status;
+			if (!$item['display_name']) {
+				$item['display_name'] = $item['name'];
+			}
 		}
 		
 		break;
 	
 	
 	case 'zenario__layouts/panels/skin_files':
+		
+		//Copy the contents of the readme to the help button
+		require_once CMS_ROOT. 'zenario/libraries/mit/parsedown/Parsedown.php';
+		$markdown = file_get_contents(CMS_ROOT. 'zenario/api/sample_skin_readme/README.txt');
+		$markdownToHTML = new Parsedown();
+		$panel['collection_buttons']['help']['help']['message'] = $markdownToHTML->text($markdown);
+		
 		
 		if ($skin = getSkinFromId(get('refiner__skin'))) {
 			
@@ -477,6 +530,13 @@ switch ($path) {
 			foreach ($panel['items'] as $id => &$item) {
 				$text = '';
 				$comma = false;
+				
+				if ($item['in_use_anywhere']) {
+					$mrg = array('used_on' => 'Used on');
+				} else {
+					$mrg = array('used_on' => 'Attached to');
+				}
+				
 				$usage_content = (int)$item['usage_content'];
 				$usage_plugins = (int)$item['usage_plugins'];
 				$usage_menu_nodes = (int)$item['usage_menu_nodes'];
@@ -493,7 +553,10 @@ switch ($path) {
 							AND archived = 0';
 						$result = sqlSelect($sql);
 						$row = sqlFetchAssoc($result);
-						$text .= adminPhrase('Used on "[[tag]]"', array('tag' => formatTag($row['id'], $row['type'])));
+						
+						$mrg['tag'] = formatTag($row['id'], $row['type']);
+						$text .= adminPhrase('[[used_on]] "[[tag]]"', $mrg);
+					
 					} elseif ($usage_plugins === 1) {
 						$sql = '
 							SELECT p.name, m.display_name
@@ -510,13 +573,13 @@ switch ($path) {
 						if ($row['name'] && $row['display_name']) {
 							$text = adminPhrase('Used on plugin "[[name]]" of the module "[[display_name]]"', $row);
 						} else {
-							$text = 'Used on 1 plugin';
+							$text = adminPhrase('Used on 1 plugin');
 						}
 					} else {
-						$text = 'Used on 1 menu node';
+						$text = adminPhrase('Used on 1 menu node');
 					}
 				} elseif ($contentUsage > 1) {
-					$text .= 'Used on ';
+					$text .= $mrg['used_on']. ' ';
 					if ($usage_content > 0) {
 						$text .= nAdminPhrase(
 							'[[count]] content item',
@@ -566,9 +629,12 @@ switch ($path) {
 						AND archived = 0';
 					$result = sqlSelect($sql);
 					$row = sqlFetchAssoc($result);
-					$text .= adminPhrase('Used on "[[template_name]]"', $row);
+					$mrg['template_name'] = $row['template_name'];
+					$text .= adminPhrase('[[used_on]] "[[template_name]]"', $mrg);
+				
 				} elseif ($usage_email_templates > 1) {
-					$text = adminPhrase('Used on [[count]] email templates', array('count' => $usage_email_templates));
+					$mrg['count'] = $usage_email_templates;
+					$text = adminPhrase('[[used_on]] [[count]] email templates', $mrg);
 				}
 				$item['usage_email_templates'] = $text;
 			}
@@ -722,66 +788,75 @@ switch ($path) {
 			if ($langSpecificDomainsUsed) {
 				$panel['columns']['domain']['show_by_default'] = true;
 			}
+			
+			
+			
+			$maxEnabledLanguageCount = siteDescription('max_enabled_languages');
+			$enabledLanguages = getLanguages();
+			if ($maxEnabledLanguageCount && (count($enabledLanguages) >= $maxEnabledLanguageCount)) {
+				if ($maxEnabledLanguageCount == 1) {
+					unset($panel['collection_buttons']['create']);
+				}
+				if (isset($panel['collection_buttons']['add'])) {
+					$panel['collection_buttons']['add']['css_class'] = '';
+					$panel['collection_buttons']['add']['disabled'] = true;
+					if ($maxEnabledLanguageCount == 1) {
+						$message = adminPhrase('
+						<p>
+							This Community CMS allows one language per site. To make this site multi-lingual, please upgrade to Pro. 
+						</p><p>
+							Otherwise you will need to reset your site if you want to change to a different language.
+						</p>'
+						);
+					} else {
+						$message = adminPhrase('The maximun number of enabled languages on this site is [[count]]', array('count' => $maxEnabledLanguageCount));
+					}
+					$panel['collection_buttons']['add']['disabled_tooltip'] = $message;
+				}
+				unset($panel['item_buttons']['add_language']);
+			}
 		}
 		
 		break;
 		
 	
 	case 'zenario__languages/panels/phrases':
-		//Task #9611 Change the icon in the phrases panel to help when creating a module's phrase
-		if ($additionalLanguages = getNumLanguages() - 1) {
+		$languages = getLanguages(false, true, true);
+		$additionalLanguages = count($languages) - 1;
+		
+		foreach ($panel['items'] as $id => &$item) {
 			
-			$defaultLanguage = setting('default_language');
-			$languages = getLanguages(false, true, true);
-			unset($languages[$defaultLanguage]);
-			$languages = array_keys($languages);
-			
-			foreach ($panel['items'] as $id => &$item) {
-				if (isset($item[$defaultLanguage]) && $item[$defaultLanguage] != '') {
-					$translations = 0;
-					foreach ($languages as $langId) {
-						if (isset($item[$langId]) && $item[$langId] != '') {
-							++$translations;
-						}
-					}
+			//For each item, check to see if there is a translation for each language
+			$translations = false;
+			$missingTranslations = false;
+			foreach ($languages as $langId => $lang) {
+				if (isset($item[$langId]) && $item[$langId] != '') {
+					$translations = true;
 				
-					if ($translations == 0) {
-						$item['css_class'] = 'phrase_not_translated';
-						$item['tooltip'] = adminPhrase('This phrase has not been translated into all site languages, click "Edit phrase" to add translations.');
+				//If a language does not have the translate_phrases flag set, then as long as this isn't
+				//a phrase code, all it to just use the phrase untranslated.
+				} elseif (empty($lang['translate_phrases']) && substr($item['code'], 0, 1) != '_') {
+					$item[$langId] = $item['code'];
 				
-					} else if ($translations < $additionalLanguages) {
-						$item['css_class'] = 'phrase_partially_translated';
-						$item['tooltip'] = adminPhrase('This phrase has been translated into some site languages, click "Edit phrase" to add missing translations.');
-				
-					} else {
-						$item['css_class'] = 'phrase_translated';
-						$item['tooltip'] = adminPhrase('This phrase has been translated into all site languages.');
-					}
+				} else {
+					$missingTranslations = true;
 				}
 			}
-		}
+			
+			//Task #9611 Change the icon in the phrases panel to help when creating a module's phrase
+			if ($additionalLanguages) {
+				if ($missingTranslations) {
+					if ($translations) {
+						$item['css_class'] = 'phrase_partially_translated';
+						$item['tooltip'] = adminPhrase('This phrase has been translated into some site languages, click "Edit phrase" to add missing translations.');
 		
-		break;
-
-	
-	case 'zenario__languages/nav/vlp/vlp_chained/panel':
-		if ($mode != 'xml') {
-			foreach ($panel['items'] as $id => &$item) {
-				$item['local_text'] = formatNicely($item['local_text'], 50);
-				$item['cell_css_classes'] = array();
-				$item['cell_css_classes']['local_text'] = 'lang_flag_'. $item['language_id'];
-				
-				$item['traits'] = array();
-				if ($item['phrase_id'] == $refinerId) {
-					$item['traits']['reference_lang'] = true;
-				
-				} elseif ($item['phrase_id'] === null) {
-					$item['traits']['ghost'] = true;
-					$item['css_class'] = 'language ghost';
-					$item['cell_css_classes']['language_id'] = 'ghost';
-					$item['cell_css_classes']['protect_flag'] = 'ghost';
-					$item['cell_css_classes']['local_text'] = 'ghost';
-					$item['local_text'] = adminPhrase('MISSING [[lang_name]] ([[language_id]])', array('language_id' => $item['language_id'], 'lang_name' => getLanguageName($item['language_id'], false, false)));
+					} else {
+						$item['css_class'] = 'phrase_not_translated';
+						$item['tooltip'] = adminPhrase('This phrase has not been translated into all site languages, click "Edit phrase" to add translations.');
+					}
+				} else {
+					$item['css_class'] = 'phrase_translated';
+					$item['tooltip'] = adminPhrase('This phrase has been translated into all site languages.');
 				}
 			}
 		}
@@ -828,6 +903,15 @@ switch ($path) {
 		
 		} else {
 			$panel['trash']['empty'] = !checkRowExists('admins', array('status' => 'deleted'));
+		}
+		
+		if (!self::canCreateAdditionalAdmins()) {
+			$tooltip = adminPhrase('The maximum number of client administrators has been reached ([[i]])', array('i' => siteDescription('max_local_administrators')));
+			$panel['collection_buttons']['create']['disabled'] = 
+			$panel['item_buttons']['restore_admin']['disabled'] = true;
+			$panel['collection_buttons']['create']['disabled_tooltip'] = 
+			$panel['item_buttons']['restore_admin']['disabled_tooltip'] = $tooltip;
+			$panel['collection_buttons']['create']['css_class'] = '';
 		}
 		
 		break;

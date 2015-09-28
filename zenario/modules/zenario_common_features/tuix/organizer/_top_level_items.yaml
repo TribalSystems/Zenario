@@ -1,11 +1,13 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 loading_message:
-    hidden: Yes
+    hidden: true
     panel:
         no_items_message: Loading...
 
 zenario__content:
+    youtube_video_id: jR8CDnaoMSo
+    youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     ord: 1
     visible_if: >
         zenarioA.siteSettings.default_language
@@ -56,25 +58,14 @@ zenario__content:
             label: Documents
             link:
                 path: zenario__content/panels/documents
-        document_tags:
-            priv: _PRIV_MANAGE_DOCUMENTS
-            label: Document tags
-            link:
-                path: zenario__content/panels/document_tags
-        document_rules:
-            priv: _PRIV_MANAGE_DOCUMENTS
-            label: Document rules
-            link:
-                path: 'zenario__content/panels/document_rules'
-            tooltip: >
-                Set rules to automatically set a document's metadata
-                based on its filename (advanced)
     data-step: 11
     data-position: right
     data-intro: >
         <p><strong>Content items</strong></p>
         <p>Create and modify all content items, including HTML pages, news, documents, vacancies etc.</p>
 zenario__menu:
+    youtube_video_id: r6otMwh7EVw
+    youtube_thumbnail_title: 'Zenario CMS: Menu navigation quick-start guide'
     ord: 2
     priv: _PRIV_VIEW_MENU_ITEM
     visible_if: >
@@ -187,6 +178,8 @@ zenario__modules:
         <p><strong>Modules</strong></p>
         <p>View and install all website modules and their plugins.</p>
 zenario__languages:
+    youtube_video_id: e-kjG0sgeTs
+    youtube_thumbnail_title: 'Zenario CMS: Adding languages to a Zenario site'
     ord: "999998"
     priv: _PRIV_VIEW_LANGUAGE
     css_class: zenario_cms_core_languages

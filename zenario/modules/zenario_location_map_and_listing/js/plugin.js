@@ -85,9 +85,6 @@
 				}
 			}
 		
-			//The contents of the infoWindow are stored on the page
-			infoWindow = new google.maps.InfoWindow({content: $('#' + location.htmlId).html()})
-		
 			//Create a marker, using the image we found if possible
 			marker = new google.maps.Marker({
 				position: pos,
@@ -95,43 +92,50 @@
 				title: location.name,
 				icon: icon
 			});
-		
-			//This anonymous function is used to break the variable scope and preserve the values
-			//of the location, pos, marker and infoWindow variables
-			(function(location, pos, marker, infoWindow) {
 			
-				//Set the info window to open at the position
-				infoWindow.setPosition(pos);
+			//Add this marker to the bounds of the map
+			bounds.extend(marker.position);
 			
-				//Create a wrapper function that will open the info window on the map
-				infoWindow._open = function() {
-					zenario_location_map_and_listing.closeInfoWindow();
-					infoWindow.open(map);
-				};
+			if (location.id != 'postcode') {
+				//The contents of the infoWindow are stored on the page
+				infoWindow = new google.maps.InfoWindow({content: $('#' + location.htmlId).html()});
 			
-				//When the visitor clicks the pin, open the info window for the location they've just clicked on
-				google.maps.event.addListener(marker, 'click', function() {
-					infoWindow._open();
+				//This anonymous function is used to break the variable scope and preserve the values
+				//of the location, pos, marker and infoWindow variables
+				(function(location, pos, marker, infoWindow) {
 				
-					//Attempt to highlight and scroll to the item in the parent window
-					zenario_location_map_and_listing.iframeHighlightItem(location.htmlId);
-					zenario_location_map_and_listing.iframeScrollToItem(location.htmlId);
-				});	
+					//Set the info window to open at the position
+					infoWindow.setPosition(pos);
+				
+					//Create a wrapper function that will open the info window on the map
+					infoWindow._open = function() {
+						zenario_location_map_and_listing.closeInfoWindow();
+						infoWindow.open(map);
+					};
+				
+					//When the visitor clicks the pin, open the info window for the location they've just clicked on
+					google.maps.event.addListener(marker, 'click', function() {
+						infoWindow._open();
+					
+						//Attempt to highlight and scroll to the item in the parent window
+						zenario_location_map_and_listing.iframeHighlightItem(location.htmlId);
+						zenario_location_map_and_listing.iframeScrollToItem(location.htmlId);
+					});
+				
+					//Store the infoWindow in an array so we can call it via other means
+					zenario_location_map_and_listing.infoWindows[location.id] = infoWindow;
 			
-				//Store the infoWindow in an array so we can call it via other means
-				zenario_location_map_and_listing.infoWindows[location.id] = infoWindow;
-			
-				//Add this marker to the bounds of the map
-				bounds.extend(marker.position);
-		
-			//End of the anonymous function
-			})(location, pos, marker, infoWindow);
+				//End of the anonymous function
+				})(location, pos, marker, infoWindow);
+			}
 		}
 		
 		//Catch the case where the map isn't defined
 		if (!map) {
 			mapOptions = {
-				mapTypeId: google.maps.MapTypeId.ROADMAP
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				center: {lat: 0, lng: 0},
+				zoom: 1
 			};
 			map = new google.maps.Map(zenario.get(mapId), mapOptions);
 		}
@@ -183,16 +187,18 @@
 	};
 
 	zenario_location_map_and_listing.listingScrollToItem = function(containerId, htmlId) {
-
+		
 		var time = 400,
 			offset, 
 			$scrollableArea = $('#' + containerId + ' .zenario_lmal_scrollable_area'),
-			$el = $('#' + containerId + ' .' + htmlId),
-			offset = 1*$el.offset().top - 1*$scrollableArea.offset().top;
+			$el = $('#' + containerId + ' .' + htmlId);
+		if ($el.length) {
+			var offset = 1*$el.offset().top - 1*$scrollableArea.offset().top;
 	
-		offset = Math.max(0, offset - Math.floor($scrollableArea.height() / 4));
+			offset = Math.max(0, offset - Math.floor($scrollableArea.height() / 4));
 	
-		$scrollableArea.stop().animate({scrollTop: offset}, time);
+			$scrollableArea.stop().animate({scrollTop: offset}, time);
+		}
 	};
 
 	//Dummy functions that will be created later
@@ -200,6 +206,5 @@
 	};
 	zenario_location_map_and_listing.iframeScrollToItem = function(htmlId) {
 	};
-
-
+	
 })(zenario, zenario_location_map_and_listing);

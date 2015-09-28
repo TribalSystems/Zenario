@@ -1,6 +1,11 @@
 {% if not slides and adminId %}
 	This slideshow has no slides yet.
 {% else %}
+	{% if heading %}
+		<div class="slideshow_heading">
+			<h2>{{heading|e}}</h2>
+		</div>
+	{% endif %}
 	<div id="slideshow_outer_{{instanceId|e}}">
 		{% if placeholder %}
 			<div class="slideshow_container">

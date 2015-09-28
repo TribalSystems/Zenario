@@ -17,12 +17,12 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                If your site can be accessed using more than one domain name, please set your primary one here.
-                                                                Links to your site will use the primary domain, and Administrators will be directed to the primary domain when they log in.
-                                                            </p>
-                                                            <p>
-                                                                If you set a preferred domain, this must be a domain that you can access, otherwise you will be unable to log into Admin Mode.
-                                                            </p>
+                                If your site can be accessed using more than one domain name, please set your primary one here.
+                                Links to your site will use the primary domain, and Administrators will be directed to the primary domain when they log in.
+                            </p>
+                            <p>
+                                If you set a preferred domain, this must be a domain that you can access, otherwise you will be unable to log into Admin Mode.
+                            </p>
                 primary_domain:
                     site_setting:
                         name: primary_domain
@@ -31,4 +31,5 @@ site_settings:
                     value: ""
                     values:
                         none: Allow administrators to log in on any domain
+                    format_onchange: true
     setting_group: primary_domain

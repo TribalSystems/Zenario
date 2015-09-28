@@ -192,6 +192,40 @@ additionalProperties:
                 Note that this will clash with the <code>popout_message</code> property in Organizer;
                 you can use one or the other, but not both at the same time.
         
+        toast:
+            type: object
+            description: >
+                This will cause the panel to display a "toaster" at the top right when the admin box is displayed,
+                or after the admin box is saved.
+                
+                The toastr library is used;
+                you can see https://github.com/CodeSeven/toastr for more information.
+            properties:
+                message:
+                    type: string
+                    description: >
+                        A message for the toast.
+                title:
+                    type: string
+                    description: >
+                        An optional title for the toast.
+                
+                message_type:
+                    enum:
+                        - error
+                        - warning
+                        - info
+                        - success
+                    default: info
+                    description: >
+                        The type of message. A different styling will be applied for each different type.
+                
+                options:
+                    additionalProperties:
+                        type: *variable
+                        description: >
+                            Any additional options to pass to the toastr library.
+        
         confirm:
             type: object
             dependencies_if_true:
@@ -1089,13 +1123,60 @@ additionalProperties:
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
                                 
-                                values:
+                                admin_setting:
                                     type: object
+                                    static: true
+                                    description: >
+                                        When you are adding fields to the Administrator FAB ("zenario_admin") then you
+                                        can declare them as admin settings to have them loaded and saved.
+                                        
+                                        You can have fields without this property if you wish, but these will not be loaded or saved.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
+                                    required:
+                                        - name
+                                    properties:
+                                        name:
+                                            type: string
+                                            static: true
+                                            description: >
+                                                The code-name of this admin setting.
+                                                
+                                                This value is read when your Module is installed or a database update for your Module is applied.
+                                                If you change it you will need to increment your Module's revision number.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
+                                        value:
+                                            type: *variable
+                                            static: true
+                                            description: >
+                                                The default value for this admin setting.
+                                                
+                                                This value is read when your Module is installed or a database update for your Module is applied.
+                                                If you change it you will need to increment your Module's revision number.
+                                                
+                                                As a helpful shortcut, if you do not provide it here the CMS will read the <code>value</code>
+                                                property from the field itself.
+                                                
+                                                
+                                                This property must be written in your .yaml file.
+                                                It can't be changed in php.
+                                
+                                values:
+                                    type: 
+                                        - string
+                                        - object
                                     description: >
                                         Use this property to define a List of Values for <code>checkboxes</code>, <code>radios</code> or <code>select</code>-type fields.
                                         
                                         From 7.0.5 onwards, you can use this property for a text field to add a jQuery auto-complete.
-                                    additionalProperties:
+                                        
+                                        From 7.0.7 onwards, you can enter the code-name of lov.
+                                    additionalProperties: &lovValues
                                         #This needs to be changed if using docson as it glitches out here
                                         type:
                                             - string
@@ -1581,6 +1662,22 @@ additionalProperties:
                                     - onkeypress
                                     - onkeyup
                                     - onselect
+        
+        
+        lovs:
+            type: object
+            additionalProperties:
+                type: object
+                additionalProperties: *lovValues
+            description: >
+                From 7.0.7 onwards, instead of defining a list of values against each field,
+                you can define lists of values here and just enter the code-name for each field.
+        
+        go_to_url:
+            type: string
+            description: >
+                    This property is used in the installer and in wizards. If set, the installer
+                    or the wizard will close and navigate to the specified path or URL.
         
         module_class_name:
             type: string

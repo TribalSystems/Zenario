@@ -69,6 +69,12 @@ class zenario_menu extends module_base_class {
 		
 		$this->showInMenuMode();
 		
+		if(setting('zenario_menu__allow_overriding_of_invisible_flag_on_menu_nodes') && $this->setting('show_invisible_menu_nodes')){
+			$this->showInvisibleMenuItems=true;
+		}
+		
+		$this->setting('show_missing_menu_nodes');
+		
 		//Get the Menu Node for this content item
 		$this->currentMenuId = getSectionMenuItemFromContent(cms_core::$equivId, cms_core::$cType, $this->sectionId);
 		

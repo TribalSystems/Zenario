@@ -21,8 +21,11 @@ site_settings:
                     type: text
                     note_below: |
                         An application key that can use the Google Translate API.
-                                                        You can obtain a key at
-                                                        <a href="https://code.google.com/apis/console/" target="_blank">
-                                                            https://code.google.com/apis/console/
-                                                        </a>.
+                        You can obtain a key by going to
+                        <a href="https://cloud.google.com/translate/v2/getting_started" target="_blank">
+                            https://cloud.google.com/translate/v2/getting_started</a>,
+                        then clicking the
+                        <em style="font-style: italic;">
+                            &quot;create or select a project in the Google Developers Console and enable the API&quot;
+                        </em> link.
     setting_group: api_keys

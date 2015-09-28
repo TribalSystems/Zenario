@@ -717,7 +717,65 @@ _html
 	OR `code` = 'zenario_newsletter__sample_design_3'
 _sql
 
+
+
+//Remove the "time_received" column
+);	revision( 117
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP COLUMN `time_received`
+_sql
+
+//Add some missing keys
+);	revision( 158
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `username`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `email`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `email_sent`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `time_clicked_through`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `username` (`newsletter_id`, `username`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `email` (`newsletter_id`, `email`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `email_sent` (`newsletter_id`, `email_sent`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `time_clicked_through` (`newsletter_id`, `time_clicked_through`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `email_overridden_by` (`newsletter_id`, `email_overridden_by`)
+_sql
 );
+
+
+
 
 
 //Convert the format of inline image URLs in Newsletters again.
@@ -785,3 +843,26 @@ if (needRevision(162)) {
 
 	revision(162);
 }
+
+
+
+
+//Re-add the time_received column
+revision( 164
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD COLUMN `time_received` datetime NULL 
+_sql
+
+);	revision( 165
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `time_received`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `time_received` (`newsletter_id`, `time_received`)
+_sql
+
+);

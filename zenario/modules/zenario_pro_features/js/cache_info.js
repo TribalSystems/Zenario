@@ -160,6 +160,10 @@ zenarioCI.init = function(canCache) {
 		
 		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache, true);
 		
+		//For testing
+		//options.hide = 1*60*1000; 
+		
+		
 		zenario.tooltips('div.zenario_cache_info div', options);
 		
 		zenarioCI.inited = true;

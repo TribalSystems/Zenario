@@ -34,9 +34,9 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		//Get a list of tabs and fields, and loop through it
 		$unsets = array();
-		$fields = listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		$datasetFields = listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 		
-		foreach ($fields as $fieldId => &$field) {
+		foreach ($datasetFields as $fieldId => &$field) {
 			
 			//Look for fields, exclude the tabs
 			if (!empty($field['parent']) && !empty($field['type'])) {
@@ -76,10 +76,10 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		unset($field);
 		
 		foreach ($unsets as $fieldId) {
-			unset($fields[$fieldId]);
+			unset($datasetFields[$fieldId]);
 		}
 		
-		$box['tabs']['smart_group']['custom_template_fields']['field__znz']['values'] = $fields;
+		$box['tabs']['smart_group']['custom_template_fields']['field__znz']['values'] = $datasetFields;
 		
 		$box['tabs']['smart_group']['custom_template_fields']['field2__znz']['values'] =
 		$box['tabs']['smart_group']['custom_template_fields']['field3__znz']['values'] =

@@ -1,0 +1,65 @@
+<div class="zenario_tutorial">
+	<div id="zenario_tutorial_video_banner" class="zenario_tutorial_video_banner">
+		{{m.main_video_title|e}}
+	</div>
+	<div id="zenario_tutorial_main_video" class="main_video">
+		{{zenarioA.microTemplate('zenario_tutorial_main_video', m)}}
+	</div>
+	<div class="other_videos">
+		<% if (m.videos.length) { %>
+			<!-- Jssor Slider Begin -->
+			<div id="zenario_tutorial_other_videos" class="organizer_slideshow">
+				<div class="zenario_slideshow_wrapper">
+					<!-- Loading Screen -->
+					<div u="loading" class="loading">
+						<div class="loading_background"></div>
+						<div class="loading_image"></div>
+					</div>
+					<!-- Slides Container -->
+					<div class="slides" u="slides">
+						{{zenarioA.microTemplate('zenario_tutorial_videos', m.videos)}}
+					</div>
+					
+					<!-- Arrow Left -->
+					<span u="arrowleft" class="arrowleft"></span>
+					<!-- Arrow Right -->
+					<span u="arrowright" class="arrowright"></span>
+					
+					<div id="navigator" u="navigator" class="bullet">
+						<div u="prototype"></div>
+					</div>
+				</div>
+			</div>
+		<% } else { %>
+			<div class="no_other_videos">
+				<p>We are sorry there are no other videos currently available</p>
+			</div>
+		<% } %>
+	</div>
+	<div class="help_tour_outer">
+		<div class="help_tour_inner">
+			<p class="help_tour_message" style="padding-top: 14px;">
+				Use our quick help tour so you can get to know key functionality
+			</p>
+			
+				<div class="auto_open_option" style="display: none;">
+					<input 
+						type="checkbox" 
+						id="zenario_show_help_tour_next_time" 
+						onchange="zenarioA.toggleShowHelpTourNextTime();" 
+						<% if (m.show_help_tour_next_time) { %>
+							checked="checked"
+						<% } %>
+					/>
+					<label for="zenario_show_help_tour_next_time">Show me the help tour when entering Organizer</label>
+				</div>
+			
+		</div>
+		<div class="video_start_tour">
+			<span class="start_button" onclick="$.colorbox.close(); zenarioA.showHelp('#zenario_fbog [data-intro]:visible');">
+				Start the tour
+			</span>
+		</div>
+	</div>
+	<div class="video_end"></div>
+</div>

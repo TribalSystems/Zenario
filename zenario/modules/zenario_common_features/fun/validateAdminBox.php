@@ -114,7 +114,7 @@ switch ($path) {
 					array('page_type'));
 				
 				while ($row = sqlFetchAssoc($result)) {
-					if (!getRow('content', 'visitor_version', array('id' => $row['equiv_id'], 'type' => $row['content_type']))) {
+					if (!getRow('content_items', 'visitor_version', array('id' => $row['equiv_id'], 'type' => $row['content_type']))) {
 						$tags .= ($tags? ', ' : ''). '"'. formatTag($row['equiv_id'], $row['content_type']). '"';
 					}
 				}
@@ -389,7 +389,7 @@ switch ($path) {
 		if ($values['upload_document/document__upload'] == "") {
 			$box['tabs']['upload_document']['errors'][] = adminPhrase('Select a document');
 		}
-			
+		
 		$documentsUploaded = explode(',',$values['upload_document/document__upload']);
 		$documentNameList=array();
 		$found = false;
@@ -416,22 +416,23 @@ switch ($path) {
 			$parentfolderId = "0";
 		}
 		
-			$sql="
-				SELECT filename
-				FROM ".DB_NAME_PREFIX."documents
-				WHERE folder_id = ".$parentfolderId;
-				
-			$result = sqlQuery($sql);
-			while($row = sqlFetchAssoc($result)) {
-					$fileNameList[] = $row['filename'];
-			}
+		$sql="
+			SELECT filename
+			FROM ".DB_NAME_PREFIX."documents
+			WHERE folder_id = ".$parentfolderId;
 			
-			if (isset($fileNameList) && $fileNameList){
-				foreach ($documentNameList as $name){
-					if (array_search($name,$fileNameList)){
-						$nameDetails = explode(".",$name);
-						$box['tabs']['upload_document']['errors'][] = adminPhrase('An item named “[[filename]]” with extension “.[[extension]]” already exists in the files directory!', array('filename' => $nameDetails[0],'extension'=>$nameDetails[1]));
-					}
+		$result = sqlQuery($sql);
+		while($row = sqlFetchAssoc($result)) {
+			$fileNameList[] = $row['filename'];
+		}
+		
+		if ($values['upload_document/document__upload'] && isset($fileNameList) && $fileNameList){
+			foreach ($documentNameList as $name){
+				if (array_search($name, $fileNameList) !== false) {
+					$nameDetails = explode(".",$name);
+					$box['tabs']['upload_document']['errors'][] = adminPhrase('A file named "[[filename]]" with extension ".[[extension]]" already exists in this directory!', array('filename' => $nameDetails[0],'extension'=>$nameDetails[1]));
+					break;
+				}
 			}
 		}
 		break;

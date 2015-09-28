@@ -184,7 +184,7 @@ if ($path == 'zenario_quick_create') {
 	if ($box['key']['source_cID']) {
 		$content =
 			getRow(
-				'content',
+				'content_items',
 				array('id', 'type', 'tag_id', 'language_id', 'alias', 'visitor_version', 'admin_version', 'status'),
 				array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType']));
 	}
@@ -234,7 +234,7 @@ if ($path == 'zenario_quick_create') {
 		
 		if ($version =
 			getRow(
-				'versions',
+				'content_item_versions',
 				true,
 				array('id' => $box['key']['source_cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['source_cVersion']))
 		) {
@@ -304,12 +304,17 @@ if (!$version) {
 	//Attempt to work out the default template and Content Type for a new Content Item
 	if (($layoutId = ifNull($box['key']['target_template_id'], get('refiner__template')))
 	 && ($box['key']['cType'] = getRow('layouts', 'content_type', $layoutId))) {
+		
+		$contentType = getRow('content_types', true, $box['key']['cType']);
 	
 	} elseif ($box['key']['target_menu_parent']
 		   && ($cItem = getRow('menu_nodes', array('equiv_id', 'content_type'), array('id' => $box['key']['target_menu_parent'], 'target_loc' => 'int')))
 		   && ($cItem['content_type'] == 'html' || $path != 'zenario_quick_create')
-		   && ($cItem['admin_version'] = getRow('content', 'admin_version', array('id' => $cItem['equiv_id'], 'type' => $cItem['content_type'])))
+		   && ($cItem['admin_version'] = getRow('content_items', 'admin_version', array('id' => $cItem['equiv_id'], 'type' => $cItem['content_type'])))
 		   && ($layoutId = contentItemTemplateId($cItem['equiv_id'], $cItem['content_type'], $cItem['admin_version']))) {
+		
+		$box['key']['cType'] = $cItem['content_type'];
+		$contentType = getRow('content_types', true, $box['key']['cType']);
 	
 	} else {
 		if ($path == 'zenario_quick_create') {
@@ -317,6 +322,8 @@ if (!$version) {
 		} else {
 			$box['key']['cType'] = ifNull($box['key']['target_cType'], $box['key']['cType'], 'html');
 		}
+		
+		$contentType = getRow('content_types', true, $box['key']['cType']);
 		$layoutId = $contentType['default_layout_id'];
 	}
 	
@@ -497,6 +504,7 @@ if (!$contentType['enable_categories']) {
 
 if ($box['key']['cID']) {
 	$box['key']['id'] = $box['key']['cType']. '_'. $box['key']['cID'];
+	$box['tabs']['template']['hidden'] = true;
 } else {
 	$box['key']['id'] = null;
 }

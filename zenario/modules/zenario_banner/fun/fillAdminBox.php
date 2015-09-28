@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
-		//For Wireframe Plugins, pick images from this item's images, rather thamn 
+		//For Wireframe Plugins, pick images from this item's images, rather than 
 		if ($box['key']['isVersionControlled']/*
 		 && isDraft($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])*/) {
 			$box['tabs']['first_tab']['fields']['image']['pick_items']['path'] =

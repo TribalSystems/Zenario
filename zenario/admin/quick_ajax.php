@@ -26,20 +26,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+require '../basicheader.inc.php';
 
 //Check if cookies are enabled. Note this might need to be called twice in some cases
 if (isset($_REQUEST['_check_cookies_enabled'])) {
 	
-	if (empty($_COOKIE['PHPSESSID'])) {
-		session_start();
+	if (empty($_COOKIE[zenarioSessionName()])) {
+		startSession();
 	} else {
 		echo 1;
 	}
+	
+	exit;
+}
 
+startSession();
+
+if (!empty($_REQUEST['keep_session_alive'])) {
+	//This request has no purpose other than to start the session and keep the session
+	//from timing out
+
+//Remember a toast message that was being displayed shortly before a page reload
+} elseif (isset($_POST['_remember_toast']) && json_decode($_POST['_remember_toast'])) {
+	//N.b. json_decode() above is just to validate the data
+	
+	$_SESSION['_remember_toast'] = $_POST['_remember_toast'];
 
 } elseif (isset($_POST['_draft_set_callback'])) {
-	
-	session_start();
 	
 	$_SESSION['zenario_draft_callback'] = $_POST['_draft_set_callback'];
 	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
@@ -49,8 +62,6 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 
 } elseif (isset($_POST['_save_page_mode'])) {
 	
-	session_start();
-	
 	$_SESSION['page_toolbar'] = $_POST['_save_page_toolbar'];
 	$_SESSION['page_mode'] = $_POST['_save_page_mode'];
 	$_SESSION['admin_slot_wand'] = $_POST['_save_page_slot_wand'];
@@ -59,14 +70,15 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 //Quickly look up the name of a file
 } elseif (!empty($_REQUEST['lookupFileDetails'])) {
 	
-	require '../liteheader.inc.php';
+	require CMS_ROOT. 'zenario/api/database_functions.inc.php';
+	require CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 	connectLocalDB();
-	session_start();
+	
 	$checkPriv =
 		!empty($_SERVER['HTTP_HOST'])
 	 && !empty($_SESSION['admin_userid'])
 	 && !empty($_SESSION['admin_logged_into_site'])
-	 && $_SESSION['admin_logged_into_site'] == $_SERVER['HTTP_HOST']. SUBDIRECTORY. setting('site_id');
+	 && $_SESSION['admin_logged_into_site'] == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id');
 	
 	if ($checkPriv) {
 		$sql = "
@@ -84,14 +96,15 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 //Check, load or save an admin's Storekeeper preferences
 } elseif (!empty($_REQUEST['_manage_prefs'])) {
 	
-	require '../liteheader.inc.php';
+	require CMS_ROOT. 'zenario/api/database_functions.inc.php';
+	require CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 	connectLocalDB();
-	session_start();
+	
 	$checkPriv =
 		!empty($_SERVER['HTTP_HOST'])
 	 && !empty($_SESSION['admin_userid'])
 	 && !empty($_SESSION['admin_logged_into_site'])
-	 && $_SESSION['admin_logged_into_site'] == $_SERVER['HTTP_HOST']. SUBDIRECTORY. setting('site_id');
+	 && $_SESSION['admin_logged_into_site'] == COOKIE_DOMAIN. SUBDIRECTORY. setting('site_id');
 	
 	if ($checkPriv) {
 		if (!empty($_POST['_save_prefs']) && !empty($_POST['prefs'])) {
@@ -129,19 +142,19 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 
 } elseif (isset($_REQUEST['password_suggestion'])) {
 	
-	require '../visitorheader.inc.php';
+	require CMS_ROOT. 'zenario/visitorheader.inc.php';
 	echo randomString(8);
 
 
 } elseif (isset($_POST['screen_name_suggestion'])) {
 	
-	require '../adminheader.inc.php';
+	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	echo generateUserIdentifier(false, array('first_name' => $_POST['first_name'], 'last_name' => $_POST['last_name'], 'email' => $_POST['email']));
 
 
 } elseif (isset($_POST['_validate_alias'])) {
 	
-	require '../adminheader.inc.php';
+	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	
 	
 	if ($alias = post('alias')) {
@@ -155,7 +168,7 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 		if (empty($lines) && $alias) {
 			$sql = "
 				SELECT lang_code_in_url, language_id, alias
-				FROM ". DB_NAME_PREFIX. "content
+				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias < '". sqlEscape($alias). "'
 				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape(post('cType')). "'))
@@ -166,7 +179,7 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 			if (post('cID') && post('cType')) {
 				$sql = "
 					SELECT lang_code_in_url, language_id, alias
-					FROM ". DB_NAME_PREFIX. "content
+					FROM ". DB_NAME_PREFIX. "content_items
 					WHERE id = ". (int) post('cID'). "
 					  AND type = '". sqlEscape(post('cType')). "'";
 				$result = sqlQuery($sql);
@@ -183,7 +196,7 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 			
 			$sql = "
 				SELECT lang_code_in_url, language_id, alias
-				FROM ". DB_NAME_PREFIX. "content
+				FROM ". DB_NAME_PREFIX. "content_items
 				WHERE alias != ''
 				  AND alias > '". sqlEscape($alias). "'
 				  AND (equiv_id, type) NOT IN ((". (int) $equivId. ", '". sqlEscape(post('cType')). "'))
@@ -209,7 +222,7 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 						} else {
 							$sql = "
 								SELECT 1
-								FROM ". DB_NAME_PREFIX. "content
+								FROM ". DB_NAME_PREFIX. "content_items
 								WHERE alias = '". sqlEscape($content[2]). "'
 								LIMIT 2";
 							$result = sqlQuery($sql);
@@ -250,6 +263,10 @@ if (isset($_REQUEST['_check_cookies_enabled'])) {
 	
 	
 	echo json_encode($lines);
+
+} elseif (isset($_REQUEST['_show_help_tour_next_time'])) {
+	require CMS_ROOT. 'zenario/adminheader.inc.php';
+	setAdminSetting('show_help_tour_next_time', (bool) $_REQUEST['_show_help_tour_next_time']);
 }
 
 

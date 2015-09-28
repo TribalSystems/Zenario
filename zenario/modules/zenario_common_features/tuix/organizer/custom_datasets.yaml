@@ -36,14 +36,13 @@ zenario__administration:
                     path: zenario__administration/panels/custom_tabs_and_fields
                     refiner: dataset_id
             
-            # Hidden as not fully implemented in 7.0.6
             item_buttons:
                 edit_gui:
+                    hidden: true
                     label: Edit (GUI)
                     link:
                         path: zenario__administration/panels/custom_tabs_and_fields_gui
                         refiner: dataset_id
-                    hidden: true
             
             # Note there are no buttons; creating new/editing existing datasets is not implemented yet!
                     

@@ -5,6 +5,13 @@ plugin_settings:
         first_tab:
             label: Display
             fields:
+                heading:
+                    plugin_setting:
+                        name: heading
+                    label: 'Heading:'
+                    type: text
+                    maxlength: 255
+                    
                 banner_canvas:
                     plugin_setting:
                         name: banner_canvas
@@ -25,7 +32,7 @@ plugin_settings:
                             ord: "4"
                             label: Constrain by width and height
                         resize_and_crop:
-                            ord: "5"
+                            ord: 5
                             label: Resize and crop
                     format_onchange: true
                     
@@ -54,22 +61,6 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em; text-align: right'
                     post_field_html: '&nbsp;pixels'
-                    
-                offset:
-                    plugin_setting:
-                        name: offset
-                    label: 'Offset'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    note_below: |
-                        Moving the slider to the left will move the image left or down;
-                                                    moving the slider to the right will move the image right or up.
                     
                 slide_duration:
                     plugin_setting:
@@ -128,9 +119,10 @@ plugin_settings:
                 arrow_buttons:
                     plugin_setting:
                         name: arrow_buttons
-                    label: Arrow buttons
+                    label: Show arrow buttons
                     type: checkbox
                     value: 1
+                    side_note: Display arrow buttons to manually navigate the slideshow.
                     
                 auto_play:
                     plugin_setting:
@@ -138,6 +130,7 @@ plugin_settings:
                     label: Auto play
                     type: checkbox
                     value: 1
+                    side_note: The slideshow will automatically move from slide to slide, rather than the visitor having to manually switch slides.
                     
                 enable_swipe:
                     plugin_setting:
@@ -145,6 +138,7 @@ plugin_settings:
                     label: Enable swipe
                     type: checkbox
                     value: 0
+                    side_note: Visitors can swipe from slide to slide by swiping with their finger on a touch screen or dragging with their mouse.
                 
                 hover_to_pause:
                     plugin_setting:
@@ -152,6 +146,7 @@ plugin_settings:
                     label: Hover to pause
                     type: checkbox
                     value: 0
+                    side_note: The slideshow will pause when a visitor hovers over it with their mouse.
         mobile:
             label: 'Mobile'
             fields:
@@ -218,21 +213,6 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                mobile_offset:
-                    plugin_setting:
-                        name: mobile_offset
-                    label: 'Offset'
-                    type: text
-                    style: 'width: 50px;'
-                    value: "0"
-                    slider:
-                        min: "-10"
-                        max: "10"
-                        before_field: true
-                        style: 'width: 200px;'
-                    note_below: |
-                        Moving the slider to the left will move the image left or down;
-                                                    moving the slider to the right will move the image right or up.
                 desktop_resize_greater_than_image:
                     plugin_setting: 
                         name: desktop_resize_greater_than_image

@@ -854,40 +854,6 @@ _sql
 
 
 
-//Remake the tuix_file_contents table to start tracking which panel types are used in which files
-//(Technically I could have added the column and truncated the table, but I may as well
-// drop and recreate it.)
-);	revision( 30900
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
-_sql
-
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
-		`type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls') NOT NULL,
-		`path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
-		`filename` varchar(255) CHARACTER SET ascii NOT NULL,
-		`last_modified` int(10) unsigned NOT NULL DEFAULT '0',
-		`checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
-		PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
-		KEY (`panel_type`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
-_sql
-
-, <<<_sql
-	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
-	WHERE name = 'yaml_files_last_changed'
-_sql
-
-
-
 //Create tables to store tags for images
 );	revision( 31100
 , <<<_sql
@@ -1157,5 +1123,126 @@ _sql
 	WHERE name = 'site_disabled_message'
 _sql
 
-);
 
+
+
+//
+//Version 7.0.7
+//
+
+//T8893, Better naming of content item related tables
+);	revision( 32000
+, <<<_sql
+	RENAME TABLE
+		`[[DB_NAME_PREFIX]]content` TO `[[DB_NAME_PREFIX]]content_items`,
+		`[[DB_NAME_PREFIX]]versions` TO `[[DB_NAME_PREFIX]]content_item_versions`
+_sql
+
+);	revision( 32010
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
+	ADD COLUMN `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto' AFTER `folder_name`
+_sql
+
+);	revision( 32020
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `module_class_name` varchar(255) DEFAULT NULL AFTER `id`
+_sql
+
+
+
+//Remake the tuix_file_contents table to start tracking which panel types are used in which files
+//(Technically I could have added the column and truncated the table, but I may as well
+// drop and recreate it.)
+);	revision( 32260
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
+		`type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','wizards') NOT NULL,
+		`path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
+		`filename` varchar(255) CHARACTER SET ascii NOT NULL,
+		`last_modified` int(10) unsigned NOT NULL DEFAULT '0',
+		`checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+		PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
+		KEY (`panel_type`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
+	WHERE name = 'yaml_files_last_changed'
+_sql
+
+
+
+//Create a table to store the default values for admin settings
+);	revision( 32310
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_setting_defaults`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]admin_setting_defaults` (
+		`name` varchar(255) NOT NULL DEFAULT '',
+		`default_value` mediumtext,
+		PRIMARY KEY (`name`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+); revision( 32320
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]translation_chains`
+	DROP COLUMN `log_user_access`
+_sql
+
+//Add a column to the skins table to store the background selector
+);	revision( 32460
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
+	ADD COLUMN `background_selector` varchar(64) DEFAULT 'body'
+	AFTER `css_class`
+_sql
+
+); revision( 32461
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]documents`
+	ADD COLUMN `title` varchar(255) DEFAULT NULL
+_sql
+
+); revision( 32465
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]centralised_lists`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]centralised_lists` (
+		`id` int(10) unsigned NOT NULL auto_increment,
+		`module_class_name` varchar(255) NOT NULL,
+		`method_name` varchar(255) NOT NULL,
+		`label` varchar(255) NOT NULL,
+		PRIMARY KEY (`id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+); revision( 32469
+
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]jobs`
+	ADD COLUMN `run_every_minute` tinyint(1) NOT NULL DEFAULT 0 AFTER `minutes` 
+_sql
+
+);

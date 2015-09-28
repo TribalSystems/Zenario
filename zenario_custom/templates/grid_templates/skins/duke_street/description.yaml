@@ -10,6 +10,10 @@
 # (The directory name will be used if you leave this blank.)
 display_name: Duke Street
 
+# If an admin manually sets a background colour or background image,
+# this selector will be used to apply the background colour or image.
+background_selector: 'body .zenario_skin, .zenario_skin .Grid_Body'
+
 # Enter the directory name of another skin here to extend that skin.
 # (The other skin must be in the same directory that this skin is in.)
 # 

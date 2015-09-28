@@ -5,6 +5,20 @@ plugin_settings:
         first_tab:
             label: Settings
             fields:
+                title:
+                    plugin_setting:
+                        name: title
+                    label: 'Title:'
+                    type: text
+                    value: "Your profile image"
+                    style: "width: 20em;text-align: left;"
+                allow_upload:
+                    plugin_setting:
+                        name: allow_upload
+                    label: 'Allow user to upload image'
+                    type: checkbox
+                    value: "1"
+                    format_onchange: true
                 note_1:
                     snippet:
                         html: >

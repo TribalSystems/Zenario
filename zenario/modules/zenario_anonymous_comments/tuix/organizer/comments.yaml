@@ -15,7 +15,7 @@ zenario__social:
                 db_items:
                     table: |
                         [[DB_NAME_PREFIX]][[ZENARIO_ANONYMOUS_COMMENTS_PREFIX]]user_comments cm
-                        INNER JOIN [[DB_NAME_PREFIX]]content c 
+                        INNER JOIN [[DB_NAME_PREFIX]]content_items c 
                          ON cm.content_id = c.id
                         AND cm.content_type = c.type
                         LEFT JOIN [[DB_NAME_PREFIX]]menu_nodes AS mi

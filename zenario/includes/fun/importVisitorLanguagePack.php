@@ -27,17 +27,43 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+
+
+//This script supports two formats of data:
+	//The simpliest case is where there are only one row of column headings,
+	//and all the data is in tabular format.
+	//The more complex case is where there are multiple blocks of data,
+	//with subheadings containg data on the next block.
+//The logic below tries to detect when it meets the start of a new block, and tries to read the column headers
+//from the first row.
+//It then tries to work out whether the block is a subheading or if the block is data. If it's a subheading,
+//the values are written down and applies to the next block of data.
+$subheadings = array(
+	'language_id' => '',
+	'module_class_name' => 'zenario_common_features'
+);
+$emptyRow = array(
+	'phrase_code' => '',
+	'reference_text' => '',
+	'translation' => ''
+);
+$knownColumnHeaders = array(
+	'language id' => 'language_id',
+	'target language id' => 'language_id',
+	'plugin' => 'module_class_name',
+	'module' => 'module_class_name',
+	'phrase code' => 'phrase_code',
+	'reference text' => 'reference_text',
+	'translation' => 'translation'
+);
+$columns = false;
+$justHadAnEmptyLine = true;
+
 //Keep some results on what happens
 $numberOf = array('upload_error' => false, 'wrong_language' => false, 'added' => 0, 'updated' => 0, 'protected' => 0);
 
-//Assume that phrases are core, unless we see a Plugin's name
-$moduleClass = '';
-$columns = false;
-$justHadAnEmptyLine = true;
-$knownColumnHeader = array('Target Language ID' => 1, 'Phrase Code' => 1, 'Translation' => 1, 'Plugin' => 1, 'Module' => 1);
-
+//Work out whether this is a spreadsheet or a CSV file and load the file appropriately
 $mimeType = documentMimeType(str_replace('.php', '', ifNull($realFilename, $file)));
-
 if (in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 	$csv = true;
 	
@@ -81,7 +107,7 @@ if (in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 
 //Loop through each row
 for ($i = 1; true; ++$i) {
-	
+	//Work out whether this is a spreadsheet or a CSV file and load the next row appropriately
 	if ($csv) {
 		if (!$row = fgets($f)) {
 			break;
@@ -101,10 +127,12 @@ for ($i = 1; true; ++$i) {
 			break;
 		}
 		
-		$row = array(
-			ifNull($sheet->getCellByColumnAndRow(0, $i)->getCalculatedValue(), '', ''),
-			ifNull($sheet->getCellByColumnAndRow(1, $i)->getCalculatedValue(), '', ''),
-			ifNull($sheet->getCellByColumnAndRow(2, $i)->getCalculatedValue(), '', ''));
+		$row = array();
+		for ($j = 0; $j < 5; ++$j) {
+			if (!($row[$j] = $sheet->getCellByColumnAndRow($j, $i)->getCalculatedValue())) {
+				$row[$j] = '';
+			}
+		}
 		
 		//Ignore empty lines, though remember that we've had them
 		if (!$row[0]) {
@@ -120,103 +148,89 @@ for ($i = 1; true; ++$i) {
 	}
 	
 	
-	//Look out for column headers if we've not had them already...
-	//...or if we've just had an empty line and we see what looks like a column header
-	if ((
-			!$columns || $justHadAnEmptyLine
-		) && (
-			issetArrayKey($knownColumnHeader, arrayKey($row, 0)) ||
-			issetArrayKey($knownColumnHeader, arrayKey($row, 1)) ||
-			issetArrayKey($knownColumnHeader, arrayKey($row, 2))
-	)	) {
-		
-		//Little hack so that the import does not fail if someone overtypes the "Translation" column
-		if (arrayKey($row, 0) == 'Phrase Code' && arrayKey($row, 1) == 'Reference Text' && arrayKey($row, 2)) {
-			$row[2] = 'Translation';
-		} elseif (arrayKey($row, 0) == 'Phrase Code' && arrayKey($row, 1)) {
-			$row[1] = 'Translation';
-		} elseif (arrayKey($row, 0) && arrayKey($row, 1) == 'Phrase Code') {
-			$row[0] = 'Translation';
-		}
-		
-		$columns = array_flip($row);
-	
-	
-	//Check if this row has information on a phrase
-	} elseif (isset($columns['Phrase Code']) && isset($columns['Translation'])) {
-			//Report an error if we've not found the language id yet
-			if ($scanning === true || $languageId === false) {
-				$numberOf['upload_error'] = true;
-				
-				if ($csv) {
-					fclose($f);
+	//Look out for column headers if we've not had them already,
+	//or if we've just had an empty line and we see what looks like a column header
+	$lookForColumnHeaders = array();
+	if (!$columns || $justHadAnEmptyLine) {
+		for ($j = 0; $j < 5; ++$j) {
+			if (!empty($row[$j])) {
+				$header = strtolower($row[$j]);
+			
+				if (substr($header, -12) == ' translation') {
+					$lookForColumnHeaders['translation'] = $j;
+			
+				} elseif (!empty($row[$j]) && !empty($knownColumnHeaders[$header])) {
+					$lookForColumnHeaders[$knownColumnHeaders[$header]] = $j;
 				}
-				return $numberOf;
-			
-			} elseif ($scanning === 'full scan' || $scanning === 'number and file')  {
-				++$numberOf['added'];
-			
-			//Add the phrase (unless it is for a Plugin that we don't have)
-			} elseif ($moduleClass !== false) {
-				importVisitorPhrase($languageId, $moduleClass, arrayKey($row, $columns['Phrase Code']), arrayKey($row, $columns['Translation']), $adding, $numberOf);
-			}
-	
-	//Handle setup-information (allow this to be on the same line if needed)
-	} else {
-		//Look out for the language_id in the file before we have the data
-		//The language id of this pack should be in the row immediately after
-		if (isset($columns['Target Language ID'])) {
-			
-			//Read and note down the language_id
-			$packLanguageId = $row[$columns['Target Language ID']];
-					
-			//If we were just looking for the language id, return it
-			if ($scanning) {
-				$languageId = $packLanguageId;
-				if ($scanning !== 'full scan' && $scanning !== 'number and file') {
-					if ($csv) {
-						fclose($f);
-					}
-					return;
-				}
-			
-			//Are we adding a new VLP? Use the language id from the language pack if so
-			} elseif ($adding && !$languageId) {
-				$languageId = $packLanguageId;
-			
-			//Are we updating an existing VLP? Check the language id from the pack matches this language id
-			} elseif($packLanguageId != $languageId && !$forceLanguageIdOverride) {
-				$numberOf['wrong_language'] = true;
-				
-				if ($csv) {
-					fclose($f);
-				}
-				return $numberOf;
 			}
 		}
 		
-		//Look out for phrases associated with a Plugin
-		foreach (array('Module', 'Plugin') as $header) {
-			if (isset($columns[$header])) {
-				if (!$row[$columns[$header]]) {
-					$moduleClass = '';
-				
-				} elseif ($scanning === 'full scan' || $scanning === 'number and file') {
-					$moduleClass = $row[$columns[$header]];
-				
-				//Check: do we have this Plugin..?
-				} elseif (getModuleIdByClassName($row[$columns[$header]])) {
-					$moduleClass = $row[$columns[$header]];
-				
-				} elseif (!$moduleClass = getModuleClassNameByName($row[$columns[$header]])) {
-					$moduleClass = false;
-				}
-			}
+		//If these look like column headers, note down what they were and then move to the next line
+		if (!empty($lookForColumnHeaders)) {
+			$columns = $lookForColumnHeaders;
+			continue;
 		}
 	}
+	
+	//We can't start reading in data until we've had the column headers!
+	if (!$columns) {
+		continue;
+	}
+	
+	//Look for changes to the subheadings (e.g. if the language id or module change)
+	foreach ($subheadings as $col => &$value) {
+		if (isset($columns[$col]) && !empty($row[$columns[$col]])) {
+			$value = $row[$columns[$col]];
+		}
+	}
+	
+	if ($forceLanguageIdOverride !== false) {
+		$subheadings['language_id'] = $forceLanguageIdOverride;
+	}
+	
+	//Load in data on the current row (e.g. the reference text, translation and code)
+	$thisRow = $emptyRow;
+	foreach ($thisRow as $col => &$value) {
+		if (isset($columns[$col]) && !empty($row[$columns[$col]])) {
+			$value = $row[$columns[$col]];
+		}
+	}
+	
+	//Check to see if this row has a phrase defined
+	if ($thisRow['phrase_code']) {
+		$code = $thisRow['phrase_code'];
+	} else {
+		$code = $thisRow['reference_text'];
+	}
+	
+	//If there is no phrase defined on this row then keep going!
+	if (!$code) {
+		continue;
+	}
+	
+	//Report an error and stop if we find a code before we know the language
+	if (!$subheadings['language_id']) {
+		$numberOf['upload_error'] = true;
+		break;
+	
+	//If all we needed to do was find out what language was in the file, stop now
+	} elseif ($scanning === 'language id')  {
+		break;
+	
+	//If we've just scanning to see what's in the file, keep going but don't actually do the import
+	} elseif ($scanning === 'full scan' || $scanning === 'number and file')  {
+		++$numberOf['added'];
+	
+	//Otherwise try to import this phrase
+	} else {
+		importVisitorPhrase($subheadings['language_id'], $subheadings['module_class_name'], $code, $thisRow['translation'], $adding, $numberOf);
+	}
 }
+
 
 if ($csv) {
 	fclose($f);
 }
+
+$languageIdFound = $subheadings['language_id'];
 return $numberOf;

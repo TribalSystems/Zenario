@@ -28,6 +28,7 @@ zenario__users:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: cdf.id
                     width: xxsmall
                     align_right: true

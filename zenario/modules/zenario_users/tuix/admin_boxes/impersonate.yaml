@@ -9,6 +9,14 @@ zenario__impersonate:
             edit_mode:
                 enabled: true
             fields:
+                warning: 
+                    pre_field_html: <div class="zenario_fbWarning">
+                    full_width: true
+                    snippet:
+                        html: |
+                            You are about to impersonate a user with email debug mode not enabled. Please note that emails may be sent to live email addresses whilst impersonating this user. To enable debug mode please follow <a href="zenario/admin/organizer.php?#zenario__administration/panels/site_settings//email">this link</a>.
+                    post_field_html: </div>
+                    hidden: true
                 desc:
                     full_width: true
                     snippet:

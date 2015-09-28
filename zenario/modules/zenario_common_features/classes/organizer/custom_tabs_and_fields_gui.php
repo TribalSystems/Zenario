@@ -74,6 +74,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 			
 			//If this extends a system admin box, load the tabs and fields
 			if ($dataset['extends_admin_box']) {
+				$moduleFilesLoaded = array();
+				$tags = array();
+				loadTUIX(
+					$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box']
+				);
 				$tabOrdinal = 0;
 				$panel['existing_db_columns'] = array();
 				$tabs = getRowsArray('custom_dataset_tabs', true, array('dataset_id' => $dataset['id']), 'ord');
@@ -85,6 +90,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 					$fieldOrdinal = 0;
 					$fields = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $dataset['id'], 'tab_name' => $tab['name']), 'ord');
 					foreach ($fields as $id => $field) {
+						
+						
 						if (in_array($field['type'], array('checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select'))) {
 							$fieldValueOrdinal = 0;
 							$fieldValues = getDatasetFieldLOV($field, false);
@@ -103,6 +110,13 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							$field['css_classes'] = 'system_field';
 							if (!empty($systemKeys[$field['db_column']])) {
 								$field['create_index'] = true;
+							}
+							
+							if (!empty($tags[$dataset['extends_admin_box']]['tabs'][$tab['name']]['fields'][$field['field_name']])) {
+								$fieldTags = $tags[$dataset['extends_admin_box']]['tabs'][$tab['name']]['fields'][$field['field_name']];
+								if (!empty($fieldTags['type'])) {
+									$field['type'] = $fieldTags['type'];
+								}
 							}
 						}
 						if ($field['db_column']) {
@@ -185,22 +199,20 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 										foreach ($tab['fields'] as $fieldId => $field) {
 											if (is_array($field)) {
 												if (!empty($field['remove'])) {
-													if (deleteRow('custom_dataset_fields', array('id' => $fieldId, 'is_system_field' => 0)) > 0) {
-														deleteRow('custom_dataset_field_values', array('field_id' => $fieldId));
-													}
+													deleteDatasetField($fieldId);
 												} else {
 													$values = array(
 														'tab_name' => $tabName,
 														'ord' => $field['ord'],
 														'label' => $field['label'],
 														'protected' => $field['is_protected'],
-														'type' => $field['type'],
-														'dataset_id' => $dataset['id'],
 														'note_below' => $field['note_below'],
 														'include_in_export' => !empty($field['include_in_export']) ? 1 : 0
 													);
 													$ids = array();
 													if (!$field['is_system_field']) {
+														$values['dataset_id'] = $dataset['id'];
+														$values['type'] = $field['type'];
 														$values['db_column'] = $field['db_column'];
 														$values['height'] = !empty($field['height']) ? $field['height'] : 0;
 														$values['width'] = !empty($field['width']) ? $field['width'] : 0;

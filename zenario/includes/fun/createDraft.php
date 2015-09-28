@@ -49,7 +49,7 @@ if (!$adminId) {
 
 //Check to see if a target Content Item has been set, and actually exists
 $newDraftCreated = true;
-if (!$cIDTo || !($content = getRow('content', true, array('id' => $cIDTo, 'type' => $cTypeTo)))) {
+if (!$cIDTo || !($content = getRow('content_items', true, array('id' => $cIDTo, 'type' => $cTypeTo)))) {
 	
 	//If there was no target, create the details for a new Content Item
 	if (!$cIDTo || !$useCIDIfItDoesntExist) {
@@ -72,8 +72,6 @@ if (!$cIDTo || !($content = getRow('content', true, array('id' => $cIDTo, 'type'
 
 //If there was a target, create a new draft version
 } else {
-	$cVersionFrom = ifNull($cVersionFrom, getLatestVersion($cIDFrom, $cTypeFrom));
-	
 	if ($content['status'] == 'published') {
 		$content['status'] = 'published_with_draft';
 		++$content['admin_version'];
@@ -104,11 +102,14 @@ if ($newDraftCreated) {
 }
 
 //Update/insert into the content table
-setRow('content', $content, array('id' => $content['id'], 'type' => $content['type']));
+setRow('content_items', $content, array('id' => $content['id'], 'type' => $content['type']));
 
 
 //Check to see if the Source Content Item version has been set, and actually exists
-if (!$cIDFrom || !($version = getRow('versions', true, array('id' => $cIDFrom, 'type' => $cTypeFrom, 'version' => $cVersionFrom)))) {
+if (!$cIDFrom
+ || !$cTypeFrom
+ || !($cVersionFrom = ifNull($cVersionFrom, getLatestVersion($cIDFrom, $cTypeFrom)))
+ || !($version = getRow('content_item_versions', true, array('id' => $cIDFrom, 'type' => $cTypeFrom, 'version' => $cVersionFrom)))) {
 	$cIDFrom = false;
 	$cVersionFrom = false;
 	$version = array();
@@ -147,7 +148,7 @@ if (empty($version['layout_id'])) {
 }
 
 //Insert into the versions table
-setRow('versions', $version, array('id' => $version['id'], 'type' => $version['type'], 'version' => $version['version']));
+setRow('content_item_versions', $version, array('id' => $version['id'], 'type' => $version['type'], 'version' => $version['version']));
 
 
 

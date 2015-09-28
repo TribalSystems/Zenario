@@ -29,21 +29,53 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 $isWelcome = $mode === true || $mode === 'welcome';
+$isWizard = $mode === 'wizard';
+$isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
+
+
+//Some IE specific fixes
+echo '
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">';
 
 $oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
 	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
 	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
 
-if (!$isWelcome && !$oldIE && $cookieFreeDomain = cookieFreeDomain()) {
+$notSupportedInAdminMode = $oldIE
+	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 9') !== false;
+
+//In admin mode, if this is IE, require 10 or later. Direct 9 and earlier to the compatibility mode page.
+if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
+	
+	if ($isWelcomeOrWizard || checkPriv()) {
+		echo '
+<script type="text/javascript">
+	if (typeof JSON === "undefined" || ', engToBoolean($notSupportedInAdminMode), ') {
+		document.location = "',
+			jsEscape(
+				absCMSDirURL().
+				'zenario/admin/ie_compatibility_mode/index.php?'.
+				($isWizard? 'isWizard=1&' : '').
+				http_build_query($_GET)
+			),
+		'";
+	}
+</script>';
+	}
+}
+
+
+if (!$isWelcomeOrWizard && !$oldIE && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
 
 } elseif (cms_core::$mustUseFullPath) {
 	$prefix = absCMSDirURL(). 'zenario/';
 }
+
 
 //Work out what's on this page, which wrappers we need to include, and which Plugin/Swatches need to be requested
 
@@ -68,7 +100,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 }
 
 
-if ($isWelcome || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
+if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
 	echo "\n", '<link rel="shortcut icon" href="', absCMSDirURL(), 'zenario/admin/images/favicon.ico"/>';
 
 } elseif (cms_core::$lastDB) {
@@ -81,7 +113,7 @@ if ($isWelcome || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
 	
 	if ($faviconId
 	 && ($icon = getRow('files', array('id', 'mime_type', 'filename', 'checksum'), $faviconId))
-	 && ($link = fileLink($icon['id']))) {
+	 && ($link = fileLink($icon['id'], false, 'public/images'))) {
 		if ($icon['mime_type'] == 'image/vnd.microsoft.icon' || $icon['mime_type'] == 'image/x-icon') {
 			echo "\n", '<link rel="shortcut icon" href="', absCMSDirURL(), htmlspecialchars($link), '"/>';
 		} else {
@@ -100,7 +132,7 @@ if ($isWelcome || ($isOrganizer && setting('organizer_favicon') == 'zenario')) {
 
 
 //Add CSS needed for the CMS in Admin mode
-if ($isWelcome || checkPriv()) {
+if ($isWelcomeOrWizard || checkPriv()) {
 	if (!cms_core::$skinId) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/colorbox/colorbox.css?v=', $v, $gz, '"/>';
@@ -108,12 +140,12 @@ if ($isWelcome || checkPriv()) {
 	
 	echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/jquery_ui/jquery-ui.css?v=', $v, $gz, '"/>
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/inc-admin.css.php?v=', $v, $gz, '"/>
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?v=', $v, $gz, '"/>
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
 	
 	if ($includeOrganizer) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/inc-organizer.css.php?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/organizer.wrapper.css.php?v=', $v, $gz, '"/>';
 		
 		if ($isOrganizer) {
 			echo '
@@ -130,22 +162,22 @@ if ($isWelcome || checkPriv()) {
 		
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.css.php?v=', $v, $gz, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/module.wrapper.css.php?v=', $v, $gz, '&amp;ids=', $cssModuleIds, '&amp;organizer=1"/>';
 		}
 	}
 }
 
 //Add the CSS for a skin, if there is a skin, and add CSS needed for any Module Swatches on the page
 if (setting('css_wrappers') == 'on' || (setting('css_wrappers') == 'visitors_only') && !checkPriv()) {
-	//If wrappers are enabled, link to skin.css.php
+	//If wrappers are enabled, link to skin.cache_wrapper.css.php
 	if (cms_core::$skinId || cms_core::$layoutId) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;layoutId=', (int) cms_core::$layoutId, $gz, '"/>
-<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/skin.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;print=1', $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.cache_wrapper.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;layoutId=', (int) cms_core::$layoutId, $gz, '"/>
+<link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/skin.cache_wrapper.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;print=1', $gz, '"/>';
 	}
 	
 } else {
-	//If CSS Wrappers are turned off, run through the logic in skin.css.php, and link to each individual file.
+	//If CSS Wrappers are turned off, run through the logic in skin.cache_wrapper.css.php, and link to each individual file.
 	//This gives slower page load speeds, but is better for Module Developers to debug.
 	function includeCSSFile($path, $file, $pathURL = false, $media = 'screen') {
 		if (!$pathURL) {
@@ -202,25 +234,14 @@ if (checkPriv()) {
 	
 		if ($cssModuleIds) {
 			echo '
-<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.css.php?v=', $v, '&amp;ids=', $cssModuleIds, $gz, '&amp;admin_frontend=1" media="screen" />';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/module.wrapper.css.php?v=', $v, '&amp;ids=', $cssModuleIds, $gz, '&amp;admin_frontend=1" media="screen" />';
 		}
 	}
 
+//Add the CSS for the login link for admins if this looks like a logged out admin
 } else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) { 
-	//Add the CSS for the login link for admins if this looks like a logged out admin
 	echo '
-<style type="text/css">
-	body div.admin_link a {
-		position:fixed; top:30px; right:0; display:inline;
-		width:58px; height:37px; padding:32px 0 0 3px;
-		text-align:center; color:#000; font-family:Verdana, Arial, Helvetica, sans-serif; font-size:12px;
-		text-transform:uppercase; text-decoration:none; z-index:9999999;
-		background:url("zenario/admin/images/welcome/admin-btn-off-state.png") no-repeat 0 0;
-	}
-	body div.admin_link a:hover {
-		text-decoration:underline;
-	}
-</style>';
+<link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?v=', $v, '" media="screen" />';
 }
 
 
@@ -238,7 +259,7 @@ if (cms_core::$cID) {
 	//Look up the background image and any HTML to add to the HEAD from the content item
 	$sql = "
 		SELECT head_html, head_cc, head_visitor_only, head_overwrite, bg_image_id, bg_color, bg_position, bg_repeat
-		FROM ". DB_NAME_PREFIX. "versions
+		FROM ". DB_NAME_PREFIX. "content_item_versions
 		WHERE id = ". (int) cms_core::$cID. "
 		  AND type = '". sqlEscape(cms_core::$cType). "'
 		  AND version = ". (int) cms_core::$cVersion;
@@ -297,9 +318,15 @@ if (cms_core::$cID) {
 	$bgRepeat = $itemHTML['bg_repeat']? $itemHTML['bg_repeat'] : $templateHTML['bg_repeat'];
 	
 	if ($bgURL || $bgColor || $bgPosition || $bgRepeat) {
+		
+		$background_selector = 'body';
+		if (cms_core::$skinId) {
+			$background_selector = getRow('skins', 'background_selector', cms_core::$skinId);
+		}
+		
 		echo '
 <style type="text/css">
-	body {';
+	', $background_selector, ' {';
 		if ($bgURL) {
 			echo '
 		background-image: url(\'', htmlspecialchars($bgURL), '\');';
@@ -324,33 +351,7 @@ if (cms_core::$cID) {
 	
 }
 
-
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
-
-	echo '
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">';
-
-	if ($isWelcome || checkPriv()) {
-		echo '
-<script type="text/javascript">
-	if (typeof JSON === "undefined") {
-		document.location = "', jsEscape(absCMSDirURL(). 'zenario/admin/ie_compatibility_mode/index.php'), '";
-	}
-</script>';
-	}
-
-	//Add the csshover.htc file in IE 6
-	if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
-		echo '
-<style type="text/css">
-	body {
-		behavior: url(', $prefix, 'libraries/lgpl/csshover/csshover.htc);
-	}
-</style>';
-	}
-	
-	if ($oldIE) {
-	echo '
-<script type="text/javascript" src="', $prefix, 'libraries/mit/respond/respond.js?v=', $v, '"></script>';
-	}
-}
+//Bugfixes for IE 6, 7 and 8
+echo '
+<!--[if IE 6]><style type="text/css"> body { behavior: url(', $prefix, 'libraries/lgpl/csshover/csshover.htc); } </style><![endif]-->
+<!--[if lte IE 8]><script type="text/javascript" src="', $prefix, 'libraries/mit/respond/respond.js?v=', $v, '"></script><![endif]-->';

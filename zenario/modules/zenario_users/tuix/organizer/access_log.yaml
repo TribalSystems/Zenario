@@ -36,7 +36,7 @@ zenario__users:
                     sql: 'uca.user_id = [[REFINER_ID]]'
                 content:
                     table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]content AS c
+                        INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
                                                            ON c.tag_id = [[REFINER_ID]]
                                                           AND c.id = uca.content_id
                                                           AND c.type = uca.content_type

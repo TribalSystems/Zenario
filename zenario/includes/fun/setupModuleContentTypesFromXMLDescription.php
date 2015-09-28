@@ -60,8 +60,8 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 				//Find an HTML Layout to copy; try to pick the most popular one, otherwise just pick the first one
 				$sql = "
 					SELECT t.*
-					FROM ". DB_NAME_PREFIX. "content AS c
-					INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+					FROM ". DB_NAME_PREFIX. "content_items AS c
+					INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 					   ON v.id = c.id
 					  AND v.type = c.type
 					  AND v.version = c.admin_version

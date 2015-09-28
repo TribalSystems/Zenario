@@ -21,6 +21,15 @@ plugin_settings:
                 instance_name:
                     label: 'Plugin name:'
                     type: text
+        last_tab:
+            label: Help
+            ord: 999999999
+            fields:
+                module_description:
+                    label: 'Module description:'
+                    ord: 1
+                    snippet:
+                        html: {}
     confirm:
         show: No
         message: |

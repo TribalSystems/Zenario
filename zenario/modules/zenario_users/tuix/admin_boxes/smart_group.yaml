@@ -48,13 +48,13 @@ zenario_smart_group:
                     values:
                         group:
                             ord: 100001
-                            label: Group
+                            label: 'Group:'
                         flag:
                             ord: 100002
-                            label: Flag
+                            label: 'Flag:'
                         list:
                             ord: 100003
-                            label: Radio or list
+                            label: 'Radio or list:'
                     format_onchange: true
                 
                 is_isnt_in__znz:
@@ -66,7 +66,7 @@ zenario_smart_group:
                         is:
                             label: member of
                         is_one_of:
-                            label: member of one of
+                            label: member of ANY of
                         isnt:
                             label: not a member of
                     visible_if: |

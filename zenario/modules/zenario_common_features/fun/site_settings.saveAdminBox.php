@@ -92,7 +92,7 @@ foreach ($box['tabs'] as $tabName => &$tab) {
 							//Resync every content equivalence, trying to make sure that the pages for the new default language are used as the base
 							$sql = "
 								SELECT DISTINCT equiv_id, type
-								FROM ". DB_NAME_PREFIX. "content
+								FROM ". DB_NAME_PREFIX. "content_items
 								WHERE status NOT IN ('trashed','deleted')";
 							$equivResult = sqlQuery($sql);
 							while ($equiv = sqlFetchAssoc($equivResult)) {

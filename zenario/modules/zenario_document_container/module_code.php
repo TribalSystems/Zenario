@@ -38,7 +38,7 @@ class zenario_document_container extends module_base_class {
 		if(!($this->setting('container_mode') == 'user_documents')) {
 			//standard documents
 			if (checkPriv()) {
-				if ($this->document_id && $document = getRow('documents', array('file_id', 'type', 'folder_name','filename'), $this->document_id)) {
+				if ($this->document_id && $document = getRow('documents', array('file_id', 'type', 'folder_name','filename','title'), $this->document_id)) {
 					if ($document['type'] == 'file') {
 						if ($file = getRow('files', array('id', 'filename'), $document['file_id'])) {
 							 $showingText = 'Document ' . '"' . $document['filename'] . '"';
@@ -66,7 +66,7 @@ class zenario_document_container extends module_base_class {
 						if ($this->setting('show_folder_name_as_title')) {
 							$showingText .= ", select folder name will be shown as main title";
 						}
-						if ($this->setting('document_tags')) {
+						if (setting('enable_document_tags') && $this->setting('document_tags')) {
 							$documentTagText = "Only showing documents with one of the following tags:";
 							$documentTagsArray = explode(',', $this->setting('document_tags'));
 							$tagNamesArray = getRowsArray('document_tags', 'tag_name', array('id' => $documentTagsArray));
@@ -94,23 +94,14 @@ class zenario_document_container extends module_base_class {
 			}
 			if ($this->document_id) {
 				$link = '';
-				if (!$document = getRow('documents', array('file_id', 'type', 'thumbnail_id', 'folder_name','filename'), $this->document_id)) {
+				if (!$document = getRow('documents', array('id', 'file_id', 'type', 'thumbnail_id', 'folder_name','filename', 'privacy', 'file_datetime', 'title'), $this->document_id)) {
 					return false;
 				}
 				if ($document['type'] == 'file') {
-							
-					$documentTagsArray = explode(',', $this->setting('document_tags'));
-					$tagNamesArray = getRowsArray('document_tags', 'tag_name', array('id' => $documentTagsArray));
-					$documentTagText = "";
-					foreach ($tagNamesArray as $tagName) {
-						$documentTagText .= " " . $tagName . ",";
-					}
-					$documentTagText = rtrim($documentTagText, ",");
 					$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
-					$file = getRow('files', array('id', 'path', 'created_datetime', 'short_checksum'), $document['file_id']);
+					$file = getRow('files', array('id', 'path', 'created_datetime', 'short_checksum', 'size'), $document['file_id']);
 					$file['filename'] = $document['filename'];
-					$link = $this->getFileLink($file, $privacyLevel);
-					$this->sendErrorReportIfPrivateFilesInPublicFolder();
+					$link = getDocumentFileLink($file, $document['privacy'], $privacyLevel, $document['id']);
 					if ($this->setting('offer_download_as_zip')) {
 						$this->mergeFields['Download_Archive'] = true;
 						if (get('build') == $this->instanceId) {
@@ -127,12 +118,19 @@ class zenario_document_container extends module_base_class {
 						$this->mergeFields['Document_created_datetime'] = $file['created_datetime'];
 						$this->mergeFields['Document_Title'] =  $document['filename'];
 						$this->mergeFields['Document_Link_Text'] = $document['filename'];
-						if ($document['thumbnail_id'] && $this->setting('show_thumbnails')) {
-							$thumbnailHtml= self::createThumbnailHtml($document['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
-							$this->mergeFields['Thumbnail'] = $thumbnailHtml;
-						} else {
-							$this->mergeFields['Thumbnail'] = false;
+						$this->mergeFields['Thumbnail'] = $this->getDocumentThumbnail($document['thumbnail_id'], $document['file_id']);
+						if ($this->setting('show_file_size') && $file['size']) {
+							$fileSize = fileSizeConvert($file['size']);
+							$this->mergeFields['File_Size'] = $fileSize;
 						}
+						if ($this->setting('show_upload_date') && $document['file_datetime']) {
+							$uploadDate = formatDateTimeNicely($document['file_datetime'], '_MEDIUM');
+							$this->mergeFields['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
+						}
+						if($this->setting('show_title')) {
+							$this->mergeFields['Title_Exists'] =  $document['title'];
+						}
+						
 						$fields = getDatasetFieldsDetails('documents');
 						$documentCustomData = getRow('documents_custom_data', true, $this->document_id);
 					
@@ -180,7 +178,6 @@ class zenario_document_container extends module_base_class {
 							self::addFilesToDocumentArray($childFiles, $childFolders, $level);
 						}
 					}
-					$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					
 					if ($this->setting('offer_download_as_zip')) {
 						$ids = array_keys($childFiles);
@@ -208,7 +205,7 @@ class zenario_document_container extends module_base_class {
 			}
 			$link = '';
 			if ($userId = userId()) {
-				if (!$documents = getRowsArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', array('id', 'type', 'file_id', 'folder_name', 'thumbnail_id'), array('user_id' => userId()), 'ordinal')) {
+				if (!$documents = getRowsArray(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents', array('id', 'type', 'file_id', 'folder_name', 'thumbnail_id', 'document_datetime', 'title'), array('user_id' => userId()), 'ordinal')) {
 					$this->mergeFields['error'] = 'no_files';
 				}
 				
@@ -225,10 +222,9 @@ class zenario_document_container extends module_base_class {
 					foreach ($documents as &$document) {
 					
 						$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
-						$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $document['file_id']);
+						$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum', 'size'), $document['file_id']);
 						
-						
-						$link = $this->getFileLink($file, 'private');
+						$link = getDocumentFileLink($file, 'private', $privacyLevel);
 						$document['Document_Type'] =  'file';
 						$document['Document_Link'] = $link;
 						$document['Document_created_datetime'] = $file['created_datetime'];
@@ -243,6 +239,20 @@ class zenario_document_container extends module_base_class {
 						} else {
 							$document['Thumbnail'] = false;
 						}
+					
+						if($this->setting('show_title')) {
+							$document['Title_Exists'] = true;
+						}
+						
+						if ($this->setting('show_file_size') && $file['size']) {
+							$fileSize = fileSizeConvert($file['size']);
+							$document['File_Size'] = $fileSize;
+						}
+						if ($this->setting('show_upload_date') && $document['document_datetime']) {
+							$uploadDate = formatDateTimeNicely($document['document_datetime'], '_MEDIUM');
+							$document['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
+						}
+						
 					
 						$documentCustomData = getRow(ZENARIO_USER_DOCUMENTS_PREFIX.'user_documents_custom_data', true, $document['id']);
 						
@@ -275,7 +285,6 @@ class zenario_document_container extends module_base_class {
 							$document[$fieldName] = $displayValue;
 						}
 					}
-					$this->sendErrorReportIfPrivateFilesInPublicFolder();
 					$this->mergeFields['Documents'] = $documents;
 				}
 				
@@ -292,6 +301,25 @@ class zenario_document_container extends module_base_class {
 		}
 			//Display the Plugin
 		$this->framework('Outer', $this->mergeFields);
+	}
+	
+	private function getDocumentThumbnail($documentThumbnailId, $fileId) {
+		$thumbnailId = false;
+		if ($this->setting('show_thumbnails')) {
+			if ($documentThumbnailId) {
+				$thumbnailId = $documentThumbnailId;
+			} else {
+				$mimeType = getRow('files', 'mime_type', $fileId);
+				if (in_array($mimeType, array('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg'))) {
+					$thumbnailId = $fileId;
+				}
+			}
+		}
+		$thumbnailHTML = false;
+		if ($thumbnailId) {
+			$thumbnailHTML = self::createThumbnailHtml($thumbnailId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+		}
+		return $thumbnailHTML;
 	}
 	
 	private static function getGoogleAnalyticsDocumentLink($fileId, $privacyLevel = false, $docFilename = false) {
@@ -564,11 +592,13 @@ class zenario_document_container extends module_base_class {
 						$fields['show_folder_name_as_title']['hidden'] = false;
 						$fields['show_files_in_folders']['hidden'] = false;
 						$fields['show_folders_in_results']['hidden'] = false;
-						$sql = 'SELECT COUNT(*) FROM '.DB_NAME_PREFIX.'document_tags';
-						$result = sqlSelect($sql);
-						$row = sqlFetchRow($result);
-						if ($row[0] > 0) {
-							$fields['document_tags']['hidden'] = false;
+						if (setting('enable_document_tags')) {
+							$sql = 'SELECT COUNT(*) FROM '.DB_NAME_PREFIX.'document_tags';
+							$result = sqlSelect($sql);
+							$row = sqlFetchRow($result);
+							if ($row[0] > 0) {
+								$fields['document_tags']['hidden'] = false;
+							}
 						}
 					} else {
 						$fields['show_files_in_folders']['hidden'] = true;
@@ -632,76 +662,26 @@ class zenario_document_container extends module_base_class {
 				}
 				
 				$fields['first_tab/title_tags']['hidden'] = !$values['first_tab/show_folder_name_as_title'];
-				break;
-		}
-	}
-	
-	public $privateFilesInPublicFolder = array();
-	
-	public function getFileLink($file, $privacyLevel) {
-		if($file['filename']) {
-			if (!windowsServer() && $privacyLevel == 'public' && ($path = docstoreFilePath($file['id'], false))) {
-				$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
-				$symFolder =  CMS_ROOT . $dirPath;
-				$symPath = $symFolder . '/' . $file['filename'];
-				$frontLink = $dirPath . '/' . $file['filename'];
 				
-				if (!file_exists($symPath)) {
-					if(!file_exists($symFolder)) {
-						mkdir($symFolder);
-					}
-					symlink($path, $symPath);
+				if($values['first_tab/container_mode'] == 'user_documents') {
+					$fields['first_tab/show_folder_name_as_title']['hidden'] = true;
+					$fields['first_tab/title_tags']['hidden'] = true;
+				} else {
+					$fields['first_tab/show_folder_name_as_title']['hidden'] = false;
 				}
-				return $frontLink;
-			} else {
-				$link = fileLink($file['id']);
-				if (file_exists($symPath)) {
-					$this->privateFilesInPublicFolder[] = $file;
-				}
-				return $link;
-			}
-		} else {
-			return false;
-		}
-	}
-	
-	public function sendErrorReportIfPrivateFilesInPublicFolder() {
-		if (!empty($this->privateFilesInPublicFolder)) {
-			$fileCount = count($this->privateFilesInPublicFolder);
-			$s = '';
-			if ($fileCount != 1) {
-				$s = 's';
-			}
-			$subject = "Warning at " . $_SERVER['HTTP_HOST'];
-			$body = "Private file$s found in public folder.\n\n";
-			foreach ($this->privateFilesInPublicFolder as $file) {
-				$frontLink = 'public' . '/' . $file['path'] . '/' . $file['filename'];
-				$link = fileLink($file['id']);
-				$body .= "File '" . $file['filename']
-					. "'\n Was found with the public path '" . $frontLink 
-					. "' and also with the private path '" . $link . "'\n\n";
-			}
-			$body .= "If you do not want the file$s to be publicly available remove the symlink$s from the public folder.\n\n";
-			sendEmail($subject, $body, 
-				EMAIL_ADDRESS_GLOBAL_SUPPORT,
-				$addressToOverriddenBy,
-				$nameTo = false,
-				$addressFrom = false,
-				$nameFrom = false,
-				false, false, false,
-				$isHTML = false,
-				false, false, false,
-				'document_container__private_file_in_public_folder');
+				
+			break;
 		}
 	}
 	
 	function addMergeFields($documents, $level) {
+		
 		$privacyLevel = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => $this->cType));
 		foreach ($documents as $key => $childDoc) {
-			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum'), $childDoc['file_id']);
+			$file = getRow('files', array('id', 'filename', 'path', 'created_datetime', 'short_checksum', 'size'), $childDoc['file_id']);
 			$file['filename'] = $childDoc['filename'];
 			$documents[$key]['Document_Type'] =  'file';
-			$documents[$key]['Document_Link'] =  $this->getFileLink($file, $privacyLevel);
+			$documents[$key]['Document_Link'] =  getDocumentFileLink($file, $childDoc['privacy'], $privacyLevel, $childDoc['id']);
 			$fileURL = self::getGoogleAnalyticsDocumentLink($childDoc['file_id'], $privacyLevel);
 			$documents[$key]['Google_Analytics_Link'] = trackFileDownload($fileURL);
 			$documents[$key]['Document_Mime'] = str_replace('/', '_', documentMimeType($documents[$key]['Document_Link']));
@@ -709,12 +689,18 @@ class zenario_document_container extends module_base_class {
 			$documents[$key]['Document_Title'] = $childDoc['filename'];
 			$documents[$key]['Document_Link_Text'] = $childDoc['filename'];
 			$documents[$key]['Document_Level'] = $level;
-			
-			if ($childDoc['thumbnail_id'] && $this->setting('show_thumbnails')) {
-				$thumbnailHtml= self::createThumbnailHtml($childDoc['thumbnail_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
-				$documents[$key]['Thumbnail'] = $thumbnailHtml;
-			} else {
-				$documents[$key]['Thumbnail'] = false;
+			$documents[$key]['Thumbnail'] = $this->getDocumentThumbnail($childDoc['thumbnail_id'], $childDoc['file_id']);
+			if ($this->setting('show_file_size') && $file['size']) {
+				$fileSize = fileSizeConvert($file['size']);
+				$documents[$key]['File_Size'] = $fileSize;
+			}
+			if ($this->setting('show_upload_date') && $childDoc['file_datetime']) {
+				$uploadDate = formatDateTimeNicely($childDoc['file_datetime'], '_MEDIUM');
+				$documents[$key]['Upload_Date'] = $this->phrase('Uploaded: [[date]]', array('date' => $uploadDate));
+			}
+			if($this->setting('show_title')) {
+				$documents[$key]['Title_Folder_Exists'] = true;
+				$documents[$key]['Title_Exists'] =  $childDoc['title'];
 			}
 			
 			$fields = getDatasetFieldsDetails('documents');
@@ -747,6 +733,7 @@ class zenario_document_container extends module_base_class {
 				$documents[$key][$fieldName] = $displayValue;
 			}
 		}
+		
 		return $documents;
 	}
 	
@@ -762,8 +749,8 @@ class zenario_document_container extends module_base_class {
 	
 	public function getFilesInFolder($folderId) {
 		$childFiles = array();
-		if ($this->setting('document_tags')) {
-			$sql = "SELECT d.id, d.type, d.file_id, d.folder_name, d.thumbnail_id, d.filename 
+		if (setting('enable_document_tags') && $this->setting('document_tags')) {
+			$sql = "SELECT d.id, d.type, d.file_id, d.folder_name, d.thumbnail_id, d.filename, d.privacy, d.file_datetime, d.title
 					FROM " . DB_NAME_PREFIX . "documents AS d 
 					LEFT JOIN " . DB_NAME_PREFIX . "document_tag_link AS dtl 
 						ON d.id = dtl.document_id 
@@ -774,16 +761,17 @@ class zenario_document_container extends module_base_class {
 					ORDER BY d.ordinal" ;
 			$result = sqlQuery($sql);
 			
-			while ($row = sqlFetchRow($result)) {
-				$childFiles[] = array('id' => $row[0], 'type' => $row[1], 'file_id' => $row[2], 'folder_name' => $row[3],'filename' =>$row[4]);
+			while ($row = sqlFetchAssoc($result)) {
+				$childFiles[] = $row;
 			}
 					
 		} else {
 			$childFiles = getRowsArray('documents', 
-							array('id', 'type', 'file_id', 'folder_name','thumbnail_id','filename'), 
+							array('id', 'type', 'file_id', 'folder_name','thumbnail_id','filename', 'privacy', 'file_datetime', 'title'), 
 							array('folder_id' => $folderId, 'type' => 'file'),
 							'ordinal');
 		}
+		
 		if ($childFiles) {
 			return $childFiles;
 		} else {

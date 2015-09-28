@@ -17,6 +17,7 @@ zenario__administration:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: el.id
                 datetime:
                     title: Logged

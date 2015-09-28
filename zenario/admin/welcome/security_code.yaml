@@ -1,0 +1,60 @@
+security_code:
+    tab: security_code
+    tabs:
+        security_code:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            show_errors_after_field: description
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Extra security check</h1>
+                            <p>
+                                You've not logged in from this computer or this browser before,
+                                or it has been a while since you last entered a code.
+                            </p>
+                            <p>
+                                As an additional security measure, we've sent a code to the
+                                email address registered at this account. Please check your
+                                email and enter the code below.
+                            </p>
+                code:
+                    label: "Code:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                    style: |
+                        width: 6em;
+                submit:
+                    value: Submit
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: right;
+                resend:
+                    value: Resend email
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;
+                previous:
+                    value: "Return to site front-end"
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                    class: return_front_end
+                    same_row: false
+            notices:
+                email_resent:
+                    show: false
+                    type: success
+                    message: |
+                        The email has been resent.
+                        
+                        (If you have not received this then please check your "spam" folder
+                        in case the email has been mis-filed.)

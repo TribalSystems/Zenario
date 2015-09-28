@@ -151,7 +151,6 @@ function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, 
 				if (!empty($req['editor'])) {
 					switch ($file) {
 						case 'tinymce.css':
-						case 'fckeditor.css':
 							$files[0][] = array($skinPath, $file, $skinPathURL);
 					}
 				
@@ -164,7 +163,6 @@ function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, 
 				} else {
 					switch ($file) {
 						case 'tinymce.css':
-						case 'fckeditor.css':
 						case 'stylesheet_print.css':
 							break;
 						

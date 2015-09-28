@@ -43,9 +43,9 @@ class zenario_users__organizer__users extends zenario_users {
 		if ($refinerName == 'smart_group') {
 			$joins = array();
 				
-			if (($sg = getSmartGroupDetails($refinerId))
-			 && ($sql = smartGroupSQL($refinerId, 'u', 'custom'))) {
-				$panel['refiners']['smart_group']['sql'] = "TRUE ". $sql;
+			if ($sg = getSmartGroupDetails($refinerId)) {
+				$panel['refiners']['smart_group']['sql'] =
+					"TRUE ". smartGroupSQL($refinerId, 'u', 'custom');
 		
 				$panel['title'] = adminPhrase('Users in Smart Group "[[name]]"', $sg);
 					
@@ -69,6 +69,11 @@ class zenario_users__organizer__users extends zenario_users {
 		$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
 		$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
 			$dataset['id'];
+		
+		// If no users, hide export button
+		if (count($panel['items']) <= 0) {
+			$panel['collection_buttons']['export']['hidden'] = true;
+		}
 		
 		//Change the enum option for user type if this site is a hub or is connected to a hub
 		if (zenario_users::validateUserSyncSiteConfig()) {
@@ -204,7 +209,6 @@ class zenario_users__organizer__users extends zenario_users {
 				}
 			}
 		}
-					
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

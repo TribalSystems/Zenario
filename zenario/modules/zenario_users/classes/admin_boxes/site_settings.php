@@ -32,15 +32,16 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
 		$scheduledTaskManagerRunning = checkRowExists('modules', array('class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running'));
+		
 		if (!$scheduledTaskManagerRunning 
-			|| !setting('jobs_enabled')
+			|| !setting('jobs_enabled') 
 			|| !inc('zenario_scheduled_task_manager')
 			|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobRemoveInactivePendingUsers')) 
 		{
 			$values['unconfirmed_users/remove_inactive_users'] = false;
 			$fields['unconfirmed_users/remove_inactive_users']['disabled'] = true;
 			$fields['unconfirmed_users/remove_inactive_users']['side_note'] = 
-				'The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users';
+				'The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users.';
 		}
 	}
 	

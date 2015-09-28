@@ -20,6 +20,10 @@ body .zenario_skin {
 	display:none;
 }
 
+.space .pad_slot {
+	display: inline;
+}
+
 .Grid_Header {
 	background:#17202B;
 }
@@ -71,4 +75,8 @@ body .zenario_skin {
 
 body.zenario_adminLoggedIn .zenario_slotWithNoContents .zenario_slot {
 	background:#f0f0f0;
+}
+
+.slot.Built_On {
+	text-align: center;
 }

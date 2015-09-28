@@ -16,7 +16,7 @@ zenario__menu:
                                                 LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
                                                    ON mt.menu_id = mi.id
                                                   AND mt.language_id = [[FOCUSED_LANGUAGE_ID]]
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content AS c
+                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
                                                    ON mi.equiv_id = c.equiv_id
                                                   AND mi.content_type = c.type
                                                   AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
@@ -85,7 +85,21 @@ zenario__menu:
                         )
                 redundancy:
                     title: Redundancy
-                    db_column: mi.redundancy
+                    db_column: |
+                        IF (mi.redundancy = 'primary', 
+                        (
+                            IF (
+                                (
+                                    SELECT COUNT(*)
+                                    FROM [[DB_NAME_PREFIX]]menu_nodes AS mi2
+                                    WHERE mi.equiv_id = mi2.equiv_id
+                                    AND mi.content_type = mi2.content_type
+                                ) = 1,
+                                'unique',
+                                'primary'
+                            )
+                        ), 
+                        mi.redundancy)
                 translations:
                     title: Translations
                     db_column: |
@@ -292,6 +306,44 @@ zenario__menu:
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             move: "1"
+                
+                
+                
+                quick_add_to_menu:
+                    priv: _PRIV_ADD_MENU_ITEM
+                    label: Create secondary node
+                    parent: action_dropdown
+                    tooltip: Create another menu node linking to this item
+                    combine_items:
+                        path: zenario__menu/panels/menu_position
+                        min_path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        disallow_refiners_looping_on_min_path: No
+                        one_to_one_choose_phrase: Create secondary menu node
+                        request:
+                            mass_add_to_menu: "1"
+                            
+                make_primary:
+                    priv: _PRIV_EDIT_MENU_ITEM
+                    label: Make primary
+                    parent: action_dropdown
+                    tooltip: >
+                        Make this menu node the primary node, so that this path is
+                        used in any breadcrumb trail.
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to make this node the primary node for this content item?
+                                
+                                Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
+                            button_message: Make primary
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            make_primary: "1"
+                    visible_if_for_all_selected_items: item.redundancy == 'secondary'
+                
+                
                 delete:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete menu node

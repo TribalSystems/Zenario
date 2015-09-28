@@ -66,59 +66,6 @@ function quickValidateWelcomePage(&$values, &$rowClasses, &$snippets, $tab) {
 		} else {
 			$snippets['path_status'] = adminPhrase('No file or directory with that name.');
 		}
-	
-	} elseif ($tab == 0 || $tab == 'dirs') {
-		
-		if (isset($values['backup_dir'])) {
-			$rowClasses['dir_1'] = 'sub_section_invalid';
-			if (!$values['backup_dir']) {
-				$rowClasses['backup_dir_status'] = 'sub_invalid';
-				$snippets['backup_dir_status'] = adminPhrase('Please enter a directory.');
-			
-			} elseif (!@is_dir($values['backup_dir'])) {
-				$rowClasses['backup_dir_status'] = 'sub_invalid';
-				$snippets['backup_dir_status'] = adminPhrase('Directory does not exist, please create it.');
-			
-			} elseif (realpath($values['backup_dir']) == realpath(CMS_ROOT)) {
-				$rowClasses['backup_dir_status'] = 'sub_invalid';
-				$snippets['backup_dir_status'] = adminPhrase('Zenario is already installed in this directory. Please choose a different directory.');
-			
-			} elseif (!directoryIsWritable($values['backup_dir'])) {
-				$rowClasses['backup_dir_status'] = 'sub_invalid';
-				$snippets['backup_dir_status'] = adminPhrase('Directory is not writable by the web server, please fix its permissions.');
-			
-			} else {
-				$rowClasses['dir_1'] = 'sub_section_valid';
-				$rowClasses['backup_dir_status'] = 'sub_valid';
-				$snippets['backup_dir_status'] = adminPhrase('Good news, this directory exists and is writable.');
-			}
-		}
-		
-		
-		if (isset($values['docstore_dir'])) {
-			$rowClasses['dir_2'] = 'sub_section_invalid';
-			if (!$values['docstore_dir']) {
-				$rowClasses['docstore_dir_status'] = 'sub_invalid';
-				$snippets['docstore_dir_status'] = adminPhrase('Please enter a directory.');
-			
-			} elseif (!@is_dir($values['docstore_dir'])) {
-				$rowClasses['docstore_dir_status'] = 'sub_invalid';
-				$snippets['docstore_dir_status'] = adminPhrase('This directory does not exist.');
-			
-			} elseif (realpath($values['docstore_dir']) == realpath(CMS_ROOT)) {
-				$rowClasses['docstore_dir_status'] = 'sub_invalid';
-				$snippets['docstore_dir_status'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
-			
-			} elseif (!directoryIsWritable($values['docstore_dir'])) {
-				$rowClasses['docstore_dir_status'] = 'sub_invalid';
-				$snippets['docstore_dir_status'] = adminPhrase('This directory is not writable.');
-			
-			} else {
-				$rowClasses['dir_2'] = 'sub_section_valid';
-				$rowClasses['docstore_dir_status'] = 'sub_valid';
-				$snippets['docstore_dir_status'] = adminPhrase('This directory exists and is writable.');
-			}
-		}
 	}
 
 }
@@ -961,7 +908,6 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 				define('SHOW_SQL_ERRORS_TO_VISITORS', true);
 			}
 			
-			$merge['SALT'] = randomString(8);
 			$merge['URL'] = httpOrhttps(). $_SERVER['HTTP_HOST'];
 			$merge['HTTP_HOST'] = $_SERVER['HTTP_HOST'];
 			$merge['SUBDIRECTORY'] = SUBDIRECTORY;
@@ -1097,7 +1043,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					
 					} else {
 						//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
-						if (!setting('default_language') && ($langId = getRow('content', 'language_id', array()))) {
+						if (!setting('default_language') && ($langId = getRow('content_items', 'language_id', array()))) {
 							setSetting('default_language', $langId);
 						}
 					}
@@ -1130,20 +1076,16 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					$adminId = insertRow('admins', $details);
 					setPasswordAdmin($adminId, $merge['PASSWORD']);
 					
-					//Give the creating admin all of the basic permissions
-					$perms = 'all';
-					saveAdminPerms($perms, $adminId);
-					setAdminSession($adminId);
-					
-					
-					//Attempt to add permissions for any Modules in this package
+					//Look for permissions in each of the running modules in this package
 					foreach (getRunningModules($dbUpdateSafemode = true) as $module) {
-						if ($module['class_name'] != 'zenario_common_features'
-						 && ($perms = scanModulePermissionsInTUIXDescription($module['class_name']))
+						if (($perms = scanModulePermissionsInTUIXDescription($module['class_name']))
 						 && !empty($perms)) {
+							
+							//Give the first admin that we create all of those permissions
 							saveAdminPerms($perms, $adminId);
 						}
 					}
+					setAdminSession($adminId);
 					
 					
 					//Prepare email to the installing person
@@ -1207,7 +1149,7 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 	$box['tabs']['forgot']['errors'] = array();
 	
 	if ($box['tab'] == 'login' && !empty($box['tabs']['login']['fields']['previous']['pressed'])) {
-		$box['_location'] = redirectAdmin($getRequest);
+		$box['go_to_url'] = redirectAdmin($getRequest);
 		return false;
 	
 	//Go between the login and the forgot password screens
@@ -1233,10 +1175,10 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 			if ($adminIdL = checkPasswordAdmin($box['tabs']['login']['fields']['username']['current_value'], $details, $box['tabs']['login']['fields']['password']['current_value'], $checkViaEmail = false)) {
 				
 				if ($box['tabs']['login']['fields']['remember_me']['current_value']) {
-					setcookie('COOKIE_LAST_ADMIN_USER', $box['tabs']['login']['fields']['username']['current_value'], time()+8640000, '/', cookieDomain());
+					setCookieOnCookieDomain('COOKIE_LAST_ADMIN_USER', $box['tabs']['login']['fields']['username']['current_value']);
 					clearCookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
 				} else {
-					setcookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1', time()+8640000, '/', cookieDomain());
+					setCookieOnCookieDomain('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER', '1');
 					clearCookie('COOKIE_LAST_ADMIN_USER');
 				}
 				
@@ -1304,7 +1246,7 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 		//Check for the user by email address, without specifying their password.
 		//This will return 0 if the user wasn't found, otherwise it should return
 		//false (for user found but password didn't match)
-		} elseif (!$admin = getRow('admins', true, array('email' => $box['tabs']['forgot']['fields']['email']['current_value']))) {
+		} elseif (!$admin = getRow('admins', array('id', 'authtype', 'username', 'email', 'first_name', 'last_name'), array('email' => $box['tabs']['forgot']['fields']['email']['current_value']))) {
 			$box['tabs']['forgot']['errors'][] = adminPhrase("Sorry, we could not find that email address associated with an active Administrator on this site's database.");
 		
 		//Super Admins shouldn't be trying to change their passwords on a local site
@@ -1467,6 +1409,157 @@ function updateAJAX(&$tags, &$box, &$task) {
 	} else {
 		$box['tabs'][1]['fields']['updates']['hidden'] = true;
 	}
+	
+	return false;
+}
+
+
+//Log the current admin out
+function logoutAdminAJAX(&$box, $getRequest) {
+	unsetAdminSession();
+	$box['_clear_local_storage'] = true;
+	$box['go_to_url'] = redirectAdmin($getRequest, true);
+}
+
+//Return the UNIX time, $offset ago, converted to a string
+function zenarioSecurityCodeTime($offset = 0) {
+	return str_pad(time() - (int) $offset * 86400, 16, '0', STR_PAD_LEFT);
+}
+
+//This returns the name that the cookie for the security code should have.
+//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[ADMIN_ID]]"
+function zenarioSecurityCodeCookieName() {
+	return 'COOKIE_ADMIN_SECURITY_CODE_'. adminId();
+}
+
+//Get the value of the cookie above
+function zenarioSecurityCodeCookieValue() {
+	if (isset($_COOKIE[zenarioSecurityCodeCookieName()])) {
+		return preg_replace('@[^-_=\w]@', '', $_COOKIE[zenarioSecurityCodeCookieName()]);
+	} else {
+		return '';
+	}
+}
+
+//Looks for a security code cookie with the above name,
+//then returns the corresponding name that a site setting should have.
+//This is in the form "COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]", or
+//"COOKIE_ADMIN_SECURITY_CODE_[[COOKIE_VALUE]]_[[IP_ADDRESS]]", depending on
+//whether the security_code_by_ip option is set in the site_description.yaml file.
+function zenarioSecurityCodeSettingName() {
+	
+	if ('' == ($sccn = zenarioSecurityCodeCookieValue())) {
+		 return false;
+	
+	} elseif (siteDescription('security_code_by_ip')) {
+		return 'COOKIE_ADMIN_SECURITY_CODE_'. $sccn. '_'. visitorIP();
+
+	} else {
+		return 'COOKIE_ADMIN_SECURITY_CODE_'. $sccn;
+	}
+}
+
+//Tidy up outdated codes
+function zenarioTidySecurityCodes() {
+	$sql = "
+		DELETE FROM ". DB_NAME_PREFIX. "admin_settings
+		WHERE name LIKE 'COOKIE_ADMIN_SECURITY_CODE_%'
+		  AND value < '". sqlEscape(zenarioSecurityCodeTime(siteDescription('security_code_timeout'))). "'";
+	sqlUpdate($sql, false);
+}
+
+
+
+
+
+
+function securityCodeAJAX(&$tags, &$box, &$task, $getRequest) {
+	
+	$firstTimeHere = empty($_SESSION['COOKIE_ADMIN_SECURITY_CODE']);
+	$resend = !empty($box['tabs']['security_code']['fields']['resend']['pressed']);
+	$box['tabs']['security_code']['notices']['email_resent']['show'] = false;
+	$box['tabs']['security_code']['errors'] = array();
+	
+	//Handle the "back to site" button
+	if (!empty($box['tabs']['security_code']['fields']['previous']['pressed'])) {
+		logoutAdminAJAX($box, $getRequest);
+		return false;
+	
+	//If we've not sent the email yet, or the user presses the retry button, then send the email
+	} elseif ($firstTimeHere || $resend) {
+		
+		if ($firstTimeHere) {
+			$_SESSION['COOKIE_ADMIN_SECURITY_CODE'] = randomStringFromSet(5, 'ABCDEFGHIJKLMNPPQRSTUVWXYZ');
+		}
+		
+		$admin = getRow('admins', array('id', 'authtype', 'username', 'email', 'first_name', 'last_name'), adminId());
+		
+		//Prepare email to the mail with the code
+		$merge = array();
+		$merge['NAME'] = ifNull(trim($admin['first_name']. ' '. $admin['last_name']), $admin['username']);
+		$merge['USERNAME'] = $admin['username'];
+		$merge['URL'] = httpOrhttps(). $_SERVER['HTTP_HOST'];
+		$merge['SUBDIRECTORY'] = SUBDIRECTORY;
+		$merge['IP'] = preg_replace('[^W\.\:]', '', visitorIP());
+		$merge['CODE'] = $_SESSION['COOKIE_ADMIN_SECURITY_CODE'];
+		
+		$emailTemplate = 'security_code';
+		$message = $tags['email_templates'][$emailTemplate]['body'];
+		
+		$subject = $tags['email_templates'][$emailTemplate]['subject'];
+		
+		foreach ($merge as $pattern => $replacement) {
+			$subject = str_replace('[['. $pattern. ']]', $replacement, $subject);
+			$message = str_replace('[['. $pattern. ']]', $replacement, $message);
+		}
+		
+		$addressToOverriddenBy = false;
+		sendEmail(
+			$subject, $message,
+			$admin['email'],
+			$addressToOverriddenBy,
+			$nameTo = $merge['NAME'],
+			$addressFrom = false,
+			$nameFrom = $tags['email_templates'][$emailTemplate]['from'],
+			false, false, false,
+			$isHTML = false);
+		
+		if ($resend) {
+			$box['tabs']['security_code']['notices']['email_resent']['show'] = true;
+		}
+	
+	//Check the code if someone is trying to submit it
+	} else
+	if (!empty($_SESSION['COOKIE_ADMIN_SECURITY_CODE'])
+	 && !empty($box['tabs']['security_code']['fields']['submit']['pressed'])) {
+		
+		$code = $box['tabs']['security_code']['fields']['code']['current_value'];
+		
+		if ($code == '') {
+			$box['tabs']['security_code']['errors'][] =
+				adminPhrase('Please enter the code that was sent to your email address.');
+		
+		} elseif (trim($code) !== $_SESSION['COOKIE_ADMIN_SECURITY_CODE']) {
+			$box['tabs']['security_code']['errors'][] =
+				adminPhrase('The code you have entered is not correct.');
+		
+		} else {
+			
+			//If the code is correct, save a cookie...
+			setCookieOnCookieDomain(
+				zenarioSecurityCodeCookieName(),
+				randomString(),
+				(int) siteDescription('security_code_timeout'));
+			
+			//...and an admin setting to remember it next time!
+			$scsn = zenarioSecurityCodeSettingName();
+			$time = zenarioSecurityCodeTime();
+			setAdminSetting($scsn, $time);
+			
+			return true;
+		}
+	}
+	
 	
 	return false;
 }
@@ -1780,9 +1873,11 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		}
 	
 	} else {
+		
+		$show_warning = false;
+		
 		if (!setting('site_enabled')) {
-			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
-			$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
+			$show_warning = true;
 			$box['tabs'][0]['fields']['site_disabled']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_disabled']['snippet']['html'] =
 				adminPhrase('Your site is not enabled, so visitors will not be able to see it. Go to <em>Configuration -&gt; Site settings -&gt; Site Disabled</em> in Organizer, then click on the &quot;Enable or Disable this Site&quot; button to enable your site.');
@@ -1794,14 +1889,13 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		$sql = "
 			SELECT 1
 			FROM ". DB_NAME_PREFIX. "special_pages AS sp
-			INNER JOIN ". DB_NAME_PREFIX. "content AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_items AS c
 			   ON c.id = sp.equiv_id
 			  AND c.type = sp.content_type
 			WHERE c.status NOT IN ('published_with_draft','published')";
 		
 		if (($result = sqlQuery($sql)) && (sqlFetchRow($result))) {
-			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
-			$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
+			$show_warning = true;
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['snippet']['html'] =
 				setting('site_enabled')?
@@ -1811,6 +1905,15 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		} else {
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['row_class'] = 'valid';
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['snippet']['html'] = adminPhrase("All of your site's Special Pages are published.");
+		}
+		
+		//Check for a missing site description file.
+		if (!is_file(CMS_ROOT. 'zenario_custom/site_description.yaml')) {
+			$show_warning = true;
+			$box['tabs'][0]['fields']['site_description_missing']['row_class'] = 'warning';
+		} else {
+			//Note: only show this message if it's in the error state; hide it otherwise
+			$box['tabs'][0]['fields']['site_description_missing']['hidden'] = true;
 		}
 		
 		//Check to see if there are spare domains without a primary domain
@@ -1823,8 +1926,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		}
 		
 		//Check to see if this is a developer installation...
-		if (substr(getCMSVersionNumber(), -6) == ' (dev)') {
-			$show_warning = false;
+		if (file_exists(CMS_ROOT. 'developer.txt')) {
 			
 			//Check to see if any developers are not showing errors/warnings
 			if (!(ERROR_REPORTING_LEVEL & E_ALL)
@@ -1837,23 +1939,66 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 				$box['tabs'][0]['fields']['errors_not_shown']['hidden'] = true;
 			}
 			
-			//Check to see if any developers are missing the debug_override_enable setting
-			if (!setting('debug_override_enable')) {
-				$show_warning = true;
-				$box['tabs'][0]['fields']['email_addresses_not_overridden']['row_class'] = 'warning';
-			} else {
-				//Note: only show this message if it's in the error state; hide it otherwise
-				$box['tabs'][0]['fields']['email_addresses_not_overridden']['hidden'] = true;
-			}
-			
-			if ($show_warning) {
-				$box['tabs'][0]['fields']['show_site']['pressed'] = true;
-				$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
-			}
-			
+			////Check to see if any developers are missing the debug_override_enable setting
+			//if (!setting('debug_override_enable')) {
+			//	$show_warning = true;
+			//	$box['tabs'][0]['fields']['email_addresses_not_overridden']['row_class'] = 'warning';
+			//} else {
+			//	//Note: only show this message if it's in the error state; hide it otherwise
+			//	$box['tabs'][0]['fields']['email_addresses_not_overridden']['hidden'] = true;
+			//}
 		} else {
+			//$box['tabs'][0]['fields']['email_addresses_not_overridden']['hidden'] = true;
+			
 			$box['tabs'][0]['fields']['errors_not_shown']['hidden'] = true;
-			$box['tabs'][0]['fields']['email_addresses_not_overridden']['hidden'] = true;
+		}
+		
+		//Check to see if production sites have the debug_override_enable setting enabled
+		if (setting('debug_override_enable')) {
+			$show_warning = true;
+			$box['tabs'][0]['fields']['email_addresses_overridden']['row_class'] = 'warning';
+		} else {
+			$box['tabs'][0]['fields']['email_addresses_overridden']['hidden'] = true;
+		}
+		
+		$badSymlinks = array();
+		if (is_dir($dir = CMS_ROOT. 'zenario_extra_modules/')) {
+			foreach (scandir($dir) as $mDir) {
+				if ($mDir != '.'
+				 && $mDir != '..'
+				 && is_link($dir. $mDir)
+				 && ($rp = realpath($dir. $mDir))
+				 && ($rp = dirname($rp))
+				 && ($rp = dirname($rp))
+				 && (is_dir($rp = $rp. '/zenario/admin/db_updates/copy_over_top_check/'))
+				 && (!file_exists($rp. ZENARIO_CMS_NUMERIC_VERSION. '.txt'))) {
+					
+					$badSymlinks[] = $mDir;
+				}
+			}
+		}
+		
+		if (!$box['tabs'][0]['fields']['bad_extra_module_symlinks']['hidden'] = empty($badSymlinks)) {
+			$box['tabs'][0]['fields']['bad_extra_module_symlinks']['row_class'] = 'warning';
+			
+			$mrg = array('module' => array_pop($badSymlinks), 'version' => preg_replace('@[a-z]@', '', ZENARIO_CMS_VERSION));
+			if (empty($badSymlinks)) {
+				$box['tabs'][0]['fields']['bad_extra_module_symlinks']['snippet']['html'] =
+					adminPhrase('The <code>[[module]]</code> symlink in the <code>zenario_extra_modules/</code> directory is linked to the wrong version of Zenario. It should be linked to version [[version]].', $mrg);
+			} else {
+				$mrg['modules'] = implode('</code>, <code>', $badSymlinks);
+				$box['tabs'][0]['fields']['bad_extra_module_symlinks']['snippet']['html'] =
+					adminPhrase('The <code>[[modules]]</code> and <code>[[module]]</code> symlinks in the <code>zenario_extra_modules/</code> directory are linked to the wrong version of Zenario. They should be linked to version [[version]].', $mrg);
+			}
+		}
+		
+		
+		
+		
+		
+		if ($show_warning) {
+			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
+			$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
 		}
 	}
 	
@@ -1955,7 +2100,7 @@ function congratulationsAJAX(&$tags, &$box) {
 
 
 
-function redirectAdmin($getRequest) {
+function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 	$cID = $cType = false;
 	$request = arrayKey($getRequest, 'cID');
 	
@@ -1974,7 +2119,7 @@ function redirectAdmin($getRequest) {
 	} elseif (getCIDAndCTypeFromTagId($cID, $cType, $request)) {
 		$cType = ifNull(preg_replace('/\W/', '', $cType), 'html');
 	
-	} elseif ($request && ($content = getRow('content', array('id', 'type'), array('alias' => $request)))) {
+	} elseif ($request && ($content = getRow('content_items', array('id', 'type'), array('alias' => $request)))) {
 		$cID = $content['id'];
 		$cType = $content['type'];
 	
@@ -1989,9 +2134,8 @@ function redirectAdmin($getRequest) {
 		unset($getRequest['cType']);
 		unset($getRequest['cVersion']);
 		
-		return linkToItem($cID, $cType, true, http_build_query($getRequest));
+		return linkToItem($cID, $cType, true, http_build_query($getRequest), false, false, $useAliasInAdminMode);
 	} else {
 		return indexDotPHP();
 	}
 }
-

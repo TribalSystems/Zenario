@@ -15,15 +15,15 @@
 			[/cms:section]
 
 			[cms:section name="Registered_Not_Verified"]
-				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_VERIFY_EMAIL"/]</div>
+				<div class="confirm_email_text">[cms:merge name="Thank_You_Verify_Email_Text"/]</div>
 			[/cms:section]
 
 			[cms:section name="Registered_Verified_Not_Activated"]
-				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_WAIT_FOR_ACTIVATION"/]</div>
+				<div class="confirm_email_text">[cms:merge name="Thank_You_Wait_For_Activation_Text"/]</div>
 			[/cms:section]
 
 			[cms:section name="Registered_Email_Resent"]
-				<div class="confirm_email_text">[cms:phrase code="_THANK_YOU_VERIFY_EMAIL_RESENT"/]</div>
+				<div class="confirm_email_text">[cms:merge name="Thank_You_Verify_Email_Resent_Text"/]</div>
 			[/cms:section]
 			
 			[cms:section name="Registration_Form"]
@@ -48,6 +48,13 @@
 						<div class="label">[cms:phrase code="_EMAIL:"/]</div>
 						[cms:input type="text" name="email" pattern="new_email" required="true" class="extranet_text"/]
 					</div>
+					
+					[cms:section name="Second_Email"]
+						<div class="extranet_field">
+							<div class="label">[cms:phrase code="Repeat email:"/]</div>
+							[cms:input type="text" name="email_confirm" class="extranet_text"/]
+						</div>
+					[/cms:section]
 					
 					<div class="extranet_field">
 						<div class="label">[cms:phrase code="_SALUTATION:"/]</div>
@@ -99,12 +106,12 @@
 					[/cms:section]
 					
 					<div class="extranet_btn"><div class="r">
-						<input type="submit" name="extranet_register" class="extranet_submit i" value="[cms:phrase code='_REGISTER'/]" />
+						<input type="submit" name="extranet_register" class="extranet_submit i" value="[cms:merge name='Register_Button_Text'/]" />
 					</div></div>
 				</div>
 				<div class="extranet_links">
 					[cms:section name="Login_Link_Section"]
-						<div><a [cms:merge name='Login_Link'/]>[cms:phrase code="_LOGIN"/]</a></div>
+						<div><a [cms:merge name='Login_Link'/]>[cms:merge name="Go_Back_To_Login_Text"/]</a></div>
 					[/cms:section]
 				</div>
 			[/cms:section]

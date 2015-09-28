@@ -115,12 +115,3 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
-                
-                cookie_domain:
-                    ord: 200
-                    site_setting:
-                        name: cookie_domain
-                    label: 'Share cookies across subdomains:'
-                    type: select
-                    empty_value: 'Cookies are not shared across subdomains'
-                    values: {}

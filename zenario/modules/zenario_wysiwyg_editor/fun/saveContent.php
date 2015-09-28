@@ -49,7 +49,7 @@ if (!checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
 	$v = array();
 	$v['last_modified_datetime'] = now();
 	$v['last_author_id'] = session('admin_userid');
-	updateRow('versions', $v, array('id' => cms_core::$cID, 'type' => cms_core::$cType, 'version' => cms_core::$cVersion));
+	updateRow('content_item_versions', $v, array('id' => cms_core::$cID, 'type' => cms_core::$cType, 'version' => cms_core::$cVersion));
 
 	
 	if (post('_sync_summary') && !$this->summaryLocked($this->cID, $this->cType, $this->cVersion)) {

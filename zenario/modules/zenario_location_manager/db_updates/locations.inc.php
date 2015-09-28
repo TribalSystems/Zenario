@@ -400,11 +400,11 @@ _sql
 
 , <<<_sql
 	UPDATE [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations
-	INNER JOIN [[DB_NAME_PREFIX]]content
-	ON [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_item_id = [[DB_NAME_PREFIX]]content.id
-	AND [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_item_type = [[DB_NAME_PREFIX]]content.type
-	SET [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.equiv_id = [[DB_NAME_PREFIX]]content.equiv_id,
-	[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_type = [[DB_NAME_PREFIX]]content.type
+	INNER JOIN [[DB_NAME_PREFIX]]content_items
+	ON [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_item_id = [[DB_NAME_PREFIX]]content_items.id
+	AND [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_item_type = [[DB_NAME_PREFIX]]content_items.type
+	SET [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.equiv_id = [[DB_NAME_PREFIX]]content_items.equiv_id,
+	[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations.content_type = [[DB_NAME_PREFIX]]content_items.type
 _sql
 
 );	revision( 85
@@ -425,7 +425,7 @@ _sql
 	UPDATE 
 		`[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations` l
 	INNER JOIN 
-		`[[DB_NAME_PREFIX]]content` c
+		`[[DB_NAME_PREFIX]]content_items` c
 	ON
 			l.equiv_id = c.id
 		AND l.content_type = c.type

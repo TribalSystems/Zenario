@@ -4,7 +4,7 @@ require CMS_ROOT . 'zenario/adminheader.inc.php';
 require 'tree_explorer.fun.php';
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 $levelNodesCount = array();
 

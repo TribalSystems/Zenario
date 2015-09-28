@@ -2,11 +2,15 @@
 /*  Note that this file is used by the function lookupExistingCMSTables()
     to work out which tables are part of the CMS!  */
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_setting_defaults`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]categories`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]category_item_link`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]centralised_lists`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]characteristic_user_link`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_cache`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_items`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_item_versions`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_types`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_field_values`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_fields`;
@@ -73,6 +77,7 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_content_link`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_form_fields`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_forms`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_signin_log`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_sync_log`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users_custom_data`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]versions`;

@@ -50,7 +50,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	protected function openEditor() {
 		//$text = str_replace(array(" ", "\n", "\r", "\t", ""), '', strip_tags($this->setting('html')));
 		$text = $this->setting('html');
-		$summary = trim(strip_tags(getRow('versions', 'content_summary', array('id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion))));
+		$summary = trim(strip_tags(getRow('content_item_versions', 'content_summary', array('id' => $this->cID, 'type' => $this->cType, 'version' => $this->cVersion))));
 		$summaryMatches =
 			$summary == trim(strip_tags($text))
 		 || $summary == trim(strip_tags(zenario_wysiwyg_editor::generateSummary($text)));
@@ -83,7 +83,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 					if ($this->summaryLocked($box['key']['cID'], $box['key']['cType'], $box['key']['cVersion'])) {
 						$box['tabs']['first_tab']['fields']['sync_summary']['hidden'] = true;
 					} else {
-						$summary = trim(strip_tags(getRow('versions', 'content_summary',
+						$summary = trim(strip_tags(getRow('content_item_versions', 'content_summary',
 										array('id' => $box['key']['cID'], 'type' => $box['key']['cType'], 'version' => $box['key']['cVersion']))));
 						
 						$box['tabs']['first_tab']['fields']['sync_summary']['value'] =
@@ -153,11 +153,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 	protected function summaryLocked($cID, $cType, $cVersion) {
 		return
 			!getRow('content_types', 'enable_summary_auto_update', $cType)
-		 || getRow('versions', 'lock_summary', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		 || getRow('content_item_versions', 'lock_summary', array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	}
 	
 	protected function syncSummary($cID, $cType, $cVersion, $html) {
-		setRow('versions', array('content_summary' => $html), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		setRow('content_item_versions', array('content_summary' => $html), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 	}
 	
 	

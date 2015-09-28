@@ -33,17 +33,14 @@
 			</div>
 		</div>
 
-		<div class="viewMode toolbar firstToolbar">
-			<div
-				style="display: none;"
-				id="organizer_switch_view"
-				data-step="5" data-position="down" data-intro="
-					{{'<p><strong>Switch view</strong></p><p>This allows you to view items in the panel in a different view.</p>'|escape}}
-				"
-			>
-				<a></a>
-			</div>
-		</div>
+		<div
+			style="display: none;"
+			id="organizer_switch_view_wrap"
+			class="viewMode toolbar firstToolbar"
+			data-step="5" data-position="down" data-intro="
+				{{'<p><strong>Switch view</strong></p><p>This allows you to view items in the panel in a different view.</p>'|escape}}
+			"
+		></div>
 		
 		<% if (m.quickFilters && m.quickFilters.length) { %>
 			<div id="organizer_quickFilter">

@@ -26,6 +26,7 @@ zenario__content:
                 columns:
                     id:
                         title: ID
+                        format: id
                         searchable: Yes
                         db_column: ud.id
                         show_by_default: false

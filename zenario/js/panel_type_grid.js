@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -359,6 +359,7 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 			items: [],
 			columns: [],
 			totalWidth: 0,
+			canClickThrough: false,
 			maxNumberOfInlineButtons: 0,
 			allItemsSelected: zenarioO.allItemsSelected()
 		};
@@ -430,7 +431,9 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 		data.pageCount = zenarioO.pageCount;
 		data.itemCount = zenarioO.searchMatches;
 		
-		var firstRow = 'firstrow ';
+		var canClickThrough,
+			firstRow = 'firstrow ';
+		
 		foreach (zenarioO.searchedItems as var itemNo => var i) {
 			itemsExist = true;
 			
@@ -446,12 +449,16 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 				continue;
 			}
 			
+			if (canClickThrough = !!zenarioO.itemClickThroughLink(i)) {
+				data.canClickThrough = true;
+			}
+			
 			row = {
 				id: i,	//Using "[[id]]" in your microtemplates should both html and js escape this
 				cells: [],
 				tuix: this.tuix.items[i],
 				open_in_inspection_view: zenarioO.inspectionView && i == zenarioO.inspectionViewItem,
-				canClickThrough: !!zenarioO.itemClickThroughLink(i),
+				canClickThrough: canClickThrough,
 				showCheckbox: window.zenarioOSelectMode || itemButtonsExist,
 				//canDrag: zenarioO.changingHierarchyView && !engToBoolean(this.tuix.items[i].disable_reorder),
 				label: zenarioO.applySmallSpaces($.trim(zenarioO.applyMergeFields(labelFormat, false, i, true))).replace(/\n/g, '<br/>'),

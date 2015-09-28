@@ -77,7 +77,7 @@ if (empty($_GET) && empty($_POST)) {
 	if ($_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. 'index.php' || $_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. indexDotPHP()) {
 		if (($alias = ifNull(get('cID'), get('id')))
 		 && !is_numeric($alias)
-		 && (!checkRowExists('content', array('alias' => $alias)))
+		 && (!checkRowExists('content_items', array('alias' => $alias)))
 		 && inc('zenario_pro_features')
 		 && ($spareAlias = getRow('spare_aliases', array('target_loc', 'content_id', 'content_type', 'ext_url'), array('alias' => $alias)))) {
 			

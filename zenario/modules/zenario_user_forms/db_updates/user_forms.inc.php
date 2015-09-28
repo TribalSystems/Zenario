@@ -125,4 +125,33 @@ revision (22
 _sql
 
 
+); revision (25
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`
+_sql
+
+,<<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]form_field_update_link`(
+		`source_field_id` int(10) unsigned NOT NULL,
+		`target_field_id` int(10) unsigned NOT NULL,
+		PRIMARY KEY (`source_field_id`, `target_field_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+); revision( 26
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ADD COLUMN blocked_by_profanity_filter BOOLEAN NOT NULL DEFAULT 0
+_sql
+
+); revision( 27
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
+	ADD COLUMN profanity_filter_score INT NOT NULL DEFAULT 0,
+	ADD COLUMN profanity_tolerance_limit INT NOT NULL DEFAULT 0
+_sql
+
 );

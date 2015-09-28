@@ -27,10 +27,9 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 if (cms_core::$canCache 
  && isset($chToLoadStatus)
- && setting('compress_web_pages') && setting('cache_web_pages')
+ && setting('caching_enabled') && setting('cache_web_pages')
  && (!($pageType = isSpecialPage(cms_core::$cID, cms_core::$cType))
    || ($pageType != 'zenario_not_found' && $pageType != 'zenario_no_access'))) {
 	

@@ -74,10 +74,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) {
 }
 
 
-if (!isset($_SESSION)) {
-	session_start();
-}
-
 require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
 require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 
@@ -104,4 +100,20 @@ if (!checkPriv()) {
 		header('location: '. httpOrHttps(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'zenario/admin/welcome.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
 		exit;
 	}
+
+} else {
+	
+	//Load the current admin's settings
+	foreach (getRowsArray('admin_setting_defaults', 'default_value', array()) as $adminSettingName => $adminSettingDefaultValue) {
+		cms_core::$adminSettings[$adminSettingName] = $adminSettingDefaultValue;
+	}
+	
+	foreach (getRowsArray('admin_settings', array('name', 'value'), array('admin_id' => adminId())) as $adminSetting) {
+		if (chopPrefixOffOfString($adminSetting['name'], 'COOKIE_ADMIN_SECURITY_CODE_') === false) {
+			cms_core::$adminSettings[$adminSetting['name']] = $adminSetting['value'];
+		}
+	}
+	unset($adminSetting);
+	unset($adminSettingName);
+	unset($adminSettingDefaultValue);
 }

@@ -64,7 +64,7 @@ class zenario_common_features__admin_boxes__trash extends module_base_class {
 				   ON pi.id = ps.instance_id
 				INNER JOIN ". DB_NAME_PREFIX. "modules AS m
 				   ON m.id = pi.module_id
-				LEFT JOIN ". DB_NAME_PREFIX. "content AS c
+				LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
 				   ON pi.content_id = c.id AND pi.content_type = c.type
 				WHERE foreign_key_to = 'content'
 				  AND foreign_key_id = ".(int)$cID."

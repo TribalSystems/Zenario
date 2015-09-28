@@ -18,6 +18,7 @@ zenario__content:
             
             #panel_type: grid_or_list
             panel_type: images_with_tags_or_grid
+            use_tall_rows: true
             
             grid_view_microtemplate: zenario_grid_view_image
             slidedown_view_microtemplate: zenario_slidedown_view_image
@@ -314,6 +315,18 @@ zenario__content:
                     label: Duplicate file names
                     column: duplicate_filename
                     value: 1
+                
+                clear_all_usage:
+                    ord: 100
+                    parent: usage_dropdown
+                    label: Clear all
+                    clear_all: true
+                
+                clear_all_tags:
+                    ord: 99999
+                    parent: tags
+                    label: Clear all
+                    clear_all: true
             
             
             item:
@@ -336,14 +349,6 @@ zenario__content:
                     label: Manage tags
                     link:
                         path: zenario__content/panels/image_tags
-            inline_buttons:
-                view:
-                    css_class: inspect
-                    tooltip: View image
-                    popout:
-                        href: zenario/file.php
-                        options:
-                            type: image
             item_buttons:
                 edit:
                     label: Properties

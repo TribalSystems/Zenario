@@ -94,7 +94,8 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 		html += '/>\
 			</a>';
 		if (!mobileMode) {
-			if (slide.slide_title || slide.slide_extra_html) {
+			// Add text to slide
+			if (slide.slide_title || slide.slide_extra_html || ((slide.target_loc != 'none') && slide.slide_more_link_text)) {
 				html += '<div class="content_container"';
 				if (parseInt(slide.use_transition_code) && slide.transition_code) {
 					try {
@@ -110,8 +111,17 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 				if (slide.slide_extra_html) {
 					html += '<div class="slide_extra_html">'+slide.slide_extra_html+'</div>';
 				}
+				if ((slide.target_loc != 'none') && slide.slide_more_link_text) {
+					html += '<div class="slide_more_link_text"><a href="'+slide.dest_url+'" ';
+					if (parseInt(slide.open_in_new_window)) {
+						html += 'target="_blank"';
+					}
+					html += '>' + slide.slide_more_link_text
+					html += '</a></div>';
+				}
 				html += '</div>';
 			}
+		// Add text to mobile slide
 		} else if (slide.mobile_slide_title || slide.mobile_slide_extra_html) {
 			html += '<div class="mobile_content_container">';
 			if (slide.mobile_slide_title) {
@@ -128,6 +138,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 	html += '</div>'
 	
 	if (!mobileMode) {
+		// Add arrow buttons
 		if (settings.enable_arrow_buttons) {
 			html += '<span u="arrowleft" class="arrowl"></span>\
 					 <span u="arrowright" class="arrowr"></span>';
@@ -136,6 +147,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 				$ChanceToShow: 2
 			}
 		}
+		// Add bullet navigator
 		if (settings.navigation_style == 'bullet_navigator') {
 			html += '<div u="navigator" class="bullet">\
 						 <div u="prototype"></div>\
@@ -144,6 +156,7 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
 				$Class: $JssorBulletNavigator$,
 				$ChanceToShow: 2
 			};
+		// Add thumbnail navigator
 		} else if (settings.navigation_style == 'thumbnail_navigator') {
 			html += '<div u="thumbnavigator" class="tab">\
 						<div u="slides" style="cursor: move;">\

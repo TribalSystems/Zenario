@@ -70,18 +70,19 @@ switch ($path) {
 			$imagePicked = (bool) $imageId;
 		}
 		
-		/* Force link_type */
-		$box['tabs']['first_tab']['fields']['link_type']['hidden'] = false;
-		if (($values['first_tab/image_source'] == '_NO_IMAGE') || ($values['first_tab/image_source'] == '_STICKY_IMAGE')){
+		
+		if (!empty($box['tabs']['first_tab']['fields']['link_type']['values'])) {
 			
-			//force use link to content item
+			$onlyShowLinkToContent = false;
 			if ($values['first_tab/image_source'] == '_STICKY_IMAGE'){
 				$values['first_tab/link_type'] = '_CONTENT_ITEM';
-				$box['tabs']['first_tab']['fields']['link_type']['hidden'] = true;
+				$onlyShowLinkToContent = true;
 			}
 			
+			$box['tabs']['first_tab']['fields']['link_type']['values']['_NO_LINK']['hidden'] =
+			$box['tabs']['first_tab']['fields']['link_type']['values']['_EXTERNAL_URL']['hidden'] = $onlyShowLinkToContent;
+			
 		}
-		/* end force link_type */
 		
 		$box['tabs']['first_tab']['fields']['canvas']['hidden'] = 
 		$box['tabs']['first_tab']['fields']['alt_tag']['hidden'] = 
@@ -176,7 +177,8 @@ switch ($path) {
 
 		$box['tabs']['first_tab']['fields']['use_translation']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
-		 || $box['key']['isVersionControlled'];
+		 || $box['key']['isVersionControlled']
+		 || getNumLanguages() < 2;
 
 		$box['tabs']['first_tab']['fields']['url']['hidden'] = 
 			$values['first_tab/link_type'] != '_EXTERNAL_URL';

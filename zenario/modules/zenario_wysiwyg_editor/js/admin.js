@@ -144,7 +144,7 @@ directionality	ltr rtl
 			{title: 'Table row 1', selector: 'tr', classes: 'tablerow1'}
 		],*/
 		
-		file_browser_callback: zenario_wysiwyg_editor.SK,
+		file_browser_callback: zenarioA.fileBrowser,
 		
 		init_instance_callback: function(instance) {
 			zenarioA.enableDragDropUploadInTinyMCE(true, '', containerId);
@@ -165,6 +165,8 @@ directionality	ltr rtl
 	window.zenarioEditorCancel = function(editor) {
 		zenario_wysiwyg_editor.close(get(editor.id));
 	};
+	
+	zenario_wysiwyg_editor.startPoking();
 }
 
 zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice) {
@@ -227,75 +229,7 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	}
 }
 
-/*
-	fileBrowserCallback(
-						self.getEl('inp').id,
-						self.getEl('inp').value,
-						settings.filetype,
-						window
-					);
-*/
-zenario_wysiwyg_editor.SK = function(field_name, url, type, win) {
-	
-	zenario_wysiwyg_editor.win = win;
-	zenario_wysiwyg_editor.field_name = field_name;
-	
-	if (type == 'file') {
-		zenarioA.organizerSelect('zenario_wysiwyg_editor', 'setLinkURL', false,
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						'zenario__content/panels/content',
-						false, undefined, undefined, undefined, true);
-	
-	} else if (type == 'image') {
-		zenarioA.organizerSelect('zenario_wysiwyg_editor', 'setImageURL', false,
-						'zenario__content/panels/content/item_buttons/images//' + zenario_wysiwyg_editor.cType + '_' + zenario_wysiwyg_editor.cID + '//',
-						'zenario__content/panels/inline_images_for_content',
-						'zenario__content/panels/inline_images_for_content',
-						'zenario__content/panels/inline_images_for_content',
-						true, undefined, undefined, undefined, true);
-	}
-}
 
-zenario_wysiwyg_editor.lastFieldValue = '';
-zenario_wysiwyg_editor.setEditorField = function(value, el, onlyIfEmpty) {
-	if (el === undefined) {
-		el = zenario_wysiwyg_editor.win.document.getElementById(zenario_wysiwyg_editor.field_name);
-	}
-	
-	if (onlyIfEmpty) {
-		if (el.value !== '' && el.value != zenario_wysiwyg_editor.lastFieldValue) {
-			return;
-		}
-		zenario_wysiwyg_editor.lastFieldValue = value;
-	}
-	
-	el.value = value;
-	zenario.fireChangeEvent(el);
-}
-
-zenario_wysiwyg_editor.setLinkURL = function(path, key, row) {
-	//Get the URL via an AJAX program
-	key.getItemURL = 1;
-	var URL = zenario.moduleNonAsyncAJAX('zenario_common_features', key, true);
-	
-	zenario_wysiwyg_editor.setEditorField(row.title, $('.mce-panel input.mce-link_text_to_display')[0], true);
-	zenario_wysiwyg_editor.setEditorField(URL);
-}
-
-zenario_wysiwyg_editor.setImageURL = function(path, key, row) {
-	var imageURL = 'zenario/file.php?c=' + row.checksum + '&filename=' + encodeURIComponent(row.filename);
-	
-	zenario_wysiwyg_editor.setEditorField(row.alt_tag, $('.mce-panel input.mce-image_alt')[0]);
-	zenario_wysiwyg_editor.setEditorField(imageURL);
-}
-
-zenario_wysiwyg_editor.setFlashURL = function(path, key, row) {
-	var flashURL = 'zenario/file.php?c=' + row.checksum + '&filename=' + encodeURIComponent(row.filename);
-	
-	zenario_wysiwyg_editor.setEditorField(flashURL);
-}
 
 zenario_wysiwyg_editor.close = function(el) {
 
@@ -310,12 +244,32 @@ zenario_wysiwyg_editor.close = function(el) {
 }
 
 zenario_wysiwyg_editor.doClose = function(slotName) {
+	zenario_wysiwyg_editor.stopPoking();
+	
 	$('#zenario_editor_toolbar').html('').hide();
 	zenario_wysiwyg_editor.refreshPluginSlot(slotName, undefined, false);
 	
 	//Reload the Admin Toolbar
 	zenarioAT.init();
 }
+
+
+zenario_wysiwyg_editor.stopPoking = function() {
+	if (zenario_wysiwyg_editor.poking) {
+		clearInterval(zenario_wysiwyg_editor.poking);
+	}
+	zenario_wysiwyg_editor.poking = false;
+};
+
+zenario_wysiwyg_editor.startPoking = function() {
+	if (!zenario_wysiwyg_editor.poking) {
+		zenario_wysiwyg_editor.poking = setInterval(zenario_wysiwyg_editor.poke, 2 * 60 * 1000);
+	}
+};
+
+zenario_wysiwyg_editor.poke = function() {
+	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
+};
 
 	
 

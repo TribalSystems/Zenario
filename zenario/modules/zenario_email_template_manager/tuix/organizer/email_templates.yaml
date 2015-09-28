@@ -8,16 +8,23 @@ zenario__email_template_manager:
             item:
                 css_class: zenario_email_template_panel
             db_items:
-                table: '[[DB_NAME_PREFIX]]email_templates as T'
+                table: |
+                    [[DB_NAME_PREFIX]]email_templates as T
+                    LEFT JOIN [[DB_NAME_PREFIX]]modules as M
+                        ON T.module_class_name = M.class_name
                 id_column: T.code
             default_sort_column: template_name
             label_format_for_picked_items: '[[template_name]] (ID[[layout_id]])'
             no_items_message: >
                 There are no email templates. Most modules that send emails will
                 create email templates when they are installed.
+            refiners:
+                module:
+                    sql: M.id = [[REFINER_ID]]
             columns:
                 layout_id:
                     title: ID
+                    format: id
                     db_column: T.id
                     searchable: Yes
                     show_by_default: Yes
@@ -96,6 +103,16 @@ zenario__email_template_manager:
                     format: datetime
                     empty_value: Never used
                     width: small
+                body_extract:
+                    title: Body extract
+                    db_column: body
+                    width: xxlarge
+                    show_by_default: true
+                module_name:
+                    title: Module created by
+                    db_column: M.display_name
+                    show_by_default: true
+                    
             collection_buttons:
                 create_template:
                     priv: _PRIV_MANAGE_EMAIL_TEMPLATE

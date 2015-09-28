@@ -38,6 +38,7 @@ class zenario_html_snippet extends module_base_class {
 	protected $mergeFields = array();
 	protected $sections = array();
 	protected $empty = false;
+	protected $raw_html = '';
 	
 	//When the plugin is set up, also get the content item's status and the content section to display
 	function init() {

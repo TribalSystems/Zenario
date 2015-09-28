@@ -2,7 +2,7 @@
 
 
 if (!empty($_REQUEST['compress']) && !empty($_REQUEST['data'])) {
-	require '../../cacheheader.inc.php';
+	require '../../basicheader.inc.php';
 	echo strtr(base64_encode(
 			gzcompress($_REQUEST['data'])
 		), ' +/=', '~-_,');
@@ -20,7 +20,7 @@ if (!empty($_REQUEST['compress']) && !empty($_REQUEST['data'])) {
 
 } elseif (!empty($_GET['thumbnail'])) {
 
-	require '../../cacheheader.inc.php';
+	require '../../basicheader.inc.php';
 
 	//If a checksum was given, we can cache this file
 	if (!empty($_GET['checksum'])) {
@@ -262,7 +262,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 								sqlUpdate($sql);
 								
 								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "versions AS v
+									UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
 									INNER JOIN ".  DB_NAME_PREFIX. "plugin_instances AS pi
 									   ON pi.content_id = v.id
 									  AND pi.content_type = v.type
@@ -273,7 +273,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 								sqlUpdate($sql);
 								
 								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "versions AS v
+									UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
 									INNER JOIN ".  DB_NAME_PREFIX. "plugin_item_link AS pil
 									   ON pil.content_id = v.id
 									  AND pil.content_type = v.type
@@ -386,7 +386,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 			
 			//require_once(CMS_ROOT. 'zenario/adminheader.inc.php');
 			//checkForChangesInCssJsAndHtmlFiles();
-			//$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+			//$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 			
 			echo
 			'<!DOCTYPE HTML>

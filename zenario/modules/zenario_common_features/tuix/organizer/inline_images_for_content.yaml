@@ -10,9 +10,9 @@ zenario__content:
             db_items:
                 table: |
                     (SELECT 1) as dummy
-                    INNER JOIN [[DB_NAME_PREFIX]]content AS c
+                    INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
                        ON c.tag_id = [[REFINER__CONTENT]]
-                    INNER JOIN [[DB_NAME_PREFIX]]versions AS v
+                    INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS v
                        ON v.id = c.id
                       AND v.type = c.type
                       AND v.version = c.admin_version
@@ -180,7 +180,7 @@ zenario__content:
                             message: |
                                 When an image is sticky, it can appear automatically in banners, content summary lists and other managed links to its content item.
                                 
-                                Only one of the images of a content item can be sticky.
+                                Only one of the images attached to a content item can be sticky.
                                 
                                 Make the image "[[filename]]" sticky?
                             button_message: Make sticky

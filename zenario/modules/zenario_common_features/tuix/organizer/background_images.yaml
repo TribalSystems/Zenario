@@ -56,7 +56,7 @@ zenario__content:
                 #    db_column: |
                 #        (
                 #            SELECT COUNT(DISTINCT )
-                #            FROM [[DB_NAME_PREFIX]]versions
+                #            FROM [[DB_NAME_PREFIX]]content_item_versions
                 #            WHERE ...
                 #        )
                 #    show_by_default: Yes

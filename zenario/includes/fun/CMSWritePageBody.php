@@ -49,8 +49,8 @@ if (cms_core::$userId) {
 }
 
 $toolbarAttr = '';
-if ($includeAdminToolbar && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') === false) {
-	//Make the Admin Toolbar float above the page, except in IE 6 which doesn't support the CSS.
+if ($includeAdminToolbar) {
+	//Make the Admin Toolbar float above the page.
 	$attributes .= ' style="margin-top: 129px;"';
 	$toolbarAttr = ' style="height: 129px; width: 100%; position: fixed; top: 0px; left: 0px; margin: 0px; z-index: 1000;"';
 }

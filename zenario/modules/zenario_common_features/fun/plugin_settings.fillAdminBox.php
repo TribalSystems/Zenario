@@ -27,7 +27,6 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
 if (get('refiner__nest')) {
 	$box['key']['instanceId'] = get('refiner__nest');
 	$box['key']['nest'] = (int) get('id');
@@ -78,17 +77,6 @@ if ($box['key']['isVersionControlled']) {
 		exitIfNotCheckPriv('_PRIV_VIEW_REUSABLE_PLUGIN');
 	} else {
 		exitIfNotCheckPriv('_PRIV_MANAGE_REUSABLE_PLUGIN');
-	}
-}
-
-//For Nests and nested Plugins, if this is an existing instance or a Wireframe Plugin on a draft, enable the save and continue button
-if ($box['key']['instanceId']
- && (empty($instance['content_id']) || isDraft($instance['content_id'], $instance['content_type'], $instance['content_version']))) {
-	
-	if ($box['key']['nest']
-	 || (($nestablemoduleIds = getNestablemoduleIds()) && (!empty($nestablemoduleIds[$box['key']['moduleId']])))) {
-		$box['save_button_message'] = adminPhrase('Save & Close');
-		$box['save_and_continue_button_message'] = adminPhrase('Save & Continue');
 	}
 }
 
@@ -227,10 +215,27 @@ switch ($path) {
 				adminPhrase('Creating a plugin of the "[[module]]" module',
 					array('module' => htmlspecialchars(getModuleDisplayName($box['key']['moduleId']))));
 		}
+		
+		// Get modules description file
+		$moduleDescription = "No module decription found for this plugin.";
+		$path = moduleDescriptionFilePath($module['class_name']);
+		
+		$tags = zenarioReadTUIXFile(CMS_ROOT . $path);
+		if ($tags && isset($tags['description']) && $tags['description']) {
+			$moduleDescription = $tags['description'];
+			
+		//check inheritance 
+		} else if ($tags && isset($tags['inheritance']['inherit_description_from_module']) && $tags['inheritance']['inherit_description_from_module']) {
+			$path = moduleDescriptionFilePath($tags['inheritance']['inherit_description_from_module']);
+			$tags = zenarioReadTUIXFile(CMS_ROOT . $path);
+			if ($tags && isset($tags['description']) && $tags['description']) {
+				$moduleDescription = $tags['description'];
+			}
+		}
+		$fields['last_tab/module_description']['snippet']['html'] = 
+			'<div class="module_description">' . $moduleDescription . '</div>';
+		
 		break;
-
-
-	
 	
 	case 'plugin_css_and_framework':
 		

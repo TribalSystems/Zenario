@@ -275,7 +275,7 @@ Link: [[link]]', $note);
 	}
 
 	protected static function getContentFieldsForEmail($cID, $cType, $cVersion) {
-		$record = getRow('versions', array('tag_id', 'title'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+		$record = getRow('content_item_versions', array('tag_id', 'title'), array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 		self::insertFieldsForEmail($record);
 		$url = $record['url'];
 		$record['hyperlink'] = linkToItem($cID, $cType, $fullPath = true, $request = '&cVersion=' . $cVersion);

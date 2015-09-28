@@ -42,11 +42,11 @@ if ($error) {
 	if ($changeButtonHTML) {
 		echo '<!--Button_HTML:<input type="button" class="submit" value="', adminPhrase('OK'), '" onclick="zenarioO.reloadPage(\'zenario__languages/panels/languages\');"/>-->';
 	}
-	echo adminPhrase("Language Pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
+	echo adminPhrase("Language pack imported. [[added]] phrase(s) were added and [[updated]] phrase(s) have been updated. [[protected]] phrase(s) were protected and not overwritten.", $numberOf);
 	
 } else {
 	echo '<!--Message_Type:Warning-->';
-	echo '<strong>', adminPhrase("No Phrases were Imported."), '</strong>';
+	echo adminPhrase("No phrases were imported.");
 	
 	if ($numberOf['protected'] > 0) {
 		echo adminPhrase(" [[protected]] phrase(s) were protected and not overwritten.", $numberOf);

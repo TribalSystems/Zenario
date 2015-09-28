@@ -32,7 +32,7 @@ $content = '';
 
 
 //Add images linked via Version Controlled modules
-$fileIdsInPlugins = array();
+$fileIds = array();
 $sql = "
 	SELECT ps.value
 	FROM ". DB_NAME_PREFIX. "plugin_instances AS pi
@@ -45,34 +45,27 @@ $sql = "
 	  AND pi.content_version = ". (int) $cVersion;
 $result = sqlQuery($sql);
 
-while ($fileIds = sqlFetchRow($result)) {
-	if ($fileIds = explode(',', $fileIds[0])) {
-		foreach ($fileIds as $fileId) {
+while ($fileIdsInPlugin = sqlFetchRow($result)) {
+	if ($fileIdsInPlugin = explode(',', $fileIdsInPlugin[0])) {
+		foreach ($fileIdsInPlugin as $fileId) {
 			if ($fileId = (int) trim($fileId)) {
-				$fileIdsInPlugins[$fileId] = $fileId;
+				$fileIds[$fileId] = $fileId;
 			}
 		}
 	}
 }
 
-//Do a quick check to see if all of those ids exist, only add the ones in the database!
-if (!empty($fileIdsInPlugins)) {
-	$sql = "
-		SELECT f.id
-		FROM ". DB_NAME_PREFIX. "files AS f
-		WHERE f.id IN (". inEscape($fileIdsInPlugins, 'numeric'). ")";
-	$result = sqlQuery($sql);
-	while ($file = sqlFetchAssoc($result)) {
-		$fileId = $file['id'];
-		$files[$fileId] = array('id' => $fileId);
-	}
-}
-
-
 //Note down the sticky image for this Content Item, if there is one
-if ($fileId = getRow('versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion))) {
-	$files[$fileId] = array('id' => $fileId);
+if ($fileId = getRow('content_item_versions', 'sticky_image_id', array('id' => $cID, 'type' => $cType, 'version' => $cVersion))) {
+	$fileIds[$fileId] = $fileId;
 }
+
+//Do a quick check to see if all of those ids exist, only add the ones in the database!
+if (!empty($fileIds)) {
+	$files = getRowsArray('files', array('id', 'usage', 'privacy'), array('id' => $fileIds));
+}
+
+
 
 
 //Get each content area (which will have been converted into HTML snippets)
@@ -116,3 +109,25 @@ syncInlineFiles(
 //Update the Content in the cache table
 $text = trim(strip_tags($content));
 setRow('content_cache', array('text' => $text, 'text_wordcount' => str_word_count($text)), array('content_id' => $cID, 'content_type' => $cType, 'content_version' => $cVersion));
+
+
+//Fix for T10031, Images in WYSIWYG Editors staying on "will auto detect" in the image library
+//Look through any of the images used on this content item that are still set to auto-detect,
+//and set them to either public or private (depending on this item's privacy setting) when
+//the content item is published.
+if ($publishing && !empty($files)) {
+	$citemPrivacy = getRow('translation_chains', 'privacy', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
+	
+	if ($citemPrivacy == 'public') {
+		$privacy = 'public';
+	} else {
+		$privacy = 'private';
+	}
+	
+	foreach ($files as $fileId => $file) {
+		if ($file['usage'] == 'image'
+		 && $file['privacy'] == 'auto') {
+			updateRow('files', array('privacy' => $privacy), $fileId);
+		}
+	}
+}

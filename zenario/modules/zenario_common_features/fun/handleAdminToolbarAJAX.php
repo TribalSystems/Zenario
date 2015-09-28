@@ -30,20 +30,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //Requests for Menu Nodes
 if (request('mID') && post('menu_item')) {
-	if (post('make_primary') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
-		$submission = array(
-			'content_id' => $cID,
-			'target_loc' => 'int',
-			'content_type' => $cType,
-			'redundancy' => 'primary');
-		saveMenuDetails($submission, request('mID'));
-		$_SESSION['page_toolbar'] = 'menu1';
+	//Most of the logic for Menu Nodes is already included for Storekeeper, so include those functions
+	$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', request('mID'), $ids, false, false);
 	
-	} else {
-		//Most of the logic for Menu Nodes is already included for Storekeeper, so include those functions
-		$this->handleOrganizerPanelAJAX('zenario__menu/panels/menu_nodes', request('mID'), $ids, false, false);
+	if (post('make_primary') && checkPriv('_PRIV_EDIT_MENU_ITEM')) {
+		$_SESSION['page_toolbar'] = 'menu1';
 	}
-
 } elseif (post('rollback')) {
 	$cVersionTo = false;
 	createDraft($cID, $cID, $cType, $cVersionTo, $cVersion);

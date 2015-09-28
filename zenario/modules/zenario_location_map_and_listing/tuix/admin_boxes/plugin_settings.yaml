@@ -17,7 +17,7 @@ plugin_settings:
                         name: filter_by_country
                     type: checkbox
                     label: 'Filter by country'
-                    note_below: |
+                    side_note: |
                         Shows a drop-down list of countries. When a visitor selects a country,
                         only that country's locations will be shown.
                     redraw_onchange: true
@@ -34,7 +34,7 @@ plugin_settings:
                         target_path: zenario__languages/panels/countries
                     validation:
                         required_if_not_hidden: 'Please select a default country'
-                    note_below: |
+                    side_note: |
                         If the GeoIP Lookup Module is running and the visitor is in one of the
                         countries in the list, the country they are in will be used instead
                         of this default value.
@@ -43,7 +43,7 @@ plugin_settings:
                         name: list_by_field
                     type: checkbox
                     label: 'List by checkbox-type field(s)'
-                    note_below: |
+                    side_note: |
                         You can select up to three checkbox-type fields from the location dataset
                         to group the listings.
                         If you select one field, it will act as a filter - only locations with that field set
@@ -114,6 +114,59 @@ plugin_settings:
                         name: allow_scrolling
                     type: checkbox
                     label: 'Allow scrolling'
-                    note_below: |
+                    side_note: |
                         If this is checked, a visitor will be able to scroll the map using the
                         scroll-wheel on their mouse.
+                
+                enable_postcode_search:
+                    plugin_setting:
+                        name: enable_postcode_search
+                    label: Enable postcode search
+                    type: checkbox
+                    side_note: |
+                        Show a search box which a user can use to filter locations to those closest to a postcode.
+                    redraw_onchange: true
+                hide_locations_list_before_search:
+                    plugin_setting:
+                        name: hide_locations_list_before_search
+                    label: Hide locations list before search
+                    type: checkbox
+                    side_note: |
+                        You can hide the list of locations before a search is made in case the unfiltered list of locations is too long.
+                    visible_if: zenarioAB.value('enable_postcode_search')
+                search_result_count:
+                    plugin_setting:
+                        name: search_result_count
+                    label: 'Number of search results:'
+                    type: select
+                    values:
+                        1: 1
+                        2: 2
+                        3: 3
+                        4: 4
+                        5: 5
+                        10: 10
+                        25: 25
+                        50: 50
+                        unlimited: Unlimited
+                    value: 4
+                    visible_if: zenarioAB.value('enable_postcode_search')
+                search_result_distance:
+                    plugin_setting:
+                        name: search_result_distance
+                    label: Search result distance
+                    type: radios
+                    values:
+                        dont_show:
+                            ord: 1
+                            label: Don't show
+                        km: 
+                            ord: 1
+                            label: Show in Kilometers
+                        m: 
+                            ord: 1
+                            label: Show in Miles
+                    value: dont_show
+                    side_note: |
+                        After searching for a postcode, display a distance next to each result.
+                    visible_if: zenarioAB.value('enable_postcode_search')

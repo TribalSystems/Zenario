@@ -1,79 +1,110 @@
+<% if (m.id) { %>
 <form id="zenario_slide_settings_form">
 	<div id="zenario_main_image_details" class="zenario_slide_attributes_panel">
-	<div>
-		<div class="zenario_main_slide">
-			<img id="zenario_main_image_preview" src="{{m.image_src_thumbnail_1|e}}" alt="{{m.alt_tag|e}}" />
+		<div>
+			<div class="zenario_main_slide">
+				<img id="zenario_main_image_preview" src="{{m.image_src_thumbnail_1|e}}" alt="{{m.alt_tag|e}}" />
+			</div>
+			
+			<p id="zenario_main_image_dimensions">{{m.true_width|e}} x {{m.true_height|e}}</p>
+			
+			<div class="zenario_slide_settings_section zenario_slide_settings_choose_image">
+				<p>Desktop Image:</p>
+				<input type="text" name="filename" value="{{m.filename|e}}" size="50" readonly/> 
+				<button type="button" id="zenario_change_image">Change Image</button>
+			</div>
+			
+			<p>Alt-tag:</p>
+			<input type="text" name="overwrite_alt_tag" value="{{m.overwrite_alt_tag|e}}" size="40" maxlength="255"/>
+			
+			<% if (m.has_tabs) { %>
+				<p>Tab name</p>
+				<input type="text" name="tab_name" value="{{m.tab_name|e}}" size="50" maxlength="255"/>
+			<% } %>
+			
+			<p>Slide title:</p>
+			<input type="text" name="slide_title" value="{{m.slide_title|e}}" size="50" maxlength="255"/>
+			
+			<p>Description (HTML)</p>
+			<textarea name="slide_extra_html">{{m.slide_extra_html|e}}</textarea>
+			
+			<% if (m.slide_more_link_text) { %>
+				<p>More link text:</p>
+				<input type="text" name="slide_more_link_text" value="{{m.slide_more_link_text|e}}" size="50" maxlength="255"/>
+			<% } %>
+			
+			<br />
+			<input type="checkbox" name="use_transition_code" id="zenario_use_transition_code"
+				<% if (m.use_transition_code) { %>
+					checked="checked"
+				<% } %>
+			/>
+			<label for="zenario_use_transition_code">Use text transition</label> <span id="zenario_show_transition_box">Show</span>
 		</div>
-		
-		<p id="zenario_main_image_dimensions"></p>
-		
-		<div class="zenario_slide_settings_section zenario_slide_settings_choose_image">
-			<p>Desktop Image:</p>
-			<input type="text" name="filename" size="50" readonly/> 
-			<button type="button" id="zenario_change_image">Change Image</button>
-		</div>
-		
-		<p>Alt-tag:</p>
-		<input type="text" name="overwrite_alt_tag" id="zenario_overwrite_alt_tag" size="40"/>
-		
-		<div id="zenario_main_tab_name">
-			<p>Tab name</p>
-			<input type="text" name="tab_name" id="zenario_tab_name" size="50"/>
-		</div>
-		
-		<p>Slide title:</p>
-		<input type="text" name="slide_title" id="zenario_slide_title" size="50"/>
-		
-		<p>Description (HTML)</p>
-		<textarea name="slide_extra_html" id="zenario_slide_extra_html"></textarea>
-		<br />
-		<input type="checkbox" name="use_transition_code" id="zenario_use_transition_code"/>
-		Use text transition <span id="zenario_show_transition_box">Show</span>
-	</div>
 	</div>
 	
 	<div id="zenario_rollover_image_details" class="zenario_slide_attributes_panel" hidden>
 	<div>
 		<div class="zenario_rollover_slide">
-			
 			<img id="zenario_rollover_image_preview" src="{{m.rollover_image_src_thumbnail_1}}" alt="{{m.r_alt_tag}}" />
-			<p id="zenario_rollover_image_dimensions"></p>
+			<% if (m.rollover_image_id) { %>
+				<p id="zenario_rollover_image_dimensions">{{m.true_r_width|e}} x {{m.true_r_height|e}}</p>
+			<% } %>
 		</div>
-		<p>Rollover Image:</p>
-		<input type="text" id="zenario_rollover_filename" name="r_filename" size="50" readonly/>
-		<button type="button" id="zenario_change_rollover_image">Change Image</button>
-		<button type="button" id="zenario_remove_rollover_image">Remove</button>
-		<p>Alt-tag:</p>
-		<input type="text" name="rollover_overwrite_alt_tag" id="zenario_rollover_overwrite_alt_tag" size="40"/>
 		
+		<p>Rollover Image:</p>
+		<input type="text" name="r_filename" value="{{m.r_filename|e}}" size="50" readonly/>
+		<button type="button" id="zenario_change_rollover_image">
+			<% if (m.rollover_image_id) { %>
+				Change Image
+			<% } else { %>
+				Add Image
+			<% } %>
+		</button>
+		<% if (m.rollover_image_id) { %>
+			<button type="button" id="zenario_remove_rollover_image">Remove</button>
+		<% } %>
+		
+		<p>Alt-tag:</p>
+		<input type="text" name="rollover_overwrite_alt_tag" value="{{m.rollover_overwrite_alt_tag|e}}" size="40" maxlength="255"/>
 	</div>
 	</div>
 	
 	<div id="zenario_mobile_image_details" class="zenario_slide_attributes_panel" hidden>
 	<div>
 		<div class="zenario_mobile_slide">
-			
 			<img id="zenario_mobile_image_preview" src="{{m.mobile_image_src_thumbnail_1}}" alt="{{m.m_alt_tag}}"/>
-			<p id="zenario_mobile_image_dimensions"></p>
+			<% if (m.mobile_image_id) { %>
+				<p id="zenario_mobile_image_dimensions">{{m.true_m_width|e}} x {{m.true_m_height|e}}</p>
+			<% } %>
 		</div>
+		
 		<p>Mobile Image:</p>
-		<input type="text" id="zenario_mobile_filename" name="m_filename" size="50" readonly/>
-		<button type="button" id="zenario_change_mobile_image">Change Image</button>
-		<button type="button" id="zenario_remove_mobile_image">Remove</button>
+		<input type="text" name="m_filename" value="{{m.m_filename|e}}" size="50" readonly/>
+		<button type="button" id="zenario_change_mobile_image">
+			<% if (m.mobile_image_id) { %>
+				Change Image
+			<% } else { %>
+				Add Image
+			<% } %>
+		</button>
+		<% if (m.mobile_image_id) { %>
+			<button type="button" id="zenario_remove_mobile_image">Remove</button>
+		<% } %>
 		
 		<p>Alt-tag:</p>
-		<input type="text" name="mobile_overwrite_alt_tag" id="zenario_mobile_overwrite_alt_tag" size="40"/>
+		<input type="text" name="mobile_overwrite_alt_tag" value="{{m.mobile_overwrite_alt_tag|e}}" size="40" maxlength="255"/>
 		
-		<div id="zenario_mobile_tab_name">
+		<% if (m.has_tabs) { %>
 			<p>Tab name</p>
-			<input type="text" name="mobile_tab_name" id="zenario_tab_name" size="50"/>
-		</div>
+			<input type="text" name="mobile_tab_name" value="{{m.mobile_tab_name|e}}" size="50" maxlength="255"/>
+		<% } %>
 		
 		<p>Slide title</p>
-		<input type="text" name="mobile_slide_title" id="zenario_mobile_slide_title" size="50"/>
+		<input type="text" name="mobile_slide_title" value="{{m.mobile_slide_title|e}}" size="50" maxlength="255"/>
 		
 		<p>Description (HTML)</p>
-		<textarea name="mobile_slide_extra_html" id="zenario_mobile_slide_extra_html"></textarea>
+		<textarea name="mobile_slide_extra_html">{{m.mobile_slide_extra_html|e}}</textarea>
 		
 	</div>
 	</div>
@@ -88,41 +119,42 @@
 			<div id="zenario_slide_settings_inner">
 				<p>Link:</p>
 				<select id="zenario_select_link_type" name="target_loc">
-					<option value="none">Don't link</option>
-					<option value="internal">Internal - link to a content item</option>
-					<option value="external">External - link to a full URL</option>
+					{{zenarioA.microTemplate('zenario_slide_select_options', m.target_loc_list )}}
 				</select>
 				
 				<div id="zenario_internal_link_settings" hidden>
 					<p>Content item:</p>
-					<input id="zenario_content_item_link" name="content_item_link" type="text" readonly size="50"/>
-					<button type="button" id="zenario_select_content_item" onclick="zenario_slideshow_2.pickContentItemLinkFromOrganizer();">Select a content item...</button>
-					<input type="hidden" id="zenario_content_item_id" name="content_item_tag_id">
+					<input type="text" id="zenario_content_item_link" name="content_item_link" value="{{m.content_item_link|e}}" readonly size="50"/>
+					<input type="button" id="zenario_select_content_item" onclick="zenario_slideshow_2.pickContentItemLinkFromOrganizer();" value="Select a content item..."/>
+					<input type="hidden" id="zenario_content_item_id" name="content_item_tag_id" value="{{m.content_item_tag_id|e}}">
 				</div>
 				
 				<div id="zenario_external_link_settings" hidden>
 					<p>External URL:</p>
-					<input id="zenario_external_link" name="external_link" type="text" size="50"/>
+					<input type="text" id="zenario_external_link" name="external_link" value="{{m.external_link|e}}" size="50" maxlength="255"/>
 				</div>
 				
 				<div id="zenario_open_in_new_window_settings" hidden>
-					<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window"/>
-					Open in a new window
+					<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window" 
+						<% if (m.open_in_new_window) { %>
+							checked="checked"
+						<% } %>
+					/>
+					<label for="zenario_open_in_new_window">Open in a new window</label>
 				</div>
 				
 				<div id="zenario_link_to_translation_chain_settings" hidden>
-					<input type="checkbox" id="zenario_link_to_translation_chain" name="link_to_translation_chain"/>
-					Use translation chain
+					<input type="checkbox" id="zenario_link_to_translation_chain" name="link_to_translation_chain"
+						<% if (m.link_to_translation_chain) { %>
+							checked="checked"
+						<% } %>
+					/>
+					<label for="zenario_link_to_translation_chain">Use translation chain</label>
 				</div>
 				
 				<p>Slide visibility by user:</p>
 				<select id="zenario_select_slide_visibility" name="slide_visibility">
-					<option value="everyone">Everyone</option>
-					<option value="logged_in">Logged-in users</option>
-					<option value="logged_out">Anonymous visitors</option>
-					<option value="logged_in_with_field">Logged-in users with dataset field:</option>
-					<option value="logged_in_without_field">Logged-in users without dataset field:</option>
-					<option value="call_static_method">Call a module's static method (advanced)</option>
+					{{zenarioA.microTemplate('zenario_slide_select_options', m.slide_visibility_list )}}
 				</select>
 				
 				<div id="caching_message" class="caching_message" hidden">Caching will be disabled if slides aren't visible to everyone</div>
@@ -130,32 +162,36 @@
 				<div id="zenario_user_field_settings" hidden>
 					<!-- List of select options generated in PHP, set in JS -->
 					<select id="zenario_dataset_boolean_and_groups_only" name="field_id">
-						<option value="0" selected>-- Select --</option>
+						{{zenarioA.microTemplate('zenario_slide_select_options', m.field_id_list )}}
 					</select>
 				</div>
 				
 				<div id="zenario_static_method_settings" hidden> 
 					<div id="zenario_module_class_name_settings">
 						<p>Module class name:</p>
-						<input id="zenario_module_class_name" name="plugin_class" type="text"/>
+						<input id="zenario_module_class_name" name="plugin_class" value="{{m.plugin_class|e}}" type="text" maxlength="255"/>
 					</div>
 					<div id="zenario_static_method_name_settings">
 						<p>Static method name:</p>
-						<input id="zenario_static_method_name" name="method_name" type="text"/>
+						<input id="zenario_static_method_name" name="method_name" value="{{m.method_name|e}}" type="text" maxlength="255"/>
 					</div>
 					<div id="zenario_parameter_1_settings">
 						<p>Parameter 1:</p>
-						<input id="zenario_parameter_1" name="param_1" type="text"/>
+						<input id="zenario_parameter_1" name="param_1" type="text" value="{{m.param_1|e}}" maxlength="255"/>
 					</div>
 					<div id="zenario_parameter_2_settings">
 						<p>Parameter 2:</p>
-						<input id="zenario_parameter_2" name="param_2" type="text"/>
+						<input id="zenario_parameter_2" name="param_2" type="text" value="{{m.param_2|e}}" maxlength="255"/>
 					</div>
 				</div>
 				
 				<div id="zenario_slide_hidden_setting">
-					<input type="checkbox" id="zenario_slide_hidden" name="hidden" />
-					Disable slide
+					<input type="checkbox" id="zenario_slide_hidden" name="hidden" 
+						<% if (m.hidden) { %>
+							checked="checked"
+						<% } %>
+					/>
+					<label for="zenario_slide_hidden">Disable slide</label>
 				</div>
 				
 				
@@ -163,3 +199,8 @@
 		</div>
 	</div>
 </form>
+<% } else { %>
+	<div class="no_slides_message">
+		<p>There aren't any slides in this slideshow. Upload an image or add one from Organizer to begin!</p>
+	</div>
+<% } %>

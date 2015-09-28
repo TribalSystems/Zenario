@@ -52,6 +52,14 @@ plugin_settings:
                     value: h1
                     side_note: |
                         Choose which HTML tags the title will be displayed in.
+                show_title:
+                    plugin_setting:
+                        name: show_title
+                    label: "Show document title"
+                    type: checkbox
+                    format_onchange: true
+                    note_below: |
+                        If this setting is checked and no title has been entered for a document nothing will show.
                 offer_download_as_zip:
                     plugin_setting:
                         name: offer_download_as_zip
@@ -100,6 +108,16 @@ plugin_settings:
                     plugin_setting:
                         name: show_folders_in_results
                     label: "Show sub-folder names in results"
+                    type: checkbox
+                show_file_size:
+                    plugin_setting:
+                        name: show_file_size
+                    label: "Show document file size"
+                    type: checkbox
+                show_upload_date:
+                    plugin_setting:
+                        name: show_upload_date
+                    label: "Show document upload date"
                     type: checkbox
                 show_thumbnails:
                     plugin_setting:

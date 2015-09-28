@@ -74,7 +74,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) {
 header('Content-Type: text/html; charset=UTF-8');
 
 //Include the CMS' library of functions
-require_once CMS_ROOT. 'zenario/liteheader.inc.php';
+require_once CMS_ROOT. 'zenario/basicheader.inc.php';
+startSession();
+
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 
 //Load site settings

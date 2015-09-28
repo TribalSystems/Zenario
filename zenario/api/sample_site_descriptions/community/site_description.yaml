@@ -17,7 +17,37 @@ edition: ProBusiness
 license_info: 'Modified BSD License'
 
 # The max number of local administrators that can be created on this site (0 means no limit):
-max_local_administrators: 0
+max_local_administrators: 2
 
 # The max number of languages that can be created on this site (0 means no limit):
 max_enabled_languages: 0
+
+
+# If enabled, an admin must verify access to their email when logging into the site.
+require_security_code_on_admin_login: false
+
+# If enabled, an admin must verify access for each IP address they use to access the site.
+security_code_by_ip: false
+
+# The length of time (in days) that this should last.
+security_code_timeout: 30
+
+
+# Style formats are class names that can be selected in the WYSIWYG Editor
+# under the Styles menu.
+# 
+# See http://www.tinymce.com/wiki.php/Configuration:style_formats for more information.
+email_style_formats:
+    -
+        title: 'Bold text'
+        inline: b
+    -
+        title: 'Red text'
+        inline: span
+        styles:
+            color: '#ff0000'
+    -
+        title: 'Red header'
+        block: h1
+        styles:
+            color: '#ff0000'

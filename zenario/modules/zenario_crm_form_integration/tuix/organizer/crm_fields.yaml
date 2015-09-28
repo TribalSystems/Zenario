@@ -11,6 +11,7 @@ zenario__user_forms:
 			columns:
 				id:
 					title: ID
+					format: id
 					db_column: ff.id
 					align_right: true
 					width: xxsmall

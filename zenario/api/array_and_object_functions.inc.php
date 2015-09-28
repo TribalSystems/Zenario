@@ -28,7 +28,7 @@
 
 //	function arrayKey(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {}
 
-function curl($URL, $post = false, $headers = array(), $saveToFile = false) {
+function curl($URL, $post = false, $options = array(), $saveToFile = false) {
 	if (!$curl = @curl_init()) {
 		return false;
 	}
@@ -62,8 +62,10 @@ function curl($URL, $post = false, $headers = array(), $saveToFile = false) {
 		curl_setopt($curl, CURLOPT_POST, false);
 	}
 	
-	if (!empty($headers)) {
-		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+	if (!empty($options)) {
+		foreach ($options as $opt => $optVal) {
+			curl_setopt($curl, $opt, $optVal);
+		}
 	}
 	
 	$result = curl_exec($curl);
@@ -102,6 +104,28 @@ function engToBooleanArray(&$array, $key, $key2 = false, $key3 = false, $key4 = 
 	} else {
 		return 0;
 	}
+}
+
+//Explode a string, and return any values that aren't empty and/or whitespace
+function explodeAndTrim($string, $mustBeNumeric = false, $separator = ',') {
+	$a = array();
+	foreach (explode($separator, $string) as $id) {
+		if (($id = trim($id))
+		 && (!$mustBeNumeric || ($id = (int) $id))) {
+			$a[] = $id;
+		}
+	}
+	return $a;
+}
+
+function explodeDecodeAndTrim($string, $separator = ',') {
+	$a = array();
+	foreach (explode($separator, $string) as $id) {
+		if ($id = decodeItemIdForStorekeeper(trim($id))) {
+			$a[] = $id;
+		}
+	}
+	return $a;
 }
 
 //	function get($name) {}

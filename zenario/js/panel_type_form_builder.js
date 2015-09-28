@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -88,6 +88,11 @@ methods.cmsSetsSearchTerm = function(searchTerm) {
 	this.searchTerm = searchTerm;
 };
 
+//Never show the left hand nav; always show this panel using the full width
+methods.returnShowLeftColumn = function() {
+	return false;
+};
+
 //Use this function to set AJAX URL you want to use to load the panel.
 //Initally the this.tuix variable will just contain a few important TUIX properties
 //and not your the panel definition from TUIX.
@@ -118,7 +123,7 @@ methods.returnAJAXRequests = function() {
 
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
-	return Math.max(20, Math.min(1*zenarioA.siteSettings.organizer_page_size, 500));
+	return Math.max(20, Math.min(500, 1*zenarioA.adminSettings.organizer_page_size || 50));
 };
 
 //Sets the title shown above the panel.
@@ -190,35 +195,56 @@ methods.getValuesFromTUIX = function(tuix) {
 	return values;
 };
 
-
+// Change objects into ordered array
 methods.getOrderedItems = function(items) {
 	var item,
 		orderedItems = [];
 	
+	function compare(a, b) {
+		if (a.ord < b.ord) 
+			return -1;
+		if (a.ord > b.ord)
+			return 1;
+		return 0;
+	}
+	// Loop through each tab
 	foreach (items as tabName => tab) {
-		item = {}
+		var item = {};
+		// Store tab metadata except fields
 		foreach (tab as key => value) {
 			if (key != 'fields') {
 				item[key] = value;
 			}
 		}
+		// If tab has fields create array
 		if (tab['fields']) {
 			item['fields'] = [];
+			// Loop through each field
 			foreach (tab['fields'] as id => field) {
+				// Check if field has a list of values
 				if (field['lov']) {
 					var values = [];
+					// If so store them in array
 					foreach (field['lov'] as id => value) {
-						values.splice(value['ord'] - 1, 0, value);
+						values.push(value);
 					}
+					// Sort field lov
+					values.sort(compare);
 					field['lov'] = values;
 				}
-				item['fields'].splice(field['ord'] - 1, 0, field);
+				// Store fields in array
+				item['fields'].push(field);
 			}
+			// Sort fields
+			item['fields'].sort(compare)
 		} else {
 			this.tuix.items[tabName].fields = {};
 		}
-		orderedItems.splice(item['ord'] - 1, 0, item);
+		// Store tabs in array
+		orderedItems.push(item);
 	}
+	// Sort tabs
+	orderedItems.sort(compare);
 	return orderedItems;
 };
 
@@ -226,7 +252,7 @@ methods.getOrderedItems = function(items) {
 //Draw the panel, as well as the header at the top and the footer at the bottom
 //This is called every time the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showPanel = function($header, $panel, $footer) {
-	$header.html('').show();
+	$header.html('').hide();
 	var that = this,
 		items = this.getOrderedItems(this.tuix.items),
 		mergeFields = {
@@ -251,6 +277,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	if (this.currentTab && !this.tuix.items[this.currentTab] && this.currentTabOrd && items[this.currentTabOrd]) {
 		this.currentTab = items[this.currentTabOrd].name;
 	}
+	
 	foreach (items as i => item) {
 		var $tab = $('#organizer_form_tab_' + item['name']);
 			$section = $('#organizer_section_' + item['name']);
@@ -300,9 +327,10 @@ methods.showPanel = function($header, $panel, $footer) {
 		start: function(event, ui) {
 			that.startIndex = ui.item.index();
 		},
+		// Change tab order
 		stop: function(event, ui) {
 			if (that.startIndex != ui.item.index()) {
-				that.currentTabOrd = ui.item.index() + 1;
+				that.currentTabOrd = ui.item.index();
 				that.changeMadeToPanel();
 			}
 		}
@@ -645,7 +673,7 @@ methods.tabClick = function($tab) {
 	$('#organizer_section_' + this.currentTab).sortable('disable');
 	
 	this.currentTab = $tab.data('name');
-	this.currentTabOrd = $tab.index() + 1;
+	this.currentTabOrd = $tab.index();
 	this.current = {id: this.currentTab, type: 'tab'};
 	
 	// Enable new section
@@ -855,6 +883,7 @@ methods.setCurrentFieldDetails = function(values) {
 				$('#field_values_list').append(html);
 				that.redrawCurrentFieldValues();
 				that.initFieldValues();
+				that.changeMadeToPanel();
 			});
 			break;
 		case 'centralised_select':
@@ -971,14 +1000,15 @@ methods.initFieldValues = function() {
 	$('#field_values_list div.remove').off().on('click', function() {
 		var id = $(this).data('id');
 		$('#organizer_field_value_' + id).remove();
-		that.changeMadeToPanel();
 		$(this).parent().remove();
+		that.changeMadeToPanel();
 	});
 	
 	// Update form labels
 	$('#field_values_list input').off().on('keyup', function() {
 		var id = $(this).data('id');
 		$('#organizer_field_value_' + id + ' label').text($(this).val());
+		that.changeMadeToPanel();
 	});
 };
 
@@ -1208,8 +1238,7 @@ methods.changeMadeToPanel = function() {
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showButtons = function($buttons) {
-	var that = this,
-		html = '';
+	var that = this;
 	
 	if (this.changingForm) {
 		//Change the buttons to apply/cancel buttons
@@ -1239,7 +1268,8 @@ methods.showButtons = function($buttons) {
 			});
 		
 	} else {
-		$buttons.html(html).show();
+		//Remove the buttons, but don't actually hide them as we want to keep some placeholder space there
+		$buttons.html('').show();
 	}
 };
 

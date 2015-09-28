@@ -40,7 +40,8 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 			$clearByContent = false, $clearByMenu = true, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
 		$this->sectionId				= $this->setting('menu_section');
-		$this->startFrom				= /*$this->setting('show_parent')? '_MENU_LEVEL_TWO_ABOVE' : */'_MENU_LEVEL_ABOVE';
+		// If show parent, start from 2 levels up to also get the parent nodes
+		$this->startFrom				= $this->setting('show_parent') ? '_MENU_LEVEL_TWO_ABOVE' : '_MENU_LEVEL_ABOVE';
 		$this->numLevels				= 2;
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
@@ -89,7 +90,10 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 			$menuItem = $row['img'];
 		}
 		
-		$title = getItemTitle($row['cID'], $row['cType']);
+		$title = false;
+		if ($this->setting('show_page_link_as_title')) {
+			$title = getItemTitle($row['cID'], $row['cType']);
+		}
 		
 		$menuItem =
 			'<a href="'. $row['url']. '"'.
@@ -127,6 +131,7 @@ class zenario_menu_forward_back_navigator extends zenario_menu {
 		$hadCurrentMenuItem = false;
 		
 		foreach ($menuArray as $row) {
+			
 			if ($row['mID'] == $this->currentMenuId) {
 				$this->back = $last;
 				$hadCurrentMenuItem = true;

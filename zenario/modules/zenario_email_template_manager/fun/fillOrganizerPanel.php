@@ -29,11 +29,29 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'zenario__email_template_manager/panels/email_templates':
+		
+		if ($refinerName == 'module') {
+			$moduleDetails = getRow('modules', array('display_name'), $refinerId);
+			$panel['title'] = adminPhrase('Email Templates created by the module "[[display_name]]"', $moduleDetails);
+			$panel['no_items_message'] = adminPhrase('There are no Email Templates created by the module "[[display_name]]"', $moduleDetails);
+			
+			// Hide collection buttons
+			$panel['collection_buttons']['create_template']['hidden'] = 
+			$panel['collection_buttons']['test']['hidden'] = true;
+		}
+		
+		$body_extract_length = 250;
 		foreach ($panel['items'] as $K=>$item){
+			$body_extract = strip_tags($panel['items'][$K]['body_extract']);
+			$body_extract_snippet = substr($body_extract, 0, $body_extract_length);
+			if (strlen($body_extract) > $body_extract_length) {
+				$body_extract_snippet .= '...';
+			}
+			$panel['items'][$K]['body_extract'] = $body_extract_snippet;
 			$template = self::getTemplateByCode($K);
 			if ($K!=$template['id']) {
 				if (count($arr=explode("__",$K))==2){
-					$panel['items'][$K]['created_by'] = 'Module ' . $arr[0];	
+					$panel['items'][$K]['created_by'] = 'Module ' . $arr[0];
 				} else {
 					$panel['items'][$K]['created_by'] = 'n/a';
 				}

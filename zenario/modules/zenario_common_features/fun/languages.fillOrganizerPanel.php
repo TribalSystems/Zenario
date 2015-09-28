@@ -36,8 +36,8 @@ if (get('refiner__template')) {
 	foreach ($panel['items'] as $id => &$item) {
 		$sql = "
 			SELECT COUNT(*)
-			FROM ". DB_NAME_PREFIX. "content AS c
-			INNER JOIN ". DB_NAME_PREFIX. "versions AS v
+			FROM ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = c.admin_version
@@ -60,7 +60,7 @@ if (get('refiner__template')) {
 	foreach ($panel['items'] as $id => &$item) {
 		$sql = "
 			SELECT COUNT(*)
-			FROM ". DB_NAME_PREFIX. "content AS c
+			FROM ". DB_NAME_PREFIX. "content_items AS c
 			WHERE c.language_id = '". sqlEscape($id). "'
 			  AND c.status NOT IN ('trashed','deleted')
 			  AND c.type = '". sqlEscape(get('refiner__content_type')). "'";
@@ -77,7 +77,7 @@ if (get('refiner__template')) {
 		foreach ($panel['items'] as $id => &$item) {
 			$sql = "
 				SELECT COUNT(*)
-				FROM ". DB_NAME_PREFIX. "content AS c
+				FROM ". DB_NAME_PREFIX. "content_items AS c
 				WHERE c.language_id = '". sqlEscape($id). "'
 				  AND c.status NOT IN ('trashed','deleted')";
 			
@@ -89,7 +89,7 @@ if (get('refiner__template')) {
 		//Count how many Content Equivalences exist in total
 		$sql = "
 			SELECT COUNT(DISTINCT equiv_id, type)
-			FROM ". DB_NAME_PREFIX. "content
+			FROM ". DB_NAME_PREFIX. "content_items
 			WHERE status NOT IN ('trashed','deleted')";
 		$result = sqlQuery($sql);
 		$row = sqlFetchRow($result);

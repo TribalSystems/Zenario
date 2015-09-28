@@ -3,7 +3,13 @@
 		<button>Add images from Organizer</button>
 	</a>
 	<a onclick="zenario_slideshow_2.uploadImages();" class="button_upload_images">
-		<button>Upload Images</button>
+		<button 
+			{% if (m.recommededSize) { %}
+				title="{{m.recommededSizeMessage|e}}"
+			{% } %}
+		>
+			Upload Images
+		</button>
 	</a>
 </div>
 <div class="slide_navigation">

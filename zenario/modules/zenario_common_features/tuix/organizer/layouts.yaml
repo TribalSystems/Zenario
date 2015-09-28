@@ -26,6 +26,7 @@ zenario__layouts:
             columns:
                 code:
                     title: ID
+                    format: id
                     show_by_default: true
                     db_column: "CONCAT('L', IF (l.layout_id < 10, LPAD(CAST(l.layout_id AS CHAR), 2, '0'), CAST(l.layout_id AS CHAR)))"
                     searchable: true
@@ -96,8 +97,8 @@ zenario__layouts:
                     db_column: |
                         (
                                                     SELECT COUNT(DISTINCT c.id, c.type)
-                                                    FROM [[DB_NAME_PREFIX]]versions AS v
-                                                    INNER JOIN [[DB_NAME_PREFIX]]content AS c
+                                                    FROM [[DB_NAME_PREFIX]]content_item_versions AS v
+                                                    INNER JOIN [[DB_NAME_PREFIX]]content_items AS c
                                                        ON c.id = v.id
                                                       AND c.type = v.type
                                                       AND c.admin_version = v.version
@@ -194,6 +195,12 @@ zenario__layouts:
                         Template file is missing!
                     visible_if: >
                         item.missing
+                template_file_unregistered:
+                    css_class: zenario_ib_warning
+                    tooltip: |
+                        Template file is not registered!
+                    traits:
+                        unregistered: true
                 grid_preview:
                     css_class: inspect
                     tooltip: View image
@@ -229,7 +236,7 @@ zenario__layouts:
                 edit_grid:
                     priv: _PRIV_EDIT_TEMPLATE_FAMILY
                     hide_in_select_mode: true
-                    label: Edit layout
+                    label: Edit layout with Gridmaker
                     popout:
                         href: zenario/admin/grid_maker/grid_maker.php?loadTemplateFile=1
                         width: 100%

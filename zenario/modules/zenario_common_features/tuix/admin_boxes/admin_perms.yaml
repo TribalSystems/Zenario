@@ -3,7 +3,7 @@
 zenario_admin:
     tabs:
         permissions:
-            disable_autofocus: Yes
+            disable_autofocus: true
             
             # The fillAdminBox(), formatAdminBox() and saveAdminBox() functions in the Community Features
             # Module automatically add the <row_class> and <onchange> tags as well as the
@@ -21,60 +21,202 @@ zenario_admin:
             fields:
                 perm_author:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Author
                 perm_author_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_CONTENT_ITEM_SETTINGS:
+                            label: "View a Content Item's settings"
+                        _PRIV_EDIT_DRAFT:
+                            parent: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                            label: Edit a Content Item
+                        _PRIV_CREATE_FIRST_DRAFT:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: Create a Content Item
+                        _PRIV_CREATE_REVISION_DRAFT:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: Create a Draft of a Content Item
+                        _PRIV_DELETE_DRAFT:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: Delete the Draft of a Content Item
+                        _PRIV_EDIT_CONTENT_ITEM_CATEGORIES:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: "Set a Content Item's Categories"
+                        _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: "Set a Content Item's Permissions"
+                        _PRIV_EDIT_CONTENT_ITEM_TEMPLATE:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: "Change a Content Item's Layout"
+                        _PRIV_SET_CONTENT_ITEM_STICKY_IMAGE:
+                            parent: _PRIV_EDIT_DRAFT
+                            label: "Set a Content Item's Sticky image"
+                        _PRIV_MANAGE_MEDIA:
+                            label: Manage Media (including Inline images and animations)
                 perm_editmenu:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Menu Editor
                 perm_editmenu_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_MENU_ITEM:
+                            label: "View a Menu Node's Details"
+                        _PRIV_EDIT_MENU_ITEM:
+                            parent: _PRIV_VIEW_MENU_ITEM
+                            label: Edit a Menu Node
+                        _PRIV_ADD_MENU_ITEM:
+                            parent: _PRIV_EDIT_MENU_ITEM
+                            label: Create a Menu Node
+                        _PRIV_DELETE_MENU_ITEM:
+                            parent: _PRIV_VIEW_MENU_ITEM
+                            label: Delete a Menu Node
+                        _PRIV_REORDER_MENU_ITEM:
+                            parent: _PRIV_VIEW_MENU_ITEM
+                            label: Reorder Menu Nodes
+                        _PRIV_ADD_MENU_SECTION:
+                            parent: _PRIV_VIEW_MENU_ITEM
+                            label: Create a Menu Section
+                        _PRIV_DELETE_MENU_SECTION:
+                            parent: _PRIV_VIEW_MENU_ITEM
+                            label: Delete a Menu Section
                 perm_publish:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Publisher
                 perm_publish_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_CANCEL_CHECKOUT:
+                            label: Cancel a check-out
+                        _PRIV_HIDE_CONTENT_ITEM:
+                            label: Hide a Content Item
+                        _PRIV_PUBLISH_CONTENT_ITEM:
+                            label: Publish a Content Item
+                        _PRIV_TRASH_CONTENT_ITEM:
+                            label: Trash a Content Item
+                        _PRIV_MANAGE_CATEGORY:
+                            label: Manage Categories
+                        _PRIV_MANAGE_EMAIL_TEMPLATE:
+                            label: Manage Email Templates
+                        _PRIV_VIEW_LANGUAGE:
+                            label: View languages and their Phrases
+                        _PRIV_MANAGE_LANGUAGE_CONFIG:
+                            parent: _PRIV_VIEW_LANGUAGE
+                            label: Manage languages
+                        _PRIV_MANAGE_LANGUAGE_PHRASE:
+                            parent: _PRIV_VIEW_LANGUAGE
+                            label: Manage Phrases
+                        _PRIV_VIEW_REUSABLE_PLUGIN:
+                            label: "View a plugin's settings"
+                        _PRIV_MANAGE_REUSABLE_PLUGIN:
+                            parent: _PRIV_VIEW_REUSABLE_PLUGIN
+                            label: Manage plugins
+                        _PRIV_MANAGE_SPARE_ALIAS:
+                            label: Manage page aliases
+                        _PRIV_MANAGE_DOCUMENTS:
+                            label: Manage documents
+                        _PRIV_VIEW_CONFIDENTIAL_USER_DOCUMENTS:
+                            label: View confidential user documents
+                        _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS:
+                            parent: _PRIV_VIEW_CONFIDENTIAL_USER_DOCUMENTS
+                            label: Manage confidential user documents
                 perm_designer:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Designer
                 perm_designer_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_TEMPLATE:
+                            label: "View a Layout's details"
+                        _PRIV_EDIT_TEMPLATE:
+                            parent: _PRIV_VIEW_TEMPLATE
+                            label: "Edit a Layout's details"
+                        _PRIV_VIEW_TEMPLATE_FAMILY:
+                            label: "View a Template Family's details"
+                        _PRIV_EDIT_TEMPLATE_FAMILY:
+                            parent: _PRIV_VIEW_TEMPLATE_FAMILY
+                            label: "Edit a Template Family's details"
+                        _PRIV_VIEW_SLOT:
+                            label: "View what's in a Slot (all Layers)"
+                        _PRIV_MANAGE_ITEM_SLOT:
+                            parent: _PRIV_VIEW_SLOT
+                            label: Manage Slots on the Item Layer
+                        _PRIV_MANAGE_TEMPLATE_SLOT:
+                            parent: _PRIV_VIEW_SLOT
+                            label: Manage Slots on the Layout and Template Family Layers
+                        _PRIV_RUN_MODULE:
+                            label: Run a Module
+                        _PRIV_SUSPEND_MODULE:
+                            label: Suspend a Module
+                        _PRIV_RESET_MODULE:
+                            label: Uninitialise a Module
+                        _PRIV_VIEW_SITE_SETTING:
+                            label: View Site Settings
+                        _PRIV_EDIT_SITE_SETTING:
+                            parent: _PRIV_VIEW_SITE_SETTING
+                            label: Change Site Settings
+                        _PRIV_EDIT_CONTENT_TYPE:
+                            label: Change Content Type settings
+                        _PRIV_MANAGE_SPARE_DOMAIN_NAME:
+                            label: Manage Spare Domain Names
+                        _PRIV_MANAGE_DATASET:
+                            label: Manage Datasets
+                        _PRIV_PROTECT_UNPROTECT_DATASET_FIELD:
+                            #parent: _PRIV_MANAGE_DATASET
+                            label: Protect / unprotect dataset fields
                 perm_manage:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Supervisor
                 perm_manage_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    checking_child_checks_parents: true
+                    values:
+                        _PRIV_VIEW_ADMIN:
+                            label: "View an Admin's details"
+                        _PRIV_EDIT_ADMIN:
+                            parent: _PRIV_VIEW_ADMIN
+                            label: "Edit an Admin's details"
+                        _PRIV_CREATE_ADMIN:
+                            parent: _PRIV_EDIT_ADMIN
+                            label: Create an Admin
+                        _PRIV_DELETE_ADMIN:
+                            parent: _PRIV_VIEW_ADMIN
+                            label: Trash an Admin
+                        _PRIV_CHANGE_ADMIN_PASSWORD:
+                            parent: _PRIV_VIEW_ADMIN
+                            label: "Change an Admin's Password"
                 perm_edit_users:
-                    placeholder: Yes
-                    hidden: Yes
+                    placeholder: true
+                    hidden: true
                 perm_edit_users_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    placeholder: true
+                    hidden: true
                 _PRIV_BACKUP_SITE:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Create a backup of the site
                 perm_restore:
                     type: checkbox
-                    full_width: Yes
+                    full_width: true
                     post_field_label: Reset/Restore site
                 perm_restore_permissions:
-                    placeholder: Yes
-                    hidden: Yes
-                perm_dev_tools:
-                    type: checkbox
-                    full_width: Yes
-                    post_field_label: Use developer tools
-                perm_dev_tools_permissions:
-                    placeholder: Yes
-                    hidden: Yes
+                    type: checkboxes
+                    full_width: true
+                    values:
+                        _PRIV_RESET_SITE:
+                            label: Reset the site
+                        _PRIV_RESTORE_SITE:
+                            label: Restore the site from a backup

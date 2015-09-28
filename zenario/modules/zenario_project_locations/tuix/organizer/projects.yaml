@@ -19,6 +19,7 @@ zenario__projects:
                 columns: 
                     id: 
                         title: ID
+                        format: id
                         db_column: l.id
                         show_by_default: No
                         searchable: Yes

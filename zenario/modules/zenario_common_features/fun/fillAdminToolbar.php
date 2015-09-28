@@ -28,10 +28,18 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$content = getRow('content', true, array('id' => $cID, 'type' => $cType));
+//The $importantGetRequests should be passed to us in the URL, get them and decode them.
+if (empty($_GET['get']) || !($importantGetRequests = json_decode($_GET['get'], true))) {
+	$importantGetRequests = array();
+}
+
+//Look up details on the content item and version we are displaying the toolbar for
+$content = getRow('content_items', true, array('id' => $cID, 'type' => $cType));
 $chain = getRow('translation_chains', true, array('equiv_id' => $content['equiv_id'], 'type' => $cType));
-$version = getRow('versions', true, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+$version = getRow('content_item_versions', true, array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 $menuItems = getMenuItemFromContent($cID, $cType, true, false, true);
+$tagId = $cType. '_'. $cID;
+$isMultilingual = getNumLanguages() > 1;
 
 if (!$content || !$version) {
 	exit;
@@ -171,7 +179,6 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	 || (cms_core::$status == 'hidden_with_draft' && $cVersion == cms_core::$adminVersion - 1)) {
 		$adminToolbar['sections']['edit']['css_class'] = 'zenario_section_grey zenario_section_dark_text';
 		$adminToolbar['sections']['edit']['label'] = adminPhrase('Hidden');
-		unset($adminToolbar['sections']['edit']['buttons']['start_editing']);
 	
 	//Trashed Content Items
 	} else
@@ -323,17 +330,17 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
 
 if (isset($adminToolbar['sections']['edit']['buttons']['view_items_images'])) {
 	$adminToolbar['sections']['edit']['buttons']['view_items_images']['organizer_quick']['path'] =
-		'zenario__content/panels/content/item_buttons/images//'. $cType. '_'. $cID. '//';
+		'zenario__content/panels/content/item_buttons/images//'. $tagId. '//';
 }
 
 if (isset($adminToolbar['sections']['edit']['buttons']['view_slots'])) {
 	$adminToolbar['sections']['edit']['buttons']['view_slots']['organizer_quick']['path'] =
-		'zenario__content/panels/content/item_buttons/view_slots//'. $cType. '_'. $cID. '//';
+		'zenario__content/panels/content/item_buttons/view_slots//'. $tagId. '//';
 }
 
 
 //Multilingual options
-if (getNumLanguages() <= 1) {
+if (!$isMultilingual) {
 	unset($adminToolbar['sections']['edit']['buttons']['view_items_translations']);
 	if (isset($adminToolbar['sections']['translations'])) {
 		$adminToolbar['sections']['translations']['hidden'] = true;
@@ -342,7 +349,7 @@ if (getNumLanguages() <= 1) {
 } else {
 	if (isset($adminToolbar['sections']['edit']['buttons']['view_items_translations'])) {
 		$adminToolbar['sections']['edit']['buttons']['view_items_translations']['organizer_quick']['path'] =
-			'zenario__content/panels/content/item_buttons/zenario_trans__view//'. $cType. '_'. $cID. '//';
+			'zenario__content/panels/content/item_buttons/zenario_trans__view//'. $tagId. '//';
 	}
 	if (isset($adminToolbar['sections']['translations'])) {
 		$ord = 0;
@@ -354,7 +361,7 @@ if (getNumLanguages() <= 1) {
 				$adminToolbar['sections']['translations']['custom_template_buttons']['dropdown'];
 			
 			if ($translation = getRow(
-				'content',
+				'content_items',
 				array('id', 'type', 'alias', 'status'),
 				array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType, 'language_id' => $lang['id'])
 			)) {
@@ -373,7 +380,10 @@ if (getNumLanguages() <= 1) {
 				}
 				
 				$adminToolbar['sections']['translations']['buttons'][$gcId]['frontend_link'] =
-					linkToItem($translation['id'], $translation['type'], false, '', $translation['alias']);
+					linkToItem($translation['id'], $translation['type'], false, $importantGetRequests, $translation['alias']);
+					//Note: The linkToItem() function has the option to automatically add the $importantGetRequests.
+					//However as we're actually handling an AJAX request, and are not on the page itself, this
+					//option won't work here so we need to manually pass in the $importantGetRequests.
 			
 			} else {
 				$adminToolbar['sections']['translations']['buttons'][$ddId]['css_class'] =
@@ -404,7 +414,7 @@ if (getNumLanguages() <= 1) {
 
 
 //Set up the version history navigation, including a left arrow, the current item in view and a right arrow, with the correct icons and tooltips on each
-if ($cVersion > 1 && checkRowExists('versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion - 1))) {
+if ($cVersion > 1 && checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion - 1))) {
 	$mrg = array('status' => getContentItemVersionStatus($content, $cVersion - 1));
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['css_class'] = getContentItemVersionToolbarIcon($content, $cVersion - 1, 'zenario_at_prev_version_');
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['frontend_link'] = indexDotPHP(true). '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion - 1);
@@ -441,7 +451,7 @@ if (isset($adminToolbar['sections']['edit']['buttons']['publish'])
 }
 
 
-if (checkRowExists('versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion + 1))) {
+if (checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion + 1))) {
 	$mrg = array('status' => getContentItemVersionStatus($content, $cVersion + 1));
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['css_class'] = getContentItemVersionToolbarIcon($content, $cVersion + 1, 'zenario_at_next_version_');
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['frontend_link'] = indexDotPHP(true). '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion + 1);
@@ -581,7 +591,16 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 	//Content that is not in the Menu
 	if (empty($menuItems)) {
 		$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['no_menu_nodes'];
-	
+		$adminToolbar['toolbars']['menu1']['css_class'] .= ' zenario_toolbar_warning';
+		$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('
+			Warning: Orphaned content item. 
+			<br/>
+			This content item is not in the menu.
+			<br/>
+			We recommend putting all content items in the menu hierarchy.
+			<br/>
+			Click the "Attach content item to menu" button on this tab to create a menu node with the content item\'s Title, and to attach the item to the menu..
+		');
 	//Content with at least one Menu Node
 	} else {
 		if (!cms_core::$visitorVersion) {
@@ -672,8 +691,14 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				}
 			}
 			
+			$menuLink = getMenuItemStorekeeperDeepLink($menuItem['id'], cms_core::$langId);
 			if (isset($adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick'])) {
-				$adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick']['path'] = getMenuItemStorekeeperDeepLink($menuItem['id'], cms_core::$langId);
+				$adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick']['path'] = $menuLink;
+			}
+			if ($primary
+			 && !empty($adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['hidden'])) {
+				$adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['hidden'] = false;
+				$adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['navigation_path'] = $menuLink;
 			}
 			
 			$primary = false;
@@ -700,8 +725,30 @@ unset($adminToolbar['sections']['secondary_menu_node']);
 //
 
 //Set labels and tooltips
-$adminToolbar['sections']['icons']['buttons']['tag_id']['label'] = $cType. '_'. $cID;
-$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] = adminPhrase('Content Id: [[cID]]<br/>Content Type: [[cType_name]]<br/>Tag Id: [[cType]]_[[cID]]', array('cID' => cms_core::$cID, 'cType' => cms_core::$cType, 'cType_name' => getContentTypeName(cms_core::$cType)));
+$mrg = array(
+	'tagId' => $tagId,
+	'cID' => cms_core::$cID,
+	'cType' => cms_core::$cType,
+	'cVersion' => cms_core::$cVersion,
+	'cType_name' => getContentTypeName(cms_core::$cType),
+	'title' => cms_core::$pageTitle,
+	'alias' => cms_core::$alias,
+	'lang' => getLanguageName(cms_core::$langId),
+	'wordcount' => (int) getRow('content_cache', 'text_wordcount', array('content_id' => cms_core::$cID, 'content_type' => cms_core::$cType, 'content_version' => cms_core::$cVersion))
+);
+
+if (cms_core::$cVersion < cms_core::$adminVersion
+ || cms_core::$cVersion < cms_core::$visitorVersion) {
+	$mrg['status'] = 'archived';
+} elseif (cms_core::$cVersion == cms_core::$visitorVersion) {
+	$mrg['status'] = str_replace('_with_draft', '', cms_core::$status);
+} else {
+	$mrg['status'] = str_replace('_with_draft', ' with draft', cms_core::$status);
+}
+
+$adminToolbar['sections']['icons']['buttons']['tag_id']['label'] = $tagId;
+$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] =
+	adminPhrase('Content Id: [[cID]]<br/>Content Type: [[cType_name]]<br/>Tag Id: [[cType]]_[[cID]]', $mrg);
 
 if (isSpecialPage(cms_core::$cID, cms_core::$cType)) {
 	$adminToolbar['sections']['icons']['buttons']['tag_id']['tooltip'] .= adminPhrase('<br/>Special Page');
@@ -713,39 +760,21 @@ if (isSpecialPage(cms_core::$cID, cms_core::$cType)) {
 }
 
 $adminToolbar['meta_info']['title'] = cms_core::$pageTitle;
-$adminToolbar['sections']['icons']['buttons']['title']['tooltip'] = adminPhrase('Title: [[title]]', array('title' => cms_core::$pageTitle));
 
-$layoutLabel = 'L';
-if (cms_core::$layoutId < 10) {
-	$layoutLabel .= '0';
+if ($isMultilingual) {
+	$adminToolbar['sections']['icons']['buttons']['title']['tooltip'] =
+		adminPhrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]<br/>Language: [[lang]]', $mrg);
+} else {
+	$adminToolbar['sections']['icons']['buttons']['title']['tooltip'] =
+		adminPhrase('Title: [[title]]<hr/>Content item ID: [[tagId]]<br/>Version: [[cVersion]] ([[status]])<br/>Alias: [[alias]]<br/>Word count: [[wordcount]]', $mrg);
 }
-$layoutLabel .= cms_core::$layoutId;
-$adminToolbar['sections']['icons']['buttons']['layout_id']['label'] = $layoutLabel;
-$sql = '
-	SELECT 
-		COUNT(DISTINCT c.tag_id) AS item_count, 
-		l.name
-	FROM '.DB_NAME_PREFIX.'versions v
-	INNER JOIN '.DB_NAME_PREFIX.'layouts l
-		ON v.layout_id = l.layout_id
-	INNER JOIN '.DB_NAME_PREFIX.'content c
-		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
-	WHERE v.layout_id = '.(int)cms_core::$layoutId. '
-	AND c.status NOT IN ("trashed", "deleted")';
-$result = sqlQuery($sql);
-$layoutDetails = sqlFetchAssoc($result);
-$layoutName = $layoutDetails['name'];
-$layoutItemCount = $layoutDetails['item_count'];
-
-$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
-	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
 
 // Language
-if (getNumLanguages() <= 1) {
+if (!$isMultilingual) {
 	unset($adminToolbar['sections']['icons']['buttons']['language_id']);
 } else {
 	$adminToolbar['sections']['icons']['buttons']['language_id']['label'] = cms_core::$langId;
-	$adminToolbar['sections']['icons']['buttons']['language_id']['tooltip'] = adminPhrase('Language: [[lang]]', array('lang' => getLanguageName(cms_core::$langId)));
+	$adminToolbar['sections']['icons']['buttons']['language_id']['tooltip'] = adminPhrase('Language: [[lang]]', $mrg);
 }
 
 // Alias
@@ -757,6 +786,34 @@ if (cms_core::$alias) {
 		'zenario_at_icon_alias zenario_at_icon_no_alias';
 }
 
+
+
+
+$layoutLabel = 'L';
+if (cms_core::$layoutId < 10) {
+	$layoutLabel .= '0';
+}
+$layoutLabel .= cms_core::$layoutId;
+$adminToolbar['sections']['icons']['buttons']['layout_id']['label'] = $layoutLabel;
+$sql = '
+	SELECT 
+		COUNT(DISTINCT c.tag_id) AS item_count, 
+		l.name
+	FROM '.DB_NAME_PREFIX.'content_item_versions v
+	INNER JOIN '.DB_NAME_PREFIX.'layouts l
+		ON v.layout_id = l.layout_id
+	INNER JOIN '.DB_NAME_PREFIX.'content_items c
+		ON (v.version = c.admin_version) AND (v.tag_id = c.tag_id)
+	WHERE v.layout_id = '.(int)cms_core::$layoutId. '
+	AND c.status NOT IN ("trashed", "deleted")';
+$result = sqlQuery($sql);
+$layoutDetails = sqlFetchAssoc($result);
+$layoutName = $layoutDetails['name'];
+$layoutItemCount = $layoutDetails['item_count'];
+
+$adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] = 
+	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
+
 $visitorURL = linkToItem(
 	$cID, $cType, $fullPath = false, $request = '', cms_core::$alias,
 	$autoAddImportantRequests = false, $useAliasInAdminMode = true);
@@ -764,7 +821,13 @@ $visitorURL = linkToItem(
 if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = adminPhrase('Go to content item via its alias "[[alias]]"', array('alias' => (cms_core::$alias)));
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;
+} else {
+	$adminToolbar['sections']['icons']['buttons']['no_alias']['label'] = adminPhrase('This content item does not have an alias');
+	unset($adminToolbar['sections']['icons']['buttons']['no_alias']['tooltip']);
+	$adminToolbar['sections']['icons']['buttons']['alias']['label'] = adminPhrase('Set an alias');
 }
+
+
 if (isset($adminToolbar['sections']['icons']['buttons']['no_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['no_alias']['frontend_link'] = $visitorURL;
 }
@@ -785,7 +848,7 @@ ksort($showVersions);
 $i = 0;
 foreach ($showVersions as $showVersion => $dummy) {
 	
-	if ($showVersion && ($v = getRow('versions', true, array('id' => $cID, 'type' => $cType, 'version' => $showVersion)))) {
+	if ($showVersion && ($v = getRow('content_item_versions', true, array('id' => $cID, 'type' => $cType, 'version' => $showVersion)))) {
 		
 		$tuixId = 'version_'. ++$i;
 		
@@ -879,6 +942,15 @@ if ($chain['privacy'] == 'public') {
 }
 
 if (isset($adminToolbar['sections']['icons']['buttons']['item_permissions_closed'])) {
+
+	if($chain['privacy'] == 'no_access') {
+		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_no_access";
+	} elseif($chain['privacy'] == 'group_members') {
+		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_group_members";
+	} elseif($chain['privacy'] == 'specific_users') {
+		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['css_class'] = "zenario_at_icon_permissions_closed_specific_users";
+	}
+
 	$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip'] =
 		$adminToolbar['sections']['icons']['buttons']['item_permissions_closed']['tooltip__'. $chain['privacy']];
 	

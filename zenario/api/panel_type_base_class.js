@@ -33,7 +33,7 @@
 		2. It is minified (e.g. using Google Closure Compiler).
 		3. It may be wrapped togther with other files (this is to reduce the number of http requests on a page).
 	
-	For more information, see js_minify.shell.php for steps (1) and (2), and inc-organizer.js.php for step (3).
+	For more information, see js_minify.shell.php for steps (1) and (2), and organizer.wrapper.js.php for step (3).
 */
 
 
@@ -130,7 +130,7 @@ methods.returnAJAXRequests = function() {
 
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
-	return Math.max(20, Math.min(1*zenarioA.siteSettings.organizer_page_size, 500));
+	return Math.max(20, Math.min(500, 1*zenarioA.adminSettings.organizer_page_size || 50));
 };
 
 //Sets the title shown above the panel.
@@ -176,6 +176,12 @@ methods.returnSearchingEnabled = function() {
 //If you return false, your sortAndSearchItems() method will be called instead.
 methods.returnDoSortingAndSearchingOnServer = function() {
 	return this.tuix.db_items && !engToBoolean(this.tuix.db_items.client_side);
+};
+
+//Return whether to show the left hand nav.
+//By default, if this is full mode then show the left hand nav, and if not, then hide it.
+methods.returnShowLeftColumn = function() {
+	return !window.zenarioONotFull;
 };
 
 //Function to search and sort the items on the client side.

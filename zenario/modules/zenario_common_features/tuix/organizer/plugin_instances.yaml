@@ -62,7 +62,7 @@ zenario__modules:
                         (
                             SELECT COUNT(DISTINCT ciil.tag_id)
                             FROM [[DB_NAME_PREFIX]]plugin_item_link AS piil
-                            INNER JOIN [[DB_NAME_PREFIX]]content AS ciil
+                            INNER JOIN [[DB_NAME_PREFIX]]content_items AS ciil
                                ON ciil.id = piil.content_id
                               AND ciil.type = piil.content_type
                               AND piil.content_version IN (ciil.visitor_version, ciil.admin_version)
@@ -77,7 +77,7 @@ zenario__modules:
                                 (ciil.admin_version - 1, 'hidden_with_draft'),
                                 (ciil.admin_version, 'hidden')
                               )
-                            INNER JOIN [[DB_NAME_PREFIX]]versions AS viil
+                            INNER JOIN [[DB_NAME_PREFIX]]content_item_versions AS viil
                                ON viil.id = piil.content_id
                               AND viil.type = piil.content_type
                               AND viil.version = piil.content_version

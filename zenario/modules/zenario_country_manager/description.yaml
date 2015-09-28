@@ -34,3 +34,10 @@ category: management
 keywords: country, county, location, place, region, state, world
 vlp_class_name: zenario_country_manager
 is_pluggable: No
+centralised_lists:
+    -
+        method_name: getActiveCountries
+        label: Countries (active)
+    -
+        method_name: getRegionsByCountry
+        label: Regions

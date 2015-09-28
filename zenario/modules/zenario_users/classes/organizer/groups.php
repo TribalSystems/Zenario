@@ -45,7 +45,7 @@ class zenario_users__organizer__groups extends zenario_users {
 			$sql = '
 				SELECT COUNT(*)
 				FROM '.DB_NAME_PREFIX.'group_content_link gcl
-				INNER JOIN '.DB_NAME_PREFIX.'content c
+				INNER JOIN '.DB_NAME_PREFIX.'content_items c
 					ON gcl.equiv_id = c.equiv_id
 					AND gcl.content_type = c.type
 					AND c.status != \'trashed\'

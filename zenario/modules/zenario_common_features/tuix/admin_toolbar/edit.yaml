@@ -20,9 +20,6 @@ sections:
             category_dropdown:
                 label: Categories
                 hide_when_children_are_not_visible: Yes
-            layout_dropdown:
-                label: Layout
-                hide_when_children_are_not_visible: Yes
             view_dropdown:
                 label: View
                 hide_when_children_are_not_visible: Yes
@@ -30,7 +27,7 @@ sections:
                 label: Locking
                 hide_when_children_are_not_visible: Yes
 
-# property_dropdown
+        # property_dropdown
             item_meta_data:
                 parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -68,9 +65,26 @@ sections:
                     key:
                         mode: foot
                         level: item
+            layout:
+                parent: property_dropdown
+                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                label: Change layout
+                appears_in_toolbars:
+                    edit: Yes
+                admin_box:
+                    path: zenario_content_layout
+            view_slots:
+                parent: property_dropdown
+                label: View item's slots
+                organizer_quick:
+                    min_path: zenario__content/panels/slots
+                    target_path: zenario__content/panels/slots
 
-#action_dropdown
+        #action_dropdown
             start_editing:
+                # Warning: the presence of this button affects how the zenarioA.draft() function
+                # works. If this button is missing then zenarioA.draft() won't attempt to make
+                # a draft!
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
                 label: Make a draft
@@ -130,6 +144,29 @@ sections:
                             message_type: warning
                         request:
                             create_draft_by_copying: "1"
+            create_draft_by_overwriting:
+                parent: action_dropdown
+                priv: _PRIV_CREATE_REVISION_DRAFT
+                appears_in_toolbars:
+                    edit: true
+                label: Copy from other content item
+                pick_items:
+                    path: ""
+                    min_path: zenario__content/panels/languages
+                    max_path: zenario__content/panels/content
+                    target_path: zenario__content/panels/content
+                    one_to_one_choose_phrase: Copy from selected
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to copy the contents of the selected content item over the current draft?
+                                
+                                This cannot be undone.
+                            button_message: Copy and overwrite
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            create_draft_by_copying: 1
             hide_content:
                 parent: action_dropdown
                 priv: _PRIV_HIDE_CONTENT_ITEM
@@ -258,22 +295,6 @@ sections:
                 admin_box:
                     path: zenario_content_categories
 
-#layout_dropdown
-            layout:
-                parent: layout_dropdown
-                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                label: Change layout
-                appears_in_toolbars:
-                    edit: Yes
-                admin_box:
-                    path: zenario_content_layout
-            view_slots:
-                parent: layout_dropdown
-                label: View item's slots
-                organizer_quick:
-                    min_path: zenario__content/panels/slots
-                    target_path: zenario__content/panels/slots
-
 #view_dropdown
             view_items_translations:
                 parent: view_dropdown
@@ -284,7 +305,7 @@ sections:
                     disallow_refiners_looping_on_min_path: Yes
             view_items_images:
                 parent: view_dropdown
-                label: Images in this content item
+                label: Images attached to this content item
                 organizer_quick:
                     target_path: zenario__content/panels/inline_images_for_content
                     min_path: zenario__content/panels/inline_images_for_content

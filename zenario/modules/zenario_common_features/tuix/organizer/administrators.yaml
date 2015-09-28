@@ -43,6 +43,10 @@ zenario__users:
                     values:
                         local: Local
                         super: Multi-site
+                is_client_account:
+                    title: Is client account
+                    format: yes_or_no
+                    db_column: a.is_client_account
                 csuper:
                     db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
                 status:

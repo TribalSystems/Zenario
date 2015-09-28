@@ -89,81 +89,78 @@ if ($resultSp = getRows('special_pages', true, array())) {
 						if (!empty($page['page_type']) && $page['page_type'] == $sp['page_type']) {
 							foreach ($langsToCreate as $langId => $dummy) {
 								//Create a new page
-								$cID = $cVersion = false;
+								$cID = $cIDFrom = $cVersion = $cVersionFrom = false;
 								$cType = 'html';
-								createDraft($cID, $cIDFrom = false, $cType, $cVersion, $cVersionFrom = false, $langId);
 								
+								//T9475, Enabling a second language should duplicate the home page
+								if ($sp['logic'] == 'create_and_maintain_in_all_languages'
+								 && $sp['equiv_id']) {
+									$cIDFrom = $sp['equiv_id'];
+									createDraft($cID, $cIDFrom, $cType, $cVersion, $cVersionFrom, $langId);
+									$sp['equiv_id'] = recordEquivalence($sp['equiv_id'], $cID, $cType);
 								
-								//Try to get the right layout for this
-								$layoutId = getDefaultTemplateId('html');
+								} else {
+									createDraft($cID, $cIDFrom, $cType, $cVersion, $cVersionFrom, $langId);
 								
-								if (!empty($page['layout'])) {
-									$sql = "
-										SELECT layout_id
-										FROM ". DB_NAME_PREFIX. "layouts
-										WHERE name LIKE '%". likeEscape($page['layout']). "%'
-										LIMIT 1";
-									$resultL = sqlSelect($sql);
-									if ($layout = sqlFetchAssoc($resultL)) {
-										$layoutId = $layout['layout_id'];
+									//Try to work out what layout it should have
+									$layoutId = getDefaultTemplateId('html');
+							
+									if (!empty($page['layout'])) {
+										$sql = "
+											SELECT layout_id
+											FROM ". DB_NAME_PREFIX. "layouts
+											WHERE name LIKE '%". likeEscape($page['layout']). "%'
+											LIMIT 1";
+										$resultL = sqlSelect($sql);
+										if ($layout = sqlFetchAssoc($resultL)) {
+											$layoutId = $layout['layout_id'];
+										}
 									}
-								}
 								
 								
-								//Try to add an alias (so long as the alias is not taken)
-								if ($alias = arrayKey($page, 'default_alias')) {
-									//Attempt to make the alias unique if we're adding multiple languages
-									if (checkRowExists('content', array('alias' => $alias))) {
-										$alias .= '-'. $langId;
-									}
-									
-									if (!is_array(validateAlias($alias))) {
-										setRow('content', array('alias' => $alias), array('id' => $cID, 'type' => $cType));
+									//Try to add an alias (so long as the alias is not taken)
+									if ($alias = arrayKey($page, 'default_alias')) {
+										if (!is_array(validateAlias($alias))) {
+											setRow('content_items', array('alias' => $alias), array('id' => $cID, 'type' => $cType));
+										} else {
+											$alias = '';
+										}
 									} else {
 										$alias = '';
 									}
-								} else {
-									$alias = '';
-								}
 								
-								setRow('versions',
-									array('title' => arrayKey($page, 'default_title'), 'layout_id' => $layoutId),
-									array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
+									setRow('content_item_versions',
+										array('title' => arrayKey($page, 'default_title'), 'layout_id' => $layoutId),
+										array('id' => $cID, 'type' => $cType, 'version' => $cVersion));
 								
-								if (!$sp['equiv_id']) {
-									$sp['equiv_id'] = $cID;
-									$sp['content_type'] = $cType;
-								} else {
-									//For multilingal sites, make sure that translations of special pages are marked as translations
-									$sp['equiv_id'] = recordEquivalence($sp['equiv_id'], $cID, $cType);
-								}
-								
-								//Update the special pages table to record which page is the special page,
-								//unless we are using the create_in_default_language_on_install logic in which case we won't make
-								//the created page a special page
-								if ($sp['logic'] != 'create_in_default_language_on_install') {
-									updateRow(
-										'special_pages',
-										array(
-											'equiv_id' => $sp['equiv_id'],
-											'content_type' => $sp['content_type']),
-										array(
-											'page_type' => $sp['page_type']));
-								}
-								
-								
-								//Work out a free main slot to put a Plugin in
-								$template = getRow('layouts', array('layout_id', 'file_base_name', 'family_name'), $layoutId);
-								$slotName = getTemplateMainSlot($template['family_name'], $template['file_base_name']);
-								
-								//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
-								if ($module['is_pluggable']) {
-									//Insert this Plugin onto the page
-									if ($module['can_be_version_controlled']) {
-										//Prefer a Wireframe Plugin if the Plugin allows it
-										updatePluginInstanceInItemSlot(0, $slotName, $cID, $cType, $cVersion, $module['id']);
-									
+									if (!$sp['equiv_id']) {
+										$sp['equiv_id'] = $cID;
+										$sp['content_type'] = $cType;
 									} else {
+										//For multilingal sites, make sure that translations of special pages are marked as translations
+										$sp['equiv_id'] = recordEquivalence($sp['equiv_id'], $cID, $cType);
+									}
+								
+									//Update the special pages table to record which page is the special page,
+									//unless we are using the create_in_default_language_on_install logic in which case we won't make
+									//the created page a special page
+									if ($sp['logic'] != 'create_in_default_language_on_install') {
+										updateRow(
+											'special_pages',
+											array(
+												'equiv_id' => $sp['equiv_id'],
+												'content_type' => $sp['content_type']),
+											array(
+												'page_type' => $sp['page_type']));
+									}
+								
+									//We'll need to put a something on this page
+									//Work out a free main slot to put a Plugin in
+									$template = getRow('layouts', array('layout_id', 'file_base_name', 'family_name'), $layoutId);
+									$slotName = getTemplateMainSlot($template['family_name'], $template['file_base_name']);
+							
+									//Check if this Plugin is Slotable, and if so attempt to put this Plugin on the page
+									if ($module['is_pluggable']) {
 										//Otherwise set a Reusable Instance there
 										if (!$instanceId = getRow('plugin_instances', 'id', array('module_id' => $module['id'], 'content_id' => 0))) {
 											//Create a new reusable instance if one does not already exist
@@ -174,32 +171,32 @@ if ($resultSp = getRows('special_pages', true, array())) {
 												$instanceId,
 												$errors, $onlyValidate = false, $forceName = true);
 										}
-										
-										updatePluginInstanceInItemSlot($instanceId, $slotName, $cID, $cType, $cVersion, $module['id']);
-									}
 								
-								//Otherwise have the option to place a HTML Snippet in there
-								} elseif ((arrayKey($page, 'default_content')) && ($snippetId = getRow('modules', 'id', array('class_name' => 'zenario_wysiwyg_editor')))) {
-									
-									//Try to find an editor
-									if ($editorSlot = pluginMainSlot($cID, $cType, $cVersion)) {
-										$instanceId = insertRow(
-											'plugin_instances',
-											array(
-												'module_id' => $snippetId,
-												'content_id' => $cID,
-												'content_type' => $cType,
-												'content_version' => $cVersion,
-												'slot_name' => $editorSlot));
-									
-										setRow(
-											'plugin_settings',
-											array(
-												'instance_id' => $instanceId,
-												'name' => 'html',
-												'value' => arrayKey($page, 'default_content'),
-												'is_content' => 'version_controlled_content',
-												'format' => 'translatable_html'));
+										updatePluginInstanceInItemSlot($instanceId, $slotName, $cID, $cType, $cVersion, $module['id']);
+							
+									//Otherwise have the option to place a HTML Snippet in there
+									} elseif (!empty($page['default_content']) && ($snippetId = getRow('modules', 'id', array('class_name' => 'zenario_wysiwyg_editor')))) {
+								
+										//Try to find an editor
+										if ($editorSlot = pluginMainSlot($cID, $cType, $cVersion)) {
+											$instanceId = insertRow(
+												'plugin_instances',
+												array(
+													'module_id' => $snippetId,
+													'content_id' => $cID,
+													'content_type' => $cType,
+													'content_version' => $cVersion,
+													'slot_name' => $editorSlot));
+								
+											setRow(
+												'plugin_settings',
+												array(
+													'instance_id' => $instanceId,
+													'name' => 'html',
+													'value' => $page['default_content'],
+													'is_content' => 'version_controlled_content',
+													'format' => 'translatable_html'));
+										}
 									}
 								}
 								
@@ -256,11 +253,14 @@ if ($resultSp = getRows('special_pages', true, array())) {
 									}
 									saveMenuText($menuId, $langId, array('name' => arrayKey($page, 'footer_menu_title')));
 								}
-							}
 							
-							//Publish the page straight away if requested
-							if ($sp['publish']) {
-								publishContent($cID, $cType);
+								//Update the wordcount and other stats
+								syncInlineFileContentLink($cID, $cType, $cVersion);
+							
+								//Publish the page straight away if requested
+								if ($sp['publish']) {
+									publishContent($cID, $cType);
+								}
 							}
 						}
 					}

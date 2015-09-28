@@ -90,6 +90,10 @@ if (get('upgrade') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN') && $module['stat
 		echo adminPhrase('all Special Pages for this Module, ');
 	}
 	
+	if (checkRowExists('centralised_lists', array('module_class_name' => $module['class_name']))) {
+		echo adminPhrase('all centralised lists for this Module, ');
+	}
+	
 	$result = getRows('content_types', 'content_type_name_en', array('module_id' => $ids), 'content_type_name_en');
 	while ($contentType = sqlFetchAssoc($result)) {
 		echo adminPhrase('all Content Items of the "[[content_type_name_en]]" Content Type, ', $contentType);

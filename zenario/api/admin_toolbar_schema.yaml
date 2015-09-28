@@ -153,6 +153,9 @@ properties:
                                     - help
                             -
                                 required:
+                                    - navigation_path
+                            -
+                                required:
                                     - organizer_quick
                             -
                                 required:
@@ -354,6 +357,13 @@ properties:
                                         default: question
                                         description: >
                                             The type of message. A different styling will be applied for each different type.
+                            
+                            navigation_path:
+                                type: string
+                                description: >
+                                    A button with the navigation_path property will open Organizer and go to
+                                    the specified path when pressed.
+                                
                             
                             organizer_quick: &organizer_quick
                                 type: object

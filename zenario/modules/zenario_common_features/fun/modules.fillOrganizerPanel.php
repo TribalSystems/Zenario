@@ -175,7 +175,7 @@ foreach ($panel['items'] as $id => &$module) {
 		$module['traits']['code_present'] = true;
 		
 		if ($module['status'] == 'module_not_initialized') {
-			$module['comment'] = adminPhrase('(uninitialized)');
+			$module['comment'] = adminPhrase('(uninitialised)');
 			$module['cell_css_classes']['status'] = "orange";
 		} elseif ($module['status'] == 'module_suspended') {
 			$module['comment'] = adminPhrase('(suspended)');

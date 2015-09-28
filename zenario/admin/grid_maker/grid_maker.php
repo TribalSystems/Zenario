@@ -21,10 +21,9 @@ CMSWritePageHead($prefix, false, false);
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION);
+$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
 
 echo '
-	<link rel="stylesheet" type="text/css" href="../../libraries/mit/toastr/toastr.min.css?v=', $v, '" media="screen"/>
 	<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css?v=', $v, '" media="screen"/>';
 
 
@@ -42,7 +41,6 @@ CMSWritePageFoot($prefix, false, false, false);
 echo '
 <script type="text/javascript" src="../../libraries/mit/jquery/jquery-ui.button.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../libraries/mit/jquery/jquery-ui.spinner.min.js?v=', $v, '"></script>
-<script type="text/javascript" src="../../libraries/mit/toastr/toastr.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="../../js/admin_grid_maker.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	window.zenarioAdminHasZipPerms = ', engToBoolean(checkPriv('_PRIV_VIEW_TEMPLATE_FAMILY')), ';

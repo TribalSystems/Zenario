@@ -31,7 +31,22 @@
 				<div class="thumbnail no_thumbnail_{{item.Document_Mime}}"></div>
 			{% endif %}
 			{% if item.Document_Type == 'file' %}
-				<div class="level_{{item.Document_Level}}"><a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">{{item.Document_Link_Text}}</a></div>
+				<div class="level_{{item.Document_Level}}">
+					<a href="{{item.Document_Link}}" target="_blank" onclick="{{item.Google_Analytics_Link}}">
+						{% if item.Title_Folder_Exists %}
+							{{item.title}}
+						{% else %}
+							{% if item.Title_Exists %} {{item.title}} {% else %} {{item.Document_Link_Text}} {% endif %}
+						{% endif %}
+					</a>
+					
+					{% if item.File_Size %}
+						<span class="file_size">{{item.File_Size|e}}</span>
+					{% endif %}
+					{% if item.Upload_Date %}
+						<span class="upload_date">{{item.Upload_Date|e}}</span>
+					{% endif %}
+				</div>
 			{% else %}
 				<div class="level_{{item.Document_Level}}"><h3>{{item.Document_Link_Text}}</h3></div>
 			{% endif %}
@@ -45,11 +60,20 @@
 		{% else %}
 			<div class="no_thumbnail_{{Document_Mime}}"></div>
 		{% endif %}
-		<div id="{{Document_css_id}}"><a href="{{Document_Link}}" target="_blank" onclick="{{Google_Analytics_Link}}">{{Document_Link_Text}}</a></div>
+		<div id="{{Document_css_id}}">
+			<a href="{{Document_Link}}" target="_blank" onclick="{{Google_Analytics_Link}}">{% if Title_Exists %} {{Title_Exists}} {% else %} {{Document_Link_Text}} {% endif %}</a>
+			{% if File_Size %}
+				<span class="file_size">{{File_Size|e}}</span>
+			{% endif %}
+			{% if Upload_Date %}
+				<span class="upload_date">{{Upload_Date|e}}</span>
+			{% endif %}
+		</div>
 	{% endif %}
 {% else %}
 	{% if error == 'no_user' %}
 		<div id="no_user" class="error">You must be an extranet user to see this plugin</div>
 	{% endif %}
 {% endif %}
+
 </div>

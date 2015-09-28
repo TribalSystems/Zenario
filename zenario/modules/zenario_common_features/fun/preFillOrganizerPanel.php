@@ -145,10 +145,10 @@ switch ($path) {
 				}
 				
 				$panel['title'] =
-					adminPhrase('Images used on the content item [[tag]], version [[version]]',
+					adminPhrase('Images attached to the content item [[tag]], version [[version]]',
 						array(
 							'tag' => formatTagFromTagId(get('refiner__content')),
-							'version' => getRow('content', 'admin_version', array('tag_id' => get('refiner__content')))));
+							'version' => getRow('content_items', 'admin_version', array('tag_id' => get('refiner__content')))));
 				
 				break;
 			
@@ -310,8 +310,7 @@ switch ($path) {
 
 	
 	case 'zenario__languages/panels/phrases':
-	case 'zenario__languages/nav/vlp/vlp_chained/panel':
-		return require funIncPath(__FILE__, 'vlp.preFillOrganizerPanel');
+		return require funIncPath(__FILE__, 'phrases.preFillOrganizerPanel');
 
 	
 }

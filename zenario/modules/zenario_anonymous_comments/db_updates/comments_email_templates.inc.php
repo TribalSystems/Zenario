@@ -122,3 +122,25 @@ revision(107, "
         0
     )
 ");
+
+revision(150,
+
+<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_anonymous_comments'
+	WHERE `code` = 'zenario_comments__to_admin_comment_notification_en'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_anonymous_comments'
+	WHERE `code` = 'zenario_comments__comment_report'
+_sql
+
+,<<<_sql
+	UPDATE [[DB_NAME_PREFIX]]email_templates
+	SET `module_class_name` = 'zenario_anonymous_comments'
+	WHERE `code` = 'zenario_comments__comment_awaiting_approval'
+_sql
+
+);

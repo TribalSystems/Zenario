@@ -6,6 +6,7 @@ zenario_user_admin_box_form_field:
 		form_id: ''
 		numValues: 2
 		type: ''
+		linked: ''
 	tabs:
 		details:
 			label: Details
@@ -42,9 +43,15 @@ zenario_user_admin_box_form_field:
 						radios:
 							label: Multiple radio-buttons
 							side_note: Allows one choice from a list of values you define.
+						centralised_radios:
+							label: Centralised radio-buttons
+							side_note: Choose a list of values that already exists on the system and create a group of radio buttons.
 						select:
 							label: Select list
 							side_note: Allows one choice from a list of values you define.
+						centralised_select:
+							label: Centralised select list
+							side_note: Choose a list of values that already exists on the system and create a select list.
 						text:
 							label: Text
 							side_note: A one-line text field.
@@ -87,6 +94,28 @@ zenario_user_admin_box_form_field:
 					maxlength: 255
 					side_note: >
 						This will be the field label as seen by the user. 
+				
+				values_source:
+					visible_if: "({centralised_radios:1,centralised_select:1})[zenarioAB.value('field_type_picker', 'details')]"
+					label: 'Source:'
+					type: select
+					format_onchange: true
+					values: {}
+					
+				values_source_filter:
+					label: 'Source filter:'
+					type: text
+					hidden: true
+					style: 'width: 10em;'
+					side_note: 'Set a filter for the source'
+					
+				filter_on_field:
+					label: 'Filter on field:'
+					type: select
+					empty_value: -- Select --
+					side_note: |
+						Filter a centralised select list based on the value of another field.
+					visible_if: "({centralised_select:1})[zenarioAB.value('field_type_picker', 'details')]"
 				
 				description:
 					label: 'Description:'
@@ -167,7 +196,6 @@ zenario_user_admin_box_form_field:
 				visible_condition_field_value:
 					label: 'Visible if:'
 					type: select
-					empty_value: '-- Select --'
 				
 				validation:
 					label: 'Validation:'

@@ -71,10 +71,6 @@ if (isset($panel['collection_buttons']['create'])) {
 
 
 $panel['item']['tooltip_when_link_is_active'] = adminPhrase('View child Menu Nodes of &quot;[[name]]&quot;.');
-if (in($mode, 'full', 'quick') && checkPriv('_PRIV_REORDER_MENU_ITEM')) {
-	$panel['item']['tooltip'] = adminPhrase('To reorder menu nodes, drag and drop. Changes will take effect after a further confirmation.');
-	$panel['item']['tooltip_when_link_is_active'] .= '<br/>'. $panel['item']['tooltip'];
-}
 
 if ($panel['key']['parentId']) {
 	$mrg['parent'] = getMenuName($panel['key']['parentId'], $panel['key']['languageId']);
@@ -130,13 +126,19 @@ foreach ($panel['items'] as &$item) {
 	$id = $item['mid'];
 	
 	if ($item['target_loc'] == 'int' && $item['internal_target']) {
-		if ($item['redundancy'] == 'primary') {
+		if ($item['redundancy'] == 'unique') {
+			$item['tooltip'] = adminPhrase('This is a unique menu node. No other menu node links to this content item.');
+			$item['css_class'] = 'zenario_menunode_internal_unique';
+		} elseif ($item['redundancy'] == 'primary') {
+			$item['tooltip'] = adminPhrase("This is a primary menu node. There are other secondary menu nodes linking to the same content item.");
 			$item['css_class'] = 'zenario_menunode_internal';
 		} else {
+			$item['tooltip'] = adminPhrase("This is a secondary menu node. There's a primary menu node that also links to this content item.");
 			$item['css_class'] = 'zenario_menunode_internal_secondary';
 		}
 	
 	} elseif ($item['target_loc'] == 'ext' && $item['target']) {
+		$item['tooltip'] = adminPhrase('This menu node links to an external URL.');
 		$item['css_class'] = 'zenario_menunode_external';
 	
 	} else {

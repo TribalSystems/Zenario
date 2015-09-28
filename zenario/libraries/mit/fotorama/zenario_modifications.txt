@@ -1,0 +1,1 @@
+fotorama.png url replaced with ../libraries/mit/fotorama/fotorama.png needed for this to work in admin mode

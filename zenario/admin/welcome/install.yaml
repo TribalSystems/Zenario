@@ -18,7 +18,7 @@ install:
                     type: toggle
                     redraw_onchange: true
                     full_width: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 reason:
                     full_width: true
                     pre_field_html: |  
@@ -27,7 +27,7 @@ install:
                         html: "&nbsp;"
                     post_field_html: |
                         </div>
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 next:
                     value: Begin Installation
                     type: submit
@@ -91,12 +91,12 @@ install:
                     value: Fresh Install
                     type: submit
                     full_width: true
-                    visible_if: "if (zenarioAB.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
+                    visible_if: "if (zenarioAW.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
                 restore:
                     value: Restore from Backup
                     type: submit
                     same_row: true
-                    visible_if: "if (zenarioAB.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
+                    visible_if: "if (zenarioAW.value('i_agree')) delete tuixObject.disabled; else tuixObject.disabled = true; true;"
         2:
             edit_mode:
                 enabled: true
@@ -127,102 +127,102 @@ install:
                     full_width: true
                     snippet:
                         html: Web Server
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_server:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 server_1:
                     full_width: true
                     snippet:
                         html: Apache http server
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 php:
                     full_width: true
                     snippet:
                         html: PHP
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_php:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 php_1:
                     full_width: true
                     snippet:
                         html: PHP version 5.3 or later
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 mysql:
                     full_width: true
                     snippet:
                         html: MySQL
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_mysql:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 mysql_1:
                     full_width: true
                     snippet:
                         html: MySQLi extension enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 mysql_2:
                     full_width: true
                     snippet:
                         html: MySQL version 5.0 or later
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 mb:
                     full_width: true
                     snippet:
                         html: Unicode Support
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_mb:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 mb_1:
                     full_width: true
                     snippet:
                         html: ctype extension enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 mb_2:
                     full_width: true
                     snippet:
                         html: mbstring extension enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 gd:
                     full_width: true
                     snippet:
                         html: Image Manipulation
-                    visible_if: zenarioAB.togglePressed(1)
+                    visible_if: zenarioAW.togglePressed(1)
                 show_gd:
                     type: toggle
                     redraw_onchange: true
                     same_row: true
-                    visible_if: "zenarioAB.togglePressed(1, tuixObject)"
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 gd_1:
                     full_width: true
                     snippet:
                         html: GD Library enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 gd_2:
                     full_width: true
                     snippet:
                         html: GIF Read Support enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 gd_3:
                     full_width: true
                     snippet:
                         html: JPG Support enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 gd_4:
                     full_width: true
                     snippet:
                         html: PNG Support enabled in PHP
-                    visible_if: zenarioAB.togglePressed()
+                    visible_if: zenarioAW.togglePressed()
                 
                 # We need to check whether mod-rewrite is working.
                 # This check can't always be done in PHP, so it must be done on the client.
@@ -240,7 +240,7 @@ install:
                             } else {
                                 tuixObject.row_class = 'section_warning';
                             }
-                            return zenarioAB.togglePressed(1);
+                            return zenarioAW.togglePressed(1);
                         }
                 show_mr:
                     type: toggle
@@ -251,7 +251,7 @@ install:
                             if (tuixObject.pressed === undefined) {
                                 tuixObject.pressed = !window.isHtaccessWorking;
                             }
-                            return zenarioAB.togglePressed(1, tuixObject)
+                            return zenarioAW.togglePressed(1, tuixObject)
                         }
                 mr_valid_1:
                     full_width: true
@@ -260,7 +260,7 @@ install:
                         html: |
                             Friendly URLs are supported (this is optional, but recommended).
                     visible_if: |
-                        window.isHtaccessWorking && zenarioAB.togglePressed()
+                        window.isHtaccessWorking && zenarioAW.togglePressed()
                 mr_warning_1:
                     full_width: true
                     row_class: warning
@@ -271,7 +271,7 @@ install:
                             Please check your Apache configuration (that the mod_rewrite module is enabled),
                             and that your Zenario directory contains the .htaccess file.
                     visible_if: |
-                        !window.isHtaccessWorking && zenarioAB.togglePressed()
+                        !window.isHtaccessWorking && zenarioAW.togglePressed()
                 sub_table_close:
                     snippet:
                         html: ""
@@ -505,7 +505,7 @@ install:
                 password:
                     label: "Choose a Password:"
                     type: password
-                    onkeyup: zenarioAB.quickValidateWelcomePage(300);
+                    onkeyup: zenarioAW.quickValidateWelcomePage(300);
                     row_class: row_form
                     return_key_presses_button: next
                 password_strength:
@@ -617,7 +617,7 @@ install:
                     label: "Path:"
                     type: text
                     row_class: row_form
-                    onkeyup: zenarioAB.quickValidateWelcomePage(500);
+                    onkeyup: zenarioAW.quickValidateWelcomePage(500);
                     return_key_presses_button: next
                 path_status:
                     full_width: true

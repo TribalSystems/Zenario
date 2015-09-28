@@ -498,13 +498,15 @@ class zenario_content_list extends module_base_class {
 		
 		$this->fillAdminSlotControlsShowFilterSettings($controls, $key);
 		
-		$controls['actions']['create_a_content_item'] = array(
-			'ord' => 50,
-			'label' => adminPhrase('Create a Content Item'),
-			'page_modes' => array('edit' => true),
-			'onclick' => "
-				zenarioAB.open('zenario_content', ". json_encode($key). ");
-				return false;");
+		if (checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
+			$controls['actions']['create_a_content_item'] = array(
+				'ord' => 50,
+				'label' => adminPhrase('Create a Content Item'),
+				'page_modes' => array('edit' => true),
+				'onclick' => "
+					zenarioAB.open('zenario_content', ". json_encode($key). ");
+					return false;");
+		}
 		
 	}
 	

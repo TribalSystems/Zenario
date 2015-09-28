@@ -60,7 +60,6 @@ class zenario_users__admin_boxes__content extends zenario_users {
 			 && ($equivId = equivId($box['key']['source_cID'], $box['key']['cType']))
 			 && ($chain = getRow('translation_chains', true, array('equiv_id' => $equivId, 'type' => $cType)))) {
 				$values['privacy/privacy'] = $chain['privacy'];
-				$values['privacy/log_user_access'] = $chain['log_user_access'];
 				$values['privacy/group_members'] = self::setupGroupOrUserCheckboxes('group_content_link', 'group_id', $equivId, $cType);
 				$values['privacy/specific_users'] = self::setupGroupOrUserCheckboxes('user_content_link', 'user_id', $equivId, $cType);
 			}

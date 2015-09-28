@@ -57,7 +57,13 @@ switch ($path) {
 			$box['title'] = adminPhrase('Creating an Email Template');
 			$box['tabs']['meta_data']['fields']['email_address_from']['value'] = setting('email_address_from');
 			$box['tabs']['meta_data']['fields']['email_name_from']['value'] = setting('email_name_from');
-			
+		}
+		
+		$style_formats = siteDescription('email_style_formats');
+		if (!empty($style_formats)) {
+			$box['tabs']['body']['fields']['body']['editor_options']['style_formats'] = $style_formats;
+			$box['tabs']['body']['fields']['body']['editor_options']['toolbar'] =
+				'undo redo | image link unlink | bold italic | removeformat | styleselect | fontsizeselect | formatselect | numlist bullist | outdent indent | code';
 		}
 		
 		break;

@@ -456,7 +456,7 @@ _sql
 
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]user_form_fields`
-	SET `name` = `label`
+	SET `name` = IF(`label` IS NOT NULL, `label`, '')
 _sql
 
 ); revision( 29237
@@ -621,6 +621,33 @@ _sql
 	ADD COLUMN `create_index` tinyint(1) NOT NULL DEFAULT 0 AFTER `show_in_organizer`
 _sql
 
+); revision( 32463
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement') DEFAULT NULL
+_sql
+
+); revision( 32466
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `values_source` varchar(255) NOT NULL DEFAULT '',
+	ADD COLUMN `values_source_filter` varchar(255) NOT NULL DEFAULT ''
+_sql
+
+); revision( 32472
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `title_tag` enum('h1','h2','h3','h4','h5','h6','p') DEFAULT 'h2' AFTER `title`
+_sql
+
+); revision( 32473
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN profanity_filter_text BOOLEAN NOT NULL DEFAULT 0
+_sql
+
 );
-
-

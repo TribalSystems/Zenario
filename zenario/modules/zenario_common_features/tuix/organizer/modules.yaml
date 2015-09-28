@@ -28,7 +28,7 @@ zenario__modules:
                     remove_filter: true
                 module_not_initialized:
                     ord: 2
-                    label: "Uninitialized"
+                    label: "Uninitialised"
                     column: status
                     value: module_not_initialized
                 module_running:
@@ -36,7 +36,6 @@ zenario__modules:
                     label: "Running"
                     column: status
                     value: module_running
-                    enabled_by_default: true
                 module_suspended:
                     ord: 4
                     label: "Suspended"
@@ -68,6 +67,7 @@ zenario__modules:
             columns:
                 id:
                     title: ID
+                    format: id
                     db_column: m.id
                     show_by_default: false
                     searchable: true
@@ -96,7 +96,7 @@ zenario__modules:
                     show_by_default: true
                     format: enum
                     values:
-                        module_not_initialized: Uninitialized
+                        module_not_initialized: Uninitialised
                         module_running: Running
                         module_suspended: Suspended
                     width: small
@@ -214,10 +214,12 @@ zenario__modules:
                         refiner: album
             item_buttons:
                 view_dropdown:
+                    ord: 1
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 view_instances:
+                    ord: 2
                     label: Module's plugins
                     parent: view_dropdown
                     traits:
@@ -227,6 +229,7 @@ zenario__modules:
                         branch: true
                         refiner: plugin
                 usage_layouts:
+                    ord: 3
                     parent: view_dropdown
                     label: "Layouts with module's plugins"
                     traits:
@@ -237,6 +240,7 @@ zenario__modules:
                         branch: true
                         refiner: module_usage
                 usage_item:
+                    ord: 4
                     parent: view_dropdown
                     label: "Content items using this module's plugins"
                     traits:
@@ -247,6 +251,7 @@ zenario__modules:
                         branch: true
                         refiner: module_usage
                 phrases:
+                    ord: 5
                     priv: _PRIV_VIEW_LANGUAGE
                     parent: view_dropdown
                     label: "Module's phrases"
@@ -258,6 +263,7 @@ zenario__modules:
                         branch: true
                         refiner: language_and_plugin
                 show_frameworks:
+                    ord: 6
                     parent: view_dropdown
                     label: "Module's frameworks"
                     hide_in_select_mode: true
@@ -268,6 +274,7 @@ zenario__modules:
                         branch: true
                         refiner: module
                 view_content_items:
+                    ord: 7
                     parent: view_dropdown
                     label: Effective usage
                     traits:
@@ -278,20 +285,12 @@ zenario__modules:
                         branch: true
                         refiner: module_effective_usage
                 action_dropdown:
+                    ord: 8
                     label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                run:
-                    priv: _PRIV_RUN_MODULE
-                    label: Start module
-                    traits:
-                        code_present: true
-                    without_traits:
-                        module_running: true
-                    hide_in_select_mode: true
-                    admin_box:
-                        path: zenario_setup_module
                 upgrade:
+                    ord: 10
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     label: "Upgrade compatible modules' plugins"
@@ -308,6 +307,7 @@ zenario__modules:
                         request:
                             upgrade: "1"
                 suspend:
+                    ord: 11
                     parent: action_dropdown
                     priv: _PRIV_SUSPEND_MODULE
                     label: Suspend module
@@ -323,6 +323,7 @@ zenario__modules:
                         request:
                             suspend: "1"
                 uninstall:
+                    ord: 11
                     parent: action_dropdown
                     priv: _PRIV_RESET_MODULE
                     label: Uninitialise and delete data
@@ -338,6 +339,7 @@ zenario__modules:
                         request:
                             uninstall: "1"
                 remove:
+                    ord: 12
                     priv: _PRIV_RESET_MODULE
                     label: Remove
                     without_traits:
@@ -350,3 +352,14 @@ zenario__modules:
                             message_type: warning
                         request:
                             remove: "1"
+                run:
+                    ord: 13
+                    priv: _PRIV_RUN_MODULE
+                    label: Start module
+                    traits:
+                        code_present: true
+                    without_traits:
+                        module_running: true
+                    hide_in_select_mode: true
+                    admin_box:
+                        path: zenario_setup_module

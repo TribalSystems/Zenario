@@ -53,7 +53,8 @@ define('RUNNING_FROM_COMMAND_LINE', true);
 
 //Include the CMS' library of functions, but don't include any behaviour designed
 //for sending a page to a Visitor as this is a scheduled task and not a page load.
-require CMS_ROOT. 'zenario/liteheader.inc.php';
+require CMS_ROOT. 'zenario/basicheader.inc.php';
+require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
 connectLocalDB();

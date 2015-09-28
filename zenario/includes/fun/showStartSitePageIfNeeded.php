@@ -27,9 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-if (!isset($_SESSION)) {
-	session_start();
-}
+startSession();
 
 $logoURL = $logoWidth = $logoHeight = false;
 if (cms_core::$lastDB
