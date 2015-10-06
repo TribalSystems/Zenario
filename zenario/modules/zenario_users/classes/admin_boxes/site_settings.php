@@ -59,6 +59,18 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 		}
 		
 		$fields['unconfirmed_users/max_days_user_inactive']['hidden'] = !$values['unconfirmed_users/remove_inactive_users'];
+		
+		if (isset($fields['names/user_use_screen_name'])) {
+			$screenNamesOn = !empty($values['names/user_use_screen_name']);
+			$screenNamesWereOn = !empty($fields['names/user_use_screen_name']['value']);
+			
+			$box['tabs']['names']['notices']['turning_off_screen_names']['show'] =
+				$screenNamesWereOn && !$screenNamesOn;
+			
+			$box['tabs']['names']['notices']['turning_on_screen_names']['show'] =
+				$screenNamesOn && !$screenNamesWereOn
+				&& checkRowExists('users', array('screen_name' => array('!' => '')));
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -70,6 +82,31 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 			 && !$values['passwords/plaintext_extranet_user_passwords']) {
 				foreach (getRowsArray('users', array('id', 'password'), array('password_salt' => null)) as $user) {
 					setUsersPassword($user['id'], $user['password'], -1, false);
+				}
+			}
+			
+			if (isset($fields['names/user_use_screen_name'])) {
+				//If the "use screen names" option is changed, regenerate the user identifiers
+				$screenNamesOn = !empty($values['names/user_use_screen_name']);
+				$screenNamesWereOn = !empty($fields['names/user_use_screen_name']['value']);
+				if ($screenNamesOn != $screenNamesWereOn) {
+				
+					if ($screenNamesWereOn) {
+						//If we're turning screen names off, all users will be affected!
+						$affectedUsers = array();
+					} else {
+						//If we're turning screen names on, only users with a screen name will be affected
+						$affectedUsers = array('screen_name' => array('!' => ''));
+					}
+				
+					//Clear the previous identifiers
+					updateRow('users', array('identifier' => null), $affectedUsers);
+				
+					//Loop through all users and set identifiers
+					$result = getRows('users', array('id', 'screen_name', 'first_name', 'last_name', 'email'), $affectedUsers);
+					while ($user = sqlFetchAssoc($result)) {
+						updateRow('users', array('identifier' => generateUserIdentifier($user['id'], $user)), $user['id']);
+					}
 				}
 			}
 		}

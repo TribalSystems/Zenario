@@ -197,7 +197,7 @@ class zenario_event_listing extends module_base_class {
 				$eventRow['equiv_id'] = $row['equiv_id'];
 				$eventRow['language_id'] = $row['language_id'];
 
-				if ( ($eventRow['equiv_id'] != equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != $_SESSION['user_lang'])) ){
+				if ( ($this->cType != 'event' || $eventRow['equiv_id'] != equivId($this->cID, $this->cType))  && (!isset($eventRows[$eventRow['equiv_id']]) || ($eventRows[$eventRow['equiv_id']]['language_id'] != $_SESSION['user_lang'])) ){
 					$eventRows[$eventRow['equiv_id']] = $eventRow;
 				}
 				

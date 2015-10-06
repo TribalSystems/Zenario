@@ -83,7 +83,6 @@ class zenario_common_features__admin_boxes__custom_tab extends module_base_class
 				'parent_field_id' => $values['details/parent_field_id']);
 			
 			if (!$box['key']['id']) {
-				$cols['dataset_id'] = $box['key']['dataset_id'];
 				
 				$sql = "
 					SELECT
@@ -98,7 +97,7 @@ class zenario_common_features__admin_boxes__custom_tab extends module_base_class
 				$box['key']['id'] = '__custom_tab_'. $row[1];
 			}
 			
-			setRow('custom_dataset_tabs', $cols, array('name' => $box['key']['id']));
+			setRow('custom_dataset_tabs', $cols, array('name' => $box['key']['id'], 'dataset_id' => $box['key']['dataset_id']));
 		}
 	}
 }

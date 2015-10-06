@@ -313,6 +313,7 @@ zenario__locations:
 			export:
 				priv: _PRIV_EXPORT_LOCATIONS
 				label: Export
+				hide_in_select_mode: true
 				admin_box:
 					path: zenario_export_dataset
 					key:

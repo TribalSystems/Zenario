@@ -112,15 +112,21 @@ class zenario_location_manager extends module_base_class {
 		} elseif ($path=="zenario__locations/panel") {
 			// Add dataset ID to import button
 			$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-			$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
-			$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
-			$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
-				$dataset['id'];
-			
-			// If no locations, hide export button
-			if (count($panel['items']) <= 0) {
-				$panel['collection_buttons']['export']['hidden'] = true;
+			if (isset($panel['collection_buttons']['import'])) {
+				$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = $dataset['id'];
 			}
+			if (isset($panel['collection_buttons']['donwload_sample_file'])) {
+				$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = $dataset['id'];
+			}
+			if (isset($panel['collection_buttons']['export'])) {
+				$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = $dataset['id'];
+				// If no locations, hide export button
+				if (count($panel['items']) <= 0) {
+					$panel['collection_buttons']['export']['hidden'] = true;
+				}
+			}
+			
+			
 			
 			$admins = array();
 			$adminsRaw = getRows("admins",array("id","username","authtype"),array("status" => "active"));

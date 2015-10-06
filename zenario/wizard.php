@@ -84,14 +84,19 @@ echo '
 	zenarioW.getRequest = ', json_encode($_GET), ';
 	
 	$(document).ready(function () {
-		zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
-			if (cookiesEnabled) {
-				zenarioW.start();
-			} else {
-				get("no_something").style.display = "block";
-				get("no_cookies").style.display = "inline";
-			}
-		});
+		try {
+			zenarioA.checkCookiesEnabled().after(function(cookiesEnabled) {
+				if (cookiesEnabled) {
+					zenarioW.start();
+				} else {
+					get("no_something").style.display = "block";
+					get("no_cookies").style.display = "inline";
+				}
+			});
+		} catch (e) {
+			get("no_something").style.display = "block";
+			get("no_cookies").style.display = "inline";
+		}
 	});
 </script>';
 
@@ -165,8 +170,12 @@ echo '
 	
 				<div>
 					<h1>', adminPhrase('Welcome to Zenario'), '</h1>
-					<p id="no_cookies">', adminPhrase('Please enable cookies in your browser to continue.'), '</p>
-					<p id="no_script">', adminPhrase('Please enable JavaScript in your browser to continue.'), '</p>
+					<p id="no_cookies">',
+						adminPhrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please alert your system administrator. There may be a problem with the caching or session storage on your server."),
+					'</p>
+					<p id="no_script">',
+						adminPhrase('Please enable JavaScript in your browser to continue.'),
+					'</p>
 				</div>
 			</div>
 		</div>

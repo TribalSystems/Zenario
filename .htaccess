@@ -4,6 +4,7 @@ Options -Indexes
 	ModPagespeed on
 	ModPagespeedRewriteLevel CoreFilters
 	ModPagespeedDisableFilters add_head,combine_css,combine_javascript,inline_javascript,rewrite_javascript_external
+	ModPagespeedDisallow "*no_pagespeed*"
 	ModPagespeedDisallow "*no_cache*"
 </IfModule>
 

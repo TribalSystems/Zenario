@@ -6,10 +6,28 @@ site_settings:
     tabs:
         names:
             label: Sign-in
+            show_errors_after_field: description
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
                 on: false
+
+            notices:
+                turning_off_screen_names:
+                    show: false
+                    type: warning
+                    message: >
+                        If you turn off screen names, the identifier for all users and contacts
+                        will be changed to first name+last name (+suffix number, if non-unique).
+                        For users and contacts without a first name or last name,
+                        the start of their email address will be used instead.
+                turning_on_screen_names:
+                    show: false
+                    type: warning
+                    message: >
+                        If you turn on screen names, the identifier for all users and contacts will be changed
+                        to their screen name if they have one.
+            
             fields:
                 description:
                     full_width: true
@@ -20,7 +38,8 @@ site_settings:
                         name: user_use_screen_name
                     label: 'Use screen names'
                     type: checkbox
-                    value: "1"
+                    format_onchange: true
+                    value: 1
                     side_note: |
                         For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
                         If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet

@@ -56,11 +56,11 @@ if (get('refiner__template') && get('refiner__content_type') && $refinerName == 
 }
 
 
-//Check if a specific Content Type has been set
-if (get('refiner__content_type')) {
-	$panel['key']['cType'] = get('refiner__content_type');
-} elseif (get('refiner__template')) {
-	$panel['key']['cType'] = getRow('layouts', 'content_type', get('refiner__template'));
+//Check if a specific Content Type has been set, either by using a content-type refiner or a layout's refiner
+if (get('refiner__template')) {
+	$panel['key']['cType'] = $_GET['refiner__content_type'] = getRow('layouts', 'content_type', get('refiner__template'));
+} elseif (get('refiner__content_type')) {
+	$panel['key']['cType'] = $_GET['refiner__content_type'];
 }
 
 if (isset($panel['collection_buttons']['create'])) {

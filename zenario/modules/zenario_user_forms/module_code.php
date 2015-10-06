@@ -682,21 +682,25 @@ class zenario_user_forms extends module_base_class {
 				break;
 			case 'zenario__user_forms/panels/zenario_user_forms__user_responses':
 				
-					if (!setting('zenario_user_forms_set_profanity_filter')) {
-						unset($panel['columns']['blocked_by_profanity_filter']);
-						unset($panel['columns']['profanity_filter_score']);
-						unset($panel['columns']['profanity_tolerance_limit']);
-					} else {
-						foreach($panel['items'] as $id => &$item) {
-							$profanityValues = getRow(ZENARIO_USER_FORMS_PREFIX. 'user_response',
-								array('blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'),
-								array('id' => $id));
-							$profanityValueForPanel = ($profanityValues['blocked_by_profanity_filter'] == 1 ? "Yes" : "No");
-							$item['blocked_by_profanity_filter'] = $profanityValueForPanel;
-							$item['profanity_filter_score'] = $profanityValues['profanity_filter_score'];
-							$item['profanity_tolerance_limit'] = $profanityValues['profanity_tolerance_limit'];
-						}
+				// Set panel title
+				$formDetails = getRow('user_forms', array('name'), $refinerId);
+				$panel['title'] = adminPhrase('Responses for form "[[name]]"', $formDetails);
+				
+				if (!setting('zenario_user_forms_set_profanity_filter')) {
+					unset($panel['columns']['blocked_by_profanity_filter']);
+					unset($panel['columns']['profanity_filter_score']);
+					unset($panel['columns']['profanity_tolerance_limit']);
+				} else {
+					foreach($panel['items'] as $id => &$item) {
+						$profanityValues = getRow(ZENARIO_USER_FORMS_PREFIX. 'user_response',
+							array('blocked_by_profanity_filter', 'profanity_filter_score', 'profanity_tolerance_limit'),
+							array('id' => $id));
+						$profanityValueForPanel = ($profanityValues['blocked_by_profanity_filter'] == 1 ? "Yes" : "No");
+						$item['blocked_by_profanity_filter'] = $profanityValueForPanel;
+						$item['profanity_filter_score'] = $profanityValues['profanity_filter_score'];
+						$item['profanity_tolerance_limit'] = $profanityValues['profanity_tolerance_limit'];
 					}
+				}
 				
 				if (!self::isFormCRMEnabled($refinerId)) {
 					unset($panel['columns']['crm_response']);

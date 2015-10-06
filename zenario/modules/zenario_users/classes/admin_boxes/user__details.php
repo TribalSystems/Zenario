@@ -49,10 +49,6 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			$values['details/screen_name_confirmed'] = $user['screen_name_confirmed'];
 			$values['details/terms_and_conditions_accepted'] = $user['terms_and_conditions_accepted'];
 			
-			if (!setting('user_use_screen_name')) {
-				$fields['details/screen_name']['read_only'] = true;
-			}
-			
 			switch($user['status']) {
 				case 'contact':
 					$fields['details/status']['side_note'] = 
@@ -102,9 +98,6 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			
 			unset($fields['details/status']['values']['suspended']);
 			unset($fields['details/status']['values']['pending']);
-			if (!setting('user_use_screen_name')) {
-				$fields['details/screen_name']['hidden'] = $fields['details/screen_name_confirmed']['hidden'] = true;
-			}
 			$fields['details/email_verified']['hidden'] = true;
 			
 			$box['title'] = adminPhrase('Creating a user');

@@ -144,8 +144,19 @@ class zenario_common_features extends module_base_class {
 		return $documentProperties;
 	}
 	
-	public static function userStatus() {
-		return array('pending' => 'Pending', 'active' => 'Active', 'suspended' => 'Suspended', 'contact' => 'Contact');
+	// Centralised list for user status
+	public static function userStatus($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array('can_filter' => false);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				return array(
+					'pending' => 'Pending', 
+					'active' => 'Active', 
+					'suspended' => 'Suspended', 
+					'contact' => 'Contact'
+				);
+		}
 	}
 	
 	

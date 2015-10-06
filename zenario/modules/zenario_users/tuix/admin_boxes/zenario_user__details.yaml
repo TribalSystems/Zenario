@@ -57,7 +57,9 @@ zenario_user__details:
                     visible_if: |
                         zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
+                        && zenarioA.siteSettings.user_use_screen_name
                     maxlength: 50
+                    reformat_onchange: true
                 suggest_screen_name:
                     same_row: true
                     visible_if: |
@@ -81,6 +83,7 @@ zenario_user__details:
                         zenarioAB.tuix.key.id
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
+                        && zenarioA.siteSettings.user_use_screen_name
                     read_only: true 
                     side_note: "If unchecked the screen name has been automatically generated with no user input."
                 change_password:

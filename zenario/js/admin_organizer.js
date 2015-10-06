@@ -2798,6 +2798,7 @@ zenarioO.action2 = function() {
 
 			if (message) {
 				if (zenarioA.showMessage(message, undefined, 'error') === false) {
+					get('organizer_preloader_circle').style.display = 'none';
 					return;
 				}
 			}

@@ -704,8 +704,19 @@ class zenario_crm_form_integration extends module_base_class {
 					if ($fieldType == 'checkbox') {
 						
 						$checkboxState = $value ? 1 : 0;
-						if ($crmValue = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId,'form_field_value_dataset_id'=>0, 'form_field_value_unlinked_id'=>0, 'form_field_value_checkbox_state' => $checkboxState))) {
-							
+						
+						$crmValue = getRow(
+							ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
+							'value', 
+							array(
+								'form_field_id' => $fieldId,
+								'form_field_value_dataset_id' => 0, 
+								'form_field_value_unlinked_id' => 0, 
+								'form_field_value_checkbox_state' => $checkboxState
+							)
+						);
+						
+						if ($crmValue !== false) {
 							$value = $crmValue;
 						}
 					}

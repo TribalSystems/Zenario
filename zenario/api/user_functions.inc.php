@@ -203,26 +203,26 @@ function isInvalidUser($values, $id = false) {
 
 function generateUserIdentifier($userId, $details = array()) {
 	
-	$baseScreenName = $firstName = $lastName = $email = '';
-	if (!empty($details['screen_name'])) {
-		$baseScreenName = $details['screen_name'];
-	} elseif ($userId) {
-		$userDetails = getRow('users', array('identifier', 'screen_name', 'first_name', 'last_name', 'email'), $userId);
-		foreach ($userDetails as $col => $value) {
-			if (!isset($detais[$col])) {
-				$details[$col] = $value;
-			}
-		}
-		if ($details['screen_name']) {
-			$baseScreenName = $userDetails['screen_name'];
-		}
+	//Look up details on this user if not provided
+	if (empty($details)
+	 || !isset($details['email'])
+	 || !isset($details['last_name'])
+	 || !isset($details['first_name'])
+	 || !isset($details['screen_name'])) {
+		$details = getRow('users', array('screen_name', 'first_name', 'last_name', 'email'), $userId);
 	}
 	
+	$baseScreenName = '';
 	$firstName = $details['first_name'];
 	$lastName = $details['last_name'];
 	$email = $details['email'];
-	// Remove special characters and get the base screen name
-	if (!$baseScreenName) {
+	
+	//If this site uses screen names, use the screen name as the identifier...
+	if (!setting('user_use_screen_name')
+	 || !($baseScreenName = $details['screen_name'])) {
+		//...otherwise calcuate an identifier from the first name, last name and/or email address
+		
+		// Remove special characters and get the base screen name
 		$firstName = trimNonWordCharactersUnicode($firstName);
 		$lastName = trimNonWordCharactersUnicode($lastName);
 		if ($firstName || $lastName) {

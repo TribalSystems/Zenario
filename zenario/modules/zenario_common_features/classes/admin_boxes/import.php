@@ -545,6 +545,9 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 		
 		if ($box['tab'] == 'actions') {
+			
+			$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
+			
 			foreach($box['tabs']['actions']['fields'] as $name => $field) {
 				if (!in_array($name, array('records_statement', 'email_report', 'line_break', 'previous'))) {
 					unset($box['tabs']['actions']['fields'][$name]);
@@ -555,6 +558,14 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			}
 			$ord = 1;
 			foreach ($datasetFieldDetails as $fieldId => $datasetField) {
+				
+				// Hide certain fields when importing users
+				if ($userImport) {
+					if ($datasetField['is_system_field'] && $datasetField['db_column'] === 'screen_name_confirmed') {
+						continue;
+					}
+				}
+				
 				$ord++;
 				$valueFieldName = 'value__'.$fieldId;
 				$fieldValuePicker = array(
@@ -738,17 +749,19 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$DBColumnValueIndexLink = array();
 		$errorCount = 0;
 		
-		$userImport = ($datasetDetails['system_table'] == 'users');
+		$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
 		$mergeOrOverwriteRow = false;
 		
 		foreach ($rowFieldIdLink as $ord => $fieldId) {
 			$field = false;
 			$columnIndex = $ord + 1;
+			
 			if (isset($datasetFieldDetails[$fieldId])) {
 				$field = $datasetFieldDetails[$fieldId];
 				$DBColumnValueIndexLink[$field['db_column']] = $columnIndex;
 			}
 			
+			// Validate fields
 			if ($field && $field['db_column'] && isset($lineValues[$ord])) {
 				
 				$value = trim($lineValues[$ord]);
@@ -874,6 +887,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						}
 					}
 				}
+				
 				// Validate required fields
 				if ($field['required'] && ($value === '')) {
 					if (!$errorMessage = $field['required_message']) {
@@ -882,28 +896,39 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 				}
 				
-				
-			} elseif (($fieldId == 'id') && ($value = $lineValues[$ord])) {
-				
-				if (!self::$systemDataIDColumn) {
-					self::$systemDataIDColumn = self::getTablePrimaryKeyName($datasetDetails['system_table']);
-				}
-				$currentRow = getRowsArray($datasetDetails['system_table'], self::$systemDataIDColumn, array(self::$systemDataIDColumn => $value));
-				$rowCount = count($currentRow);
-				if ($rowCount == 0) {
-					$errorMessage = 'No existing record found for ID column '.self::$systemDataIDColumn;
-					self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-				}
-				
-				if (($IDColumnIndex !== false) && ($ord == $IDColumnIndex)) {
-					if ($value === '') {
-						$errorMessage = 'ID field is blank';
+				// Validate fields with a values source
+				if ($field['values_source']) {
+					$lov = getCentralisedListValues($field['values_source']);
+					if (!isset($lov[$value])) {
+						$errorMessage = 'Unknown list value';
 						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
-					} else {
-						// Record duplicates of chosen ID field in import
-						if ($errorLines = self::recordUniqueImportValue(self::$ids, $value, $lineNumber)) {
-							$errorMessage = 'More than one line in the file has a matching ID column ('.implode(', ',$errorLines).')';
+					}
+				}
+				
+			
+			} elseif (($fieldId == 'id') && isset($lineValues[$ord])) {
+				
+				if ($value = trim($lineValues[$ord])) {
+					if (!self::$systemDataIDColumn) {
+						self::$systemDataIDColumn = self::getTablePrimaryKeyName($datasetDetails['system_table']);
+					}
+					$currentRow = getRowsArray($datasetDetails['system_table'], self::$systemDataIDColumn, array(self::$systemDataIDColumn => $value));
+					$rowCount = count($currentRow);
+					if ($rowCount == 0) {
+						$errorMessage = 'No existing record found for ID column '.self::$systemDataIDColumn;
+						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+					}
+					
+					if (($IDColumnIndex !== false) && ($ord == $IDColumnIndex)) {
+						if ($value === '') {
+							$errorMessage = 'ID field is blank';
 							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+						} else {
+							// Record duplicates of chosen ID field in import
+							if ($errorLines = self::recordUniqueImportValue(self::$ids, $value, $lineNumber)) {
+								$errorMessage = 'More than one line in the file has a matching ID column ('.implode(', ',$errorLines).')';
+								self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
+							}
 						}
 					}
 				}
@@ -1259,6 +1284,12 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					if (!isset($data['last_name'])) {
 						$data['last_name'] = '';
 					}
+					
+					// Do not allow screen names to be imported to sites that don't use screen names
+					if (!setting('user_use_screen_name')) {
+						unset($data['screen_name']);
+					}
+					
 					$id = saveUser($data);
 					
 					// If site uses screen names and no screen name is imported, use the identifier as a screen name
@@ -1272,6 +1303,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				
 				// Custom logic to save locations
 				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
+					$data['last_updated_via_import'] = now();
 					$id = insertRow($datasetDetails['system_table'], $data);
 				
 				// Other datasets
@@ -1308,7 +1340,12 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				
 				// Custom logic to update users
 				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
+					if (!setting('user_use_screen_name')) {
+						unset($data['screen_name']);
+					}
 					$data['modified_date'] = now();
+				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
+					$data['last_updated_via_import'] = now();
 				}
 				
 				$rowsToUpdate = getRowsArray($datasetDetails['system_table'], $systemDataIDColumn, array($IDColumn => $IDColumnValue));

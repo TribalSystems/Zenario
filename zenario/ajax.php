@@ -73,6 +73,10 @@ if ($methodCall == 'refreshPlugin'
 	$cID = $cType = $content = $version = $redirectNeeded = $instanceFound = false;
 	resolveContentItemFromRequest($cID, $cType, $redirectNeeded);
 	
+	if (!$cVersion = request('cVersion')) {
+		$cVersion = getAppropriateVersion($cID, $cType);
+	}
+	
 	if (!cms_core::$cVersion = getShowableContent($content, $version, $cID, $cType, request('cVersion'))) {
 		exit;
 	}

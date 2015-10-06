@@ -271,9 +271,9 @@ zenario__layouts:
                     hide_in_select_mode: true
                     label: Content items using this layout
                     link:
-                        path: zenario__layouts/panels/layouts/templates_content_via_ctype/panel
-                        refiner: templates_content_via_ctype
+                        path: zenario__content/panels/content
                         branch: true
+                        refiner: template
                     without_traits:
                         unregistered: true
                 view_slots:
@@ -389,77 +389,3 @@ zenario__layouts:
                         unregistered: true
                     without_columns_set:
                         default: true
-            
-            #    This is a hack to get the content type in the chain of refiners when viewing the Content using a Layout
-            #    or Content using a Layout by Language.
-            #    
-            #    Firstly, we go though a refiner that looks up the Content Type of the Layout from the Layout Id.
-            #    
-            #    Secondly, we go through another refiner that looks up the value of the template id from the original
-            #    refiner and repropagates that with the correct name.
-            #    
-            #    Finally, we go to the actual location that we want to go to.
-            templates_content_via_ctype:
-                panel:
-                    db_items:
-                        table: '[[DB_NAME_PREFIX]]layouts AS l'
-                        id_column: l.content_type
-                    refiner_required: true
-                    refiners:
-                        templates_content_via_ctype:
-                            sql: 'l.layout_id = [[REFINER_ID]]'
-                    allow_bypass: true
-                    item:
-                        link:
-                            path: zenario__layouts/panels/layouts/templates_content_via_ctype2/panel
-                            branch: true
-                            refiner: content_type
-            templates_content_via_ctype2:
-                panel:
-                    db_items:
-                        table: '[[DB_NAME_PREFIX]]layouts AS l'
-                        id_column: l.layout_id
-                    refiner_required: true
-                    refiners:
-                        content_type:
-                            sql: |
-                                l.layout_id = [[REFINER__TEMPLATES_CONTENT_VIA_CTYPE]]
-                                                                AND l.content_type = [[REFINER_ID]]
-                    allow_bypass: true
-                    item:
-                        link:
-                            path: zenario__content/panels/content
-                            branch: true
-                            refiner: template
-            templates_languages_via_ctype:
-                panel:
-                    db_items:
-                        table: '[[DB_NAME_PREFIX]]layouts AS l'
-                        id_column: l.content_type
-                    refiner_required: true
-                    refiners:
-                        templates_languages_via_ctype:
-                            sql: 'l.layout_id = [[REFINER_ID]]'
-                    allow_bypass: true
-                    item:
-                        link:
-                            path: zenario__layouts/panels/layouts/templates_languages_via_ctype2/panel
-                            branch: true
-                            refiner: content_type
-            templates_languages_via_ctype2:
-                panel:
-                    db_items:
-                        table: '[[DB_NAME_PREFIX]]layouts AS l'
-                        id_column: l.layout_id
-                    refiner_required: true
-                    refiners:
-                        content_type:
-                            sql: |
-                                l.layout_id = [[REFINER__TEMPLATES_LANGUAGES_VIA_CTYPE]]
-                                                                AND l.content_type = [[REFINER_ID]]
-                    allow_bypass: true
-                    item:
-                        link:
-                            path: zenario__content/panels/languages
-                            branch: true
-                            refiner: template

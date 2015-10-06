@@ -164,7 +164,7 @@ function checkConfigFileExists() {
 }
 
 function compareVersionNumber($actual, $required) {
-	return version_compare($actual, $required, '>=');
+	return version_compare(preg_replace('@[^\d\.]@', '', $actual), $required, '>=');
 }
 
 
