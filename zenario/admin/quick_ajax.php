@@ -234,7 +234,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 							if (setting('mod_rewrite_enabled')) {
 								$link = $aliasOrCID. setting('mod_rewrite_suffix');
 							} else {
-								$link = indexDotPHP(). "?cID=". $aliasOrCID;
+								$link = DIRECTORY_INDEX_FILENAME. '?cID='. $aliasOrCID;
 							}
 							$line .= '<u>'. htmlspecialchars($link). '</u>, ';
 						}
@@ -244,7 +244,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 					if (setting('mod_rewrite_enabled')) {
 						$link = $aliasOrCID. setting('mod_rewrite_suffix');
 					} else {
-						$link = indexDotPHP(). "?cID=". $aliasOrCID;
+						$link = DIRECTORY_INDEX_FILENAME. '?cID='. $aliasOrCID;
 					}
 					$line .= '<u>'. htmlspecialchars($link). '</u>';
 				

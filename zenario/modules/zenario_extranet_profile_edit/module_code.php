@@ -47,6 +47,7 @@ class zenario_extranet_profile_edit extends zenario_extranet {
 				}
 			}
 			$errors = array();
+			$data = userId();
 			$this->data['Edit'] = false;
 			if (get('extranet_edit_profile')) {
 				$this->data['Edit'] = true;
@@ -61,10 +62,11 @@ class zenario_extranet_profile_edit extends zenario_extranet {
 			$this->data['closeForm'] = $this->closeForm();
 			
 			if ($this->setting('enable_edit_profile') && post('extranet_update_profile')){
-				$errors = zenario_user_forms::validateUserForm($userFormId, $_POST);
+				$data = $_POST;
+				$errors = zenario_user_forms::validateUserForm($userFormId, $data);
 				
 				if (empty($errors)) {
-					$redirect = zenario_user_forms::saveUserForm($userFormId, $_POST, userId());
+					$redirect = zenario_user_forms::saveUserForm($userFormId, $data, userId());
 					if ($redirect) {
 						$this->headerRedirect($redirect);
 					}
@@ -75,7 +77,7 @@ class zenario_extranet_profile_edit extends zenario_extranet {
 					$this->data['View'] = false;
 				}
 			}
-			$this->data['form_fields'] = zenario_user_forms::drawUserForm($userFormId, userId(), !$this->data['Edit'], $errors, 0, $this->containerId);
+			$this->data['form_fields'] = zenario_user_forms::drawUserForm($userFormId, $data, !$this->data['Edit'], $errors, 0, $this->containerId);
 			$this->data['edit_profile_link'] = $this->refreshPluginSlotAnchor('extranet_edit_profile=1');
 			$this->data['back_link'] = $this->refreshPluginSlotAnchor('');
 		} else {

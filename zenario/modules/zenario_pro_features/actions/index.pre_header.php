@@ -72,30 +72,26 @@ if (empty($_GET) && empty($_POST)) {
 
 
 
-//If there is a requested page, check to see if this is actually a spare alias redirect to another page
-} elseif (get('cType') == 'html' || !get('cType')) {
-	if ($_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. 'index.php' || $_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. indexDotPHP()) {
-		if (($alias = ifNull(get('cID'), get('id')))
-		 && !is_numeric($alias)
-		 && (!checkRowExists('content_items', array('alias' => $alias)))
-		 && inc('zenario_pro_features')
-		 && ($spareAlias = getRow('spare_aliases', array('target_loc', 'content_id', 'content_type', 'ext_url'), array('alias' => $alias)))) {
-			
-			if ($spareAlias['target_loc'] == 'int' && $spareAlias['content_id']) {
-				header(
-					'location: '. linkToItem($spareAlias['content_id'], $spareAlias['content_type']),
-					true, 301);
-				exit;
-			
-			} elseif ($spareAlias['target_loc'] == 'ext' && $spareAlias['ext_url']) {
-				header(
-					'location: '. $spareAlias['ext_url'],
-					true, 301);
-				exit;
-			}
-		}
-		
-		unset($spareAlias);
-		unset($alias);
+//If there was an alias in the URL but it didn't resolve to a content item,
+//check to see if this is actually a spare alias redirect to another page or URL.
+} else
+if (!$cID
+ && $aliasInURL
+ && !is_numeric($aliasInURL)
+ && ($_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. 'index.php' || $_SERVER['SCRIPT_FILENAME'] == CMS_ROOT. DIRECTORY_INDEX_FILENAME)
+ && ($spareAlias = getRow('spare_aliases', array('target_loc', 'content_id', 'content_type', 'ext_url'), array('alias' => $aliasInURL)))) {
+	
+	if ($spareAlias['target_loc'] == 'int' && $spareAlias['content_id']) {
+		header(
+			'location: '. linkToItem($spareAlias['content_id'], $spareAlias['content_type']),
+			true, 301);
+		exit;
+	
+	} elseif ($spareAlias['target_loc'] == 'ext' && $spareAlias['ext_url']) {
+		header(
+			'location: '. $spareAlias['ext_url'],
+			true, 301);
+		exit;
 	}
+	unset($spareAlias);
 }

@@ -998,9 +998,9 @@ function getContentLang($cID, $cType = false) {
 
 //Try to work out what content item is being accessed
 //n.b. linkToItem() and resolveContentItemFromRequest() are essentially opposites of each other...
-function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
-	$alias = '';
-	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $aliasInURL = false;
+function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$aliasInURL) {
+	$aliasInURL = '';
+	$equivId = $cID = $cType = $reqLangId = $redirectNeeded = $languageSpecificDomain = $hierarchicalAliasInURL = false;
 
 	//If there is a menu id in the request, try to get the Content Item from that
 	if (!empty($_REQUEST['mID']) && ($menu = getContentFromMenu($_REQUEST['mID'], 2))) {
@@ -1031,19 +1031,19 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 	
 	//Check for a requested page in the GET request
 	if (!empty($_GET['cID'])) {
-		$alias = $_GET['cID'];
+		$aliasInURL = $_GET['cID'];
 		
 		//If we see any slashes in the alias used in the URL, any links we generate will need to have the full path.
-		if (strpos($alias, '/') !== false) {
+		if (strpos($aliasInURL, '/') !== false) {
 			cms_core::$mustUseFullPath = true;
 		}
 	}
 	//Also check the POST request; use this instead if we see it
 	if (!empty($_POST['cID'])) {
-		$alias = $_POST['cID'];
+		$aliasInURL = $_POST['cID'];
 	}
 	
-	if (!$reqLangId && !$alias) {
+	if (!$reqLangId && !$aliasInURL) {
 		//Show one of the home pages if there's nothing in the request and no language specific domain
 		$equivId = cms_core::$homeEquivId;
 		$cType = cms_core::$homeCType;
@@ -1051,10 +1051,10 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 	} else {
 		
 		//Check for slashes in the alias
-		if (strpos($alias, '/') !== false) {
+		if (strpos($aliasInURL, '/') !== false) {
 			
-			$aliasInURL = trim($alias, '/');
-			$slashes = explode('/', $aliasInURL);
+			$hierarchicalAliasInURL = trim($aliasInURL, '/');
+			$slashes = explode('/', $hierarchicalAliasInURL);
 			
 			//For multilingual sites, check the first part of the URL for the requested language code.
 			//(Except if a language-specific domain was used above, in which case skip this.)
@@ -1066,29 +1066,29 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			}
 			
 			//Use the last bit of the URL to find the page.
-			$alias = array_pop($slashes);
+			$aliasInURL = array_pop($slashes);
 			
 			//Anything in the middle are the other aliases in the menu tree; currently these are just visual
 			//and are ignored.
 		
 		} else {
 			//Check the request for a numeric cID, a string alias, and a language code separated by a comma.
-			$alias = explode(',', $alias);
+			$aliasInURL = explode(',', $aliasInURL);
 		
-			if (!empty($alias[1])) {
+			if (!empty($aliasInURL[1])) {
 				//Don't allow a language specific domain name *and* the language code in a comma
 				if ($languageSpecificDomain) {
 					$redirectNeeded = 301;
 				}
 				
-				$reqLangId = $alias[1];
+				$reqLangId = $aliasInURL[1];
 			}
 			
-			$alias = $alias[0];
+			$aliasInURL = $aliasInURL[0];
 		}
 		
 		//Language codes with no alias means the home page for that language
-		if ($reqLangId && !$alias) {
+		if ($reqLangId && !$aliasInURL) {
 			
 			langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true);
 			
@@ -1103,8 +1103,8 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			return;
 		
 		//Link by numeric cID
-		} elseif (is_numeric($alias)) {
-			$cID = (int) $alias;
+		} elseif (is_numeric($aliasInURL)) {
+			$cID = (int) $aliasInURL;
 			
 			if (!empty($_REQUEST['cType'])) {
 				$cType = $_REQUEST['cType'];
@@ -1123,7 +1123,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			return;
 		
 		//Link by tag id
-		} elseif (getCIDAndCTypeFromTagId($cID, $cType, $alias)) {
+		} elseif (getCIDAndCTypeFromTagId($cID, $cType, $aliasInURL)) {
 			//Allow tag ids with language codes, but redirect them to the correct URL
 			if ($reqLangId && !$languageSpecificDomain) {
 				langEquivalentItem($cID, $cType, $reqLangId);
@@ -1139,7 +1139,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 			$sql = "
 				SELECT id, type, equiv_id, language_id
 				FROM ". DB_NAME_PREFIX. "content_items
-				WHERE alias = '". sqlEscape($alias). "'
+				WHERE alias = '". sqlEscape($aliasInURL). "'
 				  AND status NOT IN ('trashed', 'deleted')
 				ORDER BY language_id";
 			
@@ -1179,15 +1179,15 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 				
 				//If this was a hierarchical URL, but hierarchical URLs are disabled,
 				//we should redirect back to a page with a flat URL
-				} elseif ($aliasInURL !== false && !setting('mod_rewrite_slashes')) {
+				} elseif ($hierarchicalAliasInURL !== false && !setting('mod_rewrite_slashes')) {
 					$redirectNeeded = 301;
 				
 				//If this was a hierarchical URL, check the URL was correct and redirect if not
-				} elseif ($aliasInURL !== false) {
-					$hierarchicalAlias = addHierarchicalAlias($row['equiv_id'], $row['type'], $row['language_id'], $alias);
+				} elseif ($hierarchicalAliasInURL !== false) {
+					$hierarchicalAlias = addHierarchicalAlias($row['equiv_id'], $row['type'], $row['language_id'], $aliasInURL);
 				
-					if ($aliasInURL != $hierarchicalAlias
-					 && $aliasInURL != $row['language_id']. '/'. $hierarchicalAlias) {
+					if ($hierarchicalAliasInURL != $hierarchicalAlias
+					 && $hierarchicalAliasInURL != $row['language_id']. '/'. $hierarchicalAlias) {
 						$redirectNeeded = 301;
 					}
 				}
@@ -1260,7 +1260,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded) {
 		$cID = $match['id'];
 		
 		//If there was a requested alias, which was different than the resolved alias, we should do a redirect.
-		if ($alias && $alias != $match['alias']) {
+		if ($aliasInURL && $aliasInURL != $match['alias']) {
 			$redirectNeeded = 301;
 		
 		//If there was a requested language, which was different than the resolved language, we should do a redirect.
@@ -2774,7 +2774,11 @@ function linkToItem(
 		return $fullPath. $aliasOrCID. $mod_rewrite_suffix. ($request? addQu($request) : '');
 	
 	} else {
-		return $fullPath. indexDotPHP(!$fullPath). "?cID=". $aliasOrCID. ($request? addAmp($request) : '');
+		$basePath = $fullPath. DIRECTORY_INDEX_FILENAME;
+		if ($basePath === '') {
+			$basePath = SUBDIRECTORY;
+		}
+		return $basePath. '?cID='. $aliasOrCID. ($request? addAmp($request) : '');
 	}
 }
 

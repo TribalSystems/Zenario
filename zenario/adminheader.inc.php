@@ -95,7 +95,7 @@ if (!checkPriv()) {
 		exit;
 	
 	//Also don't do the redirect for index.php or organizer.php
-	} elseif (arrayKey($location, 0) != indexDotPHP() && arrayKey($location, 0) != 'index.php' && arrayKey($location, 0) != 'organizer.php') {
+	} elseif (arrayKey($location, 0) != DIRECTORY_INDEX_FILENAME && arrayKey($location, 0) != 'index.php' && arrayKey($location, 0) != 'organizer.php') {
 		//Otherwise attempt to redirect the user to the login screen
 		header('location: '. httpOrHttps(). $_SERVER["HTTP_HOST"]. SUBDIRECTORY. 'zenario/admin/welcome.php?desturl='. urlencode($_SERVER['REQUEST_URI']));
 		exit;

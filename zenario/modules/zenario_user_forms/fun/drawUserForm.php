@@ -30,10 +30,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $formFields = self::getUserFormFields($userFormId);
 $formProperties = getRow('user_forms', array('translate_text', 'default_next_button_text', 'default_previous_button_text'), array('id' => $userFormId));
 $translate = $formProperties['translate_text'];
+$submitted = false;
+
+
 //If $loadData is an array, use that as the data
 if ($loadData && is_array($loadData)) {
 	$data = $loadData;
-
+	$submitted = true;
 //If $loadData is a number, try to load data for that user
 } elseif ($loadData && is_numeric($loadData)) {
 	$data = array();
@@ -244,9 +247,12 @@ foreach ($formFields as $fieldId => $field) {
 	
 	// Get default value of field
 	$fieldValue = false;
-	if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea'))) {
-		if (!empty($data[$fieldName])) {
-			$fieldValue = $data[$fieldName];
+	if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
+		
+		if ($submitted) {
+			if (isset($data[$fieldName])) {
+				$fieldValue = $data[$fieldName];
+			}
 		} elseif (!empty($field['default_value'])) {
 			$fieldValue = $field['default_value'];
 		} elseif (!empty($field['default_value_class_name']) && !empty($field['default_value_method_name'])) {
@@ -263,7 +269,7 @@ foreach ($formFields as $fieldId => $field) {
 		case 'group':
 		case 'checkbox':
 			$html .= '<input type="checkbox" ';
-			if (isset($data[$fieldName]) && (($data[$fieldName] == 1) || $data[$fieldName] == 'on')) {
+			if ($fieldValue && (($fieldValue == 1) || $fieldValue == 'on')) {
 				$html .= 'checked ';
 			}
 			if ($readOnly || $field['is_readonly']) {

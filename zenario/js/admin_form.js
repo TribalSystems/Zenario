@@ -1405,12 +1405,17 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 				var codeEditor = ace.edit(id);
 				codeEditor.session.setUseSoftTabs(false);
 				codeEditor.setShowPrintMargin(false);
-		
+				
 				if (readOnly) {
 					codeEditor.setReadOnly(true);
 					codeEditor.setBehavioursEnabled(false);
 					//codeEditor.session.setOption("useWorker", false);
 				}
+				
+				if (engToBoolean(field.wrap_text)) {
+					codeEditor.session.setUseWrapMode(true);
+				}
+				
 				codeEditor.session.setOption("useWorker", false);
 		
 				//Attempt to set the correct language

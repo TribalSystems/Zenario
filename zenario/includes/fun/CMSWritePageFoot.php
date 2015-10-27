@@ -145,7 +145,7 @@ echo '
 	zenario.userId = ', (int) session('extranetUserID'), ';
 	zenario.langId = "', jsEscape(session('user_lang')), '";
 	zenario.dpf = "', jsEscape(setting('vis_date_format_datepicker')), '";
-	zenario.indexDotPHP = "'. jsEscape(indexDotPHP()). '";
+	zenario.indexDotPHP = "'. jsEscape(DIRECTORY_INDEX_FILENAME). '";
 	zenario.canSetCookie = ', (int) canSetCookie(), ';';
 	
 //Add location information about a content item if it is available

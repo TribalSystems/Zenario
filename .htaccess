@@ -2,8 +2,9 @@ Options -Indexes
 
 <IfModule pagespeed_module>
 	ModPagespeed on
-	ModPagespeedRewriteLevel CoreFilters
-	ModPagespeedDisableFilters add_head,combine_css,combine_javascript,inline_javascript,rewrite_javascript_external
+	#ModPagespeedRewriteLevel CoreFilters
+	#ModPagespeedDisableFilters add_head,combine_css,combine_javascript,extend_cache,inline_javascript,rewrite_javascript_external
+	ModPagespeedRewriteLevel OptimizeForBandwidth
 	ModPagespeedDisallow "*no_pagespeed*"
 	ModPagespeedDisallow "*no_cache*"
 </IfModule>

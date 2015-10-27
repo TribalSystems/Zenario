@@ -70,7 +70,7 @@ if (isset($box['tabs']['sitemap']['fields']['sitemap_url'])) {
 			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
 		} else {
 			$box['tabs']['sitemap']['fields']['sitemap_url']['value'] =
-			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. indexDotPHP(). '?method_call=showSitemap';
+			$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
 		}
 	}
 }

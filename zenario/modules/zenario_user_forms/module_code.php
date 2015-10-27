@@ -1473,6 +1473,21 @@ class zenario_user_forms extends module_base_class {
 					} else {
 						$values['advanced/default_value_mode'] = 'none';
 					}
+				} elseif ($fieldType == 'checkbox' || $fieldType == 'group') {
+					$fields['advanced/default_value_text']['hidden'] = true;
+					$fields['advanced/default_value_lov']['values'] = array(0, 1);
+					if ($formFieldValues['default_value']) {
+						$values['advanced/default_value_mode'] = 'value';
+						$values['advanced/default_value_lov'] = $formFieldValues['default_value'];
+					} elseif ($formFieldValues['default_value_class_name'] && $formFieldValues['default_value_method_name']) {
+						$values['advanced/default_value_mode'] = 'method';
+						$values['advanced/default_value_class_name'] = $formFieldValues['default_value_class_name'];
+						$values['advanced/default_value_method_name'] = $formFieldValues['default_value_method_name'];
+						$values['advanced/default_value_param_1'] = $formFieldValues['default_value_param_1'];
+						$values['advanced/default_value_param_2'] = $formFieldValues['default_value_param_2'];
+					} else {
+						$values['advanced/default_value_mode'] = 'none';
+					}
 				} else {
 					$box['tabs']['advanced']['hidden'] = true;
 				}
@@ -1786,7 +1801,7 @@ class zenario_user_forms extends module_base_class {
 				
 				// Advanced tab display
 				if (!$box['tabs']['advanced']['hidden']) {
-					if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
+					if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'))) {
 						$fields['advanced/default_value_lov']['hidden'] = $values['advanced/default_value_mode'] != 'value';
 					} elseif (in_array($values['details/field_type_picker'], array('text', 'textarea'))) {
 						$fields['advanced/default_value_text']['hidden'] = $values['advanced/default_value_mode'] != 'value';
@@ -2376,7 +2391,7 @@ class zenario_user_forms extends module_base_class {
 						$record['default_value_param_2'] = null;
 					} elseif ($values['advanced/default_value_mode'] == 'value') {
 						
-						if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select'))) {
+						if (in_array($values['details/field_type_picker'], array('radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'))) {
 							$record['default_value'] = $values['advanced/default_value_lov'];
 						} elseif (in_array($values['details/field_type_picker'], array('text', 'textarea'))) {
 							$record['default_value'] = $values['advanced/default_value_text'];
@@ -2477,21 +2492,38 @@ class zenario_user_forms extends module_base_class {
 				break;
 			
 			case 'zenario_user_forms__export_user_responses':
-				
 				// Export responses
 				
 				// Create PHPExcel object
 				require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
 				$objPHPExcel = new PHPExcel();
-				$objPHPExcel->getDefaultStyle()
-					->getNumberFormat()
-					->setFormatCode('#');
+				$sheet = $objPHPExcel->getActiveSheet();
 				
 				// Get headers
-				$formFields = getRowsArray('user_form_fields', 'name', array('user_form_id' => $box['key']['form_id']), 'ordinal');
+				$typesNotToExport = array('page_break', 'section_description', 'restatement');
+				$formFields = array();
+				$sql = '
+					SELECT id, name
+					FROM ' . DB_NAME_PREFIX . 'user_form_fields
+					WHERE user_form_id = ' . (int)$box['key']['form_id'] . '
+					AND (field_type NOT IN (' . inEscape($typesNotToExport) . ')
+						OR field_type IS NULL
+					)
+					ORDER BY ordinal
+				';
+				$result = sqlSelect($sql);
+				while ($row = sqlFetchAssoc($result)) {
+					$formFields[$row['id']] = $row['name'];
+				}
+				
+				$lastColumn = PHPExcel_Cell::stringFromColumnIndex(count($formFields) + 1);
+				
+				// Set columns to text type
+				$sheet->getStyle('A:' . $lastColumn)
+					->getNumberFormat()
+					->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
 				
 				// Write headers
-				$sheet = $objPHPExcel->getActiveSheet();
 				$sheet->setCellValue('A1', 'Response ID');
 				$sheet->setCellValue('B1', 'Date/Time Responded');
 				$sheet->fromArray($formFields, NULL, 'C1');
@@ -2548,30 +2580,31 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 				
-				$responses = getRowsArray(
+				$responseDates = getRowsArray(
 					ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 					'response_datetime', 
 					array('form_id' => $box['key']['form_id']), 'response_datetime'
 				);
 				
 				// Write data
-				$i = 1;
+				$rowPointer = 1;
 				foreach ($responsesData as $responseId => $responseData) {
-					$i++;
+					$rowPointer++;
 					$response = array();
 					$response[0] = $responseId;
-					$response[1] = formatDateTimeNicely($responses[$responseId], '_MEDIUM');
+					$response[1] = formatDateTimeNicely($responseDates[$responseId], '_MEDIUM');
 					for ($j = 1; $j <= count($formFields); $j++) {
 						$k = $j + 1;
 						if (!isset($responseData[$j])) {
 							$response[$k] = '';
 						} else {
-							$response[$k] = '="' . $responseData[$j] . '"';
+							$response[$k] = $responseData[$j];
 						}
 						ksort($response);
 					}
-					
-					$sheet->fromArray($response, NULL, 'A'.$i);
+					foreach ($response as $columnPointer => $value) {
+						$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value);
+					}
 				}
 				
 				$formName = getRow('user_forms', 'name', array('id' => $box['key']['form_id']));

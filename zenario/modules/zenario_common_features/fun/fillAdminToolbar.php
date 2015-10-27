@@ -417,7 +417,7 @@ if (!$isMultilingual) {
 if ($cVersion > 1 && checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion - 1))) {
 	$mrg = array('status' => getContentItemVersionStatus($content, $cVersion - 1));
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['css_class'] = getContentItemVersionToolbarIcon($content, $cVersion - 1, 'zenario_at_prev_version_');
-	$adminToolbar['sections']['history']['buttons']['content_item_left']['frontend_link'] = indexDotPHP(true). '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion - 1);
+	$adminToolbar['sections']['history']['buttons']['content_item_left']['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion - 1);
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['label'] = adminPhrase('View previous ([[status]])', $mrg);
 	$adminToolbar['sections']['history']['buttons']['content_item_left']['tooltip'] =
 		adminPhrase('View previous version'). '|'.
@@ -454,7 +454,7 @@ if (isset($adminToolbar['sections']['edit']['buttons']['publish'])
 if (checkRowExists('content_item_versions', array('id' => $cID, 'type' => $cType, 'version' => $cVersion + 1))) {
 	$mrg = array('status' => getContentItemVersionStatus($content, $cVersion + 1));
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['css_class'] = getContentItemVersionToolbarIcon($content, $cVersion + 1, 'zenario_at_next_version_');
-	$adminToolbar['sections']['history']['buttons']['content_item_right']['frontend_link'] = indexDotPHP(true). '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion + 1);
+	$adminToolbar['sections']['history']['buttons']['content_item_right']['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $cID. '&cType='. $cType. '&cVersion='. ($cVersion + 1);
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['label'] = adminPhrase('Next version ([[status]])', $mrg);
 	$adminToolbar['sections']['history']['buttons']['content_item_right']['tooltip'] =
 		adminPhrase('View next version'). '|'.

@@ -355,7 +355,7 @@ if (empty($panel['items']) && !checkRowExists('languages', array())) {
 				}
 			}
 			
-			$item['frontend_link'] = indexDotPHP(). '?cID='. $item['id']. '&cType='. $item['type']. '&zenario_sk_return=navigation_path';
+			$item['frontend_link'] = DIRECTORY_INDEX_FILENAME. '?cID='. $item['id']. '&cType='. $item['type']. '&zenario_sk_return=navigation_path';
 			
 			if ($mode == 'get_item_links') {
 				$item['name'] = $item['tag'];

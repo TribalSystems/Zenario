@@ -671,6 +671,9 @@ if (!defined('COOKIE_TIMEOUT')) {
 if (!defined('SESSION_TIMEOUT')) {
 	define('SESSION_TIMEOUT', 0);
 }
+if (!defined('DIRECTORY_INDEX_FILENAME')) {
+	define('DIRECTORY_INDEX_FILENAME', 'index.php');
+}
 
 //Set the timezone to UTC if it's not defined, to avoid a PHP error
 if ($tz = @date_default_timezone_get()) {

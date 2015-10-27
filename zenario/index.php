@@ -79,16 +79,6 @@ define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
 zenarioInitialiseTwig();
 
-//Run pre-header actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.pre_header.php', true)) {
-		require $action;
-	}
-}
-unset($className);
-unset($dirName);
-unset($action);
-
 
 if (checkPriv()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
@@ -105,15 +95,28 @@ if (checkPriv()) {
 
 
 //Attempt to get this page.
-$cID = $cType = $content = $version = $redirectNeeded = false;
-resolveContentItemFromRequest($cID, $cType, $redirectNeeded);
+$cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
+resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL);
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())) {
 	header('location: '. ifNull(linkToItem($cID, $cType), SUBDIRECTORY), true, $redirectNeeded);
 	exit;
 }
-$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
 
+//Run pre-header actions
+foreach (cms_core::$editions as $className => $dirName) {
+	if ($action = moduleDir($dirName, 'actions/index.pre_header.php', true)) {
+		require $action;
+	}
+}
+unset($className);
+unset($dirName);
+unset($action);
+
+
+
+//Look up more details on the content item we are going to show
+$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
 
 //If a page was requested but couldn't be shown...
 if ($status === 'no_permission') {

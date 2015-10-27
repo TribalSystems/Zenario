@@ -186,16 +186,17 @@ plugin_settings:
                     plugin_setting:
                         name: restrict_posting_to_group
                     label: 'Group:'
-                    pick_items:
-                        path: zenario__users/panels/users/groups
-                        target_path: zenario__users/panels/users/groups
-                        min_path: zenario__users/panels/users/groups
-                        max_path: zenario__users/panels/users/groups
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Group
-                        select_phrase: Select Group...
-                        nothing_selected_phrase: No Group Selected
-                        hide_remove_button: Yes
+                    type: select
+                    #pick_items:
+                    #    path: zenario__users/panels/groups
+                    #    target_path: zenario__users/panels/groups
+                    #    min_path: zenario__users/panels/groups
+                    #    max_path: zenario__users/panels/groups
+                    #    disallow_refiners_looping_on_min_path: Yes
+                    #    one_to_one_choose_phrase: Choose Group
+                    #    select_phrase: Select Group...
+                    #    nothing_selected_phrase: No Group Selected
+                    #    hide_remove_button: Yes
                     value: ""
                     validation:
                         required_if_not_hidden: Please select a Group.
@@ -227,16 +228,17 @@ plugin_settings:
                     plugin_setting:
                         name: moderators
                     label: 'Moderation Group:'
-                    pick_items:
-                        path: zenario__users/panels/users/groups
-                        target_path: zenario__users/panels/users/groups
-                        min_path: zenario__users/panels/users/groups
-                        max_path: zenario__users/panels/users/groups
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Group
-                        select_phrase: Select Group...
-                        nothing_selected_phrase: No Group Selected
-                        hide_remove_button: Yes
+                    type: select
+                    #pick_items:
+                    #    path: zenario__users/panels/groups
+                    #    target_path: zenario__users/panels/groups
+                    #    min_path: zenario__users/panels/groups
+                    #    max_path: zenario__users/panels/groups
+                    #    disallow_refiners_looping_on_min_path: Yes
+                    #    one_to_one_choose_phrase: Choose Group
+                    #    select_phrase: Select Group...
+                    #    nothing_selected_phrase: No Group Selected
+                    #    hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select a Group.
                     value: ""

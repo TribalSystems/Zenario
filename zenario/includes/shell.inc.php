@@ -57,7 +57,7 @@ require CMS_ROOT. 'zenario/basicheader.inc.php';
 require CMS_ROOT. 'zenario/api/database_functions.inc.php';
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 require CMS_ROOT. 'zenario/includes/admin.inc.php';
-connectLocalDB();
+loadSiteConfig();
 
 //Include the Module Base Class
 require CMS_ROOT. 'zenario/api/module_api.inc.php';

@@ -712,7 +712,7 @@ class zenario_event_calendar extends module_base_class {
 			
 				$arr = array (	'Event_title'=> ($this->setting('show_title')?htmlspecialchars($event['title']):''),
 								'Event_summary'=> ($this->setting('show_summary')?$event['content_summary']:''),
-								'SUBDIR' => SUBDIRECTORY. indexDotPHP(), 
+								'SUBDIR' => SUBDIRECTORY. DIRECTORY_INDEX_FILENAME, 
 								'Event_id'=>(int)$event['id'], 
 								'Content_type'=>'event',
 								'StickyImage'=>$htmlStickyImage);

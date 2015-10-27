@@ -240,7 +240,7 @@ class zenario_search_results extends module_base_class {
 			$this->launchAJAXSearch();
 		}
 		
-		$this->mergeFields['Search_Target'] = indexDotPHP(true);
+		$this->mergeFields['Search_Target'] = SUBDIRECTORY. DIRECTORY_INDEX_FILENAME;
 		$this->mergeFields['Search_Page_Alias'] = $cID;
 		$this->mergeFields['Search_Page_cType'] = $cType;
 	}

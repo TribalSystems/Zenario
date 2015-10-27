@@ -1420,6 +1420,11 @@ additionalProperties:
                                         The Ace Editor (http://ace.c9.io/) is used to power these fields, and the language can be any
                                         language that Ace supports.
                                 
+                                wrap_text:
+                                    type: boolean
+                                    description: >
+                                        Enable text wrapping for a code_editor type field.
+                                
                                 color_picker_options:
                                     type: object
                                     description: >

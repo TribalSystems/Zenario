@@ -24,7 +24,7 @@ site_settings:
                     label: 'Content notification email subject:'
                     type: text
                     value: |
-                      Website2 content notification: Item {{published_drafted_trashed}}
+                      Website content notification: Item {{published_drafted_trashed}}
                     validation:
                         required: Please enter an email subject for content notification.
 
@@ -34,7 +34,16 @@ site_settings:
                     label: 'Content notification email body:'
                     type: textarea
                     rows: 10
-                    value: "This is an automated message from the website at {{url}}.\n\nItem {{published_drafted_trashed}}, details:\n\nContent item reference:    {{tag_id}}\nBrowser title: {{title}}\nWho by:        {{admin_name}}\nWhen:          {{datetime_when}}\nLink:          {{hyperlink}}"
+                    value: >
+                        This is an automated message from the website at {{url}}.
+                        
+                        Item {{published_drafted_trashed}}, details:
+                        
+                        Content item reference:    {{tag_id}}
+                        Browser title: {{title}}
+                        Who by:        {{admin_name}}
+                        When:          {{datetime_when}}
+                        Link:          {{hyperlink}}
                     validation:
                         required: Please enter an email body for content notification.
 

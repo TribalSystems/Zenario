@@ -71,6 +71,7 @@ function httpOrhttps() {
 	}
 }
 
+//Deprecated, please just use DIRECTORY_INDEX_FILENAME instead!
 function indexDotPHP($noBasePath = false) {
 	if (defined('DIRECTORY_INDEX_FILENAME')) {
 		$indexFile = DIRECTORY_INDEX_FILENAME;

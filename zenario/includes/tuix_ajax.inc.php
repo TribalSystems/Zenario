@@ -114,15 +114,15 @@ function adminBoxEncodeTUIX(&$tags) {
 		}
 	
 		if (empty($tags['_sync']['password'])) {
-			$password = base64_encode(openssl_random_pseudo_bytes(32));
-		} else {
-			$password = $tags['_sync']['password'];
+			$tags['_sync']['password'] = base64_encode(openssl_random_pseudo_bytes(32));
 		}
-		unset($tags['_sync']['password']);
+		if (empty($tags['_sync']['iv'])) {
+			$tags['_sync']['iv'] = base64_encode(openssl_random_pseudo_bytes(16));
+		}
 		
-		$string = openssl_encrypt(json_encode($tags), 'aes128', $password);
-		
-		$tags['_sync']['password'] = $password;
+		$string = openssl_encrypt(
+			json_encode($tags), 'aes128',
+			base64_decode($tags['_sync']['password']), 0, base64_decode($tags['_sync']['iv']));
 		
 	} else {
 		$string = json_encode($tags);
@@ -144,7 +144,11 @@ function adminBoxEncodeTUIX(&$tags) {
 //Reverse the above
 function adminBoxDecodeTUIX(&$tags, &$clientTags, $string) {
 	if (function_exists('openssl_encrypt') && !empty($clientTags['_sync']['password'])) {
-		$string = openssl_decrypt($string, 'aes128', $clientTags['_sync']['password']);
+		$iv = '';
+		if (!empty($clientTags['_sync']['iv'])) {
+			$iv = $clientTags['_sync']['iv'];
+		}
+		$string = openssl_decrypt($string, 'aes128', base64_decode($clientTags['_sync']['password']), 0, base64_decode($iv));
 	}
 	
 	return ($tags = json_decode($string, true)) && (is_array($tags));

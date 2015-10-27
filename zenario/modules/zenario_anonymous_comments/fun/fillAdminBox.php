@@ -41,5 +41,31 @@ switch ($path) {
 			$box['tabs']['moderation']['fields']['email_address_for_reports']['value'] = setting('email_address_admin');
 		}
 		
+		
+		$moderators =
+			isset($box['tabs']['moderation']['fields']['moderators']);
+		$restrict_posting_to_group =
+			isset($box['tabs']['posting']['fields']['restrict_posting_to_group']);
+		$restrict_new_thread_to_group =
+			isset($box['tabs']['posting']['fields']['restrict_new_thread_to_group']);
+		
+		if ($moderators
+		 || $restrict_posting_to_group
+		 || $restrict_new_thread_to_group) {
+			
+			$groups = listCustomFields('users', $flat = false, $filter = 'groups_only', true, true);
+			//listCustomFields($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
+			
+			if ($moderators) {
+				$box['tabs']['moderation']['fields']['moderators']['values'] = $groups;
+			}
+			if ($restrict_posting_to_group) {
+				$box['tabs']['posting']['fields']['restrict_posting_to_group']['values'] = $groups;
+			}
+			if ($restrict_new_thread_to_group) {
+				$box['tabs']['posting']['fields']['restrict_new_thread_to_group']['values'] = $groups;
+			}
+		}
+		
 		break;
 }

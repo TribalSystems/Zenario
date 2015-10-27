@@ -1549,7 +1549,7 @@ function securityCodeAJAX(&$tags, &$box, &$task, $getRequest) {
 			setCookieOnCookieDomain(
 				zenarioSecurityCodeCookieName(),
 				randomString(),
-				(int) siteDescription('security_code_timeout'));
+				(int) siteDescription('security_code_timeout') * 86400);
 			
 			//...and an admin setting to remember it next time!
 			$scsn = zenarioSecurityCodeSettingName();
@@ -2136,6 +2136,6 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 		
 		return linkToItem($cID, $cType, true, http_build_query($getRequest), false, false, $useAliasInAdminMode);
 	} else {
-		return indexDotPHP();
+		return ifNull(DIRECTORY_INDEX_FILENAME, SUBDIRECTORY);
 	}
 }

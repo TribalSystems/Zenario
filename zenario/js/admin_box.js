@@ -306,6 +306,7 @@ zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $
 		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'session')
 		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'cache_dir')
 		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'password')
+		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'iv')
 		 || (($type = 'array') && $key1 === undefined && $key0 == 'key')
 		 || (($type = 'value') && $key2 === undefined && $key1 == 'key')
 		 || (($type = 'value') && $key1 === undefined && $key0 == 'shake')

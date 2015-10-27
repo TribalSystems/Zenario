@@ -70,8 +70,8 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
-	$cID = $cType = $content = $version = $redirectNeeded = $instanceFound = false;
-	resolveContentItemFromRequest($cID, $cType, $redirectNeeded);
+	$cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = $instanceFound = false;
+	resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL);
 	
 	if (!$cVersion = request('cVersion')) {
 		$cVersion = getAppropriateVersion($cID, $cType);
