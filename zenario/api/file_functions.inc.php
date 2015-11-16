@@ -143,7 +143,31 @@ function checkDocumentTypeIsAllowed($file) {
 	$type = explode('.', $file);
 	$type = $type[count($type) - 1];
 	
-	return checkRowExists('document_types', array('type' => $type));
+	return !checkDocumentTypeIsExecutable($type)
+		&& checkRowExists('document_types', array('type' => $type));
+}
+
+function checkDocumentTypeIsExecutable($extension) {
+	switch (strtolower($extension)) {
+		case 'asp':
+		case 'bin':
+		case 'cgi':
+		case 'js':
+		case 'jsp':
+		case 'php':
+		case 'php3':
+		case 'ph3':
+		case 'php4':
+		case 'ph4':
+		case 'php5':
+		case 'ph5':
+		case 'phtm':
+		case 'phtml':
+		case 'sh':
+			return true;
+		default:
+			return false;
+	}
 }
 
 function contentFileLink(&$url, $cID, $cType, $cVersion) {

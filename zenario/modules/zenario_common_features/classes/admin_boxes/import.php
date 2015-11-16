@@ -233,16 +233,16 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 		$path = getPathOfUploadedFileInCacheDir($file);
 		
-		
-		// Include modules if needed
-		switch ($datasetDetails['extends_organizer_panel']) {
-			case 'zenario__locations':
-				inc('zenario_location_manager');
-				break;
-		}
-		
 		// Get list of values for header to DB column matching.
 		$DBColumnSelectListValues = listCustomFields($datasetDetails['system_table'], $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		
+		// If importing users and screen names not enabled, don't show a field for screen names
+		if (($datasetDetails['system_table'] == 'users') && !setting('user_use_screen_name')) {
+			$screenNameField = getDatasetFieldDetails('screen_name', $datasetDetails);
+			if (!empty($screenNameField['id'])) {
+				unset($DBColumnSelectListValues[$screenNameField['id']]);
+			}
+		}
 		
 		// Show an ID field for updates
 		$update = $values['file/type'] == 'update_data';
@@ -1229,9 +1229,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						$customData[$fieldIdDetails[$fieldId]['db_column']] = $value;
 					}
 					$message .= $fieldIdDetails[$fieldId]['db_column'].': '.$value. "\n";
-					
-					
-					
 				}
 			}
 			
@@ -1248,7 +1245,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							
 							// Overwrite data
 							if ($insertMode == 'overwrite') {
-								updateRow($datasetDetails['system_table'], $data, $userId);
+								saveUser($data, $userId);
 								setRow($datasetDetails['table'], $customData, $userId);
 							
 							// Merge data (only update blank fields)
@@ -1260,7 +1257,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 										unset($data[$col]);
 									}
 								}
-								updateRow($datasetDetails['system_table'], $data, $userId);
+								saveUser($data, $userId);
 								
 								$customkeys = array_keys($customData);
 								$foundData = getRow($datasetDetails['table'], $customkeys, $userId);
@@ -1330,13 +1327,27 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			// Update records
 			} elseif ($mode == 'update') {
 				
+				// List of IDs to update (just for saftey, should normaly only be 1)
+				$idsToUpdate = array();
+				
 				if ($keyFieldID == 'id') {
-					$IDColumnValue = $record['id'];
-					$IDColumn = $systemDataIDColumn;
+					$idsToUpdate[] = $record['id'];
 				} else {
-					$IDColumnValue = $data[$fieldIdDetails[$keyFieldID]['db_column']];
-					$IDColumn = $fieldIdDetails[$keyFieldID]['db_column'];
+					if (!empty($fieldIdDetails[$keyFieldID]['is_system_field'])) {
+						$idsToUpdate = getRowsArray(
+							$datasetDetails['system_table'], 
+							$systemDataIDColumn, 
+							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
+						);
+					} else {
+						$idsToUpdate = getRowsArray(
+							$datasetDetails['table'], 
+							$customDataIDColumn, 
+							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
+						);
+					}
 				}
+				
 				
 				// Custom logic to update users
 				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
@@ -1344,17 +1355,27 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						unset($data['screen_name']);
 					}
 					$data['modified_date'] = now();
+					
 				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
 					$data['last_updated_via_import'] = now();
 				}
 				
-				$rowsToUpdate = getRowsArray($datasetDetails['system_table'], $systemDataIDColumn, array($IDColumn => $IDColumnValue));
-				foreach ($rowsToUpdate as $recordId) {
-					// Update system data
-					updateRow($datasetDetails['system_table'], $data, array($systemDataIDColumn => $recordId));
-					// Update/create custom data
-					setRow($datasetDetails['table'], $customData, array($customDataIDColumn => $recordId));
+				
+				// Update records
+				foreach ($idsToUpdate as $recordId) {
+					if (!empty($data)) {
+						
+						if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
+							saveUser($data, $recordId);
+						} else {
+							updateRow($datasetDetails['system_table'], $data, array($systemDataIDColumn => $recordId));
+						}
+					}
+					if (!empty($customData)) {
+						setRow($datasetDetails['table'], $customData, array($customDataIDColumn => $recordId));
+					}
 				}
+				
 			}
 			if ($error) {
 				$errorMessage .= $message;

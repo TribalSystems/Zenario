@@ -752,7 +752,7 @@ class zenario_api {
 	private $frameworkPath;
 	private $frameworkData;
 	private $frameworkLoaded = false;
-	private $zenario2Twig = array();
+	private $zenario2Twig = false;
 	protected $frameworkIsTwig = false;
 	protected $frameworkOutputted = false;
 	
@@ -927,9 +927,9 @@ class zenario_api {
 	//After showSlot is finished, we'll output the $this->zenario2Twig arrat using Twig.
 	public final function afterShowSlot() {
 		if ($this->frameworkIsTwig
-		 && !empty($this->zenario2Twig)) {
+		 && $this->zenario2Twig !== false) {
 			$this->twigFramework($this->zenario2Twig);
-			$this->zenario2Twig = array();
+			$this->zenario2Twig = false;
 		}
 	}
 	
@@ -1256,6 +1256,10 @@ class zenario_api {
 			//If the Module is outputting its framework at bit at a time, attempt to cache all of the data and
 			//output it all at the end.
 			} else {
+				if (!$this->zenario2Twig) {
+					$this->zenario2Twig = array();
+				}
+				
 				//Assume that calls to frameworkHead() or the Outer section are headers/footers that are never in loops
 				if ($half === 1 || $section === 'Outer') {
 					foreach ($mergeFields as $fieldName => $value) {

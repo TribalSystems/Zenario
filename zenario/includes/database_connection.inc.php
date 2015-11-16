@@ -229,6 +229,15 @@ function loadSiteConfig() {
 			define('SHOW_SQL_ERRORS_TO_VISITORS', false);
 		}
 	}
+	
+	//If the "Show menu structure in friendly URLs" site setting is enabled,
+	//always use the full URL when generating links in an AJAX request, just in case the results
+	//are being displayed with a different relative path
+	if (setting('mod_rewrite_slashes')
+	 && !empty($_SERVER['SCRIPT_FILENAME'])
+	 && substr(basename($_SERVER['SCRIPT_FILENAME']), -8) == 'ajax.php') {
+		cms_core::$mustUseFullPath = true;
+	}
 }
 
 //Old database functionality, please don't use any more

@@ -71,6 +71,12 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		$customFields = array();
 		$ord = 0;
 		while ($row = sqlFetchAssoc($result)) {
+			
+			// Never export encrypted passwords
+			if ($dataset['system_table'] == 'users' && !setting('plaintext_extranet_user_passwords') && $row['db_column'] == 'password') {
+				continue;
+			}
+			
 			if ($row['is_system_field']) {
 				$systemFields[] = $row['db_column'];
 			} else {

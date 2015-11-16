@@ -1040,12 +1040,6 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 
 						//Import any phrases for Modules that use phrases
 						importPhrasesForModules($merge['LANGUAGE_ID']);
-					
-					} else {
-						//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
-						if (!setting('default_language') && ($langId = getRow('content_items', 'language_id', array()))) {
-							setSetting('default_language', $langId);
-						}
 					}
 					
 					setSetting('vis_date_format_short', $merge['VIS_DATE_FORMAT_SHORT']);
@@ -1111,6 +1105,11 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					
 					//Apply database updates
 					checkIfDBUpdatesAreNeeded($andDoUpdates = true);
+					
+					//Fix a bug where sample sites might not have a default language set, by setting a default language if any content has been created
+					if (!setting('default_language') && ($langId = getRow('content_items', 'language_id', array()))) {
+						setSetting('default_language', $langId);
+					}
 					
 					//Update the special pages, creating new ones if needed
 					addNeededSpecialPages();

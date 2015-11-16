@@ -513,6 +513,9 @@ switch ($path) {
 		if (preg_replace('/[a-zA-Z0-9_\\.-]/', '', $values['details/type'])) {
 			$box['tabs']['details']['errors'][] = adminPhrase('The Extension must not contain any special characters.');
 		
+		} elseif (checkDocumentTypeIsExecutable($values['details/type'])) {
+			$box['tabs']['details']['errors'][] = adminPhrase('You may not register an executable file type.');
+		
 		} elseif (checkRowExists('document_types', array('type' => $values['details/type']))) {
 			$box['tabs']['details']['errors'][] = adminPhrase('This extension is already registered in the CMS.');
 		}

@@ -260,6 +260,7 @@ if ($formProperties['save_data'] && $zenario_extranet) {
 			
 			// Save new user custom data
 			self::saveUserCustomData($user_custom_fields, $userId);
+			self::saveUserMultiCheckboxData($checkBoxValues, $userId);
 		}
 		if ($userId) {
 			addUserToGroup($userId, $formProperties['add_user_to_group']);

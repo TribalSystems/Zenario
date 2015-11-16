@@ -291,14 +291,6 @@ if ($methodCall == 'refreshPlugin'
 }
 
 
-//If the "Show menu structure in friendly URLs" site setting is enabled,
-//always use the full URL when generating links in an AJAX request, just in case the results
-//are being displayed with a different relative path
-if (setting('mod_rewrite_slashes')) {
-	cms_core::$mustUseFullPath = true;
-}
-
-
 //Check which method call is being requested and then launch that method
 
 //Output a file

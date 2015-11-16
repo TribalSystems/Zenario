@@ -21,7 +21,6 @@ zenario__languages:
                     exists: yes
                 plugin:
                     exists: yes
-            allow_bypass: Yes
             columns:
                 name:
                     title: Language Name

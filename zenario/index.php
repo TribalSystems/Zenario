@@ -99,7 +99,16 @@ $cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
 resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL);
 
 if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())) {
-	header('location: '. ifNull(linkToItem($cID, $cType), SUBDIRECTORY), true, $redirectNeeded);
+	
+	//When fixing the language code in the URL, make sure we redirect using the full path
+	//as the language code might be in the domain/subdomain.
+	$fullPath = $redirectNeeded == 302;
+	
+	$requests = $_GET;
+	unset($requests['cID']);
+	unset($requests['cType']);
+	
+	header('location: '. ifNull(linkToItem($cID, $cType, $fullPath, $requests), SUBDIRECTORY), true, $redirectNeeded);
 	exit;
 }
 
