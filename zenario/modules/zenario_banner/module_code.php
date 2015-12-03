@@ -153,7 +153,15 @@ class zenario_banner extends module_base_class {
 			
 			// If the content item this banner was linking to has been removed, update setting to no-link
 			if ($this->setting('link_type') == '_CONTENT_ITEM' && !$linkExists) {
-				updateRow('plugin_settings', array('value' => '_NO_LINK'), array('instance_id' => $this->instanceId, 'name' => 'link_type'));
+				
+				if (!getCIDAndCTypeFromTagId($cID, $cType, $this->setting('hyperlink_target'))
+				 || !(($equivId = equivId($cID, $cType))
+				   && checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType, 'status' => array('!1' => 'trashed', '!2' => 'deleted'))))) {
+					
+					updateRow('plugin_settings', array('value' => ''), array('instance_id' => $this->instanceId, 'name' => 'hyperlink_target'));
+					updateRow('plugin_settings', array('value' => '_NO_LINK'), array('instance_id' => $this->instanceId, 'name' => 'link_type'));
+				}
+			
 			} elseif ($this->setting('link_type') == '_EXTERNAL_URL' && $this->setting('url')) {
 				$this->mergeFields['Link_Href'] =
 				$this->mergeFields['Image_Link_Href'] =

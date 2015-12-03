@@ -1979,6 +1979,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		
 		if (!$box['tabs'][0]['fields']['bad_extra_module_symlinks']['hidden'] = empty($badSymlinks)) {
 			$box['tabs'][0]['fields']['bad_extra_module_symlinks']['row_class'] = 'warning';
+			$show_warning = true;
 			
 			$mrg = array('module' => array_pop($badSymlinks), 'version' => preg_replace('@[a-z]@', '', ZENARIO_CMS_VERSION));
 			if (empty($badSymlinks)) {

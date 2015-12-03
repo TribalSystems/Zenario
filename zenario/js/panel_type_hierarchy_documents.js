@@ -61,45 +61,56 @@ methods.getHierarchyMicroTemplateHTML = function(m) {
 }
 
 methods.getItems = function() {
-	var m = this.getMergeFieldsForItemsAndColumns();
+	var m = this.getMergeFieldsForItemsAndColumns(),
+		i, j, l, item, cell,
+		line_number,
+		max = -1,
+		lineHeader, lineHeaders = {};
 	
 	// Get columns on lines
-	var lineHeaders = {};
 	foreach (this.tuix.columns as name => column) {
-		if (column.document_line_number) {
+		if (line_number = 1*column.document_line_number) {
 			lineHeaders[name] = {
-				line_number: +column.document_line_number,
+				line_number: line_number,
 				css_class: column.css_class
 			}
 		}
 	}
 	
 	// Split values onto multiple lines
-	if (lineHeaders) {
+	if (!_.isEmpty(lineHeaders)) {
 		foreach (m.items as i => item) {
-			m.items[i].lines = [];
+			
 			var lineIndex = 0,
 				lineValues = {};
+			
 			foreach (item.cells as j => cell) {
-				if (lineHeaders.hasOwnProperty(cell.id) && cell.value !== '') {
-					if (!lineValues.hasOwnProperty(lineHeaders[cell.id].line_number)) {
-						lineValues[lineHeaders[cell.id].line_number] = {
+				if (cell.id
+				 && cell.value !== ''
+				 && (lineHeader = lineHeaders[cell.id])) {
+					line_number = lineHeader.line_number;
+					
+					if (!lineValues[line_number]) {
+						lineValues[line_number] = {
 							values: [],
 							index: ++lineIndex
 						};
 					}
-					var value = {
+					lineValues[line_number].values.push({
 						value: cell.value,
-						css_class: lineHeaders[cell.id].css_class
-					};
-					lineValues[lineHeaders[cell.id].line_number].values.push(value);
+						css_class: lineHeader.css_class
+					});
+					
+					if (max < line_number) {
+						max = line_number;
+					}
 				}
 			}
 			
-			var max = _.max(Object.keys(lineValues));
-			for (var l = 0; l <= max; l++) {
+			item.lines = [];
+			for (l = 0; l <= max; l++) {
 				if (lineValues[l]) {
-					m.items[i].lines.push(lineValues[l]);
+					item.lines.push(lineValues[l]);
 				}
 			}
 		}

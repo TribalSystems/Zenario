@@ -2675,6 +2675,9 @@ zenarioO.quickFilterEnabled = function(id) {
 //Apply merge fields to a message, using the currently selected item's columns as fields
 zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 	
+	//Escape any ~s in the string
+	string = string.replace(/~/g, '~1');
+	
 	var string2 = string;
 	
 	if (i === undefined) {
@@ -2689,13 +2692,17 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 				columnValue = columnValue.replace(/\n/g, ' ');
 			}
 			
+			//Escape any ~s, [s and ]s in the string
+			columnValue = columnValue.replace(/~/g, '~1').replace(/\[/g, '~2').replace(/\]/g, '~3');
+			
 			while (string != (string2 = string.replace('[[' + c + ']]', columnValue))) {
 				string = string2;
 			}
 		}
 	}
 	
-	return string;
+	//Unescape and return
+	return string.replace(/~2/g, '[').replace(/~3/g, '[').replace(/~1/g, '~');
 };
 
 

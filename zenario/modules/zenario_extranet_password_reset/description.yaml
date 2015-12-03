@@ -38,4 +38,4 @@ special_pages:
         logic: create_and_maintain_in_default_language
 dependencies:
     zenario_extranet: Yes
-default_instance_name: Extranet Password Resest
+default_instance_name: Extranet Password Reset

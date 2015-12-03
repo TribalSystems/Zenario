@@ -152,6 +152,7 @@ function checkDocumentTypeIsExecutable($extension) {
 		case 'asp':
 		case 'bin':
 		case 'cgi':
+		case 'exe':
 		case 'js':
 		case 'jsp':
 		case 'php':
@@ -250,7 +251,7 @@ function copyFileInDatabase($usage, $existingFileId, $filename = false, $mustBeA
 	return false;
 }
 
-function docstoreFilePath($fileIdOrPath, $useTmpDir = true) {
+function docstoreFilePath($fileIdOrPath, $useTmpDir = true, $customDocstorePath = false) {
 	if (is_numeric($fileIdOrPath)) {
 		if (!$fileIdOrPath = getRow('files', array('location', 'data', 'path'), array('id'=> $fileIdOrPath))) {
 			return false;
@@ -267,7 +268,12 @@ function docstoreFilePath($fileIdOrPath, $useTmpDir = true) {
 		}
 	}
 	
-	if ($fileIdOrPath && ($dir = setting('docstore_dir')) && (is_dir($dir = $dir. '/'. $fileIdOrPath. '/'))) {
+	$dir = setting('docstore_dir');
+	if ($customDocstorePath) {
+		$dir = $customDocstorePath;
+	}
+	
+	if ($fileIdOrPath && $dir && (is_dir($dir = $dir. '/'. $fileIdOrPath. '/'))) {
 		foreach (scandir($dir) as $file) {
 			if (substr($file, 0, 1) != '.') {
 				return $dir. $file;
@@ -338,7 +344,7 @@ function createFilePrivateLink($fileId) {
 }
 
 
-function fileLink($fileId, $hash = false, $type = 'files') {
+function fileLink($fileId, $hash = false, $type = 'files', $customDocstorePath = false) {
 	//Check that this file exists
 	if (!$fileId
 	 || !($file = getRow('files', array('usage', 'short_checksum', 'checksum', 'filename', 'location', 'path'), $fileId))) {
@@ -362,7 +368,7 @@ function fileLink($fileId, $hash = false, $type = 'files') {
 	
 	//Otherwise attempt to create the resized version in the cache directory
 	if ($path) {
-	
+		
 		//If the image is already available, all we need to do is link to it
 		if (file_exists($path. $file['filename'])) {
 			return $path. rawurlencode($file['filename']);
@@ -372,7 +378,7 @@ function fileLink($fileId, $hash = false, $type = 'files') {
 		if ($file['location'] == 'db') {
 			$file['data'] = getRow('files', 'data', $fileId);
 		
-		} elseif ($pathDS = docstoreFilePath($file['path'])) {
+		} elseif ($pathDS = docstoreFilePath($file['path'], true, $customDocstorePath)) {
 			$file['data'] = file_get_contents($pathDS);
 		
 		} else {

@@ -590,17 +590,20 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 	
 	//Content that is not in the Menu
 	if (empty($menuItems)) {
-		$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['no_menu_nodes'];
-		$adminToolbar['toolbars']['menu1']['css_class'] .= ' zenario_toolbar_warning';
-		$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('
-			Warning: Orphaned content item. 
-			<br/>
-			This content item is not in the menu.
-			<br/>
-			We recommend putting all content items in the menu hierarchy.
-			<br/>
-			Click the "Attach content item to menu" button on this tab to create a menu node with the content item\'s Title, and to attach the item to the menu..
-		');
+		if (!empty($adminToolbar['toolbars']['menu1'])
+		 && !empty($adminToolbar['sections']['no_menu_nodes'])) {
+			$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['no_menu_nodes'];
+			$adminToolbar['toolbars']['menu1']['css_class'] .= ' zenario_toolbar_warning';
+			$adminToolbar['toolbars']['menu1']['tooltip'] .= '<br/>'. adminPhrase('
+				Warning: Orphaned content item. 
+				<br/>
+				This content item is not in the menu.
+				<br/>
+				We recommend putting all content items in the menu hierarchy.
+				<br/>
+				Click the "Attach content item to menu" button on this tab to create a menu node with the content item\'s Title, and to attach the item to the menu..
+			');
+		}
 	//Content with at least one Menu Node
 	} else {
 		if (!cms_core::$visitorVersion) {

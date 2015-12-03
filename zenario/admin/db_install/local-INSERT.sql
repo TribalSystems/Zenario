@@ -76,7 +76,9 @@ ALTER TABLE `[[DB_NAME_PREFIX]]plugin_layout_link` ENABLE KEYS;
 
 ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings` DISABLE KEYS;
 INSERT INTO `[[DB_NAME_PREFIX]]plugin_settings` VALUES
- (11,'html',0,'<a\n	class=\"watch_our_video_link\"\n	href=\"https://www.youtube.com/watch?v=8VzBBQ2la7w\"\n	onclick=\"\n		$.colorbox({\n			iframe: true,\n			transition: \'none\',\n			width: $(window).width() * 0.9,\n			height: $(window).height() * 0.9,\n			href:\'http://www.youtube.com/embed/8VzBBQ2la7w?rel=0&amp;autoplay=1\'\n		});\n		return false;\n	\"\n>[[Watch our video]]</a>','synchronized_setting','html',NULL,0,'','remove'),
+ (6,'show_headings',0,'1','synchronized_setting','text',NULL,0,'','remove'),
+ (6,'heading_if_items',0,'Recently added pages','synchronized_setting','translatable_text',NULL,0,'','remove'),
+ (6,'heading_tags',0,'h3','synchronized_setting','text',NULL,0,'','remove'),
  (7,'mobile_behavior',0,'change_image','synchronized_setting','text',NULL,0,'','remove'),
  (7,'link_type',0,'_CONTENT_ITEM','synchronized_setting','text',NULL,0,'','remove'),
  (7,'hyperlink_target',0,'html_1','synchronized_setting','text','content',1,'html','delete_instance'),
@@ -97,6 +99,7 @@ INSERT INTO `[[DB_NAME_PREFIX]]plugin_settings` VALUES
  (10, 'title', 0, 'Read the full story', 'synchronized_setting', 'text', NULL, 0, '', 'remove'),
  (9, 'target_blank', 0, '1', 'synchronized_setting', 'text', NULL, 0, '', 'remove'),
  (10, 'target_blank', 0, '1', 'synchronized_setting', 'text', NULL, 0, '', 'remove'),
+ (11,'html',0,'<a\n	class=\"watch_our_video_link\"\n	href=\"https://www.youtube.com/watch?v=8VzBBQ2la7w\"\n	onclick=\"\n		$.colorbox({\n			iframe: true,\n			transition: \'none\',\n			width: $(window).width() * 0.9,\n			height: $(window).height() * 0.9,\n			href:\'http://www.youtube.com/embed/8VzBBQ2la7w?rel=0&amp;autoplay=1\'\n		});\n		return false;\n	\"\n>[[Watch our video]]</a>','synchronized_setting','html',NULL,0,'','remove'),
  (13,'html',0,'<p>Built on <a href="http://zenar.io" target="_blank">Zenario</a></p>','synchronized_setting','translatable_html',NULL,0,'','remove');
 ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings` ENABLE KEYS;
 

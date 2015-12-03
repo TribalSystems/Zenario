@@ -1245,4 +1245,12 @@ _sql
 	ADD COLUMN `run_every_minute` tinyint(1) NOT NULL DEFAULT 0 AFTER `minutes` 
 _sql
 
+
+//Remove any excecutables from the document_types table if anyone has previously added them
+); revision( 32474
+,<<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]document_types`
+	WHERE `type` IN ('asp', 'bin', 'cgi', 'exe', 'js', 'jsp', 'php', 'php3', 'ph3', 'php4', 'ph4', 'php5', 'ph5', 'phtm', 'phtml', 'sh')
+_sql
+
 );
