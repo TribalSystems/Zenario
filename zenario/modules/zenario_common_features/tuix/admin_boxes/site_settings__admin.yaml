@@ -7,12 +7,11 @@ site_settings:
         content_items:
             label: Content items
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This tab contains settings for when working with content items.
                 create_draft_warning:
@@ -42,25 +41,62 @@ site_settings:
         security:
             label: Security
             edit_mode:
-                enabled: Yes
+                enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
-                on: No
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This tab contains settings for administrator passwords and security.
                 min_admin_password_strength:
                     site_setting:
                         name: min_admin_password_strength
-                    label: 'Minimum admin password strength:'
+                    label: Minimum admin password strength
                     type: select
                     value: _MEDIUM
                     values:
-                        _WEAK: Weak
-                        _MEDIUM: Medium
-                        _STRONG: Strong
-                        _VERY_STRONG: Very strong
+                        _WEAK:
+                            label: Weak
+                        _MEDIUM:
+                            label: Medium
+                        _STRONG:
+                            label: Strong
+                        _VERY_STRONG:
+                            label: Very strong
+                
+                zenario_site_description:
+                    type: grouping
+                    name: zenario_site_description
+                
+                require_security_code_on_admin_login:
+                    legend: Set in the <code>zenario_custom/site_description.yaml</code> file
+                    grouping: zenario_site_description
+                    
+                    label: Require security code on login
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        If enabled, an admin must verify access to their email when logging into the site.
+                
+                security_code_by_ip:
+                    grouping: zenario_site_description
+                    label: Issue security codes on a per-IP basis
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        If enabled, an admin must verify access for each IP address they use to access the site.
+                
+                security_code_timeout:
+                    grouping: zenario_site_description
+                    label: Security codes timeout
+                    type: text
+                    read_only: true
+                    style: |
+                        width: 4em;
+                    note_below: |
+                        The length of time (in days) that this should last.
+        
+        
         email_template:
             label: Admin email templates
             edit_mode:
@@ -68,7 +104,7 @@ site_settings:
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
                 description:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                     html: This tab contain email templates.
                 notification_to_new_admin:
@@ -80,33 +116,11 @@ site_settings:
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
+                        disallow_refiners_looping_on_min_path: true
                         nothing_selected_phrase: No email template selected
                         select_phrase: Select an email template...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                     
                     value: zenario_common_features__notification_to_new_admin
-        fabs:
-            label: Floating Admin Boxes
-            edit_mode:
-                enabled: Yes
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: No
-            fields:
-                description:
-                    full_width: Yes
-                    snippet:
-                        html: This tab contains settings for the floating boxes seen in admin mode.
-                fab_use_cache_dir:
-                    site_setting:
-                        name: fab_use_cache_dir
-                    label: 'Use the cache directory'
-                    type: checkbox
-                    value: 1
-                    note_below: |
-                        If enabled, files will be written to the <code>cache/</code> directory to
-                        help speed up the floating admin boxes.
-                        
-                        If you are running on a cloud server you may need to disable this.
                     
                     

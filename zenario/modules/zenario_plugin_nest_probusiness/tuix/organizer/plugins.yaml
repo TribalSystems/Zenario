@@ -12,12 +12,14 @@ zenario__modules:
                 zenario_plugin_nest_probusiness__collection_buttons:
                     add_tab:
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         label: Create a tab
                         only_show_on_refiner: nest
                         admin_box:
                             path: zenario_plugin_nest_probusiness__tab
                     add_wireframe_and_at_most_one_tab:
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         label: Add a plugin
                         only_show_on_refiner: nest
                         pick_items:

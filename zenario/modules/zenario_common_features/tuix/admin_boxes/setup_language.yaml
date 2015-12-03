@@ -58,6 +58,7 @@ zenario_setup_language:
                         language matches one of the language codes listed here (comparison is case-insensitive).
                         Enter one or more language codes, separate multiple codes with a comma.
                     visible_if: "zenarioAB.value('detect')"
+                    indent: 1
                 translate_phrases:
                     type: checkbox
                     label: 'Translate phrases:'
@@ -91,6 +92,7 @@ zenario_setup_language:
                         zenarioA.multipleLanguagesEnabled()
                         && zenarioA.siteSettings.primary_domain
                         && zenarioAB.value('use_domain')
+                    indent: 1
                     label: 'Domain:'
                     type: text
                     note_below: |
@@ -104,7 +106,7 @@ zenario_setup_language:
                     read_only: true
                     note_below: |
                         You need to set a primary domain before you can use a language-specific domain.
-                        Please go to <em>Configuration -&gt; Site settings -&gt; Primary Domain</em>
+                        Please go to <em>Configuration -&gt; Site settings -&gt; Domains</em>
                         and set the primary domain.
                         
                         

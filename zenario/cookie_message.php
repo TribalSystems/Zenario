@@ -80,7 +80,7 @@ document.write(\'', jsEscape('
 		</div>
 		<div class="zenario_cc_buttons">
 			<div class="zenario_cc_accept">
-				<a href="zenario/quick_ajax.php?accept_cookies=1">'. phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
+				<a href="zenario/cookies.php?accept_cookies=1">'. phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
 			</div>
 		</div>
 	</div>
@@ -103,10 +103,10 @@ document.write(\'', jsEscape('
 		</div>
 		<div class="zenario_cc_buttons">
 			<div class="zenario_cc_reject">
-				<a href="zenario/quick_ajax.php?accept_cookies=0">'. phrase('_COOKIE_CONSENT_REJECT'). '</a>
+				<a href="zenario/cookies.php?accept_cookies=0">'. phrase('_COOKIE_CONSENT_REJECT'). '</a>
 			</div>
 			<div class="zenario_cc_accept">
-				<a href="zenario/quick_ajax.php?accept_cookies=1">'. phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
+				<a href="zenario/cookies.php?accept_cookies=1">'. phrase('_COOKIE_CONSENT_ACCEPT'). '</a>
 			</div>
 		</div>
 	</div>

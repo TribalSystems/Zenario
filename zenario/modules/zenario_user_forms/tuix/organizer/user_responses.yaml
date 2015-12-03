@@ -3,6 +3,7 @@
 zenario__user_forms:
     panels:
         zenario_user_forms__user_responses:
+            priv: _PRIV_VIEW_FORM_RESPONSES
             title: User Responses
             no_items_message: No user responses have been recorded.
             hidden: true
@@ -60,6 +61,7 @@ zenario__user_forms:
                     ord: 99999
             item_buttons:
                 view_response:
+                    priv: _PRIV_VIEW_FORM_RESPONSES
                     label: 'View response'
                     admin_box:
                         path: zenario_user_form_response
@@ -67,12 +69,14 @@ zenario__user_forms:
                             form_id: ''
             collection_buttons:
                 export:
+                    priv: _PRIV_VIEW_FORM_RESPONSES
                     label: 'Export in Excel'
                     admin_box: 
                         path: zenario_user_forms__export_user_responses
                         key:
                             form_id: ''
                 delete_form_responses:
+                    priv: _PRIV_MANAGE_FORMS
                     label: 'Delete all responses'
                     ajax:
                         confirm:
@@ -82,3 +86,4 @@ zenario__user_forms:
                             message_type: warning
                         request:
                             delete_form_responses: 1
+                

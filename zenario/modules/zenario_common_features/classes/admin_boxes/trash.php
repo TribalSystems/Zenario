@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__trash extends module_base_class {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$ids = explode(',', $box['key']['id']);
+		$ids = explodeAndTrim($box['key']['id']);
 		if (count($ids) > 1) {
 			$fields['trash/desc']['snippet']['html'] = '
 				<p>
@@ -144,7 +144,7 @@ class zenario_common_features__admin_boxes__trash extends module_base_class {
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$ids = explode(',', $box['key']['id']);
+		$ids = explodeAndTrim($box['key']['id']);
 		foreach ($ids as $tagId) {
 			$cID = $cType = false;
 			getCIDAndCTypeFromTagId($cID, $cType, $tagId);

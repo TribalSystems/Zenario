@@ -16,7 +16,7 @@ site_settings:
                     snippet:
                         html: |
                             This tab contains default settings for the Emails sent by your site.
-                                                            These are also used as default values for any Email Templates created when installing a Module.
+                            These are also used as default values for any Email Templates created when installing a Module.
                 email_address_admin:
                     site_setting:
                         name: email_address_admin
@@ -24,7 +24,7 @@ site_settings:
                     type: text
                     note_below: |
                         Email address to which general administrative emails should be sent.
-                                                    This is used during an Extranet User signup and other places.
+                        This is used during an Extranet User signup and other places.
                     validation:
                         required: Please enter an Email Address.
                         email: Please enter a valid Email Address.
@@ -34,8 +34,8 @@ site_settings:
                     read_only: true
                     note_below: |
                         Any errors that occur on the site will be sent to this address.
-                                                        You can change this address by editing the <code>EMAIL_ADDRESS_GLOBAL_SUPPORT</code> definition
-                                                        in your <code>zenario_siteconfig.php</code> file.
+                        You can change this address by editing the <code>EMAIL_ADDRESS_GLOBAL_SUPPORT</code> definition
+                        in your <code>zenario_siteconfig.php</code> file.
                 email_address_from:
                     site_setting:
                         name: email_address_from
@@ -44,13 +44,13 @@ site_settings:
                     value: myname@example.com
                     note_below: |
                         Email address which all server-generated emails should appear to come from.
-                                                            (Some anti-spam systems can wrongly identify server-generated emails as spam,
-                                                             so you might want to choose a special address here and tell your anti-spam software about it.
-                                                             You might also use a real email account if you want to trap undeliverable messages sent to users,
-                                                             so that you catch any bounces via this account.)
-                                                        <br/>
-                                                            If you enter your own SMTP details on the SMTP tab then the &amp;quot;From&amp;quot; address
-                                                            may be overwritten by your SMTP server.
+                            (Some anti-spam systems can wrongly identify server-generated emails as spam,
+                             so you might want to choose a special address here and tell your anti-spam software about it.
+                             You might also use a real email account if you want to trap undeliverable messages sent to users,
+                             so that you catch any bounces via this account.)
+                        <br/>
+                            If you enter your own SMTP details on the SMTP tab then the &amp;quot;From&amp;quot; address
+                            may be overwritten by your SMTP server.
                     validation:
                         required: 'Please enter an Email Address &quot;From&quot;.'
                         email: 'Please enter a valid Email Address &quot;From&quot;.'
@@ -110,10 +110,10 @@ site_settings:
                     snippet:
                         html: |
                             <p>
-                                                                    When the CMS sends an email, it can either use the PHP <code>mail()</code> function,
-                                                                    or it can connect to a SMTP server.
-                                                                    If not correctly set up, any emails sent could be lost without trace.
-                                                                </p>
+                                    When the CMS sends an email, it can either use the PHP <code>mail()</code> function,
+                                    or it can connect to a SMTP server.
+                                    If not correctly set up, any emails sent could be lost without trace.
+                                </p>
                 smtp_specify_server:
                     site_setting:
                         name: smtp_specify_server
@@ -132,6 +132,7 @@ site_settings:
                     value: ""
                     note_below: e.g. smtp.example.com
                     visible_if: "zenarioAB.value('smtp_specify_server')"
+                    indent: 1
                 smtp_port:
                     site_setting:
                         name: smtp_port
@@ -140,6 +141,7 @@ site_settings:
                     value: "25"
                     style: 'width: 5em;'
                     visible_if: "zenarioAB.value('smtp_specify_server')"
+                    indent: 1
                     validation:
                         numeric: The Port number must be numeric.
                 smtp_security:
@@ -153,6 +155,7 @@ site_settings:
                         tls: Transport Layer Security (tls)
                         ssl: Secure Sockets Layer (ssl)
                     visible_if: "zenarioAB.value('smtp_specify_server')"
+                    indent: 1
                 smtp_use_auth:
                     site_setting:
                         name: smtp_use_auth
@@ -160,6 +163,7 @@ site_settings:
                     type: checkbox
                     value: ""
                     visible_if: "zenarioAB.value('smtp_specify_server')"
+                    indent: 1
                     redraw_onchange: true
                 smtp_username:
                     site_setting:
@@ -168,12 +172,14 @@ site_settings:
                     type: text
                     value: ""
                     visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"
+                    indent: 2
                 smtp_password:
                     site_setting:
                         name: smtp_password
                     label: 'Password:'
                     type: password
                     visible_if: "1 * zenarioAB.value('smtp_specify_server') && zenarioAB.value('smtp_use_auth')"
+                    indent: 2
         test:
             priv: _PRIV_EDIT_SITE_SETTING
             label: Test
@@ -186,8 +192,8 @@ site_settings:
                     snippet:
                         html: |
                             This tab allows you to send a test email.
-                                                            
-                                                            If you do not receive the test email, you may need to change the settings on the SMTP tab.
+                            
+                            If you do not receive the test email, you may need to change the settings on the SMTP tab.
                 test_send_email_address:
                     type: text
                     maxlength: "100"

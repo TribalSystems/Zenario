@@ -5,6 +5,14 @@
 	<% } %>
 	
     <div class="organizer_total_cell  placeholder-checkbox"></div>
-    <div class="organizer_total_cell firstcol listicon" style="width: {{39 + 39 * m.maxNumberOfInlineButtons|escape}}px;"></div>
+    <div class="organizer_total_cell firstcol listicon" style="
+    
+    <% if(m.rowWidth == 0 || m.rowWidth === undefined) { %>
+    	width: {{30|escape}}px;
+    <% } else { %>
+    	width: {{m.rowWidth|escape}}px;
+    <% } %>
+    
+    "></div>
 	{{zenarioA.microTemplate('zenario_organizer_list_total_cell', m.columns)}}
 </div>

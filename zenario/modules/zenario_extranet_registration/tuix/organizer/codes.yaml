@@ -36,6 +36,7 @@ zenario__users:
                 zenario_extranet_registration_enterprise__create:
                     name: Create a code
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     admin_box:
                         path: zenario_extranet_registration__codes
                         

@@ -11,18 +11,18 @@ zenario__menu:
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]]menu_nodes AS mi
-                                                INNER JOIN [[DB_NAME_PREFIX]]menu_sections AS ms
-                                                   ON mi.section_id = ms.id
-                                                LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
-                                                   ON mt.menu_id = mi.id
-                                                  AND mt.language_id = [[FOCUSED_LANGUAGE_ID]]
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
-                                                   ON mi.equiv_id = c.equiv_id
-                                                  AND mi.content_type = c.type
-                                                  AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
+                    INNER JOIN [[DB_NAME_PREFIX]]menu_sections AS ms
+                       ON mi.section_id = ms.id
+                    LEFT JOIN [[DB_NAME_PREFIX]]menu_text AS mt
+                       ON mt.menu_id = mi.id
+                      AND mt.language_id = [[FOCUSED_LANGUAGE_ID]]
+                    LEFT JOIN [[DB_NAME_PREFIX]]content_items AS c
+                       ON mi.equiv_id = c.equiv_id
+                      AND mi.content_type = c.type
+                      AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mi.id
                 custom_where_statement_if_no_missing_items: WHERE mt.menu_id IS NOT NULL
-                client_side: Yes
+                client_side: true
             
             panel_type: hierarchy_with_lazy_load
             reorder:
@@ -35,24 +35,24 @@ zenario__menu:
                 column: parent_id
                 #db_column: mi.parent_id
             
-            disable_periodic_refresh: Yes
+            disable_periodic_refresh: true
             refiners:
                 language:
-                    exists: Yes
+                    exists: true
                 following_item_link:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]menu_nodes AS mnil
-                                                         ON mnil.section_id = mi.section_id
-                                                        /*AND mnil.parent_id = mi.parent_id*/
-                                                        AND mnil.id = [[REFINER__FOLLOWING_ITEM_LINK]]
+                             ON mnil.section_id = mi.section_id
+                            /*AND mnil.parent_id = mi.parent_id*/
+                            AND mnil.id = [[REFINER__FOLLOWING_ITEM_LINK]]
                 section:
                     sql: 'mi.section_id = [[REFINER__SECTION]]'
                 children:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]menu_hierarchy AS cmh
-                                                         ON cmh.ancestor_id = [[REFINER__CHILDREN]]
-                                                        AND cmh.child_id != [[REFINER__CHILDREN]]
-                                                        AND cmh.child_id = mi.id
+                             ON cmh.ancestor_id = [[REFINER__CHILDREN]]
+                            AND cmh.child_id != [[REFINER__CHILDREN]]
+                            AND cmh.child_id = mi.id
             label_format_for_picked_items: '[[section_name]] | [[name]]'
             columns:
                 mid:
@@ -60,7 +60,7 @@ zenario__menu:
                 ordinal:
                     title: Ordinal
                     db_column: mi.ordinal
-                    align_right: Yes
+                    align_right: true
                 path:
                     title: Path
                     searchable: false
@@ -68,9 +68,9 @@ zenario__menu:
                     width: xlarge
                 name:
                     title: Menu Node Text
-                    searchable: Yes
+                    searchable: true
                     db_column: mt.name
-                    always_show: Yes
+                    always_show: true
                     length_limit: "30"
                 section_id:
                     db_column: mi.section_id
@@ -112,7 +112,7 @@ zenario__menu:
                     db_column: mi.target_loc
                 target:
                     title: Target
-                    searchable: Yes
+                    searchable: true
                     db_column: |
                         IF (mi.target_loc = 'int',
                             IF (c.id IS NOT NULL,
@@ -124,7 +124,7 @@ zenario__menu:
                             )
                         )
                     item_link: content_item_or_url
-                    show_by_default: Yes
+                    show_by_default: true
                 internal_target:
                     db_column: "mi.target_loc = 'int' AND mi.equiv_id"
                 target_content_id:
@@ -144,15 +144,16 @@ zenario__menu:
             collection_buttons:
                 create:
                     priv: _PRIV_ADD_MENU_ITEM
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a menu node
                     admin_box:
                         path: zenario_quick_create
                         key:
-                            id_is_menu_node_id: "1"
+                            id_is_menu_node_id: 1
                 tree_explorer:
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: Open Tree Explorer
                     popout:
                         href: zenario/admin/tree_explorer/index.php
@@ -162,28 +163,29 @@ zenario__menu:
                         maxHeight: 100%
                         initialWidth: 100%
                         initialHeight: 100%
-                        iframe: Yes
+                        iframe: true
                         transition: none
             inline_buttons:
                 view_frontend:
                     css_class: view_frontend
                     tooltip: View in front-end
                     frontend_link:
-                        exists: Yes
+                        exists: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
                     tooltip: View in floating box
                     popout:
-                        iframe: Yes
+                        iframe: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
             item_buttons:
                 create_child:
                     priv: _PRIV_ADD_MENU_ITEM
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a child menu node
                     tooltip: >
                         Create a new child menu node underneath the selected menu
@@ -191,112 +193,147 @@ zenario__menu:
                     admin_box:
                         path: zenario_quick_create
                         key:
-                            id_is_parent_menu_node_id: "1"
-                edit:
-                    priv: _PRIV_EDIT_MENU_ITEM
-                    hide_in_select_mode: Yes
-                    label: Menu node properties
+                            id_is_parent_menu_node_id: 1
+                edit_menu_text:
+                    priv: _PRIV_EDIT_MENU_TEXT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Edit menu text
                     admin_box:
-                        path: zenario_menu
-                        key:
-                            mode: ""
+                        path: zenario_menu_text
                     without_traits:
-                        ghost: Yes
+                        ghost: true
+                define_menu_text:
+                    priv: _PRIV_EDIT_MENU_TEXT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Define menu text in this language
+                    admin_box:
+                        path: zenario_menu_text
+                    traits:
+                        ghost: true
+                    without_traits:
+                        can_duplicate: true
+                duplicate:
+                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    label: Create a translation
+                    admin_box:
+                        path: zenario_content
+                        key:
+                            translate: true
+                            duplicate_from_menu: true
+                    traits:
+                        can_duplicate: true
                 citem:
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     label: Content item properties
                     admin_box:
                         path: zenario_content
                         key:
-                            id_is_menu_node_id: "1"
+                            id_is_menu_node_id: 1
                     traits:
-                        content: Yes
+                        content: true
                 view_dropdown:
                     label: View
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 citems_translations:
                     parent: view_dropdown
-                    php: Yes
-                    hide_in_select_mode: Yes
+                    php: true
+                    hide_in_select_mode: true
                     label: "View Content Item's translations"
                     link:
                         path: zenario__content/panels/chained
-                        branch: Yes
+                        branch: true
                         refiner: zenario_trans__chained_in_link__from_menu_node
                     traits:
-                        content: Yes
+                        content: true
                 view_content:
                     parent: view_dropdown
                     label: Content Items under this Node in the tree
                     link:
                         path: zenario__content/panels/content
-                        branch: Yes
+                        branch: true
                         refiner: menu_children
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
-                add:
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                edit:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_MENU_ITEM
-                    label: XXXX_menu.xml,1
-                    tooltip: Define menu text in this Language
+                    hide_in_select_mode: true
+                    label: Menu node properties
                     admin_box:
                         path: zenario_menu
-                    traits:
-                        ghost: Yes
-                    without_traits:
-                        can_duplicate: Yes
-                add_to_existing:
-                    parent: action_dropdown
-                    priv: _PRIV_EDIT_MENU_ITEM
-                    label: XXXX_menu.xml,2
-                    tooltip: >
-                        Define Menu Text in this Language, then point to the
-                        existing Content Item
-                    admin_box:
-                        path: zenario_menu
-                    traits:
-                        ghost: Yes
-                        can_duplicate: Yes
-                add_and_duplicate:
-                    parent: action_dropdown
-                    priv: _PRIV_CREATE_FIRST_DRAFT
-                    label: XXXX_menu.xml,3
-                    tooltip: >
-                        Define Menu Text and Duplicate this Content Item to create a
-                        translation in this Language
-                    admin_box:
-                        path: zenario_content
                         key:
-                            duplicate: Yes
-                            duplicate_from_menu: Yes
-                    traits:
-                        ghost: Yes
-                        can_duplicate: Yes
-                duplicate:
-                    parent: action_dropdown
-                    priv: _PRIV_CREATE_FIRST_DRAFT
-                    label: XXXX_menu.xml,4
-                    tooltip: >
-                        Duplicate this Content Item to create a translation in this
-                        Language
-                    admin_box:
-                        path: zenario_content
-                        key:
-                            duplicate: Yes
-                            duplicate_from_menu: Yes
-                    traits:
-                        can_duplicate: Yes
+                            mode: ""
                     without_traits:
-                        ghost: Yes
+                        ghost: true
+                #add:
+                #    parent: action_dropdown
+                #    priv: _PRIV_EDIT_MENU_ITEM
+                #    label: XXXX_menu.xml,1
+                #    tooltip: Define menu text in this Language
+                #    admin_box:
+                #        path: zenario_menu
+                #    traits:
+                #        ghost: true
+                #    without_traits:
+                #        can_duplicate: true
+                #add_to_existing:
+                #    parent: action_dropdown
+                #    priv: _PRIV_EDIT_MENU_ITEM
+                #    label: XXXX_menu.xml,2
+                #    tooltip: >
+                #        Define Menu Text in this Language, then point to the
+                #        existing Content Item
+                #    admin_box:
+                #        path: zenario_menu
+                #    traits:
+                #        ghost: true
+                #        can_duplicate: true
+                #add_and_duplicate:
+                #    parent: action_dropdown
+                #    priv: _PRIV_CREATE_FIRST_DRAFT
+                #    label: XXXX_menu.xml,3
+                #    tooltip: >
+                #        Define Menu Text and Duplicate this Content Item to create a
+                #        translation in this Language
+                #    admin_box:
+                #        path: zenario_content
+                #        key:
+                #            duplicate: true
+                #            duplicate_from_menu: true
+                #    traits:
+                #        ghost: true
+                #        can_duplicate: true
+                #duplicate:
+                #    parent: action_dropdown
+                #    priv: _PRIV_CREATE_FIRST_DRAFT
+                #    label: XXXX_menu.xml,4
+                #    tooltip: >
+                #        Duplicate this Content Item to create a translation in this
+                #        Language
+                #    admin_box:
+                #        path: zenario_content
+                #        key:
+                #            duplicate: true
+                #            duplicate_from_menu: true
+                #    traits:
+                #        can_duplicate: true
+                #    without_traits:
+                #        ghost: true
                 move:
                     parent: action_dropdown
                     priv: _PRIV_EDIT_MENU_ITEM
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: Move in tree
-                    multiple_select: Yes
+                    multiple_select: true
                     combine_items:
                         path: zenario__menu/panels/menu_position
                         target_path: zenario__menu/panels/menu_position
@@ -305,7 +342,7 @@ zenario__menu:
                         visible_if_for_all_selected_items: >
                             zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
-                            move: "1"
+                            move: 1
                 
                 
                 
@@ -321,7 +358,7 @@ zenario__menu:
                         disallow_refiners_looping_on_min_path: No
                         one_to_one_choose_phrase: Create secondary menu node
                         request:
-                            mass_add_to_menu: "1"
+                            mass_add_to_menu: 1
                             
                 make_primary:
                     priv: _PRIV_EDIT_MENU_ITEM
@@ -340,65 +377,65 @@ zenario__menu:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            make_primary: "1"
+                            make_primary: 1
                     visible_if_for_all_selected_items: item.redundancy == 'secondary'
                 
                 
                 delete:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete menu node
-                    multiple_select: Yes
-                    hide_in_select_mode: Yes
+                    multiple_select: true
+                    hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: |
                                 Are you sure that you wish to delete the menu mode "[[name]]"?
-                                                                        
-                                                                        No content item will be deleted, but if the node links to a content item that item will become an orphan.
+                                
+                                No content item will be deleted, but if the node links to a content item that item will become an orphan.
                             multiple_select_message: |
                                 Are you sure that you wish to delete these menu nodes?
-                                                                        
-                                                                        No content items will be deleted, but if the nodes link to content items those items will become orphans.
+                                
+                                No content items will be deleted, but if the nodes link to content items those items will become orphans.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete: "1"
+                            delete: 1
                     traits:
-                        childless: Yes
+                        childless: true
                     without_traits:
-                        removable: Yes
-                        ghost: Yes
+                        removable: true
+                        ghost: true
                 delete_recursive:
                     priv: _PRIV_DELETE_MENU_ITEM
                     label: Delete
-                    multiple_select: Yes
-                    hide_in_select_mode: Yes
+                    multiple_select: true
+                    hide_in_select_mode: true
                     ajax:
                         confirm:
                             message: |
                                 Are you sure that you wish to delete the menu node "[[name]]"?
-                                                                        
-                                                                        Note, it has [[children]] child node(s)! These, and any further child nodes below them, will be deleted.
-                                                                        
-                                                                        No content items will be deleted, but items to which the menu nodes link will become orphans.
+                                
+                                Note, it has [[children]] child node(s)! These, and any further child nodes below them, will be deleted.
+                                
+                                No content items will be deleted, but items to which the menu nodes link will become orphans.
                             multiple_select_message: |
                                 Are you sure that you wish to delete these menu nodes?
-                                                                        
-                                                                        These, and any further child nodes below them, will be deleted.
-                                                                        
-                                                                        No content items will be deleted, but items to which the menu nodes link will become orphans.
+                                
+                                These, and any further child nodes below them, will be deleted.
+                                
+                                No content items will be deleted, but items to which the menu nodes link will become orphans.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete: "1"
+                            delete: 1
                     one_with_traits:
-                        has_children: Yes
+                        has_children: true
                     without_traits:
-                        removable: Yes
-                        ghost: Yes
+                        removable: true
+                        ghost: true
                 go_to_menu_in_sk:
                     label: Go to menu node
                     tooltip: Go to this Menu Node in hierarchical view
-                    navigation_path: Yes
+                    navigation_path: true

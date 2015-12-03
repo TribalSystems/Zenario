@@ -114,7 +114,7 @@ function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $re
 	$errorText = 'Database connection failure';
 	
 	try {
-		if ($dbconnection = mysqli_connect($dbhost, $dbuser, $dbpass, $dbname)) {
+		if ($dbconnection = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname)) {
 			if (mysqli_query($dbconnection,'SET NAMES "UTF8"')
 			 && mysqli_query($dbconnection,"SET collation_connection='utf8_general_ci'")
 			 && mysqli_query($dbconnection,"SET collation_server='utf8_general_ci'")
@@ -129,7 +129,7 @@ function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $re
 	}
 	
 	if ($reportErrors) {
-		reportDatabaseError($errorText, mysqli_errno($dbconnection), mysqli_error($dbconnection));
+		reportDatabaseError($errorText, @mysqli_errno($dbconnection), @mysqli_error($dbconnection));
 	}
 	
 	return false;
@@ -148,12 +148,12 @@ function loadSiteConfig() {
 		$sql = "
 			SELECT 1
 			FROM ". DB_NAME_PREFIX. "local_revision_numbers
-			WHERE path = 'admin/db_updates/core'
+			WHERE path = 'admin/db_updates/step_2_update_the_database_schema'
 			  AND revision_no >= ". (int) LATEST_BIG_CHANGE_REVISION_NO. "
 			LIMIT 1";
 		
 		if (!($result = sqlQuery($sql)) || !(sqlFetchRow($result))) {
-			require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+			if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
 			showStartSitePageIfNeeded(true);
 			exit;
 		}
@@ -278,30 +278,36 @@ function handleDatabaseError($dbconnection, $sql) {
 		exit;
 	}
 	
-	echo "<div id=\"error_information\">
+	if ($addDiv = !empty($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'ajax.php') === false) {
+		echo '<div id="error_information">';
+	}
+	
+	echo "
 Database query error: ".$sqlErrno.", ".$sqlError.",\n$sql\n\n
 Trace-back information:\n";
 	
 	print_r(debug_backtrace());
 	
-	echo '
-		<!-- Dont show this bit in the source -->
-		<br /><br />
-		<a href="#" onClick="
-			this.innerHTML = \'\';
-			document.body.innerHTML = 
-				\'<textarea style=&quot;height: 95%; min-height: 600px; width:95%; min-width: 800px;&quot;>\' +
-					document.getElementById(\'error_information\').innerHTML.substring(0,
-						document.getElementById(\'error_information\').innerHTML.indexOf(
-							\'<!-- Dont show this bit in the source -->\'
-						)
-					) + 
-				\'<\' + \'/\' + \'textarea>\';
-			return false;
-		">
-			<b>Click here to see this error message in a textarea</b>
-		</a>
-	</div>';
+	if ($addDiv) {
+		echo '
+			<!-- Dont show this bit in the source -->
+			<br /><br />
+			<a href="#" onClick="
+				this.innerHTML = \'\';
+				document.body.innerHTML = 
+					\'<textarea style=&quot;height: 95%; min-height: 600px; width:95%; min-width: 800px;&quot;>\' +
+						document.getElementById(\'error_information\').innerHTML.substring(0,
+							document.getElementById(\'error_information\').innerHTML.indexOf(
+								\'<!-- Dont show this bit in the source -->\'
+							)
+						) + 
+					\'<\' + \'/\' + \'textarea>\';
+				return false;
+			">
+				<b>Click here to see this error message in a textarea</b>
+			</a>
+		</div>';
+	}
 	
 	exit;
 }
@@ -312,7 +318,7 @@ function reportDatabaseError($errtext="", $errno="", $error="", $sql="", $backtr
 	$body = visitorIP(). " accessing ". $_SERVER['REQUEST_URI']. "\n\n". $errtext. "\n\n". $errno. "\n\n". $error. "\n\n". $sql. "\n\n". $backtrace. "\n\n";
 	
 	// Mail it
-	require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	if (!function_exists('sendEmail')) require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
 	$addressToOverriddenBy = false;
 	
 	//A little hack - don't allow sendEmail() to connect to the database
@@ -388,7 +394,7 @@ function checkForChangesInPhpFiles() {
 		return;
 	}
 	
-	require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	if (!function_exists('sendEmail')) require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
 	
 	//Make sure we are in the CMS root directory.
 	//This should already be done, but I'm being paranoid...
@@ -575,8 +581,8 @@ function checkForChangesInYamlFiles() {
 	
 	if ($changed) {
 		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
-		require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
-		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
+		if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 		
 		//Scan the TUIX files, and come up with a list of what paths are in what files
 		$tuixFiles = array();
@@ -985,6 +991,12 @@ function checkTableDefinition($prefixAndTable, $checkExists = false) {
 		cms_core::$pkCols[$prefixAndTable] = false;
 	}
 	
+	if ($checkExists && is_string($checkExists)) {
+		return
+			is_array(cms_core::$numericCols[$prefixAndTable])
+			&& isset(cms_core::$numericCols[$prefixAndTable][$checkExists]);
+	}
+	
 	return !empty(cms_core::$numericCols[$prefixAndTable]);
 }
 
@@ -1020,7 +1032,14 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 			if (substr($sign2, 0, 1) == '!') {
 				$sign2 = '!=';
 			}
-			if ($sign2 === '!=' || $sign2 === '<>' || $sign2 === '<=' || $sign2 === '<' || $sign2 === '>' || $sign2 === '>=') {
+			if ($sign2 === '!='
+			 || $sign2 === '<>'
+			 || $sign2 === '<='
+			 || $sign2 === '<'
+			 || $sign2 === '>'
+			 || $sign2 === '>='
+			 || $sign2 === 'LIKE'
+			 || $sign2 === 'NOT LIKE') {
 				checkRowExistsCol($table, $sql, $col, $val2, $first, $isWhere, $sign2);
 			}
 		}
@@ -1075,7 +1094,7 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 //Declare a function to check if something exists in the database
 function checkRowExists(
 	$table, $ids,
-	$cols = false, $notZero = false, $multiple = false, $delete = false, $orderBy = array(),
+	$cols = false, $notZero = false, $multiple = false, $mode = false, $orderBy = array(),
 	$distinct = false, $array = false, $addId = false
 ) {
 	
@@ -1129,38 +1148,70 @@ function checkRowExists(
 		}
 	}
 	
-	if ($delete) {
-		$sql = '
-			DELETE';
-	
-	} elseif (is_array($cols) && !empty($cols)) {
-		$sql = '';
-		foreach ($cols as $col) {
-			$sql .= ($sql? ',' : 'SELECT '). '`'. sqlEscape($col). '` AS `'. sqlEscape($col). '`';
+	do {
+		switch ($mode) {
+			case 'delete':
+				$sql = '
+					DELETE';
+				break 2;
+		
+			case 'count':
+				$sql = '
+					SELECT COUNT(*) AS c';
+				$cols = 'c';
+				break 2;
+		
+			case 'max':
+				$pre = 'MAX(';
+				$suf = ')';
+				break;
+			
+			case 'min':
+				$pre = 'MIN(';
+				$suf = ')';
+				break;
+			
+			default:
+				$pre = '';
+				$suf = '';
 		}
 		
-		if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && !in_array(cms_core::$pkCols[cms_core::$lastDBPrefix. $table], $cols)) {
-			$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
-		}
-		
-	} elseif ($cols === true) {
-		$cols = array();
-		$sql = '
-			SELECT '. ($distinct? 'DISTINCT ' : ''). '*';
-		
-	} elseif ($cols !== false) {
-		$sql = '
-			SELECT '. ($distinct? 'DISTINCT ' : ''). '`'. sqlEscape($cols). '`';
-		
-		if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && $cols != cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
-			$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
-		}
+		if (is_array($cols) && !empty($cols)) {
+			$sql = '';
+			foreach ($cols as $col) {
+				$sql .= ($sql? ',' : 'SELECT '). $pre. '`'. sqlEscape($col). '`'. $suf;
+			
+				if ($pre || $suf) {
+					$sql .= ' AS `'. sqlEscape($cols). '`';
+				}
+			}
 	
-	} else {
-		$sql = '
-			SELECT 1';
-	}
+			if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && !in_array(cms_core::$pkCols[cms_core::$lastDBPrefix. $table], $cols)) {
+				$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
+			}
 	
+		} elseif ($cols === true) {
+			$cols = array();
+			$sql = '
+				SELECT '. ($distinct? 'DISTINCT ' : ''). '*';
+	
+		} elseif ($cols !== false) {
+			$sql = '
+				SELECT '. ($distinct? 'DISTINCT ' : ''). $pre. '`'. sqlEscape($cols). '`'. $suf;
+			
+			if ($pre || $suf) {
+				$sql .= ' AS `'. sqlEscape($cols). '`';
+			}
+	
+			if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && $cols != cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
+				$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
+			}
+
+		} else {
+			$sql = '
+				SELECT 1';
+		}
+	} while(false);
 	
 	
 	
@@ -1214,9 +1265,9 @@ function checkRowExists(
 	}
 	
 	
-	if ($delete) {
+	if ($mode == 'delete') {
 		$values = false;
-		$affectedRows = cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table, true);
+		$affectedRows = reviewDatabaseQueryForChanges($sql, $ids, $values, $table, true);
 		return $affectedRows;
 	
 	} else {
@@ -1240,7 +1291,7 @@ function checkRowExists(
 	}
 }
 
-function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $insertIgnore = false) {
+function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $ignore = false) {
 	$sqlW = '';
 	
 	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
@@ -1266,7 +1317,7 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $in
 		
 		if (!empty($values)) {
 			$sql = '
-				UPDATE `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
+				UPDATE '. ($ignore? 'IGNORE ' : ''). '`'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
 			
 			$first = true;
 			foreach ($values as $col => &$val) {
@@ -1283,9 +1334,9 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $in
 				
 				if (empty($ids)) {
 					$dummy = false;
-					cms_core::reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);
+					reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);
 				} else {
-					cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
+					reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
 				}
 			}
 		}
@@ -1305,7 +1356,7 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $in
 	
 	} elseif ($insertIfNotPresent) {
 		$sql = '
-			INSERT '. ($insertIgnore? 'IGNORE ' : ''). 'INTO `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
+			INSERT '. ($ignore? 'IGNORE ' : ''). 'INTO `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
 		
 		$first = true;
 		$hadColumns = array();
@@ -1326,9 +1377,9 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $in
 		if (sqlAffectedRows() > 0) {
 			if (empty($ids)) {
 				$dummy = false;
-				cms_core::reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);
+				reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);
 			} else {
-				cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
+				reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
 			}
 		}
 		
@@ -1336,5 +1387,22 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $in
 	
 	} else {
 		return false;
+	}
+}
+
+
+function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
+	
+	//Only do the review when Modules are running normally and we're connected to the local db
+	if (cms_core::$lastDBHost
+	 && cms_core::$lastDBHost == DBHOST
+	 && cms_core::$lastDBName == DBNAME
+	 && cms_core::$lastDBPrefix == DB_NAME_PREFIX
+	 && ($edition = cms_core::$edition)) {
+		return $edition::reviewDatabaseQueryForChanges($sql, $ids, $values, $table, $runSql);
+	
+	} elseif ($runSql) {
+		sqlUpdate($sql, false);
+		return sqlAffectedRows();
 	}
 }

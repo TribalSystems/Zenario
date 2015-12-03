@@ -231,8 +231,6 @@ foreach ($fileFields as $key => $fieldName) {
 			$_POST[$fieldName] = $_REQUEST[$fieldName] = $newName;
 		}
 	}
-	
-	
 	//Stop the user trying to trick the CMS into submitting a different file in a different location
 	if (!empty($_POST[$fieldName])) {
 		if (strpos($_POST[$fieldName], '..') !== false

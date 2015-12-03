@@ -298,12 +298,12 @@ class zenario_slideshow_2 extends module_base_class {
 					}
 					switch($value['target_loc']) {
 						case 'internal':
-							if (empty($value['dest_url'])) {
+							if (empty($value['content_item_tag_id'])) {
 								$errors[$index][] = adminPhrase('Please select a content item.');
 							}
 							break;
 						case 'external':
-							if (empty($value['dest_url'])) {
+							if (empty($value['external_link'])) {
 								$errors[$index][] = adminPhrase('Please enter a URL.');
 							}
 							break;
@@ -335,8 +335,17 @@ class zenario_slideshow_2 extends module_base_class {
 							$value['field_id'] = 0;
 						}
 						
-						if ($value["target_loc"] == 'none') {
-							$value["slide_more_link_text"] = '';
+						$value['dest_url'] = '';
+						switch ($value["target_loc"]) {
+							case 'internal':
+								$value['dest_url'] = $value['content_item_tag_id'];
+								break;
+							case 'external':
+								$value['dest_url'] = $value['external_link'];
+								break;
+							case 'none':
+								$value["slide_more_link_text"] = '';
+								break;
 						}
 						
 						if (checkRowExists(ZENARIO_SLIDESHOW_2_PREFIX. "slides", array("id" => $key))) {
@@ -602,8 +611,13 @@ class zenario_slideshow_2 extends module_base_class {
 				imageLink($width, $height, $url3, $row3["mobile_image_id"], 300, 150);
 				$row3['mobile_image_src_thumbnail_1'] = $url3;
 				
+				
+				$row1['content_item_link'] = $row1['content_item_tag_id'] = $row1['external_link'] = '';
 				if ($row1['target_loc'] == 'internal' && $row1['dest_url']) {
 					$row1['content_item_link'] = formatTagFromTagId($row1['dest_url']);
+					$row1['content_item_tag_id'] = $row1['dest_url'];
+				} elseif ($row1['target_loc'] == 'external' && $row1['dest_url']) {
+					$row1['external_link'] = $row1['dest_url'];
 				}
 				
 			}
@@ -694,6 +708,40 @@ class zenario_slideshow_2 extends module_base_class {
 	public static function eventPluginInstanceDeleted($instanceId) {
 		// Delete slides
 		deleteRow(ZENARIO_SLIDESHOW_2_PREFIX. 'slides', array('instance_id' => $instanceId));
+	}
+	
+	public static function removeContentItemFromSlideLinks($cID, $cType) {
+		$tagID = formatTag($cID, $cType, false);
+		$result = getRows(
+			ZENARIO_SLIDESHOW_2_PREFIX . 'slides', 
+			array('id', 'target_loc', 'dest_url'), 
+			array('target_loc' => 'internal', 'dest_url' => $tagID)
+		);
+		while ($row = sqlFetchAssoc($result)) {
+			updateRow(
+				ZENARIO_SLIDESHOW_2_PREFIX . 'slides', 
+				array(
+					'target_loc' => 'none', 
+					'dest_url' => null, 
+					'link_to_translation_chain' => 0,
+					'open_in_new_window' => 0
+				), 
+				array('id' => $row['id'])
+			);
+		}
+	}
+	
+	public static function eventContentTrashed($cID, $cType) {
+		// Remove any internal links from slides to this content item
+		self::removeContentItemFromSlideLinks($cID, $cType);
+	}
+	
+	public static function eventContentDeleted($cID, $cType, $cVersion) {
+		// Remove any internal links from slides to this content item if the content item has been fully deleted
+		$contentItem = getRow('content_items', array('status'), array('id' => $cID, 'type' => $cType));
+		if ($contentItem === false || $contentItem['status'] === 'deleted') {
+			self::removeContentItemFromSlideLinks($cID, $cType);
+		}
 	}
 	
 }

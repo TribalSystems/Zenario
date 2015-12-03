@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content:
-    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
     key:
         id: ""
         cID: ""
@@ -46,33 +45,33 @@ zenario_content:
                     maxlength: 75
                     onkeyup: |
                         zenarioAB.contentTitleChange();
-                                                    cnt = $('#title').val().length;
-                                                    if(cnt<1) {
-                                                        $('#snippet__title_length').attr('class','title_red');
-                                                    } else if (cnt<20) {
-                                                        $('#snippet__title_length').attr('class','title_orange');
-                                                    } else if (cnt<40) {
-                                                        $('#snippet__title_length').attr('class','title_yellow');
-                                                    } else if (cnt<66) {
-                                                        $('#snippet__title_length').attr('class','title_green');
-                                                    } else {
-                                                        $('#snippet__title_length').attr('class','title_yellow');
-                                                    }
-                                                    $('#snippet__title_counter').html(cnt);
-                                                    title = $('#title').val();
-                                                    if (title.length>65) {
-                                                        title = title.substring(0,65).split(' ').slice(0, -1).join(' ') + ' ...';
-                                                    }
-                                                    $('#google_preview_title').html(title);
-                                                    if ($('#alias').val()) {
-                                                        $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
-                                                    }
+                        cnt = $('#title').val().length;
+                        if(cnt<1) {
+                            $('#snippet__title_length').attr('class','title_red');
+                        } else if (cnt<20) {
+                            $('#snippet__title_length').attr('class','title_orange');
+                        } else if (cnt<40) {
+                            $('#snippet__title_length').attr('class','title_yellow');
+                        } else if (cnt<66) {
+                            $('#snippet__title_length').attr('class','title_green');
+                        } else {
+                            $('#snippet__title_length').attr('class','title_yellow');
+                        }
+                        $('#snippet__title_counter').html(cnt);
+                        title = $('#title').val();
+                        if (title.length>65) {
+                            title = title.substring(0,65).split(' ').slice(0, -1).join(' ') + ' ...';
+                        }
+                        $('#google_preview_title').html(title);
+                        if ($('#alias').val()) {
+                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                        }
                     post_field_html: |
                         <div class="snippet__title" >
-                                                        <div id="snippet__title_length" class="[[initial_class_name]]">
-                                                            <span id="snippet__title_counter">[[initial_characters_count]]</span>
-                                                        </div>
-                                                    </div>
+                            <div id="snippet__title_length" class="[[initial_class_name]]">
+                                <span id="snippet__title_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
                 language_id:
                     ord: 30
                     label: 'Language:'
@@ -85,9 +84,9 @@ zenario_content:
                     same_row: true
                     pre_field_html: |
                         <label for="publication_date" style="font-weight:bold;">
-                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                        Release Date:
-                                                    </label>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                Release Date:
+                            </label>
                 create_menu:
                     ord: 39
                     label: 'Add to menu:'
@@ -101,17 +100,14 @@ zenario_content:
                     onchange: zenarioAB.tuix.___menu_title_changed = true;
                     onkeyup: |
                         get('menu_path').value =
-                                                        !get('menu_title').value?
-                                                            ''
-                                                        :    !get('menu_parent_path').value?
-                                                                get('menu_title').value
-                                                            :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                            !get('menu_title').value?
+                                ''
+                            :    !get('menu_parent_path').value?
+                                    get('menu_title').value
+                                :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
                 menu_path:
                     ord: 41
-                    same_row: true
-                    pre_field_html: |
-                        <br/>
-                                                        Path:
+                    label: 'Path:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
@@ -126,8 +122,8 @@ zenario_content:
                     maxlength: 75
                     onkeyup: |
                         if ($('#alias').val()) {
-                                                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
-                                                        }
+                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                        }
                     onchange: zenarioAB.tuix.___alias_changed = true;
                     note_below: |
                         An alias for this content item, and part of its URL.
@@ -144,53 +140,53 @@ zenario_content:
                     style: height:45px
                     onkeyup: |
                         cnt = $('#description').val().length;
-                                                    if(cnt<1) {
-                                                        $('#snippet__description_length').attr('class','description_red');
-                                                    } else if (cnt<50) {
-                                                        $('#snippet__description_length').attr('class','description_orange');
-                                                    } else if (cnt<100) {
-                                                        $('#snippet__description_length').attr('class','description_yellow');
-                                                    } else if (cnt<156) {
-                                                        $('#snippet__description_length').attr('class','description_green');
-                                                    } else {
-                                                        $('#snippet__description_length').attr('class','description_yellow');
-                                                    }
-                                                    $('#snippet__description_counter').html(cnt);
-                        
-                                                    desc = $('#description').val();
-                                                    if (desc.length>155) {
-                                                        desc = desc.substring(0,155).split(' ').slice(0, -1).join(' ') + ' ...';
-                                                    }
-                                                    $('#google_preview_description').html(desc);
-                                                    if ($('#alias').val()) {
-                                                        $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
-                                                    }
+                        if(cnt<1) {
+                            $('#snippet__description_length').attr('class','description_red');
+                        } else if (cnt<50) {
+                            $('#snippet__description_length').attr('class','description_orange');
+                        } else if (cnt<100) {
+                            $('#snippet__description_length').attr('class','description_yellow');
+                        } else if (cnt<156) {
+                            $('#snippet__description_length').attr('class','description_green');
+                        } else {
+                            $('#snippet__description_length').attr('class','description_yellow');
+                        }
+                        $('#snippet__description_counter').html(cnt);
+                    
+                        desc = $('#description').val();
+                        if (desc.length>155) {
+                            desc = desc.substring(0,155).split(' ').slice(0, -1).join(' ') + ' ...';
+                        }
+                        $('#google_preview_description').html(desc);
+                        if ($('#alias').val()) {
+                            $('#google_preview_url').html(zenario.htmlspecialchars(zenarioAB.value('domain_and_subdir_container') + $('#alias').val()));
+                        }
                     post_field_html: |
                         <div class="snippet__description" >
-                                                        <div id="snippet__description_length" class="[[initial_class_name]]">
-                                                            <span id="snippet__description_counter">[[initial_characters_count]]</span>
-                                                        </div>
-                                                    </div>
+                            <div id="snippet__description_length" class="[[initial_class_name]]">
+                                <span id="snippet__description_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
                 google_preview:
                     label: 'Search engine results preview:'
                     ord: 75
                     snippet:
                         html: |
-                            <div  class="google_preview_container">
-                                                                    <h3 class="google_preview_title">
-                                                                        <span id="google_preview_title">
-                                                                            [[google_preview_title]]
-                                                                        </span>
-                                                                    </h3>
-                                                                    <div class="google_preview_url">
-                                                                        <div>
-                                                                            <cite id="google_preview_url">[[google_preview_url]]</cite>
-                                                                        </div>
-                                                                        <span id="google_preview_description" class="google_preview_description">
-                                                                            [[google_preview_description]]
-                                                                        </span>
-                                                                    </div>
-                                                                </div>
+                            <div class="google_preview_container">
+                                <h3 class="google_preview_title">
+                                    <span id="google_preview_title">
+                                        [[google_preview_title]]
+                                    </span>
+                                </h3>
+                                <div class="google_preview_url">
+                                    <div>
+                                        <cite id="google_preview_url">[[google_preview_url]]</cite>
+                                    </div>
+                                    <span id="google_preview_description" class="google_preview_description">
+                                        [[google_preview_description]]
+                                    </span>
+                                </div>
+                            </div>
                 keywords:
                     ord: 80
                     label: 'Keywords meta tag:'
@@ -199,10 +195,10 @@ zenario_content:
                     onkeyup: "$('#snippet__keywords_counter').html($('#keywords').val().length);"
                     post_field_html: |
                         <div class="snippet__keywords" >
-                                                        <div id="snippet__keywords_length" class="[[initial_class_name]]">
-                                                            <span id="snippet__keywords_counter">[[initial_characters_count]]</span>
-                                                        </div>
-                                                    </div>
+                            <div id="snippet__keywords_length" class="[[initial_class_name]]">
+                                <span id="snippet__keywords_counter">[[initial_characters_count]]</span>
+                            </div>
+                        </div>
                 writer_id:
                     ord: 100
                     label: 'Writer:'
@@ -227,8 +223,8 @@ zenario_content:
                     type: editor
                     insert_link_button:
                         exists: true
-                    rows: 4
-                    cols: 80
+                    style: |
+                        height: 12em;
                 lock_summary_view_mode:
                     label: 'Protected:'
                     ord: 140

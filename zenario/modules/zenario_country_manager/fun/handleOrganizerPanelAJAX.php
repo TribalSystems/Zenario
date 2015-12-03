@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-		if (checkPriv("_PRIV_PUBLISH_CONTENT_ITEM")){
+		if (checkPriv("_PRIV_MANAGE_COUNTRY")){
 			foreach (explode(',',$ids) as $id) {
 				if (post('action') == 'activate_country') {
 					updateRow(ZENARIO_COUNTRY_MANAGER_PREFIX . "country_manager_countries", array('active' => 1), array('id' => $id));
@@ -74,7 +74,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 				}
 			}
 		} else {
-			echo "You have no permission to manipulate Countries or Regions.";
+			echo adminPhrase("You have no permission to manipulate Countries or Regions.");
 		}
 
 ?>

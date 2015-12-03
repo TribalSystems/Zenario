@@ -227,13 +227,17 @@ class zenario_api {
 		return $return;
 	}
 	
-	//HTML escape something for the old framework system, but leave it alone if this is Twig
-	protected final function escapeIfOldFramework($text) {
+	protected final function frameworkIsTwig() {
 		if (!$this->frameworkLoaded) {
 			$this->tApiLoadFramework();
 		}
 		
-		if ($this->frameworkIsTwig) {
+		return $this->tApiFrameworkIsTwig;
+	}
+	
+	//HTML escape something for the old framework system, but leave it alone if this is Twig
+	protected final function escapeIfOldFramework($text) {
+		if ($this->frameworkIsTwig()) {
 			return $text;
 		} else {
 			return htmlspecialchars($text);
@@ -753,8 +757,8 @@ class zenario_api {
 	private $frameworkData;
 	private $frameworkLoaded = false;
 	private $zenario2Twig = false;
-	protected $frameworkIsTwig = false;
 	protected $frameworkOutputted = false;
+	protected $tApiFrameworkIsTwig = false;
 	
 	private $tApiFirst = true;
 	private final function tApiFirst() {
@@ -892,32 +896,42 @@ class zenario_api {
 		}
 	}
 	
-	
 	//Display a Slot and its wrappers
 	public final function show($includeAdminControlsIfInAdminMode = true, $showPlaceholderMethod = 'showSlot') {
 		
-		if ($includeAdminControlsIfInAdminMode) {
+		$edition = cms_core::$edition;
+		$isLayoutPreview = cms_core::$cID === -1;
+		$isShowSlot = $showPlaceholderMethod == 'showSlot';
+		
+		//Include the controls if this is admin mode, and if this is not a preview of a layout
+		if ($includeAdminControlsIfInAdminMode && !$isLayoutPreview && checkPriv()) {
 			$this->startIncludeAdminControls();
 		}
 		
 		echo $this->startInner();
-			if (!$this->eggId) {
-				cms_core::preSlot($this->slotName, $showPlaceholderMethod);
-			}
-				
-				//Display the plugin, if it has been set up.
-				if (!$this->instanceId) {
-					echo showPluginError($this->slotName);
-				} else {
-					$this->$showPlaceholderMethod();
-					
-					if ($showPlaceholderMethod == 'showSlot') {
-						$this->afterShowSlot();
-					}
+			
+			if ($isLayoutPreview && $isShowSlot) {
+				$this->showLayoutPreview();
+			
+			} else {
+				if (!$this->eggId) {
+					$edition::preSlot($this->slotName, $showPlaceholderMethod);
 				}
 				
-			if (!$this->eggId) {
-				cms_core::postSlot($this->slotName, $showPlaceholderMethod);
+					//Display the plugin, if it has been set up.
+					if (!$this->instanceId) {
+						echo showPluginError($this->slotName);
+					} else {
+						$this->$showPlaceholderMethod();
+					
+						if ($isShowSlot) {
+							$this->afterShowSlot();
+						}
+					}
+				
+				if (!$this->eggId) {
+					$edition::postSlot($this->slotName, $showPlaceholderMethod);
+				}
 			}
 		echo $this->endInner();
 	}
@@ -926,7 +940,7 @@ class zenario_api {
 	//Any calls to frameworkHead() or to framework() for sections other than "Outer" are stored in the $this->zenario2Twig array.
 	//After showSlot is finished, we'll output the $this->zenario2Twig arrat using Twig.
 	public final function afterShowSlot() {
-		if ($this->frameworkIsTwig
+		if ($this->tApiFrameworkIsTwig
 		 && $this->zenario2Twig !== false) {
 			$this->twigFramework($this->zenario2Twig);
 			$this->zenario2Twig = false;
@@ -945,9 +959,7 @@ class zenario_api {
 	
 	//Display the admin controls for a slot
 	private final function startIncludeAdminControls() {
-		if (checkPriv()) {
-			require funIncPath(__FILE__, __FUNCTION__);
-		}
+		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	//Put a div around the slot, so we can reload the contents
@@ -993,7 +1005,7 @@ class zenario_api {
 		//New framework code, using Twig
 		if (is_file($file = $path. 'framework.twig.html')) {
 			//No loading needed here; Twig recompiles if needed when displaying a framework.
-			$this->frameworkIsTwig = true;
+			$this->tApiFrameworkIsTwig = true;
 		
 		//Old framework code
 		//Check to see if the framework html file exists, and start loading it if it does
@@ -1231,7 +1243,7 @@ class zenario_api {
 			echo 'This plugin requires a framework, but no framework was set. ';
 		}
 		
-		if ($this->frameworkIsTwig) {
+		if ($this->tApiFrameworkIsTwig) {
 			//Attempt to automatically migrate a Module using the old framework system to using Twig
 		
 			//I'll add support for the following situations:
@@ -1715,55 +1727,10 @@ class zenario_api {
 			return false;
 		}
 		
-		if (!$type) {
-			$type = cms_core::$skType;
-		}
-		if (!$path) {
-			$path = cms_core::$skPath;
-		}
-		
-		//Catch a renamed variable
-		if ($type == 'storekeeper') {
-			$type = 'organizer';
-		}
-		
-		$basePath = dirname($filePath);
-		$moduleDir = basename($basePath);
-		
-		//Modules use the owner/author name at the start of their name. Get this prefix.
-		$prefix = explode('_', $moduleDir, 2);
-		if (!empty($prefix[1])) {
-			$prefix = $prefix[0];
-		} else {
-			$prefix = '';
-		}
-		
-		//Take the path, and try to get the name of the last tag in the tag path.
-		//(But if the last tag is "panel", remove that as the second-last tag will be more helpful.)
-		//Also try to remove the prefix from above.
-		$matches = array();
-		preg_match('@.*/_*(\w+)@', str_replace('/'. $prefix. '_', '/', str_replace('/panel', '', '/'. $path)), $matches);
-		
-		if (empty($matches[1])) {
-			exit('Bad path: '. $path);
-		}
-		
-		//From the logic above, create a standard filepath and class name
-		$phpPath = $basePath. '/classes/'. $type. '/'. $matches[1]. '.php';
-		$className = $moduleDir. '__'. $type. '__'. $matches[1];
-		
-		//Check if the file is there
-		if (is_file($phpPath)) {
-			require_once $phpPath;
-		
-			if (class_exists($className)) {
-				$c = new $className;
-				$c->tAPIrunSubClassSafetyCatch = true;
-				return $c;
-			} else {
-				exit('The class '. $className. ' was not defined in '. $phpPath);
-			}
-		
+		if ($className = includeModuleSubclass($filePath, $type, $path)) {
+			$c = new $className;
+			$c->tAPIrunSubClassSafetyCatch = true;
+			return $c;
 		} else {
 			return false;
 		}

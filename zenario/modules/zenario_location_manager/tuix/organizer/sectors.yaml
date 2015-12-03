@@ -64,6 +64,7 @@ zenario__locations:
                 disable_close_up_view: Yes
                 collection_buttons:
                     create_sector:
+                        priv: _PRIV_MANAGE_LOCATIONS
                         ord: "1"
                         label: Define a sector
                         css_class: zenario_create_a_new

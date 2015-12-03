@@ -182,6 +182,21 @@ function getDiamondPath() {
 	return moduleDir('zenario_common_features', 'tuix/organizer/diamond.gif');
 }
 
+function refreshAdminSession() {
+	if (adminId()) {
+		setAdminSession(adminId(), session('admin_global_id'));
+	}
+}
+
+function prepareAdminWelcomeScreen(&$box, &$tags, $path) {
+	if (arrayKey($box, 'path') != $path) {
+		$box = array('path' => $path);
+	}
+
+	checkBoxDefinition($box, $tags[$path]);
+}
+
+
 //Old code for sample sites, commented out as we don't currently use them
 //function listSampleSites() {
 //	$sampleSites = array();
@@ -415,8 +430,8 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			$box['tabs'][3]['errors'][] = adminPhrase('The database username should only contain [a-z, A-Z, 0-9, _ and -].');
 		}
 		
-		if (preg_match('/[^a-zA-Z0-9_-]/', $merge['DB_NAME_PREFIX'])) {
-			$box['tabs'][3]['errors'][] = adminPhrase('The table prefix should only contain the characters [a-z, A-Z, 0-9, _ and -].');
+		if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_NAME_PREFIX'])) {
+			$box['tabs'][3]['errors'][] = adminPhrase('The table prefix should only contain the characters [a-z, A-Z, 0-9 and _].');
 		}
 		
 		if (empty($box['tabs'][3]['errors'])) {
@@ -511,7 +526,8 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		}
 	} else {
 		//Validation for Step 45: Check a backup file exists
-		if (($box['tab'] > 45 || ($box['tab'] == 45 && !empty($box['tabs'][45]['fields']['next']['pressed'])))) {
+		if ((($box['tab'] != 45 && $box['tab'] > 5)
+		  || ($box['tab'] == 45 && !empty($box['tabs'][45]['fields']['next']['pressed'])))) {
 			$box['tabs'][45]['errors'] = array();
 			
 			if (!is_file($box['tabs'][45]['fields']['path']['current_value'])) {
@@ -523,6 +539,13 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			
 			} elseif (!is_readable($box['tabs'][45]['fields']['path']['current_value'])) {
 				$box['tabs'][45]['errors'][] = adminPhrase('Please enter a path to a file with read-access set.');
+			}
+	
+			if (!$merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'] = $box['tabs'][45]['fields']['email']['current_value']) {
+				$box['tabs'][45]['errors'][] = adminPhrase('Please enter a support email address.');
+			
+			} elseif (!validateEmailAddress($merge['EMAIL_ADDRESS_GLOBAL_SUPPORT'])) {
+				$box['tabs'][45]['errors'][] = adminPhrase('Please enter a valid email address.');
 			}
 		}
 	}
@@ -896,6 +919,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			$box['tabs'][6]['fields']['zenario_siteconfig']['pre_field_html'] =
 				'<pre>'. CMS_ROOT. 'zenario_siteconfig.php'. ':</pre>';
 			$box['tabs'][6]['fields']['zenario_siteconfig']['value'] = readSampleConfigFile($merge);
+			unset($box['tabs'][6]['fields']['zenario_siteconfig']['current_value']);
 			
 			
 			break;
@@ -1029,8 +1053,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 						setRow('languages', array(
 							'detect' => 0,
 							'detect_lang_codes' => '',
-							//This will need uncommenting the next time the INSTALLER_REVISION_NO is increased!
-							//'translate_phrases' => $translatePhrases,
+							'translate_phrases' => $translatePhrases,
 							'search_type'=> $searchType
 							), 
 							$merge['LANGUAGE_ID']);
@@ -1069,16 +1092,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 					
 					$adminId = insertRow('admins', $details);
 					setPasswordAdmin($adminId, $merge['PASSWORD']);
-					
-					//Look for permissions in each of the running modules in this package
-					foreach (getRunningModules($dbUpdateSafemode = true) as $module) {
-						if (($perms = scanModulePermissionsInTUIXDescription($module['class_name']))
-						 && !empty($perms)) {
-							
-							//Give the first admin that we create all of those permissions
-							saveAdminPerms($perms, $adminId);
-						}
-					}
+					saveAdminPerms($adminId, 'all_permissions');
 					setAdminSession($adminId);
 					
 					
@@ -1111,11 +1125,11 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 						setSetting('default_language', $langId);
 					}
 					
+					//Populate the menu_hierarchy and the menu_positions tables
+					recalcAllMenuHierarchy();
+					
 					//Update the special pages, creating new ones if needed
 					addNeededSpecialPages();
-					
-					//Set a value for the organizer_title site setting
-					setSetting('organizer_title', 'Organizer for '. primaryDomain());
 				}
 			}
 			
@@ -1171,8 +1185,18 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 		
 		if (empty($box['tabs']['login']['errors'])) {
 			$details = array();
-			if ($adminIdL = checkPasswordAdmin($box['tabs']['login']['fields']['username']['current_value'], $details, $box['tabs']['login']['fields']['password']['current_value'], $checkViaEmail = false)) {
-				
+			
+			$adminIdL = checkPasswordAdmin($box['tabs']['login']['fields']['username']['current_value'], $details, $box['tabs']['login']['fields']['password']['current_value'], $checkViaEmail = false);
+			
+			if (!$adminIdL) {
+				$box['tabs']['login']['errors']['details_wrong'] =
+					adminPhrase('Your username and password combination was not recognised. Please check and try again.');
+			
+			} elseif (isError($adminIdL)) {
+				$box['tabs']['login']['errors']['details_wrong'] =
+					adminPhrase($adminIdL->__toString());
+			
+			} else {
 				if ($box['tabs']['login']['fields']['remember_me']['current_value']) {
 					setCookieOnCookieDomain('COOKIE_LAST_ADMIN_USER', $box['tabs']['login']['fields']['username']['current_value']);
 					clearCookie('COOKIE_DONT_REMEMBER_LAST_ADMIN_USER');
@@ -1205,31 +1229,15 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 				@sqlSelect($sql);
 				
 				// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
-				setRow('site_settings', array('value' => primaryDomain()), array('name' => 'last_primary_domain'));
+				if (setting('admin_domain_is_public')) {
+					setRow('site_settings', array('value' => primaryDomain()), array('name' => 'last_primary_domain'));
+				}
 				
 				//Don't offically mark the admin as "logged in" until they've passed all of the
 				//checks in the admin login screen
 				$_SESSION['admin_logged_in'] = false;
 				
 				return true;
-			
-			//checkPasswordAdmin() will return an empty string for Super Admins where the link to the global database is not working
-				//I want the "global db not enabled" and "password not correct" states to be different,
-				//yet still both evaluate to false.
-			} elseif ($adminIdL === '') {
-				$box['tabs']['login']['errors']['details_wrong'] =
-					adminPhrase('You cannot use your multi-site account because this site has lost its connection to the global database. Please check that the correct settings have been entered in the zenario_siteconfig.php file.');
-			
-			//checkPasswordAdmin() will return null for Super Admins when they need to log into the control site to change their password.
-				//I want the "password needs changing" and "password not correct" states to be different,
-				//yet still both evaluate to false.
-			} elseif ($adminIdL === null) {
-				$box['tabs']['login']['errors']['details_wrong'] =
-					adminPhrase('Your multi-site account has been flagged for a password change. Please log into the control site to change it.');
-			
-			} else {
-				$box['tabs']['login']['errors']['details_wrong'] =
-					adminPhrase('Your username and password combination was not recognised. Please check and try again.');
 			}
 		}
 	
@@ -1296,6 +1304,11 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 		}
 		$box['tabs']['login']['fields']['remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
 		
+		//Don't show the note about the admin login link if it is turned off in the site settings
+		if (!setting('admin_domain_is_public')) {
+			$box['tabs']['login']['fields']['remember_me']['note_below'] = '';
+		}
+		
 		if ($passwordReset) {
 			$box['tabs']['login']['fields']['reset']['hidden'] = false;
 			$box['tabs']['login']['fields']['description']['hidden'] = true;
@@ -1309,6 +1322,41 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 }
 
 
+
+function updateNoPermissionsAJAX(&$tags, &$box, &$task, $getRequest) {
+	//Handle the "back to site" button
+	if (!empty($box['tabs'][0]['fields']['previous']['pressed'])) {
+		logoutAdminAJAX($box, $getRequest);
+		return;
+	
+	} else {
+		$admins = getRowsArray(
+			'admins',
+			array('first_name', 'last_name', 'username', 'authtype'),
+			array(
+				'status' => 'active',
+				'id' => getRowsArray(
+					'action_admin_link',
+					'admin_id',
+					array('action_name' => array('_ALL', '_PRIV_APPLY_DATABASE_UPDATES')))),
+			array('first_name', 'last_name', 'username', 'authtype')
+		);
+		
+		if (!empty($admins)) {
+			$html =
+				'<p>'. adminPhrase('The following administrators are able to apply updates:'). '</p><ul>';
+			
+			foreach ($admins as $admin) {
+				$html .= '<li>'. htmlspecialchars(formatAdminName($admin)). '</li>';
+			}
+			
+			$html .= '</ul>';
+			
+			$box['tabs'][0]['fields']['admins_who_can_do_updates']['hidden'] = false;
+			$box['tabs'][0]['fields']['admins_who_can_do_updates']['snippet']['html'] = $html;
+		}
+	}
+}
 
 
 
@@ -1336,7 +1384,7 @@ function updateAJAX(&$tags, &$box, &$task) {
 		$modules = array();
 		$revisions = array();
 		$currentRevisionNumber = false;
-		$latestRevisionNumber = getLatestRevisionNumber();
+		$latestRevisionNumber = LATEST_REVISION_NO;
 	
 		//Get details on any database updates needed
 		if ($updates = checkIfDBUpdatesAreNeeded(false, false, false)) {
@@ -1513,7 +1561,7 @@ function securityCodeAJAX(&$tags, &$box, &$task, $getRequest) {
 		}
 		
 		$addressToOverriddenBy = false;
-		sendEmail(
+		$emailSent = sendEmail(
 			$subject, $message,
 			$admin['email'],
 			$addressToOverriddenBy,
@@ -1523,7 +1571,11 @@ function securityCodeAJAX(&$tags, &$box, &$task, $getRequest) {
 			false, false, false,
 			$isHTML = false);
 		
-		if ($resend) {
+		if (!$emailSent) {
+			$box['tabs']['security_code']['errors'][] =
+				adminPhrase('Warning! The system could not send an email. Please contact your server administrator.');
+			
+		} elseif ($resend) {
 			$box['tabs']['security_code']['notices']['email_resent']['show'] = true;
 		}
 	
@@ -1590,7 +1642,7 @@ function changePasswordAJAX(&$tags, &$box, &$task) {
 		if (!$currentPassword) {
 			$box['tabs']['change_password']['errors'][] = adminPhrase('Please enter your current password.');
 		
-		} elseif (!checkPasswordAdmin(session('admin_username'), $details, $currentPassword)) {
+		} elseif (!engToBoolean(checkPasswordAdmin(session('admin_username'), $details, $currentPassword))) {
 			$box['tabs']['change_password']['errors'][] = adminPhrase('_MSG_PASS_WRONG');
 		}
 		
@@ -1956,6 +2008,9 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		if (setting('debug_override_enable')) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['email_addresses_overridden']['row_class'] = 'warning';
+			$box['tabs'][0]['fields']['email_addresses_overridden']['snippet']['html'] =
+				adminPhrase('You have &ldquo;Email debug mode&rdquo; enabled under <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer. Email sent by this site will be redirected to &quot;[[email]]&quot;.',
+					array('email' => htmlspecialchars(setting('debug_override_email_address'))));
 		} else {
 			$box['tabs'][0]['fields']['email_addresses_overridden']['hidden'] = true;
 		}
@@ -1968,9 +2023,10 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 				 && is_link($dir. $mDir)
 				 && ($rp = realpath($dir. $mDir))
 				 && ($rp = dirname($rp))
-				 && ($rp = dirname($rp))
+				 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
+				 && (is_dir($rp. '/zenario') || ($rp = dirname($rp)))
 				 && (is_dir($rp = $rp. '/zenario/admin/db_updates/copy_over_top_check/'))
-				 && (!file_exists($rp. ZENARIO_CMS_NUMERIC_VERSION. '.txt'))) {
+				 && (!file_exists($rp. ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION. '.txt'))) {
 					
 					$badSymlinks[] = $mDir;
 				}
@@ -1981,7 +2037,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			$box['tabs'][0]['fields']['bad_extra_module_symlinks']['row_class'] = 'warning';
 			$show_warning = true;
 			
-			$mrg = array('module' => array_pop($badSymlinks), 'version' => preg_replace('@[a-z]@', '', ZENARIO_CMS_VERSION));
+			$mrg = array('module' => array_pop($badSymlinks), 'version' => ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION);
 			if (empty($badSymlinks)) {
 				$box['tabs'][0]['fields']['bad_extra_module_symlinks']['snippet']['html'] =
 					adminPhrase('The <code>[[module]]</code> symlink in the <code>zenario_extra_modules/</code> directory is linked to the wrong version of Zenario. It should be linked to version [[version]].', $mrg);
@@ -1993,14 +2049,39 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		}
 		
 		
-		
-		
-		
 		if ($show_warning) {
 			$box['tabs'][0]['fields']['show_site']['pressed'] = true;
 			$box['tabs'][0]['fields']['site']['row_class'] = 'section_warning';
 		}
 	}
+	
+	
+	
+	
+	//Web server warnings
+	$show_warning = false;
+	
+	if (!$box['tabs'][0]['fields']['opcache_misconfigured']['hidden'] =
+		!checkFunctionEnabled('ini_get')
+	 || !engToBoolean(ini_get('opcache.enable'))
+	 || engToBoolean(ini_get('opcache.dups_fix'))
+	) {
+		$box['tabs'][0]['fields']['opcache_misconfigured']['row_class'] = 'warning';
+		$show_warning = true;
+	}
+	
+	
+	if ($show_warning) {
+		$box['tabs'][0]['fields']['show_server']['pressed'] = true;
+		$box['tabs'][0]['fields']['server']['row_class'] = 'section_warning';
+		$box['tabs'][0]['fields']['show_server']['hidden'] =
+		$box['tabs'][0]['fields']['server']['hidden'] = false;
+	} else {
+		$box['tabs'][0]['fields']['server']['row_class'] = 'section_valid';
+		$box['tabs'][0]['fields']['show_server']['hidden'] =
+		$box['tabs'][0]['fields']['server']['hidden'] = true;
+	}
+	
 	
 	
 	
@@ -2049,6 +2130,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	//If everything is valid, do not show this screen unless it was shown previously
 	if ($box['tabs'][0]['fields']['dirs']['row_class'] == 'section_valid'
 	 && $box['tabs'][0]['fields']['site']['row_class'] == 'section_valid'
+	 && $box['tabs'][0]['fields']['server']['row_class'] == 'section_valid'
 	 && empty($box['tabs'][0]['fields']['check_again']['pressed'])) {
 	 	unset($box['disallow_changes_to_dirs']);
 		return true;
@@ -2104,6 +2186,8 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 	$cID = $cType = false;
 	$request = arrayKey($getRequest, 'cID');
 	
+	$domain = ($useAliasInAdminMode || !checkPriv())? primaryDomain() : adminDomain();
+	
 	if (!empty($getRequest['og']) && checkPriv()) {
 		return
 			'zenario/admin/organizer.php'.
@@ -2111,7 +2195,7 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 			'#'. $getRequest['og'];
 		
 	} elseif (!empty($getRequest['desturl']) && checkPriv()) {
-		return httpOrhttps(). primaryDomain(). $getRequest['desturl'];
+		return httpOrhttps(). $domain. $getRequest['desturl'];
 		
 	} elseif ($cID = (int) $request) {
 		$cType = ifNull(preg_replace('/\W/', '', arrayKey($getRequest, 'cType')), 'html');

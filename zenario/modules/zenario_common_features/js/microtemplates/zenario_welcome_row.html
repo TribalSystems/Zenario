@@ -14,6 +14,20 @@
 <% } %>
 
 <% if (m.fields) { %>
+	<% var firstField = m.fields[0]; %>
+	
+	<% if (firstField._lastGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastGrouping) { %>
+			</fieldset>
+		<% } %>
+		<% if (firstField.grouping) { %>
+			<fieldset class="zenario_grouping zenario_grouping__{{firstField.grouping|escape}}">
+		<% } %>
+	<% } %>
+	<% if (firstField.legend) { %>
+		<legend class="zenario_legend zenario_legend_for__{{firstField._id|escape}}"><span>{{firstField.legend}}</span></legend>
+	<% } %>
+	
 	<div id="row__{{m.fields[0]._id|escape}}" class="zenario_ab_row zenario_ab_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}}">
 		<% if (zenario.engToBoolean(m.fields[0].full_width)) { %>
 			<div >
@@ -29,4 +43,10 @@
 				</div>
 			</div>
 	</div>
+	
+	<% if (firstField._isLastRow) { %>
+		<% if (firstField.grouping) { %>
+			</fieldset>
+		<% } %>
+	<% } %>
 <% } %>

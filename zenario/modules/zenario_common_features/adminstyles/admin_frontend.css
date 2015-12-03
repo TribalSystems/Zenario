@@ -1,0 +1,19 @@
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_content_items a,
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_modules_panel a,
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a{
+	padding-left: 30px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a {
+	background: url('/zenario/admin/images/menu-navigation-icon.png') #393939 no-repeat scroll left;
+	background-position: -5px 0px;
+}
+
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_content_items a {
+	background: url('/zenario/admin/images/icon-goto-content-items.png') no-repeat 4px 4px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_modules_panel a {
+	background: url('/zenario/admin/images/icon-goto-modules-panel.png') no-repeat 4px 3px;
+}

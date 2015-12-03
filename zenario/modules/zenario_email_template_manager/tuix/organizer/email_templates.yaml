@@ -115,15 +115,16 @@ zenario__email_template_manager:
                     
             collection_buttons:
                 create_template:
+                    label: Create an email template
                     priv: _PRIV_MANAGE_EMAIL_TEMPLATE
                     css_class: zenario_create_a_new
-                    label: Create
+                    hide_on_filter: true
                     admin_box:
                         path: zenario_email_template
                 test:
                     priv: _PRIV_EDIT_SITE_SETTING
                     hide_in_select_mode: Yes
-                    label: Send Test Email
+                    label: Send test email
                     tooltip: Manage Email Settings and send a Test Email
                     admin_box:
                         path: site_settings
@@ -132,7 +133,7 @@ zenario__email_template_manager:
                         tab: test
             item_buttons:
                 edit_template:
-                    label: Properties
+                    label: Edit email template
                     multiple_select: No
                     admin_box:
                         path: zenario_email_template

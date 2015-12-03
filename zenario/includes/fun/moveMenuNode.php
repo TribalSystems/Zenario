@@ -37,7 +37,7 @@ $newNeighbour = false;
 $newSectionId = menuSectionId($newSectionId);
 
 if (!is_array($ids)) {
-	$ids = explode(',', $ids);
+	$ids = explodeAndTrim($ids);
 }
 
 //If a specific node was picked, move the selected nodes to that ordinal

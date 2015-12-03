@@ -6,9 +6,11 @@ sections:
 
             property_dropdown:
                 label: Properties
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             publish:
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Publish...
                 css_class: publish label_without_icon
                 tooltip: Publish this content item|Click to Publish
@@ -16,21 +18,23 @@ sections:
                     path: zenario_publish
             action_dropdown:
                 label: Actions
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             category_dropdown:
                 label: Categories
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             view_dropdown:
                 label: View
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
             lock_dropdown:
                 label: Locking
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
 
         # property_dropdown
             item_meta_data:
                 parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Edit metadata
                 tooltip: ""
                 admin_box:
@@ -38,16 +42,21 @@ sections:
             alias:
                 parent: property_dropdown
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                    && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 label: Edit alias
                 admin_box:
                     path: zenario_alias
             head:
                 parent: property_dropdown
                 priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 label: HTML in head of page
                 admin_box:
                     path: zenario_head_foot_slot
@@ -57,8 +66,10 @@ sections:
             foot:
                 parent: property_dropdown
                 priv: _PRIV_MANAGE_ITEM_SLOT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 label: HTML at foot of page
                 admin_box:
                     path: zenario_head_foot_slot
@@ -68,12 +79,16 @@ sections:
             layout:
                 parent: property_dropdown
                 priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Change layout
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 admin_box:
                     path: zenario_content_layout
             view_slots:
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 parent: property_dropdown
                 label: View item's slots
                 organizer_quick:
@@ -87,6 +102,8 @@ sections:
                 # a draft!
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Make a draft
                 ajax:
                     priv: _PRIV_CREATE_REVISION_DRAFT
@@ -104,10 +121,12 @@ sections:
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        create_draft: "1"
-                        switch_to_edit_mode: "1"
+                        create_draft: 1
+                        switch_to_edit_mode: 1
             cant_start_editing:
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: "Can't edit"
                 css_class: create_disabled label_to_the_left
                 tooltip: >
@@ -120,12 +139,14 @@ sections:
                 admin_box:
                     path: zenario_content
                     key:
-                        duplicate: "1"
+                        duplicate: 1
             create_draft_by_copying:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 label: Copy from other content item
                 pick_items:
                     path: ""
@@ -143,10 +164,12 @@ sections:
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            create_draft_by_copying: "1"
+                            create_draft_by_copying: 1
             create_draft_by_overwriting:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
                 label: Copy from other content item
@@ -170,8 +193,10 @@ sections:
             hide_content:
                 parent: action_dropdown
                 priv: _PRIV_HIDE_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 label: Hide
                 css_class: zenario_hide_content label_to_the_left
                 ajax:
@@ -186,12 +211,14 @@ sections:
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        hide: "1"
+                        hide: 1
             delete_draft:
                 parent: action_dropdown
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 priv: _PRIV_DELETE_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Delete draft
                 css_class: zenario_delete_draft label_to_the_left
                 ajax:
@@ -206,12 +233,14 @@ sections:
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        delete: "1"
+                        delete: 1
             trash_content:
                 parent: action_dropdown
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 priv: _PRIV_TRASH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Trash
                 css_class: zenario_trash_content label_to_the_left
                 
@@ -220,6 +249,8 @@ sections:
             unhide:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Unhide/make draft
                 css_class: create label_to_the_left
                 tooltip: >
@@ -236,10 +267,12 @@ sections:
                         cancel_button_message: Cancel
                         message_type: question
                     request:
-                        unhide: "1"
+                        unhide: 1
             redraft:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Re-draft
                 css_class: create label_to_the_left
                 tooltip: >
@@ -256,9 +289,11 @@ sections:
                         cancel_button_message: Cancel
                         message_type: question
                     request:
-                        create_draft: "1"
+                        create_draft: 1
             rollback_item:
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Rollback
                 css_class: zenario_rollback label_to_the_left
                 tooltip: >
@@ -276,9 +311,11 @@ sections:
                         cancel_button_message: Cancel
                         message_type: question
                     request:
-                        rollback: "1"
+                        rollback: 1
             no_rollback_item:
                 priv: _PRIV_CREATE_REVISION_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: "Can't Rollback"
                 css_class: zenario_rollback_disabled label_to_the_left
                 tooltip: >
@@ -291,7 +328,7 @@ sections:
                 priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                 label: Add to/remove from categories
                 appears_in_toolbars:
-                    edit: Yes
+                    edit: true
                 admin_box:
                     path: zenario_content_categories
 
@@ -302,23 +339,25 @@ sections:
                 organizer_quick:
                     target_path: zenario__content/panels/chained
                     min_path: zenario__content/panels/chained
-                    disallow_refiners_looping_on_min_path: Yes
+                    disallow_refiners_looping_on_min_path: true
             view_items_images:
                 parent: view_dropdown
                 label: Images attached to this content item
                 organizer_quick:
                     target_path: zenario__content/panels/inline_images_for_content
                     min_path: zenario__content/panels/inline_images_for_content
-                    disallow_refiners_looping_on_min_path: Yes
+                    disallow_refiners_looping_on_min_path: true
 
 #lock_dropdown
             lock:
                 parent: lock_dropdown
                 priv: _PRIV_EDIT_DRAFT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Lock this draft
                 appears_in_toolbars:
-                    edit: Yes
-                    edit_disabled: Yes
+                    edit: true
+                    edit_disabled: true
                 ajax:
                     confirm:
                         message: |
@@ -331,19 +370,19 @@ sections:
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        lock: "1"
+                        lock: 1
             locked:
                 parent: lock_dropdown
                 appears_in_toolbars:
-                    edit: Yes
-                    edit_disabled: Yes
+                    edit: true
+                    edit_disabled: true
                 label: Locked
                 css_class: zenario_item_locked
             unlock:
                 parent: lock_dropdown
                 appears_in_toolbars:
-                    edit: Yes
-                    edit_disabled: Yes
+                    edit: true
+                    edit_disabled: true
                 label: Unlock
                 tooltip: This content item is locked by you
                 ajax:
@@ -356,12 +395,12 @@ sections:
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        unlock: "1"
+                        unlock: 1
             force_open:
                 parent: lock_dropdown
                 appears_in_toolbars:
-                    edit: Yes
-                    edit_disabled: Yes
+                    edit: true
+                    edit_disabled: true
                 priv: _PRIV_CANCEL_CHECKOUT
                 label: Force unlock
                 tooltip: This content item is locked by another administrator
@@ -377,4 +416,4 @@ sections:
                         cancel_button_message: Leave it alone
                         message_type: warning
                     request:
-                        unlock: "1"
+                        unlock: 1

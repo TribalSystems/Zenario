@@ -48,6 +48,10 @@ body.webkit input {
 	padding:15px 30px 20px 30px;
 }
 
+.welcome input[readonly] {
+	background-color: #CBCBCB!important;
+}
+
 /* Header */
 
 .welcome .welcome_header_logo {
@@ -97,23 +101,33 @@ body.webkit input {
 
 /* Sys Requirements Screen */
 
-.welcome table.sub_table
-{
+.welcome fieldset.zenario_grouping__sub_table {
+	clear:both;
 	width:100%;
 	background:#FFF;
+	margin: 20px 0;
+	padding: 3px;
+	box-sizing: border-box;
+	
+	border:3px solid #C5E2F4;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	
+	max-height: none;
+	overflow: visible;	
 }
 
-.welcome div.thickbox_table table.sub_table .zenario_ab_row {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row {
 	padding-bottom:0;
 	margin-bottom:2px;
 }
 
-.welcome div.thickbox_table table.sub_table .zenario_ab_row > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .zenario_ab_row > div
 {
 	padding:5px 5px 5px 20px;
 	overflow:hidden;
 }
-.welcome #row__sub_table_open td table.sub_table tr:first-child td,
+.welcome #row__sub_table_open td fieldset.zenario_grouping__sub_table tr:first-child td,
 .welcome #row__sub_table_close td
 {
 	height: 0px;
@@ -121,87 +135,87 @@ body.webkit input {
 	padding-bottom: 0px;
 }
 
-.welcome table.sub_table tr td span
+.welcome fieldset.zenario_grouping__sub_table tr td span
 {
 	float:left;
 }
 
-.welcome div.thickbox_table table.sub_table .section_valid,
-.welcome div.thickbox_table table.sub_table .sub_section_valid
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_valid
 {
 	background-color: #C3F1D7;
 }
 
-.welcome div.thickbox_table table.sub_table .section_invalid,
-.welcome div.thickbox_table table.sub_table .sub_section_invalid
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid
 {
 	background-color: #FCE7E6;
 }
 
-.welcome div.thickbox_table table.sub_table .section_warning,
-.welcome div.thickbox_table table.sub_table .sub_section_warning
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .section_warning,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_warning
 {
 	background-color: #faedd3;
 }
 
-.welcome div.thickbox_table table.sub_table .valid,
-.welcome div.thickbox_table table.sub_table .invalid,
-.welcome div.thickbox_table table.sub_table .warning,
-.welcome div.thickbox_table table.sub_table .sub_valid,
-.welcome div.thickbox_table table.sub_table .sub_invalid,
-.welcome div.thickbox_table table.sub_table .sub_warning
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning
 {
 	background:#FFF !important;
 }
 
-.welcome div.thickbox_table table.sub_table .valid > div,
-.welcome div.thickbox_table table.sub_table .invalid > div,
-.welcome div.thickbox_table table.sub_table .warning > div,
-.welcome div.thickbox_table table.sub_table .sub_valid > div,
-.welcome div.thickbox_table table.sub_table .sub_invalid > div,
-.welcome div.thickbox_table table.sub_table .sub_warning > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
 {
 	padding:5px 5px 5px 40px;
 }
 
-.welcome div.thickbox_table table.sub_table .valid > div,
-.welcome div.thickbox_table table.sub_table .sub_valid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div
 {
 	background:url('../admin/images/icon-success.png') no-repeat 15px 5px;
 }
 
-.welcome div.thickbox_table table.sub_table .invalid > div,
-.welcome div.thickbox_table table.sub_table .sub_invalid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div
 {
 	background:url('../admin/images/error-icon-small.png') no-repeat 15px 5px;
 }
 
-.welcome div.thickbox_table table.sub_table .warning > div,
-.welcome div.thickbox_table table.sub_table .sub_warning > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .warning > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
 {
 	background:url('../admin/images/icon-warning.png') no-repeat 15px 5px;
 }
 
 /* Diagnostics */
 
-.welcome div.thickbox_table table.sub_table .sub_section_valid > div,
-.welcome div.thickbox_table table.sub_table .sub_section_invalid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid > div
 {
 	border-left:20px solid #FFF;
 }
 
-.welcome div.thickbox_table table.sub_table .sub_valid > div,
-.welcome div.thickbox_table table.sub_table .sub_invalid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div
 {
 	border-left:40px solid #FFF;
 }
 
-.welcome div.thickbox_table table.sub_table .sub_field > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_field > div
 {
 	border-left:60px solid #FFF;
 }
 
-.welcome div.thickbox_table table.sub_table .sub_field input.input_text
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_field input.input_text
 {
 	margin-left:10px;
 }
@@ -212,17 +226,6 @@ body.webkit input {
 	max-height:300px;
 	overflow:auto;
 }
-.welcome div.zenario_ab_row__sub_table_open{
-	max-height: none;
-	overflow: visible;	
-}
-.welcome div.zenario_ab_row__sub_table_open {
-	margin-top:20px;
-	border:3px solid #C5E2F4;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-}
-
 .welcome table.revisions {
 	width:100%;
 	margin-left: auto;
@@ -300,7 +303,7 @@ body.webkit input {
 	background-position:10px center;
 }
 
-.welcome div.thickbox_table table.sub_table input.input_text {
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table input.input_text {
 	height:30px;
 	line-height:30px;
 }
@@ -385,7 +388,7 @@ body.webkit input {
 	margin-left:10px;
 }
 
-.welcome div.thickbox_table table.sub_table input.input_toggle
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table input.input_toggle
 {
 	float:right;
 	width:23px !important;

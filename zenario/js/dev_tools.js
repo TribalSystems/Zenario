@@ -54,13 +54,10 @@ zenario.lib(function(
 //devTools.editingPositions = {};
 devTools.internalCMSProperties = {
 	class_name: {description: 'This property tracks which module created each element.'},
+	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your .yaml file. It can't be changed in php."},
 	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
 	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
-	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'},
-	__page__: {description: 'If pagination is being applied on the server, this will contain the current page number.'},
-	__item_count__: {description: 'If pagination is being applied on the server, this will contain the total number of items (not just the number of items on the current page).'},
-	__item_parents__: {description: 'If a panel uses lazy loading in hierarchy view, this object contains all of the item ids that have children.'},
-	__item_sort_order__: {description: 'If sorting is being applied on the server, this will contain a sorted array of item ids.'}
+	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'}
 };
 devTools.deprecatedTraitProperties = {
 	traits: true,
@@ -303,7 +300,7 @@ devTools.load = function() {
 		
 		//Load information on each of the contributing files
 		devTools.focus.files = {};
-		var module,
+		var moduleClassName, module,
 			modules = devTools.focus.modules_files_loaded,
 			paths,
 			files = {},
@@ -311,10 +308,10 @@ devTools.load = function() {
 			url,
 			post;
 		
-		foreach (modules as module) {
-			if (paths = modules[module].paths) {
+		foreach (modules as moduleClassName => module) {
+			if (paths = module.paths) {
 				foreach (paths as file) {
-					files[module + '.' + file] = false;
+					files[moduleClassName + '.' + file] = false;
 				}
 			}
 		}
@@ -324,12 +321,12 @@ devTools.load = function() {
 		
 		zenario.ajax(url, post, true).after(function(data) {
 			if (data) {
-				foreach (modules as module) {
-					if (paths = modules[module].paths) {
+				foreach (modules as moduleClassName => module) {
+					if (paths = module.paths) {
 						foreach (paths as file) {
-							if (data[module + '.' + file]) {
-								data[module + '.' + file].path = paths[file];
-								devTools.focus.files[module + '.' + file] = data[module + '.' + file];
+							if (data[moduleClassName + '.' + file]) {
+								data[moduleClassName + '.' + file].path = paths[file];
+								devTools.focus.files[moduleClassName + '.' + file] = data[moduleClassName + '.' + file];
 							}
 						}
 					}
@@ -395,21 +392,27 @@ devTools.draw = function() {
 devTools.updateToolbar = function(refresh) {
 	var merge = {
 		files: {},
+		paths: {},
 		selectedFile: devTools.skMap? 'combined' : 'current',
 		organizer_query_ids: devTools.focus.organizer_query_ids,
 		organizer_query_details: devTools.focus.organizer_query_details
 	};
 	
 	var file,
-		paths,
-		module,
+		path, paths, dir, dirs,
+		moduleClassName, module,
 		modules = devTools.focus.modules_files_loaded,
 		cursor;
 	
-	foreach (modules as module) {
-		if (paths = modules[module].paths) {
-			foreach (paths as file) {
-				merge.files[module + '.' + file] = paths[file];
+	foreach (modules as moduleClassName => module) {
+		if (paths = module.paths) {
+			foreach (paths as file => path) {
+				dirs = path.split('/');
+				dirs.pop();
+				dir = dirs.join('/');
+				dir += '/';
+				merge.paths[dir] = dirs.slice(-3).join('/');
+				merge.files[moduleClassName + '.' + file] = paths[file];
 			}
 		}
 	}
@@ -448,7 +451,7 @@ devTools.updateEditor = function() {
 	
 	//Show the current TUIX
 	if (view == 'current') {
-		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].focus, format) + padding);
+		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].tuix, format) + padding);
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
 	

@@ -55,4 +55,4 @@ zenario__email_template_manager:
                     format: datetime
                     show_by_default: Yes
                     width: medium
-            no_items_message: "No links were found on the newsletter or newsletter has not been sent"
+            no_items_message: "No links were found in the newsletter, or the newsletter has not yet been sent."

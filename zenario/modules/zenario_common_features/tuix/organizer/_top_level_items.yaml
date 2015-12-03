@@ -5,6 +5,12 @@ loading_message:
     panel:
         no_items_message: Loading...
 
+dummy_item:
+    ord: 0
+    hidden: true
+    youtube_video_id: 8VzBBQ2la7w
+    youtube_thumbnail_title: 'Overview of Zenario'
+
 zenario__content:
     youtube_video_id: jR8CDnaoMSo
     youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
@@ -205,11 +211,13 @@ zenario__administration:
         Configure site settings, backups, URLs and other features of your site
     nav:
         site_settings:
+            priv: _PRIV_VIEW_SITE_SETTING
             label: Site settings
             tooltip: Configure how the CMS works
             link:
                 path: zenario__administration/panels/site_settings
         backups:
+            priv: _PRIV_BACKUP_SITE
             #css_class: backups
             name: Backups
             tooltip: Create and restore backups

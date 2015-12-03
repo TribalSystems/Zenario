@@ -37,7 +37,6 @@ if ($usage == 'email'
 
 
 $file = array();
-$imageMimeTypes = array('image/gif' => true, 'image/jpeg' => true, 'image/jpg' => true, 'image/pjpeg' => true, 'image/png' => true);
 
 if (!is_readable($location)
  || !is_file($location)
@@ -55,7 +54,7 @@ $file['filename'] = $filename;
 $file['mime_type'] = documentMimeType($filename);
 $file['usage'] = $usage;
 
-if ($mustBeAnImage && empty($imageMimeTypes[$file['mime_type']])) {
+if ($mustBeAnImage && !isImageOrSVG($file['mime_type'])) {
 	return false;
 }
 
@@ -90,11 +89,11 @@ if ($existingFile = getRow('files', array('id', 'filename', 'location', 'path'),
 
 
 //Check if the file is an image
-if ($file['mime_type'] == 'image/gif' || $file['mime_type'] == 'image/png' || $file['mime_type'] == 'image/jpeg') {
+if (isImageOrSVG($file['mime_type'])) {
 	
-	$image = getimagesize($location);
-	if (!empty($imageMimeTypes[$image['mime']])) {
+	if (isImage($file['mime_type'])) {
 		
+		$image = getimagesize($location);
 		$file['width'] = $image[0];
 		$file['height'] = $image[1];
 		$file['mime_type'] = $image['mime'];
@@ -116,14 +115,39 @@ if ($file['mime_type'] == 'image/gif' || $file['mime_type'] == 'image/png' || $f
 				resizeImageString($file[$c[0]], $file['mime_type'], $file[$c[1]], $file[$c[2]], $c[3], $c[4]);
 			}
 		}
+	
+	} else
+	if (function_exists('simplexml_load_string')
+	 && ($svg = simplexml_load_string(file_get_contents($location)))) {
+		
+		foreach ($svg->attributes() as $name => $value) {
+			switch (strtolower($name)) {
+				case 'width':
+					$file['width'] = (int) $value;
+					break;
+				
+				case 'height':
+					$file['height'] = (int) $value;
+					break;
+				
+				case 'viewbox':
+					
+					$viewbox = explode(' ', (string) $value);
+					
+					if (empty($file['width']) && !empty($viewbox[2])) {
+						$file['width'] = (int) $viewbox[2];
+					}
+					if (empty($file['height']) && !empty($viewbox[3])) {
+						$file['height'] = (int) $viewbox[3];
+					}
+			}
+		}
 	}
+	
+	
 	$filenameArray = explode('.', $filename);
 	$altTag = trim(preg_replace('/[^a-z0-9]+/i', ' ', $filenameArray[0]));
 	$file['alt_tag'] = $altTag;
-}
-
-if ($mustBeAnImage && !(!empty($file['width']) && !empty($file['height']))) {
-	return false;
 }
 
 

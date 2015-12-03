@@ -1,83 +1,55 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
+#    You can create new admin permissions by defining new fields in the Permissions
+#    admin box.
+#    
+#    To count as an admin permission:
+#        - The fields should be placed under zenario_admin/tabs/permissions/fields
+#        - The fields should have the "is_admin_permission" property set to true
+#        - The fields should be in the "specific_actions" grouping
+#    
+#    You may have:
+#        - A "type: checkbox" field on its own to act as a single permission.
+#        - A "type: checkboxes" field on its own to act as a list of
+#          permissions.
+#        - A "type:" checkboxes field with the "checking_child_checks_parents"
+#          property set to act as a list of permissions with hierarchal dependencies.
+#        - A "type: checkbox" field immediately followed by a
+#          "type: checkboxes: field to act as a list of permissions that can
+#          be quickly turned on or off by the first checkbox. This will also add a
+#          toggle button to allow the longer list to be hidden.
+#    
+#    The CMS will then add the CSS, JavaScript, loading logic and saving logic needed.
 zenario_admin:
     tabs:
         permissions:
-            
-            # The fillAdminBox(), formatAdminBox() and saveAdminBox() functions in the Community Features
-            # Module automatically add the <row_class> and <onchange> tags as well as the
-            # loading and saving logic to the fields in this tab so that they work as permission selectors.
-            
-            # You may have:
-            #     - A <type>checkbox</type> field on its own to act as a single permission.
-            #     - A <type>checkboxes</type> field to act as a list of permissions.
-            #     - A <type>checkboxes</type> field with the <checking_child_checks_parents> tag set
-            #       to act as a list of permissions with hierarchal dependencies.
-            #     - A <type>checkbox</type> field immediately followed by a <type>checkboxes</type> field
-            #       to act as a list of permissions that can be quickly turned on or off by the first
-            #       checkbox. This will also add a toggle button to allow the longer list to be hidden.
-            
             fields:
-                #perm_manage_permissions:
-                 #   values:
-                  #      _PRIV_MANAGE_PROTECTED_USER_CHARACTERISTIC:
-                  #          label: "Protect/deprotect a user characteristic"
-
                 perm_edit_users:
-                    type: checkbox
-                    hidden: No
-                    full_width: Yes
-                    post_field_label: Extranet User Manager
+                    hidden: false
 
                 perm_edit_users_permissions:
-                    type: checkboxes
-                    hidden: No
-                    full_width: Yes
-                    checking_child_checks_parents: Yes
+                    hidden: false
                     values:
                         _PRIV_VIEW_USER:
-                            label: "View a User's details"
+                            label: "View a user's details"
                         _PRIV_EDIT_USER:
                             parent: _PRIV_VIEW_USER
-                            label: "Edit a User's details"
+                            label: "Edit a user's details"
                         _PRIV_CREATE_USER:
                             parent: _PRIV_EDIT_USER
-                            label: Create a User
+                            label: Create a user
                         _PRIV_DELETE_USER:
                             parent: _PRIV_VIEW_USER
-                            label: Delete a User
+                            label: Delete a user
                         _PRIV_CHANGE_USER_STATUS:
                             parent: _PRIV_VIEW_USER
-                            label: Activate or suspend a User
+                            label: Activate or suspend a user
                         _PRIV_CHANGE_USER_PASSWORD:
                             parent: _PRIV_VIEW_USER
-                            label: "Change User's Password"
+                            label: "Change user's password"
                         _PRIV_IMPERSONATE_USER:
                             parent: _PRIV_VIEW_USER
-                            label: Impersonate a User
-                        _PRIV_MANAGE_GROUP_MEMBERSHIP:
+                            label: Impersonate a user
+                        _PRIV_MANAGE_GROUP:
                             parent: _PRIV_VIEW_USER
-                            label: Add or remove Users in a Group
-                        _PRIV_EDIT_GROUP:
-                            parent: _PRIV_VIEW_USER
-                            label: "Edit a Group's details"
-                        _PRIV_CREATE_GROUP:
-                            parent: _PRIV_EDIT_GROUP
-                            label: Create a Group
-                        _PRIV_DELETE_GROUP:
-                            parent: _PRIV_VIEW_USER
-                            label: Delete a Group
-                        _PRIV_MODERATE_USER_COMMENTS:
-                            label: "Edit and delete a User's comments and posts"
-                        _PRIV_VIEW_USER_CHARACTERISTIC:
-                            parent: _PRIV_VIEW_USER
-                            label: View User Characteristics
-                        _PRIV_EDIT_PROTECTED_USER_CHARACTERISTIC:
-                            parent: _PRIV_VIEW_USER_CHARACTERISTIC
-                            label: Edit User Characteristics
-                        _PRIV_CREATE_CHARACTERISTIC:
-                            parent: _PRIV_EDIT_PROTECTED_USER_CHARACTERISTIC
-                            label: Create User Characteristics
-                        _PRIV_SET_CHARACTERISTIC_ON_USER:
-                            parent: _PRIV_VIEW_USER_CHARACTERISTIC
-                            label: Set User Characteristics
+                            label: "Manage user/contact groups"

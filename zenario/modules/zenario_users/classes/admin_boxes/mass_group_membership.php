@@ -211,7 +211,7 @@ class zenario_users__admin_boxes__mass_group_membership extends module_base_clas
 		
 		$diff = array_diff($current, $initial);
 		
-		if (checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
+		if (checkPriv('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $box['key']['id']) as $userId) {
 				if ($userId) {
 					foreach ($diff as $groupId) {

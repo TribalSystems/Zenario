@@ -173,11 +173,13 @@ class zenario_scheduled_task_manager extends module_base_class {
 				email_on_no_action,
 				email_address_on_action,
 				email_address_on_no_action,
-				email_address_on_error
+				email_address_on_error,
+				status,
+				last_run_started,
+				last_run_started <= DATE_SUB(NOW(), INTERVAL 4 HOUR) AS stuck
 			FROM ". DB_NAME_PREFIX. "jobs
 			WHERE manager_class_name = '". sqlEscape($managerClassName). "'
-			  AND `enabled` = 1
-			  AND status != 'in_progress'";
+			  AND `enabled` = 1";
 		
 		if ($runSpecificJob) {
 			$sql .= "
@@ -212,6 +214,20 @@ class zenario_scheduled_task_manager extends module_base_class {
 		$result = sqlQuery($sql);
 		while($job = sqlFetchAssoc($result)) {
 			$jobsRun = true;
+			
+			//Jobs that are still "in progress" should not have a second copy run.
+			if ($job['status'] == 'in_progress') {
+				//However if we see that they've been in progress for more than four hours then send an email
+				if ($job['stuck']) {
+					self::sendLogEmails(
+						$managerClassName, $serverTime,
+						$job['job_name'], $job['id'], 'error',
+						'This has been "in progress" for over four hours and may be stuck!',
+						$job['email_address_on_error']);
+				}
+				continue;
+			}
+			
 			exec('php '.
 						escapeshellarg(CMS_ROOT. moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php')).
 					' '. 
@@ -356,42 +372,46 @@ class zenario_scheduled_task_manager extends module_base_class {
 		 || ($log['status'] == 'action_taken' && $emailActions)
 		 || ($log['status'] == 'no_action_taken' && $emailInaction)) {
 		 	
-		 	inc($managerClassName);
-		 	$class = new $managerClassName;
-		 	
-		 	$headers = $subject = $body = '';
-		 	$class->logEmail(
-		 		$subject, $body,
-		 		$serverTime, $jobName, $jobId,
-		 		arrayKey(zenario_scheduled_task_manager::$lastRunStatuses, $log['status']), $log['note']);
-			
-			$emails = array();
-			foreach (explode(',', $emailList) as $email) {
-				if ($email) {
-					$emails[$email] = true;
-				}
-			}
-			
-			if ($log['status'] == 'error' && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
-				$emails[EMAIL_ADDRESS_GLOBAL_SUPPORT] = true;
-			}
-			
-			foreach ($emails as $email => $dummy) {
-				var_dump($email);
-				$addressToOverriddenBy = false;
-				sendEmail(
-					$subject, $body,
-					$email,
-					$addressToOverriddenBy,
-					$nameTo = false,
-					$addressFrom = false,
-					$nameFrom = false,
-					false, false, false,
-					$isHTML = false);
-			}
+		 	self::sendLogEmails(
+		 		$managerClassName, $serverTime,
+		 		$jobName, $jobId, $log['status'], $log['note'],
+		 		$emailList);
 		}
 		
 		return $logId;
+	}
+	
+	protected static function sendLogEmails(
+		$managerClassName, $serverTime, $jobName, $jobId, $status, $note, $emailList
+	) {
+		
+		inc($managerClassName);
+		$class = new $managerClassName;
+		
+		$headers = $subject = $body = '';
+		$class->logEmail(
+			$subject, $body,
+			$serverTime, $jobName, $jobId,
+			arrayKey(zenario_scheduled_task_manager::$lastRunStatuses, $status), $note);
+		
+		$emails = arrayValuesToKeys(explodeAndTrim($emailList));
+		
+		if ($status == 'error' && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+			$emails[EMAIL_ADDRESS_GLOBAL_SUPPORT] = true;
+		}
+		
+		foreach ($emails as $email => $dummy) {
+			$addressToOverriddenBy = false;
+			sendEmail(
+				$subject, $body,
+				$email,
+				$addressToOverriddenBy,
+				$nameTo = false,
+				$addressFrom = false,
+				$nameFrom = false,
+				false, false, false,
+				$isHTML = false);
+		}
 	}
 	
 	public function logEmail(

@@ -1,6 +1,6 @@
 ---
 display_name: '[[MODULE_DIRECTORY_NAME]]'
-required_cms_version: '[[ZENARIO_CMS_VERSION]]'
+required_cms_version: '[[ZENARIO_MAJOR_VERSION]].[[ZENARIO_MINOR_VERSION]]'
 author_name: ""
 copyright_info: ""
 license_info: 'Modified BSD License'

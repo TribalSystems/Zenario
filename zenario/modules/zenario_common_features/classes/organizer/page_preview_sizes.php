@@ -38,7 +38,7 @@ class zenario_common_features__organizer__page_preview_sizes extends module_base
 
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		if (post('delete')) {
+		if (post('delete') && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
 			$sql = '
 				DELETE FROM '.DB_NAME_PREFIX.'page_preview_sizes
 				WHERE id IN ('.sqlEscape($ids).')';
@@ -49,8 +49,9 @@ class zenario_common_features__organizer__page_preview_sizes extends module_base
 			foreach ($pagePreviewSizes as $pagePreviewSizeId) {
 				updateRow('page_preview_sizes', array('ordinal' => $ord++), $pagePreviewSizeId);
 			}
-		} elseif (post('reorder')) {
-			foreach (explode(',', $ids) as $id) {
+		
+		} elseif (post('reorder') && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
+			foreach (explodeAndTrim($ids) as $id) {
 				if (isset($_POST['ordinals'][$id])) {
 					$sql = "
 						UPDATE ". DB_NAME_PREFIX. "page_preview_sizes 
@@ -59,7 +60,8 @@ class zenario_common_features__organizer__page_preview_sizes extends module_base
 					sqlUpdate($sql);
 				}
 			}
-		} elseif (post('set_default')) {
+		
+		} elseif (post('set_default') && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
 			updateRow('page_preview_sizes', array('is_default' => 0), array('is_default' => 1));
 			updateRow('page_preview_sizes', array('is_default' => 1), array('id' => $ids));
 		}

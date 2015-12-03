@@ -211,7 +211,7 @@ switch ($path) {
 		 && empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])) {
 			if ($values['first_tab/canvas'] == 'fixed_width') {
 				$box['tabs']['first_tab']['fields']['width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} else {
 				unset($box['tabs']['first_tab']['fields']['width']['note_below']);
@@ -220,7 +220,7 @@ switch ($path) {
 			if ($values['first_tab/canvas'] == 'fixed_height'
 			 || $values['first_tab/canvas'] == 'fixed_width_and_height') {
 				$box['tabs']['first_tab']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} elseif ($values['first_tab/canvas'] == 'resize_and_crop') {
 				$box['tabs']['first_tab']['fields']['height']['note_below'] =
@@ -235,7 +235,7 @@ switch ($path) {
 		 && empty($box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden'])) {
 			if ($values['first_tab/enlarge_canvas'] == 'fixed_width') {
 				$box['tabs']['first_tab']['fields']['enlarge_width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} else {
 				unset($box['tabs']['first_tab']['fields']['enlarge_width']['note_below']);
@@ -244,7 +244,7 @@ switch ($path) {
 			if ($values['first_tab/enlarge_canvas'] == 'fixed_height'
 			 || $values['first_tab/enlarge_canvas'] == 'fixed_width_and_height') {
 				$box['tabs']['first_tab']['fields']['enlarge_height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} else {
 				unset($box['tabs']['first_tab']['fields']['enlarge_height']['note_below']);

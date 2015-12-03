@@ -64,34 +64,49 @@ zenarioAT.init = function(firstLoad) {
 	var url =
 		URLBasePath +
 		'zenario/admin/ajax.php?_at=1&_json=1' +
-		'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
+		'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests)) +
+		zenario.urlRequest(zenarioAT.getKey());
 	
-	zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
+	zenarioAT.url = url;
 	
-	//Check the local storage, to see if there is an in-date copy of the Admin Toolbar for this item
-	if (zenarioAT.tuix = zenario.checkSessionStorage(url, zenarioAT.getKey(), true)) {
-			//Backwards compatability for any old code
-			zenarioAT.focus = zenarioAT.tuix;
-		zenarioAT.init2();
+	zenario.ajax(url, false, true, true, true, 7500).after(zenarioAT.init2);
+
 	
-	} else {
-		//Launch an AJAX request to get the admin toolbar
-		zenarioA.keepTrying(function(attempt) {
-			$.get(zenarioAT.url, function(data) {
-				if (zenarioA.stopTrying(attempt)) {
-					if (zenarioAT.tuix = zenarioA.readData(data, url, zenarioAT.getKey())) {
-						//Backwards compatability for any old code
-						zenarioAT.focus = zenarioAT.tuix;
-						zenarioAT.init2();
-					}
-				}
-			}, 'text');
-		});
-	}
+	
+	//var url =
+	//	URLBasePath +
+	//	'zenario/admin/ajax.php?_at=1&_json=1' +
+	//	'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
+	//
+	//zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
+	//
+	////Check the local storage, to see if there is an in-date copy of the Admin Toolbar for this item
+	//if (zenarioAT.tuix = zenario.checkSessionStorage(url, zenarioAT.getKey(), true)) {
+	//		//Backwards compatability for any old code
+	//		zenarioAT.focus = zenarioAT.tuix;
+	//	zenarioAT.init2();
+	//
+	//} else {
+	//	//Launch an AJAX request to get the admin toolbar
+	//	zenarioA.keepTrying(function(attempt) {
+	//		$.get(zenarioAT.url, function(data) {
+	//			if (zenarioA.stopTrying(attempt)) {
+	//				if (zenarioAT.tuix = zenarioA.readData(data, url, zenarioAT.getKey())) {
+	//					//Backwards compatability for any old code
+	//					zenarioAT.focus = zenarioAT.tuix;
+	//					zenarioAT.init2();
+	//				}
+	//			}
+	//		}, 'text');
+	//	});
+	//}
 };
 
 
-zenarioAT.init2 = function() {
+zenarioAT.init2 = function(tuix) {
+	zenarioAT.tuix = tuix;
+	
+	
 	zenarioAT.sort();
 	/*zenarioAT.drawToolbarTabs();
 	
@@ -289,17 +304,12 @@ zenarioAT.getLastKeyId = function(limitOfOne) {
 };
 
 zenarioAT.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
-	var string2 = string;
-	
-	//foreach (someMergeFields as var c) {
-		//while (string != (string2 = string.replace('[[' + c + ']]', someMergeFields[c]))) {
-			//string = string2;
-		//}
-	//}
-	
 	return string;
 };
 
+zenarioAT.applyMergeFieldsToLabel = function(label, isHTML, itemLevel, multiSelectLabel) {
+	return label;
+};
 
 
 
@@ -336,7 +346,8 @@ zenarioAT.action2 = function() {
 		var goNum = ++zenarioAT.goNum;
 		zenarioA.nowDoingSomething('saving');
 		
-		$.post(URLBasePath + zenarioAT.actionTarget, zenarioAT.actionRequests, function(message) {
+		
+		zenario.ajax(URLBasePath + zenarioAT.actionTarget, zenarioAT.actionRequests, false, false, true).after(function(message) {
 			//Check that this isn't an out-of-date request that has come in syncronously via AJAX
 			if (goNum != zenarioAT.goNum) {
 				return;
@@ -351,7 +362,7 @@ zenarioAT.action2 = function() {
 				//...or refresh the page
 				zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));
 			}
-		}, 'text');
+		});
 	}
 	zenarioAT.actionTarget = false;
 	delete zenarioAT.actionRequests;

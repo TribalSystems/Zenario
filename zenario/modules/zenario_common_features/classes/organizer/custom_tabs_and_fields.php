@@ -119,14 +119,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 					getCustomTabsParents($ctab, $parents);
 					
 					if (!empty($parents)) {
-						$panel['items'][$ctab['name']]['parents'] = '';
+						$parentLabel = '';
 						foreach ($parents as $parent) {
 							if ($parent['label']) {
-								$panel['items'][$ctab['name']]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+								$parentLabel = str_replace(':', '', $parent['label']). ' -> '. $parentLabel;
 							} else {
-								$panel['items'][$ctab['name']]['parents'] .= $parent['field_name']. ' -> ';
+								$parentLabel = $parent['field_name']. ' -> '. $parentLabel;
 							}
 						}
+						$panel['items'][$ctab['name']]['parents'] = $parentLabel;
 					}
 				
 				//Look for customised system tabs
@@ -197,14 +198,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 				getCustomFieldsParents($field, $parents);
 				
 				if (!empty($parents)) {
-					$panel['items'][$id]['parents'] = '';
+					$parentLabel = '';
 					foreach ($parents as $parent) {
 						if ($parent['label']) {
-							$panel['items'][$id]['parents'] .= str_replace(':', '', $parent['label']). ' -> ';
+							$parentLabel = str_replace(':', '', $parent['label']). ' -> '. $parentLabel;
 						} else {
-							$panel['items'][$id]['parents'] .= $parent['field_name']. ' -> ';
+							$parentLabel = $parent['field_name']. ' -> '. $parentLabel;
 						}
 					}
+					$panel['items'][$id]['parents'] = $parentLabel;
 				}
 				
 				//if (isset($panel['items'][$field['tab_name']])) {
@@ -243,7 +245,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 			//Delete empty tabs
 			if (post('delete_tab') && checkPriv('_PRIV_MANAGE_DATASET')) {
 				
-				foreach (explode(',', $ids) as $id) {
+				foreach (explodeAndTrim($ids) as $id) {
 					if (!checkRowExists('custom_dataset_fields', array('dataset_id' => $refinerId, 'tab_name' => $id))) {
 						deleteRow('custom_dataset_tabs', array('dataset_id' => $refinerId, 'name' => $id));
 					}
@@ -261,7 +263,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields extends module_
 				$errorFieldsMustBeChildren = false;
 				$errorSystemFieldsCannotBeMovedBetweenTabs = false;
 			
-				foreach (explode(',', $ids) as $id) {
+				foreach (explodeAndTrim($ids) as $id) {
 				
 					$details = array(
 						'id' => $id,

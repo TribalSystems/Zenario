@@ -43,7 +43,7 @@ echo
 
 
 //checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 CMSWritePageHead('', 'wizard', false);
 
 echo '
@@ -71,9 +71,19 @@ echo '
 CMSWritePageBody('', false);
 CMSWritePageFoot('', 'wizard', false, false);
 
-$logoURL = 'admin/images/zenario_logo.png';
-$logoWidth = 142;
-$logoHeight = 57;
+if ((file_exists(CMS_ROOT. ($logoURL = 'wizard-logo.png')))
+ || (file_exists(CMS_ROOT. ($logoURL = 'zenario_custom/wizard-logo.png')))
+ && ($imageDetails = getimagesize(CMS_ROOT. $logoURL))
+ && (!empty($imageDetails[1]))) {
+	$logoWidth = $imageDetails[0];
+	$logoHeight = $imageDetails[1];
+	$logoURL = '../'. $logoURL;
+	
+} else {
+	$logoURL = 'admin/images/zenario_logo.png';
+	$logoWidth = 142;
+	$logoHeight = 57;
+}
 
 
 
@@ -116,7 +126,7 @@ if ($requestedPath = ifNull(request('name'), request('path'))) {
 }
 
 
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
+if (strpos(httpUserAgent(), 'MSIE 6') !== false) {
 	echo '
 		<style type="text/css">
 			html {

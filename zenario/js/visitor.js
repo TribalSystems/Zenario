@@ -827,7 +827,9 @@ zenario.addJQueryElements = function(path, adminFacing) {
 	
 	//Fancybox/Lightbox replacement
 	$(path + "a[rel^='colorbox'], a[rel^='fancybox'], a[rel^='lightbox']").colorbox({
-		title: function() { return $(this).attr('data-box-title'); }
+		title: function() { return $(this).attr('data-box-title'); },
+		maxWidth: '100%',
+		maxHeight: '100%'
 	});
 	
 	if (zenario.browserIsIE(9)) {
@@ -1065,6 +1067,7 @@ zenario.tooltips = function(target, options) {
 	if (target === undefined) {
 		//Add tooltips to an entire page after it has been loaded
 		zenario.tooltips('a[title]', options);
+		zenario.tooltips('div[title]', options);
 		zenario.tooltips('img[title]', options);
 		zenario.tooltips('area[title]', options);
 		zenario.tooltips('input[title]', options);
@@ -1289,11 +1292,8 @@ zenario.stop = function(e) {
 zenario.rev = '';
 zenario.lastLoadNum = false;
 
+//Warning: zenario.checkSessionStorage() and zenario.checkLocalStorage() use are deprecated!
 zenario.checkSessionStorage = function(url, requests, isObject, loadNum) {
-	return zenario.checkLocalStorage(url, requests, isObject, loadNum, true);
-};
-
-zenario.checkLocalStorage = function(url, requests, isObject, loadNum, session) {
 	zenario.checkLastUrl = url;
 	
 	//Don't do anything for IE 6 and 7
@@ -1315,83 +1315,69 @@ zenario.checkLocalStorage = function(url, requests, isObject, loadNum, session) 
 		}
 	}
 	
+	//Clear the storage if the data is out of date
+	zenario.checkDataRevisionNumber(false);
+	
 	
 	//Check if the requested item is actually in the local storage
 	var name = zenario.userId + '_' + zenario.adminId + '_' + url;
-	var store = zenario.sGetItem(session, name, isObject);
+	var store = zenario.sGetItem(true, name, isObject);
 	
 	if (!store) {
 		return false;
-	}
-	
-	
-	//Get the latest data revision number and code hash
-	var oldRev = zenario.sGetItem(session, 'rev');
-	
-	//If this is part of the same "load" as a previous request, we do not need to keep checking the data revision number with each load
-	if (oldRev && loadNum && zenario.lastLoadNum === loadNum) {
-		zenario.rev = oldRev;
-	} else {
-		zenario.checkDataRevisionNumber(false);
-	}
-	zenario.lastLoadNum = loadNum;
-	
-	
-	//Clear the storage if the data is out of date
-	if (!oldRev || !zenario.rev || oldRev != zenario.rev) {
-		zenario.sClear(session);
-		zenario.sSetItem(session, 'rev', zenario.rev);
-		return false;
-	
-	//Otherwise return the data
 	} else {
 		return store;
 	}
 };
 
 zenario.setSessionStorage = function(merge, url, requests, isObject) {
-	zenario.setLocalStorage(merge, url, requests, isObject, true);
-};
-
-zenario.setLocalStorage = function(merge, url, requests, isObject, session) {
 	
 	//Don't do anything for IE 6 and 7
 	if (zenario.browserIsIE(7)) {
 		return false;
 	}
 	
-	if (!zenario.rev) {
+	if (!zenario.dataRev()) {
 		zenario.checkDataRevisionNumber(false);
 	}
 	
-	if (zenario.rev && merge) {
+	if (zenario.dataRev() && merge) {
 		url += zenario.urlRequest(requests);
 		var name = zenario.userId + '_' + zenario.adminId + '_' + url;
-		zenario.sSetItem(session, name, merge, isObject);
+		zenario.sSetItem(true, name, merge, isObject);
 	}
 };
 
-zenario.checkDataRevisionNumber = function(async) {
+zenario.checkDataRevisionNumber = function(async, cb) {
 	
 	if (zenarioAB.tuix && zenarioAB.tuix.path == 'install') {
+		if (cb) cb();
 		return;
 	}
 	
-	var url = URLBasePath + 'zenario/quick_ajax.php',
-		data = {_get_data_revision: 1, admin: !!zenarioA.init};
+	var url = URLBasePath + 'zenario/has_database_changed_and_is_cache_out_of_date.php';
 	
 	if (async) {
-		$.ajax({
-			type: 'POST',
-			url: url,
-			data: data,
-			success: function(data) {
-				zenario.rev = data;
-			},
-			dataType: 'text'
+		zenario.ajax(url, true, undefined, undefined, true, 2500).after(function(rev) {
+			zenario.outdateCachedData(rev);
+			if (cb) cb();
 		});
 	} else {
-		zenario.rev = zenario.nonAsyncAJAX(url, data);
+		zenario.outdateCachedData(zenario.nonAsyncAJAX(url, true));
+	}
+};
+
+zenario.dataRev = function() {
+	return zenario.rev = zenario.rev || zenario.sGetItem(true, 'rev');
+};
+
+zenario.outdateCachedData = function(rev) {
+	rev = rev || '';
+	
+	if (zenario.dataRev() != rev) {
+		zenario.rev = rev;
+		zenario.sClear(true);
+		zenario.sSetItem(true, 'rev', rev);
 	}
 };
 

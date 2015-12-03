@@ -9,6 +9,16 @@ CREATE TABLE `[[DB_NAME_PREFIX]]action_admin_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_settings`;
+CREATE TABLE `[[DB_NAME_PREFIX]]admin_settings` (
+  `admin_id` int(10) unsigned NOT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `value` mediumtext,
+  PRIMARY KEY (`admin_id`,`name`),
+  KEY `name` (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_storekeeper_prefs`;
 CREATE TABLE `[[DB_NAME_PREFIX]]admin_storekeeper_prefs` (
   `admin_id` int(10) unsigned NOT NULL,
@@ -31,6 +41,10 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admins` (
   `reset_password_salt` varchar(8) DEFAULT NULL,
   `reset_password_time` datetime DEFAULT NULL,
   `status` enum('active','deleted') NOT NULL DEFAULT 'deleted',
+  `permissions` enum('all_permissions','specific_actions','specific_languages','specific_menu_areas') NOT NULL DEFAULT 'specific_actions',
+  `specific_languages` text,
+  `specific_content_items` text,
+  `specific_menu_areas` text,
   `last_login` datetime DEFAULT NULL,
   `last_login_ip` varchar(80) CHARACTER SET ascii NOT NULL DEFAULT '',
   `first_name` varchar(100) NOT NULL DEFAULT '',
@@ -42,6 +56,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admins` (
   `last_browser` varchar(255) NOT NULL DEFAULT '',
   `last_browser_version` varchar(255) NOT NULL DEFAULT '',
   `last_platform` varchar(255) NOT NULL DEFAULT '',
+  `is_client_account` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `authtype` (`authtype`),
   KEY `global_id` (`global_id`),
@@ -58,5 +73,5 @@ CREATE TABLE `[[DB_NAME_PREFIX]]admins` (
 
 
 REPLACE INTO `[[DB_NAME_PREFIX]]local_revision_numbers` VALUES
- ('admin/db_updates/core','admin.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/data_conversion','admin.inc.php',[[INSTALLER_REVISION_NO]]);
+ ('admin/db_updates/step_2_update_the_database_schema','admin_tables.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_4_migrate_the_data','admin_tables.inc.php',[[INSTALLER_REVISION_NO]]);

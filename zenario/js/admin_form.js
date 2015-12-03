@@ -228,7 +228,7 @@ methods.loadValuesFromOrganizerPath = function(field) {
 		if (panel = zenarioA.getSKItem(field.load_values_from_organizer_path)) {
 			if (panel.items) {
 				foreach (panel.items as i) {
-					field.values[zenario.decodeItemIdForStorekeeper(i)] = zenarioA.formatSKItemName(panel, i);
+					field.values[zenario.decodeItemIdForOrganizer(i)] = zenarioA.formatSKItemName(panel, i);
 				}
 			}
 		}
@@ -434,14 +434,7 @@ methods.validate = function(differentTab, tab, wipeValues, callBack) {
 
 methods.retryAJAX = function(url, post, done, nowDoingSomething) {
 	var doAJAX = function() {
-		$.ajax({
-			type: 'POST',
-			url: url,
-			data: post,
-			dataType: 'text'
-		})
-			.done(done)
-			.zenario_retry = doAJAX;
+		zenario.ajax(url, post, undefined, undefined, doAJAX).after(done);
 		
 		if (nowDoingSomething) {
 			zenarioA.nowDoingSomething(nowDoingSomething);
@@ -470,7 +463,7 @@ methods.switchToATabWithErrors = function() {
 	return false;
 };
 
-methods.save = function(confirm, saveAndContinue) {
+methods.save = function(confirm, saveAndContinue, createAnother) {
 	var url;
 	if (!this.loaded || !(url = this.getURL())) {
 		return;
@@ -497,20 +490,20 @@ methods.save = function(confirm, saveAndContinue) {
 		_box: this.sendStateToServer()};
 	
 	if (engToBoolean(this.tuix.download) || (this.tuix.confirm && engToBoolean(this.tuix.confirm.download))) {
-		this.save2(zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest(post)), saveAndContinue);
+		this.save2(zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest(post)), saveAndContinue, createAnother);
 	} else {
 		this.retryAJAX(
 			url,
 			post,
 			function(data) {
-				that.save2(data, saveAndContinue);
+				that.save2(data, saveAndContinue, createAnother);
 			},
 			'saving'
 		);
 	}
 };
 
-methods.save2 = function(data, saveAndContinue) {
+methods.save2 = function(data, saveAndContinue, createAnother) {
 	delete this.saving;
 	
 	if (('' + data).substr(0, 12) == '<!--Valid-->') {
@@ -521,7 +514,7 @@ methods.save2 = function(data, saveAndContinue) {
 			this.load(data);
 			this.sortTabs();
 			this.draw();
-			this.showConfirm(saveAndContinue);
+			this.showConfirm(saveAndContinue, createAnother);
 		
 		} else if (('' + data).substr(0, 15) == '<!--Download-->') {
 			get('zenario_iframe_form').action = this.getURL();
@@ -535,12 +528,12 @@ methods.save2 = function(data, saveAndContinue) {
 				this.load(data);
 			}
 			
-			this.refreshParentAndClose(true, saveAndContinue);
+			this.refreshParentAndClose(true, saveAndContinue, createAnother);
 		
 		} else if (('' + data).substr(0, 12) == '<!--Saved-->') {
 			data = data.substr(12);
 			this.load(data);
-			this.refreshParentAndClose(false, saveAndContinue);
+			this.refreshParentAndClose(false, saveAndContinue, createAnother);
 		
 		} else {
 			this.close();
@@ -555,7 +548,7 @@ methods.save2 = function(data, saveAndContinue) {
 };
 
 
-methods.showConfirm = function(saveAndContinue) {
+methods.showConfirm = function(saveAndContinue, createAnother) {
 	if (this.tuix && this.tuix.confirm && engToBoolean(this.tuix.confirm.show)) {
 		
 		var message = this.tuix.confirm.message;
@@ -565,11 +558,20 @@ methods.showConfirm = function(saveAndContinue) {
 		}
 		
 		var buttons =
-			'<input type="button" class="submit_selected" value="' + this.tuix.confirm.button_message + '" onclick="' + this.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ');"/>' +
+			'<input type="button" class="submit_selected" value="' + this.tuix.confirm.button_message + '" onclick="' + this.globalName + '.save(true, ' + engToBoolean(saveAndContinue) + ', ' + engToBoolean(createAnother) + ');"/>' +
 			'<input type="button" class="submit" value="' + this.tuix.confirm.cancel_button_message + '" onclick="zenarioA.closeFloatingBox();"/>';
 		
 		zenarioA.floatingBox(message, buttons, ifNull(this.tuix.confirm.message_type, 'none'));
 	}
+};
+
+
+methods.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
+	return string;
+};
+
+methods.applyMergeFieldsToLabel = function(label, isHTML, itemLevel, multiSelectLabel) {
+	return label;
 };
 
 
@@ -728,6 +730,7 @@ methods.drawFields = function(cb) {
 	var microTemplate = ifNull(this.tuix.tabs[tab].template, this.mtPrefix + '_current_tab'),
 		errorsDrawn = false,
 		i, error, field, notice,
+		currentGrouping,
 		data = {
 			fields: {},
 			rows: [],
@@ -777,7 +780,16 @@ methods.drawFields = function(cb) {
 			continue;
 		}
 		
-		if (field._startNewRow || ! data.rows.length) {
+		//Note down if the last field was in a grouping
+		field._lastGrouping = currentGrouping;
+		if (currentGrouping !== field.grouping) {
+			currentGrouping = field.grouping;
+			
+			//Force different groupings to be on a new row, even if the same_row property is set
+			field._startNewRow = true;
+		}
+		
+		if (field._startNewRow || !data.rows.length) {
 			data.rows.push({fields: []});
 		}
 		
@@ -789,6 +801,9 @@ methods.drawFields = function(cb) {
 		
 		data.rows[data.rows.length-1].fields.push(field);
 		data.fields[fieldId] = field;
+	}
+	if (data.rows.length) {
+		data.rows[data.rows.length-1].fields[0]._isLastRow = true;
 	}
 	
 	if (!errorsDrawn) {
@@ -802,9 +817,11 @@ methods.drawFields = function(cb) {
 	foreach (this.sortedFields[tab] as var f) {
 		var fieldId = this.sortedFields[tab][f];
 		
+		delete this.tuix.tabs[tab].fields[fieldId]._lastGrouping;
 		delete this.tuix.tabs[tab].fields[fieldId]._startNewRow;
 		delete this.tuix.tabs[tab].fields[fieldId]._hideOnOpen;
 		delete this.tuix.tabs[tab].fields[fieldId]._showOnOpen;
+		delete this.tuix.tabs[tab].fields[fieldId]._isLastRow;
 		delete this.tuix.tabs[tab].fields[fieldId]._html;
 		delete this.tuix.tabs[tab].fields[fieldId]._id;
 	}
@@ -927,35 +944,6 @@ methods.focusField = function() {
 	delete this.fieldToFocus;
 };
 
-methods.setTitle = function(title, isHTML) {
-	
-	if (!title) {
-		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').css('display', 'none');
-	} else {
-		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').css('display', 'block');
-		$('#zenario_fbAdminFloatingBox .zenario_jqmTitle').addClass(' zenario_no_drag');
-		
-		var showTooltip = title.length > 80;
-		
-		if (!isHTML) {
-			title = htmlspecialchars(title);
-		}
-		
-		
-		get('zenario_jqmTitle').innerHTML = title;
-		zenarioA.setTooltipIfTooLarge('#zenario_jqmTitle', title, zenarioA.tooltipLengthThresholds.adminBoxTitle);
-		//get('zenario_jqmTitle').style.fontSize = Math.min(12, Math.round(1200 / ('' + title).length)) + 'px';
-	}
-};
-
-methods.showCloseButton = function() {
-	if (this.tuix.cancel_button_message) {
-		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'none');
-	} else {
-		$('#zenario_fbAdminFloatingBox .zenario_jqmClose').css('display', 'block');
-	}
-};
-
 methods.errorOnBox = function() {
 	if (this.tuix && this.tuix.tabs) {
 		foreach (this.tuix.tabs as tab) {
@@ -1005,11 +993,10 @@ methods.checkValues = function(wipeValues) {
 			foreach (thisTab.fields as var f) {
 				
 				var field = thisTab.fields[f],
-					nonFieldType = field.snippet || field.type == 'submit' || field.type == 'toggle',
 					multi = field.pick_items || field.type == 'checkboxes' || field.type == 'radios';
 				
 				//Ignore non-field types
-				if (!nonFieldType) {
+				if (this.isFormField(field)) {
 					
 					if (field.current_value === undefined) {
 						field.current_value = this.value(f, tab, true);
@@ -1036,6 +1023,25 @@ methods.checkValues = function(wipeValues) {
 	
 
 methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
+	
+	if (field === undefined) {
+		field = this.tuix.tabs[tab].fields[id];
+	}
+	
+	if (readOnly === undefined) {
+		readOnly = !this.editModeOn() || engToBoolean(field.read_only);
+	}
+	
+	//Currently date-time fields are readonly
+	if (field.type && field.type == 'datetime') {
+		readOnly = true;
+	}
+	
+	//Groups are not actually drawn on the page, they're only in with the fields so their
+	//ordinal can be determined
+	if (field.type && field.type == 'grouping') {
+		return '';
+	}
 	
 		
 	var that = this,
@@ -1089,19 +1095,6 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 		isNormalTextField = true,
 		parentsValuesExist = false;
 	
-	if (field === undefined) {
-		field = this.tuix.tabs[tab].fields[id];
-	}
-	
-	if (readOnly === undefined) {
-		readOnly = !this.editModeOn() || engToBoolean(field.read_only);
-	}
-	
-	//Currently date-time fields are readonly
-	if (field.type && field.type == 'datetime') {
-		readOnly = true;
-	}
-	
 	//Load field values if an LOV is in use
 	if (lov === undefined) {
 		
@@ -1134,7 +1127,7 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 					existingParents[val.parent] = true;
 				}
 				
-				if (zenarioA.hidden(val)) {
+				if (zenarioA.hidden(val, false, undefined, v)) {
 					continue;
 				} else if (val.ord !== undefined) {
 					sortOrder.push([v, val.ord]);
@@ -1393,9 +1386,6 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 			
 			html += '<select';
 		
-		} else if (field.type == 'textarea') {
-			html += '<textarea';
-		
 		} else if (field.type == 'code_editor') {
 			html += '<div';
 			extraAtt['class'] = ' zenario_embedded_ace_editor';
@@ -1417,6 +1407,15 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 				}
 				
 				codeEditor.session.setOption("useWorker", false);
+				
+				//Ace doesn't have the concept of an "on change" event, it only has something it fires
+				//after every keystroke.
+				//But we'll take this, set a 2-second delay, and use it as an "on change" event.
+				codeEditor.session.on('change', function(e) {
+					zenario.actAfterDelayIfNotSuperseded('code_editor_' + id, function() {
+						that.fieldChange(id);
+					}, 2000);
+				});
 		
 				//Attempt to set the correct language
 				if (language = field.language) {
@@ -1478,6 +1477,7 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 						allow_script_urls: true,
 		
 						autoresize_max_height: Math.max(Math.floor(($(window).height()) * 0.5), 300),
+						autoresize_bottom_margin: 10,
 		
 						onchange_callback: onchange_callback,
 						init_instance_callback: function(instance) {
@@ -1566,6 +1566,13 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 				options = _.extend(options, field.editor_options);
 			}
 			
+			options.setup = function (editor) {
+				editor.on('change', 
+					function(inst) {
+						that.fieldChange(inst.id);
+					});
+			};
+			
 			cb.after(function() {
 				var $field = $(get(id)),
 					domTab = get('zenario_abtab'),
@@ -1599,42 +1606,50 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 				extraAtt['class'] += this.tuix.tabs[tab].fields[id].pressed? ' pressed' : ' not_pressed';
 			}
 		
-		} else if (field.type == 'date' || field.type == 'datetime') {
-			html += '<input';
-			extraAtt.type = 'text';
-			extraAtt['class'] += ' zenario_datepicker';
-			
-			if (engToBoolean(field.change_month_and_year)) {
-				extraAtt['class'] += ' zenario_datepicker_change_month_and_year';
-			}
-			
-			extraAtt.readonly = 'readonly';
-			
-			if (!readOnly) {
-				extraAtt.onkeyup =
-					ifNull(extraAtt.onkeyup, '', '') +
-					"zenario.dateFieldKeyUp(this, event, '" + htmlspecialchars(id) + "');";
-			}
-		
-		} else if (field.type == 'url') {
-			html += '<input';
-			extraAtt.type = 'url';
-			extraAtt.onfocus =
-				ifNull(extraAtt.onfocus, '', '') +
-				"if(!this.value) this.value = 'http://';";
-			extraAtt.onblur =
-				ifNull(extraAtt.onblur, '', '') +
-				"if(this.value == 'http://') this.value = '';";
-		
+		//Various text fields
 		} else {
-			if (field.slider) {
-				hasSlider = true;
-				html += this.drawSlider(cb, id, field, readOnly, true);
+			if (field.type == 'textarea') {
+				html += '<textarea';
+		
+			} else if (field.type == 'date' || field.type == 'datetime') {
+				html += '<input';
+				extraAtt.type = 'text';
+				extraAtt['class'] += ' zenario_datepicker';
+			
+				if (engToBoolean(field.change_month_and_year)) {
+					extraAtt['class'] += ' zenario_datepicker_change_month_and_year';
+				}
+			
+				extraAtt.readonly = 'readonly';
+			
+				if (!readOnly) {
+					extraAtt.onkeyup =
+						ifNull(extraAtt.onkeyup, '', '') +
+						"zenario.dateFieldKeyUp(this, event, '" + htmlspecialchars(id) + "');";
+				}
+		
+			} else if (field.type == 'url') {
+				html += '<input';
+				extraAtt.type = 'url';
+				extraAtt.onfocus =
+					ifNull(extraAtt.onfocus, '', '') +
+					"if(!this.value) this.value = 'http://';";
+				extraAtt.onblur =
+					ifNull(extraAtt.onblur, '', '') +
+					"if(this.value == 'http://') this.value = '';";
+		
+			} else {
+				if (field.slider) {
+					hasSlider = true;
+					html += this.drawSlider(cb, id, field, readOnly, true);
+				}
+			
+				html += '<input';
+				extraAtt.type = field.type;
+				isNormalTextField = true;
 			}
 			
-			html += '<input';
-			extraAtt.type = field.type;
-			isNormalTextField = true;
+			this.addExtraAttsForTextFields(field, extraAtt);
 		}
 		
 		//Checkboxes/Radiogroups only: If the form has already been submitted, overwrite the "checked" attribute depending on whether the checkbox/radiogroup was chosen
@@ -1830,6 +1845,9 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 	return html;
 };
 
+methods.addExtraAttsForTextFields = function(field, extraAtt) {
+};
+
 
 
 
@@ -1923,7 +1941,7 @@ methods.chooseFromDropbox = function(id) {
 				cb = new zenario.callback;
 			
 			foreach (files as f => file) {
-				cb.add(zenario.ajax('zenario/ajax.php?method_call=handleAdminBoxAJAX&fetchFromDropbox=1', file, true));
+				cb.add(zenario.ajax('zenario/ajax.php?method_call=handleAdminBoxAJAX&fetchFromDropbox=1&path=' + encodeURIComponent(that.path), file, true));
 			}
 			
 			cb.after(function() {
@@ -2017,7 +2035,7 @@ methods.upload = function(id, setUpDragDrop) {
 	
 	if (setUpDragDrop) {
 		zenarioA.setHTML5UploadFromDragDrop(
-			URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX',
+			URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX&path=' + encodeURIComponent(that.path),
 			{
 				fileUpload: 1
 			},
@@ -2075,9 +2093,7 @@ methods.drawSlider = function(cb, id, field, readOnly, before) {
 					};
 				
 				options.change = function(event, ui) {
-					if (that && that.id) {
-						that.fieldChange(that.id.replace('zenario_slider_for__', ''));
-					}
+					that.fieldChange(id);
 				};
 				
 				$(domSlider).slider(options);
@@ -2115,7 +2131,7 @@ methods.pickedItemsArray = function(field, value) {
 			//Format uploaded files - these are encoded, and in the form "checksum/filename/width/height"
 			//We want to try and display the filename
 			if (field.upload
-			 && (file = zenario.decodeItemIdForStorekeeper(i))
+			 && (file = zenario.decodeItemIdForOrganizer(i))
 			 && (file = file.split('/'))
 			 && (file[1])) {
 				picked_items[i] = file[1];
@@ -2500,7 +2516,7 @@ methods.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 				}
 			
 				//Check if this is an image that has been chosen
-				if (extension.match(/gif|jpg|jpeg|png/)) {
+				if (extension.match(/gif|jpg|jpeg|png|svg/)) {
 					//For images, display a thumbnail that opens a colorbox when clicked
 					mi.thumbnail = {
 						onclick: this.globalName + ".showPickedItemInPopout('" + src + "&popout=1&dummy_filename=" + encodeURIComponent("image." + extension) + "', '" + label + "');",
@@ -2604,7 +2620,7 @@ methods.setPickedItems = function(path, key, row, panel) {
 		values = {};
 	
 	foreach (key._items as item) {
-		ditem = zenario.decodeItemIdForStorekeeper(item);
+		ditem = zenario.decodeItemIdForOrganizer(item);
 		
 		values[ditem] = zenarioA.formatSKItemName(panel, item);
 	}
@@ -2726,7 +2742,7 @@ methods.changes = function(tab) {
 	}
 };
 
-methods.markAsChanged = function(tab, dontUpdateButton) {
+methods.markAsChanged = function(tab) {
 	if (!this.tuix) {
 		return;
 	}
@@ -2901,6 +2917,14 @@ methods.meChange = function(changed, id, confirm) {
 };
 
 
+methods.currentValue = function(f, tab) {
+	if (tab == this.tuix.tab) {
+		return this.readField(f);
+	} else {
+		return this.value(f, tab);
+	}
+};
+
 methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	if (!tab) {
 		tab = this.tuix.tab;
@@ -2914,7 +2938,9 @@ methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 		readOnly = !this.editModeOn(tab);
 	}
 	
-	if (!field) {
+	if (!field
+	 || field.snippet
+	 || field.type == 'grouping') {
 		return undefined;
 	
 	} else if (!getButtonLabelsAsValues && (field.type == 'submit' || field.type == 'toggle')) {
@@ -2935,6 +2961,15 @@ methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 };
 
 
+methods.isFormField = function(field) {
+	return !(!field
+			|| field.snippet
+			|| field.type == 'grouping'
+			|| field.type == 'submit'
+			|| field.type == 'toggle');
+};
+
+
 methods.readField = function(f) {
 	var value = undefined,
 		tab = this.tuix.tab,
@@ -2942,7 +2977,7 @@ methods.readField = function(f) {
 		el;
 	
 	//Non-field types
-	if (!field || field.snippet || field.type == 'submit' || field.type == 'toggle') {
+	if (!this.isFormField(field)) {
 		return undefined;
 	}
 	
@@ -3212,24 +3247,52 @@ methods.sortTabs = function() {
 };
 
 methods.sortFields = function(tab) {
+	
+	var i, field, fields, groupingOrd,
+		groupingOrds = {};
+	
 	//Build an array to sort, containing:
 		//0: The item's actual index
 		//1: The value to sort by
 	this.sortedFields[tab] = [];
-	if (this.tuix.tabs[tab].fields) {
-		foreach (this.tuix.tabs[tab].fields as var i => var field) {
-			if (field) {
-				this.sortedFields[tab].push([i, field.ord]);
+	if (fields = this.tuix.tabs[tab].fields) {
+		
+		//Look for groupings among the fields.
+		//Groupings work like placeholders; the fields in the grouping should all have
+		//the position of the placeholder.
+		foreach (fields as i => field) {
+			if (field.type
+			 && field.type == 'grouping') {
+				groupingOrds[field.name || i] = 1*field.ord;
 			}
 		}
-	}
+		
+		foreach (fields as i => field) {
+			if (field) {
+				
+				if (field.type
+				 && field.type == 'grouping') {
+					//Groupings work like placeholders; they help sort the fields
+					//but shouldn't count as sorted fields
+				} else {
+					if (field.grouping) {
+						groupingOrd = groupingOrds[field.grouping];
+					} else {
+						groupingOrd = undefined;
+					}
+				
+					this.sortedFields[tab].push([i, field.ord, groupingOrd]);
+				}
+			}
+		}
 	
-	//Sort this array
-	this.sortedFields[tab].sort(zenarioA.sortArray);
+		//Sort this array
+		this.sortedFields[tab].sort(zenarioA.sortArrayWithGrouping);
 	
-	//Remove fields that were just there to help sort
-	foreach (this.sortedFields[tab] as var i) {
-		this.sortedFields[tab][i] = this.sortedFields[tab][i][0];
+		//Remove fields that were just there to help sort
+		foreach (this.sortedFields[tab] as i) {
+			this.sortedFields[tab][i] = this.sortedFields[tab][i][0];
+		}
 	}
 };
 
@@ -3245,6 +3308,30 @@ methods.sendStateToServer = function() {
 methods.getValueArrayofArrays = function(leaveAsJSONString) {
 	return zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest({_read_values: true, _box: this.sendStateToServer()}), !leaveAsJSONString);
 };
+
+methods.getValues1D = function(pluginSettingsOnly) {
+	
+	var t, tab, f, field, name, values = {};
+	
+	if (this.tuix
+	 && this.tuix.tabs) {
+		foreach (this.tuix.tabs as t => tab) {
+			if (tab.fields) {
+				foreach (tab.fields as f => field) {
+					if (pluginSettingsOnly) {
+						if (name = field.plugin_setting && field.plugin_setting.name) {
+							values[name] = this.currentValue(f, t);
+						}
+					} else {
+						values[f] = this.currentValue(f, t);
+					}
+				}
+			}
+		}
+	}
+	
+	return values;
+}
 
 methods.callFunctionOnEditors = function(action) {
 	if (this.tuix && this.tuix.tab && this.tuix.tabs[this.tuix.tab] && this.tuix.tabs[this.tuix.tab].fields && window.tinyMCE) {
@@ -3353,13 +3440,16 @@ methods.generateAlias = function(text) {
 
 methods.contentTitleChange = function() {
 	
-	if (get('menu_title') && !this.tuix.___menu_title_changed) {
-		get('menu_title').value = get('title').value.replace(/\s+/g, ' ');
-		get('menu_title').onkeyup();
+	var menuTitleDOM = get('menu_title'),
+		aliasDOM = get('alias');
+	
+	if (menuTitleDOM && !this.tuix.___menu_title_changed) {
+		menuTitleDOM.value = get('title').value.replace(/\s+/g, ' ');
+		menuTitleDOM.onkeyup();
 	}
 	
-	if (get('alias') && !this.tuix.___alias_changed) {
-		get('alias').value = this.generateAlias(get('title').value);
+	if (aliasDOM && !aliasDOM.disabled && !this.tuix.___alias_changed) {
+		aliasDOM.value = this.generateAlias(get('title').value);
 		this.validateAlias();
 	}
 };
@@ -3371,7 +3461,7 @@ methods.viewFrameworkSource = function() {
 	var url =
 		URLBasePath +
 		'zenario/admin/organizer.php' +
-		'#zenario__modules/show_frameworks//' + this.tuix.key.moduleId + '//' + zenario.encodeItemIdForStorekeeper(this.readField('framework'));
+		'#zenario__modules/show_frameworks//' + this.tuix.key.moduleId + '//' + zenario.encodeItemIdForOrganizer(this.readField('framework'));
 	window.open(url);
 	
 	return false;

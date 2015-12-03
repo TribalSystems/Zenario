@@ -34,24 +34,8 @@ useGZIP(!empty($_GET['gz']));
 
 
 //Run pre-load actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.pre_load.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.pre_load');
 
-
-function incJS($file) {
-	if (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	}
-	
-	echo "\n/**/\n";
-}
 
 
 
@@ -75,8 +59,4 @@ incJS('zenario/libraries/mit/jquery/jquery.colorbox');
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.post_display.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.post_display');

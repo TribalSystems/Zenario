@@ -10,20 +10,6 @@ useGZIP(!empty($_GET['gz']));
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 header('Content-Type: text/javascript; charset=UTF-8');
 
-function incJS($file, $useSrc = false) {
-	if ($useSrc && file_exists($file. '_src.js')) {
-		require $file. '_src.js';
-	} elseif (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	}
-	
-	echo "\n/**/\n";
-}
-
 
 incJS('zenario/libraries/lgpl/punymce/puny_mce');
 incJS('zenario/libraries/lgpl/punymce/plugins/bbcode');

@@ -100,17 +100,8 @@ zenario_slideshow_2.selectSlide = function(slideId) {
 		// Show new slide
 		var slide = this.data.slides[slideId];
 		
-		// Add any extra data
-		slide.has_tabs = this.data.tabs;
-		switch(slide.target_loc) {
-			case "internal":
-				slide.content_item_tag_id = slide.dest_url;
-				break;
-			case "external":
-				slide.external_link = slide.dest_url;
-				break;
-			case "none":
-				break;
+		if (slide.target_loc == 'internal' && !slide.content_item_tag_id) {
+			slide.content_item_link = "Nothing selected";
 		}
 		
 		// Show placeholder image when no rollover or mobile images
@@ -129,8 +120,10 @@ zenario_slideshow_2.selectSlide = function(slideId) {
 		slide.use_transition_code = zenario.engToBoolean(slide.use_transition_code);
 		slide.hidden = zenario.engToBoolean(slide.hidden);
 		
+		slide.has_tabs = that.tabs
+		
 		var createSelectList = function(values, selected) {
-			var selectList = []
+			var selectList = [];
 			for (key in values) {
 				if (values.hasOwnProperty(key)) {
 					if (key == selected) {
@@ -203,15 +196,13 @@ zenario_slideshow_2.selectSlide = function(slideId) {
 		}
 		slide.field_id_list = createSelectList(this.dataset_fields, slide.field_id);
 		
-		
-		
 		this.displaySlideDetails(slide);
 		this.current = slideId;
 	} else if (slideId === 0) {
 		this.displaySlideDetails({id: slideId});
 	}
 	
-	zenario_slideshow_2.size();
+	this.size();
 };
 
 // Show a slides details
@@ -219,11 +210,6 @@ zenario_slideshow_2.displaySlideDetails = function(slide) {
 	var html = zenarioA.microTemplate('zenario_slide_details', slide);
 	$('#zenario_slide_attributes_inner').html(html);
 	this.bindEventListeners();
-	
-	//TODO Improve this!
-	// Trigger events to show any hidden fields
-	$('#zenario_select_link_type').change();
-	$('#zenario_select_slide_visibility').change();
 };
 
 zenario_slideshow_2.highlightSlide = function(slideId) {
@@ -240,6 +226,7 @@ zenario_slideshow_2.highlightSlide = function(slideId) {
 // Save data entered for current slide when viewing different slide
 zenario_slideshow_2.tempSaveData = function(slideId) {
 	if (slideId && this.data.slides[slideId]) {
+		console.log(this.data.slides[slideId]);
 		// Get form data
 		var data = new Array;
 		serial = $('#zenario_slide_settings_form').serializeArray();
@@ -266,27 +253,10 @@ zenario_slideshow_2.tempSaveData = function(slideId) {
 				if ($.inArray(name, checkboxFields) != -1) {
 					value = zenario.engToBoolean(value);
 				}
-				// Skip extra dest_url fields
-				if ($.inArray(name, ['content_item_link', 'content_item_tag_id', 'external_link']) != -1) {
-					continue;
-				}
-				if (name == 'target_loc') {
-					switch(data[name]) {
-						case "internal":
-							this.data.slides[slideId].content_item_link = data['content_item_link'];
-							this.data.slides[slideId].dest_url = data['content_item_tag_id'];
-							break;
-						case "external":
-							this.data.slides[slideId].dest_url = data['external_link'];
-							break;
-						case "none":
-							this.data.slides[slideId].dest_url = '';
-							break;
-					}
-				}
 				this.data.slides[slideId][name] = value;
 			}
 		}
+		console.log(this.data.slides[slideId]);
 	}
 };
 
@@ -444,57 +414,17 @@ zenario_slideshow_2.bindEventListeners = function() {
 	
 	// Slide link picker
 	$("#zenario_select_link_type").off().on("change", function () {
-		if ($("#zenario_select_link_type").val() == 'none') {
-			$("#zenario_static_method_settings").hide();
-			$("#zenario_open_in_new_window_settings").hide();
-			$("#zenario_open_in_new_window").attr('checked', false);
-			$("#zenario_slide_more_link_text").hide();
-		} else {
-			$("#zenario_open_in_new_window_settings").show();
-			$("#zenario_slide_more_link_text").show();
-		}
-		if ($("#zenario_select_link_type").val() == 'internal') {
-			$("#zenario_internal_link_settings").show();
-			$("#zenario_link_to_translation_chain_settings").show();
-			if ($("#zenario_content_item_id").val() == '') {
-				$("#zenario_content_item_link").val("Nothing selected");
-			}
-		} else {
-			$("#zenario_internal_link_settings").hide();
-			$("#zenario_content_item_link").val("");
-			$("#zenario_content_item_id").val("");
-			$("#zenario_link_to_translation_chain_settings").hide();
-			$("#zenario_link_to_translation_chain").attr('checked', false);
-		}
-		if ($("#zenario_select_link_type").val() == 'external') {
-			$("#zenario_external_link_settings").show();
-		} else {
-			$("#zenario_external_link_settings").hide();
-			$("#zenario_external_link").val("");
-		}
+		
+		that.selectSlide(that.current);
 	});
 	
 	// Slide visibility selector
+	
 	$("#zenario_select_slide_visibility").off().on("change", function() {
-		if ($("#zenario_select_slide_visibility").val() == 'call_static_method') {
-			$("#zenario_static_method_settings").show();
-		} else {
-			$("#zenario_static_method_settings").hide();
-			$("#zenario_module_class_name").val('');
-			$("#zenario_static_method_name").val('');
-			$("#zenario_parameter_1").val('');
-			$("#zenario_parameter_2").val('');
-		}
-		if ($.inArray(
-				$("#zenario_select_slide_visibility").val(), 
-				['logged_in_with_field', 'logged_in_without_field', 'without_field']) != -1) 
-		{
-			$("#zenario_user_field_settings").show();
-		} else {
-			$("#zenario_user_field_settings").hide();
-		}
-		$('#caching_message').toggle($(this).val() != 'everyone');
+		
+		that.selectSlide(that.current);
 	});
+	
 	
 	// Add prefix to URL box
 	$("#zenario_external_link").off().on("blur", function() {
@@ -519,6 +449,7 @@ zenario_slideshow_2.bindEventListeners = function() {
 			that.errors = JSON.parse(data);
 			if (_.isEmpty(that.errors)) {
 				zenario.refreshPluginSlot(that.slotName, 'lookup');
+				$('#zenario_slideshow_error_display').html('');
 			} else {
 				var html = '';
 				for (key in that.errors) {
@@ -676,7 +607,7 @@ zenario_slideshow_2.uploadImages = function() {
 		//If there is a form, the message should be surrounded by <form></form> tags.
 		var buttonsHTML = '';
 		html = 
-			'<form id="jqmodal_form" action="' + htmlspecialchars(this.AJAXLink) + '"' +
+			'<form id="zenario_bc_form" action="' + htmlspecialchars(this.AJAXLink) + '"' +
 				' onsubmit="/*...*/"' +
 				' target="zenario_iframe" method="post" enctype="multipart/form-data">'
 				+ html;
@@ -688,7 +619,7 @@ zenario_slideshow_2.uploadImages = function() {
 		html += '</form>';
 			
 		buttonsHTML =
-			'<input type="button" class="submit_selected" value="' + zenarioA.phrase.upload + '" onclick="get(\'jqmodal_form\').submit();"/>';
+			'<input type="button" class="submit_selected" value="' + zenarioA.phrase.upload + '" onclick="get(\'zenario_bc_form\').submit();"/>';
 		
 		buttonsHTML +=
 			'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>';
@@ -918,8 +849,9 @@ zenario_slideshow_2.resize = function() {
 	if (this.sizing) {
 		clearTimeout(this.sizing);
 	}
+	
 	if (get('zenario_fbAdminInner')) {
-		var height = Math.floor($(window).height() * 0.96 - (zenario.browserIsIE()? 210 : zenario.browserIsSafari()? 202 : 205));
+		var height = Math.floor($(window).height() * 0.96 - 150);
 		if (height > maxHeight) {
 			height = maxHeight;
 		}
@@ -930,7 +862,7 @@ zenario_slideshow_2.resize = function() {
 			
 		}
 	}
-	this.sizing = setTimeout(this.resize, 250);
+	this.sizing = setTimeout(zenario_slideshow_2.resize, 250);
 };
 
 zenario_slideshow_2.size = function() {

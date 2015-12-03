@@ -51,7 +51,11 @@
 							</div>
 						</div>
 						<div id="organizer_bottomWrap">
-							<div id="organizer_lowerLeftColumn">{{zenarioO.fillLowerLeft()}}</div>
+							<% if (zenarioA.isFullOrganizerWindow && !zenarioA.openedInIframe) { %>
+								<div id="organizer_lowerLeftColumn">{{zenarioO.fillLowerLeft()}}</div>
+							<% } else { %>
+								<div id="organizer_lowerLeftColumn" style="visibility: hidden;">&nbsp;</div>
+							<% } %>
 							<div id="organizer_lowerMiddleColumn"></div>
 							<div id="organizer_lowerRightColumn">
 								<form style="float: right;" id="organizer_bottomRightForm">

@@ -43,7 +43,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 				$moduleFilesLoaded, $tags, $type = 'admin_boxes', 'zenario_custom_field',
 				$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = true, $exitIfError = true
 			);
-			$centralisedLists = $tags['zenario_custom_field']['tabs']['details']['fields']['values_source']['values'];
+			$centralisedLists = getCentralisedLists();
 			$panel['centralised_lists']['values'] = array();
 			$count = 1;
 			foreach ($centralisedLists as $method => $label) {
@@ -103,7 +103,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								$field['lov'][$valueId] = $value;
 							}
 						} elseif ($field['type'] == 'editor') {
-							$field['field_placeholder'] = 'images/form_builder/editor_placeholder.png';
+							$field['field_placeholder'] = 'images/admin_box_builder/editor_placeholder.png';
 						}
 						
 						if ($field['is_system_field']) {
@@ -134,9 +134,12 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 						$field['show_by_default'] = (int)$field['show_by_default'];
 						$field['show_in_organizer'] = (int)$field['show_in_organizer'];
 						$field['sortable'] = (int)$field['sortable'];
-						
 						$field['ord'] = ++$fieldOrdinal;
 						$field['label'] = $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : '');
+						
+						// Set remove to false
+						$field['remove'] = false;
+						
 						$panel['items'][$tab['name']]['fields'][$id] = $field;
 					}
 				}
@@ -275,6 +278,72 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								}
 							}
 						}
+					}
+					break;
+				case 'validate':
+					
+					$id = post('id');
+					$type = post('type');
+					$tab = post('tab');
+					$field_tab = post('field_tab');
+					$items = json_decode(post('items'), true);
+					
+					
+					if ($id && $items) {
+						$errors = array();
+						
+						if ($type == 'tab') {
+							// Validate tab details
+						} elseif ($type == 'field') {
+							
+							if (!empty($items[$tab]['fields'][$id]) && empty($items[$tab]['fields'][$id]['remove'])) {
+								
+								$field = $items[$tab]['fields'][$id];
+								
+								// Validate field details
+								switch ($field_tab) {
+									case 'details':
+										if (empty($field['is_system_field'])) {
+											// Must have code name
+											if (empty($field['db_column'])) {
+												$errors[] = adminPhrase('Please enter a code name');
+											// Code name must be unique
+											} else {
+												unset($items[$tab]['fields'][$id]);
+												$isUnique = true;
+												foreach ($items as $tab2) {
+													if (isset($tab2['fields']) && is_array($tab2['fields'])) {
+														foreach ($tab2['fields'] as $field2) {
+															if (isset($field2['db_column']) && $field2['db_column'] == $field['db_column']) {
+																$isUnique = false;
+																break 2;
+															}
+														}
+													}
+												}
+												if (!$isUnique) {
+													$errors[] = adminPhrase('The code name "[[db_column]]" is already in use in this dataset.', array('db_column' => $field['db_column']));
+												}
+											}
+										}
+										break;
+									case 'display':
+										break;
+									case 'validation':
+										if (!empty($field['is_required']) && empty($field['required_message'])) {
+											$errors[] = adminPhrase('Please enter a message if not complete.');
+										}
+										if ($field['validation'] != 'none' && empty($field['validation_message'])) {
+											$errors[] = adminPhrase('Please enter a message if not valid.');
+										}
+										break;
+									case 'values':
+										break;
+								}
+							}
+						}
+						
+						echo json_encode($errors);
 					}
 					break;
 				

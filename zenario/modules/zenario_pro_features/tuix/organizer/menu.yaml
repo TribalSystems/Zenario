@@ -7,6 +7,7 @@ zenario__menu:
                 create:
                     priv: _PRIV_ADD_MENU_SECTION
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a menu section
                     parent: advanced_dropdown
                     hide_in_select_mode: Yes

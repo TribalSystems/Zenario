@@ -37,13 +37,13 @@ zenario__modules:
                         title: 'Ordinal #'
                         db_column: |
                             IF (np.is_tab,
-                                                            LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                                                            CONCAT(
-                                                                LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                                                                '.',
-                                                                LPAD(np.ord, ROUND(LOG10(IFNULL((SELECT MAX(ord) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0')
-                                                            )
-                                                        )
+                                LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
+                                CONCAT(
+                                    LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
+                                    '.',
+                                    LPAD(np.ord, ROUND(LOG10(IFNULL((SELECT MAX(ord) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0')
+                                )
+                            )
                         show_by_default: Yes
                         width: xsmall
                     module_class_name:
@@ -65,7 +65,7 @@ zenario__modules:
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
                               AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                     checksum:
                         db_column: img_f.checksum
                         table_join: |
@@ -77,7 +77,7 @@ zenario__modules:
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
                               AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                     mime_type:
                         server_side_only: Yes
                         db_column: img_f.mime_type
@@ -90,7 +90,7 @@ zenario__modules:
                             LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                                ON img_f.id = img_ps.foreign_key_id
                               AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 default_sort_column: name_or_title
                 label_format_for_grid_view: |
                     [[ordinal]]
@@ -111,6 +111,7 @@ zenario__modules:
                     add_wireframe:
                         label: Create a plugin
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         only_show_on_refiner: nest
                         pick_items:
                             path: zenario__modules/panels/modules/refiners/nestable_only////
@@ -125,6 +126,7 @@ zenario__modules:
                     add_plugin:
                         label: Add plugin from existing
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         only_show_on_refiner: nest
                         pick_items:
                             path: zenario__modules/panels/modules/refiners/nestable_only////
@@ -140,6 +142,7 @@ zenario__modules:
                     upload_banner:
                         label: Upload image to make banner
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         tooltip: >
                             To create a banner plugin in this nest, click here to upload
                             an image

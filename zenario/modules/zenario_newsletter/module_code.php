@@ -451,6 +451,10 @@ class zenario_newsletter extends module_base_class {
 		
 		$emailOverriddenBy = false;
 		
+		if(setting('zenario_newsletter__enable_opened_emails')) {
+			$newsletterBody = $newsletterBody .zenario_newsletter::applyTrackingGif($hashes['tracker_hash'], $newsletter['url']);
+		}
+		
 		if (sendEmail(
 			$newsletterSubject,
 			$newsletterBody,
@@ -586,6 +590,10 @@ class zenario_newsletter extends module_base_class {
 		
 		$key = array('foreign_key_to' => 'newsletter_template', 'foreign_key_id' => $id);
 		deleteRow('inline_images', $key);
+	}
+	
+	protected static function applyTrackingGif($trackerHash, $url) {
+		return ' <img alt="&nbsp;" height="1" width="1" src="'. htmlspecialchars($url). 'tracker.php?t='. htmlspecialchars($trackerHash). '"/>';
 	}
 
 }

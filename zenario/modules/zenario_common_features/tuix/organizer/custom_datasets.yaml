@@ -37,12 +37,14 @@ zenario__administration:
                     refiner: dataset_id
             
             item_buttons:
+                
+                # Hidden because branched before this feature was complete
                 edit_gui:
-                    hidden: true
                     label: Edit (GUI)
                     link:
                         path: zenario__administration/panels/custom_tabs_and_fields_gui
                         refiner: dataset_id
+                    hidden: true
             
             # Note there are no buttons; creating new/editing existing datasets is not implemented yet!
                     

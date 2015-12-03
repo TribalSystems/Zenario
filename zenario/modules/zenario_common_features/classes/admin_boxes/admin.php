@@ -37,19 +37,17 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 
 		if ($box['key']['id']) {
-			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id', 'image_id', 'is_client_account'), $box['key']['id'])) {
+			if (!$details = getRow('admins', array(
+				'permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas',
+				'username', 'email', 'first_name', 'last_name',
+				'authtype', 'global_id', 'image_id', 'is_client_account'
+			), $box['key']['id'])) {
 				exit;
 
 			} elseif ($details['authtype'] != 'local') {
 				$box['tabs']['details']['edit_mode']['enabled'] = false;
 				$box['tabs']['password']['hidden'] = true;
 				$box['tabs']['permissions']['edit_mode']['enabled'] = false;
-
-				$box['tabs']['details']['fields']['desc']['snippet']['html'] =
-				adminPhrase("This Administrator's details are stored in a global database outside of this site's database. You can only make changes via the control site.");
-
-				$box['tabs']['permissions']['fields']['desc']['snippet']['html'] =
-				adminPhrase("This Administrator's permissions are stored in a global database outside of this site's database. You can only make changes via the control site.");
 
 			} elseif (checkPriv('_PRIV_EDIT_ADMIN')) {
 				$box['tabs']['details']['edit_mode']['enabled'] = true;
@@ -59,7 +57,9 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			//Load this admin's settings
 			if (is_array(arrayKey($box,'tabs'))) {
 				foreach ($box['tabs'] as $tabName => &$tab) {
-					if (is_array($tab)) {
+					if (is_array($tab)
+					 && !empty($tab['fields'])
+					 && is_array($tab['fields'])) {
 						foreach ($tab['fields'] as &$field) {
 							if (($settingName = arrayKey($field, 'admin_setting', 'name'))
 							 && (false !== ($settingValue = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']))))) {
@@ -72,32 +72,37 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			$box['key']['authtype'] = $details['authtype'];
 			$box['key']['global_id'] = $details['global_id'];
-			$box['title'] = adminPhrase('Managing Administrator "[[username]]"', $details);
 			
 			
-			$values['username'] = $details['username'];
-			$values['first_name'] = $details['first_name'];
-			$values['last_name'] = $details['last_name'];
-			$values['email'] = $details['email'];
-			$values['image'] = $details['image_id'];
-			$values['is_client_account'] = $details['is_client_account'];
+			$values['details/username'] = $details['username'];
+			$values['details/first_name'] = $details['first_name'];
+			$values['details/last_name'] = $details['last_name'];
+			$values['details/email'] = $details['email'];
+			$values['details/image'] = $details['image_id'];
+			$values['details/is_client_account'] = $details['is_client_account'];
+			$values['permissions/permissions'] = $details['permissions'];
+			$values['permissions/specific_languages'] = $details['specific_languages'];
+			$values['permissions/specific_content_items'] = $details['specific_content_items'];
+			$values['permissions/specific_menu_areas'] = $details['specific_menu_areas'];
+			
+			$allPerms = $details['permissions'] == 'all_permissions';
+			$isCurrentAdmin = $box['key']['id'] == adminId();
 			
 			
 			//Get a list of permissions that an Admin is in
-			$perms = array();
-			loadAdminPerms($perms, $box['key']['id']);
+			$perms = loadAdminPerms($box['key']['id']);
 
 			//Ensure the array fields is sorted by ordinal, as there is logic in PHP that relies on them being in
 			//the right order.
 			uasort($box['tabs']['permissions']['fields'], array('zenario_common_features', 'sortFieldsByOrd'));
-			
-			if ($allPerms = !empty($perms['_ALL'])) {
-				$values['permissions/everything'] = 'everything';
-			}
 
 			//Set the checkboxes for permissions up appropriately
 			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
-				if (is_array($field) && !empty($field['type'])) {
+				if (is_array($field)
+				 && !empty($field['type'])
+				 && !empty($field['is_admin_permission'])
+				 && engToBoolean($field['is_admin_permission'])) {
+					
 					if ($field['type'] == 'checkbox') {
 						$field['value'] = $allPerms || !empty($perms[$fieldName]);
 							
@@ -117,15 +122,61 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 					}
 
 					//Don't let an Admin remove their own management rights.
-					if ($box['key']['id'] == adminId() && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
+					if ($isCurrentAdmin && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
 						$field['read_only'] = true;
 					}
 				}
 			}
-
+			
+			//Admins shouldn't be able to change themselves into a limited admin
+			if ($isCurrentAdmin) {
+				$fields['permissions/permissions']['values']['specific_languages']['disabled'] = true;
+				$fields['permissions/permissions']['values']['specific_menu_areas']['disabled'] = true;
+			}
+			
+			if ($box['key']['id'] == adminId()) {
+				$box['title'] = adminPhrase('Managing your profile');
+				
+				if ($details['authtype'] != 'local') {
+					$box['tabs']['details']['fields']['desc']['snippet']['html'] =
+						adminPhrase("Your details are stored in a global database outside of this site's database. You can only make changes via the control site.");
+					$box['tabs']['permissions']['fields']['desc']['snippet']['html'] =
+						adminPhrase("Your permissions are stored in a global database outside of this site's database. You can only make changes via the control site.");
+				} else {
+					$box['tabs']['details']['fields']['desc']['hidden'] =
+					$box['tabs']['password']['fields']['desc']['hidden'] =
+					$box['tabs']['permissions']['fields']['desc']['hidden'] = true;
+				}
+			
+			} elseif ($details['authtype'] != 'local') {
+				$box['title'] = adminPhrase('Managing the multi-site administrator "[[username]]"', $details);
+				
+				$box['tabs']['details']['fields']['desc']['snippet']['html'] =
+					adminPhrase("This administrator's details are stored in a global database outside of this site's database. You can only make changes via the control site.");
+				$box['tabs']['permissions']['fields']['desc']['snippet']['html'] =
+					adminPhrase("This administrator's permissions are stored in a global database outside of this site's database. You can only make changes via the control site.");
+			
+			} else {
+				$box['title'] = adminPhrase('Managing the local administrator "[[username]]"', $details);
+				
+				$box['tabs']['details']['fields']['desc']['snippet']['html'] =
+					adminPhrase("Use this screen to change this administrator's details.");
+				$box['tabs']['password']['fields']['desc']['snippet']['html'] =
+					adminPhrase("Use this screen to change this administrator's password.");
+				$box['tabs']['permissions']['fields']['desc']['hidden'] = true;
+			}
 
 		} else {
 			exitIfNotCheckPriv('_PRIV_CREATE_ADMIN');
+			
+			$box['title'] = adminPhrase('Creating a local administrator');
+			
+			$box['tabs']['details']['fields']['desc']['snippet']['html'] =
+				adminPhrase("Use this screen to define a new local administrator for this site.");
+			$box['tabs']['permissions']['fields']['desc']['hidden'] = true;
+			
+			
+			
 			$box['tabs']['details']['edit_mode']['enabled'] =
 			$box['tabs']['details']['edit_mode']['always_on'] =
 			$box['tabs']['password']['edit_mode']['enabled'] =
@@ -136,6 +187,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			$box['tabs']['password']['edit_mode']['enable_revert'] =
 			$box['tabs']['permissions']['edit_mode']['enable_revert'] = false;
 			$values['is_client_account'] = true;
+		}
+		
+		$fields['permissions/specific_languages']['values'] = array();
+		foreach (getLanguages(false, true, true) as $langId => $lang) {
+			$fields['permissions/specific_languages']['values'][$langId] = $lang['english_name']. ' ('. $lang['id']. ')';
 		}
 		
 		$adminAuthType = getRow('admins', 'authtype', adminId());
@@ -161,90 +217,103 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		//toggles that show/hide the children.
 		//However, we need to hide every field instead if the "This administrator has every possible permission" option is checked
 		$rowStart = false;
+		$specificActionsOpen = $values['permissions/permissions'] == 'specific_actions';
+		
 		foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
-			if ($fieldName != 'everything'
-			 && is_array($field)
-			 && !empty($field['type'])) {
+			if (is_array($field) && !empty($field['type'])) {
+				
+				$isAdminPerm = (!empty($field['is_admin_permission']) && engToBoolean($field['is_admin_permission']));
+				$isInAdminPermGrouping = (!empty($field['grouping']) && $field['grouping'] == 'specific_actions');
 				
 				//Hide every other field if the "This administrator has every possible permission" option is checked.
 				//(Except for the dev tools, which is a hard-coded exception.)
-				if ($values['permissions/everything'] == 'everything') {
-					$field['hidden'] = true;
+				if ($isAdminPerm || $isInAdminPermGrouping) {
+					$field['hidden'] = !$specificActionsOpen;
+				}
 				
-				} else {
-					unset($field['hidden']);
-				
-					//Look for checkboxes on their own, add some styling around them
-					if (!engToBooleanArray($field, 'same_row') && $field['type'] == 'checkbox') {
-						$rowStart = $fieldName;
-						$field['row_class'] = 'zenario_perms';
-					}
-
-					//Look for single checkboxes that are immediately followed by multiple checkboxes.
-					//In this case turn the single checkbox into a role, which encompases several actions.
-					if ($rowStart && $field['type'] == 'checkboxes' && !empty($field['values'])) {
-
-						//Add a toggle field just after the single checkbox, which can show/hide the multiple checkboxes
-						$toggle = $rowStart. '_toggle';
-						if (empty($box['tabs']['permissions']['fields'][$toggle])) {
-							$box['tabs']['permissions']['fields'][$toggle] = array(
-									'ord' => $box['tabs']['permissions']['fields'][$rowStart]['ord']. '.1',
-									'type' => 'toggle',
-									'same_row' => true,
-									'visible_if' => 'zenarioAB.togglePressed(1, tuixObject)',
-									'redraw_onchange' => true,
-									'can_be_pressed_in_view_mode' => true);
+				if ($isAdminPerm && $specificActionsOpen) {
+			
+					//Hide every other field if the "This administrator has every possible permission" option is checked.
+					//(Except for the dev tools, which is a hard-coded exception.)
+					if ($values['permissions/permissions'] != 'specific_actions') {
+						$field['hidden'] = true;
+			
+					} else {
+						unset($field['hidden']);
+			
+						//Look for checkboxes on their own, add some styling around them
+						if (!engToBooleanArray($field, 'same_row') && $field['type'] == 'checkbox') {
+							$rowStart = $fieldName;
+							$field['row_class'] = 'zenario_perms';
 						}
 
-						$field['row_class'] = 'zenario_hierarchical_perms';
-						$field['visible_if'] = 'zenarioAB.togglePressed(2)';
+						//Look for single checkboxes that are immediately followed by multiple checkboxes.
+						//In this case turn the single checkbox into a role, which encompases several actions.
+						if ($rowStart && $field['type'] == 'checkboxes' && !empty($field['values'])) {
+
+							//Add a toggle field just after the single checkbox, which can show/hide the multiple checkboxes
+							$toggle = $rowStart. '_toggle';
+							if (empty($box['tabs']['permissions']['fields'][$toggle])) {
+								$box['tabs']['permissions']['fields'][$toggle] = array(
+										'grouping' => 'specific_actions',
+										'ord' => $box['tabs']['permissions']['fields'][$rowStart]['ord']. '.1',
+										'type' => 'toggle',
+										'same_row' => true,
+										'visible_if' => 'zenarioAB.togglePressed(1, tuixObject)',
+										'redraw_onchange' => true,
+										'can_be_pressed_in_view_mode' => true);
+							}
+
+							$field['row_class'] = 'zenario_hierarchical_perms';
+							$field['visible_if'] = 'zenarioAB.togglePressed(2)';
 
 
 
-						//Loop through each value for the child checkboxes and count them.
-						$n = 0;
-						foreach ($field['values'] as $valueName => &$value) {
-							++$n;
+							//Loop through each value for the child checkboxes and count them.
+							$n = 0;
+							foreach ($field['values'] as $valueName => &$value) {
+								++$n;
+							}
+
+							//Count how many children have been checked
+							if (empty($values['permissions'. '/'. $fieldName])) {
+								$c = 0;
+							} else {
+								$c = count(explodeAndTrim($values['permissions'. '/'. $fieldName]));
+							}
+
+							//Set the "X / Y" display on the toggle
+							$box['tabs']['permissions']['fields'][$toggle]['value'] =
+							$box['tabs']['permissions']['fields'][$toggle]['current_value'] = $c. '/'. $n;
+
+							//Check or uncheck the parent, depending on if at least one child is checked.
+							//Also set a CSS class on the row around the parent depending on how many were checked.
+							$parentChecked = true;
+							if ($c == 0) {
+								$parentChecked = false;
+								$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_empty';
+						
+							} elseif ($c < $n) {
+								$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_half_full';
+						
+							} else {
+								$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_full';
+							}
+
+							$box['tabs']['permissions']['fields'][$rowStart][
+							engToBooleanArray($box['tabs']['permissions']['fields'], 'edit_mode', 'on')? 'current_value' : 'value'
+									] = $parentChecked;
+
+							//Set up JavaScript logic to update all of this when an Admin changes the value of a checkbox
+							$field['onclick'] =
+							$field['onchange'] =
+							"zenarioAB.adminPermChange('". jsEscape($rowStart). "', '". jsEscape($fieldName). "', '". jsEscape($toggle). "');";
+							$box['tabs']['permissions']['fields'][$rowStart]['onclick'] =
+							$box['tabs']['permissions']['fields'][$rowStart]['onchange'] =
+							"zenarioAB.adminParentPermChange('". jsEscape($rowStart). "', '". jsEscape($fieldName). "', '". jsEscape($toggle). "');";
+
+							$rowStart = $toggle = false;
 						}
-
-						//Count how many children have been checked
-						if (empty($values['permissions'. '/'. $fieldName])) {
-							$c = 0;
-						} else {
-							$c = count(explode(',', $values['permissions'. '/'. $fieldName]));
-						}
-
-						//Set the "X / Y" display on the toggle
-						$box['tabs']['permissions']['fields'][$toggle]['value'] =
-						$box['tabs']['permissions']['fields'][$toggle]['current_value'] = $c. '/'. $n;
-
-						//Check or uncheck the parent, depending on if at least one child is checked.
-						//Also set a CSS class on the row around the parent depending on how many were checked.
-						$parentChecked = true;
-						if ($c == 0) {
-							$parentChecked = false;
-							$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_empty';
-							
-						} elseif ($c < $n) {
-							$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_half_full';
-							
-						} else {
-							$box['tabs']['permissions']['fields'][$rowStart]['row_class'] = 'zenario_perms zenario_permgroup_full';
-						}
-
-						$box['tabs']['permissions']['fields'][$rowStart][
-						engToBooleanArray($box['tabs']['permissions']['fields'], 'edit_mode', 'on')? 'current_value' : 'value'
-								] = $parentChecked;
-
-						//Set up JavaScript logic to update all of this when an Admin changes the value of a checkbox
-						$field['onclick'] =
-						$field['onchange'] =
-						"zenarioAB.adminPermChange('". jsEscape($rowStart). "', '". jsEscape($fieldName). "', '". jsEscape($toggle). "');";
-						$box['tabs']['permissions']['fields'][$rowStart]['onclick'] =
-						$box['tabs']['permissions']['fields'][$rowStart]['onchange'] =
-						"zenarioAB.adminParentPermChange('". jsEscape($rowStart). "', '". jsEscape($fieldName). "', '". jsEscape($toggle). "');";
-
-						$rowStart = $toggle = false;
 					}
 				}
 			}
@@ -311,6 +380,23 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			} elseif ($values[$tab. '/'. 'password'] != $values[$tab. '/'. 'password_confirm']) {
 				$box['tabs'][$tab]['errors'][] = adminPhrase('Please ensure that the passwords you submit are identical.');
+			}
+		}
+		
+		if (engToBooleanArray($box['tabs']['permissions'], 'edit_mode', 'on')) {
+			switch ($values['permissions/permissions']) {
+				case 'specific_languages':
+					if (!$values['permissions/specific_languages']
+					 && !$values['permissions/specific_content_items']) {
+						$box['tabs']['permissions']['errors'][] = adminPhrase('Please select a language.');
+					}
+					break;
+				
+				case 'specific_menu_areas':
+					if (!$values['permissions/specific_menu_areas']) {
+						$box['tabs']['permissions']['errors'][] = adminPhrase('Please select an area of the menu.');
+					}
+					break;
 			}
 		}
 
@@ -389,7 +475,9 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			foreach ($box['tabs']['permissions']['fields'] as $fieldName => &$field) {
 				//Ignore info tags, non-fields and anything that's not a checkbox/checkboxes.
 				if (is_array($field)
-				&& !empty($field['type'])) {
+				 && !empty($field['type'])
+				 && !empty($field['is_admin_permission'])
+				 && engToBoolean($field['is_admin_permission'])) {
 
 					//For single checkboxes, just save one permission
 					if ($field['type'] == 'checkbox') {
@@ -407,16 +495,29 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 							if ($box['key']['id'] == adminId() && in($fieldName, 'perm_manage', 'perm_manage_permissions')) {
 								$perms[$valueName] = checkPriv($valueName);
 							} else {
-								$perms[$valueName] = in_array($valueName, explode(',', $values['permissions'. '/'. $fieldName]));
+								$perms[$valueName] = in_array($valueName, explodeAndTrim($values['permissions'. '/'. $fieldName]));
 							}
 						}
 					}
 				}
 			}
 			
-			$perms['_ALL'] = $values['permissions/everything'] == 'everything';
+			$details = array(
+				'specific_languages' => '',
+				'specific_content_items' => '',
+				'specific_menu_areas' => '');
 			
-			saveAdminPerms($perms, $box['key']['id']);
+			switch ($values['permissions/permissions']) {
+				case 'specific_languages':
+					$details['specific_languages'] = $values['permissions/specific_languages'];
+					$details['specific_content_items'] = $values['permissions/specific_content_items'];
+					break;
+				
+				case 'specific_menu_areas':
+					$details['specific_menu_areas'] = $values['permissions/specific_menu_areas'];
+					break;
+			}
+			saveAdminPerms($box['key']['id'], $values['permissions/permissions'], $perms, $details);
 
 			if ($box['key']['id'] == adminId()) {
 				setAdminSession(adminId());

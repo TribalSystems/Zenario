@@ -103,17 +103,20 @@ zenario__user_forms:
                 create:
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_user_admin_box_form
                     hide_on_refiner: archived
             item_buttons:
                 edit:
+                    priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Properties
                     admin_box:
                         path: zenario_user_admin_box_form
                 duplicate:
+                    priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Duplicate
                     ajax:
@@ -127,13 +130,13 @@ zenario__user_forms:
                             duplicate_form: "1"
                     hide_on_refiner: archived
                 
-                
                 view_dropdown:
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
                 view_responses:
                     label: Responses
+                    priv: _PRIV_VIEW_FORM_RESPONSES
                     parent: view_dropdown
                     link:
                         path: zenario__user_forms/panels/zenario_user_forms__user_responses
@@ -146,6 +149,7 @@ zenario__user_forms:
                         refiner: form_id
                     
                 delete:
+                    priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Delete
                     multiple_select_tooltip: Delete these forms?
@@ -172,6 +176,7 @@ zenario__user_forms:
                             delete_form: "1"
                     hide_on_refiner: archived
                 archive:
+                    priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Archive
                     multiple_select_tooltip: Archive these forms?
@@ -194,3 +199,12 @@ zenario__user_forms:
                         request:
                             archive_form: "1"
                     hide_on_refiner: archived
+                
+                # Hidden because branched before this feature was complete
+                edit_form_fields_gui:
+                    label: Edit form fields (gui)
+                    link:
+                        path: zenario__user_forms/panels/form_fields_gui
+                        branch: true
+                        refiner: user_form_id
+                    hidden: true

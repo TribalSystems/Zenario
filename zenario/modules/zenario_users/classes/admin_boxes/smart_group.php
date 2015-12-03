@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__smart_group extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		exitIfNotCheckPriv('_PRIV_CREATE_GROUP');
+		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
 		//Get a list of tabs and fields, and loop through it
 		$unsets = array();
@@ -81,8 +81,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		$box['tabs']['smart_group']['custom_template_fields']['field__znz']['values'] = $datasetFields;
 		
-		$box['tabs']['smart_group']['custom_template_fields']['field2__znz']['values'] =
-		$box['tabs']['smart_group']['custom_template_fields']['field3__znz']['values'] =
+		$box['lovs']['dataset_groups'] =
 			listCustomFields('users', $flat = false, $filter = 'groups_only', $customOnly = false, $useOptGroups = true);
 
 
@@ -90,6 +89,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		if ($box['key']['id'] && ($details = getSmartGroupDetails($box['key']['id']))) {
 			$box['title'] = adminPhrase('Editing the smart group "[[name]]".', $details);
 			$values['smart_group/name'] = $details['name'];
+			$values['smart_group/must_match'] = $details['must_match'];
 			
 			//Load all of the created rules
 			$rules = getRowsArray('smart_group_rules', true, array('smart_group_id' => $box['key']['id']), 'ord');
@@ -111,9 +111,14 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					if ($field['type'] == 'group') {
 						$values['smart_group/type__'. $n] = 'group';
 						
-						if ($rule['field2_id'] || $rule['field3_id']) {
+						if ($rule['field2_id']
+						 || $rule['field3_id']
+						 || $rule['field4_id']
+						 || $rule['field5_id']) {
 							$values['smart_group/field2__'. $n] = $rule['field2_id'];
 							$values['smart_group/field3__'. $n] = $rule['field3_id'];
+							$values['smart_group/field4__'. $n] = $rule['field4_id'];
+							$values['smart_group/field5__'. $n] = $rule['field5_id'];
 							$values['smart_group/is_isnt_in__'. $n] = 'is_one_of';
 						} else {
 							$values['smart_group/is_isnt_in__'. $n] = $rule['not']? 'isnt' : 'is';
@@ -196,7 +201,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		exitIfNotCheckPriv('_PRIV_CREATE_GROUP');
+		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
 		//Add a new rule at the end
 		if (!empty($box['tabs']['smart_group']['fields']['add__'. $box['key']['num_rules']]['pressed'])) {
@@ -242,6 +247,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		$this->setupRuleRows($box, $fields, $values, $changes, $filling = false);
 		
 		//Set the LOV options for every picked field
+		$fields['smart_group/no_rules_set']['hidden'] = false;
 		for ($n = 1; $n <= $box['key']['num_rules']; ++$n) {
 			
 			$fieldId = false;
@@ -269,6 +275,8 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 						$box['tabs']['smart_group']['fields']['value__'. $n]['hidden'] = empty($lov);
 					}
 				}
+				
+				$fields['smart_group/no_rules_set']['hidden'] = true;
 			}
 		}
 		
@@ -278,7 +286,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		exitIfNotCheckPriv('_PRIV_CREATE_GROUP');
+		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
 		if (checkRowExists('smart_groups', array('name' => $values['smart_group/name'], 'id' => array('!' => $box['key']['id'])))) {
 			$fields['smart_group/name']['error'] = adminPhrase('A smart group with the name "[[smart_group/name]]" already exists. Please choose a different name.', $values);
@@ -312,8 +320,11 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 				$rule['field_id'] = $fieldId;
 				$rule['field2_id'] = 0;
 				$rule['field3_id'] = 0;
-				$rule['not'] = 0;
+				$rule['field4_id'] = 0;
+				$rule['field5_id'] = 0;
 				$rule['value'] = null;
+				$rule['not'] = 0;
+				$rule['must_match'] = $values['smart_group/must_match'];
 				
 				if ($field['type'] == 'group') {
 					$values['smart_group/type__'. $n] = 'group';
@@ -321,6 +332,8 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 					if ($values['smart_group/is_isnt_in__'. $n] == 'is_one_of') {
 						$rule['field2_id'] = $values['smart_group/field2__'. $n];
 						$rule['field3_id'] = $values['smart_group/field3__'. $n];
+						$rule['field4_id'] = $values['smart_group/field4__'. $n];
+						$rule['field5_id'] = $values['smart_group/field5__'. $n];
 					} else {
 						$rule['not'] = engToBoolean($values['smart_group/is_isnt_in__'. $n] == 'isnt');
 					}
@@ -342,11 +355,12 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 	
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		exitIfNotCheckPriv('_PRIV_CREATE_GROUP');
+		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		
 		//Save the basic details of the smart group
 		$details = array();
 		$details['name'] = $values['smart_group/name'];
+		$details['must_match'] = $values['smart_group/must_match'];
 		$details['last_modified_on'] = now();
 		$details['last_modified_by'] = adminId();
 		
@@ -366,6 +380,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 			$key = array();
 			$key['ord'] = $ord;
 			$key['smart_group_id'] = $box['key']['id'];
+			unset($rule['must_match']);
 			
 			setRow('smart_group_rules', $rule, $key);
 		}

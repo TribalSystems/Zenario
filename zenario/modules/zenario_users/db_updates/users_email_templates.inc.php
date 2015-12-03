@@ -82,3 +82,52 @@ revision(6, "
 _sql
 
 );
+
+
+revision(41, 
+	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`email_address_from`,
+		`email_name_from`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`
+	) VALUES (
+		'zenario_users__inactive_user_short_time',
+		'To User: Inactive User (Short Time)',
+		'Inactive user',
+		'". sqlEscape(setting('email_address_from')). "',
+		'". sqlEscape(setting('email_name_from')). "',
+		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a while. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
+		NOW(),
+		". (int) adminId(). ",
+		0
+	)"
+	);
+	
+revision(42, 
+	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
+		`code`,
+		`template_name`,
+		`subject`,
+		`email_address_from`,
+		`email_name_from`,
+		`body`,
+		`date_created`,
+		`created_by_id`,
+		`allow_attachments`
+	) VALUES (
+		'zenario_users__inactive_user_long_time',
+		'To User: Inactive User (Long Time)',
+		'Inactive user',
+		'". sqlEscape(setting('email_address_from')). "',
+		'". sqlEscape(setting('email_name_from')). "',
+		'<p>Dear [[salutation]] [[first_name]] [[last_name]],</p> we\'ve not seen you in a long time. <br> Did you know that you can do these cool features on the portal: <br> ..... <br> ..... <br> [[link]]',
+		NOW(),
+		". (int) adminId(). ",
+		0
+	)"
+	);

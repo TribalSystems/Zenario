@@ -36,6 +36,7 @@ zenario__locations:
                     create_accreditor:
                         ord: "1"
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         label: Create a new Accreditor
                         tooltip: Create a new Accreditor
                         admin_box:

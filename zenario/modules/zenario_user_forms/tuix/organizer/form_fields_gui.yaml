@@ -1,0 +1,9 @@
+zenario__user_forms:
+	panels:
+		form_fields_gui:
+			refiners:
+				user_form_id:
+					sql: '(ff.user_form_id=[[REFINER_ID]])'
+			title: Form fields
+			panel_type: form_builder
+			no_items_message: No form fields found, click "Add" to add one.

@@ -5,31 +5,11 @@
 	<div id="zenario_tutorial_main_video" class="main_video">
 		{{zenarioA.microTemplate('zenario_tutorial_main_video', m)}}
 	</div>
-	<div class="other_videos">
+	<div id="zenario_tutorial_slideshow_container" class="other_videos">
 		<% if (m.videos.length) { %>
-			<!-- Jssor Slider Begin -->
-			<div id="zenario_tutorial_other_videos" class="organizer_slideshow">
-				<div class="zenario_slideshow_wrapper">
-					<!-- Loading Screen -->
-					<div u="loading" class="loading">
-						<div class="loading_background"></div>
-						<div class="loading_image"></div>
-					</div>
-					<!-- Slides Container -->
-					<div class="slides" u="slides">
-						{{zenarioA.microTemplate('zenario_tutorial_videos', m.videos)}}
-					</div>
-					
-					<!-- Arrow Left -->
-					<span u="arrowleft" class="arrowleft"></span>
-					<!-- Arrow Right -->
-					<span u="arrowright" class="arrowright"></span>
-					
-					<div id="navigator" u="navigator" class="bullet">
-						<div u="prototype"></div>
-					</div>
-				</div>
-			</div>
+			
+			{{zenarioA.microTemplate('zenario_tutorial_slideshow', m)}}
+			
 		<% } else { %>
 			<div class="no_other_videos">
 				<p>We are sorry there are no other videos currently available</p>
@@ -38,11 +18,9 @@
 	</div>
 	<div class="help_tour_outer">
 		<div class="help_tour_inner">
-			<p class="help_tour_message" style="padding-top: 14px;">
-				Use our quick help tour so you can get to know key functionality
-			</p>
+			<p class="help_tour_message">Use our quick help tour so you can get to know key functionality</p>
 			
-				<div class="auto_open_option" style="display: none;">
+				<div class="auto_open_option">
 					<input 
 						type="checkbox" 
 						id="zenario_show_help_tour_next_time" 

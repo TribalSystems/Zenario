@@ -2,14 +2,14 @@
 ---
 toolbars:
     preview:
-        ord: "10"
+        ord: 10
         label: Navigate
         tooltip: To navigate your site, use this mode
         page_mode: preview
         toolbar_microtemplate: zenario_toolbar_preview_tab
     menu1:
-        ord: "20"
-        priv: _PRIV_VIEW_MENU_ITEM
+        ord: 20
+        priv: _PRIV_EDIT_MENU_TEXT
         label: Menu
         tooltip: >
             Edit menu node text and work with the navigation hierarchy
@@ -17,36 +17,36 @@ toolbars:
         page_mode: menu
         toolbar_microtemplate: zenario_toolbar_menu_tab
     menu_secondary:
-        ord: ""
-        priv: _PRIV_VIEW_MENU_ITEM
-        label: ""
+        ord: 
+        priv: _PRIV_EDIT_MENU_TEXT
+        label: 
         css_class: zenario_at_menu_tab zenario_at_menu_tab_secondary
         page_mode: menu
         tooltip: Secondary menu node|Make changes to the navigation hierarchy
         toolbar_microtemplate: zenario_toolbar_menu_tab
     edit_disabled:
-        ord: "40"
+        ord: 40
         priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
         label: Edit
-        tooltip: Editing of this version is disabled because a draft version exists
+        tooltip: ''
         page_mode: edit_disabled
         toolbar_microtemplate: zenario_toolbar_edit_tab
     edit:
-        ord: "41"
+        ord: 41
         priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
         label: Edit
         tooltip: Edit this content item
         page_mode: edit
         toolbar_microtemplate: zenario_toolbar_edit_tab
     rollback:
-        ord: "42"
+        ord: 42
         priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
         label: Edit
         tooltip: Viewing a previous version of this content item
         page_mode: rollback
         toolbar_microtemplate: zenario_toolbar_edit_tab
     template:
-        ord: "50"
+        ord: 50
         priv: _PRIV_MANAGE_TEMPLATE_SLOT
         label: Layout
         tooltip: >
@@ -60,10 +60,10 @@ sections:
         buttons:
             id_and_name:
                 hidden: Yes
-                label: ""
+                label: 
             usage:
                 hidden: Yes
-                label: ""
+                label: 
             edit_grid:
                 priv: _PRIV_EDIT_TEMPLATE_FAMILY
                 hide_in_select_mode: Yes
@@ -89,7 +89,7 @@ sections:
                 label: Organize layouts...
                 tooltip: Define which skin this layout should use, and view other layouts
                 organizer_quick:
-                    path: ""
+                    path: 
                     target_path: zenario__layouts/panels/layouts
                     min_path: zenario__layouts/panels/layouts
                     max_path: No
@@ -99,10 +99,12 @@ sections:
         buttons:
             status_button:
                 css_class: zenario_at_status_button
-                label: ""
-                tooltip: ""
+                label: 
+                tooltip: 
             publish:
                 priv: _PRIV_PUBLISH_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 label: Publish
                 css_class: zenario_at_publish_button
                 admin_box:

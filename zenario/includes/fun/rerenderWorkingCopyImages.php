@@ -31,9 +31,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 set_time_limit(60 * 10);
 
 if ($jpegOnly) {
-	$mimeType = "('image/jpeg', 'image/pjpeg')";
+	$mimeType = "('image/jpeg')";
 } else {
-	$mimeType = "('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg')";
+	$mimeType = "('image/gif', 'image/png', 'image/jpeg')";
 }
 
 

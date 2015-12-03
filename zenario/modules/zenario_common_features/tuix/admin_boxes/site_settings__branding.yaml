@@ -42,14 +42,15 @@ site_settings:
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                         drag_and_drop: true
                     note_below: >
                         If your image is larger than 500×250 it will be scaled down to fit.
                     validation:
                         required_if_not_hidden: >
                             Please upload an image.
-                        must_be_gif_jpg_or_png: >
-                            The custom logo must be a .gif, .jpg or a .png file.
+                        must_be_image_or_svg: >
+                            The custom logo must be a .gif, .jpg, .png or a .svg file.
                 
                 admin_link_logo:
                     site_setting:
@@ -76,11 +77,12 @@ site_settings:
                             - .jpg
                             - .jpeg
                             - .png
+                            - .svg
                     validation:
                         required_if_not_hidden: >
                             Please upload an image.
-                        must_be_gif_jpg_or_png: >
-                            The custom logo must be a .gif, .jpg or a .png file.
+                        must_be_image_or_svg: >
+                            The admin login logo must be a .gif, .jpg, .png or a .svg file.
                     note_below: >
                         This image will be resized down if it is larger than 50×50 pixels in size.
         og:
@@ -131,12 +133,7 @@ site_settings:
                             - .png
                         drag_and_drop: true
                     note_below: >
-                        You should upload a .ico file for a favicon.
-                        (You can also use a .gif or a .png, however these will not display for visitors
-                         using Internet Explorer 10 or earlier.)
-                        The image should be either 16×16, 32×32, 48×48 or 64×64 pixels in size.
+                        You can upload a <code>.gif</code>, <code>.ico</code> or <code>.png</code> file.<br/>
                     validation:
-                        required_if_not_hidden: >
-                            Please upload a .gif, .ico or a .png file.
                         must_be_gif_ico_or_png: >
                             The favicon must be a .gif, .ico or a .png file.

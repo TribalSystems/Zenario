@@ -53,10 +53,7 @@ zenario_menu:
                                 :    get('parent_path_of__' + this.id).value + ' -> ' + this.value;
                 path_of__menu_title:
                     ord: 1003
-                    same_row: Yes
-                    pre_field_html: |
-                        <br/>
-                            Path:
+                    label: 'Path:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder

@@ -101,7 +101,7 @@ zenario__modules:
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 checksum:
                     db_column: img_f.checksum
                     table_join: |
@@ -111,7 +111,7 @@ zenario__modules:
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 mime_type:
                     server_side_only: true
                     db_column: img_f.mime_type
@@ -122,7 +122,7 @@ zenario__modules:
                         LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
                            ON img_f.id = img_ps.foreign_key_id
                           AND img_f.`usage` = 'image'
-                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                          AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             item:
                 name: Plugin
                 names: Plugins
@@ -131,10 +131,12 @@ zenario__modules:
                 create:
                     priv: _PRIV_MANAGE_REUSABLE_PLUGIN
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a plugin
                     only_show_on_refiner: plugin
                     admin_box:
                         path: plugin_settings
+                        create_another: true
             item_buttons:
                 edit:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN

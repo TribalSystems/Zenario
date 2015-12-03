@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_admin:
-    title: Creating a local administrator
     key:
         id: ""
         authtype: ""
@@ -16,7 +15,7 @@ zenario_admin:
                 desc:
                     full_width: true
                     snippet:
-                        html: "Use this screen to define a new administrator for this site."
+                        html: ''
                 image:
                     label: 'Image:'
                     upload:
@@ -108,7 +107,7 @@ zenario_admin:
                 desc:
                     full_width: true
                     snippet:
-                        html: "Use this screen to change this Admin's password."
+                        html: ""
                 password:
                     label: 'Password:'
                     type: password
@@ -144,20 +143,70 @@ zenario_admin:
                 format_on_revert: true
                 format_on_cancel_edit: true
             fields:
-                #desc:
-                #    full_width: true
-                #    snippet:
-                #        html: "Use this screen to set this Admin's permissions."
-                everything:
+                desc:
+                    full_width: true
+                    snippet:
+                        html: ""
+                permissions:
                     type: radios
                     values:
-                        everything:
-                            ord: 1
+                        all_permissions:
                             label: "This administrator has every possible permission"
-                        specific: 
-                            ord: 2
+                        specific_actions:
                             label: "This administrator has the following specific permissions:"
-                    value: specific
+                        specific_languages:
+                            label: "This administrator can edit content items in the following languages:"
+                        specific_menu_areas:
+                            label: "This administrator can edit content items under the following parts of the menu:"
+                    value: specific_actions
                     format_onchange: true
+                
+                
+                specific_actions:
+                    type: grouping
+                    name: specific_actions
+                
+                
+                specific_languages:
+                    visible_if: |
+                        zenarioAB.value('permissions') == 'specific_languages'
+                    full_width: true
+                    type: checkboxes
+                    cols: 2
+                
+                specific_content_items:
+                    visible_if: |
+                        zenarioAB.value('permissions') == 'specific_languages'
+                    label: 'And the following specific content items:'
+                    pick_items:
+                        path: zenario__content/panels/content
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        #one_to_one_choose_phrase:
+                        multiple_select: true
+                        #one_to_many_choose_phrase:
+                        select_phrase: Select a content item
+                        #nothing_selected_phrase:
+                        disallow_refiners_looping_on_min_path: true
+                
+                specific_menu_areas:
+                    visible_if: |
+                        zenarioAB.value('permissions') == 'specific_menu_areas'
+                    full_width: true
+                    pick_items:
+                        path: zenario__menu/panels/menu_position/refiners/only_existing////
+                        min_path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        max_path: zenario__menu/panels/menu_position
+                        #one_to_one_choose_phrase:
+                        multiple_select: true
+                        #one_to_many_choose_phrase:
+                        select_phrase: Select an area
+                        #nothing_selected_phrase:
+                        disallow_refiners_looping_on_min_path: true
+                    
+                    
+                    
                 
                 

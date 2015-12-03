@@ -32,6 +32,10 @@ sections:
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
+                priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                    && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
                 ord: 23
                 parent: alias_dropdown
                 label: Edit alias
@@ -42,6 +46,7 @@ sections:
                 css_class: zenario_at_icon_title
                 tooltip: ""
                 admin_box:
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                     path: zenario_content
             version_3:
                 ord: 50

@@ -221,6 +221,7 @@ class zenario_banner extends module_base_class {
 			}
 			
 			if (imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'))) {
+				
 				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
 					$this->clearCacheBy(
 						$clearByContent, $clearByMenu, $clearByUser, $clearByFile = true, $clearByModuleData);

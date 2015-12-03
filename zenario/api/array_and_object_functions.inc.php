@@ -28,6 +28,17 @@
 
 //	function arrayKey(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {}
 
+function arrayValuesToKeys($a) {
+	$o = array();
+	if (is_array($a)) {
+		foreach ($a as $k => &$v) {
+			//if (!is_array($v) && !is_object($v))
+			$o[$v] = true;
+		}
+	}
+	return $o;
+}
+
 function curl($URL, $post = false, $options = array(), $saveToFile = false) {
 	if (!$curl = @curl_init()) {
 		return false;
@@ -121,7 +132,7 @@ function explodeAndTrim($string, $mustBeNumeric = false, $separator = ',') {
 function explodeDecodeAndTrim($string, $separator = ',') {
 	$a = array();
 	foreach (explode($separator, $string) as $id) {
-		if ($id = decodeItemIdForStorekeeper(trim($id))) {
+		if ($id = decodeItemIdForOrganizer(trim($id))) {
 			$a[] = $id;
 		}
 	}

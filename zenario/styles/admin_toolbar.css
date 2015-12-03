@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2015, Tribal Limited
  * All rights reserved.
  * 
@@ -40,7 +40,7 @@
 	background-image:url('../admin/images/sprites/org-icons-v2.png');
 }
 
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
 	width: 22px;
@@ -55,7 +55,7 @@
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
-	background-image:url('../admin/images/password-protected-group-admin-toolbar-icon');
+	background-image:url('../admin/images/password-protected-group-admin-toolbar-icon.png');
 }
 
 #zenario_at_wrap {
@@ -742,11 +742,12 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 .zenario_at_button_with_children ul li a:hover {
-	color: #0581A4!important;
+	color: #43d4f4!important;
 }
 
 .zenario_at_button_with_children ul li span:hover {
-	color: #0581A4;
+	/*color: #0581A4;*/
+	color: #43d4f4;
 }
 
 #zenario_at ul ul {
@@ -794,6 +795,13 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at ul li.zenario_at_button_with_children a {
 	background:url('../admin/images/store_keeper/arrow-drodown-grey.png') no-repeat right 15px;
+}
+
+#zenario_at ul li.zenario_at_trans_dropdown__missing > a > span::after {
+    color: #ff5600;
+    font-size: 13px;
+    line-height: 13px;
+    content: '⚠';
 }
 
 #zenario_at ul li {
@@ -1500,32 +1508,6 @@ div.zenario_grid_overlay_view .row {
 	margin-left: 5px;
 	background-color: #393939;
 	
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_assets a,
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a,
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_users a,
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_flopro_products_manager a {
-	padding-left: 30px;
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_flopro_products_manager a {
-	
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_assets a {
-	background: url('../../zenario_extra_modules/assetwolf_asset_manager/adminstyles/images/assetwolf-left-bar-icon.png') #393939 no-repeat scroll left;
-	background-position: -5px -5px;
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_menu a {
-	background: url('../admin/images/menu-navigation-icon.png') #393939 no-repeat scroll left;
-	background-position: -5px 5px;
-}
-
-#zenario_at_top_left_menu ul li ul .zenario_at__goto_users a {
-	background: url('../admin/images/users-icon.png') no-repeat left;
-	background-position: -5px -5px;
 }
 
 #zenario_at_top_left_menu ul li ul li a:hover {

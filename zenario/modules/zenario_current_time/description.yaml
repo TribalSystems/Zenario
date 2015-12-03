@@ -1,0 +1,18 @@
+author_name: Zenario
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: Current Time
+description: |
+	<p>
+		This is module allows you insert a plugin in the front end to display the "current time" taking into account the user timezone.
+	</p>
+category: management
+keywords: time, timezone, current time, clock
+vlp_class_name: zenario_current_time
+css_class_name: zenario_current_time
+is_pluggable: true
+default_framework: standard
+dependencies:
+	zenario_timezones: true

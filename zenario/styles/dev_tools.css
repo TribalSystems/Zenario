@@ -46,9 +46,37 @@ body {
 	top: 0;
 	position: absolute;
 	background: #e0e0e0;
-	overflow: hidden;
 	height: 40px;
 }
+
+#toolbar div.ssh_links {
+	display: inline-block;
+    position: relative;
+    z-index: 999999;
+    cursor: pointer;
+    border: 1px #a0a0a0 dashed;
+}
+#toolbar div.ssh_links ul {
+	display: none;
+	position: absolute;
+	list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background: #eeeeee;
+    border: 1px #606060 solid;
+    border-top: none;
+}
+
+#toolbar div.ssh_links:hover ul {
+	display: block;
+}
+
+#toolbar div.ssh_links ul li {
+    margin: 0;
+    padding: 2px;
+    border-top: #606060 solid 1px;
+}
+
 #editor { 
 	top: 40px;
 	position: absolute;

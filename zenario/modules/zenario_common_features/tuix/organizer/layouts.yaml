@@ -163,6 +163,7 @@ zenario__layouts:
                     priv: _PRIV_EDIT_TEMPLATE_FAMILY
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a layout
                     hide_on_refiner:
                         module_usage: true
@@ -256,6 +257,19 @@ zenario__layouts:
                     label: View
                     multiple_select: true
                     hide_when_children_are_not_visible: true
+                preview:
+                    parent: view_dropdown
+                    label: Preview
+                    without_traits:
+                        unregistered: true
+                    visible_if_for_all_selected_items: >
+                        !zenario.engToBoolean(item.missing)
+                    popout: 
+                        href: zenario/admin/layout_preview.php
+                        iframe: true
+                        #preloading: false
+                        #open: true
+                        
                 code:
                     parent: view_dropdown
                     hide_in_select_mode: true

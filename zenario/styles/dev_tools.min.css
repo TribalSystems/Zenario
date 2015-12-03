@@ -1,5 +1,7 @@
-body{margin:0;padding:0;overflow:hidden}#toolbar,#editor{left:0;right:25%}#sidebar{left:75%;right:0}#toolbar{top:0;position:absolute;background:#e0e0e0;overflow:hidden;height:40px}
-#editor{top:40px;position:absolute;bottom:0}#sidebar{top:0;bottom:0;position:absolute;height:100%;background:#f0f0f0}#sidebar.sidebarEmpty{background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 25px,#d0d0d0 25px,#d0d0d0 50px)}
+body{margin:0;padding:0;overflow:hidden}#toolbar,#editor{left:0;right:25%}#sidebar{left:75%;right:0}#toolbar{top:0;position:absolute;background:#e0e0e0;height:40px}
+#toolbar div.ssh_links{display:inline-block;position:relative;z-index:999999;cursor:pointer;border:1px #a0a0a0 dashed}#toolbar div.ssh_links ul{display:none;position:absolute;list-style-type:none;margin:0;padding:0;background:#eee;border:1px #606060 solid;border-top:0}
+#toolbar div.ssh_links:hover ul{display:block}#toolbar div.ssh_links ul li{margin:0;padding:2px;border-top:#606060 solid 1px}#editor{top:40px;position:absolute;bottom:0}
+#sidebar{top:0;bottom:0;position:absolute;height:100%;background:#f0f0f0}#sidebar.sidebarEmpty{background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 25px,#d0d0d0 25px,#d0d0d0 50px)}
 #sidebar .sidepanel_title{font-weight:bold}.vscroll{height:100%;width:100%;overflow-x:auto;overflow-y:scroll}.ace_gutter-layer{min-width:65px}#toolbar select{width:auto}
 #toolbar .asterisk_explination{line-height:1em;font-size:.7em;font-style:italic;margin-left:75px}#sidebar .tagPath li.active{color:black}#sidebar div.description{max-height:50%;overflow-y:auto}
 #sidebar div.type,#sidebar div.required{margin:3px 0}#sidebar div.value,#sidebar div.properties,#sidebar div.additionalProperties{margin:0}#sidebar .properties_table td.property_name{text-align:right}

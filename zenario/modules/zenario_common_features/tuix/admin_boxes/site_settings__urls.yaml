@@ -61,20 +61,23 @@ site_settings:
                         zenarioA.multipleLanguagesEnabled()
                     site_setting:
                         name: translations_different_aliases
-                    label: 'Default behaviour for translations of content items:'
+                    label: 'Aliases:'
                     type: select
-                    empty_value: Translations all use the same Alias
+                    empty_value: Content items in a translation chain have the same alias
                     values:
-                        1: Translations may have different Aliases
+                        1: Content items in a translation chain may have different aliases
                     value: "1"
+                    note_below: |
+                        This setting is not retroactive;
+                        existing aliases will not be affected when you change it.
+                        
                 translations_hide_language_code:
                     visible_if: |
                         zenarioA.multipleLanguagesEnabled()
                         && !zenarioAB.value('mod_rewrite_slashes')
                     site_setting:
                         name: translations_hide_language_code
-                    same_row: true
-                    pre_field_html: '&nbsp; &nbsp;'
+                    full_width: true
                     type: select
                     empty_value: Always add the language code
                     values:

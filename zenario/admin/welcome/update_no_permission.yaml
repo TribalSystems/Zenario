@@ -1,0 +1,41 @@
+update_no_permission:
+    tab: 0
+    tabs:
+        0:
+            edit_mode:
+                enabled: true
+                on: true
+                always_on: true
+            fields:
+                blurb:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>This site has had a software update</h1>
+                            <p>
+                                Your site's database needs to be updated, but your administrator
+                                account doesn't have permission to authorise the updates.
+                            </p><p>
+                                Please check again in a few minutes.
+                                If this message persists, please contact a more senior administrator
+                                to apply updates to the database.
+                            </p>
+                admins_who_can_do_updates:
+                    full_width: true
+                    snippet:
+                        html: ''
+                    hidden: true
+                previous:
+                    value: "Return to site front-end"
+                    type: submit
+                    full_width: true
+                    style: |
+                        float: left;
+                    class: return_front_end
+                    same_row: false
+                check_again:
+                    value: Check again
+                    type: submit
+                    same_row: true
+                    style: |
+                        float: right;

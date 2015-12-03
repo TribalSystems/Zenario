@@ -138,6 +138,7 @@ zenario__locations:
 				searchable: Yes
 				format: enum
 				values:
+					pending: Pending
 					active: Active
 					suspended: Suspended
 				width: xsmall
@@ -179,7 +180,7 @@ zenario__locations:
 													WHERE cl.parent_id = l.id
 												) = 0,
 													'[Not in hierarchy]',
-													'[Top-level Location]'
+													'[Top-level location]'
 												),
 												pl.description
 											)
@@ -197,7 +198,7 @@ zenario__locations:
 												  AND cl.parent_id IS NOT NULL
 												  AND cl.parent_id != 0
 											)
-				title: Child Locations
+				title: Child locations
 				show_by_default: No
 			checksum:
 				db_column: f.checksum
@@ -227,14 +228,17 @@ zenario__locations:
 				ord: "999"
 		quick_filter_buttons:
 					all:
+						ord: 1
 						label: 'All'
 						column: status
 						remove_filter: true
 					active:
+						ord: 2
 						label: 'Active'
 						column: status
 						value: active
 					suspended:
+						ord: 3
 						label: 'Suspended'
 						column: status
 						value: suspended
@@ -254,6 +258,7 @@ zenario__locations:
 				hide_in_select_mode: Yes
 				admin_box:
 					path: zenario_location_manager__location
+					create_another: true
 			add_location:
 				priv: _PRIV_MANAGE_LOCATIONS
 				ord: "1"
@@ -279,7 +284,7 @@ zenario__locations:
 				pick_items:
 					path: zenario__locations/panel
 					one_to_one_choose_phrase: Add child
-					one_to_many_choose_phrase: Add Child Locations
+					one_to_many_choose_phrase: Add child locations
 					target_path: zenario__locations/panel
 					min_path: zenario__locations/panel
 					max_path: zenario__locations/panel
@@ -289,13 +294,13 @@ zenario__locations:
 			# User dataset import buttons
 			import_dropdown:
 				label: Import
-				hide_in_select_mode: true
 				hide_when_children_are_not_visible: true
 				ord: 999998
 			import:
 				priv: _PRIV_MANAGE_LOCATIONS
 				label: Start import wizard
 				parent: import_dropdown
+				hide_on_filter: true
 				hide_in_select_mode: true
 				admin_box:
 					path: zenario_import
@@ -305,6 +310,7 @@ zenario__locations:
 				priv: _PRIV_MANAGE_LOCATIONS
 				label: Download sample file
 				parent: import_dropdown
+				hide_on_filter: true
 				hide_in_select_mode: true
 				admin_box:
 					path: zenario_download_sample_file
@@ -313,7 +319,6 @@ zenario__locations:
 			export:
 				priv: _PRIV_EXPORT_LOCATIONS
 				label: Export
-				hide_in_select_mode: true
 				admin_box:
 					path: zenario_export_dataset
 					key:
@@ -345,23 +350,6 @@ zenario__locations:
 				navigation_path: Yes
 				without_traits:
 					not_in_hierarchy: Yes
-			activate:
-				priv: _PRIV_MANAGE_LOCATIONS
-				label: Activate
-				hide_in_select_mode: Yes
-				ord: "1"
-				multiple_select: Yes
-				traits:
-					suspended: Yes
-				ajax:
-					confirm:
-						message: 'Are you sure you wish to activate the Location "[[description]]"?'
-						multiple_select_message: Are you sure you wish to activate the selected Locations?
-						button_message: Activate
-						cancel_button_message: Cancel
-						message_type: warning
-					request:
-						action: activate_location
 			
 			action_dropdown:
 				label: Actions
@@ -371,48 +359,72 @@ zenario__locations:
 				label: Show
 				multiple_select: Yes
 				hide_when_children_are_not_visible: Yes
+			mark_as_pending:
+				priv: _PRIV_MANAGE_LOCATIONS
+				parent: action_dropdown
+				label: Mark as pending
+				hide_in_select_mode: Yes
+				multiple_select: Yes
+				visible_if_for_all_selected_items: |
+					item.status === 'active' || item.status === 'suspended'
+				ajax:
+					confirm:
+						message: 'Are you sure you wish to mark the location "[[description]]" as pending?'
+						multiple_select_message: Are you sure you wish mark the selected locations as pending?
+						button_message: Mark as pending
+						cancel_button_message: Cancel
+						message_type: warning
+					request:
+						action: mark_location_as_pending
+			activate:
+				priv: _PRIV_MANAGE_LOCATIONS
+				parent: action_dropdown
+				label: Activate
+				hide_in_select_mode: Yes
+				multiple_select: Yes
+				visible_if_for_all_selected_items: |
+					item.status === 'pending' || item.status === 'suspended'
+				ajax:
+					confirm:
+						message: 'Are you sure you wish to activate the location "[[description]]"?'
+						multiple_select_message: Are you sure you wish to activate the selected locations?
+						button_message: Activate
+						cancel_button_message: Cancel
+						message_type: warning
+					request:
+						action: activate_location
 			suspend:
 				priv: _PRIV_MANAGE_LOCATIONS
 				parent: action_dropdown
 				label: Suspend
 				hide_in_select_mode: Yes
-				ord: "1"
 				multiple_select: Yes
-				traits:
-					active: Yes
+				visible_if_for_all_selected_items: |
+					item.status === 'pending' || item.status === 'active'
 				ajax:
 					confirm:
-						message: 'Are you sure you wish to suspend the Location "[[description]]"?'
+						message: 'Are you sure you wish to suspend the location "[[description]]"?'
 						multiple_select_message: Are you sure you wish to suspend the selected locations?
 						button_message: Suspend
 						cancel_button_message: Cancel
 						message_type: warning
 					request:
 						action: suspend_location
-			delete_locations:
-				priv: _PRIV_MANAGE_LOCATIONS
-				parent: action_dropdown
-				label: Delete
-				multiple_select: Yes
-				multiple_select_only: Yes
-				ajax:
-					confirm:
-						button_message: Delete
-						cancel_button_message: Cancel
-						message_type: warning
-						message: |
-							Are you sure you wish to delete the selected locations?
-														
-														If any of the select locations have child locations, these will be made orphans.
-					request:
-						action: delete_locations
-				hide_in_select_mode: Yes
 			delete_location:
 				priv: _PRIV_MANAGE_LOCATIONS
 				parent: action_dropdown
 				label: Delete
+				multiple_select: Yes
 				ajax:
 					confirm:
+						message: |
+							Are you sure you wish to delete the selected location?
+							
+							If this location has child locations, these will be made orphans.
+						multiple_select_message: |
+							Are you sure you wish to delete the selected locations?
+							
+							If any of the selected locations have child locations, these will be made orphans.
 						button_message: Delete
 						cancel_button_message: Cancel
 						message_type: warning

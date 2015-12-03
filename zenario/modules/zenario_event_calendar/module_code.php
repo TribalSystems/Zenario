@@ -854,7 +854,7 @@ class zenario_event_calendar extends module_base_class {
 		 && empty($box['tabs']['calendar']['fields']['canvas']['hidden'])) {
 			if ($values['calendar/canvas'] == 'fixed_width') {
 				$box['tabs']['each_item']['fields']['width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} else {
 				unset($box['tabs']['each_item']['fields']['width']['note_below']);
@@ -863,7 +863,7 @@ class zenario_event_calendar extends module_base_class {
 			if ($values['calendar/canvas'] == 'fixed_height'
 			 || $values['calendar/canvas'] == 'fixed_width_and_height') {
 				$box['tabs']['calendar']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} elseif ($values['calendar/canvas'] == 'resize_and_crop') {
 				$box['tabs']['calendar']['fields']['height']['note_below'] =

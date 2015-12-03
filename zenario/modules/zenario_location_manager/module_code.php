@@ -102,282 +102,304 @@ class zenario_location_manager extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
-		if ($path=="zenario__content/panels/content") {
-			if (isset($_GET['refiner__zenario__locations__create_content'])
-			 && isset($panel['collection_buttons']['create']['admin_box'])) {
-				$panel['collection_buttons']['create']['admin_box']['path'] = 'zenario_content';
-				$panel['title'] = 'Content items of the type "HTML page"';
-			}
-			
-		} elseif ($path=="zenario__locations/panel") {
-			// Add dataset ID to import button
-			$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-			if (isset($panel['collection_buttons']['import'])) {
-				$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = $dataset['id'];
-			}
-			if (isset($panel['collection_buttons']['donwload_sample_file'])) {
-				$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = $dataset['id'];
-			}
-			if (isset($panel['collection_buttons']['export'])) {
-				$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = $dataset['id'];
+		switch ($path) {
+			case 'zenario__content/panels/content':
+				if (isset($_GET['refiner__zenario__locations__create_content'])
+					&& isset($panel['collection_buttons']['create']['admin_box'])
+				) {
+					$panel['collection_buttons']['create']['admin_box']['path'] = 'zenario_content';
+					$panel['title'] = 'Content items of the type "HTML page"';
+				}
+				break;
+				
+			case 'zenario__locations/panel':
+				
+				// Hide pending button if pending state not enabled
+				if (!setting('zenario_location_manager__enable_pending_status')) {
+					unset($panel['item_buttons']['mark_as_pending']);
+				// Otherwise show a pending quick filter button
+				} else {
+					$panel['quick_filter_buttons']['pending'] = array(
+						'label' => 'Pending',
+						'column' => 'status',
+						'value' => 'pending',
+						'ord' => 1.5
+					);
+				}
+				
+				// Add dataset ID to import button
+				$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
+				$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
+				$panel['collection_buttons']['donwload_sample_file']['admin_box']['key']['dataset'] = 
+				$panel['collection_buttons']['export']['admin_box']['key']['dataset'] = 
+					$dataset['id'];
+				
 				// If no locations, hide export button
 				if (count($panel['items']) <= 0) {
 					$panel['collection_buttons']['export']['hidden'] = true;
 				}
-			}
-			
-			
-			
-			$admins = array();
-			$adminsRaw = getRows("admins",array("id","username","authtype"),array("status" => "active"));
-			if (sqlNumRows($adminsRaw)>0) {
-				while ($admin = sqlFetchArray($adminsRaw)) {
-					$admins[$admin['id']] = $admin['username'];
-					
-					if ($admin['authtype']=="super") {
-						$admins[$admin['id']] .= " (super)";
-					}
-				}
-			}
-
-			$panel['columns']['last_updated_by']['values'] = $admins;
-
-			foreach ($panel['items'] as $id => &$item) {
-				$item['cell_css_classes'] = array();
-				$item['label'] = $item['description'] . " " . $item['city'] . " " . $item['country'];
-				$item['traits'][$item['status']] = true;
 				
-				$locationDetails = self::getLocationDetails($id);
-
-				if ($item['status'] == 'active') {
-					$item['cell_css_classes']['status'] = "green";
-				} else {
-					$item['cell_css_classes']['status'] = "brown";
-				}
-				
-				if (!issetArrayKey($locationDetails,"parent_id") && !checkRowExists(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",array("parent_id" => $id))) {
-					$item['traits']['not_in_hierarchy'] = true;
-				}
-				
-				if ($item['checksum']) {
-					$img = '&usage=location&c='. $item['checksum'];
-					
-					$item['image'] = 'zenario/file.php?og=1'. $img;
-					$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
-				}
-				
-				$locationHierarchyPathAndDeepLinks = self::getLocationHierarchyPathAndDeepLinks($id);
-				
-				$item['path'] = $locationHierarchyPathAndDeepLinks['path'];
-				
-				$deeplinkFrag = $locationHierarchyPathAndDeepLinks['link'];
-				
-				$deeplinkFrag = substr($deeplinkFrag,0,strrpos($deeplinkFrag,"item//")) . substr($deeplinkFrag,strrpos($deeplinkFrag,"item//") + 6);
-				
-				$item['navigation_path'] = "zenario__locations/panel/hierarchy/item//hierarchy" . $deeplinkFrag;
-				
-			}
-			
-			if (setting("zenario_location_manager__sector_management")!="2") {
-				unset($panel['item_buttons']['view_location_sectors']);
-			}
-
-			if (setting("zenario_location_manager__hierarchy_levels")==0) {
-				unset($panel['item_buttons']['view_in_hierarchy']);
-			}
-			
-			if ($refinerName=="sector_locations") {
-				if ($sector = $this->getSectorDetails ($refinerId)) {
-					$panel['title'] = "Locations in the sector \"" . $sector['name'] . "\"";
-				}
-
-				$panel['no_items_message'] = "There are no locations in this sector.";
-
-				if (issetArrayKey($panel,"item_buttons","activate")) {
-					unset($panel['item_buttons']['activate']);
-				}
-
-				if (issetArrayKey($panel,"item_buttons","suspend")) {
-					unset($panel['item_buttons']['suspend']);
-				}
-
-				if (issetArrayKey($panel,"item_buttons","upload_image")) {
-					unset($panel['item_buttons']['upload_image']);
-				}
-
-				if (issetArrayKey($panel,"item_buttons","suspend")) {
-					unset($panel['item_buttons']['suspend']);
-				}
-
-				unset($panel['item']['link']);
-
-				$panel['item_buttons']['remove_location']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the Location "[[description]]" from the Sector "[[name]]"?', $sector);
-				$panel['item_buttons']['remove_location']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Locations from the Sector "[[name]]"?', $sector);
-
-				unset($panel['collection_buttons']['create_location']);
-			} elseif ($refinerName=='children_of_location') {
-				foreach ($panel['item_buttons'] as $K => $button) {
-					switch ($K) {
-						case 'remove_location':
-							unset($panel['item_buttons'][$K]);
-							break;
-					}
-				}
-				foreach ($panel['collection_buttons'] as $K => $button) {
-					switch ($K) {
-						case 'add_child_location':
-							break;
-						default:
-							unset($panel['collection_buttons'][$K]);
-							break;
-					}
-				}
-				
-				unset($panel['item_buttons']['view_in_hierarchy']);
-				
-				$panel['no_items_message'] = 'This location has no child locations.';
-				$location = $this->getLocationDetails($refinerId);
-				$panel['title']="Child locations of \"" . $location['description'] . "\"";
-				$panel['item']['tooltip'] = adminPhrase("View this location's child locations");
-				$panel['item']['link']['path'] = "zenario__locations/panel";
-				$panel['item']['link']['branch'] = "Yes";
-				$panel['item']['link']['refiner'] = "children_of_location";
-
-				$level = $this->exploreTreeUp($refinerId) + 1;
-				$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
-				if (($level > $maxLevels ) && (arrayKey($panel,'collection_buttons','add_child_location'))) {
-					unset($panel['collection_buttons']['add_child_location']);
-				} 
-				$panel['item_buttons']['set_parent']['name'] = 'Assign location a new parent';
-				$panel['item_buttons']['set_parent']['combine_items']['one_to_one_choose_phrase'] = 'Assign parent Location';
-				if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
-					unset($panel['item_buttons']['set_parent']);
-				}
-			} elseif ($refinerName=='parent_locations') {
-				foreach ($panel['item_buttons'] as $K => $button) {
-					switch ($K) {
-						case 'remove_location':
-							unset($panel['item_buttons'][$K]);
-							break;
-					}
-				}
-				foreach ($panel['collection_buttons'] as $K => $button) {
-					switch ($K) {
-						case 'add_child_location':
-							break;
-						default:
-							unset($panel['collection_buttons'][$K]);
-							break;
-					}
-				}
-
-				unset($panel['item_buttons']['view_in_hierarchy']);
-
-				$panel['title']='Top level locations with child locations';
-				$panel['no_items_in_search_message'] = 'No hierarchy of locations exists. Make a location a child of another location for something to appear here.';
-				$panel['item']['link']['path'] = "zenario__locations/panel";
-				$panel['item']['link']['branch'] = "Yes";
-				$panel['item']['link']['refiner'] = "children_of_location";
-				$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
-				if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
-					unset($panel['item_buttons']['set_parent']);
-				}
-			} else {
-				if ($panel['item']['link']["path"] == "zenario__locations/panel" && $panel['item']['link']["refiner"] == "children_of_location"){
-					unset($panel['item']['link']);
-				}
-
-				$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
-				if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
-					unset($panel['item_buttons']['set_parent']);
-				}
-				if (issetArrayKey($panel,"item_buttons","remove_location")) {
-					unset($panel['item_buttons']['remove_location']);
-				}
-			}
-		} elseif ($path=="zenario__locations/nav/sectors/panel") {
-			if (!$refinerName || $refinerName=="sub_sectors") {
-				unset($panel['collection_buttons']['add_sector']);
-				unset($panel['item_buttons']['remove_sector']);
-				unset($panel['item_buttons']['increase_score']);
-				unset($panel['item_buttons']['decrease_score']);
-				
-				if ($refinerName=="sub_sectors") {
-					if ($sector = $this->getSectorDetails($refinerId)) {
-						$panel['title'] = "Sub-sectors of \"" . $sector['name'] . "\"";
-						//unset($panel['item']['link']);
-					}
-				}
-			}
-		} elseif ($path=="zenario__locations/location_sectors/panel") {
-			if ($refinerName=="location_sectors") {
-				if ($locationSectors = $this->getLocationSectors($refinerId)) {
-					$stickyCounter = 0;
-					$topLevelSectorCount = 0;
-					foreach ($locationSectors as $locationSector) {
-						$sector = $this->getSectorDetails($locationSector);
-						$locationSectorDetails = $this->getLocationSectorDetails($refinerId,$locationSector);
+				$admins = array();
+				$adminsRaw = getRows("admins",array("id","username","authtype"),array("status" => "active"));
+				if (sqlNumRows($adminsRaw)>0) {
+					while ($admin = sqlFetchArray($adminsRaw)) {
+						$admins[$admin['id']] = $admin['username'];
 						
-						if ($sector['parent_id']==0) {
-							$topLevelSectorCount++;
-						}
-						
-						if ($locationSectorDetails['sticky_flag']) {
-							$stickyCounter++;
+						if ($admin['authtype']=="super") {
+							$admins[$admin['id']] .= " (super)";
 						}
 					}
+				}
+	
+				$panel['columns']['last_updated_by']['values'] = $admins;
+	
+				foreach ($panel['items'] as $id => &$item) {
+					$item['cell_css_classes'] = array();
+					$item['label'] = $item['description'] . " " . $item['city'] . " " . $item['country'];
+					
+					$locationDetails = self::getLocationDetails($id);
+	
+					if ($item['status'] == 'active') {
+						$item['cell_css_classes']['status'] = "green";
+					} elseif ($item['status'] == 'pending') {
+						$item['cell_css_classes']['status'] = "orange";
+					} else {
+						$item['cell_css_classes']['status'] = "brown";
+					}
+					
+					if (!issetArrayKey($locationDetails,"parent_id") && !checkRowExists(ZENARIO_LOCATION_MANAGER_PREFIX . "locations",array("parent_id" => $id))) {
+						$item['traits']['not_in_hierarchy'] = true;
+					}
+					
+					if ($item['checksum']) {
+						$img = '&usage=location&c='. $item['checksum'];
+						
+						$item['image'] = 'zenario/file.php?og=1'. $img;
+						$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
+					}
+					
+					$locationHierarchyPathAndDeepLinks = self::getLocationHierarchyPathAndDeepLinks($id);
+					
+					$item['path'] = $locationHierarchyPathAndDeepLinks['path'];
+					
+					$deeplinkFrag = $locationHierarchyPathAndDeepLinks['link'];
+					
+					$deeplinkFrag = substr($deeplinkFrag,0,strrpos($deeplinkFrag,"item//")) . substr($deeplinkFrag,strrpos($deeplinkFrag,"item//") + 6);
+					
+					$item['navigation_path'] = "zenario__locations/panel/hierarchy/item//hierarchy" . $deeplinkFrag;
+					
 				}
 				
 				if (setting("zenario_location_manager__sector_management")!="2") {
-					unset($panel['item_buttons']['remove']);
-					unset($panel['collection_buttons']['add']);
+					unset($panel['item_buttons']['view_location_sectors']);
+				}
+	
+				if (setting("zenario_location_manager__hierarchy_levels")==0) {
+					unset($panel['item_buttons']['view_in_hierarchy']);
 				}
 				
-				foreach ($panel['items'] as $id => &$item) {
-					$locationSector = $this->getLocationSectorDetails($refinerId,$id);
-					$sector = $this->getSectorDetails($id);
-
-					$item['traits']['can_delete'] = "Yes";
-					$item['traits']['not_sticky'] = "No";
-					
-					if ($locationSector['score_id']<5) {
-						$item['traits']['not_at_max'] = "Yes";
+				if ($refinerName=="sector_locations") {
+					if ($sector = self::getSectorDetails($refinerId)) {
+						$panel['title'] = "Locations in the sector \"" . $sector['name'] . "\"";
 					}
-					
-					if ($locationSector['score_id']>1) {
-						$item['traits']['not_at_min'] = "Yes";
+	
+					$panel['no_items_message'] = "There are no locations in this sector.";
+	
+					if (issetArrayKey($panel,"item_buttons","activate")) {
+						unset($panel['item_buttons']['activate']);
 					}
-
-					if ($item['sticky']==1 && !$sector['parent_id'] && $stickyCounter==1) {
-						if (!$sector['parent_id'] && $topLevelSectorCount>1) {
-							$item['traits']['can_delete'] = "No";
+	
+					if (issetArrayKey($panel,"item_buttons","suspend")) {
+						unset($panel['item_buttons']['suspend']);
+					}
+	
+					if (issetArrayKey($panel,"item_buttons","upload_image")) {
+						unset($panel['item_buttons']['upload_image']);
+					}
+	
+					if (issetArrayKey($panel,"item_buttons","suspend")) {
+						unset($panel['item_buttons']['suspend']);
+					}
+	
+					unset($panel['item']['link']);
+	
+					$panel['item_buttons']['remove_location']['ajax']['confirm']['message'] = adminPhrase('Are you sure you wish to remove the Location "[[description]]" from the Sector "[[name]]"?', $sector);
+					$panel['item_buttons']['remove_location']['ajax']['confirm']['multiple_select_message'] = adminPhrase('Are you sure you wish to remove the selected Locations from the Sector "[[name]]"?', $sector);
+	
+					unset($panel['collection_buttons']['create_location']);
+				} elseif ($refinerName=='children_of_location') {
+					foreach ($panel['item_buttons'] as $K => $button) {
+						switch ($K) {
+							case 'remove_location':
+								unset($panel['item_buttons'][$K]);
+								break;
+						}
+					}
+					foreach ($panel['collection_buttons'] as $K => $button) {
+						switch ($K) {
+							case 'add_child_location':
+								break;
+							default:
+								unset($panel['collection_buttons'][$K]);
+								break;
 						}
 					}
 					
-
-					if (($item['sticky']==0 && !$sector['parent_id'] && $topLevelSectorCount>1) || $stickyCounter>1) {
-						$item['traits']['not_sticky'] = "Yes";
+					unset($panel['item_buttons']['view_in_hierarchy']);
+					
+					$panel['no_items_message'] = 'This location has no child locations.';
+					$location = self::getLocationDetails($refinerId);
+					$panel['title']="Child locations of \"" . $location['description'] . "\"";
+					$panel['item']['tooltip'] = adminPhrase("View this location's child locations");
+					$panel['item']['link']['path'] = "zenario__locations/panel";
+					$panel['item']['link']['branch'] = "Yes";
+					$panel['item']['link']['refiner'] = "children_of_location";
+	
+					$level = $this->exploreTreeUp($refinerId) + 1;
+					$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
+					if (($level > $maxLevels ) && (arrayKey($panel,'collection_buttons','add_child_location'))) {
+						unset($panel['collection_buttons']['add_child_location']);
+					} 
+					$panel['item_buttons']['set_parent']['name'] = 'Assign location a new parent';
+					$panel['item_buttons']['set_parent']['combine_items']['one_to_one_choose_phrase'] = 'Assign parent Location';
+					if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
+						unset($panel['item_buttons']['set_parent']);
 					}
-					
-					if ($item['label_name']) {
-						$item['label_name'] .= " (Score " . $item['score'] . ")";
-					
+				} elseif ($refinerName=='parent_locations') {
+					foreach ($panel['item_buttons'] as $K => $button) {
+						switch ($K) {
+							case 'remove_location':
+								unset($panel['item_buttons'][$K]);
+								break;
+						}
 					}
-					
-					$pathArray = self::getSectorPath($id);
-					
-					$item['path'] = implode(" -> ",array_reverse($pathArray));
+					foreach ($panel['collection_buttons'] as $K => $button) {
+						switch ($K) {
+							case 'add_child_location':
+								break;
+							default:
+								unset($panel['collection_buttons'][$K]);
+								break;
+						}
+					}
+	
+					unset($panel['item_buttons']['view_in_hierarchy']);
+	
+					$panel['title']='Top level locations with child locations';
+					$panel['no_items_in_search_message'] = 'No hierarchy of locations exists. Make a location a child of another location for something to appear here.';
+					$panel['item']['link']['path'] = "zenario__locations/panel";
+					$panel['item']['link']['branch'] = "Yes";
+					$panel['item']['link']['refiner'] = "children_of_location";
+					$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
+					if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
+						unset($panel['item_buttons']['set_parent']);
+					}
+				} else {
+					if ($panel['item']['link']["path"] == "zenario__locations/panel" && $panel['item']['link']["refiner"] == "children_of_location"){
+						unset($panel['item']['link']);
+					}
+	
+					$maxLevels = (int) setting('zenario_location_manager__hierarchy_levels');
+					if ($maxLevels==0 && issetArrayKey($panel,'item_buttons','set_parent')) {
+						unset($panel['item_buttons']['set_parent']);
+					}
+					if (issetArrayKey($panel,"item_buttons","remove_location")) {
+						unset($panel['item_buttons']['remove_location']);
+					}
+				}
+				break;
+				
+			case 'zenario__locations/nav/sectors/panel':
+				
+				if(!checkPriv('_PRIV_MANAGE_LOCATIONS')){
+					$panel['no_items_message']="No sectors defined.";
 				}
 				
-				unset($panel['collection_buttons']['create_sector']);
-				unset($panel['item_buttons']['delete_sector']);
-				unset($panel['item_buttons']['rename_sector']);
-				
-				if ($location = $this->getLocationDetails($refinerId)) {
-					$panel['title'] = "Sectors associated with \"" . $location['description'] . "\"";
+				if (!$refinerName || $refinerName=="sub_sectors") {
+					unset($panel['collection_buttons']['add_sector']);
+					unset($panel['item_buttons']['remove_sector']);
+					unset($panel['item_buttons']['increase_score']);
+					unset($panel['item_buttons']['decrease_score']);
+					
+					if ($refinerName=="sub_sectors") {
+						if ($sector = self::getSectorDetails($refinerId)) {
+							$panel['title'] = "Sub-sectors of \"" . $sector['name'] . "\"";
+							//unset($panel['item']['link']);
+						}
+					}
 				}
-			}
-		} 
+				break;
+				
+			case 'zenario__locations/location_sectors/panel':
+				if ($refinerName=="location_sectors") {
+					if ($locationSectors = self::getLocationSectors($refinerId)) {
+						$stickyCounter = 0;
+						$topLevelSectorCount = 0;
+						foreach ($locationSectors as $locationSector) {
+							$sector = self::getSectorDetails($locationSector);
+							$locationSectorDetails = self::getLocationSectorDetails($refinerId,$locationSector);
+							
+							if ($sector['parent_id']==0) {
+								$topLevelSectorCount++;
+							}
+							
+							if ($locationSectorDetails['sticky_flag']) {
+								$stickyCounter++;
+							}
+						}
+					}
+					
+					if (setting("zenario_location_manager__sector_management")!="2") {
+						unset($panel['item_buttons']['remove']);
+						unset($panel['collection_buttons']['add']);
+					}
+					
+					foreach ($panel['items'] as $id => &$item) {
+						$locationSector = self::getLocationSectorDetails($refinerId,$id);
+						$sector = self::getSectorDetails($id);
+	
+						$item['traits']['can_delete'] = "Yes";
+						$item['traits']['not_sticky'] = "No";
+						
+						if ($locationSector['score_id']<5) {
+							$item['traits']['not_at_max'] = "Yes";
+						}
+						
+						if ($locationSector['score_id']>1) {
+							$item['traits']['not_at_min'] = "Yes";
+						}
+	
+						if ($item['sticky']==1 && !$sector['parent_id'] && $stickyCounter==1) {
+							if (!$sector['parent_id'] && $topLevelSectorCount>1) {
+								$item['traits']['can_delete'] = "No";
+							}
+						}
+						
+	
+						if (($item['sticky']==0 && !$sector['parent_id'] && $topLevelSectorCount>1) || $stickyCounter>1) {
+							$item['traits']['not_sticky'] = "Yes";
+						}
+						
+						if ($item['label_name']) {
+							$item['label_name'] .= " (Score " . $item['score'] . ")";
+						
+						}
+						
+						$pathArray = self::getSectorPath($id);
+						
+						$item['path'] = implode(" -> ",array_reverse($pathArray));
+					}
+					
+					unset($panel['collection_buttons']['create_sector']);
+					unset($panel['item_buttons']['delete_sector']);
+					unset($panel['item_buttons']['rename_sector']);
+					
+					if ($location = self::getLocationDetails($refinerId)) {
+						$panel['title'] = "Sectors associated with \"" . $location['description'] . "\"";
+					}
+				}
+				break;
+		}
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
@@ -393,7 +415,7 @@ class zenario_location_manager extends module_base_class {
 				}
 
 				if ($box['key']['id']) {
-					$locationDetails = $this->getLocationDetails($box['key']['id']);
+					$locationDetails = self::getLocationDetails($box['key']['id']);
                   
                  	$box['title'] = adminPhrase('Editing the location "[[name]]"',array('name' => $locationDetails['description']));
                     $box['tabs']['images']['fields']['images']['value'] = inEscape(self::locationsImages($box['key']['id']), 'numeric');
@@ -406,7 +428,7 @@ class zenario_location_manager extends module_base_class {
                     $box['tabs']['details']['fields']['state']['value'] = $locationDetails['state'];
                     $box['tabs']['details']['fields']['postcode']['value'] = $locationDetails['postcode'];
                     $box['tabs']['details']['fields']['country']['value'] = $locationDetails['country_id'];
-					if ($region = $this->getInmostLocationRegion($box['key']['id'])){
+					if ($region = self::getInmostLocationRegion($box['key']['id'])){
 						$box['tabs']['details']['fields']['region']['value'] = $region;
 					}
 					$box['tabs']['details']['fields']['map_center_lat']['value'] = $locationDetails['map_center_latitude'];
@@ -508,7 +530,7 @@ class zenario_location_manager extends module_base_class {
 					$ids = explode(",",$box['key']['id']);
 					
 					foreach ($ids as $id) {
-						if ($region = $this->getInmostLocationRegion($id)){
+						if ($region = self::getInmostLocationRegion($id)){
 							if (!$previousRegion) {
 								$previousRegion = $region;
 							} else {
@@ -611,7 +633,7 @@ class zenario_location_manager extends module_base_class {
 				}
 			
 				if ($box['key']['id']) {
-					$sectorDetails = $this->getSectorDetails($box['key']['id']);
+					$sectorDetails = self::getSectorDetails($box['key']['id']);
                   
                  	$box['title'] = adminPhrase('Editing the sector "[[name]]"',array('name' => $sectorDetails['name']));
                         
@@ -625,7 +647,7 @@ class zenario_location_manager extends module_base_class {
 				break;
 			case "zenario_location_manager__score":
 				if ($box['key']['id']) {
-					$scoreDetails = $this->getScoreDetails($box['key']['id']);
+					$scoreDetails = self::getScoreDetails($box['key']['id']);
                     
                     $box['tabs']['details']['fields']['name']['value'] = $scoreDetails['name'];
 				}
@@ -779,7 +801,7 @@ class zenario_location_manager extends module_base_class {
 			case "zenario_location_manager__sector":
 				if ($box['tabs']['details']['edit_mode']['on']) {
 					if ($values['details/name']) {
-						if (!$this->checkSectorNameUnique($values['details/name'],$box['key']['id'],$box['key']['parent_id'])) {
+						if (!self::checkSectorNameUnique($values['details/name'],$box['key']['id'],$box['key']['parent_id'])) {
 							$box['tabs']['details']['errors']['name_not_unique'] = "You must enter a unique Name";
 						}
 					}
@@ -788,7 +810,7 @@ class zenario_location_manager extends module_base_class {
 			case "zenario_location_manager__score":
 				if ($box['tabs']['details']['edit_mode']['on']) {
 					if ($values['details/name']) {
-						if (!$this->checkScoreNameUnique($values['details/name'],$box['key']['id'])) {
+						if (!self::checkScoreNameUnique($values['details/name'],$box['key']['id'])) {
 							$box['tabs']['details']['errors']['name_not_unique'] = "You must enter a unique Name";
 						}
 					}
@@ -820,106 +842,94 @@ class zenario_location_manager extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_location_manager__location":
-					exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
-					$saveValues = array();
+				exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 				
-					if (!$values['details/marker_lat']) {
-						$values['details/marker_lat'] = null;
-					}
-
-					if (!$values['details/marker_lng']) {
-						$values['details/marker_lng'] = null;
-					}
-
-					if (!$values['details/map_center_lat']) {
-						$values['details/map_center_lat'] = null;
-					}
-
-					if (!$values['details/map_center_lng']) {
-						$values['details/map_center_lng'] = null;
-					}
-
-					if (!$values['details/zoom']) {
-						$values['details/zoom'] = null;
-					}
+				$saveValues = array(
+					'external_id' => $values['details/external_id'],
+					'description' => $values['details/name'],
+					'address1' => $values['details/address_line_1'],
+					'address2' => $values['details/address_line_2'],
+					'locality' => $values['details/locality'],
+					'city' => $values['details/city'],
+					'state' => $values['details/state'],
+					'postcode' => $values['details/postcode'],
+					'country_id' => $values['details/country'] ? $values['details/country'] : null,
+					'latitude' => $values['details/marker_lat'] ? $values['details/marker_lat'] : null,
+					'longitude' => $values['details/marker_lng'] ? $values['details/marker_lng'] : null,
+					'hide_pin' => $values['details/hide_pin'],
+					'map_center_latitude' => $values['details/map_center_lat'] ? $values['details/map_center_lat'] : null,
+					'map_center_longitude' => $values['details/map_center_lng'] ? $values['details/map_center_lng'] : null,
+					'map_zoom' => $values['details/zoom'] ? $values['details/zoom'] : null,
+					'last_updated' => now(),
+					'last_updated_admin_id' => adminId()
+				);
+				
+				// Save content item details
+				$saveValues['equiv_id'] = null;
+				$saveValues['content_type'] = null;
+				if (!empty($values['content_item/content_item'])) {
+					$cID = $cType = false;
+					getCIDAndCTypeFromTagId($cID, $cType, $values['content_item/content_item']);
+					$equivID = equivId($cID, $cType);
 					
-					$saveValues['external_id'] = $values['details/external_id'];
-					$saveValues['description'] = $values['details/name'];
-					$saveValues['address1'] = $values['details/address_line_1'];
-					$saveValues['address2'] = $values['details/address_line_2'];
-					$saveValues['locality'] = $values['details/locality'];
-					$saveValues['city'] = $values['details/city'];
-					$saveValues['state'] = $values['details/state'];
-					$saveValues['postcode'] = $values['details/postcode'];
-					$saveValues['country_id'] = ($values['details/country']?$values['details/country']:null);
-					$saveValues['latitude'] = $values['details/marker_lat'];
-					$saveValues['longitude'] = $values['details/marker_lng'];
-					$saveValues['hide_pin'] = $values['details/hide_pin'];
-					$saveValues['map_center_latitude'] = $values['details/map_center_lat'];
-					$saveValues['map_center_longitude'] = $values['details/map_center_lng'];
-					$saveValues['map_zoom'] = $values['details/zoom'];
-					if (isset($values['content_item/content_item']) && $values['content_item/content_item']) {
-						$contentItemArray = explode("_", $values['content_item/content_item']);
-						if (count($contentItemArray)==2) {
-							$contentItemArray[1] = equivId($contentItemArray[1], $contentItemArray[0]);
-							$saveValues['equiv_id'] = $contentItemArray[1];
-							$saveValues['content_type'] = $contentItemArray[0];
-						}
+					$saveValues['equiv_id'] = $equivID;
+					$saveValues['content_type'] = $cType;
+				}
+				
+				// Save location
+				if (!$box['key']['id']) {
+					$box['key']['id'] = self::createLocation($saveValues);
+				} else {
+					setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));
+				}
+				
+				// Add regions to location
+				if ($values['details/country'] && $values['details/region']){
+					self::addRegionToLocation($values['details/region'],$box['key']['id']);
+				} else {
+					self::removeAllRegionsFromLocation($box['key']['id']);
+				}
+				
+				// Add sectors to location
+				if (engToBooleanArray($box, 'tabs', 'sectors', 'edit_mode', 'on')) {
+					if (!empty($values['sectors/sectors'])) {
+						$this->setLocationSectors($box['key']['id'], explode(',', $values['sectors/sectors']));
 					} else {
-						$saveValues['equiv_id'] = null;
-						$saveValues['content_type'] = null;
+						deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('location_id' => $box['key']['id']));
 					}
-					$saveValues['last_updated'] = now();
-					$saveValues['last_updated_admin_id'] = session('admin_userid');
-
-					$box['key']['id'] = $locationId = setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "locations", $saveValues, array("id" => $box['key']['id']));			
-
-					if ($values['details/country'] && $values['details/region']){
-						$this->addRegionToLocation($values['details/region'],$locationId);
-					} else {
-						$this->removeAllRegionsFromLocation($locationId);
-					}
-					
-					if (engToBooleanArray($box, 'tabs', 'sectors', 'edit_mode', 'on')) {
-						if (!empty($values['sectors/sectors'])) {
-							$this->setLocationSectors($locationId, explode(',', $values['sectors/sectors']));
+				}
+				
+				// Save location images
+				if (engToBooleanArray($box['tabs']['images'], 'edit_mode', 'on') && isset($values['images/images'])) {
+				
+					$ord = 0;
+					$sticky = 1;
+					$usedImages = array();
+					foreach (explode(',', $values['images/images']) as $image) {
+						$image_id = 0;
+						if ($filepath = getPathOfUploadedFileInCacheDir($image)) {
+							$image_id = self::addImage($box['key']['id'], $filepath);
 						} else {
-							deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('location_id' => $locationId));
-						}
-					}
-					
-					
-					//Images saving
-					if (engToBooleanArray($box['tabs']['images'], 'edit_mode', 'on') && isset($values['images/images'])) {
-					
-						$ord = 0;
-						$sticky = 1;
-						$usedImages = array();
-						foreach (explode(',', $values['images/images']) as $image) {
-							$image_id = 0;
-							if ($filepath = getPathOfUploadedFileInCacheDir($image)) {
-								$image_id = self::addImage($box['key']['id'], $filepath);
-							} else {
-								$image_id = (int) $image;
-							}
-							
-							if ($image_id) {
-								$usedImages[$image_id] = true;
-								setRow(
-									ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
-									array('ordinal' => ++$ord, 'sticky_flag' => $sticky), 
-									array('image_id' => $image_id, 'location_id' => $box['key']['id'])
-								);
-								$sticky = 0;
-							}
+							$image_id = (int) $image;
 						}
 						
-						foreach (self::locationsImages($box['key']['id']) as $image_id) {
-							if (empty($usedImages[$image_id])) {
-								self::deleteImage($box['key']['id'], $image_id);
-							}
+						if ($image_id) {
+							$usedImages[$image_id] = true;
+							setRow(
+								ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images', 
+								array('ordinal' => ++$ord, 'sticky_flag' => $sticky), 
+								array('image_id' => $image_id, 'location_id' => $box['key']['id'])
+							);
+							$sticky = 0;
 						}
 					}
+					
+					foreach (self::locationsImages($box['key']['id']) as $image_id) {
+						if (empty($usedImages[$image_id])) {
+							self::deleteImage($box['key']['id'], $image_id);
+						}
+					}
+				}
 				
 				break;
 			case "zenario_location_manager__locations_multiple_edit":
@@ -960,9 +970,9 @@ class zenario_location_manager extends module_base_class {
 							$fieldsToChangeSQL[] = "country_id = '" . ($values['details/country']?$values['details/country']:null) . "'";
 							$locationIds = explode(",",$box['key']['id']);
 							foreach ($locationIds as $locationId) {
-								$locationDetails = $this->getLocationDetails($box['key']['id']);
+								$locationDetails = self::getLocationDetails($box['key']['id']);
 								if(!($values['details/country'] == $locationDetails['country_id'])) {
-									$this->removeAllRegionsFromLocation($locationId);
+									self::removeAllRegionsFromLocation($locationId);
 								}
 							}
 						}
@@ -972,9 +982,9 @@ class zenario_location_manager extends module_base_class {
 						
 							foreach ($locationIds as $locationId) {
 								if ($values['details/region']){
-									$this->addRegionToLocation($values['details/region'],$locationId);
+									self::addRegionToLocation($values['details/region'],$locationId);
 								} else {
-									$this->removeAllRegionsFromLocation($locationId);
+									self::removeAllRegionsFromLocation($locationId);
 								}
 							}
 						}
@@ -1133,32 +1143,31 @@ class zenario_location_manager extends module_base_class {
 				} elseif (!empty($_POST['action'])) {
 					switch ($_POST['action']){
 						case 'delete_location':
-						case 'delete_locations':
 							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
-								if (($rv = self::deleteLocation($ID))!=''){
-									echo htmlspecialchars($rv);
-								}
-								updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>null),array('parent_id'=>(int)$ID));
+								self::deleteLocation($ID);
+							}
+							break;
+						case 'mark_location_as_pending':
+							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
+							$IDs = explode(',',$ids);
+							foreach ($IDs as $ID){
+								self::markLocationAsPending($ID);
 							}
 							break;
 						case 'activate_location':
 							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
-								if (($rv = $this->activateLocation($ID))!=''){
-									echo htmlspecialchars($rv);
-								}
+								self::activateLocation($ID);
 							}
 							break;
 						case 'suspend_location':
 							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							$IDs = explode(',',$ids);
 							foreach ($IDs as $ID){
-								if (($rv = $this->suspendLocation($ID))!=''){
-									echo htmlspecialchars($rv);
-								}
+								self::suspendLocation($ID);
 							}
 							break;
 						case 'add_location':
@@ -1166,7 +1175,7 @@ class zenario_location_manager extends module_base_class {
 							if ($refinerName=="sector_locations") {
 								$IDs = explode(',',$ids);
 								foreach ($IDs as $ID){
-									$this->addLocationToSector($ID,$refinerId);
+									self::addLocationToSector($ID,$refinerId);
 								}
 							}
 							break;
@@ -1175,7 +1184,7 @@ class zenario_location_manager extends module_base_class {
 							if ($refinerName=="sector_locations") {
 								$IDs = explode(',',$ids);
 								foreach ($IDs as $ID){
-									$this->removeLocationFromSector($ID,$refinerId);
+									self::removeLocationFromSector($ID,$refinerId);
 								}
 							}
 							break;
@@ -1256,9 +1265,7 @@ class zenario_location_manager extends module_base_class {
 					case 'delete_sector':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
-							if (($rv = $this->deleteSector($ID))!=''){
-								echo htmlspecialchars($rv);
-							}
+							self::deleteSector($ID);
 						}
 						break;
 				}
@@ -1267,25 +1274,19 @@ class zenario_location_manager extends module_base_class {
 					case 'remove_sector':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
-							if (($rv = $this->removeSector($refinerId,$ID))!=''){
-								echo htmlspecialchars($rv);
-							}
+							self::removeSector($refinerId, $ID);
 						}
 						break;
 					case 'increase_score':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
-							if (($rv = $this->changeScore($refinerId,$ID,"increase"))!=''){
-								echo htmlspecialchars($rv);
-							}
+							self::changeScore($refinerId,$ID,"increase");
 						}
 						break;
 					case 'decrease_score':
 						$IDs = explode(',',$ids);
 						foreach ($IDs as $ID){
-							if (($rv = $this->changeScore($refinerId,$ID,"decrease"))!=''){
-								echo htmlspecialchars($rv);
-							}
+							self::changeScore($refinerId,$ID,"decrease");
 						}
 						break;
 					case 'add_sector':
@@ -1394,77 +1395,6 @@ class zenario_location_manager extends module_base_class {
 				</html>';
 	}
 
-	public static function matchLocationsByName($like=''){
-		$rv = array();
-		$sql = "SELECT 
-					id,
-					description,
-					address1,
-					address2,
-					locality,
-					city,
-					state,
-					postcode,
-					country_id,
-					latitude,
-					longitude,
-					map_zoom,
-					map_center_latitude,
-					map_center_longitude,
-					equiv_id,
-					content_type
-				FROM "
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
-				WHERE " . 
-					($like? "description like '%" . sqlEscape($like) . "%' " :' true ');
-					
-		if (sqlNumRows($result = sqlQuery($sql))>=1){
-			while ($row = sqlFetchArray($result)) {
-				$rv[] = $row;
-			}
-		}
-		return $rv;
-	}
-
-	function getLocationsFromCountry ($iso2,$status='active') {
-		$sql = "SELECT id,
-					description,
-					address1,
-					address2,
-					locality,
-					city,
-					state,
-					postcode,
-					country_id,
-					country_id as country,
-					latitude,
-					longitude,
-					map_zoom,
-					map_center_latitude,
-					map_center_longitude,
-					status
-				FROM " 
-					. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations
-				WHERE 
-						country_id = '" . sqlEscape($iso2) . "'";
-
-		if ($status){
-			$sql .= " AND status = '" . sqlEscape($status) . "'" ;
-		}
-				
-		$result = sqlQuery($sql);
-		
-		if (sqlNumRows($result)>0) {
-			while ($row = sqlFetchArray($result)) {
-				$locations[] = $row;
-			}
-			
-			return $locations;
-		} else {
-			return false;
-		}
-	}
-
 	public static function getLocationHierarchyPathAndDeepLinks ($locationId,$output=array("path" => "","link" => ""),$pathSeparator=" -> ",$linkSeparator="//item//",$recurseCount=0) {
 		$locationDetails = self::getLocationDetails($locationId);
 		
@@ -1535,86 +1465,7 @@ class zenario_location_manager extends module_base_class {
 		return $rv;
 	}
 	
-	static function getLocations($status='active'){
-		$rv = array();
-		$sql = 'SELECT id,
-					description,
-					address1,
-					address2,
-					locality,
-					city,
-					state,
-					postcode,
-					country_id,
-					latitude,
-					longitude,
-					map_zoom,
-					map_center_latitude,
-					map_center_longitude,
-					status,
-					equiv_id,
-					content_type
-				FROM ' 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations ';
-
-		if ($status){
-			$sql .= " WHERE
-						status = '" . sqlEscape($status) . "'" ;
-		}
-					
-		if (sqlNumRows($result = sqlQuery($sql))>=1){
-			while ($row = sqlFetchArray($result)) {
-				$rv[] = $row;
-			}
-		}
-		return $rv;
-	}
-	
-	static function getSectorLocationsFromSectorName ($sectorName,$status='active') {
-		$rv = array();
-		$sql = 'SELECT l.id,
-					description,
-					address1,
-					address2,
-					locality,
-					city,
-					state,
-					postcode,
-					country_id,
-					latitude,
-					longitude,
-					map_zoom,
-					map_center_latitude,
-					map_center_longitude,
-					status,
-					equiv_id,
-					content_type
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS l
-				INNER JOIN ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link AS lssl
-					ON l.id = lssl.location_id
-				INNER JOIN ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors AS s
-					ON lssl.sector_id = s.id
-				WHERE 
-					s.name = "' . sqlEscape($sectorName) . '"';
-
-		if ($status){
-			$sql .= " AND
-						status = '" . sqlEscape($status) . "'" ;
-		}
-				
-		$sql .='	
-				ORDER 
-					BY description ASC';
-				
-		if (sqlNumRows($result = sqlQuery($sql))>=1){
-			while ($row = sqlFetchArray($result)) {
-				$rv[] = $row;
-			}
-		}
-		return $rv;
-	}
-	
-	static function getLocationDetails($ID){
+	public static function getLocationDetails($ID){
 		$rv = array();
 		$sql = 'SELECT id,
 					parent_id,
@@ -1659,7 +1510,7 @@ class zenario_location_manager extends module_base_class {
 		return $rv;
 	}
 	
-	static function getLocationIdFromContentItem ($cID, $cType) {
+	public static function getLocationIdFromContentItem ($cID, $cType) {
 		if (!$cID || !$cType) {
 			return false;
 		}
@@ -1693,28 +1544,8 @@ class zenario_location_manager extends module_base_class {
 			return false;
 		}
 	}
-
-	static function getOrphanSectorsIndexedByIdOrderedByName(){
-		$rv = array();
-		$sql = "SELECT 
-					id,
-					parent_id,
-					name
-				FROM " 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors 
-				WHERE 
-						parent_id IS NULl 
-					OR  parent_id =''
-				ORDER BY 
-					name";
-		$result = sqlQuery($sql);
-		while ($row = sqlFetchAssoc($result)){
-			$rv[$row['id']]=$row;
-		}
-		return $rv;
-	}
 	
-	static function getChildSectorsIndexedByIdOrderedByName($parentId=0){
+	public static function getChildSectorsIndexedByIdOrderedByName($parentId=0){
 		$rv = array();
 		$sql = "SELECT 
 					id,
@@ -1733,7 +1564,7 @@ class zenario_location_manager extends module_base_class {
 		return $rv;
 	}
 
-	public function getInmostLocationRegion($locationId){
+	public static function getInmostLocationRegion($locationId){
 		$sql = "
 				SELECT 
 					l1.region_id
@@ -1767,43 +1598,10 @@ class zenario_location_manager extends module_base_class {
 		}
 	}
 
-	static function matchSectorsByName($like=''){
+	public static function getSectorDetails($ID){
 		$rv = array();
-		$sql = "SELECT 
-					id,
+		$sql = 'SELECT 
 					parent_id,
-					name
-				FROM " 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors 
-				WHERE 
-					" . ($like?" name like '%" . sqlEscape($like) . "%'":" true");
-		$result = sqlQuery($sql);
-		while ($row = sqlFetchAssoc($result)){
-			$rv[$row['id']]=$row;
-		}
-		return $rv;
-	}
-
-	static function getSectorByName($name){
-		$rv = array();
-		$sql = "SELECT 
-					id,
-					parent_id,
-					name
-				FROM " 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors 
-				WHERE 
-					name ='" . sqlEscape($name) . "'";
-		$result = sqlQuery($sql);
-		if ($row = sqlFetchAssoc($result)){
-			$rv=$row;
-		}
-		return $rv;
-	}
-
-	static function getSectorDetails($ID){
-		$rv = array();
-		$sql = 'SELECT parent_id,
 					name
 				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors ';
 		$sql .= 'WHERE id = ' . (int) $ID;
@@ -1813,12 +1611,11 @@ class zenario_location_manager extends module_base_class {
 		return $rv;
 	}
 
-	static function getSectorPath ($id,$recurseCount=0,$sectorArray=array()) {
+	public static function getSectorPath($ID, $recurseCount = 0, $sectorArray=array()) {
 		++$recurseCount;
 		
-		
 		if ($recurseCount<=10) {
-			$sector = self::getSectorDetails($id);
+			$sector = self::getSectorDetails($ID);
 		
 			$sectorArray[] = $sector['name'];
 			
@@ -1830,7 +1627,7 @@ class zenario_location_manager extends module_base_class {
 		return $sectorArray;
 	}
 
-	static function getScoreDetails($ID){
+	public static function getScoreDetails($ID){
 		$rv = array();
 		$sql = 'SELECT name
 				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'scores ';
@@ -1841,12 +1638,12 @@ class zenario_location_manager extends module_base_class {
 		return $rv;
 	}
 
-	static function getLocationSectors ($locationId) {
+	public static function getLocationSectors($locationID) {
 		$sectors = array();
 		
 		$sql = "SELECT sector_id
 				FROM " .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
-				WHERE location_id = " . (int) $locationId;
+				WHERE location_id = " . (int) $locationID;
 				
 		$result = sqlQuery($sql);
 		
@@ -1860,67 +1657,64 @@ class zenario_location_manager extends module_base_class {
 			return false;
 		}
 	}
-
-	static function getLocationStickySectorDetails($locationId){
+	
+	public static function getLocationSectorDetails($locationID, $sectorID){
 		$rv = array();
 		$sql = 'SELECT 
-					lnk.score_id,
-					lnk.sticky_flag,
-					s.name
-				FROM ' 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link lnk
-				INNER JOIN ' 
-					.DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'sectors s
-				ON 
-					lnk.sector_id = s.id
-				WHERE 
-						lnk.location_id = ' . (int) $locationId . '
-					AND lnk.sticky_flag = 1';
-		$result = sqlQuery($sql);
-		if ($row = sqlFetchAssoc($result) ){
-			$rv = $row;
-		} 
-		return $rv;
-	}
-	
-	static function getLocationSectorDetails($locationId,$sectorId){
-		$rv = array();
-		$sql = 'SELECT score_id,
+					score_id,
 					sticky_flag
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link ';
-		$sql .= 'WHERE location_id = ' . (int) $locationId . '
-					AND sector_id = ' . (int) $sectorId;
+				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				WHERE location_id = ' . (int) $locationID . '
+					AND sector_id = ' . (int) $sectorID;
 		if (sqlNumRows($result = sqlQuery($sql))==1){
 			$rv = sqlFetchAssoc($result);
 		}
 		return $rv;
 	}
-	static function getPrimarySectorDetails($locationId){
-		$stickySector = getRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', array('location_id' => $locationId, 'sticky_flag' => 1));
+	
+	// Still used on choosewhere
+	public static function getPrimarySectorDetails($locationID){
+		$stickySector = getRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', 'sector_id', array('location_id' => $locationID, 'sticky_flag' => 1));
 		return $stickySector;
 	}
-	static function getScoreSectorDetails($locationId,$sectorId){
+	
+	// Still used on choosewhere
+	public static function getScoreSectorDetails($locationID, $sectorID){
 		$sql = 'SELECT score_id
-				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link ';
-		$sql .= 'WHERE location_id = ' . (int) $locationId . '
-					AND sector_id = ' . (int) $sectorId;
+				FROM ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
+				WHERE location_id = ' . (int) $locationID . '
+					AND sector_id = ' . (int) $sectorID;
 		if (sqlNumRows($result = sqlQuery($sql))==1){
 			return sqlFetchAssoc($result);
-		} else {
-			return false;
 		}
+		return false;
 	}
 
-	static function getLocationImageCount ($locationId) {
-		$sql = "SELECT count(*) 
-				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_images
-				WHERE location_id = " . (int) $locationId;
-				
-		$result = sqlQuery($sql);
+	
+	// Create a new location
+	public static function createLocation($details, $customDetails = array()) {
 		
-		$row = sqlFetchArray($result);
+		// When creating a new location, set status as pending if setting is set
+		if (setting('zenario_location_manager__enable_pending_status')) {
+			$details['status'] = 'pending';
+		}
 		
-		return $row[0];
+		// Insert new location
+		$locationID = insertRow(
+			ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
+			$details
+		);
+		
+		// Add any custom dataset fields
+		if ($customDetails) {
+			$customDetails['location_id'] = $locationID;
+			insertRow(
+				ZENARIO_LOCATION_MANAGER_PREFIX . 'locations_custom_data', 
+				$customDetails
+			);
+		}
+		
+		return $locationID;
 	}
 	
 	public static function deleteLocation($ID){
@@ -1933,7 +1727,7 @@ class zenario_location_manager extends module_base_class {
 		
 	}
 
-	function activateLocation($ID){
+	public static function activateLocation($ID){
 		$sql = "UPDATE
 					 " .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
 				SET
@@ -1943,7 +1737,7 @@ class zenario_location_manager extends module_base_class {
 		sqlQuery($sql);
 	}
 
-	function suspendLocation($ID){
+	public static function suspendLocation($ID){
 		$sql = "UPDATE
 					" .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
 				SET
@@ -1952,8 +1746,18 @@ class zenario_location_manager extends module_base_class {
 					id=" . (int)$ID;
 		sqlQuery($sql);
 	}
+	
+	public static function markLocationAsPending($ID) {
+		$sql = "UPDATE
+					" .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "locations 
+				SET
+					status='pending'
+				WHERE 
+					id=" . (int)$ID;
+		sqlQuery($sql);
+	}
 
-	function deleteSector($ID,$recurseCount=0){
+	public static function deleteSector($ID, $recurseCount = 0){
 		$recurseCount++;
 	
 		if ($recurseCount>10) {
@@ -1971,14 +1775,14 @@ class zenario_location_manager extends module_base_class {
 		
 		if (sizeof($childSectors)>0) {
 			foreach ($childSectors as $id => $childSector) {
-				$this->deleteSector($id,$recurseCount);
+				self::deleteSector($id,$recurseCount);
 			}
 		}
 
 		sendSignal('eventSectorDeleted', array("sectorId" => $ID));
 	}
 
-	function removeSector($locationId,$sectorId=false){
+	public static function removeSector($locationId,$sectorId=false){
 		$sql = "SELECT id
 				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
 				WHERE parent_id = " . (int) $sectorId;
@@ -2007,11 +1811,11 @@ class zenario_location_manager extends module_base_class {
 		sqlQuery($sql);
 	}
 
-	function changeScore($locationId,$sectorId,$mode){
+	public static function changeScore($locationID, $sectorID, $mode){
 		$sql = "SELECT score_id
 				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
-				WHERE location_id = ' . (int) $locationId . '
-					AND sector_id = ' . (int) $sectorId;
+				WHERE location_id = ' . (int) $locationID . '
+					AND sector_id = ' . (int) $sectorID;
 					
 		$result = sqlQuery($sql);
 		
@@ -2021,8 +1825,8 @@ class zenario_location_manager extends module_base_class {
 			if ($row[0]<5) {
 				$sql = 'UPDATE ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 						SET score_id = score_id + 1
-						WHERE location_id = ' . (int) $locationId . '
-							AND sector_id = ' . (int) $sectorId;
+						WHERE location_id = ' . (int) $locationID . '
+							AND sector_id = ' . (int) $sectorID;
 			}
 		}
 	
@@ -2030,57 +1834,55 @@ class zenario_location_manager extends module_base_class {
 			if ($row[0]>1) {
 				$sql = 'UPDATE ' .DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link
 						SET score_id = score_id - 1
-						WHERE location_id = ' . (int) $locationId . '
-							AND sector_id = ' . (int) $sectorId;
+						WHERE location_id = ' . (int) $locationID . '
+							AND sector_id = ' . (int) $sectorID;
 			}
 		}
-					
+		
 		sqlQuery($sql);
 	}
 	
-	function checkSectorNameUnique($name,$id,$parentId) {
+	public static function checkSectorNameUnique($name, $ID, $parentID) {
 		$sql = "SELECT 
 					id
 				FROM " 
 					. DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "sectors
 				WHERE 
 						name = '" . sqlEscape($name) . "' ";
-		if ((int)$parentId){
-			$sql .=" AND	parent_id = " . (int) $parentId;
+		if ((int)$parentID){
+			$sql .=" AND	parent_id = " . (int) $parentID;
 		}
 		
-		if ($id) {
-			$sql .= " AND id <> " . (int) $id;
+		if ($ID) {
+			$sql .= " AND id <> " . (int) $ID;
 		}
 		
 		$result = sqlQuery($sql);
 		
 		if (sqlNumRows($result)>0) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 	
-	function checkScoreNameUnique ($name,$id) {
+	public static function checkScoreNameUnique($name, $ID) {
 		$sql = "SELECT id
 				FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "scores
 				WHERE name = '" . sqlEscape($name) . "'";
 		
-		if ($id) {
-			$sql .= " AND id <> " . (int) $id;
+		if ($ID) {
+			$sql .= " AND id <> " . (int) $ID;
 		}
 		
 		$result = sqlQuery($sql);
 		
 		if (sqlNumRows($result)>0) {
 			return false;
-		} else {
-			return true;
 		}
+		return true;
 	}
 	
-	static function handleMediaUpload($filename, $maxSize, $locationId) {
+	public static function handleMediaUpload($filename, $maxSize, $locationId) {
 		$error = array();
 		if (arrayKey($_FILES,$filename)) {
 			if (is_uploaded_file($_FILES[$filename]['tmp_name'])) {
@@ -2134,30 +1936,39 @@ class zenario_location_manager extends module_base_class {
 		sqlQuery($sql);
 	}
 	
-	public function addLocationToSector ($locationId,$sectorId,$recurseCount = 0) {
+	public static function addLocationToSector($locationId, $sectorId, $recurseCount = 0) {
 		$recurseCount++;
-	
+		
 		if ($recurseCount>20) {
 			echo "Recursed out of control. Exiting";
 			exit;
 		}
-
+		
 		$stickyFlag = 1;
 		
 		if ($locationSectors = self::getLocationSectors($locationId)) {
 			$stickyFlag = 0;
 		}
 		
-		setRow(ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",array("location_id" => $locationId, "sector_id" => $sectorId, "score_id" => 3, "sticky_flag" => $stickyFlag),array("location_id" => $locationId, "sector_id" => $sectorId));
+		setRow(
+			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
+			array(
+				"location_id" => $locationId, 
+				"sector_id" => $sectorId, 
+				"score_id" => 3, 
+				"sticky_flag" => $stickyFlag
+			),
+			array("location_id" => $locationId, "sector_id" => $sectorId)
+		);
 		
 		$sectorDetails = self::getSectorDetails($sectorId);
 		
 		if (issetArrayKey($sectorDetails,"parent_id")) {
-			$this->addLocationToSector($locationId,$sectorDetails['parent_id'],$recurseCount);
+			self::addLocationToSector($locationId, $sectorDetails['parent_id'], $recurseCount);
 		}
 	}
 
-	public function addRegionToLocation($regionId, $locationId, $recurseCount=0) {
+	public static function addRegionToLocation($regionId, $locationId, $recurseCount=0) {
 		$recurseCount++;
 		
 		if ($recurseCount==1) {
@@ -2191,7 +2002,7 @@ class zenario_location_manager extends module_base_class {
 			exit;
 		}
 	
-		$sector = $this->getSectorDetails($sectorId);
+		$sector = self::getSectorDetails($sectorId);
 		
 		$sql = "REPLACE INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link
 				SET location_id = " . (int) $locationId . ",
@@ -2224,7 +2035,7 @@ class zenario_location_manager extends module_base_class {
 		deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_sector_score_link', array('location_id' => $locationId));
 
 		foreach ($sectors as $value) {
-			$sector = $this->getSectorDetails($value);
+			$sector = self::getSectorDetails($value);
 			
 			if (!$oldStickyFlag){
 				if ($sector['parent_id']) {
@@ -2245,29 +2056,38 @@ class zenario_location_manager extends module_base_class {
 		}
 	}
 
-	public function removeLocationFromSector ($locationId,$sectorId,$recurseCount = 0) {
+	public static function removeLocationFromSector($locationId, $sectorId, $recurseCount = 0) {
 		$recurseCount++;
-	
+		
 		if ($recurseCount>20) {
 			echo "Recursed out of control. Exiting";
 			exit;
 		}
-
-		deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",array("location_id" => $locationId, "sector_id" => $sectorId));
-
-		if ($result = getRows(ZENARIO_LOCATION_MANAGER_PREFIX . "sectors",array("id"),array("parent_id" => $sectorId))) {
+		
+		deleteRow(
+			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
+			array("location_id" => $locationId, "sector_id" => $sectorId)
+		);
+		
+		$result = getRows(
+			ZENARIO_LOCATION_MANAGER_PREFIX . "sectors",
+			array("id"),
+			array("parent_id" => $sectorId)
+		);
+		
+		if ($result) {
 			while ($row = sqlFetchAssoc($result)) {
-				$this->removeLocationFromSector($locationId,$row['id'],$recurseCount);
+				self::removeLocationFromSector($locationId,$row['id'],$recurseCount);
 			}
 		}
 	}
 
-	public function removeAllRegionsFromLocation($locationId){
+	public static function removeAllRegionsFromLocation($locationID){
 		
 		$sql = "DELETE FROM 
 					" . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . "location_region_link 
 				WHERE
-					location_id = " . (int) $locationId;
+					location_id = " . (int) $locationID;
 		sqlQuery($sql);
 	}
 	
@@ -2282,8 +2102,20 @@ class zenario_location_manager extends module_base_class {
 		}
 	}
 
-	public static function eventLocationDeleted ($locationId) {
-		deleteRow(ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",array("location_id" => $locationId));
+	public static function eventLocationDeleted ($locationID) {
+		
+		// Remove parent_id from any child locations
+		updateRow(
+			ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',
+			array('parent_id' => null),
+			array('parent_id' => $locationID)
+		);
+		
+		// Delete sector score links
+		deleteRow(
+			ZENARIO_LOCATION_MANAGER_PREFIX . "location_sector_score_link",
+			array("location_id" => $locationID)
+		);
 	}
 
 	public static function eventSectorDeleted ($sectorId) {
@@ -2320,7 +2152,8 @@ class zenario_location_manager extends module_base_class {
 				return array('can_filter' => false);
 			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
 				return array(
-					'active' => 'Active', 
+					'pending' => 'Pending',
+					'active' => 'Active',
 					'suspended' => 'Suspended'
 				);
 		}

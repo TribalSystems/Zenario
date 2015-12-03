@@ -355,8 +355,8 @@ zenario.lib(function(
 		});
 	};
 	
-	zenarioA.showTutorial = function(nav, auto) {
 	
+	zenarioA.showTutorial = function(nav, auto) {
 		if (!nav && zenarioO.currentTopLevelPath) {
 			nav = zenarioO.currentTopLevelPath.substr(0, zenarioO.currentTopLevelPath.indexOf('/'));
 		}
@@ -365,47 +365,52 @@ zenario.lib(function(
 				videos: [],
 				show_help_tour_next_time: zenarioA.show_help_tour_next_time,
 				auto: auto
-			};
+			},
+			key, topLevelItem, video;
 		
 		// Get all tutorial videos
-		for (var key in zenarioO.map) {
-			if (zenarioO.map.hasOwnProperty(key) 
-				&& typeof(zenarioO.map[key]) == 'object'
-				&& zenarioO.map[key].youtube_video_id
-			) {
+		foreach (zenarioO.map as key => topLevelItem) {
+			if (topLevelItem
+			 && topLevelItem.youtube_video_id) {
 				videos[key] = {
-					id: zenarioO.map[key].youtube_video_id,
-					title: zenarioO.map[key].youtube_thumbnail_title
+					id: topLevelItem.youtube_video_id,
+					title: topLevelItem.youtube_thumbnail_title
 				};
 			}
 		}
 		
 		// If there is a video for the current nav
+		var index = 0;
 		if (nav && videos[nav]) {
 			
 			// Put videos in array with current nav first
 			m.main_video_id = videos[nav].id;
 			m.main_video_title = videos[nav].title;
+			
+			videos[nav].index = index++;
+			videos[nav].selected = true;
+			
 			m.videos.push(videos[nav]);
-			delete videos[nav];
+			delete(videos[nav]);
 		}
 		
 		// Add other videos
-		for (var key in videos) {
-			if (videos.hasOwnProperty(key)) {
-				m.videos.push(videos[key]);
-			}
+		foreach (videos as key => video) {
+			video.index = index++;
+			m.videos.push(video);
 		}
 		
-		if(auto == true && m.main_video_id == undefined) {
+		if (auto == true && m.main_video_id == undefined) {
 			return;
 		}
-			
+		
 		// Open tutorial
 		var html = zenarioA.microTemplate('zenario_tutorial', m);
 		$.colorbox({
 			width: 964,
 			height: 791,
+			innerHeight: 696,
+			maxHeight: '95%',
 			html: html,
 			className: 'zenario_tutorial_cbox',
 			overlayClose: false,
@@ -413,51 +418,71 @@ zenario.lib(function(
 			onComplete: function() {
 				if (m.videos.length > 0) {
 					// Init slideshow
-					var options = {
-						$FillMode: 1,
-						$SlideDuration: 300,                                //[Optional] Specifies default duration (swipe) for slide in milliseconds, default value is 500
-						$MinDragOffsetToSlide: 20,                          //[Optional] Minimum drag offset to trigger slide , default value is 20
-						$SlideWidth: 200,                                   //[Optional] Width of every slide in pixels, default value is width of 'slides' container
-						$SlideHeight: 150,                                //[Optional] Height of every slide in pixels, default value is height of 'slides' container
-						$SlideSpacing: 75, 					                //[Optional] Space between each slide in pixels, default value is 0
-						$DisplayPieces: 3,                                  //[Optional] Number of pieces to display (the slideshow would be disabled if the value is set to greater than 1), the default value is 1
-						$ParkingPosition: 0,                              //[Optional] The offset position to park slide (this options applys only when slideshow disabled), default value is 0.
-						$UISearchMode: 1,                                   //[Optional] The way (0 parellel, 1 recursive, default value is 1) to search UI components (slides container, loading screen, navigator container, arrow navigator container, thumbnail navigator container etc).
-						$PlayOrientation: 1,                                //[Optional] Orientation to play slide (for auto play, navigation), 1 horizental, 2 vertical, default value is 1
-						$DragOrientation: 1                                //[Optional] Orientation to drag slide, 0 no drag, 1 horizental, 2 vertical, 3 either, default value is 1 (Note that the $DragOrientation should be the same as $PlayOrientation when $DisplayPieces is greater than 1, or parking position is not 0)
-						
-						//$BulletNavigatorOptions: {                                //[Optional] Options to specify and enable navigator or not
-						//	$Class: $JssorBulletNavigator$,                       //[Required] Class to create navigator instance
-						//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
-						//	$AutoCenter: 1,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
-						//	$Steps: 1,                                      //[Optional] Steps to go for each navigation request, default value is 1
-						//	$Lanes: 1,                                      //[Optional] Specify lanes to arrange items, default value is 1
-						//	$SpacingX: 0,                                   //[Optional] Horizontal space between each item in pixel, default value is 0
-						//	$SpacingY: 0,                                   //[Optional] Vertical space between each item in pixel, default value is 0
-						//	$Orientation: 1                                 //[Optional] The orientation of the navigator, 1 horizontal, 2 vertical, default value is 1
-						//},
-						
-						//$ArrowNavigatorOptions: {
-						//	$Class: $JssorArrowNavigator$,              //[Requried] Class to create arrow navigator instance
-						//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
-						//	$AutoCenter: 2,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
-						//	$Steps: 1                                    //[Optional] Steps to go for each navigation request, default value is 1
-						//}
-						
-					};
-					var jssor_slider1 = new $JssorSlider$("zenario_tutorial_other_videos", options);
+					zenarioA.initTutorialSlideshow();
 				}
             }
 		});
 	};
 	
-	zenarioA.clickOtherTutorialVideo = function(id, title) {
+	
+	zenarioA.initTutorialSlideshow = function() {
+		
+		// Init jssor slideshow
+		var options = {
+			$FillMode: 1,
+			$SlideDuration: 300,                                //[Optional] Specifies default duration (swipe) for slide in milliseconds, default value is 500
+			$MinDragOffsetToSlide: 20,                          //[Optional] Minimum drag offset to trigger slide , default value is 20
+			$SlideWidth: 200,                                   //[Optional] Width of every slide in pixels, default value is width of 'slides' container
+			$SlideHeight: 150,                                //[Optional] Height of every slide in pixels, default value is height of 'slides' container
+			$SlideSpacing: 75, 					                //[Optional] Space between each slide in pixels, default value is 0
+			$DisplayPieces: 3,                                  //[Optional] Number of pieces to display (the slideshow would be disabled if the value is set to greater than 1), the default value is 1
+			$ParkingPosition: 0,                              //[Optional] The offset position to park slide (this options applys only when slideshow disabled), default value is 0.
+			$UISearchMode: 1,                                   //[Optional] The way (0 parellel, 1 recursive, default value is 1) to search UI components (slides container, loading screen, navigator container, arrow navigator container, thumbnail navigator container etc).
+			$PlayOrientation: 1,                                //[Optional] Orientation to play slide (for auto play, navigation), 1 horizental, 2 vertical, default value is 1
+			$DragOrientation: 1                                //[Optional] Orientation to drag slide, 0 no drag, 1 horizental, 2 vertical, 3 either, default value is 1 (Note that the $DragOrientation should be the same as $PlayOrientation when $DisplayPieces is greater than 1, or parking position is not 0)
+			
+			//$BulletNavigatorOptions: {                                //[Optional] Options to specify and enable navigator or not
+			//	$Class: $JssorBulletNavigator$,                       //[Required] Class to create navigator instance
+			//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+			//	$AutoCenter: 1,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+			//	$Steps: 1,                                      //[Optional] Steps to go for each navigation request, default value is 1
+			//	$Lanes: 1,                                      //[Optional] Specify lanes to arrange items, default value is 1
+			//	$SpacingX: 0,                                   //[Optional] Horizontal space between each item in pixel, default value is 0
+			//	$SpacingY: 0,                                   //[Optional] Vertical space between each item in pixel, default value is 0
+			//	$Orientation: 1                                 //[Optional] The orientation of the navigator, 1 horizontal, 2 vertical, default value is 1
+			//},
+			
+			//$ArrowNavigatorOptions: {
+			//	$Class: $JssorArrowNavigator$,              //[Requried] Class to create arrow navigator instance
+			//	$ChanceToShow: 2,                               //[Required] 0 Never, 1 Mouse Over, 2 Always
+			//	$AutoCenter: 2,                                 //[Optional] Auto center navigator in parent container, 0 None, 1 Horizontal, 2 Vertical, 3 Both, default value is 0
+			//	$Steps: 1                                    //[Optional] Steps to go for each navigation request, default value is 1
+			//}
+			
+		};
+		var jssor_slider1 = new $JssorSlider$("zenario_tutorial_other_videos", options);
+		
+		var SliderClickEventHandler = function(slideIndex, event) {
+			$video = $('#zenario_tutorial_other_video_' + slideIndex);
+			zenarioA.clickOtherTutorialVideo($video.data('id'), $video.data('title'), slideIndex);
+		}
+		
+		jssor_slider1.$On($JssorSlider$.$EVT_CLICK, SliderClickEventHandler);
+	};
+	
+	
+	zenarioA.clickOtherTutorialVideo = function(id, title, index) {
+		// Change main video
 		var m = {
 				main_video_id: id
 			},
 			html = zenarioA.microTemplate('zenario_tutorial_main_video', m);
 		$('#zenario_tutorial_video_banner').html(title);
 		$('#zenario_tutorial_main_video').html(html);
+		
+		// Toggle selected video
+		$('#zenario_tutorial_other_videos_slideshow div.video').removeClass('selected');
+		$('#zenario_tutorial_other_video_' + index).addClass('selected');
 	};
 	
 	zenarioA.toggleShowHelpTourNextTime = function() {
@@ -533,6 +558,30 @@ zenario.lib(function(
 			zenarioA.showGridOn = !zenarioA.showGridOn;
 			zenarioAT.clickTab(zenarioA.toolbar);
 		}
+	};
+	
+	zenarioA.checkSpecificPerms = function(id) {
+		
+		if (!zenarioA.adminHasSpecificPerms) {
+			return true;
+		}
+		
+		var i, ids = id.split(',');
+	
+		foreach (ids as i => id) {
+			if (!zenarioO.tuix
+			 || !zenarioO.tuix.items
+			 || !zenarioO.tuix.items[id]
+			 || !zenarioO.tuix.items[id]._specific_perms) {
+				return false;
+			}
+		}
+		
+		return true;
+	};
+	
+	zenarioA.checkSpecificPermsOnThisPage = function() {
+		return !zenarioA.adminHasSpecificPerms || zenarioA.adminHasSpecificPermsOnThisPage;
 	};
 
 });

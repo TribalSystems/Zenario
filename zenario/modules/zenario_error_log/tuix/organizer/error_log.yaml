@@ -4,6 +4,7 @@ zenario__administration:
     panels:
         error_log:
             title: Error log
+            no_items_message: The error log is empty
             view_mode: list
             disable_grid_view: true
             db_items:
@@ -44,6 +45,8 @@ zenario__administration:
                     item_link: content_item_or_url
             collection_buttons:
                 clear_log:
+                    priv: _PRIV_MANAGE_SPARE_ALIAS
+                    hide_when_no_search_results: true
                     label: Clear log
                     ajax:
                         confirm:

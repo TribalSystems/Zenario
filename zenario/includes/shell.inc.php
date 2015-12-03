@@ -64,10 +64,9 @@ require CMS_ROOT. 'zenario/api/module_api.inc.php';
 require CMS_ROOT. 'zenario/api/module_base_class/module_code.php';
 
 //Include the currently running version of the Core CMS Module
-foreach (cms_core::$editions as $className => $dirName) {
+foreach (cms_core::$editions as $className) {
 	if (inc($className)) {
 		cms_core::$edition = $className;
-		cms_core::$editionClass = new $className;
 		break;
 	}
 }

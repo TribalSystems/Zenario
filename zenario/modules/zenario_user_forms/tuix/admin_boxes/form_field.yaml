@@ -6,7 +6,6 @@ zenario_user_admin_box_form_field:
 		form_id: ''
 		numValues: 2
 		type: ''
-		linked: ''
 	tabs:
 		details:
 			label: Details

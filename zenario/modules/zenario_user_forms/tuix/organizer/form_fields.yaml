@@ -28,9 +28,9 @@ zenario__user_forms:
 					db_column: ff.user_field_id
 					align_right: true
 					width: xxsmall
-				ordinal:
+				ord:
 					title: Ordinal
-					db_column: ff.ordinal
+					db_column: ff.ord
 					align_right: true
 					width: xxsmall
 				name:
@@ -100,42 +100,51 @@ zenario__user_forms:
 					show_by_default: true
 					width: large
 			reorder:
-				column: ordinal
+				column: ord
 			collection_buttons: 
 				add_field_user_characteristic:
+					priv: _PRIV_MANAGE_FORMS
 					label: Add a user field (linked)
 					hide_in_select_mode: true
 					css_class: zenario_create_a_new
+					hide_on_filter: true
 					admin_box:
 						path: zenario_user_dataset_field_picker
 						key:
 							form_id: ''
 				add_field:
+					priv: _PRIV_MANAGE_FORMS
 					label: Add a field (unlinked)
 					hide_in_select_mode: true
 					css_class: zenario_create_a_new
+					hide_on_filter: true
 					admin_box:
 						path: zenario_user_admin_box_form_field
 						key:
 							form_id: ''
 				add_section_description:
+					priv: _PRIV_MANAGE_FORMS
 					label: Add section description
 					hide_in_select_mode: true
 					css_class: zenario_create_a_new
+					hide_on_filter: true
 					admin_box:
 						path: zenario_user_admin_box_form_field
 						key:
 							form_id: ''
 							type: 'section_description'
 				add_page_break:
+					priv: _PRIV_MANAGE_FORMS
 					label: Add a page break
 					hide_in_select_mode: true
 					css_class: zenario_create_a_new
+					hide_on_filter: true
 					ajax:
 						request:
 							add_page_break: 1
 			item_buttons:
 				edit:
+					priv: _PRIV_MANAGE_FORMS
 					hide_in_select_mode: true
 					label: Properties
 					admin_box:
@@ -143,6 +152,7 @@ zenario__user_forms:
 						key:
 							form_id: ''
 				delete:
+					priv: _PRIV_MANAGE_FORMS
 					label: Delete
 					multiple_select: true
 					ajax:

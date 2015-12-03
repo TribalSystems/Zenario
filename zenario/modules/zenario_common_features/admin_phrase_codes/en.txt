@@ -32,6 +32,11 @@ _DIRECTORY_DOES_NOT_EXIST|The directory [[dirpath]] does not exist. You should c
 _DIRECTORY_NOT_READ_AND_WRITEABLE|The directory [[dirpath]] does not have read and write permissions set
 _EDIT|Edit
 _EMAIL:|Email Address:
+_ERROR_ADMIN_LOGIN_MULTISITE_CONNECTION|You cannot use your multi-site account because this site has lost its connection to the global database. Please check that the correct settings have been entered in the zenario_siteconfig.php file.
+_ERROR_ADMIN_LOGIN_MULTISITE_PASSWORD_CHANGE_NEEDED|Your multi-site account has been flagged for a password change. Please log into the control site to change it.
+_ERROR_ADMIN_LOGIN_MULTISITE_PERMISSIONS|Your multi-site account only has permissions on specific areas, and cannot be used to accesss this site.
+_ERROR_ADMIN_LOGIN_PASSWORD|Your username and password combination was not recognised. Please check and try again.
+_ERROR_ADMIN_LOGIN_USERNAME|Your username and password combination was not recognised. Please check and try again.
 _ERROR_EMAIL_INVALID|Please enter a valid email address.
 _ERROR_EMAIL_NAME_IN_USE|This email address is already in use by another user.
 _ERROR_EMAIL_TEMPLATE_MISSING|Sorry, you cannot send an email as the [[template]] Email Template is missing.

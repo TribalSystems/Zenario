@@ -36,8 +36,23 @@ sections:
             menu_section:
                 hidden: true
                 label: ""
+            edit_menu_text:
+                priv: _PRIV_EDIT_MENU_TEXT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                label: Edit menu text
+                tooltip: Edit the text of this menu node in the navigation
+                admin_box:
+                    path: zenario_menu_text
+                    key:
+                        mID: ""
+                        languageId: ""
+            advanced_dropdown:
+                label: Advanced
+                hide_when_children_are_not_visible: true
             edit_menu_item:
                 priv: _PRIV_EDIT_MENU_ITEM
+                parent: advanced_dropdown
                 label: Menu node properties
                 tooltip: Edit the text of this menu node in the navigation
                 admin_box:
@@ -47,6 +62,7 @@ sections:
                         languageId: ""
             view_menu_node_in_sk:
                 priv: _PRIV_EDIT_MENU_ITEM
+                parent: advanced_dropdown
                 label: Organize menu...
                 organizer_quick:
                     path: ""
@@ -56,9 +72,6 @@ sections:
                     disallow_refiners_looping_on_min_path: No
                     reload_menu_slots: true
                     reload_admin_toolbar: true
-            advanced_dropdown:
-                label: Advanced
-                hide_when_children_are_not_visible: true
             detach:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Detach content item
@@ -110,6 +123,17 @@ sections:
                 label: Secondary menu node properties
                 admin_box:
                     path: zenario_menu
+                    key:
+                        mID: ""
+                        languageId: ""
+            edit_menu_text:
+                priv: _PRIV_EDIT_MENU_TEXT
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                    && zenarioA.adminHasSpecificPerms
+                label: Secondary menu node text
+                admin_box:
+                    path: zenario_menu_text
                     key:
                         mID: ""
                         languageId: ""

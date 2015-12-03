@@ -70,6 +70,7 @@ zenario__administration:
                 create_new_tab:
                     priv: _PRIV_MANAGE_DATASET
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a tab
                     admin_box:
                         path: zenario_custom_tab
@@ -81,9 +82,11 @@ zenario__administration:
                     visible_if_for_all_selected_items: |
                         item.is_tab
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create field on selected tab
                     admin_box:
                         path: zenario_custom_field
+                        create_another: true
                     hide_in_select_mode: Yes
                 
                 edit_field:

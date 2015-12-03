@@ -45,8 +45,9 @@ full_slot:
             label:
                 normal: Edit contents
                 locked: >
-                    View contents (this content item is checked out by another
-                    Administrator and cannot be edited)
+                    View contents
+                    (this content item is locked by another administrator,
+                     or you don't have the permissions to modify it)
                 cant_make_draft: View contents
                 trashed: View content (to edit, click Re-draft)
                 hidden: View content (to edit, click Unhide)

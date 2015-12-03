@@ -50,7 +50,14 @@ zenario.lib(function(
 zenarioAB.init('zenarioAB');
 
 
-
+zfabName = 'AdminFloatingBox';
+zfabWidthNoPreview = 800;
+zfabMinWidthWithPreview = 1100;
+zfabPreviewBorderWidth = 4;
+zfabLeft = 50;
+zfabTop = 2;
+zfabPaddingHeight = 188;
+zfabTabBarHeight = 53;
 
 
 
@@ -59,7 +66,7 @@ zenarioAB.init('zenarioAB');
 
 
 //Open an admin floating box
-zenarioAB.open = function(path, key, tab, values, callBack) {
+zenarioAB.open = function(path, key, tab, values, callBack, createAnotherObject, reopening) {
 	
 	//Don't allow a box to be opened if Organizer is opened and covering the screen
 	if (zenarioA.checkIfBoxIsOpen('AdminOrganizer')) {
@@ -85,27 +92,44 @@ zenarioAB.open = function(path, key, tab, values, callBack) {
 	//Open the box...
 	zenarioAB.isOpen = true;
 	zenarioAB.callBack = callBack;
+	zenarioAB.createAnotherObject = createAnotherObject;
 	zenarioAB.getRequestKey = key;
 	zenarioAB.changed = {};
-
-	var html = zenarioA.microTemplate(zenarioAB.mtPrefix, {});
+	zenarioAB.isSlidUp = false;
+	zenarioAB.previewHidden = true;
+	zenarioAB.hasPreviewWindow = false;
+	zenarioAB.lastPreviewValues = false;
+	zenarioAB.previewSlotWidth = false;
+	zenarioAB.previewSlotWidthInfo = '';
+	zenarioAB.heightBeforeSlideUp = false;
 	
-	zenarioAB.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zab_' + path;
-	zenarioA.openBox(html, zenarioAB.baseCSSClass, 'AdminFloatingBox', false, 800, 50, 2, true, true, '.zenario_jqmHead', false);
+	zenarioAB.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zenario_fab_' + path;
 	
-	//...but hide the box itself, so only the overlay shows
-	get('zenario_fbAdminFloatingBox').style.display = 'none';
+	if (!reopening) {
+		var html = zenarioA.microTemplate(zenarioAB.mtPrefix, {});
+		
+		//zenarioA.adjustBox = function(n, e, width, left, top, html, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+		//zenarioA.openBox = function(html, className, n, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+		zenarioA.openBox(html, zenarioAB.baseCSSClass, zfabName, false, zfabWidthNoPreview, zfabLeft, zfabTop, true, true, '.zenario_fabHead', false);
+		
+		//...but hide the box itself, so only the overlay shows
+		get('zenario_fbAdminFloatingBox').style.display = 'none';
+	}
 	
 	//If any Admin Boxes are open, set a warning message for if an admin tries to leave the page 
 	window.onbeforeunload = zenarioA.onbeforeunload;
-	
 	
 	zenarioAB.start(path, key, tab, values);
 };
 
 
+zenarioAB.initFields = function() {
+	zenarioAB.hasPreviewWindow = !!zenarioAB.pluginPreviewURL();
+	methodsOf(zenarioAF).initFields.call(zenarioAB);
+};
 
-zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) {
+
+zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue, createAnother) {
 	zenarioA.nowDoingSomething(false);
 	
 	var requests = {};
@@ -136,9 +160,17 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 		
 		zenarioO.refreshToShowItem(id);
 		
-	} else if (zenarioAB.tuix.key.slotName) {
+	} else if (zenario.cID && zenarioAB.tuix.key.slotName) {
 		//Refresh the slot if zenarioAB was a plugin settings FAB
 		zenario.refreshPluginSlot(zenarioAB.tuix.key.slotName, '', zenarioA.importantGetRequests);
+		
+		if (zenarioAT.init) {
+			zenarioAT.init();
+		}
+		
+	} else if (zenario.cID && (zenarioAB.path == 'zenario_menu' || zenarioAB.path == 'zenario_menu_text')) {
+		//If this is the front-end, and this was a menu FAB, just reload the menu plugins
+		zenarioA.reloadMenuPlugins();
 		
 		if (zenarioAT.init) {
 			zenarioAT.init();
@@ -170,8 +202,9 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 	}
 	
 	var popout_message = zenarioAB.tuix.popout_message;
+	createAnother = createAnother && zenarioAB.createAnotherObject;
 	
-	if (!saveAndContinue) {
+	if (!saveAndContinue && !createAnother) {
 		zenarioAB.close();
 	}
 	
@@ -194,6 +227,18 @@ zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue) 
 		
 		zenarioAB.sortTabs();
 		zenarioAB.draw();
+	
+	} else if (createAnother) {
+		$('#zenario_abtab').clearQueue();
+		delete zenarioAB.tuix;
+		zenarioAB.open(
+			zenarioAB.createAnotherObject.path,
+			zenarioAB.getRequestKey,
+			zenarioAB.createAnotherObject.tab,
+			zenarioAB.createAnotherObject.values,
+			undefined,
+			zenarioAB.createAnotherObject,
+			true);
 	}
 };
 
@@ -207,12 +252,13 @@ zenarioAB.close = function(keepMessageWindowOpen) {
 		clearTimeout(zenarioAB.sizing);
 	}
 	zenarioAB.stopPoking();
+	zenario.clearAllDelays();
 	
 	if (!keepMessageWindowOpen) {
 		zenarioA.closeFloatingBox();
 	}
 	
-	zenarioA.closeBox('AdminFloatingBox');
+	zenarioA.closeBox(zfabName);
 	zenarioAB.isOpen = false;
 	
 	//Return the page to it's original scroll position, before the box was opened
@@ -222,6 +268,9 @@ zenarioAB.close = function(keepMessageWindowOpen) {
 	}
 	
 	delete zenarioAB.tuix;
+	delete zenarioAB.lastPreviewValues;
+	delete zenarioAB.previewSlotWidth;
+	delete zenarioAB.previewSlotWidthInfo;
 	
 	return false;
 };
@@ -351,13 +400,19 @@ zenarioAB.draw = function() {
 
 zenarioAB.draw2 = function() {
 	
+	if (!zenarioAB.tuix.tabs) {
+		return;
+	}
+	
 	//Add wrapper CSS classes
 	get('zenario_fbAdminFloatingBox').className =
 		zenarioAB.baseCSSClass +
 		' ' +
-		(zenarioAB.tuix.css_class || '') + 
+		(zenarioAB.tuix.css_class || 'zenario_fab_default_style') + 
 		' ' +
-		(engToBoolean(zenarioAB.tuix.hide_tab_bar)? 'zenario_admin_box_with_tabs_hidden' : 'zenario_admin_box_with_tabs_shown');
+		(engToBoolean(zenarioAB.tuix.hide_tab_bar)?
+			'zenario_admin_box_with_tabs_hidden'
+		  : 'zenario_admin_box_with_tabs_shown');
 	
 	//Don't show the requested tab if it has been hidden
 	if (zenarioAB.tuix.tab && (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || zenarioA.hidden(zenarioAB.tuix.tabs[zenarioAB.tuix.tab]))) {
@@ -365,22 +420,34 @@ zenarioAB.draw2 = function() {
 	}
 	
 	//Set the HTML for the floating boxes tabs and title
-	get('zenario_jqmTabs').innerHTML = zenarioAB.drawTabs();
+	get('zenario_fabTabs').innerHTML = zenarioAB.drawTabs();
 	
-	zenarioAB.setTitle(zenarioAB.tuix.title);
+	
+	var isReadOnly = !zenarioAB.editModeOnBox(),
+		html = '';
+	
+	zenarioAB.setTitle(zenarioAB.tuix.title, isReadOnly);
 	zenarioAB.showCloseButton();
-	
-	
-	html = '';
 	
 	//Set the html for the save and continue button
 	if (zenarioAB.tuix.save_and_continue_button_message) {
 		html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + htmlspecialchars(zenarioAB.tuix.save_and_continue_button_message) + '"';
 		
-		if (!zenarioAB.editModeOnBox()) {
+		if (isReadOnly) {
 			html += ' class="submit_disabled"/>';
 		} else {
 			html += ' class="submit_selected" onclick="' + zenarioAB.globalName + '.save(undefined, true);"/>';
+		}
+	}
+	
+	//Set the html for the save and continue button
+	if (zenarioAB.createAnotherObject) {
+		html += '<input id="zenarioAFB_save_and_continue"  type="button" value="' + phrase.createAnother + '"';
+		
+		if (isReadOnly) {
+			html += ' class="submit_disabled"/>';
+		} else {
+			html += ' class="submit_selected" onclick="' + zenarioAB.globalName + '.save(undefined, false, true);"/>';
 		}
 	}
 
@@ -388,7 +455,7 @@ zenarioAB.draw2 = function() {
 	//Set the html for the save button
 	html += '<input id="zenarioAFB_save"  type="button" value="' + ifNull(htmlspecialchars(zenarioAB.tuix.save_button_message), phrase.save) + '"';
 	
-	if (!zenarioAB.editModeOnBox()) {
+	if (isReadOnly) {
 		html += ' class="submit_disabled"/>';
 	} else {
 		html += ' class="submit_selected" onclick="' + zenarioAB.globalName + '.save();"/>';
@@ -400,13 +467,17 @@ zenarioAB.draw2 = function() {
 		html += '<input type="button" value="' + htmlspecialchars(zenarioAB.tuix.cancel_button_message) + '" onclick="' + zenarioAB.globalName + '.close();">';
 	}
 	
-	get('zenario_fbButtons').innerHTML = html;
+	if (zenarioAB.tuix.extra_button_html) {
+		html += zenarioAB.tuix.extra_button_html;
+	}
 	
-	//Set the floating box to the max height for the user's screen
-	zenarioAB.size();
+	get('zenario_fbButtons').innerHTML = html;
 	
 	//Show the box
 	get('zenario_fbAdminFloatingBox').style.display = 'block';
+	
+	//Set the floating box to the max height for the user's screen
+	zenarioAB.size(true);
 	
 	zenarioA.nowDoingSomething(false);
 	
@@ -424,40 +495,167 @@ zenarioAB.draw2 = function() {
 
 
 
+
+zenarioAB.setTitle = function(title, isReadOnly) {
+	
+	if (!title) {
+		$('#zenario_fabTitleWrap').css('display', 'none');
+	} else {
+		$('#zenario_fabTitleWrap').css('display', 'block');
+		$('#zenario_fabTitleWrap').addClass(' zenario_no_drag');
+		
+		get('zenario_fabTitle').innerHTML = htmlspecialchars(title);
+	}
+	
+	if (isReadOnly) {
+		$('#zenario_fabBox_readonlyMarker').css('display', 'block');
+	} else {
+		$('#zenario_fabBox_readonlyMarker').css('display', 'none');
+	}
+};
+
+zenarioAB.showCloseButton = function() {
+	if (this.tuix.cancel_button_message) {
+		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'none');
+	} else {
+		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'block');
+	}
+};
+
+
+
 //Automatically set the box to the correct height for the users screen, or the maximum height requested, whichever is smaller
-zenarioAB.size = function() {
+zenarioAB.lastSize = false;
+zenarioAB.previewHidden = true;
+zenarioAB.size = function(refresh) {
 	
 	if (zenarioAB.sizing) {
 		clearTimeout(zenarioAB.sizing);
 	}
 	
-	if (get('zenario_fbMain')) {
-		if (zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar)) {
-			get('zenario_fbMain').style.top = '0px';
-			get('zenario_fbButtons').style.paddingBottom = '7px';
-			get('zenario_jqmTabs').style.display = 'none';
-		} else {
-			get('zenario_fbMain').style.top = '24px';
-			get('zenario_fbButtons').style.paddingBottom = '31px';
-			get('zenario_jqmTabs').style.display = zenario.browserIsIE()? '' : 'inherit';
-		}
-	}
+	var width = Math.floor($(window).width()),
+		height = Math.floor($(window).height()),
+		newWidth,
+		windowSizedChanged,
+		boxHeight,
+		formHeight,
+		maxFormHeight,
+		paddingHeight,
+		hideTabBar;
 	
-	if (get('zenario_fbAdminInner')) {
-		var height = Math.floor($(window).height() * 0.96 - (zenario.browserIsIE()? 210 : zenario.browserIsSafari()? 202 : 205));
+	if (width && height && !zenarioAB.isSlidUp) {
 		
-		if (zenarioAB.tuix
-		 && zenarioAB.tuix.max_height
-		 && height > zenarioAB.tuix.max_height) {
-			height = zenarioAB.tuix.max_height;
-		}
+		windowSizedChanged = zenarioAB.lastSize != width + 'x' + height;
 		
-		if (zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar)) {
-			height = 1*height + 24;
-		}
-		
-		if ((height = 1*height) > 0) {
-			get('zenario_fbAdminInner').style.height = height + 'px';
+		if (windowSizedChanged || refresh) {
+			zenarioAB.lastSize = width + 'x' + height;
+			
+			hideTabBar = zenarioAB.tuix && engToBoolean(zenarioAB.tuix.hide_tab_bar);
+			
+			if (get('zenario_fbMain')) {
+				if (hideTabBar) {
+					get('zenario_fbMain').style.top = '0px';
+					get('zenario_fbButtons').style.paddingBottom = '7px';
+					get('zenario_fabTabs').style.display = 'none';
+				} else {
+					get('zenario_fbMain').style.top = '24px';
+					get('zenario_fbButtons').style.paddingBottom = '31px';
+					get('zenario_fabTabs').style.display = zenario.browserIsIE()? '' : 'inherit';
+				}
+			}
+			
+			paddingHeight = zfabPaddingHeight;
+			if (hideTabBar) {
+				paddingHeight -= zfabTabBarHeight;
+			}
+			
+			paddingHeight += $('#zenario_fabTitleWrap').height();
+			
+			boxHeight = Math.floor(height * 0.96);
+			maxBoxWidth = Math.floor(width * 0.96);
+			formHeight = boxHeight - paddingHeight;
+			
+			maxFormHeight = 1 * (zenarioAB.tuix && zenarioAB.tuix.max_height);
+			
+			if (maxFormHeight
+			 && formHeight > maxFormHeight) {
+				formHeight = maxFormHeight;
+				boxHeight = maxFormHeight + paddingHeight;
+			}
+	
+			if (formHeight && formHeight > 0) {
+				$('#zenario_fbAdminInner').height(formHeight);
+			}
+	
+			if (boxHeight && boxHeight > 0) {
+				$('#zenario_fabBox').height(boxHeight);
+				$('#zenario_fabPreview').height(boxHeight);
+			}
+			
+			previewHidden = !zenarioAB.hasPreviewWindow || maxBoxWidth < zfabMinWidthWithPreview;
+			
+			if (previewHidden) {
+				newWidth = zfabWidthNoPreview;
+				
+				zenarioAB.previewWidth = false;
+				zenarioAB.lastPreviewValues = false;
+			
+			
+			} else {
+				//If we found the width of the slot earlier, don't allow the preview window to be larger than that.
+				//Also don't let the combined width of the preview window and the admin box be larger than the window!
+				if (zenarioAB.previewSlotWidth) {
+					newWidth = Math.min(maxBoxWidth, zfabWidthNoPreview + zfabPreviewBorderWidth + zenarioAB.previewSlotWidth);
+				} else {
+					newWidth = maxBoxWidth;
+				}
+				
+				//Note down the size that the preview window will be after all of thise
+				zenarioAB.previewWidth = newWidth - zfabWidthNoPreview - zfabPreviewBorderWidth;
+				
+				$('#zenario_fabPreview').width(zenarioAB.previewWidth);
+				
+				//Show or hide the description of the width
+				if (zenarioAB.previewSlotWidthInfo) {
+					$('#zenario_fabPreviewInfo').show().text(zenarioAB.previewSlotWidthInfo);
+				} else {
+					$('#zenario_fabPreviewInfo').hide();
+				}
+			}
+			
+			if (!zenarioAB.hasPreviewWindow) {
+				$('#zenario_fb' + zfabName)
+					.addClass('zenario_fab_with_no_preview')
+					.removeClass('zenario_fab_with_preview')
+					.removeClass('zenario_fab_with_preview_hidden')
+					.removeClass('zenario_fab_with_preview_shown');
+			
+			} else if (previewHidden) {
+				$('#zenario_fb' + zfabName)
+					.removeClass('zenario_fab_with_no_preview')
+					.addClass('zenario_fab_with_preview')
+					.addClass('zenario_fab_with_preview_hidden')
+					.removeClass('zenario_fab_with_preview_shown');
+			
+			} else {
+				$('#zenario_fb' + zfabName)
+					.removeClass('zenario_fab_with_no_preview')
+					.addClass('zenario_fab_with_preview')
+					.removeClass('zenario_fab_with_preview_hidden')
+					.addClass('zenario_fab_with_preview_shown');
+			}
+			
+			if (zenarioAB.previewHidden != previewHidden) {
+				zenarioAB.previewHidden = previewHidden;
+				
+				//Refresh the preview frame if it was previously hidden and is now shown
+				if (!previewHidden) {
+					zenarioAB.updatePreview();
+				}
+			}
+			
+			
+			zenarioA.adjustBox(zfabName, false, newWidth, zfabLeft, zfabTop);
 		}
 	}
 	
@@ -478,6 +676,175 @@ zenarioAB.returnAJAXURL = function() {
 									zenario.urlRequest(zenarioAB.getRequestKey);
 };
 
+
+
+//Attempt to get the URL of a preview
+zenarioAB.pluginPreviewURL = function(slotName, instanceId) {
+	
+	if (zenarioAB.path != "plugin_settings"
+	 || !zenario.slots
+	 || !(slotName = slotName || (zenarioAB.tuix && zenarioAB.tuix.key && zenarioAB.tuix.key.slotName))
+	 || !(instanceId = instanceId || (zenarioAB.tuix && zenarioAB.tuix.key && zenarioAB.tuix.key.instanceId) || zenario.slots[slotName].instanceId)) {
+		return false;
+	}
+	
+	var grid = zenarioA.getGridSlotDetails(slotName),
+		requests = _.clone(zenarioA.importantGetRequests),
+		c, clas,
+		cssClasses = (grid && grid.cssClass && grid.cssClass.split(' ')) || [];
+	
+	requests.cVersion = zenario.cVersion;
+	requests.slotName = slotName;
+	requests.instanceId = instanceId;
+	requests.method_call = 'showSingleSlot';
+	requests.fakeLayout = 1;
+	requests.grid_columns = grid.columns;
+	requests.grid_container = grid.container;
+	
+	//Remember the width of the slot. Don't resize the preview window to be any bigger than this.
+	zenarioAB.previewSlotWidth = grid.pxWidth;
+	//Also remember the full description of the width
+	zenarioAB.previewSlotWidthInfo = grid.widthInfo;
+	
+	//If the preview window is open and we've previously set its size, request in the URL that the
+	//preview be the size of the window that we opened
+	if (zenarioAB.previewWidth) {
+		requests.grid_pxWidth = zenarioAB.previewWidth;
+	
+	//Otherwise just use the width of the slot for now
+	} else {
+		requests.grid_pxWidth = zenarioAB.previewSlotWidth;
+	}
+	
+	//Include all of the slot's custom CSS classes.
+	requests.grid_cssClass = '';
+	foreach (cssClasses as c => clas) {
+		//For the most part we just want the custom classes, so filter "alpha", "omega" and the "spans".
+		if (clas != 'alpha'
+		 && clas != 'omega'
+		 && !clas.match(/^span[\d_]*$/)) {
+			requests.grid_cssClass += clas + ' ';
+		}
+	}
+	
+	return zenario.linkToItem(zenario.cID, zenario.cType, requests);
+};
+
+
+//If this is a plugin settings FAB with a preview window, changing the value of any field
+//should update the preview if needed
+zenarioAB.addExtraAttsForTextFields = function(field, extraAtt) {
+	if (zenarioAB.hasPreviewWindow) {
+		extraAtt.onkeyup =
+			ifNull(extraAtt.onkeyup, '', '') +
+			" zenarioAB.updatePreview();";
+	}
+};
+
+zenarioAB.fieldChange = function(id, lov) {
+	zenarioAB.updatePreview(750);
+	methodsOf(zenarioAF).fieldChange.call(zenarioAB, id, lov);
+};
+
+//This function updates the preview, after a short delay to stop lots of spam updates happening all at once
+zenarioAB.updatePreview = function(delay) {
+	if (zenarioAB.hasPreviewWindow && !zenarioAB.previewHidden) {
+		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', zenarioAB.updatePreview2, delay || 1000);
+	}
+};
+
+zenarioAB.updatePreview2 = function() {
+	
+	//Get the values of the plugin settings on this FAB
+	var previewValues = JSON.stringify(zenarioAB.getValues1D(true));
+	
+	//If they've changed since last time, refresh the preview window
+	if (zenarioAB.lastPreviewValues != previewValues) {
+		zenarioAB.lastPreviewValues = previewValues;
+		
+		$('<form action="' + htmlspecialchars(zenarioAB.pluginPreviewURL()) + '" method="post" target="zenario_fabPreviewFrame">' +
+			'<input name="overrideSettings" value="' + htmlspecialchars(previewValues) + '"/>' +
+		'</form>').appendTo('body').hide().submit().remove();
+	}
+};
+
+zenarioAB.showPreviewInPopoutBox = function() {
+	
+	var url = zenarioAB.pluginPreviewURL(),
+		previewValues = JSON.stringify(zenarioAB.getValues1D(true));
+	
+	if (!url) {
+		return;
+	}
+	
+	$.colorbox({
+		width: Math.floor($(window).width() * 0.7),
+		height: Math.floor($(window).height() * 0.9),
+		iframe: true,
+		preloading: false,
+		open: true,
+		title: zenarioAB.previewSlotWidthInfo || phrase.preview,
+		href: url + '&overrideSettings=' + encodeURIComponent(previewValues),
+		className: 'zenario_plugin_preview_popout_box'
+	});
+	$('#colorbox,#cboxOverlay,#cboxWrapper').css('z-index', '333000');
+};
+
+
+zenarioAB.slideToggle = function() {
+	if (zenarioAB.isSlidUp) {
+		zenarioAB.slideDown();
+	} else {
+		zenarioAB.slideUp();
+	}
+};
+	
+zenarioAB.slideUp = function() {
+	
+	if (zenarioAB.isSlidUp) {
+		return;
+	}
+	
+	var height = $('#zenario_fabBox_Header').height(),
+		//height = zfabPaddingHeight + zfabTabBarHeight,
+		$zenario_fabBox = $('#zenario_fabBox');
+	
+	zenarioAB.heightBeforeSlideUp = $zenario_fabBox.height();
+	
+	$('#zenario_fabBox_Body').stop(true).slideUp();
+	
+	$zenario_fabBox.stop(true).animate({height: height});
+	
+	$('#zenario_fabSlideToggle')
+		.addClass('zenario_fabSlideToggleUp')
+		.removeClass('zenario_fabSlideToggleDown');
+	
+	zenarioAB.isSlidUp = true;
+};
+
+zenarioAB.slideDown = function() {
+	
+	if (!zenarioAB.isSlidUp) {
+		return;
+	}
+	
+	$('#zenario_fabBox_Body').stop(true).slideDown();
+	$('#zenario_fabBox').stop(true).animate({height: zenarioAB.heightBeforeSlideUp}, function() {
+		zenarioAB.size(true);
+	});
+	
+	$('#zenario_fabSlideToggle')
+		.addClass('zenario_fabSlideToggleDown')
+		.removeClass('zenario_fabSlideToggleUp');
+	
+	zenarioAB.isSlidUp = false;
+};
+
+//If someone clicks on a tab, make sure that the form isn't hidden first!
+zenarioAB.clickTab = function(tab) {
+	zenarioAB.slideDown();
+	methodsOf(zenarioAF).clickTab.call(zenarioAB, tab);
+};
 
 
 

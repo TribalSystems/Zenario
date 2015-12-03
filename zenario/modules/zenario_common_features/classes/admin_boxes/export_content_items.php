@@ -31,6 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__export_content_items extends module_base_class {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
 		// Get row headers
 		$headers = array(
 			'ID/alias',
@@ -79,8 +80,14 @@ class zenario_common_features__admin_boxes__export_content_items extends module_
 				ON c.id = v.id
 				AND c.type = v.type
 				AND c.admin_version = v.version
-			ORDER BY c.first_created_datetime DESC
-		';
+			WHERE TRUE';
+		if (!empty($box['key']['type'])) {
+			$sql .= '
+				AND c.type = "' . sqlEscape($box['key']['type']) . '"';
+		}
+		$sql .= '
+			ORDER BY c.tag_id';
+		
 		$result = sqlSelect($sql);
 		$statusEnglishNames = array(
 			'first_draft' => 'First draft',
@@ -97,7 +104,7 @@ class zenario_common_features__admin_boxes__export_content_items extends module_
 		
 		
 		$headers = array(
-			'ID/alias',
+			'ID',
 			'Alias',
 			'Language',
 			'Title',
@@ -114,7 +121,7 @@ class zenario_common_features__admin_boxes__export_content_items extends module_
 		
 		while ($row = sqlFetchAssoc($result)) {
 			$contentItem = array();
-			$contentItem['tag_id'] = formatTagFromTagId($row['tag_id']);
+			$contentItem['tag_id'] = $row['tag_id'];
 			$contentItem['alias'] = $row['alias'];
 			$contentItem['language'] = getLanguageName($row['language_id']);
 			$contentItem['title'] = $row['title'];

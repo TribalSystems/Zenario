@@ -21,7 +21,7 @@ CMSWritePageHead($prefix, false, false);
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css?v=', $v, '" media="screen"/>';
@@ -64,7 +64,7 @@ echo '
 		//Load a Template file's details into Grid Maker
 			//There are two different formats here:
 				//We could be passed the numeric id of a Layout, in which case we need to look up the Family Name and Filename
-				//Or we could be passed the Family Name and Filename as a string encoded with encodeItemIdForStorekeeper()
+				//Or we could be passed the Family Name and Filename as a string encoded with encodeItemIdForOrganizer()
 			//Then we need to take the Family Name and Filename, form a path, check that file exists, open it,
 			//read its contents and then check to see if there is Grid data in there.
 		$layoutId = 0;
@@ -75,7 +75,7 @@ echo '
 		   && ($path = $layout['family_name']. '/'. $layout['filename'])
 		   )
 		  || (request('c')
-		   && ($path = decodeItemIdForStorekeeper(request('c')). '.tpl.php')
+		   && ($path = decodeItemIdForOrganizer(request('c')). '.tpl.php')
 		   && ($layout = explode('/', $path, 2))
 		   && (!empty($layout[1]))
 		   && ($layout['family_name'] = $layout[0])

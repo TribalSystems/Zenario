@@ -33,17 +33,6 @@ useCache('zenario-inc-organizer-css-'. LATEST_REVISION_NO);
 useGZIP(!empty($_GET['gz']));
 
 
-function incCSS($file) {
-	if (file_exists($file. '.min.css')) {
-		require $file. '.min.css';
-	} elseif (file_exists($file. '.css')) {
-		require $file. '.css';
-	}
-	
-	echo "\n/**/\n";
-}
-
-
 //Include the CSS needed for Organizer and its support libraries
 incCSS('zenario/libraries/mit/jquery/css/nestable');
 incCSS('zenario/libraries/mit/jpaginator/jPaginator');

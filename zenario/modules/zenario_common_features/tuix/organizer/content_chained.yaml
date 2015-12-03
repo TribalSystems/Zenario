@@ -3,15 +3,15 @@
 zenario__content:
     panels:
         chained:
-            refiner_required: Yes
+            refiner_required: true
             key:
                 cType: ""
                 language: ""
                 equivId: ""
-            enable_close_up_view: Yes
+            enable_close_up_view: true
             view_mode: list
-            disable_grid_view: Yes
-            disable_summary_view: Yes
+            disable_grid_view: true
+            disable_summary_view: true
             db_items:
                 table: >
                     [[DB_NAME_PREFIX]]content_items AS lec
@@ -57,10 +57,10 @@ zenario__content:
                 tag:
                     title: ID/alias
                     width: large
-                    searchable: Yes
+                    searchable: true
                     db_column: c.tag_id
-                    show_by_default: Yes
-                    disallow_filtering: Yes
+                    show_by_default: true
+                    disallow_filtering: true
                 equiv_id:
                     db_column: c.equiv_id
                 id:
@@ -71,25 +71,25 @@ zenario__content:
                     format: enum
                 language_id:
                     title: Language
-                    show_by_default: Yes
+                    show_by_default: true
                     db_column: l.id
                     format: language_english_name_with_id
                 alias:
                     title: Alias
-                    searchable: Yes
+                    searchable: true
                     db_column: c.alias
                 title:
                     title: Title
                     db_column: v.title
-                    searchable: Yes
+                    searchable: true
                 description:
                     title: Description
                     db_column: v.description
-                    searchable: Yes
+                    searchable: true
                 keywords:
                     title: Keywords
                     db_column: v.keywords
-                    searchable: Yes
+                    searchable: true
                 file_id:
                     db_column: f.id
                 checksum:
@@ -99,7 +99,7 @@ zenario__content:
                 filename:
                     title: Filename
                     db_column: v.filename
-                    searchable: Yes
+                    searchable: true
                 file_path:
                     db_column: f.path
                 version:
@@ -193,12 +193,12 @@ zenario__content:
                 layout:
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                 menu:
                     title: Menu Node
                     db_column: mt.name
-                    show_by_default: Yes
+                    show_by_default: true
                     item_link: menu_item
                 menu_id:
                     db_column: mi.id
@@ -210,21 +210,6 @@ zenario__content:
             label_format_for_popouts: '[[tag]] Version [[version]] [[[admin_version_status]]]'
             default_sort_column: language_id
             collection_buttons:
-                zenario_trans__link_to_chain:
-                    priv: _PRIV_EDIT_DRAFT
-                    hide_in_select_mode: Yes
-                    only_show_on_refiner: zenario_trans__chained_in_link
-                    label: Declare translation
-                    tooltip: Declare an existing Content Item as a translation
-                    pick_items:
-                        path: zenario__content/panels/content/refiners/can_chain////
-                        target_path: zenario__content/panels/content
-                        min_path: zenario__content/panels/languages
-                        max_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Declare Translation
-                        request:
-                            declare: "1"
                 categories:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     label: Change categories
@@ -235,14 +220,14 @@ zenario__content:
                     css_class: view_frontend
                     tooltip: View in Front-end window
                     frontend_link:
-                        exists: Yes
+                        exists: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
                 inspect:
                     css_class: inspect
                     tooltip: View in floating box
                     popout:
-                        iframe: Yes
+                        iframe: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
             item_buttons:
@@ -252,11 +237,11 @@ zenario__content:
                     admin_box:
                         path: zenario_content
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                 view_dropdown:
                     label: View
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view_image:
                     parent: view_dropdown
                     label: 'XXX - View Picture'
@@ -266,13 +251,13 @@ zenario__content:
                         options:
                             type: image
                     traits:
-                        has_picture: Yes
+                        has_picture: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                 export_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 download:
                     parent: export_dropdown
                     label: Download
@@ -282,26 +267,28 @@ zenario__content:
                             button_message: Download
                             cancel_button_message: Cancel
                             message_type: question
-                            download: Yes
+                            download: true
                         request:
-                            download: "1"
+                            download: 1
                     traits:
-                        has_file: Yes
+                        has_file: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     label: Change layout
                     multiple_select: true
                     admin_box:
                         path: zenario_content_layout
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                 alias:
                     parent: action_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -309,76 +296,64 @@ zenario__content:
                     admin_box:
                         path: zenario_alias
                     without_traits:
-                        ghost: Yes
-                duplicate__ghost:
+                        ghost: true
+                create_translation:
                     parent: action_dropdown
-                    priv: _PRIV_CREATE_FIRST_DRAFT
-                    label: Duplicate
+                    priv: _PRIV_CREATE_TRANSLATION_FIRST_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    label: |
+                        Create a translation in [[lang_name]]
                     admin_box:
                         path: zenario_content
                         key:
-                            translate: "1"
+                            translate: 1
                     traits:
-                        zenario_trans__can_link: Yes
-                        ghost: Yes
-                zenario_trans__remove:
-                    parent: action_dropdown
-                    php: Yes
-                    priv: _PRIV_EDIT_DRAFT
-                    hide_in_select_mode: Yes
-                    label: Undeclare translation
-                    ajax:
-                        confirm:
-                            message: 'Are you sure that you wish to undeclare the content item "[[tag]]" as a translation?'
-                            button_message: Remove
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            remove: "1"
-                    traits:
-                        zenario_trans__linked: Yes
-                        can_unlink: Yes
-                    without_traits:
-                        ghost: Yes
+                        zenario_trans__can_link: true
+                        ghost: true
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
-                    hide_in_select_mode: Yes
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
                     label: Hide
-                    multiple_select: Yes
+                    multiple_select: true
                     traits:
-                        hideable: Yes
+                        hideable: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                     ajax:
                         confirm:
                             message: |
                                 This action will hide the item "[[tag]]".
-                                                                
-                                                                It will become invisible to visitors and any menu nodes linking to it will also be hidden. (You can show an item again by creating a draft and then re-publishing.)
-                                                                
-                                                                Are you sure you wish to proceed?
+                                
+                                It will become invisible to visitors and any menu nodes linking to it will also be hidden. (You can show an item again by creating a draft and then re-publishing.)
+                                
+                                Are you sure you wish to proceed?
                             multiple_select_message: |
                                 This action will hide the selected content items.
-                                                                
-                                                                They will become invisible to visitors and any menu nodes linking to them will also be hidden. (You can show an item again by creating a draft and then re-publishing.)
-                                                                
-                                                                Are you sure you wish to proceed?
+                                
+                                They will become invisible to visitors and any menu nodes linking to them will also be hidden. (You can show an item again by creating a draft and then re-publishing.)
+                                
+                                Are you sure you wish to proceed?
                             button_message: Hide
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            hide: "1"
+                            hide: 1
                 hidden:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Unhide/make draft
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: Unhide Content Items
                     traits:
-                        hidden: Yes
+                        hidden: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                     ajax:
                         confirm:
                             message: |
@@ -393,64 +368,72 @@ zenario__content:
                             cancel_button_message: Cancel
                             message_type: question
                         request:
-                            unhide: "1"
+                            unhide: 1
                 publish:
                     parent: action_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
-                    hide_in_select_mode: Yes
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
                     label: Publish
-                    multiple_select: Yes
+                    multiple_select: true
                     traits:
-                        draft: Yes
-                        not_locked: Yes
+                        draft: true
+                        not_locked: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                     admin_box:
                         path: zenario_publish
                 delete:
                     priv: _PRIV_DELETE_DRAFT
-                    hide_in_select_mode: Yes
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
                     label: Delete draft
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_label: Delete drafts
                     traits:
-                        draft: Yes
-                        deletable: Yes
-                        not_locked: Yes
+                        draft: true
+                        deletable: true
+                        not_locked: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                     ajax:
                         confirm:
                             message: |
                                 You are about to delete the draft version of "[[tag]]".
-                                                                
-                                                                Deleting this draft will not affect the published version of this item, if it exists. However, the deletion cannot be undone.
-                                                                
-                                                                Are you sure you wish to proceed?
+                                
+                                Deleting this draft will not affect the published version of this item, if it exists. However, the deletion cannot be undone.
+                                
+                                Are you sure you wish to proceed?
                             multiple_select_message: |
                                 You are about to delete the draft versions of the selected content items.
-                                                                
-                                                                Deleting a draft will not affect any published versions of these items, if they exist. However, the deletions cannot be undone.
-                                                                
-                                                                Are you sure you wish to proceed?
+                                
+                                Deleting a draft will not affect any published versions of these items, if they exist. However, the deletions cannot be undone.
+                                
+                                Are you sure you wish to proceed?
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
-                            delete: "1"
+                            delete: 1
                 trash:
                     priv: _PRIV_TRASH_CONTENT_ITEM
-                    hide_in_select_mode: Yes
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
                     label: Trash
-                    multiple_select: Yes
+                    multiple_select: true
                     traits:
-                        trashable: Yes
+                        trashable: true
                     without_traits:
-                        ghost: Yes
+                        ghost: true
                     admin_box:
                         path: zenario_trash
                 delete_archives:
                     priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     hide_in_select_mode: true
                     label: Delete archived versions

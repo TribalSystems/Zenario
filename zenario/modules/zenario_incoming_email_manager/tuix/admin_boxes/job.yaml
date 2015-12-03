@@ -3,81 +3,6 @@
 zenario_job:
     priv: _PRIV_VIEW_SCHEDULED_TASK
     tabs:
-        zenario_incoming_email_manager__trigger:
-            ord: "1"
-            visible_if: "zenarioAB.tuix.key.manager_class_name == 'zenario_incoming_email_manager'"
-            edit_mode:
-                enabled: Yes
-                priv: _PRIV_MANAGE_SCHEDULED_TASK
-            label: Forward Email to a Script
-            fields:
-                desc:
-                    full_width: Yes
-                    snippet:
-                        html: |
-                            <p>
-                                                                    An email forwarder is an email address that forwards every email it receives to a different email address,
-                                                                    or to a script. 
-                                                                </p>
-                                                                
-                                                                <p>
-                                                                    If you or your server administrator can create an email forwarder, and you set this to forward email to the script
-                                                                    provided by the Incoming Email Manager Module, then you can set up an email address which will pass any incoming
-                                                                    email that it receives to this Email Handler.
-                                                                </p>
-                script_enable:
-                    full_width: Yes
-                    type: checkbox
-                    redraw_onchange: Yes
-                    post_field_html: |
-                        &nbsp;
-                                                        <label style="font-weight: bold;" for="script_enable">Enable forwarding of email to a script</label>
-                script_recipient_username:
-                    label: 'Email recipient username:'
-                    type: text
-                    maxlength: "255"
-                    visible_if: "zenarioAB.value('script_enable')"
-                desc2:
-                    full_width: Yes
-                    snippet:
-                        html: |
-                            <p>Creating an email forwarder will differ slightly, depending on what server software you are using. To create a new forwarder using cPanel:</p>
-                                                                <ol>
-                                                                    <li>Go to "Mail -> Forwarders".</li>
-                                                                    <li>Click "Add Forwarder".</li>
-                                                                    <li>Enter a recipient username under "Address to Forward".</li>
-                                                                    <li>Choose "Pipe to a Program" under "Advanced Options".</li>
-                                                                    <li>
-                                                                            In the text field, enter:
-                                                                        <br/><code>[[path]]</code>
-                                                                        <br/>(You may need to adjust the path slightly so that it starts from your home directory.)
-                                                                    </li>
-                                                                    <li>Enter the recipient username from step 3 into the text field above.</li>
-                                                                </ol>
-                                                                
-                                                                <p>To create a new forwarder using Postfix:</p>
-                                                                <ol>
-                                                                    <li>Edit your <code>/etc/aliases</code> file.</li>
-                                                                    <li>
-                                                                            At the end of the file, add the line:
-                                                                        <br/><code>username: &quot;|php [[path]]&quot;</code>
-                                                                    </li>
-                                                                    <li>Replace the word <code>username</code> in the line of code above with the recipient username you wish to create.</li>
-                                                                    <li>Enter the same recipient username from step 3 into the text field above.</li>
-                                                                    <li>
-                                                                            Run:
-                                                                        <br/><code>sudo newaliases</code>
-                                                                        <br/>to make the email forwarder live.
-                                                                    </li>
-                                                                </ol>
-                                                                
-                                                                <p>
-                                                                    Other software the setup method may differ, however the recipient username will usually be the part of the email address
-                                                                    before the <code>@</code>. For example, if the email were <code>user@example.com</code>, the recipient username would
-                                                                    likely be <code>user</code>.
-                                                                </p>
-                    visible_if: "zenarioAB.value('script_enable')"
-            show_errors_after_field: script_enable
         zenario_incoming_email_manager__fetch:
             ord: "2"
             visible_if: "zenarioAB.tuix.key.manager_class_name == 'zenario_incoming_email_manager'"
@@ -101,6 +26,7 @@ zenario_job:
                                                                     Day and/or Month rules to adjust when the mailbox is be checked, using similar controls to Scheduled Tasks.
                                                                 </p>
                 fetch_enable:
+                    hidden: true
                     full_width: Yes
                     type: checkbox
                     redraw_onchange: Yes

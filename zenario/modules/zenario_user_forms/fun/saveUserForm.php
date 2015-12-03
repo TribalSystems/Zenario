@@ -80,7 +80,7 @@ foreach ($formFields as $fieldId => $field) {
 	$userFieldId = $field['user_field_id'];
 	$fieldName = self::getFieldName($field);
 	$type = self::getFieldType($field);
-	$ordinal = $field['ordinal'];
+	$ord = $field['ord'];
 	// Ignore field if readonly
 	if ($field['is_readonly']){
 		continue;
@@ -107,7 +107,7 @@ foreach ($formFields as $fieldId => $field) {
 				$eng = adminPhrase('No');
 			}
 			
-			$values[$fieldId] = array('value' => $eng, 'internal_value' => $checked, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+			$values[$fieldId] = array('value' => $eng, 'internal_value' => $checked, 'db_column' => $fieldName, 'ord' => $ord);
 			$fieldIdValueLink[$fieldId] = $checked;
 			break;
 		case 'checkboxes':
@@ -132,7 +132,7 @@ foreach ($formFields as $fieldId => $field) {
 			$checkBoxValues[$fieldId] = array(
 				'internal_value' => implode(',',$internal_values), 
 				'value' => implode(',',$label_values), 
-				'ordinal' => $ordinal, 
+				'ord' => $ord, 
 				'db_column' => $fieldName,
 				'value_type' => $valueType,
 				'user_field_id' => $userFieldId,
@@ -144,7 +144,7 @@ foreach ($formFields as $fieldId => $field) {
 				$date = DateTime::createFromFormat('d/m/Y', $data[$fieldName]);
 				$date = $date->format('Y-m-d');
 			}
-			$values[$fieldId] = array('value' => $date, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+			$values[$fieldId] = array('value' => $date, 'db_column' => $fieldName, 'ord' => $ord);
 			$fieldIdValueLink[$fieldId] = $date;
 			break;
 		case 'radios':
@@ -163,7 +163,7 @@ foreach ($formFields as $fieldId => $field) {
 					'value' => $valuesList[$data[$fieldName]], 
 					'db_column' => $fieldName, 
 					'internal_value' => $data[$fieldName], 
-					'ordinal' => $ordinal);
+					'ord' => $ord);
 			}
 			break;
 		
@@ -187,13 +187,13 @@ foreach ($formFields as $fieldId => $field) {
 				default:
 					$value = substr($value, 0, 255);
 			}
-			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ord' => $ord);
 			$fieldIdValueLink[$fieldId] = $data[$fieldName];
 			break;
 		case 'editor':
 		case 'textarea':
 			$value = $data[$fieldName] ? $data[$fieldName] : '';
-			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ord' => $ord);
 			$fieldIdValueLink[$fieldId] = $data[$fieldName];
 			break;
 		case 'attachment':
@@ -201,7 +201,7 @@ foreach ($formFields as $fieldId => $field) {
 			if (!empty($data[$fieldName]) && file_exists(CMS_ROOT.$data[$fieldName])) {
 				$filename = substr(basename($data[$fieldName]), 0, -7);
 				$fileId = addFileToDatabase('forms', CMS_ROOT.$data[$fieldName], $filename);
-				$values[$fieldId] = array('value' => $filename, 'internal_value' => $fileId, 'db_column' => $fieldName, 'ordinal' => $ordinal, 'attachment' => true);
+				$values[$fieldId] = array('value' => $filename, 'internal_value' => $fileId, 'db_column' => $fieldName, 'ord' => $ord, 'attachment' => true);
 				if (setting('zenario_user_forms_admin_email_attachments')) {
 					$attachments[] = fileLink($fileId);
 				}
@@ -409,7 +409,7 @@ if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityT
 				if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
 					$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
 				}
-				$emailValues[$fieldData['ordinal']] = array($formFields[$fieldId]['name'], $fieldData['value']);
+				$emailValues[$fieldData['ord']] = array($formFields[$fieldId]['name'], $fieldData['value']);
 			}
 			ksort($emailValues);
 	
@@ -482,7 +482,7 @@ if ($formProperties['send_signal']) {
 		$params['responseId'] = $user_response_id;
 	}
 	sendSignal('eventUserFormSubmitted', $params);
-}
+} 
 // Redirect to page if speficied
 if ($formProperties['redirect_after_submission'] && $formProperties['redirect_location']) {
 	$cId = $cType = false;

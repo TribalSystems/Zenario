@@ -29,7 +29,7 @@
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_1_9c');
+define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_2_3');
 define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
@@ -41,15 +41,21 @@ this is a wrapper for calling YUI Compressor (http://developer.yahoo.com/yui/com
 or Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
 
 Usage:
+	php js_minify
+		Minify all of the JavaScript and CSS files that the CMS uses.
+	php js_minify filename.js
+		Minify a specific JavaScript and CSS files.
+	php js_minify directory
+		Minify all of the JavaScript and CSS files in a specific directory.
 	php js_minify p
-		Preview the changes that are about to happen.
-	php js_minify c
-		Create/update minified JavaScript and CSS files.
+		List the files that would be minified, but don't do anything.
 	php js_minify v
-		Create/update minified JavaScript and CSS files, with debug/verbose mode enabled.
+		Use debug/verbose mode when minifying.
 
-(Note that the Zenario download does not come with a copy of Closure Compiler to save space,
- but if you download a copy and put it in the right place then this program will use it.)
+Notes:
+  * The Zenario download does not come with a copy of Closure Compiler to save space,
+ 	but if you download a copy and put it in the right place then this program will use it.
+  * If you have svn, this script will only minify files that svn says are new or modified.
 
 ";
 	exit;
@@ -87,21 +93,45 @@ define('USE_CLOSURE_COMPILER', file_exists(CLOSURE_COMPILER_PATH));
 
 
 if (!isset($argv[1])) {
-	displayUsage();
-
-} elseif ($argv[1] == 'p') {
-	$level = 1;
-
-} elseif ($argv[1] == 'c') {
-	$level = 2;
-
-} elseif ($argv[1] == 'v') {
-	$level = 3;
-
+	$arg1 = '';
 } else {
-	displayUsage();
+	$arg1 = $argv[1];
+}
+if (!isset($argv[2])) {
+	$arg2 = '';
+} else {
+	$arg2 = $argv[2];
 }
 
+if ($arg2 == 'p'
+ || $arg2 == 'c'
+ || $arg2 == 'v') {
+	$swap = $arg2;
+	$arg2 = $arg1;
+	$arg1 = $swap;
+
+} elseif ($arg2) {
+	displayUsage();
+	exit;
+}
+
+
+if ($arg1 == 'p') {
+	$level = 1;
+	$specific = $arg2;
+
+} elseif ($arg1 == 'c') {
+	$level = 2;
+	$specific = $arg2;
+
+} elseif ($arg1 == 'v') {
+	$level = 3;
+	$specific = $arg2;
+
+} else {
+	$level = 2;
+	$specific = $arg1;
+}
 
 
 function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
@@ -225,6 +255,49 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 	}
 }
 
+if ($specific) {
+	if ((is_dir($dir = $specific)) && ($scan = scandir($dir))) {
+		
+		if (substr($dir, -1) != '/') {
+			$dir .= '/';
+		}
+		
+		foreach ($scan as $file) {
+			if (substr($file, -3) == '.js'
+			 && substr($file, -7) != '.min.js'
+			 && substr($file, -8) != '.pack.js') {
+				$file = substr($file, 0, -3);
+				minify($dir, $file, $level);
+			
+			} else
+			if (substr($file, -4) == '.css'
+			 && substr($file, -8) != '.min.css') {
+				$file = substr($file, 0, -4);
+				minify($dir, $file, $level, '.css');
+			}
+		}
+	
+	} elseif (is_file($specific)) {
+		$dir = dirname($specific) . '/';
+		$file = basename($specific);
+		if (substr($file, -3) == '.js'
+		 && substr($file, -7) != '.min.js'
+		 && substr($file, -8) != '.pack.js') {
+			$file = substr($file, 0, -3);
+			minify($dir, $file, $level);
+			
+		} else
+		if (substr($file, -4) == '.css'
+		 && substr($file, -8) != '.min.css') {
+			$file = substr($file, 0, -4);
+			minify($dir, $file, $level, '.css');
+		}
+	
+	} else {
+		displayUsage();
+	}
+	exit;
+}
 
 //Minify JavaScript files in the API directory
 if ((is_dir($dir = 'zenario/api/')) && ($scan = scandir($dir))) {

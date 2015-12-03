@@ -77,32 +77,6 @@ switch ($path) {
 			!$values['pagination/show_pagination'];
 		
 		
-		if (isset($box['tabs']['each_item']['fields']['canvas'])
-		 && empty($box['tabs']['each_item']['fields']['canvas']['hidden'])) {
-			if ($values['each_item/canvas'] == 'fixed_width') {
-				$box['tabs']['each_item']['fields']['width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
-			
-			} else {
-				unset($box['tabs']['each_item']['fields']['width']['note_below']);
-			}
-			
-			if ($values['each_item/canvas'] == 'fixed_height'
-			 || $values['each_item/canvas'] == 'fixed_width_and_height') {
-				$box['tabs']['each_item']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
-			
-			} elseif ($values['each_item/canvas'] == 'resize_and_crop') {
-				$box['tabs']['each_item']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled up or down maintaining aspect ratio.');
-			
-			} else {
-				unset($box['tabs']['each_item']['fields']['height']['note_below']);
-			}
-		}
-		
-		
-		
 		//Don't show the translations checkbox if this can never be translated
 		$fields['overall_list/translate_text']['hidden'] =
 			$box['key']['isVersionControlled']

@@ -26,6 +26,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+//
+//  This file is deprecated, it will be removed in the next version!
+//  We suggest you use mod_deflate and mod_expires in Apache instead
+//
+
+
 require 'basicheader.inc.php';
 
 //Get the requested file from the URL

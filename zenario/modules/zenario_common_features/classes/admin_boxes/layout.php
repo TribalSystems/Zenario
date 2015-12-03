@@ -35,12 +35,12 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 		//1. Creating a new Layout from an unregistered Template File
 		if (engToBoolean($box['key']['create_layout_from_template_file']) && $box['key']['id']) {
 			
-			$details = explode('/', decodeItemIdForStorekeeper($box['key']['id']), 2);
+			$details = explode('/', decodeItemIdForOrganizer($box['key']['id']), 2);
 			$box['key']['family_name'] = $details[0];
 			$box['key']['file_base_name'] = $details[1];
 			$box['key']['id'] = '';
 			
-			$box['tabs']['template']['fields']['name']['value'] = decodeItemIdForStorekeeper($box['key']['file_base_name'], '');
+			$box['tabs']['template']['fields']['name']['value'] = decodeItemIdForOrganizer($box['key']['file_base_name'], '');
 			
 			$box['title'] = adminPhrase('Registering the template file "[[file_base_name]].tpl.php" and creating a new layout', $box['key']);
 		
@@ -86,7 +86,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 
 		
 		$box['tabs']['template']['fields']['skin_id']['pick_items']['path'] = 
-			'zenario__layouts/panels/template_families/hidden_nav/view_usable_skins//'. encodeItemIdForStorekeeper($box['key']['family_name']). '//';
+			'zenario__layouts/panels/template_families/hidden_nav/view_usable_skins//'. encodeItemIdForOrganizer($box['key']['family_name']). '//';
 		
 		//For new Layouts, check how many possible Skins there are for this Template Family.
 		//If there is only one possible choice, choose it by default.
@@ -124,7 +124,11 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 		if (engToBooleanArray($box['tabs']['template'], 'edit_mode', 'on') && checkPriv('_PRIV_EDIT_TEMPLATE')) {
 			
 			//Work out what the filename for the template should be
-			$newName = generateLayoutFileBaseName($values['template/name']);
+			if ($box['key']['duplicate']) {
+				$newName = generateLayoutFileBaseName($values['template/name']);
+			} else {
+				$newName = generateLayoutFileBaseName($values['template/name'], $box['key']['id']);
+			}
 			
 			//Check for any layouts with the same name.
 			$key = array('family_name' => $box['key']['family_name'], 'name' => $values['template/name']);
@@ -167,8 +171,11 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 				'content_type' => $values['content_type'],
 				'skin_id' => $values['skin_id']);
 			
-			$newName = generateLayoutFileBaseName($values['template/name']);
-			$tryToRemoveFiles = false;
+			if ($box['key']['duplicate']) {
+				$newName = generateLayoutFileBaseName($values['template/name']);
+			} else {
+				$newName = generateLayoutFileBaseName($values['template/name'], $box['key']['id']);
+			}
 			
 			//If changing the name of a layout, attempt to copy its files
 			if ($newName != $box['key']['file_base_name']) {

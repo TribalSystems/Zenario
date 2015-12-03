@@ -112,6 +112,8 @@ methods.generateTotals = function(data, itemsToCount, grandTotal) {
 						column.grandTotalExists = true;
 					}
 					
+				} else {
+					return;
 				}
 			}
 		}
@@ -136,6 +138,11 @@ methods.showPanel = function($header, $panel, $footer) {
 		decimalPlaces,
 		maxDecimalPlaces;
 	
+	if(this.items.maxNumberOfInlineButtons > 0) {
+		this.items.rowWidth = 30 * this.items.maxNumberOfInlineButtons; 
+	} else {
+		this.items.rowWidth = 30;
+	}
 	
 	var html = this.generateTotals(this.items),
 		$totals = $(html),

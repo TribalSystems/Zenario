@@ -53,160 +53,75 @@ zenario.lib(function(
 	//extensionOf() creates a new class (optionally as an extension of another class).
 	//methodsOf() allows you to get to the methods of a class.
 var methods = methodsOf(
-	panelTypes.form_builder = extensionOf(panelTypes.base)
+	panelTypes.form_builder = extensionOf(panelTypes.form_builder_base_class)
 );
-
-
-//Methods
 
 //Called by Organizer upon the first initialisation of this panel.
 //It is not recalled if Organizer's refresh button is pressed, or the administrator changes page
 methods.init = function() {
+	// Warning message when trying to leave without saving changes
+	this.saveChangesWarningMessage = 'You are currently editing this form. If you leave now you will lose any unsaved changes.';
 	
-};
-
-//Called by Organizer whenever it needs to set the panel data.
-methods.cmsSetsPanelTUIX = function(tuix) {
-	this.tuix = tuix;
-};
-
-//Called by Organizer whenever it needs to set the current tag-path
-methods.cmsSetsPath = function(path) {
-	this.path = path;
-};
-
-//Called by Organizer whenever a panel is first loaded with a specific item requested
-methods.cmsSetsRequestedItem = function(requestedItem) {
-	this.lastItemClicked =
-	this.requestedItem = requestedItem;
-};
-
-
-//If searching is enabled (i.e. your returnSearchingEnabled() method returns true)
-//then the CMS will call this method to tell you what the search term was
-methods.cmsSetsSearchTerm = function(searchTerm) {
-	this.searchTerm = searchTerm;
-};
-
-//Never show the left hand nav; always show this panel using the full width
-methods.returnShowLeftColumn = function() {
-	return false;
-};
-
-//Use this function to set AJAX URL you want to use to load the panel.
-//Initally the this.tuix variable will just contain a few important TUIX properties
-//and not your the panel definition from TUIX.
-//The default value here is a PHP script that will:
-	//Load all of the TUIX properties
-	//Call your preFillOrganizerPanel() method
-	//Populate items from the database if you set the db_items property in TUIX
-	//Call your fillOrganizerPanel() method
-//You can skip these steps and not do an AJAX request by returning false instead,
-//or do something different by returning a URL to a different PHP script
-methods.returnAJAXURL = function() {
-	return URLBasePath
-		+ 'zenario/admin/ajax.php?_json=1&path='
-		+ encodeURIComponent(this.path)
-		+ zenario.urlRequest(this.returnAJAXRequests());
-};
-
-//Returns the URL that the dev tools will use to load debug information.
-//Don't override this function!
-methods.returnDevToolsAJAXURL = function() {
-	return methods.returnAJAXURL.call(this);
-};
-
-//Use this to add any requests you need to the AJAX URL used to call your panel
-methods.returnAJAXRequests = function() {
-	return {};
-};
-
-//You should return the page size you wish to use, or false to disable pagination
-methods.returnPageSize = function() {
-	return Math.max(20, Math.min(500, 1*zenarioA.adminSettings.organizer_page_size || 50));
-};
-
-//Sets the title shown above the panel.
-//This is also shown in the back button when the back button would take you back to this panel.
-methods.returnPanelTitle = function() {
-	var title = this.tuix.title;
+	// Whether there are any local changes
+	this.changingForm = false;
 	
-	if (window.zenarioOSelectMode && (this.path == window.zenarioOTargetPath || window.zenarioOTargetPath === false)) {
-		if (window.zenarioOMultipleSelect && this.tuix.multiple_select_mode_title) {
-			title = this.tuix.multiple_select_mode_title;
-		} else if (this.tuix.select_mode_title) {
-			title = this.tuix.select_mode_title;
-		}
-	}
+	// Fields which cause details panel to update on change
+	this.formatOnChange = [
+		'readonly_or_mandatory',
+		'mandatory_condition_field_id',
+		'visibility',
+		'visible_condition_field_id',
+		'validation',
+		'default_value_options'
+	];
 	
-	if (zenarioO.filteredView) {
-		title += phrase.refined;
-	}
+	// Selector for all form fields
+	this.formFieldsSelector = '#organizer_form_fields .form_field';
 	
-	return title;
-};
-
-//Return whether you are allowing multiple items to be selected in full and quick mode.
-//(In select mode the opening picker will determine whether multiple select is allowed.)
-methods.returnMultipleSelectEnabled = function() {
-	return false;
-};
-
-
-//Whether to enable searching on a panel
-methods.returnSearchingEnabled = function() {
-	return false;
-};
-
-
-methods.putValuesIntoTUIX = function(tuix, values) {
-	var t, tab, f, field;
-	
-	if (tuix.tabs) {
-		foreach (tuix.tabs as t => tab) {
-			if (tab.fields) {
-				foreach (tab.fields as f => field) {
-					
-					delete field.value;
-					delete field.current_value;
-					
-					if (values[f] !== undefined) {
-						field.current_value = values[f];
-					}
-				}
-			}
-		}
-	}
-};
-
-methods.getValuesFromTUIX = function(tuix) {
-	var t, tab, f, field, values= {};
-	
-	if (tuix.tabs) {
-		foreach (tuix.tabs as t => tab) {
-			if (tab.fields) {
-				foreach (tab.fields as f => field) {
-					values[f] = field.current_value;
-				}
-			}
-		}
-	}
-	
-	return values;
+	// Selector for form fields inline buttons
+	this.formFieldInlineButtonsSelector = '#organizer_form_fields .form_field_inline_buttons';
 };
 
 // Change objects into ordered array
 methods.getOrderedItems = function(items) {
-	var item,
+	var item, id, field,
 		orderedItems = [];
 	
-	function compare(a, b) {
-		if (a.ord < b.ord) 
-			return -1;
-		if (a.ord > b.ord)
-			return 1;
-		return 0;
+	// Loop through each field
+	foreach (items as id => field) {
+		var fieldClone = _.clone(field);
+		if (!field.remove) {
+			// Check if field has a list of values
+			if (fieldClone['lov']) {
+				var values = [];
+				// If so store them in array
+				foreach (fieldClone['lov'] as id => value) {
+					values.push(value);
+				}
+				// Sort field lov
+				values.sort(this.sortByOrd);
+				fieldClone.lov = values;
+			}
+			// Store fields in array
+			orderedItems.push(fieldClone);
+		}
 	}
+	// Sort fields
+	orderedItems.sort(this.sortByOrd)
+	return orderedItems;
+};
+
+methods.getOrderedDatasetFields = function(items) {
+	// Loop through current form fields and find all used dataset fields
+	var datasetFieldsOnForm = {};
+	foreach (this.tuix.items as id => field) {
+		if (field.field_id) {
+			datasetFieldsOnForm[field.field_id] = true;
+		}
+	}
+	
+	var item,
+		orderedItems = [];
 	// Loop through each tab
 	foreach (items as tabName => tab) {
 		var item = {};
@@ -221,30 +136,19 @@ methods.getOrderedItems = function(items) {
 			item['fields'] = [];
 			// Loop through each field
 			foreach (tab['fields'] as id => field) {
-				// Check if field has a list of values
-				if (field['lov']) {
-					var values = [];
-					// If so store them in array
-					foreach (field['lov'] as id => value) {
-						values.push(value);
-					}
-					// Sort field lov
-					values.sort(compare);
-					field['lov'] = values;
+				// Store fields in array if not used on form already
+				if (datasetFieldsOnForm[id] !== true) {
+					item['fields'].push(field);
 				}
-				// Store fields in array
-				item['fields'].push(field);
 			}
 			// Sort fields
-			item['fields'].sort(compare)
-		} else {
-			this.tuix.items[tabName].fields = {};
+			item['fields'].sort(this.sortByOrd)
 		}
 		// Store tabs in array
 		orderedItems.push(item);
 	}
 	// Sort tabs
-	orderedItems.sort(compare);
+	orderedItems.sort(this.sortByOrd);
 	return orderedItems;
 };
 
@@ -252,18 +156,16 @@ methods.getOrderedItems = function(items) {
 //Draw the panel, as well as the header at the top and the footer at the bottom
 //This is called every time the panel is loaded, refreshed or when something in the header toolbar is changed.
 methods.showPanel = function($header, $panel, $footer) {
-	$header.html('').hide();
+	
 	var that = this,
 		items = this.getOrderedItems(this.tuix.items),
 		mergeFields = {
 			items: items
 		},
-		html = zenarioA.microTemplate('zenario_organizer_form_builder', mergeFields),
-		currentTab = false;
+		html = zenarioA.microTemplate('zenario_organizer_form_builder', mergeFields);
 	
-	this.changingForm = false;
-	this.currentTab = this.currentTab ? this.currentTab : false;
 	this.currentFieldTab = 'details';
+	this.currentFieldTypeTab = 'unlinked';
 	this.maxNewCustomTab = 1;
 	this.maxNewCustomField = 1;
 	this.maxNewCustomFieldValue = 1;
@@ -271,207 +173,135 @@ methods.showPanel = function($header, $panel, $footer) {
 	this.current_db_columns = this.tuix.existing_db_columns;
 	this.deleting = false;
 	
+	$header.html('').hide();
 	$panel.html(html).show();
+	$footer.html('').show();
 	
-	// Handle case where new tab is selected after ID has been changed from, e.g. t4 => 6
-	if (this.currentTab && !this.tuix.items[this.currentTab] && this.currentTabOrd && items[this.currentTabOrd]) {
-		this.currentTab = items[this.currentTabOrd].name;
-	}
-	
-	foreach (items as i => item) {
-		var $tab = $('#organizer_form_tab_' + item['name']);
-			$section = $('#organizer_section_' + item['name']);
-		
-		// Init new tab
-		this.initTab($tab);
-		
-		// Init new section
-		this.initSection($section);
-		
-		if (this.currentTab != false) {
-			if (item['name'] != this.currentTab) {
-				$section.hide().sortable('disable');
-			} else {
-				$tab.addClass('on');
-			}
-		} else {
-			if (item['ord'] != 1) {
-				$section.hide().sortable('disable');
-			} else {
-				$tab.addClass('on');
-				currentTab = item['name'];
-			}
-		}
-	}
-	
-	if (currentTab) {
-		this.currentTab = currentTab;
-	}
+	this.initSection();
 	
 	this.orderedItems = items;
 	
-	// Make new fields palette draggable
-	$('#organizer_field_type_list div.field_type').draggable({
-		connectToSortable: '#organizer_form_sections div.form_section',
+	// Make unlinked fields palette draggable
+	$('#organizer_field_type_list div.field_type, #organizer_centralised_field_type_list div.field_type').draggable({
+		connectToSortable: '#organizer_form_fields',
 		helper: function() {
 			var type = $(this).data('type');
 			return $('<div>[---PLACEHOLDER---]</div>').data('type', type).addClass('preview preview_' + type);
 		}
 	});
 	
-	// Make tabs sortable
-	$('#organizer_form_tabs').sortable({
-		axis: 'x',
-		containment: 'parent',
-		items: 'div.sort',
-		start: function(event, ui) {
-			that.startIndex = ui.item.index();
-		},
-		// Change tab order
-		stop: function(event, ui) {
-			if (that.startIndex != ui.item.index()) {
-				that.currentTabOrd = ui.item.index();
-				that.changeMadeToPanel();
-			}
-		}
-	});
-	
-	// Add a new tab
-	$('#organizer_add_new_tab').on('click', function() {
-		that.save();
-		if (that.validate() !== false) {
-			return false;
-		}
-		that.addNewTab();
-	});
-	
-	// Show new fields adder
-	$('#organizer_add_new_field').on('click', function() {
-		that.save();
-		if (that.validate() !== false) {
-			return false;
-		}
-		that.current.type = that.current.id = false;
-		that.showDetailsSection('organizer_field_type_list');
-	});
+	this.initLinkedFieldsAdder();
 	
 	// Edit a form field
-	$('#organizer_form_sections div.form_field').on('click', function() {
+	$(this.formFieldsSelector).on('click', function() {
 		that.fieldClick($(this));
 	});
 	
+	this.initDeleteButtons();
+};
+
+methods.initLinkedFieldsAdder = function() {
+	var that = this;
 	
-	var listenForDelete = function() {
-		// Listen for field/tab delete
-		$('#zenario_fbMessageButtons input.submit_selected').on('click', function() { 
-			setTimeout(function() {
-				if (that.deleting == 'tab') {
-					var $tab, $next;
-					
-					that.tuix.items[that.current.id] = {remove: true};
-					$tab = $('#organizer_form_tab_' + that.current.id);
-					
-					// Select another tab
-					$next = $tab.prev();
-					if ($next.length == 0) {
-						$next = $tab.next();
-					}
-					
-					// Remove tab element
-					$tab.remove();
-					that.changeMadeToPanel();
-					if ($next.length == 1) {
-						that.tabClick($next);
-					}
-				} else if (that.deleting = 'field') {
-					that.removeField();
-				}
-				that.deleting = false;
-			});
-		});
-	}
+	// Filter out fields already included on the form and order by ordinal
+	dataset_fields = this.getOrderedDatasetFields(this.tuix.dataset_fields);
 	
-	// Init remove buttons
-	$('#organizer_remove_form_tab').on('click', function() {
-		if (that.tuix.items[that.current.id].is_system_field == 0) { 
-			that.deleting = 'tab';
-			zenarioA.showMessage('Are you sure you want to delete this Tab?<br><br>All fields on this tab will also be deleted.', 'Delete', 'warning', true);
-			listenForDelete();
+	// Set linked fields HTML
+	var html = zenarioA.microTemplate('zenario_organizer_form_builder_dataset_tab', dataset_fields);
+	$('#organizer_linked_field_type_list').html(html);
+	
+	// Make linked fields palette draggable
+	$('#organizer_linked_field_type_list div.dataset_field').draggable({
+		connectToSortable: '#organizer_form_fields',
+		helper: function() {
+			var id = $(this).data('id'),
+				tab_name = $(this).data('tab_name'),
+				type = that.tuix.dataset_fields[tab_name].fields[id].type;
+			
+			return $('<div>[---PLACEHOLDER---]</div>')
+				.data('type', type)
+				.data('id', id)
+				.data('tab_name', tab_name)
+				.addClass('preview preview_' + type);
 		}
 	});
-	
-	$('#organizer_remove_form_field').on('click', function() {
-		that.deleting = 'field';
+};
+
+methods.initDeleteButtons = function() {
+	var that = this;
+	$('#organizer_form_fields .delete_icon').off().on('click', function(e) {
+		that.deleting = true;
 		zenarioA.showMessage('Are you sure you want to delete this Field?', 'Delete', 'warning', true);
-		listenForDelete();
+		that.listenForDelete($(this).data('id'));
+		e.stopPropagation();
 	});
-	
-	$footer.html('').show();
+};
+
+methods.listenForDelete = function(id) {
+	// Listen for field delete
+	var that = this;
+	$('#zenario_fbMessageButtons input.submit_selected').on('click', function() { 
+		setTimeout(function() {
+			if (that.deleting == true) {
+				that.deleteField(id);
+			}
+			that.deleting = false;
+		});
+	});
 };
 
 
-methods.addNewTab = function() {
-	var tabName = '__custom_tab_t' + this.maxNewCustomTab++,
-		label = 'Untitled tab',
-		mergeFields = {
-			name: tabName,
-			label: label
-		},
-		html = zenarioA.microTemplate('zenario_organizer_form_builder_tab', mergeFields);
-	$('#organizer_add_new_tab').before(html);
-	this.tuix.items[tabName] = {
-		label: label,
-		is_new_tab: true,
-		is_system_field: 0,
-		fields: {}
-	};
-	// Create new section for fields
-	html = zenarioA.microTemplate('zenario_organizer_form_builder_section', mergeFields);
-	$('#organizer_form_sections').append(html);
-	var $newSection = $('#organizer_section_' + tabName);
-	this.initSection($newSection);
-	// Init new tab
-	var $newTab = $('#organizer_form_tab_' + tabName);
-	this.initTab($newTab);
-	// Open properties for new tab
-	this.tabClick($newTab);
-	// Show apply/cancel buttons
-	this.changeMadeToPanel();
-};
-
-
-methods.removeField = function() {
+methods.deleteField = function(id) {
+	//TODO is validation nessesary here??
 	var that = this,
-		id = that.current.id,
-		$field,
-		$next;
-	
-	if (!this.tuix.items[this.currentTab].fields[id] || (this.tuix.items[this.currentTab].fields[id].is_system_field == 0)) {
-		// Mark for deletion
-		this.tuix.items[this.currentTab].fields[id] = {remove: true};
-		$field = $('#organizer_form_field_' + id);
-		
-		if ($field) {
-			// Select the previous field that isn't already being removed (because of the animation), otherwise look for the next field
-			// othereise show add fields panel
-			
-			$next = this.selectNextField($field);
-			that.changeMadeToPanel();
-			
-			$field.animate({height: 0, opacity: 0}, 500, function() {
-				$field.remove();
-				if ($next === false) {
-					that.showNoFieldsMessage();
+		afterValidate = function(errors) {
+			if (_.isEmpty(errors)) {
+				var $field, $next, field_id;
+				
+				if (id === undefined) {
+					id = that.current.id;
 				}
-			});
-		}
+				
+				// Remember dataset field ID
+				field_id = that.tuix.items[id].field_id;
+				
+				// Mark for deletion
+				that.tuix.items[id] = {remove: true};
+				$field = $('#organizer_form_field_' + id);
+				
+				// Update linked fields list if dataset field
+				if (field_id) {
+					that.initLinkedFieldsAdder();
+				}
+				
+				if ($field) {
+					// Select the previous field that isn't already being removed (because of the animation), otherwise look for the next field
+					// othereise show add fields panel
+					
+					$next = that.selectNextField($field);
+					that.changeMadeToPanel();
+					
+					$field.animate({height: 0, opacity: 0}, 500, function() {
+						$field.remove();
+						if ($next === false) {
+							that.showNoFieldsMessage();
+						}
+					});
+				}
+			}
+		};
+	
+	if (cb = this.validate(true)) {
+		cb.after(afterValidate);
+	} else {
+		afterValidate([]);
 	}
-}
+};
 
 methods.selectNextField = function($field) {
 	$next = $field.prev();
 	while ($next.length == 1) {
-		if (this.tuix.items[this.currentTab].fields[$next.data('id')] && this.tuix.items[this.currentTab].fields[$next.data('id')].remove) {
+		if (this.tuix.items[$next.data('id')] && this.tuix.items[$next.data('id')].remove) {
 			$next = $next.prev();
 		} else {
 			break;
@@ -480,7 +310,7 @@ methods.selectNextField = function($field) {
 	if ($next.length == 0) {
 		$next = $field.next();
 		while ($next.length == 1) {
-			if (this.tuix.items[this.currentTab].fields[$next.data('id')] && this.tuix.items[this.currentTab].fields[$next.data('id')].remove) {
+			if (this.tuix.items[$next.data('id')] && this.tuix.items[$next.data('id')].remove) {
 				$next = $next.next();
 			} else {
 				break;
@@ -492,66 +322,18 @@ methods.selectNextField = function($field) {
 		return $next;
 	}
 	return false;
-}
+};
 
 methods.showNoFieldsMessage = function() {
 	$('#organizer_section_' + this.currentTab).addClass('empty').html(
-		'<span class="no_fields_message">There are no fields on this tab</span>');
+		'<span class="no_fields_message">There are no fields on this form</span>');
 	this.showDetailsSection('organizer_field_type_list');
-}
-
-methods.initTab = function($tab) {
-	var that = this;
-	// Change form tab
-	$tab.on('click', function() {
-		that.tabClick($(this));
-	});
-	$tab.droppable({
-		accept: 'div.form_field:not(.system_field)',
-		greedy: true,
-		hoverClass: 'ui-state-hover',
-		tolerance: 'pointer',
-		drop: function(event, ui) {
-			var tab = $(this).data('name'),
-				id = $(ui.draggable).data('id'),
-				canDrop = true,
-				$next;
-			
-			if ((that.current.type == 'field') && (id == that.current.id)) {
-				that.save();
-				if (that.validate() !== false) {
-					canDrop = false;
-				}
-			}
-			
-			if (canDrop) {
-				//Use a setTimeout() as a hack to make sure that this code is run after jQuery droppable has finished processing the element
-				setTimeout(function() {
-					// Move element to new tab
-					$(ui.draggable).detach().appendTo('#organizer_section_' + tab);
-					// Update items array
-					that.tuix.items[tab].fields[id] = that.tuix.items[that.currentTab].fields[id];
-					delete(that.tuix.items[that.currentTab].fields[id]);
-					if (that.current.type == 'field') {
-						that.current = {type: 'tab', id: that.currentTab};
-						that.tabClick($('#organizer_form_tab_' + that.currentTab));
-					}
-					
-					if (_.size(that.tuix.items[that.currentTab].fields) == 0) {
-						that.showNoFieldsMessage();
-					}
-					
-					that.removeNoItemsMessage(tab);
-				});
-			}
-		}
-	});
 };
 
 
-methods.initSection = function($section) {
+methods.initSection = function() {
 	var that = this;
-	$section.sortable({
+	$('#organizer_form_fields').sortable({
 		items: 'div.form_field',
 		// Add new field to the form
 		receive: function(event, ui) {
@@ -582,18 +364,30 @@ methods.removeNoItemsMessage = function(sectionName) {
 
 // Add a new field to the current section
 methods.addNewField = function($field) {
-	var id = 't' + this.maxNewCustomField++,
+	var form_field_id = 't' + this.maxNewCustomField++,
 		type = $field.data('type'),
-		label = 'Untitled',
+		dataset_field_id = $field.data('id'),
+		dataset_field_tab_name = $field.data('tab_name'),
+		field_label = 'Untitled',
 		mergeFields = {
-			id: id,
+			form_field_id: form_field_id,
 			type: type,
-			label: label
+			field_label: field_label
 		},
 		values_source = '';
 	
+	// Add initial details if dataset field
+	if (dataset_field_id !== undefined && dataset_field_tab_name !== undefined) {
+		datasetField = this.tuix.dataset_fields[dataset_field_tab_name].fields[dataset_field_id];
+		mergeFields['field_label'] = datasetField['label'];
+		mergeFields['name'] = datasetField['label'];
+		mergeFields['field_id'] = dataset_field_id;
+	}
+	
+	// Remove no items message from tab
 	this.removeNoItemsMessage(this.currentTab);
 	
+	// If new field is a multivalue, add an inital list of values
 	if ($.inArray(type, ['checkboxes', 'radios', 'select']) > -1) {
 		mergeFields.lov = [];
 		for (var i = 1; i <= 3; i++) {
@@ -608,6 +402,7 @@ methods.addNewField = function($field) {
 		}
 	}
 	
+	// Load centralised LOV for preview
 	if (type == 'centralised_radios') {
 		foreach (this.tuix.centralised_lists.values as method) {
 			values_source = method;
@@ -616,31 +411,24 @@ methods.addNewField = function($field) {
 		mergeFields.lov = _.toArray(this.tuix.centralised_lists.initial_lov);
 	}
 	
+	// Set HTML
 	var html = zenarioA.microTemplate('zenario_organizer_form_builder_field', mergeFields);
-	
 	$field.replaceWith(html);
-	this.tuix.items[this.currentTab].fields[id] = {
-		id: id,
-		label: label,
-		type: type,
-		is_protected: 0,
-		include_in_export: 0,
+	
+	// Add other properties to field
+	var otherProperties = {
 		is_new_field: true,
 		just_added: true,
-		db_column: '',
-		is_system_field: 0,
-		validation: 'none',
-		required: 0,
-		show_in_organizer: 0,
-		create_index: 0,
-		values_source: values_source
-	}
+		values_source: values_source,
+		readonly_or_mandatory: 'none',
+		default_value_mode: 'none',
+		remove: false
+	};
+	$.extend(mergeFields, otherProperties);
 	
-	if (mergeFields.lov) {
-		this.tuix.items[this.currentTab].fields[id].lov = mergeFields.lov;
-	}
-	
-	var $newField = $('#organizer_form_field_' + id);
+	// Add new field to list
+	this.tuix.items[form_field_id] = mergeFields;
+	var $newField = $('#organizer_form_field_' + form_field_id);
 	$newField.effect({effect: 'highlight', duration: 1000});
 	
 	// Init field
@@ -648,131 +436,241 @@ methods.addNewField = function($field) {
 	
 	// Open properties for new field
 	this.fieldClick($newField);
-};
-
-
-methods.initField = function($field) {
-	var that = this;
-	$field.on('click', function() {
-		that.fieldClick($(this));
-	});
-};
-
-
-methods.tabClick = function($tab) {
 	
-	var that = this,
-		values = {};
-	
-	this.save();
-	if (this.validate() !== false) {
-		return false;
+	// Update list of linked fields
+	if (dataset_field_id !== undefined && dataset_field_tab_name !== undefined) {
+		this.initLinkedFieldsAdder();
 	}
-	
-	// Disable old section
-	$('#organizer_section_' + this.currentTab).sortable('disable');
-	
-	this.currentTab = $tab.data('name');
-	this.currentTabOrd = $tab.index();
-	this.current = {id: this.currentTab, type: 'tab'};
-	
-	// Enable new section
-	$('#organizer_section_' + this.currentTab).sortable('enable');
-	
-	$('#organizer_form_tabs div.tab').removeClass('on');
-	$tab.addClass('on');
-	$('#organizer_form_sections div.form_section').hide();
-	
-	// Load selected tabs current properties
-	values = this.tuix.items[this.currentTab] || {};
-	this.setCurrentTabDetails(values);
-	
-	// Hide remove button if system field
-	if (this.tuix.items[this.currentTab] && (this.tuix.items[this.currentTab].is_system_field == 1)) {
-		$('#organizer_remove_form_tab').hide();
-	} else {
-		$('#organizer_remove_form_tab').show();
-	}
-	
-	// Show details panel
-	this.showDetailsSection('organizer_tab_details');
-	
-	// Show tab fields
-	$('#organizer_section_' + this.currentTab).show();
 };
 
-methods.setCurrentTabDetails = function(values) {
-	var values = _.clone(values);
-	values.parent_id_select_list = this.orderedItems;
-	var that = this;
-		html = zenarioA.microTemplate('zenario_organizer_form_builder_tab_details', values)
-	$('#organizer_tab_details_inner').html(html);
-	
-	$('#organizer_tab_details :input').off().on('change', function() {
-		that.changeMadeToPanel();
-	});
-	
-	$('#organizer_tab_details input[type="text"]').on('keyup', function() {
-		that.changeMadeToPanel();
-	});
-	
-	$('#tab__label').on('keyup', function() {
-		$('#organizer_form_tab_' + that.currentTab + ' span').text($(this).val());
-	});
-};
-
-methods.getCurrentTabDetails = function() {
-	var tab = {};
-	tab.label = $('#tab__label').val();
-	tab.parent_field_id = $('#tab__parent_field_id').val();
-	return tab;
-};
 
 methods.fieldClick = function($field) {
-	
-	var id = $field.data('id');
+	var that = this,
+		afterValidate = function(errors) {
+			if (_.isEmpty(errors)) {
+				var id = $field.data('id');
+				
+				// Select clicked field
+				that.current = {type: 'field', id: id};
+				
+				// Add class to selected field
+				$(that.formFieldsSelector).removeClass('selected');
+				$field.addClass('selected');
+				
+				that.currentFieldTab = 'details';
+				
+				that.setCurrentFieldDetails();
+				
+				// Show selected field delete button if exists
+				$(that.formFieldInlineButtonsSelector).hide();
+				$('#organizer_form_field_inline_buttons_' + that.current.id).show();
+				
+				// Show details panel
+				that.showDetailsSection('organizer_field_details');
+			}
+		};
 	
 	this.save();
-	if (this.validate() !== false) {
-		return false;
-	}
-	this.current = {type: 'field', id: id};
-	
-	// Add class to selected field
-	$('#organizer_form_sections .form_field').removeClass('selected');
-	$field.addClass('selected');
-	
-	
-	var values = (this.tuix.items[this.currentTab]['fields'][id] || {});
-	this.setCurrentFieldDetails(values);
-	this.showFieldDetailsSection('details', true);
-	
-	// Hide remove button if system field
-	if (this.tuix.items[this.currentTab].fields[id] && (this.tuix.items[this.currentTab].fields[id].is_system_field == 1)) {
-		$('#organizer_remove_form_field').hide();
+	if (cb = this.validate()) {
+		cb.after(afterValidate);
 	} else {
-		$('#organizer_remove_form_field').show();
+		afterValidate([]);
 	}
-	
-	// Show details panel
-	this.showDetailsSection('organizer_field_details');
 };
 
-methods.setCurrentFieldDetails = function(values) {
+
+methods.setCurrentFieldDetails = function() {
 	
-	var values = _.clone(values);
-	values.parent_id_select_list = this.orderedItems;
-	values.centralised_lists = this.tuix.centralised_lists;
-	values.dataset_label = this.tuix.dataset_label;
-	values.is_text_field = ($.inArray(values.type, ['date', 'editor', 'text', 'textarea', 'url']) > -1);
-	values.is_checkbox_field = ($.inArray(values.type, ['group', 'checkbox']) > -1);
-	values.is_list_field = ($.inArray(values.type, ['checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select']) > -1);
-	values.show_searchable_field = values.is_text_field ? values.show_in_organizer : values.show_in_organizer && values.create_index;
+	
 	var that = this,
-		html = zenarioA.microTemplate('zenario_organizer_form_builder_field_details', values);
+		values = (this.tuix.items[this.current.id] || {}),
+		field = _.clone(values);
 	
+	// Pass the current tab
+	field.currentFieldTab = this.currentFieldTab;
+	
+	field.centralised_lists = this.tuix.centralised_lists;
+	
+	//TODO add all fields
+	
+	// Details tab
+	
+	var readonly_or_mandatory_options = {
+		none: {
+			ord: 1,
+			label: 'None'
+		},
+		mandatory: {
+			ord: 2,
+			label: 'Mandatory'
+		},
+		readonly: {
+			ord: 3,
+			label: 'Read-only'
+		},
+		conditional_mandatory: {
+			ord: 4,
+			label: 'Mandatory on condition'
+		}
+	};
+	field.readonly_or_mandatory_options = this.createSelectList(readonly_or_mandatory_options, field.readonly_or_mandatory);
+	
+	// Mandatory on condition field options
+	field.mandatory_condition_field_id_options = this.createSelectList(this.tuix.conditional_fields, field.mandatory_condition_field_id, true);
+	
+	// Mandatory on condition field value options
+	if (field.mandatory_condition_field_id && this.tuix.conditional_fields_values[field.mandatory_condition_field_id]) {
+		field.mandatory_condition_field_value_options = this.createSelectList(
+			this.tuix.conditional_fields_values[field.mandatory_condition_field_id], 
+			field.mandatory_condition_field_value,
+			true
+		);
+	}
+	
+	// Visibility options
+	var visibility_options = {
+		visible: {
+			ord: 1,
+			label: 'Visible'
+		},
+		hidden: {
+			ord: 2,
+			label: 'Hidden'
+		},
+		visible_on_condition: {
+			ord: 3,
+			label: 'Visible on condition'
+		}
+	};
+	field.visibility_options = this.createSelectList(visibility_options, field.visibility);
+	
+	// Visible on condition field options
+	field.visible_condition_field_id_options = this.createSelectList(this.tuix.conditional_fields, field.visible_condition_field_id, true);
+	
+	// Visible if options
+	if (field.visible_condition_field_id && this.tuix.conditional_fields_values[field.visible_condition_field_id]) {
+		field.visible_condition_field_value_options = this.createSelectList(
+			this.tuix.conditional_fields_values[field.visible_condition_field_id], 
+			field.visible_condition_field_value,
+			true
+		);
+	}
+	
+	// Validation options
+	var validation_options = {
+		none: {
+			ord: 1,
+			label: 'None'
+		},
+		email: {
+			ord: 2,
+			label: 'Email'
+		},
+		URL: {
+			ord: 3,
+			label: 'URL'
+		},
+		number: {
+			ord: 4,
+			label: 'Number'
+		},
+		integer: {
+			ord: 5,
+			label: 'Integer'
+		},
+		floating_point: {
+			ord: 6,
+			label: 'Floating point'
+		}
+	};
+	field.validation_options = this.createSelectList(validation_options, field.field_validation);
+	
+	// Size options
+	var size_options = {
+		small: {
+			ord: 1,
+			label: 'Small'
+		},
+		medium: {
+			ord: 2,
+			label: 'Medium'
+		},
+		large: {
+			ord: 3,
+			label: 'Large'
+		}
+	};
+	field.size_options = this.createSelectList(size_options, field.size, true);
+	
+	// Numeric field A options
+	// Numeric field B options
+	var floatingPointFields = this.getFloatingPointFields();
+	var numeric_field_options = {};
+	foreach (floatingPointFields as id => floatingPointField) {
+		numeric_field_options[id] = {
+			ord: floatingPointField.ord,
+			label: floatingPointField.name
+		};
+	}
+	field.numeric_field_1_options = this.createSelectList(numeric_field_options, field.numeric_field_1, true);
+	field.numeric_field_2_options = this.createSelectList(numeric_field_options, field.numeric_field_2, true);
+	
+	// Calculation type options
+	var calculation_type_options = {
+		'+': {
+			ord: 1,
+			label: '+'
+		},
+		'-': {
+			ord: 2,
+			label: '-'
+		}
+	};
+	field.calculation_type_options = this.createSelectList(calculation_type_options, field.calculation_type);
+	// Field to mirror options
+	var mirroredFields = this.getMirroredFields();
+	var restatement_field_options = {};
+	foreach (mirroredFields as id => mirroredField) {
+		restatement_field_options[id] = {
+			ord: mirroredField.ord,
+			label: mirroredField.name
+		};
+	}
+	field.restatement_field_options = this.createSelectList(restatement_field_options, field.restatement_field);
+	
+	// Advanced tab
+	
+	// Default value mode options
+	var default_value_mode_options = {
+		none: {
+			ord: 1,
+			label: 'No default value'
+		},
+		value: {
+			ord: 2,
+			label: 'Enter a default value'
+		},
+		method: {
+			ord: 3,
+			label: 'Call a modules static method to get the default value'
+		}
+	};
+	field.default_value_mode_options = this.createRadioList(default_value_mode_options, field.default_value_mode, 'default_value_mode');
+	
+	// Default value lov options
+	field.default_value_lov_options = this.createSelectList(field.lov, field.default_value);
+	
+	
+	
+	
+	// Get HTML
+	var html = zenarioA.microTemplate('zenario_organizer_form_builder_field_details', field);
 	$('#organizer_field_details_inner').html(html);
 	
+	
+	
+	
+	// Listeners
 	// Listen for changes
 	$('#organizer_field_details :input').off().on('change', function() {
 		that.changeMadeToPanel();
@@ -782,213 +680,152 @@ methods.setCurrentFieldDetails = function(values) {
 	});
 	
 	// Update label and code name
-	$('#field__label').on('keyup', function() {
+	$('#field__field_label').on('keyup', function() {
 		$('#organizer_form_field_' + that.current.id + ' .label').text($(this).val());
-		if (values.just_added) {
-			var db_column = $(this).val().toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
-			$('#field__db_column').val(db_column);
-		}
-	});
-	
-	// Disable code name if protected and existing field
-	$('#field__is_protected').on('change', function() {
-		if (!values.is_new_field) {
-			$('#field__db_column').prop('readonly', $(this).prop('checked'));
-		}
 	});
 	
 	
-	$('#field__label').val(values.label);
-	$('#field__db_column').val(values.db_column);
-	$('#field__note_below').val(values.note_below);
-	$('#field__is_protected').prop('checked', values.is_protected);
-	$('input:radio[name="field__create_index"]').filter('[value="' +  values.create_index + '"]').prop('checked', true);
 	
-	// Disable code name for system fields
-	if (values.is_system_field) {
-		$('#field__db_column').prop('readonly', true);
-	} else {
-		var visibility = (values.always_show ? 2 : (values.show_by_default ? 1 : ''));
-		
-		$('#field__required').prop('checked', values.required);
-		if (values.required) {
-			$('#field__required_message').val(values.required_message);
+	// formatFieldDetails onchange
+	var formatOnChangeSelector = '';
+	for (var i = 0; i < this.formatOnChange.length; i++) {
+		if (i != 0) {
+			formatOnChangeSelector += ', ';
 		}
-		$('#field__required').on('change', function() {
-			$('#field_container__required_message').toggle(this.checked);
-		});
-		$('#field__show_in_organizer').prop('checked', values.show_in_organizer);
-		$('#field__show_in_organizer').on('change', function() {
-			$('#field_container__visibility').toggle(this.checked);
-			
-			var create_index = ($('input:radio[name="field__create_index"]:checked').val() == true);
-				searchable = values.is_text_field ? this.checked : (create_index && this.checked);
-			$('#field_container__searchable').toggle(searchable);
-			$('#field_container__sortable').toggle(create_index && this.checked);
-		});
-		
-		$('input:radio[name="field__create_index"]').on('change', function() {
-			var create_index = $('input:radio[name="field__create_index"]:checked').val() == true,
-				show_in_organizer = $('#field__show_in_organizer').prop('checked'),
-				searchable = values.is_text_field ? show_in_organizer : (create_index && show_in_organizer);
-			
-			$('#field_container__searchable').toggle(searchable);
-			$('#field_container__sortable').toggle(create_index && show_in_organizer);
-		});
-		
-		$('#field__visibility').val(visibility);
+		formatOnChangeSelector += '#field__' + this.formatOnChange[i] + ' :input';
 	}
+	$(formatOnChangeSelector).on('change', function() {
+		that.formatFieldDetails();
+	});
 	
-	if (values.db_column) {
-		$('#field__include_in_export').prop('checked', (values.include_in_export == true));
-	}
+	// Init new fields adder
+	this.initAddNewFieldsButton();
 	
-	switch (values.type) {
-		case 'select':
-		case 'checkboxes':
-		case 'radios':
-			// Order LOV by ordinal
-			var lov = [];
-			foreach (values.lov as id => value) {
-				if (!values.remove) {
-					lov[value.ord] = value
+	// Sort LOV by ordinal
+	var lov = this.getOrderedItems(field.lov);
+	
+	// Place LOV on page
+	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', lov);
+	$('#field_values_list')
+		.html(html)
+		.sortable({
+			start: function(event, ui) {
+				that.startIndex = ui.item.index();
+			},
+			stop: function(event, ui) {
+				that.save();
+				that.setCurrentFieldValues();
+				if (that.startIndex != ui.item.index()) {
+					that.changeMadeToPanel();
 				}
 			}
-			
-			// Place LOV on page
-			var html = zenarioA.microTemplate('zenario_organizer_form_builder_field_value', lov);
-			$('#field_values_list')
-				.html(html)
-				.sortable({
-					start: function(event, ui) {
-						that.startIndex = ui.item.index();
-					},
-					stop: function(event, ui) {
-						that.redrawCurrentFieldValues();
-						if (that.startIndex != ui.item.index()) {
-							that.changeMadeToPanel();
-						}
-					}
-				})
-			this.initFieldValues();
-			
-			// Setup add button
-			$('#organizer_add_a_field_value').on('click', function() {
-				var id = that.maxNewCustomFieldValue++,
-					mergeFields = {
-						id: 't' + id,
-						label: 'Untitled'
-					},
-					html = zenarioA.microTemplate('zenario_organizer_form_builder_field_value', mergeFields);
-				$('#field_values_list').append(html);
-				that.redrawCurrentFieldValues();
-				that.initFieldValues();
-				that.changeMadeToPanel();
-			});
-			break;
-		case 'centralised_select':
-		case 'centralised_radios':
-			if (!values.is_system_field) {
-				var $values_source = $('#field__values_source'),
-					$values_source_filter = $('#field__values_source_filter'),
-					$values_source_filter_label = $('#field_label__source_filter'),
-					$values_source_filter_container = $('#field_container__values_source_filter'),
-					label, can_filter;
-				
-				// Set values
-				$values_source.val(values.values_source);
-				label = $values_source.find(':selected').data('label');
-				if (values.values_source && label) {
-					$values_source_filter_label.html(label);
-				}
-				if (values.values_source_filter) {
-					$values_source_filter.val(values.values_source_filter);
-				}
-				can_filter = $values_source.find(':selected').data('filter');
-				if (can_filter) {
-					$values_source_filter_container.show();
-				}
-				
-				if (values.type == 'centralised_radios') {
-					$values_source.on('change', function() {
-						
-						// Show/hide filter option and change label
-						var $option = $(this).find(':selected');
-						$values_source_filter_container.toggle($option.data('filter') == true);
-						if ($option.data('label')) {
-							$values_source_filter_label.html($option.data('label'));
-						}
-						
-						that.updateCentralisedRadioValues($values_source, $values_source_filter, $values_source_filter_container, values);
-					});
-					
-					$values_source_filter.on('blur', function() {
-						that.updateCentralisedRadioValues($values_source, $values_source_filter, $values_source_filter_container, values);
-					});
-				}
-			}
-			break;
-		case 'textarea':
-		case 'editor':
-			var height = (values.height == false) ? '' : values.height,
-				width = (values.width == false) ? '' : values.width;
-			$('#field__height').val(height);
-			$('#field__width').val(width);
-			break;
-		case 'text':
-			if (!values.is_system_field) {
-				var validation = (values.validation == false) ? 'none' : values.validation;
-				
-				$('#field__validation__' + validation).prop('checked', true);
-				if (validation != 'none') {
-					$('#field__validation_message').val(values.validation_message);
-				}
-				
-				// Show/hide validation message box
-				$('#field_section__validation input:radio[name="field__validation"]').on('change', function() {
-					$('#field_container__validation_message').toggle($(this).prop('id') != 'field__validation__none');
-				});
-			}
-			break;
-	}
+		});
+	
+	// Bind events
+	this.initFieldValues();
+	
+	// Setup add value button
+	this.initAddNewFieldValuesButton();
 };
 
+
+methods.initAddNewFieldValuesButton = function() {
+	var that = this;
+	$('#organizer_add_a_field_value').on('click', function() {
+		
+		// Save current values
+		that.save();
+		
+		// Save new value
+		var field = that.tuix.items[that.current.id],
+			id = 't' + that.maxNewCustomFieldValue++,
+			value = {
+				id: id,
+				label: 'Untitled',
+				ord: _.size(field['lov']) + 100,
+				is_new_value: true
+			};
+		field.lov[id] = value;
+		
+		// Redraw list to include new field
+		that.setCurrentFieldValues();
+		that.initFieldValues();
+		that.changeMadeToPanel();
+	});
+};
+
+
+methods.getFloatingPointFields = function() {
+	var floatingPointFields = {};
+	foreach (this.tuix.items as id => field) {
+		if (['integer', 'number', 'floating_point'].indexOf(field.field_validation) != -1) {
+			floatingPointFields[id] = _.clone(field);
+		}
+	}
+	return floatingPointFields;
+};
+
+methods.getMirroredFields = function() {
+	var mirroredFields = {};
+	foreach (this.tuix.items as id => field) {
+		if (
+			[
+				'checkbox',
+				'checkboxes',
+				'date',
+				'editor',
+				'radios',
+				'centralised_radios',
+				'select',
+				'centralised_select',
+				'text',
+				'textarea',
+				'url',
+				'attachment',
+				'calculated'
+			].indexOf(field.type) != -1
+		) {
+			mirroredFields[id] = _.clone(field);
+		}
+	}
+	return mirroredFields;
+};
+
+
 methods.updateCentralisedRadioValues = function($values_source, $values_source_filter, $values_source_filter_container, values) {
-	var that = this,
-		actionRequests = zenarioO.getKey(),
-		actionTarget = 
-		'zenario/ajax.php?' +
-			'__pluginClassName__=' + this.tuix.class_name +
-			'&__path__=' + zenarioO.path +
-			'&method_call=handleOrganizerPanelAJAX';
 	
-	actionRequests.mode = 'get_centralised_lov';
-	actionRequests.method = $values_source.val();
+	var actionRequests = {
+		mode: 'get_centralised_lov',
+		method: $values_source.val()
+	};
+	
 	if (actionRequests.method && $values_source_filter_container.is(':visible')) {
 		actionRequests.filter = $values_source_filter.val();
 	}
 	
-	zenario.ajax(
-		URLBasePath + actionTarget,
-		actionRequests
-	).after(function(data) {
+	this.sendAJAXRequest(actionRequests).after(function(data) {
 		var lov = JSON.parse(data),
-			html = zenarioA.microTemplate('zenario_organizer_form_builder_radio_values', lov);
+			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_disabled', lov);
 		$('#organizer_form_field_values_' + values.id).html(html);
 	});
 };
 
-methods.redrawCurrentFieldValues = function() {
+methods.setCurrentFieldValues = function() {
 	
 	var id = this.current.id,
-		field = this.tuix.items[this.currentTab].fields[id],
-		mergeFields = this.getCurrentFieldValues(field),
+		field = this.tuix.items[id],
+		items = field.lov,
+		mergeFields = this.getOrderedItems(items),
 		html = '';
+	
+	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', mergeFields);
+	$('#field_values_list').html(html);
+	
 	if ($.inArray(field.type, ['checkboxes', 'radios']) > -1) {
 		if (field.type == 'checkboxes') {
-			html = zenarioA.microTemplate('zenario_organizer_form_builder_checkbox_values', mergeFields);
+			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values', mergeFields);
 		} else if (field.type == 'radios') {
-			html = zenarioA.microTemplate('zenario_organizer_form_builder_radio_values', mergeFields);
+			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_disabled', mergeFields);
 		}
 		$('#organizer_form_field_values_' + id).html(html);
 	}
@@ -999,7 +836,11 @@ methods.initFieldValues = function() {
 	// Handle remove button
 	$('#field_values_list div.remove').off().on('click', function() {
 		var id = $(this).data('id');
+		// Remove from stored values
+		that.tuix.items[that.current.id].lov[id] = {remove: true};
+		// Remove from preview
 		$('#organizer_field_value_' + id).remove();
+		// Remove from details section
 		$(this).parent().remove();
 		that.changeMadeToPanel();
 	});
@@ -1012,472 +853,120 @@ methods.initFieldValues = function() {
 	});
 };
 
+methods.getCurrentFieldValues = function() {
+	var that = this,
+		field = this.tuix.items[that.current.id];
+		lov = field.lov;
+	$('#field_values_list div.field_value').each(function(i, value) {
+		var id = $(this).data('id');
+		lov[id] = {
+			id: id,
+			label: $(value).find('input').val(),
+			ord: i + 1
+		}
+		if (field.lov[id]
+			&& field.lov[id].is_new_value
+		) {
+			lov[id].is_new_value = true;
+		}
+	});
+	return lov;
+};
+
+// Get the current values for a field
 methods.getCurrentFieldDetails = function() {
 	var field = {},
-		current = this.tuix.items[this.currentTab].fields[this.current.id],
-		is_system_field = (current.is_system_field == true);
+		current = this.tuix.items[this.current.id];
 	
-	field.label = $('#field__label').val();
-	field.db_column = $('#field__db_column').val();
-	field.is_protected = $('#field__is_protected').prop('checked');
-	field.note_below = $('#field__note_below').val();
 	
-	if (!is_system_field) {
-		field.parent_id = $('#field__parent_id').val();
-		field.required = $('#field__required').prop('checked');
-		field.required_message = (field.required == true) ? $('#field__required_message').val() : '';
-		field.show_in_organizer = $('#field__show_in_organizer').prop('checked');
-		field.create_index = ($('input:radio[name="field__create_index"]:checked').val() == true);
-		
-		if (field.show_in_organizer) {
-			var visibility =  $('#field__visibility').val();
-			field.always_show = (visibility == 2);
-			field.show_by_default = (visibility == 1);
-			field.searchable = $('#field__searchable').prop('checked');
-			if (field.create_index) {
-				field.sortable = $('#field__sortable').prop('checked');
-			}
-		}
+	$.each($('#organizer_field_details_form').serializeArray(), function(index, input) {
+		field[input.name] = input.value;
+	});
+	
+	if (field.default_value_lov !== undefined) {
+		field.default_value = field.default_value_lov;
+	} else if (field.default_value_text !== undefined) {
+		field.default_value = field.default_value_text;
 	}
 	
-	if (current.db_column) {
-		field.include_in_export = $('#field__include_in_export').prop('checked');
+	// Values tab
+	if ((['select', 'radios', 'checkboxes'].indexOf(current.type) != -1) && !current.field_id) {
+		field.lov = this.getCurrentFieldValues();
 	}
 	
-	switch (current.type) {
-		case 'select':
-		case 'checkboxes':
-		case 'radios':
-			field.lov = this.getCurrentFieldValues(current);
-			break;
-		case 'centralised_select':
-		case 'centralised_radios':
-			if (!is_system_field) {
-				field.values_source = $('#field__values_source').val();
-				field.values_source_filter = (field.values_source) ? $('#field__values_source_filter').val() : '';
-			}
-			break;
-		case 'editor':
-		case 'textarea':
-			field.height = $('#field__height').val();
-			field.width = $('#field__width').val();
-			break;
-		case 'text':
-			if (!is_system_field) {
-				field.validation = $('#field_section__validation input:radio[name="field__validation"]:checked').val();
-				field.validation_message = (field.validation != 'none') ? $('#field__validation_message').val() : '';
-			}
-			break;
-	}
 	return field;
 };
 
-methods.getCurrentFieldValues = function(field) {
-	var values = [];
-	foreach (field.lov as i => value) {
-		field.lov[i] = {remove: true};
-	}
-	$('#field_values_list div.field_value').each(function(i, value) {
-		values[++i] = {
-			id: $(this).data('id'),
-			label: $(value).find('input').val(),
-			ord: i
-		};
-	});
-	return values;
-};
 
-// Called whenever the properties of a field/tab needs to be saved
+
+// Called whenever the properties of a field needs to be saved
 methods.save = function() {
 	var values = {};
-	if (this.current.id && this.current.type) {
-		if (this.current.type == 'tab') {
-			values = this.getCurrentTabDetails();
-			if (!this.tuix.items[this.current.id]) {
-				this.tuix.items[this.current.id] = {};
-			}
-			foreach (values as id => value) {
-				this.tuix.items[this.current.id][id] = value;
-			}
-		} else if (this.current.type == 'field') {
-			values = this.getCurrentFieldDetails();
-			if (!this.tuix.items[this.currentTab].fields[this.current.id]) {
-				this.tuix.items[this.currentTab].fields[this.current.id] = {};
-			}
-			foreach (values as id => value) {
-				this.tuix.items[this.currentTab].fields[this.current.id][id] = value;
-			}
+	if (this.current.id) {
+		values = this.getCurrentFieldDetails();
+		if (!this.tuix.items[this.current.id]) {
+			this.tuix.items[this.current.id] = {};
+		}
+		foreach (values as id => value) {
+			this.tuix.items[this.current.id][id] = value;
 		}
 	}
 };
 
 // Called to validate properties of a field/tab when moving off current item
-methods.validate = function() {
+methods.validate = function(removingField) {
+	var that = this,
+		cb = new zenario.callback,
+		actionRequests = {
+			mode: 'validate_field',
+			id: this.current.id,
+			items: JSON.stringify(this.tuix.items)
+		};
+		
+	if (removingField === true) {
+		actionRequests.removingField = true;
+	}
 	
-	var error = [];
-	if (this.current.id && this.current.type) {
-		if (this.current.type == 'tab') {
-			// validate tab
-		} else if (this.current.type == 'field') {
-			var field = this.tuix.items[this.currentTab].fields[this.current.id],
-				id;
-			
-			// Find errors on current tab
-			switch (this.currentFieldTab) {
-				case 'details':
-					if (field.is_system_field == false) {
-						
-						id = (_.invert(this.current_db_columns))[field.db_column] 
-						  || (_.invert(this.tuix.existing_db_columns[field.db_column]))[field.db_column] 
-						  || false;
-						
-						if (field.db_column === '') {
-							error.push('Please enter a code name');
-						} else if (id && (id != field.id)) {
-							error.push('The code name "' + field.db_column + '" is already in use in this dataset.');
-						} else {
-							this.current_db_columns[field.id] = field.db_column;
-						}
-					}
-					break
-				case 'display':
-					break;
-				case 'validation':
-					if (field.required == true && field.required_message === '') {
-						error.push('Please enter a message if not complete.');
-					}
-					
-					if (field.validation != 'none' && field.validation_message === '') {
-						error.push('Please enter a message if not valid.');
-					}
-					break;
-				case 'values':
-					break;
-			}
-			
-			// Display any errors
-			if (error.length > 0) {
+	
+	if (this.current.id && (!this.tuix.items[this.current.id].remove)) {
+		//TODO
+		//stop adding html manually and call microtemplate function
+		//do individual tabs? this.currentFieldTab
+		this.sendAJAXRequest(actionRequests).after(function(errors) {
+			errors = JSON.parse(errors);
+			if (errors.length > 0) {
 				
-				foreach (error as index => message) {
-					error[index] = '<p>' + message + '</p>';
-				}
-				
+				// Display errors
 				var $errorDiv = $('<div id="organizer_form_field_error" class="error"></div>');
-				$errorDiv.append(error);
+				foreach (errors as index => message) {
+					$errorDiv.append('<p>' + message + '</p>');
+				}
 				
 				$('#organizer_form_field_error').html('');
 				$('#organizer_field_details').prepend($errorDiv);
 				
 			} else {
+				
+				// Remove errors
 				$('#organizer_form_field_error').remove();
-				delete(this.tuix.items[this.currentTab].fields[this.current.id].just_added);
+				delete(that.tuix.items[that.current.id].just_added);
 			}
-		}
-	}
-	return (error.length > 0);
-};
-
-methods.showFieldDetailsSection = function(section, noValidation) {
-	
-	if (!noValidation) {
-		this.save();
-		if (this.validate() !== false) {
-			return false;
-		}
-	}
-	
-	this.currentFieldTab = section;
-	
-	// Mark current tab
-	$('#organizer_field_details_tabs div.tab').removeClass('on');
-	$('#field_tab__' + section).addClass('on');
-	
-	// Show current section
-	$('#organizer_field_details div.section').hide();
-	$('#field_section__' + section).show();
-};
-
-methods.showDetailsSection = function(section) {
-	var sections = ['organizer_field_type_list', 'organizer_field_details', 'organizer_tab_details'],
-		index = $.inArray(section, sections);
-	if (index > -1) {
-		
-		// Show selected sections and destroy other forms
-		$('#' + section + '_outer').show();
-		
-		if (section == 'organizer_field_type_list') {
-			$('#organizer_add_new_field').hide();
-			this.current = false;
-		} else {
-			$('#organizer_add_new_field').show();
-		}
-		
-		delete(sections[index]);
-		
-		// Hide other sections
-		foreach (sections as key => section) {
-			if (section) {
-				$('#' + section + '_outer').hide();
-			}
-		}
-	}
-};
-
-methods.changeMadeToPanel = function() {
-	if (!this.changingForm) {
-		this.changingForm = true;
-		window.onbeforeunload = function() {
-			return 'You are currently editing this dataset. If you leave now you will lose any unsaved changes.'
-		}
-		zenarioO.disableInteraction();
-		zenarioO.setButtons();
-	}
-};
-
-
-//Draw (or hide) the button toolbar
-//This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
-methods.showButtons = function($buttons) {
-	var that = this;
-	
-	if (this.changingForm) {
-		//Change the buttons to apply/cancel buttons
-		$buttons.html(zenarioA.microTemplate('zenario_organizer_apply_cancel_buttons', {}));
-		
-		//Add an event to the Apply button to save the changes
-		var lock = false
-		$buttons.find('#organizer_applyButton')
-			.click(function() {
-				that.save();
-				if (that.validate() !== false) {
-					return false;
-				}
-				if (lock == true) {
-					return false;
-				}
-				zenarioA.nowDoingSomething('saving', true);
-				lock = true;
-				that.saveChanges();
-			});
-		
-		$buttons.find('#organizer_cancelButton')
-			.click(function() {
-				window.onbeforeunload = false;
-				zenarioO.enableInteraction();
-				zenarioO.reload();
-			});
-		
-	} else {
-		//Remove the buttons, but don't actually hide them as we want to keep some placeholder space there
-		$buttons.html('').show();
-	}
-};
-
-methods.saveChanges = function() {
-	
-	var that = this,
-		actionRequests = zenarioO.getKey(),
-		actionTarget = 
-		'zenario/ajax.php?' +
-			'__pluginClassName__=' + this.tuix.class_name +
-			'&__path__=' + zenarioO.path +
-			'&method_call=handleOrganizerPanelAJAX';
-	
-	// Get order of tabs and fields
-	$('#organizer_form_tabs div.tab.sort').each(function(i, tab) {
-		var name = $(tab).data('name');
-		that.tuix.items[name].ord = (i + 1);
-		$('#organizer_section_' + name + ' .form_field').each(function(j, field) {
-			var id = $(field).data('id');
-			that.tuix.items[name].fields[id].ord = (j + 1);
-			that.tuix.items[name].fields[id].tab_name = name;
+			
+			cb.call(errors);
 		});
-	});
-	
-	actionRequests.mode = 'save';
-	actionRequests.data = JSON.stringify(this.tuix.items);
-	
-	zenario.ajax(
-		URLBasePath + actionTarget,
-		actionRequests
-	).after(function(message) {
-		if (message) {
-			zenarioA.showMessage(message);
-		}
-		zenarioA.nowDoingSomething();
-		window.onbeforeunload = false;
-		zenarioO.enableInteraction();
-		zenarioO.reload();
-	});
-};
-
-//Called whenever Organizer is resized - i.e. when the administrator resizes their window.
-//It's also called on the first load of your panel after your showPanel() and setButtons() methods have been called.
-methods.sizePanel = function($header, $panel, $footer, $buttons) {
-	//...
-};
-
-//This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.
-methods.onUnload = function($header, $panel, $footer) {
-	this.saveScrollPosition($panel);
-};
-
-//Remember where the admin had scrolled to.
-//If we ever draw this panel again it would be nice to restore this to how it was
-methods.saveScrollPosition = function($panel) {
-	this.scrollTop = $panel.scrollTop();
-	this.scrollLeft = $panel.scrollLeft();
-};
-
-//If this panel has been displayed before, try to restore the admin's previous scroll
-//Otherwise show the top left (i.e. (0, 0))
-methods.restoreScrollPosition = function($panel) {
-	$panel
-		.scrollTop(this.scrollTop || 0)
-		.scrollLeft(this.scrollLeft || 0)
-		.trigger('scroll');
+		return cb;
+	}
+	return false;
 };
 
 
-
-
-
-methods.checkboxClick = function(id, e) {
-	zenario.stop(e);
-	
+methods.saveItemsOrder = function() {
 	var that = this;
-	
-	setTimeout(function() {
-		that.itemClick(id, undefined, true);
-	}, 0);
+	$(this.formFieldsSelector).each(function(j, field) {
+		var id = $(field).data('id');
+		that.tuix.items[id].ord = (j + 1);
+	});
 };
-
-
-methods.itemClick = function(id, e, isCheckbox) {
-	if (!this.tuix || !this.tuix.items[id]) {
-		return false;
-	}
-	
-	//If the admin is holding down the shift key...
-	if (zenarioO.multipleSelectEnabled && !isCheckbox && (e || event).shiftKey && this.lastItemClicked) {
-		//...select everything between the current item and the last item that they clicked on
-		zenarioO.selectItemRange(id, this.lastItemClicked);
-	
-	//If multiple select is enabled and the checkbox was clicked...
-	} else if (zenarioO.multipleSelectEnabled && isCheckbox) {
-		//...toogle the item that they've clicked on
-		if (this.selectedItems[id]) {
-			this.deselectItem(id);
-		} else {
-			this.selectItem(id);
-		}
-		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
-	
-	//If multiple select is not enabled and the checkbox was clicked
-	} else if (!zenarioO.multipleSelectEnabled && isCheckbox && this.selectedItems[id]) {
-		//...deselect everything if this row was already selected
-		zenarioO.deselectAllItems();
-		zenarioO.closeInspectionView();
-		this.lastItemClicked = id;
-	
-	//Otherwise select the item that they've just clicked on, and nothing else
-	} else {
-		zenarioO.closeInspectionView();
-		zenarioO.deselectAllItems();
-		this.selectItem(id);
-		this.lastItemClicked = id;
-	}
-	
-	
-	zenarioO.setButtons();
-	zenarioO.setHash();
-	
-	return false;
-};
-
-
-
-
-
-//Return an object of currently selected item ids
-//This should be an object in the format {1: true, 6: true, 18: true}
-methods.returnSelectedItems = function() {
-	return this.selectedItems;
-};
-
-//This method will be called when the CMS sets the items that are selected,
-//e.g. when your panel is initially loaded.
-//This is an object in the format {1: true, 6: true, 18: true}
-//It is usually called before your panel is drawn so you do not need to update the state
-//of the items on the page.
-methods.cmsSetsSelectedItems = function(selectedItems) {
-	this.selectedItems = selectedItems;
-};
-
-//This method should cause an item to be selected.
-//It is called after your panel is drawn so you should update the state of your items
-//on the page.
-methods.selectItem = function(id) {
-	this.selectedItems[id] = true;
-	$(get('organizer_item_' + id)).addClass('organizer_selected');
-	this.updateItemCheckbox(id, true);
-};
-
-//This method should cause an item to be deselected
-//It is called after your panel is drawn so you should update the state of your items
-//on the page.
-methods.deselectItem = function(id) {
-	delete this.selectedItems[id];
-	$(get('organizer_item_' + id)).removeClass('organizer_selected');
-	this.updateItemCheckbox(id, false);
-};
-
-//This updates the checkbox for an item, if you are showing checkboxes next to items,
-//and the "all items selected" checkbox, if it is on the page.
-methods.updateItemCheckbox = function(id, checked) {
-	
-	//Check to see if there is a checkbox next to this item first.
-	var checkbox = get('organizer_itemcheckbox_' + id);
-	
-	if (checkbox) {
-		$(get('organizer_itemcheckbox_' + id)).prop('checked', checked);
-	}
-	
-	//Change the "all items selected" checkbox, if it is on the page.
-	if (zenarioO.allItemsSelected()) {
-		$('#organizer_toggle_all_items_checkbox').prop('checked', true);
-	} else {
-		$('#organizer_toggle_all_items_checkbox').prop('checked', false);
-	}
-};
-
-//Return whether you want to enable inspection view
-methods.returnInspectionViewEnabled = function() {
-	return false;
-};
-
-//Toggle inspection view
-methods.toggleInspectionView = function(id) {
-	if (id == zenarioO.inspectionViewItemId()) {
-		this.closeInspectionView(id);
-	
-	} else {
-		this.openInspectionView(id);
-	}
-};
-
-//This method should open inspection view
-methods.openInspectionView = function(id) {
-	//...
-};
-
-//This method should close inspection view
-methods.closeInspectionView = function(id) {
-	//...
-};
-
-
 
 
 }, zenarioO.panelTypes);

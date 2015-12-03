@@ -77,7 +77,7 @@ if (checkPriv()) {
 						if($row['status'] == 'draft') {
 							if($content['lock_owner_id']) {
 								$admin_details = getAdminDetails($content['lock_owner_id']);
-								$row['comments'] = "Checked out by " . $admin_details['username'];
+								$row['comments'] = adminPhrase('Locked by [[username]]', $admin_details);
 							}
 						}
                         $rv[] = $row;
@@ -125,7 +125,7 @@ if (checkPriv()) {
 				
 				if (!empty($svninfo['Last Changed Date'])) {
 					
-					if ($date = formatDateTimeNicely($svninfo['Last Changed Date'])) {
+					if ($date = formatDateTimeNicely($svninfo['Last Changed Date'], false, languageIdForDatesInAdminMode())) {
 						$section['fields'][] = array('label' => adminPhrase('Last SVN commit applied to this site:'), 'value' => $date);
 					}
 				}
@@ -284,7 +284,7 @@ if (checkPriv()) {
 				getPluginContent($slotKey);
 			
 			$_SESSION['admin_copied_contents']['allowed'] = array();
-			foreach (explode(',', post('allowedModules')) as $module) {
+			foreach (explodeAndTrim(post('allowedModules')) as $module) {
 				$_SESSION['admin_copied_contents']['allowed'][$module] = true;
 			}
 			

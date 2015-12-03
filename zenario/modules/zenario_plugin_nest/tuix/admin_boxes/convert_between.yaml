@@ -9,7 +9,7 @@ zenario_plugin_nest__convert_between:
         slotName: ""
     title: ""
     hide_tab_bar: Yes
-    max_height: "400"
+    max_height: 400
     tabs:
         convert:
             edit_mode:
@@ -18,54 +18,51 @@ zenario_plugin_nest__convert_between:
                 always_on: Yes
             fields:
                 desc:
-                    ord: "1"
+                    ord: 1
                     full_width: Yes
                     snippet:
                         html: Use this screen to convert between different types of Nest.
                 standalone_current:
-                    ord: "2"
+                    ord: 2
                     snippet:
                         html: Standalone Plugin
                     current_module: standalone
                 zenario_plugin_nest_current:
-                    ord: "3"
+                    ord: 3
                     snippet:
                         html: Untabbed Nest
                     current_module: zenario_plugin_nest
+                label:
+                    ord: 100
+                    label: 'Convert to:'
                 standalone:
-                    ord: "101"
+                    ord: 101
                     type: radio
                     name: radio
-                    post_field_html: |
-                        <label for="standalone">
-                                                            Standalone Plugin
-                                                        </label>
+                    label: Standalone Plugin
                     convert_to: standalone
                     req_only_1_plugin: Yes
                     req_only_1_type_of_plugin: No
                     req_only_banner_plugins: No
                 standalone_note:
-                    ord: "102"
+                    ord: 102
                     same_row: Yes
                     note_below: >
                         Any Nest that contains only one Plugin may be converted into
                         a standalone Plugin.
                     convert_to: standalone
                 zenario_plugin_nest:
-                    ord: "110"
+                    ord: 110
                     type: radio
                     name: radio
-                    post_field_html: |
-                        <label for="zenario_plugin_nest">
-                                                            Untabbed Nest
-                                                        </label>
+                    label: Untabbed Nest
                     convert_to: zenario_plugin_nest
                     convert_to_framework: no_controls
                     req_only_1_plugin: No
                     req_only_1_type_of_plugin: No
                     req_only_banner_plugins: No
                 zenario_plugin_nest_note:
-                    ord: "111"
+                    ord: 111
                     same_row: Yes
                     note_below: |
                         Untabbed Nests do not use tabs.

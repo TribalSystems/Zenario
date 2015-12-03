@@ -117,12 +117,10 @@ zenario_user_admin_box_form:
                 captcha_type:
                     label: 'Type of captcha:'
                     type: select
+                    empty_value: '-- Select --'
                     values:
-                        word:
-                            label: 'Words'
-                        math:
-                            label: 'Math'
-                    value: words
+                    validation: 
+                        required_if_not_hidden: Please select a type of captcha.
                 extranet_users_use_captcha:
                     label: 'Require extranet users to complete a captcha'
                     type: checkbox

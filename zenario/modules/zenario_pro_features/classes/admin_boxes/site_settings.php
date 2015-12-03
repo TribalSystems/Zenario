@@ -31,9 +31,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		if (isset($box['tabs']['security']['fields']['admin_use_ssl'])) {
+		if (isset($box['tabs']['admin_domain']['fields']['admin_use_ssl'])) {
 			if (!setting('admin_use_ssl') && httpOrhttps() != 'https://') {
-				$box['tabs']['security']['fields']['admin_use_ssl']['read_only'] = true;
+				$box['tabs']['admin_domain']['fields']['admin_use_ssl']['read_only'] = true;
 			}
 		}
 		$fields['zenario_pro_features__caching/limit_caching_debug_info_by_ip']['note_below'] = 
@@ -44,9 +44,6 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (isset($box['tabs']['security']['fields']['admin_use_ssl_port'])) {
-			$box['tabs']['security']['fields']['admin_use_ssl_port']['hidden'] = !engToBooleanArray($values, 'security/admin_use_ssl');
-		}
 		
 		if (isset($box['tabs']['zenario_pro_features__caching'])) {
 			
@@ -67,7 +64,7 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 					$sql = '';
 					$ids = $values = array();
 					$table = 'site_settings';
-					cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
+					reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
 					unset($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed']);
 	
 					$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = true;

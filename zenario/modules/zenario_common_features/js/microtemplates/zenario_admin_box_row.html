@@ -20,12 +20,33 @@
 <% } %>
 
 <% if (m.fields) { %>
-	<div id="row__{{m.fields[0]._id|escape}}" class="{{m.fields[0].type=='checkbox'? 'zenario_single_line' : ''}} zenario_ab_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zenario_hide_row_on_open' : ''}} div_table_row">
-		<% var f; %>
+	<% var f; %>
+	<% var firstField = m.fields[0]; %>
+	
+	<% if (firstField._lastGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastGrouping) { %>
+			</fieldset>
+		<% } %>
+		<% if (firstField.grouping) { %>
+			<fieldset class="zenario_grouping zenario_grouping__{{firstField.grouping|escape}}">
+		<% } %>
+	<% } %>
+	<% if (firstField.legend) { %>
+		<legend class="zenario_legend zenario_legend_for__{{firstField._id|escape}}"><span>{{firstField.legend}}</span></legend>
+	<% } %>
+	
+	<div id="row__{{firstField._id|escape}}" class="
+		{{firstField.type=='checkbox'? 'zenario_single_line' : ''}}
+		zenario_ab_row__{{firstField._id|escape}}
+		{{firstField.row_class|escape}}
+		{{firstField._hideOnOpen? 'zenario_hide_row_on_open' : ''}}
+		div_table_row
+		{{firstField.indent? 'zenario_indent_level zenario_indent_level_' +  (1*firstField.indent) : ''}}
+	">
 		
 		<div class="div_table_column">
 			
-			<% if (!zenario.engToBoolean(m.fields[0].full_width)) { %>
+			<% if (!zenario.engToBoolean(firstField.full_width)) { %>
 				<% for (f in m.fields) { %>
 					<% if (m.fields[f].side_note) { %>
 						<div class="zenario_side_note_wrap zenario_side_note_wrap_for_field">
@@ -36,14 +57,14 @@
 						</div>
 					<% } %>
 				<% } %>
-				<% if (m.fields[0].label && !(m.fields[0].type == 'checkbox' || m.fields[0].type == 'radio' || m.fields[0].type == 'toggle')) { %>
-					<div class="title {{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}}">
-						<label class="{{m.fields[0].label_class|escape}}" for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
+				<% if (firstField.label && !(firstField.type == 'checkbox' || firstField.type == 'radio' || firstField.type == 'toggle')) { %>
+					<div class="title {{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}}">
+						<label class="{{firstField.label_class|escape}}" for="{{firstField._id|escape}}">{{firstField.label}}</label>
 					</div>
 				<% } %>
 			<% } %>
 			
-			<div class="{{m.fields[0]._hideOnOpen? 'zenario_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zenario_show_on_open' : ''}} {{m.fields[0].type=='checkbox'? 'zenario_input_checkbox' : ''}}">
+			<div class="{{firstField._hideOnOpen? 'zenario_hide_on_open' : ''}} {{firstField._showOnOpen? 'zenario_show_on_open' : ''}} {{firstField.type=='checkbox'? 'zenario_input_checkbox' : ''}}">
 				<% for (f in m.fields) { %>
 					{{m.fields[f]._html}}
 					
@@ -52,7 +73,7 @@
 					<% } %>
 					
 					<% if (m.fields[f].show_phrase_icon) { %>
-						<a class="zab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
+						<a class="zenario_fab_phrase_icon" title="{{zenarioA.phrase.translatedField}}"></a>
 					<% } %>
 					
 				<% } %>
@@ -67,4 +88,10 @@
 			<% } %>
 		</div>
 	</div>
+	
+	<% if (firstField._isLastRow) { %>
+		<% if (firstField.grouping) { %>
+			</fieldset>
+		<% } %>
+	<% } %>
 <% } %>

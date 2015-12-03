@@ -31,12 +31,6 @@ class zenario_extranet_user_image extends module_base_class {
 	
 	protected $mergeFields = array();
 	protected $sections = array();
-	protected $allowedFileTypes = array(
-		'image/jpeg' => true,
-		'image/gif' => true,
-		'image/png' => true,
-		'image/jpg' => true,
-		'image/pjpeg' => true);
 	
 	public function init() {
 		if (!session('extranetUserID')) {
@@ -51,7 +45,7 @@ class zenario_extranet_user_image extends module_base_class {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_NO_IMAGE_SELECTED'));
 			
-			} elseif (empty($this->allowedFileTypes[$_FILES['extranet_upload_image']['type']])) {
+			} elseif (!isImage($_FILES['extranet_upload_image']['type'])) {
 				$this->sections['Errors'] = true;
 				$this->sections['Error'] = array('Error' => $this->phrase('_ERROR_INVALID_FILE_TYPE'));
 			

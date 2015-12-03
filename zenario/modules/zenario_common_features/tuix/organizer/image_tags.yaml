@@ -119,3 +119,4 @@ zenario__content:
                     admin_box:
                         path: zenario_image_tag
                     css_class: zenario_create_a_new
+                    hide_on_filter: true

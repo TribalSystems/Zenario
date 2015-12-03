@@ -77,4 +77,4 @@ label.zenario_tag_grey,#zenario_fbAdminInner label.zenario_tag_grey{background-c
 .empty_contenteditable_with_placeholder,.mce-content-body{min-height:80px;margin-top:10px}.empty_contenteditable_with_placeholder:before{display:block;content:'Please enter some text...'}
 .zenario_slot_being_edited .banner_title_input_box{width:100%;backgorund-color:#fff;color:#000}.zenario_slot_being_edited .zenario_banner .banner_text{background-color:#fff}
 .zenario_slot_being_edited .zenario_banner .banner_text{background-color:#fff}.zenario_slot_being_edited .zenario_banner .banner_text p{color:#000}.zenario_slot_being_edited .zenario_banner .banner_text p br{display:none}
-#toast-container.toast-top-right>div{width:365px;font-family:verdana,arial,helvetica;font-size:13px;opacity:.95;background-position:15px 15px}
+#toast-container.toast-top-right>div{width:365px;font-family:verdana,arial,helvetica;font-size:13px;opacity:.95;background-position:15px 15px}body.zenario_showing_plugin_preview,body.zenario_showing_plugin_preview div#zenario_skin{background:url('../admin/images/checkered.gif') repeat !important}

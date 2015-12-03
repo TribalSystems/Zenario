@@ -1,6 +1,14 @@
 
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]admin_setting_defaults`;
+CREATE TABLE `[[DB_NAME_PREFIX]]admin_setting_defaults` (
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `default_value` mediumtext,
+  PRIMARY KEY (`name`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]categories`;
 CREATE TABLE `[[DB_NAME_PREFIX]]categories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -25,6 +33,16 @@ CREATE TABLE `[[DB_NAME_PREFIX]]category_item_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]centralised_lists`;
+CREATE TABLE `[[DB_NAME_PREFIX]]centralised_lists` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_class_name` varchar(255) NOT NULL,
+  `method_name` varchar(255) NOT NULL,
+  `label` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]characteristic_user_link`;
 CREATE TABLE `[[DB_NAME_PREFIX]]characteristic_user_link` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -38,8 +56,87 @@ CREATE TABLE `[[DB_NAME_PREFIX]]characteristic_user_link` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content` (
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_cache`;
+CREATE TABLE `[[DB_NAME_PREFIX]]content_cache` (
+  `content_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `content_type` varchar(20) NOT NULL DEFAULT '',
+  `content_version` int(10) unsigned NOT NULL DEFAULT '0',
+  `text` mediumtext,
+  `text_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
+  `extract` mediumtext,
+  `extract_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`content_id`,`content_type`,`content_version`),
+  KEY `extract_wordcount` (`extract_wordcount`),
+  FULLTEXT KEY `text` (`text`),
+  FULLTEXT KEY `extract` (`extract`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_item_versions`;
+CREATE TABLE `[[DB_NAME_PREFIX]]content_item_versions` (
+  `id` int(10) unsigned NOT NULL,
+  `type` varchar(20) NOT NULL,
+  `tag_id` varchar(32) NOT NULL,
+  `version` int(10) unsigned NOT NULL,
+  `title` varchar(250) NOT NULL DEFAULT '',
+  `description` mediumtext,
+  `keywords` text,
+  `content_summary` mediumtext,
+  `lock_summary` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `file_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `filename` varchar(255) NOT NULL DEFAULT '',
+  `sticky_image_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `layout_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `skin_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `css_class` varchar(100) NOT NULL DEFAULT '',
+  `bg_image_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `bg_color` varchar(64) NOT NULL DEFAULT '',
+  `bg_position` enum('left top','center top','right top','left center','center center','right center','left bottom','center bottom','right bottom') DEFAULT NULL,
+  `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
+  `head_html` mediumtext,
+  `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `head_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `foot_html` mediumtext,
+  `foot_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
+  `foot_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `foot_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `created_datetime` datetime DEFAULT NULL,
+  `creating_author_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `last_author_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `last_modified_datetime` datetime DEFAULT NULL,
+  `publisher_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `published_datetime` datetime DEFAULT NULL,
+  `concealer_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `concealed_datetime` datetime DEFAULT NULL,
+  `publication_date` datetime DEFAULT NULL,
+  `rss_slot_name` varchar(100) NOT NULL DEFAULT '',
+  `rss_nest` int(10) unsigned NOT NULL DEFAULT '0',
+  `writer_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `writer_name` varchar(255) NOT NULL DEFAULT '',
+  `scheduled_publish_datetime` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`,`type`,`version`),
+  UNIQUE KEY `tag_id` (`tag_id`,`version`),
+  KEY `type` (`type`),
+  KEY `version` (`version`),
+  KEY `created_datetime` (`created_datetime`),
+  KEY `published_datetime` (`published_datetime`),
+  KEY `publication_date` (`publication_date`),
+  KEY `file_id` (`file_id`),
+  KEY `sticky_image_id` (`sticky_image_id`),
+  KEY `filename` (`filename`),
+  KEY `last_modified_datetime` (`last_modified_datetime`),
+  KEY `title_2` (`title`),
+  KEY `layout_id` (`layout_id`),
+  FULLTEXT KEY `title` (`title`),
+  FULLTEXT KEY `description` (`description`),
+  FULLTEXT KEY `keywords` (`keywords`),
+  FULLTEXT KEY `content_summary` (`content_summary`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_items`;
+CREATE TABLE `[[DB_NAME_PREFIX]]content_items` (
   `id` int(10) unsigned NOT NULL,
   `type` varchar(20) NOT NULL,
   `tag_id` varchar(32) NOT NULL,
@@ -67,21 +164,6 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_cache`;
-CREATE TABLE `[[DB_NAME_PREFIX]]content_cache` (
-  `content_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `content_type` varchar(20) NOT NULL DEFAULT '',
-  `content_version` int(10) unsigned NOT NULL DEFAULT '0',
-  `text` mediumtext,
-  `extract` mediumtext,
-  `extract_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`content_id`,`content_type`,`content_version`),
-  KEY `extract_wordcount` (`extract_wordcount`),
-  FULLTEXT KEY `text` (`text`),
-  FULLTEXT KEY `extract` (`extract`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_types`;
 CREATE TABLE `[[DB_NAME_PREFIX]]content_types` (
   `content_type_id` varchar(20) NOT NULL DEFAULT '',
@@ -92,6 +174,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]content_types` (
   `summary_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
   `release_date_field` enum('optional','mandatory','hidden') NOT NULL DEFAULT 'optional',
   `enable_summary_auto_update` tinyint(1) NOT NULL DEFAULT '0',
+  `enable_categories` tinyint(1) NOT NULL DEFAULT '0',
   `default_layout_id` int(10) unsigned NOT NULL DEFAULT '0',
   `module_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`content_type_id`),
@@ -118,16 +201,20 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_fields`;
 CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `dataset_id` int(10) unsigned NOT NULL,
-  `tab_name` varchar(16) CHARACTER SET ascii NOT NULL,
+  `tab_name` varchar(64) CHARACTER SET ascii NOT NULL,
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
+  `protected` tinyint(1) NOT NULL DEFAULT '0',
+  `fundamental` tinyint(1) NOT NULL DEFAULT '0',
   `field_name` varchar(64) CHARACTER SET ascii NOT NULL DEFAULT '',
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
   `label` varchar(64) NOT NULL DEFAULT '',
+  `default_label` varchar(64) NOT NULL DEFAULT '',
   `type` enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field') NOT NULL DEFAULT 'other_system_field',
   `width` smallint(5) unsigned NOT NULL DEFAULT '0',
   `height` smallint(5) unsigned NOT NULL DEFAULT '0',
   `values_source` varchar(255) NOT NULL DEFAULT '',
+  `values_source_filter` varchar(255) NOT NULL DEFAULT '',
   `required` tinyint(1) NOT NULL DEFAULT '0',
   `required_message` text,
   `validation` enum('none','email','emails','no_spaces','numeric','screen_name') NOT NULL DEFAULT 'none',
@@ -135,27 +222,32 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields` (
   `note_below` text,
   `db_column` varchar(255) NOT NULL DEFAULT '',
   `show_in_organizer` tinyint(1) NOT NULL DEFAULT '0',
+  `create_index` tinyint(1) NOT NULL DEFAULT '0',
   `searchable` tinyint(1) NOT NULL DEFAULT '0',
   `sortable` tinyint(1) NOT NULL DEFAULT '0',
   `show_by_default` tinyint(1) NOT NULL DEFAULT '0',
   `always_show` tinyint(1) NOT NULL DEFAULT '0',
+  `include_in_export` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `dataset_id` (`dataset_id`,`tab_name`,`id`),
   KEY `dataset_id_2` (`dataset_id`,`tab_name`,`ord`),
   KEY `show_in_organizer` (`show_in_organizer`),
   KEY `is_system_field` (`is_system_field`),
   KEY `parent_id` (`parent_id`),
-  KEY `field_name` (`field_name`)
+  KEY `field_name` (`field_name`),
+  KEY `protected` (`protected`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_tabs`;
 CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs` (
   `dataset_id` int(10) unsigned NOT NULL,
-  `name` varchar(16) CHARACTER SET ascii NOT NULL,
+  `name` varchar(64) CHARACTER SET ascii NOT NULL,
   `ord` int(10) unsigned NOT NULL DEFAULT '0',
   `label` varchar(32) NOT NULL DEFAULT '',
+  `default_label` varchar(32) NOT NULL DEFAULT '',
   `parent_field_id` int(10) NOT NULL DEFAULT '0',
+  `is_system_field` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`dataset_id`,`name`),
   KEY `ord` (`ord`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -180,8 +272,30 @@ CREATE TABLE `[[DB_NAME_PREFIX]]custom_datasets` (
   `table` varchar(255) CHARACTER SET ascii NOT NULL,
   `extends_admin_box` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `extends_organizer_panel` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `view_priv` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `edit_priv` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `table` (`table`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]document_rules`;
+CREATE TABLE `[[DB_NAME_PREFIX]]document_rules` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
+  `use` enum('filename_without_extension','filename_and_extension','extension') NOT NULL DEFAULT 'filename_without_extension',
+  `pattern` mediumtext,
+  `action` enum('move_to_folder','set_field') NOT NULL,
+  `folder_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `field_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `replacement` mediumtext,
+  `replacement_is_regexp` tinyint(1) unsigned NOT NULL,
+  `apply_second_pass` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `second_pattern` mediumtext,
+  `second_replacement` mediumtext,
+  `stop_processing_rules` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  KEY `ordinal` (`ordinal`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -221,22 +335,36 @@ CREATE TABLE `[[DB_NAME_PREFIX]]documents` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ordinal` int(10) NOT NULL,
   `type` enum('file','folder') NOT NULL DEFAULT 'file',
-  `file_id` int(10) DEFAULT NULL,
+  `file_id` int(10) unsigned DEFAULT NULL,
   `folder_id` int(10) NOT NULL DEFAULT '0',
   `folder_name` varchar(255) DEFAULT NULL,
+  `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto',
   `document_datetime` datetime DEFAULT NULL,
   `thumbnail_id` int(10) DEFAULT NULL,
+  `extract` mediumtext,
+  `extract_wordcount` int(10) unsigned NOT NULL DEFAULT '0',
+  `dont_autoset_metadata` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `filename` varchar(255) DEFAULT NULL,
+  `file_datetime` datetime DEFAULT NULL,
+  `title` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `file_id` (`file_id`),
   KEY `ordinal` (`ordinal`),
   KEY `type` (`type`),
   KEY `folder_id` (`folder_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]documents_custom_data`;
+CREATE TABLE `[[DB_NAME_PREFIX]]documents_custom_data` (
+  `document_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`document_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]email_templates`;
 CREATE TABLE `[[DB_NAME_PREFIX]]email_templates` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `module_class_name` varchar(255) DEFAULT NULL,
   `code` varchar(255) NOT NULL,
   `template_name` varchar(255) NOT NULL DEFAULT '',
   `subject` tinytext NOT NULL,
@@ -259,9 +387,11 @@ CREATE TABLE `[[DB_NAME_PREFIX]]email_templates` (
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]files`;
 CREATE TABLE `[[DB_NAME_PREFIX]]files` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `checksum` varchar(32) NOT NULL,
-  `usage` varchar(64) NOT NULL,
-  `shared` tinyint(1) NOT NULL DEFAULT '0',
+  `checksum` varchar(32) CHARACTER SET ascii NOT NULL,
+  `short_checksum` varchar(24) CHARACTER SET ascii DEFAULT NULL,
+  `usage` varchar(64) CHARACTER SET ascii NOT NULL,
+  `privacy` enum('auto','public','private') NOT NULL DEFAULT 'auto',
+  `archived` tinyint(1) NOT NULL DEFAULT '0',
   `created_datetime` datetime DEFAULT NULL,
   `filename` varchar(255) NOT NULL,
   `mime_type` varchar(128) NOT NULL,
@@ -273,13 +403,16 @@ CREATE TABLE `[[DB_NAME_PREFIX]]files` (
   `size` int(10) unsigned NOT NULL,
   `location` enum('db','docstore') NOT NULL,
   `data` longblob,
-  `path` varchar(128) NOT NULL DEFAULT '',
-  `storekeeper_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `storekeeper_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `storekeeper_data` blob,
-  `storekeeper_list_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `storekeeper_list_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `storekeeper_list_data` blob,
+  `path` varchar(255) NOT NULL DEFAULT '',
+  `thumbnail_180x130_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_180x130_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_180x130_data` blob,
+  `thumbnail_64x64_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_64x64_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_64x64_data` blob,
+  `thumbnail_24x23_width` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_24x23_height` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `thumbnail_24x23_data` blob,
   `working_copy_width` smallint(5) unsigned DEFAULT NULL,
   `working_copy_height` smallint(5) unsigned DEFAULT NULL,
   `working_copy_data` mediumblob,
@@ -288,11 +421,21 @@ CREATE TABLE `[[DB_NAME_PREFIX]]files` (
   `working_copy_2_data` mediumblob,
   PRIMARY KEY (`id`),
   UNIQUE KEY `checksum` (`checksum`,`usage`),
+  UNIQUE KEY `short_checksum` (`short_checksum`,`usage`),
   KEY `usage` (`usage`),
   KEY `created_datetime` (`created_datetime`),
   KEY `filename` (`filename`),
   KEY `mime_type` (`mime_type`),
-  KEY `location` (`location`)
+  KEY `location` (`location`),
+  KEY `width` (`width`),
+  KEY `height` (`height`),
+  KEY `archived` (`archived`),
+  KEY `thumbnail_180x130_width` (`thumbnail_180x130_width`),
+  KEY `thumbnail_180x130_height` (`thumbnail_180x130_height`),
+  KEY `thumbnail_64x64_width` (`thumbnail_64x64_width`),
+  KEY `thumbnail_64x64_height` (`thumbnail_64x64_height`),
+  KEY `thumbnail_24x23_width` (`thumbnail_24x23_width`),
+  KEY `thumbnail_24x23_height` (`thumbnail_24x23_height`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -335,17 +478,39 @@ CREATE TABLE `[[DB_NAME_PREFIX]]groups` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]inline_file_link`;
-CREATE TABLE `[[DB_NAME_PREFIX]]inline_file_link` (
-  `file_id` int(10) unsigned NOT NULL,
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tag_link`;
+CREATE TABLE `[[DB_NAME_PREFIX]]image_tag_link` (
+  `image_id` int(10) unsigned NOT NULL,
+  `tag_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`image_id`,`tag_id`),
+  KEY `tag_id` (`tag_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]image_tags`;
+CREATE TABLE `[[DB_NAME_PREFIX]]image_tags` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `color` enum('blue','red','green','orange','yellow','violet','grey') NOT NULL DEFAULT 'blue',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`),
+  KEY `color` (`color`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]inline_images`;
+CREATE TABLE `[[DB_NAME_PREFIX]]inline_images` (
+  `image_id` int(10) unsigned NOT NULL,
   `foreign_key_to` varchar(64) NOT NULL,
   `foreign_key_id` int(10) unsigned NOT NULL DEFAULT '0',
   `foreign_key_char` varchar(255) NOT NULL DEFAULT '',
   `foreign_key_version` int(10) unsigned NOT NULL DEFAULT '0',
   `in_use` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`foreign_key_to`,`foreign_key_id`,`foreign_key_char`,`foreign_key_version`,`file_id`),
-  KEY `file_id` (`file_id`),
-  KEY `in_use` (`in_use`)
+  `archived` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`foreign_key_to`,`foreign_key_id`,`foreign_key_char`,`foreign_key_version`,`image_id`),
+  KEY `file_id` (`image_id`),
+  KEY `in_use` (`in_use`),
+  KEY `archived` (`archived`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -378,6 +543,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]jobs` (
   `days` set('mon','tue','wed','thr','fri','sat','sun') NOT NULL DEFAULT 'mon,tue,wed,thr,fri,sat,sun',
   `hours` set('0h','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h') NOT NULL DEFAULT '0h',
   `minutes` set('0m','5m','10m','15m','20m','25m','30m','35m','40m','45m','50m','55m','59m') NOT NULL DEFAULT '0m',
+  `run_every_minute` tinyint(1) NOT NULL DEFAULT '0',
   `first_n_days_of_month` tinyint(1) NOT NULL DEFAULT '0',
   `log_on_action` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `log_on_no_action` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -404,11 +570,24 @@ CREATE TABLE `[[DB_NAME_PREFIX]]languages` (
   `id` varchar(15) NOT NULL DEFAULT '',
   `detect` tinyint(1) NOT NULL DEFAULT '0',
   `detect_lang_codes` varchar(100) NOT NULL DEFAULT '',
+  `translate_phrases` tinyint(1) NOT NULL DEFAULT '1',
   `sync_assist` tinyint(1) NOT NULL DEFAULT '0',
   `search_type` enum('full_text','simple') NOT NULL DEFAULT 'full_text',
+  `domain` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `detect` (`detect`),
-  KEY `sync_assist` (`sync_assist`)
+  KEY `sync_assist` (`sync_assist`),
+  KEY `translate_phrases` (`translate_phrases`),
+  KEY `domain` (`domain`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]last_sent_warning_emails`;
+CREATE TABLE `[[DB_NAME_PREFIX]]last_sent_warning_emails` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `timestamp` datetime NOT NULL,
+  `warning_code` enum('document_container__private_file_in_public_folder','module_missing') NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -420,8 +599,17 @@ CREATE TABLE `[[DB_NAME_PREFIX]]layouts` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `content_type` varchar(20) NOT NULL DEFAULT '',
   `status` enum('active','suspended') NOT NULL DEFAULT 'active',
+  `cols` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `min_width` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `max_width` smallint(4) unsigned NOT NULL DEFAULT '0',
+  `fluid` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `responsive` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `skin_id` int(10) unsigned DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
+  `bg_image_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `bg_color` varchar(64) NOT NULL DEFAULT '',
+  `bg_position` enum('left top','center top','right top','left center','center center','right center','left bottom','center bottom','right bottom') DEFAULT NULL,
+  `bg_repeat` enum('repeat','repeat-x','repeat-y','no-repeat') DEFAULT NULL,
   `head_html` mediumtext,
   `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
   `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
@@ -478,6 +666,16 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_nodes` (
   `rel_tag` varchar(100) DEFAULT NULL,
   `css_class` varchar(100) NOT NULL DEFAULT '',
   `image_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `rollover_image_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `anchor` varchar(255) DEFAULT NULL,
+  `module_class_name` varchar(255) DEFAULT NULL,
+  `method_name` varchar(255) DEFAULT NULL,
+  `param_1` varchar(255) DEFAULT NULL,
+  `param_2` varchar(255) DEFAULT NULL,
+  `menu_text_module_class_name` varchar(255) DEFAULT NULL,
+  `menu_text_method_name` varchar(255) DEFAULT NULL,
+  `menu_text_param_1` varchar(255) DEFAULT NULL,
+  `menu_text_param_2` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ordinal` (`ordinal`),
   KEY `content_type` (`content_type`),
@@ -487,6 +685,19 @@ CREATE TABLE `[[DB_NAME_PREFIX]]menu_nodes` (
   KEY `invisible` (`invisible`),
   KEY `section_id` (`section_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_positions`;
+CREATE TABLE `[[DB_NAME_PREFIX]]menu_positions` (
+  `tag` char(18) NOT NULL,
+  `section_id` smallint(10) unsigned NOT NULL,
+  `menu_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `is_dummy_child` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `parent_tag` char(18) NOT NULL,
+  PRIMARY KEY (`tag`),
+  UNIQUE KEY `section_id` (`section_id`,`menu_id`,`is_dummy_child`),
+  KEY `parent_tag` (`parent_tag`)
+) ENGINE=MyISAM DEFAULT CHARSET=ascii;
 
 
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]menu_sections`;
@@ -529,15 +740,17 @@ CREATE TABLE `[[DB_NAME_PREFIX]]modules` (
   `class_name` varchar(200) NOT NULL,
   `vlp_class` varchar(200) NOT NULL DEFAULT '',
   `display_name` varchar(255) NOT NULL,
+  `category` enum('custom','core','content_type','management','pluggable') DEFAULT NULL,
   `default_framework` varchar(50) NOT NULL DEFAULT '',
   `css_class_name` varchar(200) NOT NULL DEFAULT '',
-  `uses_instances` tinyint(1) NOT NULL DEFAULT '0',
-  `uses_wireframes` tinyint(1) NOT NULL DEFAULT '0',
+  `is_pluggable` tinyint(1) NOT NULL DEFAULT '0',
+  `can_be_version_controlled` tinyint(1) NOT NULL DEFAULT '0',
   `nestable` tinyint(1) NOT NULL DEFAULT '0',
   `status` enum('module_not_initialized','module_running','module_suspended') NOT NULL DEFAULT 'module_not_initialized',
+  `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `class_name` (`class_name`),
-  KEY `uses_wireframes` (`uses_wireframes`)
+  KEY `uses_wireframes` (`can_be_version_controlled`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -554,6 +767,20 @@ CREATE TABLE `[[DB_NAME_PREFIX]]nested_plugins` (
   `name_or_title` varchar(250) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `instance_id` (`instance_id`,`is_tab`,`tab`,`ord`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]page_preview_sizes`;
+CREATE TABLE `[[DB_NAME_PREFIX]]page_preview_sizes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `width` int(10) unsigned NOT NULL,
+  `height` int(10) unsigned NOT NULL,
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `is_default` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `ordinal` int(10) unsigned NOT NULL,
+  `type` enum('desktop','laptop','tablet','tablet_landscape','smartphone') NOT NULL DEFAULT 'desktop',
+  PRIMARY KEY (`id`),
+  KEY `ordinal` (`ordinal`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -641,6 +868,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]plugin_settings` (
   `foreign_key_id` int(10) unsigned NOT NULL DEFAULT '0',
   `foreign_key_char` varchar(255) NOT NULL DEFAULT '',
   `dangling_cross_references` enum('keep','remove','delete_instance') NOT NULL DEFAULT 'remove',
+  `is_email_address` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`instance_id`,`name`,`nest`),
   KEY `is_content` (`is_content`),
   KEY `foreign_key_to` (`foreign_key_to`,`foreign_key_id`,`foreign_key_char`),
@@ -669,7 +897,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]site_settings` (
   `name` varchar(255) NOT NULL DEFAULT '',
   `value` mediumtext,
   `default_value` mediumtext,
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`name`),
+  KEY `value` (`value`(64))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -682,6 +911,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]skins` (
   `type` enum('component','usable') NOT NULL DEFAULT 'usable',
   `extension_of_skin` varchar(255) NOT NULL DEFAULT '',
   `css_class` varchar(100) NOT NULL DEFAULT '',
+  `background_selector` varchar(64) DEFAULT 'body',
   `missing` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `family_name` (`family_name`,`name`),
@@ -704,11 +934,23 @@ CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_opt_outs` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_rules`;
+CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
+  `smart_group_id` int(10) unsigned NOT NULL,
+  `ord` int(10) unsigned NOT NULL,
+  `field_id` int(10) unsigned NOT NULL,
+  `field2_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `field3_id` int(10) unsigned NOT NULL DEFAULT '0',
+  `not` tinyint(1) NOT NULL DEFAULT '0',
+  `value` text,
+  PRIMARY KEY (`smart_group_id`,`ord`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_groups`;
 CREATE TABLE `[[DB_NAME_PREFIX]]smart_groups` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
-  `values` mediumtext,
   `created_on` datetime DEFAULT NULL,
   `created_by` int(10) unsigned NOT NULL DEFAULT '0',
   `last_modified_on` datetime DEFAULT NULL,
@@ -749,7 +991,7 @@ CREATE TABLE `[[DB_NAME_PREFIX]]special_pages` (
   `equiv_id` int(10) unsigned DEFAULT NULL,
   `content_type` varchar(20) DEFAULT NULL,
   `page_type` varchar(64) NOT NULL,
-  `create_lang_equiv_content` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `logic` enum('create_and_maintain_in_default_language','create_and_maintain_in_all_languages','create_in_default_language_on_install') NOT NULL DEFAULT 'create_and_maintain_in_default_language',
   `publish` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `module_class_name` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`page_type`),
@@ -791,21 +1033,22 @@ CREATE TABLE `[[DB_NAME_PREFIX]]translation_chains` (
   `equiv_id` int(10) unsigned NOT NULL,
   `type` varchar(20) NOT NULL,
   `privacy` enum('public','all_extranet_users','group_members','specific_users','no_access') NOT NULL DEFAULT 'public',
-  `log_user_access` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`equiv_id`,`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`;
 CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
-  `type` enum('admin_boxes','admin_toolbar','help','storekeeper','slot_controls') NOT NULL,
+  `type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','wizards') NOT NULL,
   `path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
   `module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
   `filename` varchar(255) CHARACTER SET ascii NOT NULL,
   `last_modified` int(10) unsigned NOT NULL DEFAULT '0',
   `checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
-  PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`)
+  PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
+  KEY `panel_type` (`panel_type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -901,12 +1144,41 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_form_fields`;
 CREATE TABLE `[[DB_NAME_PREFIX]]user_form_fields` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `user_form_id` int(10) unsigned NOT NULL,
-  `user_field_id` int(10) unsigned NOT NULL,
-  `ordinal` int(10) unsigned NOT NULL DEFAULT '0',
+  `user_field_id` int(10) unsigned DEFAULT '0',
+  `ord` int(10) unsigned NOT NULL DEFAULT '0',
+  `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement') DEFAULT NULL,
   `is_readonly` tinyint(1) NOT NULL DEFAULT '0',
   `is_required` tinyint(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_form_id` (`user_form_id`,`user_field_id`)
+  `mandatory_condition_field_id` int(10) unsigned DEFAULT '0',
+  `mandatory_condition_field_value` varchar(255) DEFAULT NULL,
+  `visibility` enum('visible','hidden','visible_on_condition') DEFAULT 'visible',
+  `visible_condition_field_id` int(10) unsigned DEFAULT '0',
+  `visible_condition_field_value` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `label` varchar(255) DEFAULT NULL,
+  `size` enum('small','medium','large') DEFAULT 'medium',
+  `placeholder` varchar(255) DEFAULT NULL,
+  `default_value` varchar(255) DEFAULT NULL,
+  `default_value_class_name` varchar(255) DEFAULT NULL,
+  `default_value_method_name` varchar(255) DEFAULT NULL,
+  `default_value_param_1` varchar(255) DEFAULT NULL,
+  `default_value_param_2` varchar(255) DEFAULT NULL,
+  `note_to_user` varchar(255) DEFAULT NULL,
+  `css_classes` varchar(255) DEFAULT NULL,
+  `div_wrap_class` varchar(255) DEFAULT NULL,
+  `required_error_message` varchar(255) DEFAULT NULL,
+  `validation` enum('email','URL','integer','number','floating_point') DEFAULT NULL,
+  `validation_error_message` varchar(255) DEFAULT NULL,
+  `next_button_text` varchar(255) DEFAULT NULL,
+  `previous_button_text` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `numeric_field_1` int(10) unsigned DEFAULT '0',
+  `numeric_field_2` int(10) unsigned DEFAULT '0',
+  `calculation_type` enum('+','-') DEFAULT NULL,
+  `restatement_field` int(10) unsigned DEFAULT '0',
+  `values_source` varchar(255) NOT NULL DEFAULT '',
+  `values_source_filter` varchar(255) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -914,6 +1186,42 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_forms`;
 CREATE TABLE `[[DB_NAME_PREFIX]]user_forms` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
+  `status` enum('active','archived') DEFAULT 'active',
+  `send_email_to_user` tinyint(1) NOT NULL DEFAULT '0',
+  `user_email_field` varchar(255) DEFAULT NULL,
+  `user_email_template` varchar(255) DEFAULT NULL,
+  `send_email_to_admin` tinyint(1) NOT NULL DEFAULT '0',
+  `admin_email_use_template` tinyint(1) NOT NULL DEFAULT '0',
+  `admin_email_addresses` varchar(255) DEFAULT NULL,
+  `admin_email_template` varchar(255) DEFAULT NULL,
+  `reply_to` tinyint(1) NOT NULL DEFAULT '0',
+  `save_data` tinyint(1) NOT NULL DEFAULT '1',
+  `save_record` tinyint(1) NOT NULL DEFAULT '0',
+  `send_signal` tinyint(1) NOT NULL DEFAULT '0',
+  `redirect_after_submission` tinyint(1) NOT NULL DEFAULT '0',
+  `redirect_location` varchar(255) DEFAULT NULL,
+  `reply_to_email_field` varchar(255) DEFAULT NULL,
+  `reply_to_first_name` varchar(255) DEFAULT NULL,
+  `reply_to_last_name` varchar(255) DEFAULT NULL,
+  `add_user_to_group` int(10) unsigned DEFAULT NULL,
+  `user_status` enum('active','contact') DEFAULT 'contact',
+  `log_user_in` tinyint(1) NOT NULL DEFAULT '0',
+  `show_success_message` tinyint(1) NOT NULL DEFAULT '0',
+  `success_message` varchar(255) DEFAULT NULL,
+  `user_duplicate_email_action` enum('merge','overwrite','ignore','stop') DEFAULT 'merge',
+  `create_another_form_submission_record` tinyint(1) NOT NULL DEFAULT '0',
+  `title` varchar(255) DEFAULT '',
+  `title_tag` enum('h1','h2','h3','h4','h5','h6','p') DEFAULT 'h2',
+  `use_captcha` tinyint(1) NOT NULL DEFAULT '0',
+  `captcha_type` enum('word','math') DEFAULT 'word',
+  `extranet_users_use_captcha` tinyint(1) NOT NULL DEFAULT '0',
+  `translate_text` tinyint(1) NOT NULL DEFAULT '1',
+  `submit_button_text` varchar(255) DEFAULT 'Submit',
+  `default_next_button_text` varchar(255) DEFAULT 'Next',
+  `default_previous_button_text` varchar(255) DEFAULT 'Back',
+  `log_user_in_cookie` tinyint(1) NOT NULL DEFAULT '0',
+  `duplicate_email_address_error_message` varchar(255) DEFAULT NULL,
+  `profanity_filter_text` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -941,15 +1249,29 @@ CREATE TABLE `[[DB_NAME_PREFIX]]user_signin_log` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]user_sync_log`;
+CREATE TABLE `[[DB_NAME_PREFIX]]user_sync_log` (
+  `user_id` int(10) unsigned NOT NULL,
+  `last_synced_timestamp` timestamp NOT NULL,
+  PRIMARY KEY (`user_id`),
+  KEY `last_synced_timestamp` (`last_synced_timestamp`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users`;
 CREATE TABLE `[[DB_NAME_PREFIX]]users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `global_id` int(10) unsigned NOT NULL DEFAULT '0',
   `parent_id` int(10) unsigned NOT NULL DEFAULT '0',
   `ip` varchar(255) NOT NULL DEFAULT '',
   `session_id` varchar(100) NOT NULL DEFAULT '',
+  `identifier` varchar(50) DEFAULT NULL,
   `screen_name` varchar(50) DEFAULT '',
+  `screen_name_confirmed` tinyint(1) NOT NULL DEFAULT '0',
   `password` varchar(50) NOT NULL DEFAULT '',
+  `password_salt` varchar(8) DEFAULT NULL,
   `password_needs_changing` tinyint(1) NOT NULL DEFAULT '0',
+  `reset_password_time` datetime DEFAULT NULL,
   `status` enum('pending','active','suspended','contact') NOT NULL DEFAULT 'pending',
   `image_id` int(10) unsigned NOT NULL DEFAULT '0',
   `last_login` datetime DEFAULT NULL,
@@ -962,6 +1284,8 @@ CREATE TABLE `[[DB_NAME_PREFIX]]users` (
   `created_date` datetime DEFAULT NULL,
   `modified_date` datetime DEFAULT NULL,
   `suspended_date` datetime DEFAULT NULL,
+  `last_updated_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `terms_and_conditions_accepted` tinyint(1) NOT NULL DEFAULT '0',
   `equiv_id` int(10) unsigned NOT NULL DEFAULT '0',
   `content_type` varchar(20) NOT NULL DEFAULT '',
   `hash` varchar(255) DEFAULT NULL,
@@ -973,7 +1297,10 @@ CREATE TABLE `[[DB_NAME_PREFIX]]users` (
   KEY `screen_name` (`screen_name`),
   KEY `image_id` (`image_id`),
   KEY `last_profile_update_in_frontend` (`last_profile_update_in_frontend`),
-  KEY `last_login` (`last_login`)
+  KEY `last_login` (`last_login`),
+  KEY `global_id` (`global_id`),
+  KEY `last_updated_timestamp` (`last_updated_timestamp`),
+  KEY `identifier` (`identifier`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -981,64 +1308,6 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]users_custom_data`;
 CREATE TABLE `[[DB_NAME_PREFIX]]users_custom_data` (
   `user_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`user_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-
-DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]versions`;
-CREATE TABLE `[[DB_NAME_PREFIX]]versions` (
-  `id` int(10) unsigned NOT NULL,
-  `type` varchar(20) NOT NULL,
-  `tag_id` varchar(32) NOT NULL,
-  `version` int(10) unsigned NOT NULL,
-  `title` varchar(250) NOT NULL DEFAULT '',
-  `description` mediumtext,
-  `keywords` text,
-  `content_summary` mediumtext,
-  `lock_summary` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `file_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `filename` varchar(255) NOT NULL DEFAULT '',
-  `sticky_image_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `layout_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `skin_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `css_class` varchar(100) NOT NULL DEFAULT '',
-  `head_html` mediumtext,
-  `head_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
-  `head_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `head_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `foot_html` mediumtext,
-  `foot_cc` enum('not_needed','needed','required') NOT NULL DEFAULT 'not_needed',
-  `foot_visitor_only` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `foot_overwrite` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `created_datetime` datetime DEFAULT NULL,
-  `creating_author_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `last_author_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `last_modified_datetime` datetime DEFAULT NULL,
-  `publisher_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `published_datetime` datetime DEFAULT NULL,
-  `concealer_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `concealed_datetime` datetime DEFAULT NULL,
-  `publication_date` datetime DEFAULT NULL,
-  `rss_slot_name` varchar(100) NOT NULL DEFAULT '',
-  `rss_nest` int(10) unsigned NOT NULL DEFAULT '0',
-  `writer_id` int(10) unsigned NOT NULL DEFAULT '0',
-  `writer_name` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`,`type`,`version`),
-  UNIQUE KEY `tag_id` (`tag_id`,`version`),
-  KEY `type` (`type`),
-  KEY `version` (`version`),
-  KEY `created_datetime` (`created_datetime`),
-  KEY `published_datetime` (`published_datetime`),
-  KEY `publication_date` (`publication_date`),
-  KEY `file_id` (`file_id`),
-  KEY `sticky_image_id` (`sticky_image_id`),
-  KEY `filename` (`filename`),
-  KEY `last_modified_datetime` (`last_modified_datetime`),
-  KEY `title_2` (`title`),
-  KEY `layout_id` (`layout_id`),
-  FULLTEXT KEY `title` (`title`),
-  FULLTEXT KEY `description` (`description`),
-  FULLTEXT KEY `keywords` (`keywords`),
-  FULLTEXT KEY `content_summary` (`content_summary`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 
@@ -1061,9 +1330,9 @@ CREATE TABLE `[[DB_NAME_PREFIX]]visitor_phrases` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 REPLACE INTO `[[DB_NAME_PREFIX]]local_revision_numbers` VALUES
- ('admin/db_updates/core','local.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/core','user.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/data_conversion','local.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/data_conversion','plugins.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/data_conversion','user.inc.php',[[INSTALLER_REVISION_NO]]),
- ('admin/db_updates/updater','local.inc.php',[[INSTALLER_REVISION_NO]]);
+ ('admin/db_updates/step_2_update_the_database_schema','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_2_update_the_database_schema','user_tables.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_4_migrate_the_data','content_tables.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_4_migrate_the_data','plugins.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_4_migrate_the_data','user_tables.inc.php',[[INSTALLER_REVISION_NO]]),
+ ('admin/db_updates/step_1_update_the_updater_itself','updater_tables.inc.php',[[INSTALLER_REVISION_NO]]);

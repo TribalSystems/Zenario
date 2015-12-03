@@ -36,7 +36,7 @@ require CMS_ROOT. 'zenario/includes/database_connection.inc.php';
 //	function connectLocalDB() {}
 
 function deleteRow($table, $ids, $multiple = true) {
-	return checkRowExists($table, $ids, false, false, $multiple, true);
+	return checkRowExists($table, $ids, false, false, $multiple, 'delete');
 }
 
 function getRow($table, $cols, $ids, $notZero = false) {
@@ -57,6 +57,26 @@ function getRowsArray($table, $cols, $ids = array(), $orderBy = array(), $notZer
 
 function getDistinctRowsArray($table, $cols, $ids = array(), $orderBy = array(), $notZero = false) {
 	return checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy, true, true);
+}
+
+//New in 7.1
+function selectCount($table, $ids = array()) {
+	return checkRowExists($table, $ids, false, false, false, 'count');
+}
+
+function selectMax($table, $cols, $ids = array()) {
+	return checkRowExists($table, $ids, $cols, false, false, 'max');
+}
+
+function selectMin($table, $cols, $ids = array()) {
+	return checkRowExists($table, $ids, $cols, false, false, 'min');
+}
+
+function getNextAutoIncrementId($table) {
+	if ($row = sqlFetchAssoc(sqlSelect("SHOW TABLE STATUS LIKE '". sqlEscape(cms_core::$lastDBPrefix. $table). "'"))) {
+		return $row['Auto_increment'];
+	}
+	return false;
 }
 
 
@@ -91,26 +111,28 @@ function inEscape($csv, $escaping = 'sql', $prefix = false) {
 	}
 	return $sql;
 }
+//	function inEscape($csv, $escaping = 'sql') {}
 
-function insertRow($table, $values, $insertIgnore = false) {
-	return setRow($table, $values, array(), true, $insertIgnore);
+
+function insertRow($table, $values, $ignore = false) {
+	return setRow($table, $values, array(), true, $ignore);
 }
 
-function likeEscape($sql, $allowStarsAsWildcards = false, $asciiCharactersOnly = false) {
+function likeEscape($text, $allowStarsAsWildcards = false, $asciiCharactersOnly = false) {
 	
 	if ($asciiCharactersOnly) {
 		//http://stackoverflow.com/questions/8781911/remove-non-ascii-characters-from-string-in-php
-		$sql = preg_replace('/[^\x20-\x7E]/', '', $sql);
+		$text = preg_replace('/[^\x20-\x7E]/', '', $text);
 	}
 	
 	if (!$allowStarsAsWildcards) {
-		return str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($sql)));
+		return str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text)));
 	
-	} elseif ($sql == '*') {
+	} elseif ($text == '*') {
 		return '_';
 	
 	} else {
-		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($sql))));
+		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text))));
 	}
 }
 
@@ -123,8 +145,8 @@ function paginationLimit($page, $pageSize) {
 
 //	function setRow($table, $values, $ids) {}
 
-function updateRow($table, $values, $ids) {
-	return setRow($table, $values, $ids, false);
+function updateRow($table, $values, $ids, $ignore = false) {
+	return setRow($table, $values, $ids, false, $ignore);
 }
 
 
@@ -201,7 +223,7 @@ function sqlUpdate($sql, $checkCache = true) {
 		
 			if ($checkCache) {
 				$ids = $values = false;
-				cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values);
+				reviewDatabaseQueryForChanges($sql, $ids, $values);
 			}
 		}
 		return $result;

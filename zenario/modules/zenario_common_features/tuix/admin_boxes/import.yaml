@@ -193,7 +193,4 @@ zenario_import:
                     value: Previous
                     type: submit
                     ord: 999999
-                refresh:
-                    value: refresh
-                    type: submit
             

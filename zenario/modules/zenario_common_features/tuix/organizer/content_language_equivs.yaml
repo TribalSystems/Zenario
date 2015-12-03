@@ -222,6 +222,7 @@ zenario__content:
                 create:
                     priv: _PRIV_CREATE_FIRST_DRAFT
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_quick_create
@@ -312,6 +313,8 @@ zenario__content:
                     hide_when_children_are_not_visible: Yes
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: action_dropdown
                     label: Change Layout
                     multiple_select: true
@@ -349,6 +352,8 @@ zenario__content:
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: Yes
                     label: Hide
                     multiple_select: Yes
@@ -378,6 +383,8 @@ zenario__content:
                 hidden:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Unhide/make draft
                     multiple_select: Yes
                     multiple_select_tooltip: Unhide Content Items
@@ -403,6 +410,8 @@ zenario__content:
                 publish:
                     parent: action_dropdown
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: Yes
                     label: Publish
                     multiple_select: Yes
@@ -415,6 +424,8 @@ zenario__content:
                         path: zenario_publish
                 delete:
                     priv: _PRIV_DELETE_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: Yes
                     label: Delete draft
                     multiple_select: Yes
@@ -446,6 +457,8 @@ zenario__content:
                             delete: "1"
                 trash:
                     priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: Yes
                     label: Trash
                     multiple_select: Yes
@@ -457,6 +470,10 @@ zenario__content:
                         path: zenario_trash
                 delete_archives:
                     priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    visible_if_for_any_selected_items: |
+                        item.archives_exist
                     parent: action_dropdown
                     hide_in_select_mode: true
                     label: Delete archived versions
@@ -476,5 +493,3 @@ zenario__content:
                             message_type: warning
                         request:
                             delete_archives: 1
-                    visible_if_for_any_selected_items: |
-                        item.archives_exist

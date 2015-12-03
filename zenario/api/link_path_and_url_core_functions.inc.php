@@ -26,16 +26,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function absCMSDir() {
-	return CMS_ROOT;
-}
-
 function absCMSDirURL() {
 	return httpOrHttps(). httpHost(). SUBDIRECTORY;
-}
-
-function CMSDir() {
-	return SUBDIRECTORY;
 }
 
 function httpHost() {
@@ -46,11 +38,15 @@ function httpHost() {
 	}
 }
 
-function httpHostWithoutPort() {
-	$host = httpHost();
+function httpHostWithoutPort($host = false) {
+	if ($host === false) {
+		$host = httpHost();
+	}
+	
 	if (($pos = strpos($host, ':')) !== false) {
 		$host = substr($host, 0, $pos);
 	}
+	
 	return $host;
 }
 
@@ -90,6 +86,18 @@ function indexDotPHP($noBasePath = false) {
 
 //	function moduleDir($moduleName, $subDir = '') {}
 
+function adminDomain() {
+	if (setting('admin_domain')) {
+		return setting('admin_domain');
+	
+	} elseif (!empty($_SERVER['HTTP_HOST'])) {
+		return $_SERVER['HTTP_HOST'];
+	
+	} else {
+		return primaryDomain();
+	}
+}
+
 function primaryDomain() {
 	if (setting('primary_domain')) {
 		return setting('primary_domain');
@@ -114,3 +122,21 @@ function cookieDomain() {
 		return httpHost();
 	}
 }
+
+//Warning: this is deprecated, please use the SUBDIRECTORY constant instead!
+function CMSDir() {
+	return SUBDIRECTORY;
+}
+
+//Warning: this is deprecated, please use the CMS_ROOT constant instead!
+function absCMSDir() {
+	return CMS_ROOT;
+}
+
+/*	function linkToItem(
+		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
+		$autoAddImportantRequests = false, $useAliasInAdminMode = false
+	) {}
+*/
+
+

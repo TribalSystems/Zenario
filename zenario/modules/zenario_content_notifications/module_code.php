@@ -107,17 +107,17 @@ Link: [[link]]', $note);
 		//Replace the status button with the Request to Publish button if someone can't publish a draft.
 		//Also, if this item could be published, but this admin doesn't have the rights to publish it,
 		//show the Request to Publish button where the Publish button usually is.
-		if (isDraft(cms_core::$status) && !checkPriv('_PRIV_PUBLISH_CONTENT_ITEM')) {
+		if (isDraft(cms_core::$status) && !checkPriv('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 			unset($adminToolbar['sections']['status_button']['buttons']['status_button']);
 		
-		} elseif (!isDraft(cms_core::$status) || checkPriv('_PRIV_PUBLISH_CONTENT_ITEM')) {
+		} elseif (!isDraft(cms_core::$status) || checkPriv('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
 			unset($adminToolbar['sections']['status_button']['buttons']['request_publish']);
 			unset($adminToolbar['sections']['edit']['buttons']['request_publish']);
 		}
 		
-		//If this item could be published, but this admin doesn't have the rights to publish it,
-		//show the Request to Publish button where the Publish button usually is.
-		if (!allowTrash($cID, $cType, cms_core::$status) || checkPriv('_PRIV_TRASH_CONTENT_ITEM')) {
+		//If this item could be trashed, but this admin doesn't have the rights to trashed it,
+		//show the Request to Rrash button where the Rrash button usually is.
+		if (!allowTrash($cID, $cType, cms_core::$status) || checkPriv('_PRIV_TRASH_CONTENT_ITEM', $cID, $cType)) {
 			unset($adminToolbar['sections']['edit']['buttons']['request_trash']);
 		}
 	}
@@ -155,12 +155,19 @@ Link: [[link]]', $note);
 		switch ($path) {
 			case 'zenario_admin':
 				
-				if ($values['permissions/everything'] == 'everything') {
-					$notificationPerms = true;
-				} else {
-					$notificationPerms = 
-						!empty($values['permissions/perm_publish_permissions'])
-					 && strpos($values['permissions/perm_publish_permissions'], '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST') !== false;
+				switch ($values['permissions/permissions']) {
+					case 'all_permissions':
+						$notificationPerms = true;
+						break;
+					
+					case 'specific_actions':
+						$notificationPerms = 
+							!empty($values['permissions/perm_publish_permissions'])
+						 && strpos($values['permissions/perm_publish_permissions'], '_PRIV_APPEAR_ON_CONTENT_REQUEST_RECIPIENT_LIST') !== false;
+						break;
+					
+					default:
+						$notificationPerms = false;
 				}
 				
 				$fields['notifications_tab/no_notifications']['hidden'] = $notificationPerms;
@@ -267,7 +274,7 @@ Link: [[link]]', $note);
 	}
 
 	protected static function insertFieldsForEmail(&$record) {
-		$record['url'] = $url = getGlobalURL() . SUBDIRECTORY;
+		$record['url'] = $url = adminDomain() . SUBDIRECTORY;
 		$record['admin_name'] = formatAdminName();
 		$record['admin_profile_url'] = 
 			absCMSDirURL(). 'zenario/admin/organizer.php?#zenario__users/panels/administrators';

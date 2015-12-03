@@ -1,0 +1,9 @@
+sections:
+    top_left_buttons:
+        buttons:
+            goto_locations:
+                ord: 15
+                parent: drop_down
+                css_class: zenario_at__goto_locations
+                label: Go to Locations panel
+                navigation_path: zenario__locations/panel

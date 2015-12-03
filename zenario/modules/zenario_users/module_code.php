@@ -292,7 +292,7 @@ class zenario_users extends module_base_class {
 	protected function impersonateUser($userId, $logAdminOut = false, $setCookie = false) {
 		//Log the admin out of admin mode
 		if ($logAdminOut) {
-			require_once CMS_ROOT.  'zenario/includes/admin.inc.php';
+			if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			unsetAdminSession(false);
 		}
 		
@@ -620,4 +620,133 @@ class zenario_users extends module_base_class {
 		echo 'Remove inactive users not enabled in site settings';
 		return false;
 	}
+	
+	
+	
+	
+	
+	public static function jobSendInactiveUserEmail(){
+			$k=0;
+			$emailTemplate1 = setting('inactive_user_email_template_1');
+			$emailTemplate2 = setting('inactive_user_email_template_2');
+			
+			$timeUserInactive1 = setting('time_user_inactive_1');
+			$timeUserInactive2 = setting('time_user_inactive_2');
+			
+			$emailSettings =array();
+			if($emailTemplate1 && $timeUserInactive1){
+				$emailSettings[]=array('emailTemplate'=>$emailTemplate1,'period'=>$timeUserInactive1);
+			}
+			
+			if($emailTemplate2 && $timeUserInactive2){
+				$emailSettings[]=array('emailTemplate'=>$emailTemplate2,'period'=>$timeUserInactive2);
+			}
+			
+			if($emailSettings){
+				foreach($emailSettings as $setting){
+					$userDetails=self::getInactiveUserDetails($setting['period']);
+					
+					if(is_array($userDetails) && $userDetails){
+						foreach($userDetails as $user){
+							$emailMergeFields = array();
+							$emailMergeFields['salutation'] = $user['salutation'];
+							$emailMergeFields['first_name'] = $user['first_name'];
+							$emailMergeFields['last_name'] = $user['last_name'];
+							$emailMergeFields['cms_url'] = absCMSDirURL();
+							$k++;
+							zenario_email_template_manager::sendEmailsUsingTemplate(
+																			$user['email'],
+																			$setting['emailTemplate'],
+																			$emailMergeFields,
+																			array(),
+																			false,
+																			true
+																			);
+						}
+					}
+				}
+			}else{
+				echo "The email template and the user inactivity period are unset in the site settings. <br>";
+			}
+		
+		if ($k > 1 || $k == 0) {
+			echo "Sent " . $k . " inactive user emails.";
+		} else {
+			echo "Sent " . $k . " inactive user emails.";
+		}
+		
+		if($k) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static function getInactiveUserDetails($period){
+			$date = self::getInactiveDate($period);
+
+			if(!$date){
+				return false;
+			}
+
+			$sql = "
+				SELECT id, salutation, first_name, last_name, email
+				FROM ".DB_NAME_PREFIX."users
+				WHERE status = 'active'
+				AND last_login LIKE '%".$date."%'";
+			$result = sqlSelect($sql);
+			$users = array();
+			while ($row = sqlFetchAssoc($result)) {
+				$users[] = $row;
+			}
+			
+			if($users){
+				return $users;
+			}
+			return false;
+	
+	}
+	
+	
+	public static function getInactiveDate($period){
+		switch($period){
+			case '2_weeks':
+				return date("Y-m-d",strtotime("-2 weeks"));
+				break;
+
+			case '3_weeks':
+				return date("Y-m-d",strtotime("-3 weeks"));
+				break;
+		
+			case '4_weeks':
+				return date("Y-m-d",strtotime("-4 weeks"));
+				break;
+			case '6_weeks':
+				return date("Y-m-d",strtotime("-6 weeks"));
+				break;
+			
+			case '2_months':
+				return date("Y-m-d",strtotime("-2 months"));
+				break;
+			case '3_months':
+				return date("Y-m-d",strtotime("-3 months"));
+				break;
+			case '6_months':
+				return date("Y-m-d",strtotime("-6 months"));
+				break;
+			case '9_months':
+				return date("Y-m-d",strtotime("-9 months"));
+				break;
+			case '1_year':
+				return date("Y-m-d",strtotime("-1 year"));
+				break;
+			
+		}
+			
+		return false;
+	}
+	
+	
+	
+	
 }

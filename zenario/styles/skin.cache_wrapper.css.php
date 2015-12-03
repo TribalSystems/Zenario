@@ -44,11 +44,7 @@ useCache($ETag);
 
 
 //Run pre-load actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.pre_load.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.pre_load');
 
 
 useGZIP(!empty($_GET['gz']));
@@ -75,8 +71,4 @@ includeSkinFiles($_GET);
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.post_display.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.post_display');

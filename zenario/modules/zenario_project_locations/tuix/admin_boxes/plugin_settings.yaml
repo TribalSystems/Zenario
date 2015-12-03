@@ -26,7 +26,7 @@ plugin_settings:
                     maxlength: "5"
                     style: "width: 5em;"
                     post_field_html: "&nbsp;pixels"
-                    note_below: "Images may be scaled down maintaining aspect ratio, but will never be scaled up."
+                    note_below: "Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up."
                 sticky_image_height: 
                     plugin_setting: 
                         name: sticky_image_height
@@ -39,7 +39,7 @@ plugin_settings:
                     maxlength: "5"
                     style: "width: 5em;"
                     post_field_html: "&nbsp;pixels"
-                    note_below: "Images may be scaled down maintaining aspect ratio, but will never be scaled up."
+                    note_below: "Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up."
                 map_cluster_grid_size: 
                     plugin_setting: 
                         name: map_cluster_grid_size

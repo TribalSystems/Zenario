@@ -345,7 +345,11 @@ function publishContent($cID, $cType, $adminId = false) {
 	removeUnusedVersionControlledPluginSettings($cID, $cType, $content['admin_version']);
 	syncInlineFileContentLink($cID, $cType, $content['admin_version'], true);
 	
-	cms_core::publishContent($cID, $cType, $cVersion, $cVersion-1, $adminId);
+	//cms_core::publishContent($cID, $cType, $cVersion, $cVersion-1, $adminId);
+	
+	$prev_version = $cVersion - 1;
+	
+	
 	
 	$sql = "
 		DELETE FROM ". DB_NAME_PREFIX. "content_cache
@@ -585,7 +589,7 @@ function stripAbsURLsFromAdminBoxField(&$field) {
 
 
 //Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
-//Note there is simmilar logic in zenario/admin/db_updates/data_conversion/local.inc.php for migration
+//Note there is simmilar logic in zenario/admin/db_updates/step_4_migrate_the_data/local.inc.php for migration
 function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
@@ -861,7 +865,7 @@ function hideOrShowContentItemsMenuNode($cID, $cType, $oldStatus, $newStatus = f
 		
 		if (isPublished($oldStatus) != isPublished($newStatus)) {
 			$sql = $ids = $values = false;
-			cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'menu_nodes');
+			reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'menu_nodes');
 		}
 	}
 }
@@ -1044,8 +1048,6 @@ function allowHide($cID, $cType, $status = false) {
 		 || $status == 'published';
 	}	
 }
-
-
 
 
 
@@ -1352,36 +1354,74 @@ function formatAdminName($adminDetails = false) {
 	}
 	
 	if ($adminDetails['authtype'] == 'super') {
-		return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', super)';
+		return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ', multi-site)';
 	} else {
 		return $adminDetails['first_name']. ' '. $adminDetails['last_name']. ' ('. $adminDetails['username']. ')';
 	}
 }
 
-function loadAdminPerms(&$perms, $adminId) {
-	$result = getRows('action_admin_link', 'action_name', array('admin_id' => $adminId));
-	while ($perm = sqlFetchRow($result)) {
-		$perms[$perm[0]] = true;
+//or use saveAdminPerms($adminId, $actions = array()) to add specific permissions
+function saveAdminPerms($adminId, $permissions, $actions = array(), $details = array()) {
+	$clearAllOthers = true;
+	
+	//Catch some alternate parameters where we are trying to add permissions to an exist admin by 
+	if (is_array($permissions)) {
+		$actions = $permissions;
+		$permissions = false;
+		$clearAllOthers = false;
 	}
-}
-
-function saveAdminPerms(&$perms, $adminId) {
+	
+	//Look up the permission type of the admin if we've not been passed it
+	if (!$permissions) {
+		$permissions = getRow('admins', 'permissions', $adminId);
+		
+		//Catch the case where there is nothing to actually update
+		//I.e. there are no actions or other details that we would need to save.
+		if ($permissions != 'specific_actions' && empty($details)) {
+			return;
+		}
+	}
+	
+	switch ($permissions) {
+		case 'all_permissions':
+			//For backwards compatability with a few old bits of the system,
+			//add an action called "_ALL" if someone's permission option is set to "all_permissions"
+			$actions = array('_ALL' => true);
+			break;
+		case 'specific_actions':
+			$actions['_ALL'] = false;
+			$clearAllOthers = false;
+			break;
+		case 'specific_languages':
+		case 'specific_menu_areas':
+			//Admins who use specific_languages or specific_menu_areas have certain set permissions.
+			//These are checked using PHP logic, but for backwards compatability with anything else
+			//we'll also insert them into the database.
+			$actions = adminPermissionsForTranslators();
+			break;
+	}
+	
+	
+	//Delete any old, existing permissions
+	if ($clearAllOthers) {
+		deleteRow('action_admin_link', array('admin_id' => $adminId));
+	}
+	
 	//Add/remove each permission from the database for this Admin.
-	foreach ($perms as $perm => $set) {
+	foreach ($actions as $perm => $set) {
 		if ($set) {
 			setRow('action_admin_link', array(), array('action_name' => $perm, 'admin_id' => $adminId));
-		} else {
+		
+		} elseif (!$clearAllOthers) {
 			deleteRow('action_admin_link', array('action_name' => $perm, 'admin_id' => $adminId));
 		}
 	}
-
-
-	//Set the modification date
-	$sql = "
-		UPDATE ". DB_NAME_PREFIX. "admins SET
-			modified_date = NOW()
-		WHERE id = ". (int) $adminId;
-	sqlQuery($sql);
+	
+	$details['modified_date'] = now();
+	$details['permissions'] = $permissions;
+	
+	//Update the admins table
+	updateRow('admins', $details, $adminId);
 }
 
 function deleteAdmin($admin_id, $undo = false) {
@@ -1395,32 +1435,6 @@ function deleteAdmin($admin_id, $undo = false) {
 		WHERE authtype = 'local'
 		  AND id = ". (int) $admin_id;
 	sqlQuery($sql);
-}
-
-
-//When doing database updates, we need to log an admin.
-//This means we may need to deal with old versions of the Admin Table
-//This function will check to see how up to date the table is, and which columns we can access
-function checkAdminTableColumnsExist() {
-	if (!defined('CHECK_ADMIN_TABLE_COLUMNS_EXIST')) {
-		foreach (array(
-			3 => "reset_password, reset_password_salt, reset_password_time", //Added in revision #19495
-			2 => "authtype", //Added in revision #14000
-			1 => "password_salt, password_needs_changing", //Added in revision #2521
-			0 => "1"
-		) as $level => $columns) {
-			if (@sqlSelect("
-				SELECT ". $columns. "
-				FROM ". DB_NAME_PREFIX. "admins
-				LIMIT 1"
-			)) {
-				define('CHECK_ADMIN_TABLE_COLUMNS_EXIST', $level);
-				break;
-			}
-		}
-	}
-	
-	return CHECK_ADMIN_TABLE_COLUMNS_EXIST;
 }
 
 
@@ -1557,6 +1571,10 @@ function getDefaultTemplateId($cType) {
 
 function getTemplateFamilyDetails($familyName) {
 	return getRow('template_families', array('family_name', 'skin_id', 'missing'), $familyName);
+}
+
+function validateChangeSingleLayout(&$box, $cID, $cType, $cVersion, $newLayoutId, $saving) {
+	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
 function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
@@ -2179,7 +2197,7 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 		//Clear the page cache completely if a Skin or a Template Family has changed
 		$sql = '';
 		$ids = $values = array();
-		cms_core::reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
+		reviewDatabaseQueryForChanges($sql, $ids, $values, $table = 'template_family');
 		
 		
 		//Mark all current Template Families/Template Files/Skins as missing
@@ -2298,8 +2316,17 @@ function checkLayoutInUse($layoutId) {
 		checkRowExists('content_item_versions', array('layout_id' => $layoutId));
 }
 
-function generateLayoutFileBaseName($layoutName) {
-	return substr(str_replace('~20', ' ', encodeItemIdForStorekeeper($layoutName, '')), 0, 255);
+function generateLayoutFileBaseName($layoutName, $layoutId = false) {
+	
+	if (!$layoutId) {
+		$layoutId = getNextAutoIncrementId('layouts');
+	}
+	
+	//New logic, return the id
+	return 'L'. str_pad($layoutId, 2, '0', STR_PAD_LEFT);
+	
+	//Old logic, return the name escaped
+	//return substr(str_replace('~20', ' ', encodeItemIdForOrganizer($layoutName, '')), 0, 255);
 }
 
 //Delete a Layout from the system
@@ -2345,7 +2372,7 @@ function copyLayoutFiles($layout, $newName = false, $newFamilyName = false) {
 	}
 	
 	if (!$newName) {
-		$newName = encodeItemIdForStorekeeper($layout['name'], '');
+		$newName = generateLayoutFileBaseName($layout['name']);
 	}
 	if (!$newFamilyName) {
 		$newFamilyName = $layout['family_name'];
@@ -2415,16 +2442,10 @@ function saveLanguage($submission, $lang) {
 //Check a VLP to see if the three bare-minimum required phrases are there
 //If they are, then the VLP can be added as a language
 function checkIfLanguageCanBeAdded($languageId) {
-	$sql = "
-		SELECT COUNT(*)
-		FROM ". DB_NAME_PREFIX. "visitor_phrases
-		WHERE language_id = '". sqlEscape($languageId). "'
-		  AND code IN ('__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_LOCAL_NAME__', '__LANGUAGE_FLAG_FILENAME__')
-		  AND module_class_name = 'zenario_common_features'";
-
-	$result = sqlQuery($sql);
-	list($count) = sqlFetchRow($result);
-	return $count == 3;
+	return 3 == selectCount('visitor_phrases', array(
+		'language_id' => $languageId,
+		'code' => array('__LANGUAGE_ENGLISH_NAME__', '__LANGUAGE_LOCAL_NAME__', '__LANGUAGE_FLAG_FILENAME__'),
+		'module_class_name' => 'zenario_common_features'));
 }
 
 function aliasURLIsValid($url) {
@@ -2516,12 +2537,7 @@ function getMenuPath($menuId, $langId = false, $separator = ' -> ', $useOrdinal 
 			
 	if ($useOrdinal) {
 		if (!defined('MENU_MAX_ORDINAL')) {
-			$sql2 = "
-				SELECT MAX(ordinal)
-				FROM ". DB_NAME_PREFIX. "menu_nodes";
-			$result = sqlQuery($sql2);
-			$row = sqlFetchRow($result);
-			define('MENU_MAX_ORDINAL', ceil(log($row[0] + 1, 10)));
+			define('MENU_MAX_ORDINAL', ceil(log(1 + (int) selectMax('menu_nodes', 'ordinal'), 10)));
 		}
 		
 		$sql .= "
@@ -2635,6 +2651,10 @@ function removeMenuText($menuId, $languageId) {
 	deleteRow('menu_text', array('language_id' => $languageId, 'menu_id' => $menuId));
 }
 
+function addContentItemsToMenu($tagIds, $menuTarget) {
+	require funIncPath(__FILE__, __FUNCTION__);
+}
+
 function moveMenuNode($ids, $newSectionId, $newParentId, $newNeighbourId, $languageId = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
@@ -2720,6 +2740,22 @@ function addNewMenuItemToMenuHierarchy($sectionId, $menuId, $parentId = false) {
 			FROM ". DB_NAME_PREFIX. "menu_hierarchy
 			WHERE child_id = ". (int) $parentId;
 		sqlUpdate($sql);
+	}
+}
+
+function recalcAllMenuHierarchy() {
+	$sql = "
+		TRUNCATE TABLE ". DB_NAME_PREFIX. "menu_hierarchy";
+	sqlQuery($sql);
+	
+	
+	$sql = "
+		SELECT id
+		FROM ". DB_NAME_PREFIX. "menu_sections";
+	
+	$result = sqlQuery($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		recalcMenuHierarchy($row['id']);
 	}
 }
 
@@ -3060,12 +3096,12 @@ function runModule($id, $test) {
 	} elseif (empty($desc['required_cms_version'])) {
 		return adminPhrase("This Module's description file does not state it's required version number.");
 	
-	} elseif (version_compare($desc['required_cms_version'], preg_replace('/[a-z-]/', '', ZENARIO_CMS_VERSION), '>')) {
+	} elseif (version_compare($desc['required_cms_version'], ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION, '>')) {
 		return adminPhrase('Sorry, this Module requires Zenario [[version]] or later to run. Please update your copy of the CMS.', array('version' => $desc['required_cms_version']));
 	
 	} elseif ($installation_check = moduleDir($module['class_name'], 'installation_check.php', true)) {
 		require CMS_ROOT. $installation_check;
-		$installation_status = checkInstallationCanProceed(ZENARIO_CMS_NUMERIC_VERSION);
+		$installation_status = checkInstallationCanProceed();
 		
 		if ($installation_status !== true) {
 			if (is_array($installation_status)) {
@@ -4010,7 +4046,7 @@ function importVisitorPhrase($languageId, $moduleClass, $phraseCode, $localText,
 
 
 //Given an uploaded XML file, pharse that file looking for visitor language phrases
-function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false) {
+function importVisitorLanguagePack($file, &$languageIdFound, $adding, $scanning = false, $forceLanguageIdOverride = false, $realFilename = false, $checkPerms = false) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -4381,7 +4417,10 @@ function loadModuleDescription($moduleName, &$tags) {
 	
 	$replaces = array();
 	$replaces['[[MODULE_DIRECTORY_NAME]]'] = $baseModuleName;
-	$replaces['[[ZENARIO_CMS_VERSION]]'] = ZENARIO_CMS_VERSION;
+	$replaces['[[ZENARIO_MAJOR_VERSION]]'] = ZENARIO_MAJOR_VERSION;
+	$replaces['[[ZENARIO_MINOR_VERSION]]'] = ZENARIO_MINOR_VERSION;
+	$replaces['[[ZENARIO_RELEASE_VERSION]]'] = ZENARIO_RELEASE_VERSION;
+	$replaces['[[ZENARIO_VERSION]]'] = ZENARIO_VERSION;
 	
 	//If the is_pluggable property is missing...
 	if (!isset($tags['module']['is_pluggable'])) {
@@ -4612,7 +4651,7 @@ function getTemplateUsageStorekeeperDeepLink($layoutId) {
 
 function getTemplateFamilyUsageStorekeeperDeepLink($templateFamily) {
 	return absCMSDirURL(). 'zenario/admin/organizer.php#'.
-			'zenario__layouts/panels/template_families/view_content//'. encodeItemIdForStorekeeper($templateFamily).  '//';
+			'zenario__layouts/panels/template_families/view_content//'. encodeItemIdForOrganizer($templateFamily).  '//';
 }
 
 
@@ -4713,7 +4752,7 @@ function generateFilenameForBackups() {
 	$sql = "SELECT DATE_FORMAT(NOW(), '%Y-%m-%d-%H.%i')";
 	$result = sqlQuery($sql);
 	$row = sqlFetchRow($result);
-	return preg_replace('/[^\w-\\.]/', '', httpHost() ."-backup-". $row[0]. '-r'. getLatestRevisionNumber(). '.sql.gz');
+	return preg_replace('/[^\w-\\.]/', '', httpHost() ."-backup-". $row[0]. '-'. ZENARIO_VERSION. '-r'. LATEST_REVISION_NO. '.sql.gz');
 }
 
 
@@ -4747,12 +4786,11 @@ function lookupExistingCMSTables($dbUpdateSafeMode = false) {
 	//Note - don't do this if the modules table might not be present
 	$modules = array();
 	if (!$dbUpdateSafeMode) {
-		$result = getRows('modules', array('id', 'status'), array());
-		while ($row = sqlFetchAssoc($result)) {
-			if ($row['status'] != 'module_not_initialized') {
-				$modules[$row['id']] = true;
-			}
-		}
+		$modules = arrayValuesToKeys(getRowsArray(
+			'modules',
+			'id',
+			array('status' => array('!' => 'module_not_initialized')))
+		);
 	}
 	
 	//Get a list of tables that are used on the site
@@ -4951,12 +4989,12 @@ if (!function_exists('hex2bin')) {
 }
 
 //Define some constants to make the states clearer below
-define ('NEXTPLEASE', 1);
-define ('CREATEDIR', 2);
-define ('FILENAME', 3);
-define ('FILECONTENTS', 4);
+define ('ZENARIO_BU_NEXTPLEASE', 1);
+define ('ZENARIO_BU_CREATEDIR', 2);
+define ('ZENARIO_BU_FILENAME', 3);
+define ('ZENARIO_BU_FILECONTENTS', 4);
 
-define ('READ_BACKUP_CHUNK_SIZE', 10000);
+define ('ZENARIO_BU_READ_CHUNK_SIZE', 10000);
 
 //Given a backup, restore the database from it
 function restoreDatabaseFromBackup($filename, $plainSql, $prefix, &$failures) {
@@ -4997,7 +5035,7 @@ function resetSite() {
 	}
 	
 	//Rerun some of the scripts from the installer to give us a blank site
-	require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+	if (!function_exists('runSQL')) require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
 	$error = false;
 	(runSQL(false, 'local-DROP.sql', $error)) &&
 	(runSQL(false, 'local-CREATE.sql', $error)) &&
@@ -5034,6 +5072,16 @@ function resetSite() {
 		setSetting('site_id', generateRandomSiteIdentifierKey());
 		setAdminSession(session('admin_userid'), session('admin_global_id'));
 		
+		
+		//Apply database updates
+		checkIfDBUpdatesAreNeeded($andDoUpdates = true);
+		
+		//Populate the menu_hierarchy and the menu_positions tables
+		recalcAllMenuHierarchy();
+		
+		//Update the special pages, creating new ones if needed
+		addNeededSpecialPages();
+		
 		return true;
 	}
 }
@@ -5043,8 +5091,9 @@ function restoreLocationalSiteSettings() {
 	//as the chances are that their values in the backup will be wrong
 	foreach (array(
 		'backup_dir', 'docstore_dir',
-		'primary_domain', 'use_cookie_free_domain', 'cookie_free_domain',
-		'admin_use_ssl', 'admin_use_ssl_port'
+		'admin_domain', 'admin_use_ssl',
+		'primary_domain',
+		'use_cookie_free_domain', 'cookie_free_domain'
 	) as $setting) {
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "site_settings
@@ -5149,7 +5198,22 @@ function handleAdminBoxAJAX() {
 	
 	if (request('fileUpload')) {
 		exitIfUploadError();
-		putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], request('_html5_backwards_compatibility_hack'));
+		
+		//If this is the plugin settings FAB, and this is an image, try to add the image
+		//to the image library straight away, and return the id.
+		if (!empty($_REQUEST['path'])
+		 && $_REQUEST['path'] == 'plugin_settings'
+		 && (checkPriv('_PRIV_MANAGE_MEDIA') || checkPriv('_PRIV_EDIT_DRAFT') || checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN'))
+		 && isImageOrSVG(documentMimeType($_FILES['Filedata']['name']))) {
+			
+			$imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], $mustBeAnImage = true);
+			$image = getRow('files', array('id', 'filename', 'width', 'height'), $imageId);
+			echo json_encode($image);
+		
+		//Otherwise upload
+		} else {
+			putUploadFileIntoCacheDir($_FILES['Filedata']['name'], $_FILES['Filedata']['tmp_name'], request('_html5_backwards_compatibility_hack'));
+		}
 	
 	} else if (request('fetchFromDropbox')) {
 		putDropboxFileIntoCacheDir(post('name'), post('link'));
@@ -5244,13 +5308,15 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 		}
 	}
 	
-	if ($image = getimagesize($path)) {
+	if (($mimeType = documentMimeType($file['filename']))
+	 && (isImage($mimeType))
+	 && ($image = @getimagesize($path))) {
 		$file['width'] = $image[0];
 		$file['height'] = $image[1];
 		
-		$file['id'] = encodeItemIdForStorekeeper($sha. '/'. $file['filename']. '/'. $file['width']. '/'. $file['height']);
+		$file['id'] = encodeItemIdForOrganizer($sha. '/'. $file['filename']. '/'. $file['width']. '/'. $file['height']);
 	} else {
-		$file['id'] = encodeItemIdForStorekeeper($sha. '/'. $file['filename']);
+		$file['id'] = encodeItemIdForOrganizer($sha. '/'. $file['filename']);
 	}
 	
 	$file['link'] = 'zenario/file.php?getUploadedFileInCacheDir='. $file['id'];
@@ -5282,7 +5348,19 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 
 
 
-//Smart group description function 
+function getListOfSmartGroupsWithCounts() {
+	$smartGroups = getRowsArray('smart_groups', 'name', array(), 'name');
+	foreach ($smartGroups as $smartGroupId => &$name) {
+		if ($count = countSmartGroupMembers($smartGroupId)) {
+			$name .= ' ('. $count. ')';
+		} else {
+			$name .= adminPhrase(' (empty)');
+		}
+	}
+	return $smartGroups;
+}
+
+//Smart group description function
 function getSmartGroupDescription($smartGroupId) {
 	return require funIncPath(__FILE__, __FUNCTION__);
 }
@@ -5638,14 +5716,11 @@ function getCustomFieldsParents($field, &$fields) {
 		return;
 	}
 	
-	$sql = "
-		SELECT *
-		FROM ". DB_NAME_PREFIX. "custom_dataset_fields
-		WHERE dataset_id = ". (int) $field['dataset_id']. "
-		  AND id = ". (int) $field['parent_id'];
-	
-	$result = sqlQuery($sql);
-	if ($parent = sqlFetchAssoc($result)) {
+	if ($parent = getRow(
+		'custom_dataset_fields',
+		array('id', 'dataset_id', 'tab_name', 'field_name', 'is_system_field', 'label', 'parent_id'),
+		array('dataset_id' => $field['dataset_id'], 'id' => $field['parent_id'])
+	)) {
 		if (!isset($fields[$parent['id']])) {
 			
 			if (!$parent['is_system_field']) {

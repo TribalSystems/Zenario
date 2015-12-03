@@ -1,217 +1,331 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 site_settings:
-    setting_group: users
-    title: Editing settings for users
-    tabs:
-        names:
-            label: Sign-in
-            show_errors_after_field: description
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
+	setting_group: users
+	title: Editing settings for users
+	tabs:
+		names:
+			label: Sign-in
+			show_errors_after_field: description
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
 
-            notices:
-                turning_off_screen_names:
-                    show: false
-                    type: warning
-                    message: >
-                        If you turn off screen names, the identifier for all users and contacts
-                        will be changed to first name+last name (+suffix number, if non-unique).
-                        For users and contacts without a first name or last name,
-                        the start of their email address will be used instead.
-                turning_on_screen_names:
-                    show: false
-                    type: warning
-                    message: >
-                        If you turn on screen names, the identifier for all users and contacts will be changed
-                        to their screen name if they have one.
-            
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: "This tab contains settings related to sign-in behaviour."
-                user_use_screen_name:
-                    site_setting:
-                        name: user_use_screen_name
-                    label: 'Use screen names'
-                    type: checkbox
-                    format_onchange: true
-                    value: 1
-                    side_note: |
-                        For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
-                        If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
-                        Login Module will have the option to allow users to log in using their screen name (rather than an email address).
-                sign_in_access_log:
-                    site_setting:
-                        name: sign_in_access_log
-                    label: 'Log all sign-ins'
-                    type: checkbox
-                    value: "1"
-                    side_note: |
-                        If enabled, the site will log every sign-in by every user, including date, time, IP address and browser. 
-                                    
-        passwords:
-            label: Passwords
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                min_extranet_user_password_length:
-                    label: 'Minimum password length:'
-                    site_setting:
-                        name: min_extranet_user_password_length
-                    type: select
-                    value: "5"
-                    empty_value: No restrictions
-                    values:
-                        4: "4"
-                        5: "5"
-                        6: "6"
-                        7: "7"
-                        8: "8"
-                        9: "9"
-                        10: "10"
-                        11: "11"
-                        12: "12"
-                        13: "13"
-                        14: "14"
-                        15: "15"
-                        20: "20"
-                min_extranet_user_password_strength:
-                    label: 'Minimum password strength:'
-                    site_setting:
-                        name: min_extranet_user_password_strength
-                    type: select
-                    value: _MEDIUM
-                    values:
-                        _WEAK: Weak
-                        _MEDIUM: Medium
-                        _STRONG: Strong
-                        _VERY_STRONG: Very strong
-                plaintext_extranet_user_passwords:
-                    label: 'Store user passwords as:'
-                    site_setting:
-                        name: plaintext_extranet_user_passwords
-                    type: radios
-                    values:
-                        1: Plain text
-                        0: Encrypted
-                    value: 1
-                    note_below: |
-                        Storing passwords as plain text will allow the system to send
-                        out password reminders via email, but is less secure as anyone
-                        with database access to the server will be able to read
-                        people's passwords.
-                    format_onchange: true;
-            notices:
-                turn_plaintext_off_warning:
-                    show: false
-                    type: warning
-                    message: |
-                        You are about to change from plain text to encrypted passwords when you save this setting. This means that all plain text passwords will be converted to encrypted passwords. This cannot be undone. Users will no longer be able to be reminded of their password (only to have their password reset to a random string).
-                turn_plaintext_on_warning:
-                    show: false
-                    type: warning
-                    message: |
-                        From now on, all passwords for users will be stored as plain text.
-                
-        filesizes:
-            label: File Sizes
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: This tab contains settings for file uploads.
-                max_user_image_filesize:
-                    site_setting:
-                        name: max_user_image_filesize
-                    label: 'Maximum User Image File Size:'
-                    type: text
-                    value: "50000"
-                    side_note: >
-                        Maximum allowed file size for avatar images uploaded by
-                        Extranet Users, in bytes.
-                    validation:
-                        required: Please enter a Maximum User Image File Size.
-                        numeric: The Maximum User Image File Size must be numeric.
-        unconfirmed_users:
-            label: Unconfirmed users
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: |
-                            <p>
-                                Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
-                            </p>
-                remove_inactive_users:
-                    site_setting:
-                        name: remove_inactive_users
-                    label: 'Remove inactive unconfirmed users'
-                    type: checkbox
-                    format_onchange: true
-                    side_note: Accounts for users will be deleted, where the status is Pending and the Email verified flag is set to No.
-                max_days_user_inactive:
-                    site_setting:
-                        name: max_days_user_inactive
-                    label: 'Maximum days a unconfirmed user can exist without confirming their email:'
-                    type: select
-                    values:
-                        2:
-                            label: 2 days
-                            ord: 1
-                        3:
-                            label: 3 days
-                            ord: 2
-                        7:
-                            label: 7 days
-                            ord: 3
-                        14:
-                            label: 14 days
-                            ord: 4
-                        21:
-                            label: 21 days
-                            ord: 5
-                        28:
-                            label: 28 days
-                            ord: 6
-                        45:
-                            label: 45 days
-                            ord: 7
-                        60:
-                            label: 60 days
-                            ord: 8
-                        90:
-                            label: 90 days
-                            ord: 9
-                    value: 90
-                    side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
-        log_access:
-            label: Log access
-            edit_mode:
-                enabled: true
-                priv: _PRIV_EDIT_SITE_SETTING
-                on: false
-            fields:
-                log_user_access:
-                    site_setting:
-                        name: log_user_access
-                    label: 'Log user access to private content items'
-                    type: checkbox
-                    value: 1
-                    note_below: |
-                        <p>
-                            If enabled, all user accesses to private content items will be logged in the <a href="zenario/admin/organizer.php?#zenario__users/panels/access_log">access log panel</a>.
-                        </p>
+			notices:
+				turning_off_screen_names:
+					show: false
+					type: warning
+					message: >
+						If you turn off screen names, the identifier for all users and contacts
+						will be changed to first name+last name (+suffix number, if non-unique).
+						For users and contacts without a first name or last name,
+						the start of their email address will be used instead.
+				turning_on_screen_names:
+					show: false
+					type: warning
+					message: >
+						If you turn on screen names, the identifier for all users and contacts will be changed
+						to their screen name if they have one.
+			
+			fields:
+				description:
+					full_width: true
+					snippet:
+						html: "This tab contains settings related to sign-in behaviour."
+				user_use_screen_name:
+					site_setting:
+						name: user_use_screen_name
+					label: 'Use screen names'
+					type: checkbox
+					format_onchange: true
+					value: 1
+					side_note: |
+						For sites with social features such as comments and forums, logged-in users will have a screen name, the name which will appear when they post something.
+						If you enable this setting, the Extranet Registration module will prompt new users to choose a screen name when registering, and the Extranet
+						Login Module will have the option to allow users to log in using their screen name (rather than an email address).
+				sign_in_access_log:
+					site_setting:
+						name: sign_in_access_log
+					label: 'Log all sign-ins'
+					type: checkbox
+					value: "1"
+					side_note: |
+						If enabled, the site will log every sign-in by every user, including date, time, IP address and browser. 
+									
+		passwords:
+			label: Passwords
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				min_extranet_user_password_length:
+					label: 'Minimum password length:'
+					site_setting:
+						name: min_extranet_user_password_length
+					type: select
+					value: "5"
+					empty_value: No restrictions
+					values:
+						4: "4"
+						5: "5"
+						6: "6"
+						7: "7"
+						8: "8"
+						9: "9"
+						10: "10"
+						11: "11"
+						12: "12"
+						13: "13"
+						14: "14"
+						15: "15"
+						20: "20"
+				min_extranet_user_password_strength:
+					label: 'Minimum password strength:'
+					site_setting:
+						name: min_extranet_user_password_strength
+					type: select
+					value: _MEDIUM
+					values:
+						_WEAK: Weak
+						_MEDIUM: Medium
+						_STRONG: Strong
+						_VERY_STRONG: Very strong
+				plaintext_extranet_user_passwords:
+					label: 'Store user passwords as:'
+					site_setting:
+						name: plaintext_extranet_user_passwords
+					type: radios
+					values:
+						1: Plain text
+						0: Encrypted
+					value: 1
+					note_below: |
+						Storing passwords as plain text will allow the system to send
+						out password reminders via email, but is less secure as anyone
+						with database access to the server will be able to read
+						people's passwords.
+					format_onchange: true;
+			notices:
+				turn_plaintext_off_warning:
+					show: false
+					type: warning
+					message: |
+						You are about to change from plain text to encrypted passwords when you save this setting. This means that all plain text passwords will be converted to encrypted passwords. This cannot be undone. Users will no longer be able to be reminded of their password (only to have their password reset to a random string).
+				turn_plaintext_on_warning:
+					show: false
+					type: warning
+					message: |
+						From now on, all passwords for users will be stored as plain text.
+				
+		filesizes:
+			label: File Sizes
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				description:
+					full_width: true
+					snippet:
+						html: This tab contains settings for file uploads.
+				max_user_image_filesize:
+					site_setting:
+						name: max_user_image_filesize
+					label: 'Maximum User Image File Size:'
+					type: text
+					value: "50000"
+					side_note: >
+						Maximum allowed file size for avatar images uploaded by
+						Extranet Users, in bytes.
+					validation:
+						required: Please enter a Maximum User Image File Size.
+						numeric: The Maximum User Image File Size must be numeric.
+		unconfirmed_users:
+			label: Unconfirmed users
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				description:
+					full_width: true
+					snippet:
+						html: |
+							<p>
+								Zenario can delete the accounts of people who sign up, but who never confirm their email address. Use the setting below to have these users deleted after a period of time.
+							</p>
+				remove_inactive_users:
+					site_setting:
+						name: remove_inactive_users
+					label: 'Delete unconfirmed user accounts'
+					type: checkbox
+					format_onchange: true
+					side_note: Accounts for users will be deleted, where the status is Pending and the Email verified flag is set to No.
+				max_days_user_inactive:
+					site_setting:
+						name: max_days_user_inactive
+					label: 'Maximum days a unconfirmed user can exist without confirming their email:'
+					type: select
+					values:
+						2:
+							label: 2 days
+							ord: 1
+						3:
+							label: 3 days
+							ord: 2
+						7:
+							label: 7 days
+							ord: 3
+						14:
+							label: 14 days
+							ord: 4
+						21:
+							label: 21 days
+							ord: 5
+						28:
+							label: 28 days
+							ord: 6
+						45:
+							label: 45 days
+							ord: 7
+						60:
+							label: 60 days
+							ord: 8
+						90:
+							label: 90 days
+							ord: 9
+					value: 90
+					side_note: This setting affects the scheduled task "jobRemoveInactivePendingUsers".
+		log_access:
+			label: Log access
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				log_user_access:
+					site_setting:
+						name: log_user_access
+					label: 'Log user access to private content items'
+					type: checkbox
+					value: 1
+					note_below: |
+						<p>
+							If enabled, all user accesses to private content items will be logged in the <a href="zenario/admin/organizer.php?#zenario__users/panels/access_log">access log panel</a>.
+						</p>
+		inactive_user_email:
+			label: Inactive user email
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				description:
+					full_width: true
+					snippet:
+						html: |
+							<p>
+								This option allow you send up to 2 emails to inactive users in different periods.
+								
+								These emails will be sent by a scheduled task.
+							</p>
+				time_user_inactive_1:
+					site_setting:
+						name: time_user_inactive_1
+					label: 'Select user inactivity period'
+					type: select
+					values:
+						2_weeks:
+							label: 2 weeks
+							ord: 1
+						3_weeks:
+							label: 3 weeks
+							ord: 2
+						4_weeks:
+							label: 4 weeks
+							ord: 3
+						6_weeks:
+							label: 6 weeks
+							ord: 4
+						2_months:
+							label: 2 months
+							ord: 5
+						3_months:
+							label: 3 months
+							ord: 6
+						6_months:
+							label: 6 months
+							ord: 7
+						9_months:
+							label: 9 months
+							ord: 8
+						1_year:
+							label: 1 year
+							ord: 9
+					empty_value: "-- Select --"
+					value: ''
+					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
+				inactive_user_email_template_1:
+					site_setting:
+						name: inactive_user_email_template_1
+					label: 'Email template:'
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						disallow_refiners_looping_on_min_path: Yes
+						nothing_selected_phrase: No email template selected
+						select_phrase: Select an email template...
+						hide_remove_button: true
+				time_user_inactive_2:
+					site_setting:
+						name: time_user_inactive_2
+					label: 'Select user inactivity period'
+					type: select
+					values:
+						2_weeks:
+							label: 2 weeks
+							ord: 1
+						3_weeks:
+							label: 3 weeks
+							ord: 2
+						4_weeks:
+							label: 4 weeks
+							ord: 3
+						6_weeks:
+							label: 6 weeks
+							ord: 4
+						2_months:
+							label: 2 months
+							ord: 5
+						3_months:
+							label: 3 months
+							ord: 6
+						6_months:
+							label: 6 months
+							ord: 7
+						9_months:
+							label: 9 months
+							ord: 8
+						1_year:
+							label: 1 year
+							ord: 9
+					empty_value: "-- Select --"
+					value: ''
+					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
+				inactive_user_email_template_2:
+					site_setting:
+						name: inactive_user_email_template_2
+					label: 'Email template:'
+					pick_items:
+						path: zenario__email_template_manager/panels/email_templates
+						target_path: zenario__email_template_manager/panels/email_templates
+						min_path: zenario__email_template_manager/panels/email_templates
+						max_path: zenario__email_template_manager/panels/email_templates
+						disallow_refiners_looping_on_min_path: Yes
+						nothing_selected_phrase: No email template selected
+						select_phrase: Select an email template...
+						hide_remove_button: true

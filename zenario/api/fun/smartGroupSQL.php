@@ -30,19 +30,25 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //$smartGroupId, $usersTableAlias = 'u', $customTableAlias
 
 $sql = '';
+$first = true;
 
 //A little hack - allow an array of rules to be passed in instead of an id,
 //in order to test rules that aren't yet in the database
 if (is_array($smartGroupId)) {
 	$rules = $smartGroupId;
+	$or = arrayKey($rules, 1, 'must_match') == 'any';
+
 } else {
 	$rules = getRowsArray(
 		'smart_group_rules',
-		array('field_id', 'field2_id', 'field3_id', 'not', 'value'),
+		array('field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'not', 'value'),
 		array('smart_group_id' => $smartGroupId),
 		'ord'
 	);
+	$or = count($rules) > 1
+	   && getRow('smart_groups', 'must_match', $smartGroupId) == 'any';
 }
+
 
 foreach ($rules as $rule) {
 	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
@@ -50,21 +56,43 @@ foreach ($rules as $rule) {
 	 && ($field = getDatasetFieldBasicDetails($rule['field_id']))
 	 && (in($field['type'], 'group', 'checkbox', 'radios', 'centralised_radios', 'select', 'centralised_select'))) {
 		
+		if (!$or) {
+			$and = "
+				AND ";
+		
+		} elseif ($first) {
+			$and = "
+				AND (";
+		
+		} else {
+			$and = "
+				OR ";
+		}
+		
 		//Work out the table alias and column name
 		$col = "`". sqlEscape($field['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($field['db_column']). "`";
 		
-		//If you filter by group, an "OR" logic is allowed. Handle this as a special case
-		if ($field['type'] == 'group' && ($rule['field2_id'] || $rule['field3_id'])) {
+		//If you filter by group, an "OR" logic containing multiple groups is allowed.
+		//Check if multiple groups have been picked...
+		$groups = array();
+		if ($field['type'] == 'group') {
+			if ($rule['field2_id']) $groups[] = $rule['field2_id'];
+			if ($rule['field3_id']) $groups[] = $rule['field3_id'];
+			if ($rule['field4_id']) $groups[] = $rule['field4_id'];
+			if ($rule['field5_id']) $groups[] = $rule['field5_id'];
+		}
+		
+		//...if so, handle this using an IN() statement
+		if (!empty($groups)) {
 			
-			$sql .= "
-				AND 1 IN (". $col;
+			$sql .= $and. "1 IN (". $col;
 			
-			foreach (array('field2_id', 'field3_id') as $fieldNId) {
-				if ($rule[$fieldNId] && ($fieldN = getRow(
+			foreach ($groups as $fieldNId) {
+				if ($fieldN = getRow(
 					'custom_dataset_fields',
 					array('is_system_field', 'db_column'),
-					array('id' => $rule[$fieldNId], 'type' => 'group')
-				))) {
+					array('id' => $fieldNId, 'type' => 'group')
+				)) {
 					$sql .= ", `". sqlEscape($fieldN['is_system_field']? $usersTableAlias : $customTableAlias). "`.`". sqlEscape($fieldN['db_column']). "`";
 				}
 			}
@@ -97,14 +125,17 @@ foreach ($rules as $rule) {
 			}
 			
 			if ($rule['not']) {
-				$sql .= "
-					AND NOT (". $check. " AND ". $col. " IS NOT NULL)";
+				$sql .= $and. "NOT (". $check. " AND ". $col. " IS NOT NULL)";
 			} else {
-				$sql .= "
-					AND ". $check;
+				$sql .= $and. $check;
 			}
 		}
+		$first = false;
 	}
+}
+
+if ($or && !$first) {
+	$sql .= ")";
 }
 
 return $sql;

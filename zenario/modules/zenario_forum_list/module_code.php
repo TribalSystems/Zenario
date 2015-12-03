@@ -185,7 +185,7 @@ class zenario_forum_list extends zenario_content_list {
 				 && empty($box['tabs']['each_item']['fields']['canvas']['hidden'])) {
 					if ($values['each_item/canvas'] == 'fixed_width') {
 						$box['tabs']['each_item']['fields']['width']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 					
 					} else {
 						unset($box['tabs']['each_item']['fields']['width']['note_below']);
@@ -194,7 +194,7 @@ class zenario_forum_list extends zenario_content_list {
 					if ($values['each_item/canvas'] == 'fixed_height'
 					 || $values['each_item/canvas'] == 'fixed_width_and_height') {
 						$box['tabs']['each_item']['fields']['height']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 					
 					} elseif ($values['each_item/canvas'] == 'resize_and_crop') {
 						$box['tabs']['each_item']['fields']['height']['note_below'] =

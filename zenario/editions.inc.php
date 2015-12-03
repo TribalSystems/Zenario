@@ -51,6 +51,6 @@
 
 
 cms_core::$editions = array(
-	'zenario_pro_features' => 'zenario_pro_features',
-	'zenario_common_features' => 'zenario_common_features'
+	'zenario_pro_features',
+	'zenario_common_features'
 );

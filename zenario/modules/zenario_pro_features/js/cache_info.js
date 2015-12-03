@@ -148,7 +148,9 @@ zenarioCI.init = function(canCache) {
 	if (!zenarioCI.inited) {
 		var slotName,
 			html,
-			options = {position: {my: 'right-2 center', at: 'left center', collision: 'flipfit'}};
+			options = {
+				tooltipClass: 'zenario_cache_info_tooltip',
+				position: {my: 'right-2 center', at: 'left center', collision: 'flipfit'}};
 		
 		$('div.zenario_slot').each(function(i, el) {
 			
@@ -159,10 +161,6 @@ zenarioCI.init = function(canCache) {
 		});
 		
 		zenario.get('zenario_cache_info').innerHTML = zenarioCI.box('', 'Page', !canCache, true);
-		
-		//For testing
-		//options.hide = 1*60*1000; 
-		
 		
 		zenario.tooltips('div.zenario_cache_info div', options);
 		

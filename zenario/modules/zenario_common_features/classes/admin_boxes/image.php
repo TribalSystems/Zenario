@@ -87,7 +87,7 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 		}
 		
 		//Catch the case where someone adds text into the "add tag" box but presses "Save" by mistake instead of "Add"
-		$tags = explode(',', $values['details/tags']);
+		$tags = explodeAndTrim($values['details/tags']);
 			if ($saving
 			 && $values['details/new_tag']
 			 && !in_array($values['details/new_tag'], $tags)) {
@@ -96,16 +96,14 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 			$values['details/new_tag'] = '';
 		
 			//Validate the tags
-			if (!empty($tags)) {
-				foreach ($tags as &$tagName) {
-					$tagName = trim($tagName);
-				
-					if (preg_match('/\s/', $tagName) !== 0) {
-						$box['tabs']['details']['errors']['spaces'] = adminPhrase("Tag names cannot contain spaces.");
-				
-					} elseif (!validateScreenName(trim($tagName))) {
-						$box['tabs']['details']['errors']['alphanumeric'] = adminPhrase("Tag names can contain only alphanumeric characters, underscores or hyphens.");
-					}
+			foreach ($tags as &$tagName) {
+				$tagName = trim($tagName);
+			
+				if (preg_match('/\s/', $tagName) !== 0) {
+					$box['tabs']['details']['errors']['spaces'] = adminPhrase("Tag names cannot contain spaces.");
+			
+				} elseif (!validateScreenName(trim($tagName))) {
+					$box['tabs']['details']['errors']['alphanumeric'] = adminPhrase("Tag names can contain only alphanumeric characters, underscores or hyphens.");
 				}
 			}
 		$values['details/tags'] = implode(',', $tags);

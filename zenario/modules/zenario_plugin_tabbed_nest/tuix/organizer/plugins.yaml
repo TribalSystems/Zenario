@@ -26,6 +26,7 @@ zenario__modules:
                                 instanceId: ""
                     add_wireframe_and_tab:
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         label: Add a plugin
                         only_show_on_refiner: nest
                         pick_items:

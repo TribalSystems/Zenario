@@ -7,7 +7,6 @@ pages:
     -jobs
     -signals
     -special_pages
-    -centralised_lists
 
 common_definitions:
     stringy: &stringy
@@ -538,3 +537,6 @@ properties:
                     type: string
                     description: >
                         The label of the centralised list.
+        description: >
+            If your module provides a centralised list, or multiple centralised lists, you will need to specify a label
+            and the method name for each here.

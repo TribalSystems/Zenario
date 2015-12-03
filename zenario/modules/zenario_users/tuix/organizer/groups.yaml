@@ -34,27 +34,26 @@ zenario__users:
                     align_right: true
                     show_by_default: false
                 label:
-                    title: Name
+                    title: Group name
                     db_column: cdf.label
                     searchable: true
                     width: large
                     show_by_default: true
                 db_column:
-                    title: Internal name
+                    title: Code name
                     db_column: cdf.db_column
                     show_by_default: false
                 members:
                     title: Members
-                    tooltip: Members
-                    width: xxsmall
+                    width: medium
                     show_by_default: true
                     sortable: true
                     align_right: true
                 content_items:
-                    title: Content items
-                    tooltip: Content items
-                    width: xxsmall
-                    show_by_default: true
+                    title: Content items shared
+                    tooltip: Content items to members of this group
+                    width: medium
+                    show_by_default: false
                     sortable: true
                     align_right: true
             item_buttons:

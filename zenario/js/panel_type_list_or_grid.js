@@ -207,7 +207,7 @@ methods.changeViewMode = function(view) {
 	}
 
 	//Refresh the panel to show things in the new view
-	zenarioO.refresh();
+	zenarioO.reload();
 };
 
 //Setup the switch view button at the top right of Organizer

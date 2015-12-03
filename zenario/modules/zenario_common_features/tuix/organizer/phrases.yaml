@@ -65,10 +65,16 @@ zenario__languages:
                     show_by_default: true
                     width: small
                 seen_in_file:
-                    title: Seen in file
+                    title: Found in file
                     db_column: vp.seen_in_file
                     show_by_default: true
                     width: large
+                seen_at_url:
+                    title: Seen at URL
+                    db_column: vp.seen_at_url
+                    show_by_default: false
+                    width: large
+                    item_link: content_item_or_url
             default_sort_column: code
             item:
                 name: Phrase
@@ -98,7 +104,6 @@ zenario__languages:
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
                 import_phrases:
-                    #parent: phrases_dropdown
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
                     label: Import phrases
                     tooltip: |
@@ -110,17 +115,17 @@ zenario__languages:
                         fileDesc: CSV, Excel or OpenDocument spreadsheet files
                         request:
                             import_phrases: "1"
-                #export:
-                #    parent: export_phrases_dropdown
-                #    priv: _PRIV_MANAGE_LANGUAGE_PHRASE
-                #    label: Export phrases in ...
-                #    admin_box:
-                #        path: zenario_export_vlp
-                #        key:
+            
             item_buttons:
+                edit_dropdown:
+                    label: Edit phrase...
+                    multiple_select: Yes
+                    hide_when_children_are_not_visible: Yes
                 edit:
+                    ord: 999
                     priv: _PRIV_VIEW_LANGUAGE
-                    label: Edit phrase
+                    parent: edit_dropdown
+                    label: Edit phrase (all languages)
                     admin_box:
                         path: zenario_phrase
                 merge:

@@ -69,11 +69,7 @@ require 'basicheader.inc.php';
 startSession();
 
 //Run pre-load actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.pre_load.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('index.pre_load');
 
 define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
@@ -113,14 +109,7 @@ if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())
 }
 
 //Run pre-header actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.pre_header.php', true)) {
-		require $action;
-	}
-}
-unset($className);
-unset($dirName);
-unset($action);
+require editionInclude('index.pre_header');
 
 
 
@@ -183,16 +172,14 @@ setShowableContent($content, $version);
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.pre_get_contents.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('index.pre_get_contents');
 
 
+$fakeLayout = false;
 $hideLayout = false;
 $specificSlot = false;
 $specificInstance = false;
+$overrideSettings = false;
 
 if (!empty($_REQUEST['method_call'])
  && ($_REQUEST['method_call'] == 'showSingleSlot' || $_REQUEST['method_call'] == 'showIframe')
@@ -200,21 +187,25 @@ if (!empty($_REQUEST['method_call'])
 	$specificSlot = request('slotName');
 	$specificInstance = request('instanceId');
 	$hideLayout = $specificSlot && request('hideLayout');
+	$fakeLayout = $specificSlot && request('fakeLayout');
+	
+	if ($fakeLayout
+	 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT'))
+	 && !empty($_REQUEST['overrideSettings'])) {
+		$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
+	}
 }
 
 getSlotContents(
 	cms_core::$slotContents,
 	cms_core::$cID, cms_core::$cType, cms_core::$cVersion,
 	cms_core::$layoutId, cms_core::$templateFamily, cms_core::$templateFileBaseName,
-	$specificInstance, $specificSlot);
+	$specificInstance, $specificSlot,
+	false, true, false, $overrideSettings);
 useGZIP(setting('compress_web_pages'));
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.post_get_contents.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('index.post_get_contents');
 
 
 $canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, true, true, true);
@@ -333,13 +324,42 @@ $skinDiv .= '">';
 
 //Functionality for only showing one Plugin in a slot
 if ($specificInstance || $specificSlot) {
-	CMSWritePageBody('', false);
 	
-	if ($hideLayout && $specificSlot) {
+	//Try and "fake" the grid, to get as many styles from the Skin as possible,
+	//while still showing the plugin on its own taking up the full width
+	if ($fakeLayout && $specificSlot) {
+		CMSWritePageBody('', false, $showPreview = 'plugin');
+		
+		echo '
+			<link rel="stylesheet" type="text/css" href="', htmlspecialchars(absCMSDirURL()), 'zenario/styles/admin_plugin_preview.min.css">';
+		
+		echo $skinDiv, $templateDiv, $contentItemDiv, '
+			<div class="container ', empty($_GET['grid_container'])? '' : 'container_'. (int) $_GET['grid_container'], '">
+				<div
+					class="
+						alpha span
+						', empty($_GET['grid_columns'])? 'span1_1' : 'span'. (int) $_GET['grid_columns'], '
+						', empty($_GET['grid_cssClass'])? '' : htmlspecialchars($_GET['grid_cssClass']), '
+					"
+					', empty($_GET['grid_pxWidth'])? '' : 'style="max-width: '. (int) $_GET['grid_pxWidth']. 'px;"', '
+				>';
+					slot($specificSlot, 'grid');
+		echo '
+				</div>
+			</div>
+		</div></div></div>';
+	
+	//Just show the plugin, without any of the <div>s from the layout around it
+	} elseif ($hideLayout && $specificSlot) {
+		CMSWritePageBody('', false);
 		slot($specificSlot, 'grid');
+	
+	//Just show the plugin and the layout normally, but with all other plugins hidden
 	} else {
+		CMSWritePageBody('', false);
+		
 		echo $skinDiv, $templateDiv, $contentItemDiv;
-		require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;
+			require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;
 		echo "\n", '</div></div></div>';
 	}
 	
@@ -353,14 +373,14 @@ if ($specificInstance || $specificSlot) {
 
 //Show a preview in Admin Mode in an iframe
 } elseif (!empty($_GET['_sk_preview']) && checkPriv()) {
-	CMSWritePageBody('', false, true);
+	CMSWritePageBody('', false, $showPreview = 'page');
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;
 	
 	echo "\n", '</div></div></div>';
 	
 	echo '
-		<script type="text/javascript" src="zenario/libraries/mit/jquery/jquery.min.js?v=', ZENARIO_CMS_VERSION, '"></script>
+		<script type="text/javascript" src="zenario/libraries/mit/jquery/jquery.min.js?v=', ZENARIO_VERSION, '"></script>
 		<script type="text/javascript">
 			$(\'*\').each(function(i, el) {
 				el.onclick = function() { return false; };
@@ -399,11 +419,7 @@ echo "\n", setting('sitewide_foot'), "\n";
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/index.post_display.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('index.post_display');
 
 echo "\n</body>\n</html>";
 

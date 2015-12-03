@@ -66,7 +66,7 @@ switch ($path) {
 			
 			if ($values['size/banner_canvas'] == 'fixed_width') {
 				$box['tabs']['size']['fields']['banner_width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} else {
 				unset($box['tabs']['size']['fields']['banner_width']['note_below']);
@@ -82,7 +82,7 @@ switch ($path) {
 			if ($values['size/banner_canvas'] == 'fixed_height'
 			 || $values['size/banner_canvas'] == 'fixed_width_and_height') {
 				$box['tabs']['size']['fields']['banner_height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 			} elseif ($values['size/banner_canvas'] == 'resize_and_crop') {
 				$box['tabs']['size']['fields']['banner_height']['note_below'] =
@@ -106,7 +106,7 @@ switch ($path) {
 				
 				if ($values['size/enlarge_canvas'] == 'fixed_width') {
 					$box['tabs']['size']['fields']['enlarge_width']['note_below'] =
-						adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+						adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 				
 				} else {
 					unset($box['tabs']['size']['fields']['enlarge_width']['note_below']);
@@ -115,7 +115,7 @@ switch ($path) {
 				if ($values['size/enlarge_canvas'] == 'fixed_height'
 				 || $values['size/enlarge_canvas'] == 'fixed_width_and_height') {
 					$box['tabs']['size']['fields']['enlarge_height']['note_below'] =
-						adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+						adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 				
 				} elseif ($values['size/enlarge_canvas'] == 'resize_and_crop') {
 					$box['tabs']['size']['fields']['enlarge_height']['note_below'] =

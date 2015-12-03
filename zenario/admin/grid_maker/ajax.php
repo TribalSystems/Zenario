@@ -386,7 +386,7 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 			
 			//require_once(CMS_ROOT. 'zenario/adminheader.inc.php');
 			//checkForChangesInCssJsAndHtmlFiles();
-			//$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+			//$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 			
 			echo
 			'<!DOCTYPE HTML>

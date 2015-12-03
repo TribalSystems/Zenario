@@ -47,7 +47,7 @@ foreach ($rules as $rule) {
 if (is_numeric($documentIds)) {
 	$documentIds = array($documentIds);
 } elseif (!is_array($documentIds)) {
-	$documentIds = explode(',', $documentIds);
+	$documentIds = explodeAndTrim($documentIds, true);
 }
 
 foreach ($documentIds as $documentId) {

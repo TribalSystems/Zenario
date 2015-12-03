@@ -29,12 +29,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
 $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
+$inAdminMode = checkPriv();
 
 if (!$isWelcomeOrWizard && $cookieFreeDomain = cookieFreeDomain()) {
 	$prefix = $cookieFreeDomain. 'zenario/';
@@ -61,7 +62,7 @@ echo '
 
 	
 //Add JS needed for the CMS in Admin mode
-if ($isWelcomeOrWizard || checkPriv()) {
+if ($isWelcomeOrWizard || $inAdminMode) {
 	
 	if (!$isWelcomeOrWizard) {
 		checkForChangesInPhpFiles();
@@ -131,7 +132,7 @@ if ($isWelcomeOrWizard || checkPriv()) {
 <script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
 }
-if (cms_core::$cID && $includeAdminToolbar && checkPriv()) {
+if (cms_core::$cID && $includeAdminToolbar && $inAdminMode) {
 	echo '
 <script type="text/javascript" src="', $prefix, 'js/admin_toolbar.min.js?v=', $v, '"></script>';
 }
@@ -149,6 +150,10 @@ echo '
 	zenario.canSetCookie = ', (int) canSetCookie(), ';';
 	
 //Add location information about a content item if it is available
+if (cms_core::$equivId) {
+	echo '
+	zenario.equivId = ', (int) cms_core::$equivId, ';';
+}
 if (cms_core::$cID) {
 	echo '
 	zenario.cID = ', (int) cms_core::$cID, ';';
@@ -158,7 +163,7 @@ if (cms_core::$cType) {
 	zenario.cType = "', jsEscape(cms_core::$cType), '";';
 }
 
-if (!$isWelcomeOrWizard && checkPriv()) {
+if (!$isWelcomeOrWizard && $inAdminMode) {
 	if (cms_core::$cVersion) {
 		echo '
 		zenario.cVersion = ', (int) cms_core::$cVersion, ';';
@@ -170,6 +175,7 @@ if (!$isWelcomeOrWizard && checkPriv()) {
 			if ($value
 			 && ($setting == 'cookie_require_consent'
 			  || $setting == 'default_language'
+			  || $setting == 'admin_domain'
 			  || $setting == 'primary_domain'
 			  || $setting == 'organizer_title'
 			  || $setting == 'organizer_date_format'
@@ -191,7 +197,7 @@ if (!$isWelcomeOrWizard && checkPriv()) {
 		}
 	}
 	
-	
+	$importantGetRequests = importantGetRequests();
 	echo '
 	zenarioA.toolbar = \'', jsEscape(ifNull(session('page_toolbar'), 'preview')), '\';
 	zenarioA.pageMode = \'', jsEscape(ifNull(session('page_mode'), 'preview')), '\';
@@ -199,7 +205,18 @@ if (!$isWelcomeOrWizard && checkPriv()) {
 	zenarioA.showGridOn = ', engToBoolean(session('admin_show_grid')), ';
 	zenarioA.siteSettings = ', json_encode($settings), ';
 	zenarioA.adminSettings = ', json_encode($adminSettings), ';
-	zenarioA.importantGetRequests = ', json_encode(importantGetRequests()), ';';
+	zenarioA.importantGetRequests = ', empty($importantGetRequests)? '{}' : json_encode(importantGetRequests()), ';';
+	
+	if (adminHasSpecificPerms()) {
+		echo '
+	zenarioA.adminHasSpecificPerms = 1;';
+	
+		if (cms_core::$cID && cms_core::$cType) {
+			echo '
+	zenarioA.adminHasSpecificPermsOnThisPage = ', engToBoolean(checkPriv(false, cms_core::$cID, cms_core::$cType)), ';';
+		}
+	}
+	
 	
 	
 	//Get a list of language names and flags for use in the formatting options
@@ -237,7 +254,7 @@ echo '
 
 //Add JS needed for modules
 if (!$isWelcomeOrWizard && cms_core::$pluginJS) {
-	if (checkPriv()) {
+	if ($inAdminMode) {
 		cms_core::$pluginJS .= '&amp;admin=1';
 	}
 	
@@ -254,7 +271,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	echo '
 	zenario.slot([';
 	foreach (cms_core::$slotContents as $slotName => &$instance) {
-		if (isset($instance['class']) || checkPriv()) {
+		if (isset($instance['class']) || $inAdminMode) {
 			echo
 				$i++? ',' : '',
 				'["',
@@ -276,7 +293,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				$isMainSlot = isset($instance['class']) && arrayKey($instance, 'level') == 1 && substr($slotName, 0, 1) == 'M';
 				$beingEdited = $instance['class']->beingEdited();
 				
-				if (checkPriv()) {
+				if ($inAdminMode) {
 					$isVersionControlled = (int) !empty($instance['content_id']);
 					
 					echo ',', (int) $tabId, ',', (int) $isMainSlot, ',', (int) $beingEdited, ',', (int) $isVersionControlled;
@@ -306,7 +323,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 
 
 //Add JS needed for modules in Admin Mode in the frontend
-if (checkPriv() && cms_core::$cID) {
+if ($inAdminMode && cms_core::$cID) {
 	$jsModuleIds = '';
 	foreach (getRunningModules() as $module) {
 		if (moduleDir($module['class_name'], 'js/admin_frontend.js', true)
@@ -338,9 +355,10 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	//Include the Foot for any plugin instances on the page, if they have one
 	foreach(cms_core::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
-			cms_core::preSlot($slotName, 'addToPageFoot');
+			$edition = cms_core::$edition;
+			$edition::preSlot($slotName, 'addToPageFoot');
 				$instance['class']->addToPageFoot();
-			cms_core::postSlot($slotName, 'addToPageFoot');
+			$edition::postSlot($slotName, 'addToPageFoot');
 		}
 	}
 }
@@ -386,12 +404,12 @@ if (cms_core::$cID) {
 				}
 		}
 		
-		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !checkPriv())) {
+		if (!empty($templateHTML[0]) && (empty($templateHTML[2]) || !$inAdminMode)) {
 			echo "\n\n". $templateHTML[0], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !checkPriv())) {
+	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !$inAdminMode)) {
 		echo "\n\n". $itemHTML[0], "\n\n";
 	}
 }

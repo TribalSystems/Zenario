@@ -74,7 +74,7 @@ if ($loadData && is_array($loadData)) {
 	$data = array();
 }
 
-$pageBreakFields = getRowsArray('user_form_fields', 'id', array('field_type' => 'page_break', 'user_form_id' => $userFormId), array('ordinal'));
+$pageBreakFields = getRowsArray('user_form_fields', 'id', array('field_type' => 'page_break', 'user_form_id' => $userFormId), array('ord'));
 
 // Begin form field HTML
 $html = '';

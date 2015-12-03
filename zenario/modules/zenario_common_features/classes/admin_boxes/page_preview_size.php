@@ -46,6 +46,9 @@ class zenario_common_features__admin_boxes__page_preview_size extends module_bas
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		exitIfNotCheckPriv('_PRIV_EDIT_SITE_SETTING');
+		
 		if (!$id = $box['key']['id']) {
 			$sql = 'SELECT max(ordinal) FROM '.DB_NAME_PREFIX.'page_preview_sizes';
 			$result = sqlSelect($sql);

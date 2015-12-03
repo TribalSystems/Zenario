@@ -350,16 +350,21 @@ function applyValidationFromTUIXOnTab(&$tab) {
 				
 				} else {
 					//Check validation rules for file pickers
-					$mbgip = !empty($field['validation']['must_be_gif_ico_or_png']);
-					$mbgjp = !empty($field['validation']['must_be_gif_jpg_or_png']);
-					$mbgp = !empty($field['validation']['must_be_gif_or_png']);
-					$mbi = !empty($field['validation']['must_be_ico']);
+					$must_be_image = !empty($field['validation']['must_be_image']);
+					$must_be_image_or_svg = !empty($field['validation']['must_be_image_or_svg']);
+					$must_be_gif_or_png = !empty($field['validation']['must_be_gif_or_png']);
+					$must_be_gif_ico_or_png = !empty($field['validation']['must_be_gif_ico_or_png']);
+					$must_be_ico = !empty($field['validation']['must_be_ico']);
 					
-					if ($mbgip || $mbgjp || $mbgp || $mbi) {
+					if ($must_be_image
+					 || $must_be_image_or_svg
+					 || $must_be_gif_or_png
+					 || $must_be_gif_ico_or_png
+					 || $must_be_ico) {
 						
 						//These validation rules should work for multiple file pickers, so we'll need to
 						//split by a comma and validate each file separately
-						foreach (explode(',', $fieldValue) as $file) {
+						foreach (explodeAndTrim($fieldValue) as $file) {
 							
 							//If this file has just been picked, we'll need to check it from the disk
 							if ($filepath = getPathOfUploadedFileInCacheDir($file)) {
@@ -370,36 +375,33 @@ function applyValidationFromTUIXOnTab(&$tab) {
 								$mimeType = getRow('files', 'mime_type', $file);
 							}
 							
+							$isIcon = in($mimeType, 'image/vnd.microsoft.icon', 'image/x-icon');
+							$isGIFPNG = in($mimeType, 'image/gif', 'image/png');
+							
 							//Check all of the possible rules for image validation.
 							//Stop checking image validation rules for this field as soon
 							//as we find one picked file that doesn't match one rule
-							if ($mbgip
-							 && $mimeType != 'image/gif'
-							 && $mimeType != 'image/png'
-							 && $mimeType != 'image/vnd.microsoft.icon'
-							 && $mimeType != 'image/x-icon') {
-								$field['error'] = $field['validation']['must_be_gif_ico_or_png'];
+							if ($must_be_image && !isImage($mimeType)) {
+								$field['error'] = $field['validation']['must_be_image'];
 								break;
 							
 							} else
-							if ($mbgjp
-							 && $mimeType != 'image/gif'
-							 && $mimeType != 'image/jpeg'
-							 && $mimeType != 'image/png') {
-								$field['error'] = $field['validation']['must_be_gif_jpg_or_png'];
+							if ($must_be_image_or_svg && !isImageOrSVG($mimeType)) {
+								$field['error'] = $field['validation']['must_be_image_or_svg'];
 								break;
 							
 							} else
-							if ($mbgp
-							 && $mimeType != 'image/gif'
-							 && $mimeType != 'image/png') {
+							if ($must_be_gif_or_png && !$isGIFPNG) {
 								$field['error'] = $field['validation']['must_be_gif_or_png'];
 								break;
 							
 							} else
-							if ($mbi
-							 && $mimeType != 'image/vnd.microsoft.icon'
-							 && $mimeType != 'image/x-icon') {
+							if ($must_be_gif_ico_or_png && !($isGIFPNG || $isIcon)) {
+								$field['error'] = $field['validation']['must_be_gif_ico_or_png'];
+								break;
+							
+							} else
+							if ($must_be_ico && !$isIcon) {
 								$field['error'] = $field['validation']['must_be_ico'];
 								break;
 							}
@@ -413,17 +415,8 @@ function applyValidationFromTUIXOnTab(&$tab) {
 
 //Sync updates from the client to the array stored on the server
 function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = false, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false) {
-	$keys = array();
-	if (is_array($serverTags)) {
-		foreach (array_keys($serverTags) as $key) {
-			$keys[$key] = true;
-		}
-	}
-	if (is_array($clientTags)) {
-		foreach (array_keys($clientTags) as $key) {
-			$keys[$key] = true;
-		}
-	}
+	
+	$keys = array_merge(arrayValuesToKeys(array_keys($serverTags)), arrayValuesToKeys(array_keys($clientTags)));
 	
 	foreach ($keys as $key0 => $dummy) {
 		//Only allow certain tags in certain places to be merged in
@@ -469,17 +462,8 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 
 //Sync updates from the server to the array stored on the client
 function syncAdminBoxFromServerToClient($serverTags, $clientTags, &$output) {
-	$keys = array();
-	if (is_array($serverTags)) {
-		foreach (array_keys($serverTags) as $key) {
-			$keys[$key] = true;
-		}
-	}
-	if (is_array($clientTags)) {
-		foreach (array_keys($clientTags) as $key) {
-			$keys[$key] = true;
-		}
-	}
+	
+	$keys = array_merge(arrayValuesToKeys(array_keys($serverTags)), arrayValuesToKeys(array_keys($clientTags)));
 	
 	foreach ($keys as $key0 => $dummy) {
 		if (!isset($serverTags[$key0])) {

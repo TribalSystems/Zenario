@@ -69,6 +69,12 @@ if (checkAdminTableColumnsExist() >= 3) {
 	$passwordColumns .= " NULL AS reset_password, NULL AS reset_password_salt,";
 }
 
+if (checkAdminTableColumnsExist() >= 4) {
+	$passwordColumns .= "permissions,";
+} else {
+	$passwordColumns .= "'specific_actions' AS permissions,";
+}
+
 //Check for super admins first
 $details = $sha2 = false;
 if (connectGlobalDB()) {
@@ -83,7 +89,7 @@ if (connectGlobalDB()) {
 				CONCAT(first_name, ' ', last_name) AS full_name
 			FROM ". DB_NAME_PREFIX_GLOBAL ."admins
 			WHERE ". $whereStatement. "
-			AND status = 'active'";
+			  AND status = 'active'";
 		$result = sqlQuery($sql);
 	connectLocalDB();
 	
@@ -104,27 +110,22 @@ if (!$details) {
 			CONCAT(first_name, ' ', last_name) AS full_name
 		FROM ". DB_NAME_PREFIX ."admins
 		WHERE ". $whereStatement. "
-		AND status = 'active'";
+		  AND status = 'active'";
 	$result = sqlQuery($sql);
 	
 	//Is there an admin with that name?
 	if ($details = sqlFetchAssoc($result)) {
 		//If the link to the global database is down, don't allow super admins to log in with the copies of their data
 		if (arrayKey($details, 'authtype') == 'super') {
-			//Return an empty string in this case.
-				//I want the "global db not enabled" and "password not correct" states to be different,
-				//yet still both evaulate to false.
-			return '';
+			return new zenario_error('_ERROR_ADMIN_LOGIN_MULTISITE_CONNECTION');
 		
 		} else {
 			$details['type'] = 'local';
 		}
 	
 	} else {
-		//If we found no-one with that name, return 0.
-			//I want the "user not found" and "password not correct" states to be different,
-			//yet still both evaulate to false
-		return 0;
+		//If we found no-one with that name, return an error
+		return new zenario_error('_ERROR_ADMIN_LOGIN_USERNAME');
 	}
 }
 
@@ -155,19 +156,20 @@ foreach (array('password' => 'password_salt', 'reset_password' => 'reset_passwor
 	}
 }
 
-//Return true or false appropriately
-if (!$details['password_correct'] || $details['status'] != 'active') {
-	return false;
+//Return an error if the password was wrong
+if (!$details['password_correct']) {
+	return new zenario_error('_ERROR_ADMIN_LOGIN_PASSWORD');
 }
 
 if ($details['type'] == 'global') {
 	//If the password needs changing flag is set, don't allow a superadmin to log in until they have changed
 	//it on the control site.
-	if ($details['password_needs_changing']) {
-		//Return null in this case.
-			//I want the "password needs changing" and "password not correct" states to be different,
-			//yet still both evaulate to false.
-		return null;
+	if ($details['permissions'] != 'all_permissions'
+	 && $details['permissions'] != 'specific_actions') {
+		return new zenario_error('_ERROR_ADMIN_LOGIN_MULTISITE_PERMISSIONS');
+	
+	} elseif ($details['password_needs_changing']) {
+		return new zenario_error('_ERROR_ADMIN_LOGIN_MULTISITE_PASSWORD_CHANGE_NEEDED');
 	
 	} else {
 		return syncSuperAdmin($details['id']);

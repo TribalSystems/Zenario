@@ -57,8 +57,13 @@ if ($includeAdminToolbar) {
 
 echo "\n", $bodyTag;
 
-if ($showPreview) {
-	echo ' zenario_showing_preview';
+switch ($showPreview) {
+	case 'page':
+		echo ' zenario_showing_preview';
+		break;
+	case 'plugin':
+		echo ' zenario_showing_plugin_preview';
+		break;
 }
 
 echo '"', $attributes, '>';

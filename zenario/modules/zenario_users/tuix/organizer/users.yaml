@@ -194,11 +194,13 @@ zenario__users:
                     hide_in_select_mode: true
                     priv: _PRIV_CREATE_USER
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     admin_box:
                         path: zenario_user__details
+                        create_another: true
                 
                 add_user_to_this_group:
-                    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    priv: _PRIV_EDIT_USER
                     only_show_on_refiner: group_members
                     hide_in_select_mode: true
                     label: Add users to this Group
@@ -213,12 +215,12 @@ zenario__users:
                 # User dataset import buttons
                 import_dropdown:
                     label: Import
-                    hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
                     ord: 999998
                 import:
                     label: Start import wizard
                     parent: import_dropdown
+                    hide_on_filter: true
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_import
@@ -227,6 +229,7 @@ zenario__users:
                 donwload_sample_file:
                     label: Download sample file
                     parent: import_dropdown
+                    hide_on_filter: true
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_download_sample_file
@@ -265,7 +268,7 @@ zenario__users:
                     multiple_select: true
                 
                 add_users_to_groups:
-                    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    priv: _PRIV_EDIT_USER
                     parent: action_dropdown
                     label: Add to group...
                     tooltip: Add this user to one or more groups
@@ -278,7 +281,7 @@ zenario__users:
                             remove: false
                 
                 remove_users_from_groups:
-                    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    priv: _PRIV_EDIT_USER
                     parent: action_dropdown
                     label: Remove from group...
                     tooltip: Add this user to one or more groups
@@ -292,7 +295,7 @@ zenario__users:
                 
                 remove_users_from_this_group:
                     parent: action_dropdown
-                    priv: _PRIV_MANAGE_GROUP_MEMBERSHIP
+                    priv: _PRIV_EDIT_USER
                     only_show_on_refiner: group_members
                     hide_in_select_mode: true
                     label: Remove user from this Group

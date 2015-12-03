@@ -33,228 +33,9 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'plugin_settings.fillAdminBox');
 	
 	
-	case 'site_settings':
-		return require funIncPath(__FILE__, 'site_settings.fillAdminBox');
-	
-	
-	case 'zenario_publish':
-		
-		$status = getModuleStatusByClassName('zenario_scheduled_task_manager');
-		if ($status != 'module_running') {
-			$fields['publish/publish_options']['hidden'] = true;
-		} else {
-			$allJobsEnabled = setting('jobs_enabled');
-			$scheduledPublishingEnabled = getRow('jobs', 'enabled', array('job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features'));
-			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
-				$scheduledTaskLink = absCMSDirURL() . 
-					'zenario/admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks';
-				$fields['publish/publish_options']['values']['schedule']['disabled'] = true;
-				$fields['publish/publish_options']['values']['schedule']['post_field_html'] = "
-					<br />
-					<br />
-					Scheduled publishing is not available. The Scheduled Task Manager is installed 
-					but the Scheduled Publishing task is not enabled. 
-					<a href='".$scheduledTaskLink."'>Click for more info.</a>";
-			} else {
-				$values['publish/publish_date'] = date('Y-m-d');
-			}
-		}
-		break;
-	
-	
-	case 'zenario_reusable_plugin':
-		if (!$instance = getPluginInstanceDetails($box['key']['id'])) {
-			exit;
-		}
-		
-		if ($box['key']['duplicate']) {
-			$box['tabs']['instance']['edit_mode']['always_on'] = true;
-			$box['title'] = adminPhrase('Duplicating the plugin "[[instance_name]]".', $instance);
-		
-		} else {
-			$box['title'] = adminPhrase('Renaming the plugin "[[instance_name]]".', $instance);
-		}
-		
-		$box['tabs']['instance']['fields']['name']['value'] = $instance['instance_name'];
-		
-		break;
-	
-	
-	case 'zenario_setup_language':
-		return require funIncPath(__FILE__, 'setup_language.fillAdminBox');
-	
-	
-	case 'zenario_setup_module':
-		return require funIncPath(__FILE__, 'setup_module.fillAdminBox');
-	
-	
-	case 'zenario_alias':
-		//Set up the primary key from the requests given
-		if ($box['key']['id'] && !$box['key']['cID']) {
-			getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
-		}
-		
-		//Load the alias
-		$box['tabs']['meta_data']['fields']['alias']['value'] =
-			contentItemAlias($box['key']['cID'], $box['key']['cType']);
-		$box['tabs']['meta_data']['fields']['lang_code_in_url']['value'] =
-			getRow('content_items', 'lang_code_in_url', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
-		
-		$box['tabs']['meta_data']['fields']['update_translations']['value'] =
-			setting('translations_different_aliases')? 'update_this' : 'update_all';
-		
-		$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label'] =
-			setting('translations_hide_language_code')?
-				$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__hide']
-			 :	$box['tabs']['meta_data']['fields']['lang_code_in_url']['values']['default']['label__show'];
-		
-		
-		//If every language has a specific domain name, there's no point in showing the
-		//lang_code_in_url field as it will never be used.
-		$langSpecificDomainsUsed = checkRowExists('languages', array('domain' => array('!' => '')));
-		$langSpecificDomainsNotUsed = checkRowExists('languages', array('domain' => ''));
-		
-		if ($langSpecificDomainsUsed && !$langSpecificDomainsNotUsed) {
-			$box['tabs']['meta_data']['fields']['lang_code_in_url']['hidden'] =
-			$box['tabs']['meta_data']['fields']['lang_code_in_url_dummy']['hidden'] = true;
-		}
-		
-		
-		getLanguageSelectListOptions($box['tabs']['meta_data']['fields']['language_id']);
-		$box['tabs']['meta_data']['fields']['language_id']['value'] = getContentLang($box['key']['cID'], $box['key']['cType']);
-		
-		$box['title'] =
-			adminPhrase('Editing the alias for content item "[[tag]]"',
-				array('tag' => formatTag($box['key']['cID'], $box['key']['cType'])));
-		
-		break;
-	
-	
-	case 'zenario_enable_site':
-		if (setting('site_enabled')) {
-			$box['tabs']['site']['fields']['enable_site']['value'] = 1;
-		} else {
-			$box['tabs']['site']['fields']['disable_site']['value'] = 1;
-		}
-		$box['tabs']['site']['fields']['site_disabled_title']['value'] = setting('site_disabled_title');
-		$box['tabs']['site']['fields']['site_disabled_message']['value'] = setting('site_disabled_message');
-		
-		break;
-	
-	
-	case 'zenario_delete_language':
-		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_CONFIG');
-		$box['tabs']['site']['fields']['username']['value'] = session('admin_username');
-		$box['tabs']['site']['notices']['are_you_sure']['message'] =
-			adminPhrase(
-				'Are you sure that you wish to delete the Language "[[lang]]"? All Content Items and Menu Node text in this Language will also be deleted. THIS CANNOT BE UNDONE!',
-				array('lang' => getLanguageName($box['key']['id'])));
-		
-		break;
-	
-	
-	case 'zenario_site_reset':
-		exitIfNotCheckPriv('_PRIV_RESET_SITE');
-		$box['tabs']['site']['fields']['username']['value'] = session('admin_username');
-		
-		break;
-	
-	
-	case 'zenario_menu':
-		return require funIncPath(__FILE__, 'menu_node.fillAdminBox');
-	
-	
 	case 'zenario_content':
 	case 'zenario_quick_create':
 		return require funIncPath(__FILE__, 'content.fillAdminBox');
-	
-	
-	case 'zenario_content_layout':
-		
-		$tagSQL = "";
-		$cID = $cType = false;
-		$canEdit = true;
-		
-		if (request('cID') && request('cType')) {
-			$total = 1;
-			$cID = $box['key']['cID'] = request('cID');
-			$cType = $box['key']['cType'] = request('cType');
-			$tagSQL = "'". sqlEscape($box['key']['id'] = $cType. '_'. $cID). "'";
-			$canEdit = checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType);
-		
-		} else {
-			$tagIds = explode(',', $box['key']['id']);
-			
-			foreach ($tagIds as $tagId) {
-				if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-					
-					if (!checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
-						$canEdit = false;
-					}
-					
-					$tagSQL .= ($tagSQL? ", " : ""). "'". sqlEscape($tagId). "'";
-				}
-			}
-			
-			if (!$tagSQL) {
-				exit;
-			}
-			$total = count($tagIds);
-			
-			$box['key']['cType'] = false;
-			foreach ($tagIds as $tagId) {
-				if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-					if (!$box['key']['cType']) {
-						$box['key']['cType'] = $cType;
-					} elseif ($cType != $box['key']['cType']) {
-						$box['key']['cType'] = false;
-						break;
-					}
-				}
-			}
-		}
-		
-		if (!$canEdit) {
-			$box['tabs']['cant_edit']['hidden'] = false;
-		
-		} elseif (!$box['key']['cType']) {
-			$box['tabs']['mix_of_types']['hidden'] = false;
-		
-		} else {
-			$box['tabs']['layout']['hidden'] = false;
-			$box['tabs']['layout']['edit_mode']['enabled'] = true;
-			
-			$box['tabs']['layout']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['cType']. '//';
-			
-			//Run a SQL query to check how many distinct values this column has for each Content Item.
-			//If there is only one unique value then populate it, otherwise show the field as blank.
-			$sql = "
-				SELECT DISTINCT v.layout_id
-				FROM ". DB_NAME_PREFIX. "content_items AS c
-				INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
-				   ON c.id = v.id
-				  AND c.type = v.type
-				  AND c.admin_version = v.version
-				WHERE c.tag_id IN (". $tagSQL. ")
-				LIMIT 2";
-			$result = sqlQuery($sql);
-			
-			if (($row1 = sqlFetchRow($result)) && !($row2 = sqlFetchRow($result))) {
-				$fields['layout_id']['value'] = $row1[0];
-			}
-		}
-		
-		if ($total > 1) {
-			$box['title'] =
-				adminPhrase('Changing the layout of [[count]] content items',
-					array('count' => $total));
-		} else {
-			$box['title'] =
-				adminPhrase('Changing the layout of the content item "[[tag]]"',
-					array('tag' => formatTag($cID, $cType)));
-		}
-		
-		break;
 	
 	
 	case 'zenario_content_categories':
@@ -274,7 +55,7 @@ switch ($path) {
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
-		foreach (explode(',', $box['key']['id']) as $tagId) {
+		foreach (explodeAndTrim($box['key']['id']) as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				$tagId = $cType. '_'. $equivId;
 				if (!isset($tagIds[$tagId])) {
@@ -405,7 +186,7 @@ switch ($path) {
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
-		foreach (explode(',', $box['key']['id']) as $tagId) {
+		foreach (explodeAndTrim($box['key']['id']) as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				$tagId = $cType. '_'. $equivId;
 				if (!isset($tagIds[$tagId])) {
@@ -537,7 +318,7 @@ switch ($path) {
 		}
 		
 		//Given a list of tag ids using cID and cType, convert them to equivIds and cTypes
-		foreach (explode(',', $box['key']['id']) as $tagId) {
+		foreach (explodeAndTrim($box['key']['id']) as $tagId) {
 			if (getEquivIdAndCTypeFromTagId($equivId, $cType, $tagId)) {
 				$tagId = $cType. '_'. $equivId;
 				if (!isset($tagIds[$tagId])) {
@@ -640,72 +421,7 @@ switch ($path) {
 		}
 		
 		break;
-	case 'zenario_publish':
-		if ($box['key']['cID']) {
-			$count = 1;
-			$box['key']['id'] = $box['key']['cType']. '_'. $box['key']['cID'];
-		} else {
-			$tags = explode(',', $box['key']['id']);
-			$count = count($tags);
-			
-			if ($count == 1) {
-				getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $tags[0]);
-			}
-		}
-		
-		if ($count == 1) {
-			$box['tabs']['publish']['fields']['desc']['snippet']['html'] = 
-				adminPhrase('Are you sure you wish to Publish the Content Item &quot;[[tag]]&quot;?', array('tag' => htmlspecialchars(formatTag($box['key']['cID'], $box['key']['cType']))));
-		} else {
-			$box['tabs']['publish']['fields']['desc']['snippet']['html'] = 
-				adminPhrase('Are you sure you wish to Publish the [[count]] selected Content Items?', array('count' => $count));
-		}
-		
-		break;
 	
-	
-	case 'zenario_export_vlp':
-		
-		$phrases = array();
-		$sql = "
-			SELECT COUNT(*)
-			FROM (
-				SELECT DISTINCT code, module_class_name
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
-			) AS c";
-		$result = sqlQuery($sql);
-		list($phrases['total']) = sqlFetchRow($result);
-		
-		$sql = "
-			SELECT COUNT(*)
-			FROM (
-				SELECT DISTINCT code, module_class_name
-				FROM ". DB_NAME_PREFIX. "visitor_phrases
-				WHERE language_id = '". sqlEscape($box['key']['id']). "'
-			) AS c";
-		$result = sqlQuery($sql);
-		list($phrases['present']) = sqlFetchRow($result);
-		$phrases['missing'] = $phrases['total'] - $phrases['present'];
-		$phrases['lang'] = getLanguageName($box['key']['id']);
-		$phrases['def_lang'] = getLanguageName(setting('default_language'));
-		
-		
-		$box['tabs']['export']['fields']['desc']['snippet']['html'] =
-			adminPhrase('Use this to download a spreadsheet of "[[lang]]" phrases.',$phrases);
-		$box['tabs']['export']['fields']['option']['values']['present'] =
-			adminPhrase('Only include phrases that are present ([[present]])', $phrases);
-		$box['tabs']['export']['fields']['option']['values']['missing'] =
-			adminPhrase('Only include phrases that are missing ([[missing]])', $phrases);
-		$box['tabs']['export']['fields']['option']['values']['all'] =
-			adminPhrase('Include all possible phrases ([[total]])', $phrases);
-		
-		if ($box['key']['id'] != setting('default_language')) {
-			$box['tabs']['export']['fields']['desc']['snippet']['html'] .=
-				' '.
-				adminPhrase('"[[def_lang]]" will be used as a reference.',$phrases);
-		}
-		
-		break;
 	
 	case 'zenario_document_folder':
 		if (isset($box['key']['add_folder']) && $box['key']['add_folder']) {
@@ -821,39 +537,6 @@ switch ($path) {
 		break;
 	
 	
-	case 'zenario_content_type_details':
-		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
-			'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['id']. '//';
-		
-		foreach (getContentTypeDetails($box['key']['id']) as $col => $value) {
-			if ($col == 'enable_categories') {
-				$box['tabs']['details']['fields'][$col]['value'] = $value ? 'enabled' : 'disabled';
-			} else {
-				$box['tabs']['details']['fields'][$col]['value'] = $value;
-			}
-		}
-		
-		switch ($box['key']['id']) {
-			case 'html':
-			case 'document':
-			case 'picture':
-			case 'video':
-			case 'audio':
-				//HTML, Document, Picture, Video and Audio fields cannot currently be mandatory
-				foreach (array('description_field', 'keywords_field', 'summary_field', 'release_date_field') as $field) {
-					$box['tabs']['details']['fields'][$field]['values']['mandatory']['hidden'] = true;
-				}
-				
-				break;
-				
-			
-			case 'event':
-				//Event release dates must be hidden as it is overridden by another field
-				$box['tabs']['details']['fields']['release_date_field']['hidden'] = true;
-		}
-		
-		break;
-		
 	case 'zenario_reorder_documents':
 		if ($box['key']['id']){
 			$folderId = $box['key']['id'];

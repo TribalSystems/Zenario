@@ -85,8 +85,14 @@ function logUserInAutomatically() {
 		if (!$admin) {
 			unsetAdminSession();
 		
-		//Also update an Admin's permissions if they've been modified
-		} elseif (empty($_SESSION['admin_modified_date']) || $admin['modified_date'] != $_SESSION['admin_modified_date']) {
+		//Update an Admin's permissions if their admin record has been modified since they were last set.
+			//Note that I'm also triggering this logic if a couple of $_SESSION variables are missing;
+			//this is to catch the case where someone migrates the site from the old admin permission
+			//system to the new admin permissions system, when other admins are still logged in.
+		} else
+		if (empty($_SESSION['admin_permissions'])
+		 || empty($_SESSION['admin_modified_date'])
+		 || $_SESSION['admin_modified_date'] != $admin['modified_date']) {
 			if (empty($_SESSION['admin_global_id'])) {
 				setAdminSession($_SESSION['admin_userid']);
 			} else {
@@ -162,6 +168,7 @@ function getSmartGroupDetails($smartGroupId) {
 	return getRow('smart_groups',
 			array(
 					'name',
+					'must_match',
 					'created_on',
 					'created_by',
 					'last_modified_on',
@@ -189,6 +196,29 @@ function countSmartGroupMembers($smartGroupId) {
 	$result = sqlSelect($sql);
 	$row = sqlFetchRow($result);
 	return $row[0];
+}
+
+function checkUserIsInSmartGroup($smartGroupId, $userId = -1) {
+	
+	if ($userId === -1) {
+		$userId = userId();
+	}
+	
+	if (!$userId) {
+		return false;
+	}
+	
+	$sql = "
+		SELECT 1
+		FROM ". DB_NAME_PREFIX. "users AS u
+		LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+		   ON ucd.user_id = u.id
+		WHERE u.id = ". (int) $userId. "
+		". smartGroupSQL($smartGroupId). "
+		LIMIT 1";
+	
+	$result = sqlSelect($sql);
+	return (bool) sqlFetchRow($result);
 }
 
 
@@ -624,7 +654,7 @@ function deleteUser($userId) {
 		deleteRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'linking_id' => $userId));
 	}
 	
-	require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+	if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 	deleteUnusedImagesByUsage('user');
 }
 

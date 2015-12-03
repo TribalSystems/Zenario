@@ -46,20 +46,20 @@ zenario_quick_create:
                     value: 1
                     onchange: |
                         if (this.checked) {
-                                                        get('alias').disabled = false;
-                                                        get('title').disabled = false;
-                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').removeAttr('disabled');
-                                                        if (get('menu_title')) get('menu_title').disabled = false;
-                                                        $('#row__template_id input').removeAttr('disabled');
-                                                        $('#row__template_id input.launch_keeper').removeClass('submit_disabled');
-                                                        $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                        $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                        $('#zenarioAFB_save').removeClass('submit_disabled').removeAttr('disabled');
-                                                    }
+                            get('alias').disabled = false;
+                            get('title').disabled = false;
+                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').removeAttr('disabled');
+                            if (get('menu_title')) get('menu_title').disabled = false;
+                            $('#row__template_id input').removeAttr('disabled');
+                            $('#row__template_id input.launch_keeper').removeClass('submit_disabled');
+                            $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#zenarioAFB_save').removeClass('submit_disabled').removeAttr('disabled');
+                        }
                     post_field_html: |
                         <label for="quick_create">
-                                                        Quick-create an HTML Page:
-                                                    </label>
+                            Quick-create an HTML Page:
+                        </label>
                 title:
                     ord: 20
                     label: 'Browser Title:'
@@ -81,17 +81,14 @@ zenario_quick_create:
                     onchange: zenarioAB.tuix.___menu_title_changed = true;
                     onkeyup: |
                         get('menu_path').value =
-                                                        !get('menu_title').value?
-                                                            ''
-                                                        :    !get('menu_parent_path').value?
-                                                                get('menu_title').value
-                                                            :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                            !get('menu_title').value?
+                                ''
+                            :    !get('menu_parent_path').value?
+                                    get('menu_title').value
+                                :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
                 menu_path:
                     ord: 41
-                    same_row: Yes
-                    pre_field_html: |
-                        <br/>
-                                                        Path:
+                    label: 'Path:'
                     type: text
                     disabled: disabled
                     class: zenario_textbox_noborder
@@ -109,7 +106,7 @@ zenario_quick_create:
                     note_below: |
                         An alias for this content item, and part of its URL.
                         The combination of a content item's alias and its language code is unique.
-                                                    Lower case only, may not contain spaces or special characters.
+                        Lower case only, may not contain spaces or special characters.
                     post_field_html: '<div id="alias_warning_display"></div>'
                 layout_id:
                     ord: 60
@@ -130,20 +127,20 @@ zenario_quick_create:
                     full_width: Yes
                     onchange: |
                         if (this.checked) {
-                                                        get('alias').disabled = true;
-                                                        get('title').disabled = true;
-                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
-                                                        if (get('menu_title')) get('menu_title').disabled = true;
-                                                        $('#row__template_id input').attr('disabled', 'disabled');
-                                                        $('#row__template_id input.launch_keeper').addClass('submit_disabled');
-                                                        $('#more_options_button_content').removeClass('submit_disabled').removeAttr('disabled');
-                                                        $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                        $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                    }
+                            get('alias').disabled = true;
+                            get('title').disabled = true;
+                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
+                            if (get('menu_title')) get('menu_title').disabled = true;
+                            $('#row__template_id input').attr('disabled', 'disabled');
+                            $('#row__template_id input.launch_keeper').addClass('submit_disabled');
+                            $('#more_options_button_content').removeClass('submit_disabled').removeAttr('disabled');
+                            $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
+                        }
                     post_field_html: |
                         <label for="more_options_content">
-                                                        Other Content Types, and more options:
-                                                    </label>
+                            Other Content Types, and more options:
+                        </label>
                 more_options_button_content:
                     ord: 80
                     value: More Content Options...
@@ -152,13 +149,13 @@ zenario_quick_create:
                     class: launch_keeper submit_disabled
                     onclick: |
                         var key = $.extend(true, {}, zenarioAB.tuix.key);
-                                                    key.target_alias = zenarioAB.readField('alias');
-                                                    key.target_title = zenarioAB.readField('title');
-                                                    if (get('menu_title')) key.target_menu_title = zenarioAB.readField('menu_title');
-                                                    key.target_template_id = zenarioAB.readField('layout_id');
-                                                    
-                                                    zenarioAB.close();
-                                                    zenarioAB.open('zenario_content', key);
+                        key.target_alias = zenarioAB.readField('alias');
+                        key.target_title = zenarioAB.readField('title');
+                        if (get('menu_title')) key.target_menu_title = zenarioAB.readField('menu_title');
+                        key.target_template_id = zenarioAB.readField('layout_id');
+                        
+                        zenarioAB.close();
+                        zenarioAB.open('zenario_content', key);
                 more_options_menu:
                     ord: 90
                     type: radio
@@ -166,20 +163,20 @@ zenario_quick_create:
                     full_width: Yes
                     onchange: |
                         if (this.checked) {
-                                                        get('alias').disabled = true;
-                                                        get('title').disabled = true;
-                                                        if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
-                                                        if (get('menu_title')) get('menu_title').disabled = true;
-                                                        $('#row__template_id input').attr('disabled', 'disabled');
-                                                        $('#row__template_id input.launch_keeper').addClass('submit_disabled');
-                                                        $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                        $('#more_options_button_menu').removeClass('submit_disabled').removeAttr('disabled');
-                                                        $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
-                                                    }
+                            get('alias').disabled = true;
+                            get('title').disabled = true;
+                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
+                            if (get('menu_title')) get('menu_title').disabled = true;
+                            $('#row__template_id input').attr('disabled', 'disabled');
+                            $('#row__template_id input.launch_keeper').addClass('submit_disabled');
+                            $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#more_options_button_menu').removeClass('submit_disabled').removeAttr('disabled');
+                            $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
+                        }
                     post_field_html: |
                         <label for="more_options_menu">
-                                                        Link to an existing Content Item or to an external URL:
-                                                    </label>
+                            Link to an existing Content Item or to an external URL:
+                        </label>
                 more_options_button_menu:
                     ord: 100
                     value: More Menu Options...
@@ -188,6 +185,6 @@ zenario_quick_create:
                     disabled: disabled
                     onclick: |
                         var key = $.extend(true, {}, zenarioAB.tuix.key);
-                                                    key.suggestedName = zenarioAB.readField('menu_title');
-                                                    zenarioAB.close();
-                                                    zenarioA.openMenuAdminBox(key, true);
+                        key.suggestedName = zenarioAB.readField('menu_title');
+                        zenarioAB.close();
+                        zenarioA.openMenuAdminBox(key, 'zenario_menu');

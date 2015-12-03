@@ -26,7 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-function checkInstallationCanProceed($zenarioCMSNumericVersion) {
+function checkInstallationCanProceed() {
 	if (windowsServer()) {
 		return array(adminPhrase('Sorry, this Module requires a Unix-based server to run.'));
 	

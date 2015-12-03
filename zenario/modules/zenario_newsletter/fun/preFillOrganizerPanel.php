@@ -79,9 +79,9 @@ switch ($path) {
 			unset($panel['collection_buttons']['delete_inline_file']);
 		}
 		
-		$zenario_common_features = new zenario_common_features;
-		$zenario_common_features->preFillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
-		
+		//Borrow the logic from the image library panel to handle the images
+		$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
+		$c->preFillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
 		
 		break;
 		

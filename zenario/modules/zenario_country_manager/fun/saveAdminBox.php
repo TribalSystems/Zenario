@@ -29,6 +29,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 	switch($path) {
 		case 'zenario_country_manager__country':
+			exitIfNotCheckPriv('_PRIV_MANAGE_COUNTRY');
+			
 			setRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
 					array('english_name' => $values['details/name']), 
 						array('id' => $values['details/code']));
@@ -50,8 +52,13 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			}
 
 			$box['key']['id'] = $values['details/code'];
+			
 			break;
-		case 'zenario_country_manager__region':
+	
+	
+	case 'zenario_country_manager__region':
+			exitIfNotCheckPriv('_PRIV_MANAGE_COUNTRY');
+			
 			$updateArray['name'] = arrayKey($values,'details/name');
 			if (setting('zenario_country_manager__region_type_management')) {
 				$updateArray['region_type'] = arrayKey($values, 'details/region_type');

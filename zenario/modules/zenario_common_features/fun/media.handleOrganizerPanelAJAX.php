@@ -74,7 +74,7 @@ if (post('upload') && $privCheck) {
 
 //Add an image from the library
 } elseif (post('add') && $key && $privCheck) {
-	foreach (explode(',', $ids) as $id) {
+	foreach (explodeAndTrim($ids, true) as $id) {
 		$key['image_id'] = $id;
 		setRow('inline_images', array(), $key);
 	}
@@ -82,26 +82,26 @@ if (post('upload') && $privCheck) {
 
 //Mark images as public
 } elseif (post('mark_as_public') && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
+	foreach (explodeAndTrim($ids, true) as $id) {
 		updateRow('files', array('privacy' => 'public'), $id);
 	}
 
 //Mark images as private
 } elseif (post('mark_as_private') && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
+	foreach (explodeAndTrim($ids, true) as $id) {
 		updateRow('files', array('privacy' => 'private'), $id);
 		deletePublicImage($id);
 	}
 
 //Delete an unused image
 } elseif (post('delete') && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
+	foreach (explodeAndTrim($ids, true) as $id) {
 		deleteUnusedImage($id);
 	}
 
 //Detach an image from a content item or newsletter
 } elseif (post('remove') && $key && checkPriv('_PRIV_MANAGE_MEDIA')) {
-	foreach (explode(',', $ids) as $id) {
+	foreach (explodeAndTrim($ids, true) as $id) {
 		$key['image_id'] = $id;
 		$key['in_use'] = 0;
 		deleteRow('inline_images', $key);

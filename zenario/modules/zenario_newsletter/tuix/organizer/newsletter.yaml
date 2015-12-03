@@ -35,6 +35,12 @@ zenario__email_template_manager:
                     sql: |
                         n.status = '_ARCHIVED'
             columns:
+                id:
+                    title: ID
+                    db_column: n.id
+                    searchable: Yes
+                    show_by_default: Yes
+                    width: xsmall
                 newsletter_name:
                     title: Name
                     db_column: n.newsletter_name
@@ -47,6 +53,11 @@ zenario__email_template_manager:
                     searchable: Yes
                     show_by_default: Yes
                     width: large
+                recipients:
+                    title: Recipients
+                    show_by_default: Yes
+                    align_right: true
+                    width: xsmall
                 email_address_from:
                     title: Address From
                     db_column: n.email_address_from
@@ -74,11 +85,6 @@ zenario__email_template_manager:
                     title: Smart group rules
                     db_column: n.smart_group_descriptions_when_sent_out
                     show_by_default: Yes
-                recipients:
-                    title: Recipients
-                    show_by_default: Yes
-                    align_right: true
-                    width: xsmall
                 progress_sent:
                     title: 'Sent'
                     db_column: |
@@ -127,6 +133,34 @@ zenario__email_template_manager:
                     searchable: Yes
                     format: datetime
                     show_by_default: Yes
+                opened:
+                    title: Opened
+                    searchable: Yes
+                    format: text
+                    show_by_default: Yes
+                    align_right: true
+                    width: xsmall
+                opened_percentage:
+                    title: Opened %
+                    searchable: Yes
+                    format: text
+                    show_by_default: Yes
+                    align_right: true
+                    width: xsmall
+                clicked:
+                    title: Clicked
+                    searchable: Yes
+                    format: text
+                    show_by_default: Yes
+                    align_right: true
+                    width: xsmall
+                clicked_percentage:
+                    title: Clicked %
+                    searchable: Yes
+                    format: text
+                    show_by_default: Yes
+                    align_right: true
+                    width: xsmall
             item:
                 name: Newsletter
                 names: Newsletters
@@ -137,12 +171,13 @@ zenario__email_template_manager:
                 create:
                     priv: _PRIV_EDIT_NEWSLETTER
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a Newsletter
                     admin_box:
                         path: zenario_newsletter
                 process:
                     css_class: process
-                    label: Process
+                    label: Outbox
                     link:
                         path: zenario__email_template_manager/panels/newsletters
                         refiner: outbox
@@ -211,12 +246,14 @@ zenario__email_template_manager:
                     hide_in_select_mode: true
                 click_throughs:
                     parent: view_dropdown
+                    visible_if: |
+                        !!zenarioO.refiner
+                    hide_in_select_mode: true
                     label: Click-throughs
                     link: 
                         path: zenario__email_template_manager/panels/newsletter_click_throughs
                         branch: Yes
                         refiner: click_through_id
-                    hide_in_select_mode: true
                 
                 actions_dropdown:
                     label: Actions

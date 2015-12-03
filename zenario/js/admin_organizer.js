@@ -343,30 +343,36 @@ zenarioO.init = function(reload) {
 	var store, url = URLBasePath + 'zenario/admin/ajax.php?_json=1';
 	
 	//Attempt to get the map from the local store
-	if (zenarioO.map = zenario.checkSessionStorage(url, {}, true)) {
-		zenarioO.init2();
+	//if (zenarioO.map = zenario.checkSessionStorage(url, {}, true)) {
+	//	zenarioO.init2();
+	//
+	//} else {
+	//	//Otherwise launch an AJAX request to get the map
+	//	zenarioA.keepTrying(function(attempt) {
+	//		$.ajax({
+	//			url: url,
+	//			dataType: 'text'
+	//		}).fail(function(resp, statusType, statusText) {
+	//			if (zenarioA.stopTrying(attempt)) {
+	//				zenarioA.AJAXErrorHandler(resp, statusType, statusText);
+	//			}
+	//			
+	//		}).done(function(data) {
+	//			if (zenarioA.stopTrying(attempt)) {
+	//				if (zenarioO.map = zenarioA.readData(data, url, {})) {
+	//					zenarioO.init2();
+	//				}
+	//			}
+	//		
+	//		});
+	//	});
+	//}
 	
-	} else {
-		//Otherwise launch an AJAX request to get the map
-		zenarioA.keepTrying(function(attempt) {
-			$.ajax({
-				url: url,
-				dataType: 'text'
-			}).fail(function(resp, statusType, statusText) {
-				if (zenarioA.stopTrying(attempt)) {
-					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-				}
-				
-			}).done(function(data) {
-				if (zenarioA.stopTrying(attempt)) {
-					if (zenarioO.map = zenarioA.readData(data, url, {})) {
-						zenarioO.init2();
-					}
-				}
-			
-			});
-		});
-	}
+	zenario.ajax(url, false, false, true).after(function (data) {
+		if (zenarioO.map = zenarioA.readData(data, url, {})) {
+			zenarioO.init2();
+		}
+	});
 };
 
 
@@ -914,8 +920,6 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		url = panelInstance.returnAJAXURL(),
 		devToolsURL = panelInstance.returnDevToolsAJAXURL(),
 		requests = {},
-		post = {},
-		postUsed = false,
 		data = false,
 		store,
 		go2 = function(data) {
@@ -1027,61 +1031,64 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	//Allow the panel type to disable this AJAX request by returning false for the url
 	if (!url) {
 		go2(panel);
+	} else {
+		zenario.ajax(url + zenario.urlRequest(requests), false, true, true, true).after(go2);
+	}
 	
 	//Attempt to get this panel from the local storage, unless there's a post request
-	} else if (postUsed) {
-		//Don't use the local storage for post requests
-		zenarioA.keepTrying(function(attempt) {
-			$.ajax({
-				url: url + zenario.urlRequest(requests),
-				data: post,
-				type: 'POST',
-				dataType: 'text'
-			
-			}).fail(function(resp, statusType, statusText) {
-				if (zenarioA.stopTrying(attempt)) {
-					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-				}
-			
-			}).done(function(data) {
-				if (zenarioA.stopTrying(attempt)) {
-					if (data = zenarioA.readData(data)) {
-						go2(data);
-					}
-				}
-			});
-		});
-	
-	} else if (db_items && !dontUseCache && (store = zenario.checkSessionStorage(url, requests, true, zenarioO.loadNum))) {
-		//Use the value from the local storage if possible...
-		go2(store);
-	
-	} else {
-		//...otherwise do an AJAX request then save the results into the local storage
-		var startTrying = function() {
-			zenarioA.keepTrying(function(attempt) {
-				$.ajax({
-					url: url,
-					data: requests,
-					dataType: 'text'
-			
-				}).fail(function(resp, statusType, statusText) {
-					if (zenarioA.stopTrying(attempt)) {
-						resp.zenario_retry = startTrying;
-						zenarioA.AJAXErrorHandler(resp, statusType, statusText);
-					}
-			
-				}).done(function(data) {
-					if (zenarioA.stopTrying(attempt)) {
-						if (data = zenarioA.readData(data, url, requests, startTrying)) {
-							go2(data);
-						}
-					}
-				});
-			});
-		};
-		startTrying();
-	}
+	//} else if (postUsed) {
+	//	//Don't use the local storage for post requests
+	//	zenarioA.keepTrying(function(attempt) {
+	//		$.ajax({
+	//			url: url + zenario.urlRequest(requests),
+	//			data: post,
+	//			type: 'POST',
+	//			dataType: 'text'
+	//		
+	//		}).fail(function(resp, statusType, statusText) {
+	//			if (zenarioA.stopTrying(attempt)) {
+	//				zenarioA.AJAXErrorHandler(resp, statusType, statusText);
+	//			}
+	//		
+	//		}).done(function(data) {
+	//			if (zenarioA.stopTrying(attempt)) {
+	//				if (data = zenarioA.readData(data)) {
+	//					go2(data);
+	//				}
+	//			}
+	//		});
+	//	});
+	//
+	//} else if (db_items && !dontUseCache && (store = zenario.checkSessionStorage(url, requests, true, zenarioO.loadNum))) {
+	//	//Use the value from the local storage if possible...
+	//	go2(store);
+	//
+	//} else {
+	//	//...otherwise do an AJAX request then save the results into the local storage
+	//	var startTrying = function() {
+	//		zenarioA.keepTrying(function(attempt) {
+	//			$.ajax({
+	//				url: url,
+	//				data: requests,
+	//				dataType: 'text'
+	//		
+	//			}).fail(function(resp, statusType, statusText) {
+	//				if (zenarioA.stopTrying(attempt)) {
+	//					resp.zenario_retry = startTrying;
+	//					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
+	//				}
+	//		
+	//			}).done(function(data) {
+	//				if (zenarioA.stopTrying(attempt)) {
+	//					if (data = zenarioA.readData(data, url, requests, startTrying)) {
+	//						go2(data);
+	//					}
+	//				}
+	//			});
+	//		});
+	//	};
+	//	startTrying();
+	//}
 };
 
 
@@ -1403,17 +1410,17 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 					'&_get_item_links=' + contentTags[lang][parent] +
 					'&languageId=' + encodeURIComponent(lang);
 				
-				if (!(zenarioO.contentItems[lang][parent] = zenario.checkSessionStorage(url, {}, true, zenarioO.loadNum))) {
+				//if (!(zenarioO.contentItems[lang][parent] = zenario.checkSessionStorage(url, {}, true, zenarioO.loadNum))) {
 					++zenarioO.itemLinkRequestsLeft;
-					zenarioO.getDataHack(url, lang, function(url, lang, data) {
+					zenarioO.getDataHack(url, lang, function(lang, data) {
 						if (goNum == zenarioO.goNum) {
-							zenarioO.contentItems[lang][parent] = zenarioA.readData(data, url, {});
+							zenarioO.contentItems[lang][parent] = data;
 							if (!--zenarioO.itemLinkRequestsLeft) {
 								zenarioO.go3(goNum, searchTerm, backwards, runFunctionAfter);
 							}
 						}
 					});
-				}
+				//}
 			}
 		}
 	}
@@ -1434,17 +1441,17 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 				'&refinerId=' + encodeURIComponent(lang) +
 				'&refiner__language=' + encodeURIComponent(lang);
 			
-			if (!(zenarioO.menuItems[lang] = zenario.checkSessionStorage(url, {}, true, zenarioO.loadNum))) {
+			//if (!(zenarioO.menuItems[lang] = zenario.checkSessionStorage(url, {}, true, zenarioO.loadNum))) {
 				++zenarioO.itemLinkRequestsLeft;
-				zenarioO.getDataHack(url, lang, function(url, lang, data) {
+				zenarioO.getDataHack(url, lang, function(lang, data) {
 					if (goNum == zenarioO.goNum) {
-						zenarioO.menuItems[lang] = zenarioA.readData(data, url, {});
+						zenarioO.menuItems[lang] = data;
 						if (!--zenarioO.itemLinkRequestsLeft) {
 							zenarioO.go3(goNum, searchTerm, backwards, runFunctionAfter);
 						}
 					}
 				});
-			}
+			//}
 		}
 	}
 	
@@ -1467,14 +1474,19 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 
 //A wrapper function to ensure that the url, lang variables keep their values, rather than get overwritten
 zenarioO.getDataHack = function(url, lang, success) {
-	setTimeout(
-		function() {
-			//Hack to try and prevent a possible bug where the GET request gets too large:
-				//Convert it to a post request if it gets too big
-			var post = url.length > 2000,
-				data = zenario.nonAsyncAJAX(url, post);
-			success(url, lang, data);
-		}, 1);
+	
+	zenario.ajax(url, url.length > 2000, true, true, true).after(function(data) {
+		success(lang, data);
+	});
+	
+	//setTimeout(
+	//	function() {
+	//		//Hack to try and prevent a possible bug where the GET request gets too large:
+	//			//Convert it to a post request if it gets too big
+	//		var post = url.length > 2000,
+	//			data = zenario.nonAsyncAJAX(url, post);
+	//		success(url, lang, data);
+	//	}, 1);
 };
 
 
@@ -1867,10 +1879,13 @@ zenarioO.setPanel = function() {
 	zenarioO.setHash();
 	
 	// Open help tour
-	//if (zenarioA.show_help_tour_next_time && !zenarioA.seen_help_tour) {
-	//	var topLevel = zenarioO.currentTopLevelPath.split('/')[0];
-	//	zenarioA.showTutorial(topLevel, true);
-	//}
+	if (zenarioA.show_help_tour_next_time && !zenarioA.seen_help_tour) {
+		// Get current nav
+		//var topLevel = zenarioO.currentTopLevelPath.split('/')[0];
+		// Always use this nav
+		var topLevel = 'dummy_item';
+		zenarioA.showTutorial(topLevel, true);
+	}
 	zenarioA.seen_help_tour = true;
 };
 
@@ -2678,15 +2693,27 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 	//Escape any ~s in the string
 	string = string.replace(/~/g, '~1');
 	
-	var string2 = string;
+	var string2 = string,
+		columnValue,
+		c, v;
 	
 	if (i === undefined) {
 		i = zenarioO.getKeyId();
 	}
 	
-	foreach (zenarioO.tuix.items[i] as var c) {
+	foreach (zenarioO.tuix.items[i] as c => v) {
 		if (string.indexOf('[[' + c + ']]') != -1) {
-			var columnValue = zenarioO.columnValue(i, c, !escapeHTML);
+			
+			if (zenarioO.tuix.columns
+			 && zenarioO.tuix.columns[c]) {
+				columnValue = zenarioO.columnValue(i, c, !escapeHTML);
+			
+			} else if (escapeHTML) {
+				columnValue = htmlspecialchars(v);
+			
+			} else {
+				columnValue = v;
+			}
 			
 			if (!keepNewLines && columnValue !== undefined) {
 				columnValue = columnValue.replace(/\n/g, ' ');
@@ -2703,6 +2730,28 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 	
 	//Unescape and return
 	return string.replace(/~2/g, '[').replace(/~3/g, '[').replace(/~1/g, '~');
+};
+
+zenarioO.applyMergeFieldsToLabel = function(label, isHTML, itemLevel, multiSelectLabel) {
+	
+	if (itemLevel
+	 && multiSelectLabel
+	 && zenarioO.itemsSelected > 1) {
+		label = multiSelectLabel;
+	}
+	
+	if (!label) {
+		return label;
+	}
+	
+	label = ('' + label).replace(/\[\[item_count\]\]/ig, zenarioO.itemsSelected);
+
+	if (itemLevel
+	 && zenarioO.itemsSelected == 1) {
+		label = zenarioO.applyMergeFields(label, isHTML);
+	}
+	
+	return label;
 };
 
 
@@ -2797,7 +2846,7 @@ zenarioO.action2 = function() {
 		var goNum = ++zenarioO.goNum;
 		get('organizer_preloader_circle').style.display = 'block';
 		
-		$.post(URLBasePath + zenarioO.actionTarget, zenarioO.actionRequests, function(message) {
+		zenario.ajax(URLBasePath + zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
 			//Check that this isn't an out-of-date request that has come in syncronously via AJAX
 			if (goNum != zenarioO.goNum) {
 				return;
@@ -2811,7 +2860,7 @@ zenarioO.action2 = function() {
 			}
 			
 			zenarioO.selectCreatedIds();
-		}, 'text');
+		});
 	}
 	zenarioO.actionTarget = false;
 	delete zenarioO.actionRequests;
@@ -2828,39 +2877,45 @@ zenarioO.uploadComplete = function() {
 
 zenarioO.selectCreatedIds = function() {
 	
-	var newIds;
-	if (newIds = zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?method_call=getNewId', true, true)) {
-		zenarioO.deselectAllItems();
-		zenarioO.pi.cmsSetsSelectedItems(newIds);
-		zenarioO.setHash();
-	}
+	zenario.ajax(URLBasePath + 'zenario/ajax.php?method_call=getNewId', true, true).after(function(newIds) {
+		
+		var id, items = '';
+		if (!_.isEmpty(newIds)) {
+			zenarioO.deselectAllItems();
+			zenarioO.pi.cmsSetsSelectedItems(newIds);
+			zenarioO.setHash();
+			
+			foreach (newIds as id) {
+				items += (items? ',' : '') + id;
+			}
+		}
 	
-	get('organizer_preloader_circle').style.display = 'none';
+		//Clear the local storage, as there have probably just been changes
+		zenario.outdateCachedData();
 	
+		get('organizer_preloader_circle').style.display = 'none';
 	
-	var items = '';
-	foreach (newIds as var i) {
-		items += (items? ',' : '') + i;
-	}
-	
-	//Clear the local storage, as there have probably just been changes
-	delete zenario.rev;
-	
-	if (newIds && items) {
-		//Make sure show the specific items if possible
-		zenarioO.go(zenarioO.path + '//' + items);
-	} else {
-		//Otherwise use a normal refresh.
-		zenarioO.reload();
-	}
+		if (items) {
+			//Make sure show the specific items if possible
+			zenarioO.go(zenarioO.path + '//' + items);
+		} else {
+			//Otherwise use a normal refresh.
+			zenarioO.reload();
+		}
+	});
 };
 
+
+//If the admin manually presses the reload button in Organizer, clear the cache and reload the panel.
+zenarioO.reloadButton = function() {
+	zenario.outdateCachedData();
+	zenarioO.reload();
+};
 
 //Refresh the current view
 zenarioO.lastActivity = false;
 zenarioO.refreshIsPeriodic = false;
-zenarioO.reload =
-zenarioO.refresh = function(periodic, allowCache, runFunctionAfter) {
+zenarioO.reload = function(periodic, allowCache, runFunctionAfter) {
 	
 	//Stop doing periodic refreshes after 20 minutes if inactivity
 	if (periodic) {
@@ -2965,7 +3020,7 @@ zenarioO.refreshToShowItem = function(itemId) {
 	
 	//Escape the item id if needed
 	if (zenarioO.tuix.db_items && zenarioO.tuix.db_items.encode_id_column) {
-		itemId = zenario.encodeItemIdForStorekeeper(itemId);
+		itemId = zenario.encodeItemIdForOrganizer(itemId);
 	}
 	
 	var itemIds = (itemId + '').split(',');
@@ -2991,7 +3046,7 @@ zenarioO.refreshToShowItem = function(itemId) {
 	zenarioO.stopRefreshing();
 	
 	//Clear the local storage, as there have probably just been changes
-	delete zenario.rev;
+	zenario.outdateCachedData();
 	
 	if (zenarioO.inspectionView) {
 		zenarioO.go(zenarioO.path + '//' + itemId + '/');
@@ -3358,7 +3413,7 @@ zenarioO.setViewOptions = function() {
 					zenarioVO.tuix.tabs.cp.fields['date_after_col_' + c] = {
 						ord: 100 * colNo + 7,
 						row_class: 'zenario_date_filters_for_field',
-						label: phrase.after,
+						label: '<span class="zenario_date_filters_phrase">' + phrase.after + '</span>',
 						type: 'date',
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateAfter,
@@ -3368,7 +3423,7 @@ zenarioO.setViewOptions = function() {
 					zenarioVO.tuix.tabs.cp.fields['date_before_col_' + c] = {
 						ord: 100 * colNo + 8,
 						row_class: 'zenario_date_filters_for_field',
-						label: phrase.before,
+						label: '<span class="zenario_date_filters_phrase">' + phrase.before + "</span>",
 						type: 'date',
 						onchange: "zenarioO.updateDateFilters('" + htmlspecialchars(c) + "');",
 						value: dateBefore,
@@ -5108,23 +5163,26 @@ zenarioO.getItemButtons = function() {
 				id: i,
 				tuix: button,
 				css_class: ifNull(button.css_class, 'label_without_icon'),
-				label: ifNull(button.label, button.name),
 				disabled: disabled
 			};
 			buttonsPos[i] = bi;
 			
-			if (zenarioO.itemsSelected > 1 && button.multiple_select_label) {
-				buttons[bi].label = button.multiple_select_label;
-			}
+			
+			buttons[bi].label = zenarioO.applyMergeFieldsToLabel(
+				ifNull(button.label, button.name),
+				false, true,
+				button.multiple_select_label
+			);
 			
 			if (disabled && button.disabled_tooltip) {
-				buttons[bi].tooltip = button.disabled_tooltip;
-			
-			} else if (zenarioO.itemsSelected > 1 && button.multiple_select_tooltip) {
-				buttons[bi].tooltip = button.multiple_select_tooltip;
+				buttons[bi].tooltip = zenarioO.applyMergeFieldsToLabel(button.disabled_tooltip, false, true);
 			
 			} else {
-				buttons[bi].tooltip = button.tooltip;
+				buttons[bi].tooltip = zenarioO.applyMergeFieldsToLabel(
+					button.tooltip,
+					false, true,
+					button.multiple_select_tooltip
+				);
 			}
 			
 			
@@ -5311,6 +5369,11 @@ zenarioO.checkButtonHidden = function(button, items) {
 		}
 	}
 	
+	//Some buttons should not be shown when there is a search or a filter set
+	if (zenarioO.filteredView && engToBoolean(button.hide_on_filter)) {
+		return true;
+	}
+	
 	//Don't show a <call_js_function> button for a function that does not exist
 	if (button.call_js_function && !zenarioA.checkFunctionExists(button.call_js_function['function'], button.call_js_function.encapsulated_object)) {
 		return true;
@@ -5483,6 +5546,12 @@ zenarioO.getInlineButtons = function(id) {
 			buttons[bi].tooltip = button.tooltip;
 		}
 		
+		if (buttons[bi].tooltip) {
+			buttons[bi].tooltip = zenarioO.applyMergeFields(buttons[bi].tooltip, false, id);
+		}
+		if (buttons[bi].label) {
+			buttons[bi].label = zenarioO.applyMergeFields(buttons[bi].label, false, id);
+		}
 		
 		if (disabled) {
 			buttons[bi].onclick = "return false;";

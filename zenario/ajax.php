@@ -34,11 +34,8 @@ startSession();
 
 
 //Run pre-load actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/ajax.pre_load.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('ajax.pre_load');
+
 
 $type = false;
 $path = false;
@@ -66,7 +63,7 @@ if ($methodCall == 'refreshPlugin'
 	
 	//If an admin is logged in, include admin functions for refreshing modules
 	if (checkPriv()) {
-		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 	}
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
@@ -224,7 +221,7 @@ if ($methodCall == 'refreshPlugin'
 		echo json_encode($_SESSION['sk_new_ids']);
 		unset($_SESSION['sk_new_ids']);
 	} else {
-		echo json_encode(false);
+		echo json_encode(array());
 	}
 	exit;
 	
@@ -602,8 +599,4 @@ if ($methodCall == 'showFile') {
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/ajax.post_display.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('ajax.post_display');

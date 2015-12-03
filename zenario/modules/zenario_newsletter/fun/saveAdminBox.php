@@ -123,9 +123,9 @@ switch ($path) {
 				ZENARIO_NEWSLETTER_PREFIX. 'newsletters',
 				array(
 					'unsubscribe_text' 
-							=> $values['add_unsubscribe_link']? $values['unsubscribe_text']: null,
+							=> ($values['unsubscribe_link'] == 'unsub') ? $values['unsubscribe_text']: null,
 					'delete_account_text' 
-							=> $values['add_delete_account_link']? $values['delete_account_text']: null
+							=> ($values['unsubscribe_link'] == 'delete') ? $values['delete_account_text']: null
 					),
 				$box['key']['id']);
 

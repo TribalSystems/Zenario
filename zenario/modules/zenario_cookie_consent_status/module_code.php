@@ -65,8 +65,8 @@ class zenario_cookie_consent_status extends module_base_class {
 				$this->sections['Rejected_Cookies'] = true;
 			}
 			
-			$this->mergeFields['Accept_Link'] = 'zenario/quick_ajax.php?accept_cookies=1';
-			$this->mergeFields['Reject_Link'] = 'zenario/quick_ajax.php?accept_cookies=0';
+			$this->mergeFields['Accept_Link'] = 'zenario/cookies.php?accept_cookies=1';
+			$this->mergeFields['Reject_Link'] = 'zenario/cookies.php?accept_cookies=0';
 			
 			return true;
 		}

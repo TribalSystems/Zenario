@@ -424,7 +424,7 @@ class zenario_forum extends zenario_comments {
 				$using_ids = array('file_id' => (int)$fileId, 'post_id' => (int)$postId);
 				$using_values = $using_ids;
 				$using_values['caption'] = sqlEscape($file_name);
-				setRow('user_posts_uploads', $using_values, $using_ids, DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX);
+				setRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', $using_values, $using_ids);
 			}
 		}
 	}
@@ -444,21 +444,12 @@ class zenario_forum extends zenario_comments {
 	protected function manageUploads($postId){
 		if($this->allow_uploads){
 			
-			if(!empty($_POST['remove_files'])){
-				$filesToRemove = &$_POST['remove_files'];
-				$files_count = count($filesToRemove);
-				for($i=0; $i < $files_count; ++$i){
-					$this->deleteOneUpload($postId, $filesToRemove[$i]);
-				}
-			}
-			
 			if($postId){
 				foreach($_POST as $key => $value){
 					$file_id = $this->split_str_value_to_value($key, 'file_caption_');
 					if(is_numeric($file_id) && strlen($value)){
-						setRow('user_posts_uploads', array('caption' => sqlEscape($value)), 
-							array('post_id' => (int)$postId, 'file_id' => (int)$file_id), 
-							DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX, false);
+						setRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', array('caption' => sqlEscape($value)), 
+							array('post_id' => (int)$postId, 'file_id' => (int)$file_id));
 					}
 				}
 			}
@@ -478,15 +469,25 @@ class zenario_forum extends zenario_comments {
 					$this->manageOneUpload($postId, $filesToUpload['tmp_name'][$i], $filesToUpload['name'][$i]);
 				}
 			}
+			
+			
+			if(!empty($_POST['remove_files'])){
+				$filesToRemove = &$_POST['remove_files'];
+				$files_count = count($filesToRemove);
+				for($i=0; $i < $files_count; ++$i){
+					$this->deleteOneUpload($postId, $filesToRemove[$i]);
+				}
+			}
+			
 		}
 	}
 
 	protected function deleteOneUploadFile($file_id){
 		if($this->allow_uploads){
 			
-			require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+			if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			
-			if(!getRow('user_posts_uploads', 'file_id', array('file_id' => (int)$file_id), false, DB_NAME_PREFIX.ZENARIO_FORUM_PREFIX)){
+			if(!getRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', array('file_id' => (int)$file_id))){
 				deleteFile($file_id);
 			}
 		}
@@ -502,8 +503,8 @@ class zenario_forum extends zenario_comments {
 	protected function deleteUploads($postId){
 		if($this->allow_uploads){
 			
-			deleteRow(ZENARIO_FORUM_PREFIX. 'user_posts_uploads', array('post_id' => $postId));
-			$file_list = getRowsArray('user_posts_uploads', 'file_id', array('post_id' => $postId), false, false,
+			deleteRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', array('post_id' => $postId));
+			$file_list = getRowsArray(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', array('post_id' => $postId), false, false,
 					DB_NAME_PREFIX.ZENARIO_FORUM_PREFIX);
 			if(is_array($file_list)){
 				foreach($file_list as $file_id){

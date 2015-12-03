@@ -113,4 +113,19 @@ _sql
 	ADD COLUMN `field_value` varchar(255) NOT NULL default ''
 	AFTER `field_id`
 _sql
+
+);	revision( 55
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX]]tabs`
+	MODIFY COLUMN `visibility`
+		enum('everyone','logged_out','logged_in','logged_in_with_field','logged_in_without_field','without_field','call_static_method','in_smart_group')
+		NOT NULL default 'everyone'
+
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX]]tabs`
+	ADD COLUMN `smart_group_id` int(10) unsigned NOT NULL default 0
+	AFTER `visibility`
+_sql
 );

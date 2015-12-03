@@ -343,6 +343,9 @@ class zenario_incoming_email_manager extends module_base_class {
 					unset($panel['collection_buttons']['get_code']);
 					unset($panel['collection_buttons']['enable_all']);
 					unset($panel['collection_buttons']['suspend_all']);
+
+					$panel['item_buttons']["suspend"]['ord']=2;
+					$panel['item_buttons']['zenario_incoming_email_manager__edit_enabled']['ord']=1;
 				
 				} else {
 					unset($panel['item_buttons']['zenario_incoming_email_manager__edit_enable']);
@@ -399,6 +402,12 @@ class zenario_incoming_email_manager extends module_base_class {
 					updateRow('jobs', array('status' => 'rerun_scheduled'), $checkEmailId);
 					updateRow('jobs', array('status' => 'rerun_scheduled'), $ids);
 				}
+				
+				if ((post('action') == 'enable_incoming_email_handler') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK') && $checkEmailId = getRow('jobs', 'id', array('job_name' => 'jobCheckEmails'))) {
+					foreach (explode(',', $ids) as $id) {
+						updateRow('jobs',array('enabled' => 1),$id);
+					}
+				}
 		}
 	}
 	
@@ -423,22 +432,25 @@ class zenario_incoming_email_manager extends module_base_class {
 					}
 					
 					//Enter some suitable default values for the mailbox connection details, if they are not enabled
-					if (empty($box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_enable']['value'])
+					/*if (empty($box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_enable']['value'])
 					 && empty($box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_server']['value'])) {
 						$box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_server']['value'] = 'mail.example.com:143/ssl';
 						$box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_mailbox']['value'] = 'INBOX';
 						$box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_processed_mailbox']['value'] = 'INBOX.Processed';
 						$box['tabs']['zenario_incoming_email_manager__fetch']['fields']['fetch_error_mailbox']['value'] = 'INBOX.Errors';
-					}
+					}*/
 					
 					if (!setting('jobs_enabled') || !getRow('jobs', 'enabled', array('job_name' => 'jobCheckEmails'))) {
 						$box['tabs']['zenario_incoming_email_manager__fetch']['notices']['not_enabled']['show'] = true;
 						$box['tabs']['zenario_incoming_email_manager__fetch']['edit_mode']['enabled'] = false;
 					}
 					
+					/*
+					commented
 					$box['tabs']['zenario_incoming_email_manager__trigger']['fields']['desc2']['snippet']['html'] =
 						str_replace('[[path]]', htmlspecialchars(CMS_ROOT. moduleDir('zenario_incoming_email_manager', 'mail/email_handler.php')),
 							$box['tabs']['zenario_incoming_email_manager__trigger']['fields']['desc2']['snippet']['html']);
+					*/
 					
 					$box['tabs']['time_and_day']['visible_if'] =
 					$box['tabs']['month']['visible_if'] = "zenarioAB.value('fetch_enable', 'zenario_incoming_email_manager__fetch')";
@@ -455,6 +467,10 @@ class zenario_incoming_email_manager extends module_base_class {
 					$box['tabs']['reporting']['fields']['email_on_no_action']['label'] = adminPhrase('Send email notification when an email could not be processed:');
 				}
 				
+				//set enable always
+				//fetch_enable
+				$values['zenario_incoming_email_manager__fetch/fetch_enable']=1;
+				
 				break;
 		}
 	}
@@ -463,6 +479,8 @@ class zenario_incoming_email_manager extends module_base_class {
 		switch ($path) {
 			case 'zenario_job':
 				if ($box['key']['manager_class_name'] == 'zenario_incoming_email_manager') {
+					/*
+					commented
 					if ($values['zenario_incoming_email_manager__trigger/script_enable']) {
 						if (!$username = $values['zenario_incoming_email_manager__trigger/script_recipient_username']) {
 							$box['tabs']['zenario_incoming_email_manager__trigger']['errors'][] =
@@ -479,8 +497,7 @@ class zenario_incoming_email_manager extends module_base_class {
 							//$box['tabs']['zenario_incoming_email_manager__trigger']['errors'][] =
 							//	adminPhrase('A different Incoming Email Handler is already handling that username.');
 						}
-					}
-					
+					}*/
 					if ($values['zenario_incoming_email_manager__fetch/fetch_enable']) {
 						if (!function_exists('imap_open')) {
 							$box['tabs']['zenario_incoming_email_manager__fetch']['errors'][] =
@@ -551,10 +568,11 @@ class zenario_incoming_email_manager extends module_base_class {
 							 	imap_timeout(IMAP_READTIMEOUT, 10);
 							 	imap_timeout(IMAP_WRITETIMEOUT, 10);
 							 	imap_timeout(IMAP_CLOSETIMEOUT, 10);
+								
 								if (!$mbox = @imap_open('{'. $server. '}'. $mailbox, $username, $values['zenario_incoming_email_manager__fetch/fetch_password'])) {
 									$box['tabs']['zenario_incoming_email_manager__fetch']['errors'][] =
 										adminPhrase('A connection could not be made using these settings. Please check that they are correct.');
-								
+
 								} else {
 									$exists = @imap_listmailbox($mbox, '{'. $server. '}', $mailbox);
 									if ((empty($exists))) {
@@ -578,7 +596,7 @@ class zenario_incoming_email_manager extends module_base_class {
 									
 									imap_close($mbox);
 								}
-								
+							 	
 								//Workaround for a bug in a more recent version of PHP.
 								//We need to clear any errors that might otherwise appear in the output.
 								$imapErrors = imap_errors();
@@ -596,6 +614,7 @@ class zenario_incoming_email_manager extends module_base_class {
 			case 'zenario_job':
 				if ($box['key']['manager_class_name'] == 'zenario_incoming_email_manager' && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 					
+					/*
 					if (engToBooleanArray($box['tabs']['zenario_incoming_email_manager__trigger'], 'edit_mode', 'on')) {
 						if ($values['zenario_incoming_email_manager__trigger/script_enable']) {
 							
@@ -606,13 +625,18 @@ class zenario_incoming_email_manager extends module_base_class {
 								$box['key']['id']);
 						
 						} else {
-							setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
-								array(
-									'script_enable' => 0,
-									'script_recipient_username' => null),
-								$box['key']['id']);
+							//setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
+							//	array(
+							//		'script_enable' => 0,
+							//		'script_recipient_username' => null),
+							//	$box['key']['id']);
+								
+								
+								updateRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts', array('script_enable' => 0),$box['key']['id']);
+								
+								
 						}
-					}
+					}*/
 					
 					if (engToBooleanArray($box['tabs']['zenario_incoming_email_manager__fetch'], 'edit_mode', 'on')) {
 						if ($values['zenario_incoming_email_manager__fetch/fetch_enable']) {
@@ -630,7 +654,7 @@ class zenario_incoming_email_manager extends module_base_class {
 								$box['key']['id']);
 						
 						} else {
-							setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
+							/*setRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts',
 								array(
 									'fetch_enable' => 0,
 									'fetch_server' => null,
@@ -640,16 +664,25 @@ class zenario_incoming_email_manager extends module_base_class {
 									'fetch_keep_mail' => 0,
 									'fetch_processed_mailbox' => '',
 									'fetch_error_mailbox' => ''),
-								$box['key']['id']);
+								$box['key']['id']);*/
+								
+								
+								updateRow(ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. 'accounts', array('fetch_enable' => 0),$box['key']['id']);
+								
+								
+								
 						}
 					}
-					
+					/*
 					updateRow('jobs',
 						array(
 							'enabled' =>
-								$values['zenario_incoming_email_manager__trigger/script_enable']
-							 || $values['zenario_incoming_email_manager__fetch/fetch_enable']),
+								
+								commented
+								//$values['zenario_incoming_email_manager__trigger/script_enable']||
+								$values['zenario_incoming_email_manager__fetch/fetch_enable']),
 						$box['key']['id']);
+					*/
 				}
 				
 				break;
@@ -1070,8 +1103,8 @@ class zenario_incoming_email_manager extends module_base_class {
 		$serverTime, $jobName, $jobId,
 		$status, &$logMessage
 	) {
-		$subject = 'Incoming Email Handler '. $jobName. ': '. $status. ' at '. setting('primary_domain');
-		$body = 'Report from: '. setting('primary_domain'). "\n";
+		$subject = 'Incoming Email Handler '. $jobName. ': '. $status. ' at '. primaryDomain();
+		$body = 'Report from: '. primaryDomain(). "\n";
 		$body .= 'Directory: '. CMS_ROOT. "\n";
 		$body .= 'Database Name: '. DBNAME. "\n";
 		$body .= 'Database Host: '. DBHOST. "\n";

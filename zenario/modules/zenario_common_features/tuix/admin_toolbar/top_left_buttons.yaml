@@ -14,4 +14,16 @@ sections:
                 label: Go to this item in its menu view
                 navigation_path: ''
                 hidden: true
+            goto_content_items:
+                ord: 2
+                parent: drop_down
+                css_class: zenario_at__goto_content_items
+                label: Go to Content items panel
+                navigation_path: zenario__content/panels/content_types
+            goto_modules_panel:
+                ord: 30
+                parent: drop_down
+                css_class: zenario_at__goto_modules_panel
+                label: Go to Modules panel
+                navigation_path: zenario__modules/panels/modules
                 

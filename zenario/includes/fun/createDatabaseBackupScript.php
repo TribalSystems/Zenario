@@ -33,12 +33,6 @@ set_time_limit(60 * 10);
 //Loop through every table beginning with the DB_NAME_PREFIX
 foreach(lookupExistingCMSTables() as $table) {
 	
-	//Remove the DB_NAME_PREFIX, and add [['DB_NAME_PREFIX']] in its place.
-		//This pattern should never occur in a normal mysql statement, so it will be safe to
-		//do a search and replace on this later!
-	$importTable = "[['". $table['prefix']. "']]". $table['name'];
-
-	
 	//Attempt to get the create table script for the current table
 	$sql = 'SHOW CREATE TABLE `'. $table['actual_name'] . '`';
 	
@@ -62,7 +56,15 @@ foreach(lookupExistingCMSTables() as $table) {
 		continue;
 	}
 	
-	$createTable = str_replace('`'. $table['actual_name']. '`', '`'. $importTable. '`', $createTable['Create Table']);
+	//Old logic: replace the table prefix with a pattern
+		//Remove the DB_NAME_PREFIX, and add [['DB_NAME_PREFIX']] in its place.
+		//$importTable = "[['". $table['prefix']. "']]". $table['name'];
+		//$createTable = str_replace('`'. $table['actual_name']. '`', '`'. $importTable. '`', $createTable['Create Table']);
+	
+	//New logic (T10131, A couple of small improvements to the CMS backup system):
+		//We're no longer replacing the table prefix, so we're compatabile with phpMyAdmin, mysql and mysqldump
+		$importTable = $table['actual_name'];
+		$createTable = $createTable['Create Table'];
 	
 	//Get details on each column in the current table
 	$sql = 'SHOW COLUMNS FROM `'. $table['actual_name']. '`';
@@ -190,14 +192,14 @@ foreach(lookupExistingCMSTables() as $table) {
 	
 	gzwrite($gzFile, $inserts);
 }
-	
-$inserts = "\n\n\n\n\n;\nEND OF SQL;\n";
 
-gzwrite($gzFile, $inserts);
+//Old logic for adding the contents of the docstore directory into the backup file:
+	//$inserts = "\n\n\n\n\n;\nEND OF SQL;\n";
+	//gzwrite($gzFile, $inserts);
 
-//$docpath = setting('docstore_dir');
-//if (!is_readable($docpath) || !is_writeable($docpath)) {
-	//$docpath = false;
-//}
-	//writeDocstoreDirectory($gzFile);
-//}
+	//$docpath = setting('docstore_dir');
+	//if (!is_readable($docpath) || !is_writeable($docpath)) {
+		//$docpath = false;
+	//}
+		//writeDocstoreDirectory($gzFile);
+	//}

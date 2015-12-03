@@ -337,24 +337,16 @@ class zenario_extranet extends module_base_class {
 		switch ($path) {
 			case 'plugin_settings':
 				$defaultLangId = setting('default_language');
-				if (isset($values['email_address_required_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['email_address_required_error_text']), array("code" => "_ERROR_EXTRANET_EMAIL", "language_id" => $defaultLangId));
-				}
-				if (isset($values['password_required_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['password_required_error_text']), array("code" => "_ERROR_EXTRANET_PASSWORD", "language_id" => $defaultLangId));
-				}
-				if (isset($values['invalid_email_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['invalid_email_error_text']), array("code" => "_ERROR_INVALID_EXTRANET_EMAIL", "language_id" => $defaultLangId));
-				}
-				if (isset($values['screen_name_required_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['screen_name_required_error_text']), array("code" => "_ERROR_EXTRANET_SCREEN_NAME", "language_id" => $defaultLangId));
-				}
-				if (isset($values['no_new_password_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['no_new_password_error_text']), array("code" => "_ERROR_NEW_PASSWORD", "language_id" => $defaultLangId));
-				}
-				if (isset($values['no_new_repeat_password_error_text'])) {
-					setRow("visitor_phrases", array("local_text" => $values['no_new_repeat_password_error_text']), array("code" => "_ERROR_REPEAT_NEW_PASSWORD", "language_id" => $defaultLangId));
-				}
+				
+				setRow("visitor_phrases", array("local_text" => $values['email_address_required_error_text']), array("code" => "_ERROR_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+				setRow("visitor_phrases", array("local_text" => $values['password_required_error_text']), array("code" => "_ERROR_EXTRANET_PASSWORD", "language_id" => $defaultLangId));
+				
+				setRow("visitor_phrases", array("local_text" => $values['invalid_email_error_text']), array("code" => "_ERROR_INVALID_EXTRANET_EMAIL", "language_id" => $defaultLangId));
+				setRow("visitor_phrases", array("local_text" => $values['screen_name_required_error_text']), array("code" => "_ERROR_EXTRANET_SCREEN_NAME", "language_id" => $defaultLangId));
+				
+				setRow("visitor_phrases", array("local_text" => $values['no_new_password_error_text']), array("code" => "_ERROR_NEW_PASSWORD", "language_id" => $defaultLangId));
+				setRow("visitor_phrases", array("local_text" => $values['no_new_repeat_password_error_text']), array("code" => "_ERROR_REPEAT_NEW_PASSWORD", "language_id" => $defaultLangId));
+				
 				break;
 		}
 	}
@@ -555,9 +547,7 @@ class zenario_extranet extends module_base_class {
 	
 	function validatePassword($newPassword,$confirmation,$oldPassword=false,$vlpClass=false,$userId = false) {
 		$errors = array();
-		
-		
-		//var_dump($this->setting('new_passwords_do_not_match'));
+	
 		//Look up what their current password is
 		if (trim($oldPassword)==='' && $oldPassword!==false)  {
 			//no password entered
@@ -596,12 +586,7 @@ class zenario_extranet extends module_base_class {
 			$errorMessage = $this->setting('new_password_not_strong_enough_message');
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 		
-		} 
-		
-		//if($newPassword && !$confirmation) {
-		//	$errorMessage = $this->setting('no_new_repeat_password_error_text');
-		//	$errors[] = array('Error' => $this->phrase($errorMessage));
-		//}
+		}
 	
 		return $errors;
 	}

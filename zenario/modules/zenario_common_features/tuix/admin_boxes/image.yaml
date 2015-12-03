@@ -75,8 +75,13 @@ zenario_image:
                 floating_box_title:
                     label: 'Default floating box title:'
                     type: editor
-                    cols: "70"
-                    rows: "4"
+                    #editor_options:
+                    #    height: 30
+                    #    min_height: 30
+                    #    max_height: 30
+                    #    autoresize_bottom_margin: 10
+                    style: |
+                        height: 5em;
                     note_below: >
                         This will be used to add a table under the image when
                         displayed in a floating box.

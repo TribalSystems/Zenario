@@ -8,6 +8,7 @@ zenario__content:
                     ord: 2
                     priv: _PRIV_CREATE_FIRST_DRAFT
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create multiple
                     upload:
                         accept: 'audio/*'

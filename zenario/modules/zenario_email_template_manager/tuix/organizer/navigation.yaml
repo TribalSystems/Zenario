@@ -21,6 +21,7 @@ zenario__email_template_manager:
                 path: zenario__email_template_manager/panels/email_log
         plugin_email_addresses:
             ord: 3
+            priv: _PRIV_VIEW_USER
             label: Plugin recipients
             tooltip: "View plugins that have an email address in a setting"
             link:

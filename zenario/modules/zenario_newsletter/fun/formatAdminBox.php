@@ -109,8 +109,8 @@ switch ($path) {
 						|| ($values['meta_data/load_content_source'] == 'use_newsletter_template' && $values['meta_data/load_content_source_newsletter_template'])
 							|| ($values['meta_data/load_content_source'] == 'copy_from_archived_newsletter' && $values['meta_data/load_content_source_archived_newsletter']));
 				
-		if ($values['unsub_exclude/add_unsubscribe_link'] && !setting('zenario_newsletter__all_newsletters_opt_out')) {
-			$values['unsub_exclude/add_unsubscribe_link'] = false;
+		if (($values['unsub_exclude/unsubscribe_link'] == 'unsub') && !setting('zenario_newsletter__all_newsletters_opt_out')) {
+			$values['unsub_exclude/unsubscribe_link'] = 'none';
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = true;
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['message'] =
 				adminPhrase('You must select an unsubscribe user characteristic in newsletter configuration settings');
@@ -120,11 +120,11 @@ switch ($path) {
 		}
 		$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['hidden'] =
 		$box['tabs']['unsub_exclude']['fields']['example_unsubscribe_url_underlined_and_hidden']['hidden'] =
-			!$values['unsub_exclude/add_unsubscribe_link'];
+			($values['unsub_exclude/unsubscribe_link'] != 'unsub');
 
 		$box['tabs']['unsub_exclude']['fields']['delete_account_text']['hidden'] =
 		$box['tabs']['unsub_exclude']['fields']['example_delete_account_url_underlined_and_hidden']['hidden'] =
-			!$values['unsub_exclude/add_delete_account_link'];
+			($values['unsub_exclude/unsubscribe_link'] != 'delete');
 
 		$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['hidden'] =
 			!$values['unsub_exclude/exclude_previous_newsletters_recipients_enable'];
@@ -139,37 +139,34 @@ switch ($path) {
 			
 			} else {
 				$adminDetails = getAdminDetails(session('admin_userid'));
-				foreach (explode(',', $values['meta_data/test_send_email_address']) as $email) {
-					if ($email = trim($email)) {
-						
-						$body = $values['meta_data/body'];
-						if ($values['unsub_exclude/add_unsubscribe_link']) {
-							$body .= '<p>' . htmlspecialchars($values['unsub_exclude/unsubscribe_text']) . ' [[REMOVE_FROM_GROUPS_LINK]]</p>';
-						}
-						if ($values['unsub_exclude/add_delete_account_link']) {
-							$body .= '<p>' . htmlspecialchars($values['unsub_exclude/delete_account_text']) . ' [[DELETE_ACCOUNT_LINK]]</p>';
-						}
-						
-						if (!validateEmailAddress($email)) {
-							$error .= ($error? "\n" : ''). adminPhrase('"[[email]]" is not a valid email address.', array('email' => $email));
-						
-						} elseif (!$values['meta_data/body']) {
-							$error .= ($error? "\n" : ''). adminPhrase('The test email(s) could not be sent because your Newsletter is blank.');
-							break;
-						
-						} else
-						if (($box['key']['id']) &&!$this->testSendNewsletter(
-							$body, $adminDetails, $email,
-							$values['meta_data/subject'],
-							$values['meta_data/email_address_from'],
-							$values['meta_data/email_name_from'], $box['key']['id'])
-						) {
-							$error .= ($error? "\n" : ''). adminPhrase("The test email(s) could not be sent. There could be a problem with the site's email system.");
-							break;
-						
-						} else {
-							$success .= ($success? "\n" : ''). adminPhrase('Test email sent to "[[email]]".', array('email' => $email));
-						}
+				foreach (explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
+					$body = $values['meta_data/body'];
+					if ($values['unsub_exclude/unsubscribe_link'] == 'unsub') {
+						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/unsubscribe_text']) . ' [[REMOVE_FROM_GROUPS_LINK]]</p>';
+					}
+					if ($values['unsub_exclude/unsubscribe_link'] == 'delete') {
+						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/delete_account_text']) . ' [[DELETE_ACCOUNT_LINK]]</p>';
+					}
+					
+					if (!validateEmailAddress($email)) {
+						$error .= ($error? "\n" : ''). adminPhrase('"[[email]]" is not a valid email address.', array('email' => $email));
+					
+					} elseif (!$values['meta_data/body']) {
+						$error .= ($error? "\n" : ''). adminPhrase('The test email(s) could not be sent because your Newsletter is blank.');
+						break;
+					
+					} else
+					if (($box['key']['id']) &&!$this->testSendNewsletter(
+						$body, $adminDetails, $email,
+						$values['meta_data/subject'],
+						$values['meta_data/email_address_from'],
+						$values['meta_data/email_name_from'], $box['key']['id'])
+					) {
+						$error .= ($error? "\n" : ''). adminPhrase("The test email(s) could not be sent. There could be a problem with the site's email system.");
+						break;
+					
+					} else {
+						$success .= ($success? "\n" : ''). adminPhrase('Test email sent to "[[email]]".', array('email' => $email));
 					}
 				}
 			}

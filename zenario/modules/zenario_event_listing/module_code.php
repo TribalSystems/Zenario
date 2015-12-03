@@ -47,6 +47,10 @@ class zenario_event_listing extends module_base_class {
 	public function showSlot(){
 		
 		switch ($this->setting('period_mode')){
+			case 'date_range':
+				$periodName = 'date_range';
+				$periodShift = 0;
+				break;
 			case 'all_time':
 				$periodName = 'all_time';
 				$periodShift = 0;
@@ -85,7 +89,7 @@ class zenario_event_listing extends module_base_class {
 
 		$eventRows = array();
 		if ($sql = $this->buildQuery($periodName, $periodShift)){
-
+			
 			//Get a count of how many items we have to display
 			$result = sqlSelect('SELECT COUNT(*) FROM ('. $sql . ') A');
 			list($this->rows) = sqlFetchRow($result);
@@ -367,7 +371,10 @@ class zenario_event_listing extends module_base_class {
 				}
 				break;
 			case 'all_time':
-				$sql .="SELECT '1000-01-01' as period_start";
+				$sql .= "SELECT '1000-01-01' as period_start";
+				break;
+			case 'date_range':
+				$sql .= "SELECT '" . sqlEscape($this->setting('period_start_date')) . "' as period_start";
 				break;
 		}
 		$result = sqlQuery($sql);
@@ -412,6 +419,9 @@ class zenario_event_listing extends module_base_class {
 				break;				
 			case 'all_time':
 				$sql ="SELECT '9999-12-31' as period_end";
+				break;
+			case 'date_range':
+				$sql .= "SELECT '" . sqlEscape($this->setting('period_end_date')) . "' as period_end";
 				break;
 		}
 		$result = sqlQuery($sql);
@@ -473,6 +483,7 @@ class zenario_event_listing extends module_base_class {
 		$periodEnd = $this->getPeriodEndAsSQLDateString($periodName, $periodShift);
 
 		if (($periodStart) && ($periodEnd)){
+				
 				$period = $this->expandPeriodAsSQLSafeArray($periodStart, $periodEnd, $periodName);
 				if ($period){
 					if ($this->setting('category_list')){
@@ -571,20 +582,23 @@ class zenario_event_listing extends module_base_class {
 									}
 								}
 							}
-						break;		
+							break;
 					}
-					$sql .=" AND (false ";
-					if ($this->setting('past')){
-						$sql .=" OR ( ce.end_date<'" . date('Y-m-d') . "' )";
+					
+					if (!in_array($periodName, array('date_range', 'today'))) {
+						$sql .=" AND (false ";
+						if ($this->setting('past')){
+							$sql .=" OR ( ce.end_date<'" . date('Y-m-d') . "' )";
+						}
+						if ($this->setting('ongoing')){
+							$sql .=" OR ( ce.start_date<='" . date('Y-m-d') . "' AND ce.end_date>='" . date('Y-m-d') . "'  )";
+						}
+						if ($this->setting('future')){
+							$sql .=" OR ( ce.start_date>'" . date('Y-m-d') . "' )";
+						}
+						$sql .= ")"; 
 					}
-					if ($this->setting('ongoing')){
-						$sql .=" OR ( ce.start_date<='" . date('Y-m-d') . "' AND ce.end_date>='" . date('Y-m-d') . "'  )";
-					}
-					if ($this->setting('future')){
-						$sql .=" OR ( ce.start_date>'" . date('Y-m-d') . "' )";
-					}
-					$sql .= ")"; 
-					//$sql .=" ORDER BY sort_ongoing DESC,sort_future DESC,sort_past DESC,IF(sort_future,start_date,0),IF(sort_past,start_date,0),IF(sort_ongoing,end_date,0) ";
+					
 					switch ($this->setting('sort_field')) {
 						case 'start_date':
 							switch ($this->setting('sort_order')){
@@ -615,7 +629,14 @@ class zenario_event_listing extends module_base_class {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['pagination']['fields']['pagination_style']['values'] = paginationOptions();
+				
+				// Show an initial date range
+				if ($values['first_tab/period_mode'] != 'date_range') {
+					$values['first_tab/period_start_date'] = gmdate('Y-01-01');
+					$values['first_tab/period_end_date'] = gmdate('Y-m-d', strtotime($values['first_tab/period_start_date'] . ' + 2 years UTC'));
+				}
+				
+				$fields['pagination/pagination_style']['values'] = paginationOptions();
 				break;
 		}
 	}
@@ -623,35 +644,40 @@ class zenario_event_listing extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch($path){
 			case 'plugin_settings':
-				setupCategoryCheckboxes($box['tabs']['first_tab']['fields']['category_list'], true);
+				setupCategoryCheckboxes($fields['first_tab/category_list'], true);
 				
-				$box['tabs']['first_tab']['fields']['month_period_operator']['hidden'] 
-					=	$box['tabs']['first_tab']['fields']['month_period_value']['hidden'] 
-							= !($values['first_tab/period_mode']=='month_period');
-
-				$box['tabs']['pagination']['fields']['page_limit']['hidden'] = 
-				$box['tabs']['pagination']['fields']['pagination_style']['hidden'] = 
-					!$values['pagination/show_pagination'];
-
-				$box['tabs']['first_tab']['fields']['specific_languages']['hidden'] = 
+				$fields['first_tab/period_start_date']['hidden'] = 
+				$fields['first_tab/period_end_date']['hidden'] = 
+					$values['first_tab/period_mode'] != 'date_range';
+				
+				$fields['first_tab/month_period_operator']['hidden'] =
+				$fields['first_tab/month_period_value']['hidden'] =
+					$values['first_tab/period_mode'] != 'month_period';
+				
+				$fields['first_tab/specific_languages']['hidden'] = 
 					$values['first_tab/language_selection'] != 'specific_languages';
 				
-				$box['tabs']['overall_list']['fields']['heading_text']['hidden'] =
-					!($values['overall_list/heading'] == 'show_heading');
+				$fields['first_tab/ongoing']['hidden'] = 
+				$fields['first_tab/future']['hidden'] = 
+				$fields['first_tab/past']['hidden'] = 
+					in_array($values['first_tab/period_mode'], array('today_only', 'date_range'));
 				
 				
-				// Image canvas settings
+				$fields['pagination/page_limit']['hidden'] = 
+				$fields['pagination/pagination_style']['hidden'] = 
+					!$values['pagination/show_pagination'];
+
+				$fields['overall_list/heading_text']['hidden'] =
+					$values['overall_list/heading'] != 'show_heading';
 				
-				$box['tabs']['image_size']['fields']['width']['hidden'] = 
+				$fields['image_size/width']['hidden'] = 
 					!(in($values['image_size/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
-				 
-				$box['tabs']['image_size']['fields']['height']['hidden'] =
-					!(in($values['image_size/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
 				
+				$fields['image_size/height']['hidden'] =
+					!(in($values['image_size/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
 				break;
 		}
 	}
-	
 	
 }
 ?>

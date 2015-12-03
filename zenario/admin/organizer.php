@@ -14,7 +14,7 @@ echo
 '<!DOCTYPE HTML>
 <html>
 <head>
-	<title>Organizer for ', htmlspecialchars(getGlobalURL()), '</title>
+	<title>Organizer for ', htmlspecialchars(empty($_SERVER['SERVER_NAME'])? primaryDomain() : $_SERVER['SERVER_NAME']), '</title>
 	<style type="text/css">
 		body {
 			margin: 3px;
@@ -39,7 +39,7 @@ if (!checkPriv()) {
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 
 $prefix = '../';
 CMSWritePageHead($prefix, 'organizer');

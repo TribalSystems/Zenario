@@ -85,7 +85,7 @@ if (needRevision(19)) {
 		insertRow('user_form_fields', array(
 			'user_form_id' => $userFormId,
 			'user_field_id' => $emailFieldId,
-			'ordinal' => 1,
+			'ord' => 1,
 			'is_required' => 1,
 			'label' => 'Email',
 			'name' => 'Email',
@@ -97,7 +97,7 @@ if (needRevision(19)) {
 		insertRow('user_form_fields', array(
 			'user_form_id' => $userFormId,
 			'user_field_id' => $firstNameFieldId,
-			'ordinal' => 2,
+			'ord' => 2,
 			'is_required' => 1,
 			'label' => 'First name',
 			'name' => 'First name',
@@ -107,7 +107,7 @@ if (needRevision(19)) {
 		insertRow('user_form_fields', array(
 			'user_form_id' => $userFormId,
 			'user_field_id' => $lastNameFieldId,
-			'ordinal' => 3,
+			'ord' => 3,
 			'is_required' => 1,
 			'label' => 'Last name',
 			'name' => 'Last name',

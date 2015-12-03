@@ -34,44 +34,33 @@ class zenario_export_tools extends module_base_class {
 	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		
 		switch ($path) {
 			case 'zenario_export_tools__export':
-				//Set up the primary key from the requests given
-				if ($box['key']['id'] && !$box['key']['cID']) {
-					getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
-				}
-				
-				if ($box['key']['cID'] && !$box['key']['cVersion']) {
-					$box['key']['cVersion'] = getLatestVersion($box['key']['cID'], $box['key']['cType']);
-				}
-				
-				break;
-			
-			
 			case 'zenario_export_tools__import':
-				//Set up the primary key from the requests given
-				if ($box['key']['id'] && !$box['key']['cID']) {
-					getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
-				}
-				
-				break;
-			
-			
 			case 'zenario_export_tools__google_translate':
+		
 				//Set up the primary key from the requests given
 				if ($box['key']['id'] && !$box['key']['cID']) {
 					getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $box['key']['id']);
 				}
-				
-				if ($box['key']['cID'] && !$box['key']['cVersion']) {
-					$box['key']['cVersion'] = getLatestVersion($box['key']['cID'], $box['key']['cType']);
+		
+				if ($path == 'zenario_export_tools__export') {
+					if ($box['key']['cID'] && !$box['key']['cVersion']) {
+						$box['key']['cVersion'] = getLatestVersion($box['key']['cID'], $box['key']['cType']);
+					}
+				} else {
+					if (!checkPriv('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
+						echo adminPhrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
+						exit;
+					}
 				}
-				
-				getLanguageSelectListOptions($box['tabs']['translate']['fields']['lang_from']);
-				$box['tabs']['translate']['fields']['lang_to']['value'] = getContentLang($box['key']['cID'], $box['key']['cType']);
-				unset($box['tabs']['translate']['fields']['lang_from']['values'][$box['tabs']['translate']['fields']['lang_to']['value']]);
-				
-				break;
+		
+				if ($path == 'zenario_export_tools__google_translate') {
+					getLanguageSelectListOptions($box['tabs']['translate']['fields']['lang_from']);
+					$box['tabs']['translate']['fields']['lang_to']['value'] = getContentLang($box['key']['cID'], $box['key']['cType']);
+					unset($box['tabs']['translate']['fields']['lang_from']['values'][$box['tabs']['translate']['fields']['lang_to']['value']]);
+				}
 		}
 	}
 	
@@ -90,18 +79,7 @@ class zenario_export_tools extends module_base_class {
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
-			case 'zenario_export_tools__export':
-				if (!checkPriv(false, $box['key']['cID'], $box['key']['cType'])) {
-					$box['tabs']['export']['errors'][] = adminPhrase('This Content Item is checked out by another Administrator.');
-				}
-				
-				break;
-					
-			
 			case 'zenario_export_tools__import':
-				if (!checkPriv(false, $box['key']['cID'], $box['key']['cType'])) {
-					$box['tabs']['import']['errors'][] = adminPhrase('This Content Item is checked out by another Administrator.');
-				}
 				
 				$box['tabs']['import']['notices']['okay']['show'] = false;
 				
@@ -139,6 +117,12 @@ class zenario_export_tools extends module_base_class {
 					 || getRow('content_items', 'equiv_id', array('id' => $targetCID, 'type' => $targetCType))
 					 	!= getRow('content_items', 'equiv_id', array('id' => $box['key']['cID'], 'type' => $box['key']['cType']));
 				}
+			
+			
+			case 'zenario_export_tools__google_translate':
+				if (!checkPriv('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType'])) {
+					$box['tabs']['import']['errors'][] = adminPhrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
+				}
 				
 				break;
 		}
@@ -147,7 +131,7 @@ class zenario_export_tools extends module_base_class {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'zenario_export_tools__import':
-				exitIfNotCheckPriv('_PRIV_IMPORT_CONTENT_ITEM');
+				exitIfNotCheckPriv('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
 				
 				if ($values['import/file']
 				 && ($importFile = getPathOfUploadedFileInCacheDir($values['import/file']))
@@ -175,7 +159,7 @@ class zenario_export_tools extends module_base_class {
 			
 			
 			case 'zenario_export_tools__google_translate':
-				exitIfNotCheckPriv('_PRIV_IMPORT_CONTENT_ITEM');
+				exitIfNotCheckPriv('_PRIV_IMPORT_CONTENT_ITEM', $box['key']['cID'], $box['key']['cType']);
 				
 				$post = array('q' => '');
 				$post['format'] = 'html';
@@ -234,6 +218,7 @@ class zenario_export_tools extends module_base_class {
 							} else {
 								echo adminPhrase('Could not launch a CURL request to https://www.googleapis.com. Please ensure that your API key is valid, that CURL is enabled on your server, and that there are no network issues between your server and the googleapis.com site.');
 							}
+							
 							exit;
 						}
 					} else {
@@ -847,7 +832,7 @@ class zenario_export_tools extends module_base_class {
 				return false;
 			
 			} elseif (!checkPriv(false, $cID, $cType)) {
-				$error = adminPhrase('This Content Item is checked out by another Administrator.');
+				$error = adminPhrase("This content item is locked by another administrator, or you don't have the permissions to modify it.");
 				return false;
 			
 			//If we're only checking if the file is valid, stop here

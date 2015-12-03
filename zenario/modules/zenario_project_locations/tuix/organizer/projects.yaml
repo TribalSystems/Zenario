@@ -164,6 +164,7 @@ zenario__projects:
                         ord: "1"
                         label: Create
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         hide_in_select_mode: Yes
                         admin_box: 
                             path: zenario_project_locations__project

@@ -123,7 +123,7 @@ switch ($path) {
 				'css_class' => 'help',
 				'help' => array(
 					'message' =>
-						adminPhrase('This Content Item is checked out by another Administrator and cannot be edited.')));
+						adminPhrase("This content item is locked by another administrator, or you don't have the permissions to modify it.")));
 			
 			$panel['item_buttons'] = array(
 				'view' => $panel['item_buttons']['view'],

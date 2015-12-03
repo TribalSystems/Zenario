@@ -287,11 +287,11 @@ additionalProperties:
                                 static: true
                                 preFillOrganizerPanel: true
                                 description: >
-                                    Automatically call the encodeItemIdForStorekeeper() function on the id column.
+                                    Automatically call the encodeItemIdForOrganizer() function on the id column.
                                     You should do this if the id is not numeric.
                                     
                                     Note that while the *encoding* will be automatic, the *decoding* is not, and
-                                    you'll still need to call decodeItemIdForStorekeeper() manually in the
+                                    you'll still need to call decodeItemIdForOrganizer() manually in the
                                     appropriate places.
             
             
@@ -837,6 +837,12 @@ additionalProperties:
                                 
                                         This takes the name of a refiner as a string, or you
                                         can use an associative array of refiner names as keys.
+                                hide_on_filter:
+                                    type: boolean
+                                    description: >
+                                        Hide this button when a search or a filter is applied.
+                                        
+                                        This works from version 7.1 onwards.
                     
                     refiners:
                         type: object
@@ -1292,6 +1298,12 @@ additionalProperties:
                                 
                                         This takes the name of a refiner as a string, or you
                                         can use an associative array of refiner names as keys.
+                                hide_on_filter:
+                                    type: boolean
+                                    description: >
+                                        Hide this button when a search or a filter is applied.
+                                        
+                                        This works from version 7.1 onwards.
                                 
                                 
                                 #Collection Buttons also use the following property:
@@ -1389,6 +1401,14 @@ additionalProperties:
                                                     A variable or meta-information to pass into the key of the Admin Box.
                                             description: >
                                                 Any variables set here will be passed on to the key of the Admin Box.
+                                        create_another:
+                                            type: boolean
+                                            description: >
+                                                If you set this property, there will be a "Save and create another" button
+                                                shown on the admin box, that will save the admin box then immediately open
+                                                a new one (as if this button was pressed a second time).
+                                        
+                                                This works from version 7.1 onwards.
                                         tab:
                                             type: *stringy
                                             description: >
@@ -1771,10 +1791,14 @@ additionalProperties:
                                     type: string
                                     description: >
                                         A label for this button
+                                        
+                                        From version 7.1 you can use merge fields in this label when one item is selected.
                                 tooltip:
                                     type: string
                                     description: >
                                         A tooltip for this button
+                                        
+                                        From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 parent:
                                     type: string
@@ -1843,7 +1867,7 @@ additionalProperties:
                                     description: >
                                         A tooltip for this button if it is disabled.
                                         
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                        From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 #Item Buttons share the following child-properties with Collection Buttons
                                 hide_in_select_mode:
@@ -1883,6 +1907,12 @@ additionalProperties:
                                         
                                         This takes the name of a refiner as a string, or you
                                         can use an associative array of refiner names as keys.
+                                hide_on_filter:
+                                    type: boolean
+                                    description: >
+                                        Hide this button when a search or a filter is applied.
+                                        
+                                        This works from version 7.1 onwards.
                                 
                                 
                                 #Item Buttons also use the following properties:
@@ -2015,6 +2045,8 @@ additionalProperties:
                                     type: string
                                     description: >
                                         A tooltip for this button
+                                        
+                                        From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 hidden: *hidden
                                 visible_if: *visible_if
@@ -2039,7 +2071,7 @@ additionalProperties:
                                     description: >
                                         A tooltip for this button if it is disabled.
                                         
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                        From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 #Item Buttons share the following child-properties with Collection Buttons
                                 hide_in_select_mode:
@@ -2079,6 +2111,12 @@ additionalProperties:
                                         
                                         This takes the name of a refiner as a string, or you
                                         can use an associative array of refiner names as keys.
+                                hide_on_filter:
+                                    type: boolean
+                                    description: >
+                                        Hide this button when a search or a filter is applied.
+                                        
+                                        This works from version 7.1 onwards.
                                 
                                 #In addition, an Item Button should have one (and only one) of the following properties as an action:
                                 ajax: *ajax
@@ -2513,6 +2551,45 @@ additionalProperties:
                                         If a panel has column(s) called id, filename or checksum, 
                                         the values of these columns for the currently selected item will
                                         be added onto the end of the URL specified in the <code>href</code> property as requests.
+                    
+                    
+                    
+                    __page__:
+                        type: number
+                        description: >
+                            If pagination is being applied on the server, the CMS will put the current page number
+                            into this variable.
+                            
+                            This might be different than the page you asked for, e.g. if you ask for page three but
+                            there are only two pages.
+                            
+                    __item_count__:
+                        type: number
+                        description: >
+                            The CMS will put the count of the total number of items into this variable.
+                            
+                            This includes searches, filters and refiners, but does not include pagination
+                            or the max_limit. I.e. it's a count of all of the *matched* rows.
+                            
+                    __item_parents__:
+                        type: object
+                        additionalProperties:
+                            type: boolean
+                        description: >
+                            In hierarchy view, if lazy loading is enabled, the CMS will put an associative
+                            array of which items do and do not have children into this variable.
+                            
+                    __item_sort_order__:
+                        type:
+                            - array
+                            - object
+                        additionalProperties:
+                            type: *stringy
+                        description: >
+                            If sorting is being done on the server, the CMS will put an array of ids
+                            (sorted into the correct order) into this variable.
+                            
+                            
                             
             
 

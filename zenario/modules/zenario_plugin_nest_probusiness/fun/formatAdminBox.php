@@ -32,33 +32,41 @@ switch ($path) {
 	case 'zenario_plugin_nest_probusiness__tab':
 		zenario_plugin_nest::formatAdminBox('zenario_plugin_nest__tab', $settingGroup, $box, $fields, $values, $changes);
 		
-		$box['tabs']['tab']['fields']['tab__field_id']['hidden'] = true;
-		$box['tabs']['tab']['fields']['tab__field_value']['hidden'] = true;
-		$box['tabs']['tab']['fields']['tab__field_value']['values'] = array();
+		$fields['tab/tab__field_id']['hidden'] = true;
+		$fields['tab/tab__field_value']['hidden'] = true;
+		$fields['tab/tab__field_value']['values'] = array();
+		$fields['tab/tab__smart_group']['hidden'] = true;
 		
-		if (in($values['tab/tab_visibility'], 'logged_in_with_field', 'logged_in_without_field', 'without_field')) {
-			$box['tabs']['tab']['fields']['tab__field_id']['hidden'] = false;
-			$box['tabs']['tab']['fields']['tab__field_value']['hidden'] = false;
+		if ($values['tab/tab_visibility'] == 'in_smart_group') {
+			$fields['tab/tab__smart_group']['hidden'] = false;
+			
+			if (!isset($fields['tab/tab__smart_group']['values'])) {
+				$fields['tab/tab__smart_group']['values'] = getListOfSmartGroupsWithCounts();
+			}
+		
+		} elseif (in($values['tab/tab_visibility'], 'logged_in_with_field', 'logged_in_without_field', 'without_field')) {
+			$fields['tab/tab__field_id']['hidden'] = false;
+			$fields['tab/tab__field_value']['hidden'] = false;
 			
 			if ($field = getDatasetFieldDetails($values['tab/tab__field_id'])) {
 				switch ($field['type']) {
 					case 'group':
 					case 'checkbox':
-						$box['tabs']['tab']['fields']['tab__field_value']['empty_value'] = adminPhrase('checked');
+						$fields['tab/tab__field_value']['empty_value'] = adminPhrase('checked');
 						break;
 					
 					case 'checkboxes':
-						$box['tabs']['tab']['fields']['tab__field_value']['empty_value'] = adminPhrase('checked');
+						$fields['tab/tab__field_value']['empty_value'] = adminPhrase('checked');
 						break;
 						
 					case 'radios':
 					case 'select':
 					case 'centralised_radios':
 					case 'centralised_select':
-						$box['tabs']['tab']['fields']['tab__field_value']['empty_value'] = adminPhrase('set to any value');
+						$fields['tab/tab__field_value']['empty_value'] = adminPhrase('set to any value');
 						
 						foreach (getDatasetFieldLOV($field) as $value => $displayValue) {
-							$box['tabs']['tab']['fields']['tab__field_value']['values'][$value] =
+							$fields['tab/tab__field_value']['values'][$value] =
 								adminPhrase('set to "[[displayValue]]"', array('displayValue' => $displayValue));
 							
 						}
@@ -67,10 +75,10 @@ switch ($path) {
 			}
 		}
 		
-		$box['tabs']['tab']['fields']['tab__module_class_name']['hidden'] =
-		$box['tabs']['tab']['fields']['tab__method_name']['hidden'] =
-		$box['tabs']['tab']['fields']['tab__param_1']['hidden'] =
-		$box['tabs']['tab']['fields']['tab__param_2']['hidden'] =
+		$fields['tab/tab__module_class_name']['hidden'] =
+		$fields['tab/tab__method_name']['hidden'] =
+		$fields['tab/tab__param_1']['hidden'] =
+		$fields['tab/tab__param_2']['hidden'] =
 			$values['tab/tab_visibility'] != 'call_static_method';
 		
 		break;

@@ -76,7 +76,6 @@ if ($instance['content_id'] && !checkPriv(false, $instance['content_id'], $insta
 
 $onlyBanners = $onlyOneModule && $moduleId == getRow('modules', 'id', array('class_name' => 'zenario_banner'));
 
-$firstConvertField = true;
 foreach ($fields as $key => &$field) {
 	if (is_array($field)) {
 		if (isset($field['current_module'])) {
@@ -90,10 +89,6 @@ foreach ($fields as $key => &$field) {
 		} elseif (isset($field['convert_to'])) {
 			if ($field['convert_to'] == $currentClassName) {
 				$field['hidden'] = true;
-			
-			} elseif ($firstConvertField) {
-				$firstConvertField = false;
-				$field['label'] = adminPhrase('Convert to:');
 			}
 			
 			if ($field['convert_to'] == $currentClassName
@@ -108,5 +103,3 @@ foreach ($fields as $key => &$field) {
 		}
 	}
 }
-
-?>

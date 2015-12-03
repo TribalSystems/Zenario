@@ -64,6 +64,17 @@ class module_base_class extends zenario_api {
 		//...your PHP code...//
 	}
 	
+	public function showLayoutPreview() {
+		if ($this->instanceId) {
+			$this->showSlot();
+		} elseif (!$this->moduleId) {
+			echo adminPhrase('[Empty Slot]');
+		} else {
+			echo adminPhrase('[[[module]]]',
+				array('module' => htmlspecialchars(getModuleDisplayNameByClassName($this->moduleClassName))));
+		}
+	}
+	
 	
 	
 	  /////////////////////////////////////////////////

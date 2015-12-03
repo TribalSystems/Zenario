@@ -28,9 +28,11 @@
 			<p>Description (HTML)</p>
 			<textarea name="slide_extra_html">{{m.slide_extra_html|e}}</textarea>
 			
-			<% if (m.slide_more_link_text) { %>
-				<p>More link text:</p>
-				<input type="text" name="slide_more_link_text" value="{{m.slide_more_link_text|e}}" size="50" maxlength="255"/>
+			<% if (m.target_loc != 'none') { %>
+				<div id="zenario_slide_more_link_text">
+					<p>More link text:</p>
+					<input type="text" name="slide_more_link_text" value="{{m.slide_more_link_text|e}}" size="50" maxlength="255"/>
+				</div>
 			<% } %>
 			
 			<br />
@@ -122,68 +124,83 @@
 					{{zenarioA.microTemplate('zenario_slide_select_options', m.target_loc_list )}}
 				</select>
 				
-				<div id="zenario_internal_link_settings" hidden>
-					<p>Content item:</p>
-					<input type="text" id="zenario_content_item_link" name="content_item_link" value="{{m.content_item_link|e}}" readonly size="50"/>
-					<input type="button" id="zenario_select_content_item" onclick="zenario_slideshow_2.pickContentItemLinkFromOrganizer();" value="Select a content item..."/>
-					<input type="hidden" id="zenario_content_item_id" name="content_item_tag_id" value="{{m.content_item_tag_id|e}}">
-				</div>
+				<% if (m.target_loc == 'internal') { %>
+					<div id="zenario_internal_link_settings">
+						<p>Content item:</p>
+						<input type="text" id="zenario_content_item_link" name="content_item_link" value="{{m.content_item_link|e}}" readonly size="50"/>
+						<input type="button" id="zenario_select_content_item" onclick="zenario_slideshow_2.pickContentItemLinkFromOrganizer();" value="Select a content item..."/>
+						<input type="hidden" id="zenario_content_item_id" name="content_item_tag_id" value="{{m.content_item_tag_id|e}}">
+					</div>
+				<% } %>
 				
-				<div id="zenario_external_link_settings" hidden>
-					<p>External URL:</p>
-					<input type="text" id="zenario_external_link" name="external_link" value="{{m.external_link|e}}" size="50" maxlength="255"/>
-				</div>
+				<% if (m.target_loc == 'external') { %>
+					<div id="zenario_external_link_settings">
+						<p>External URL:</p>
+						<input type="text" id="zenario_external_link" name="external_link" value="{{m.external_link|e}}" size="50" maxlength="255"/>
+					</div>
+				<% } %>
 				
-				<div id="zenario_open_in_new_window_settings" hidden>
-					<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window" 
-						<% if (m.open_in_new_window) { %>
-							checked="checked"
-						<% } %>
-					/>
-					<label for="zenario_open_in_new_window">Open in a new window</label>
-				</div>
+				<% if (m.target_loc == 'external' || m.target_loc == 'internal') { %>
+					<div id="zenario_open_in_new_window_settings">
+						<input type="checkbox" id="zenario_open_in_new_window" name="open_in_new_window" 
+							<% if (m.open_in_new_window) { %>
+								checked="checked"
+							<% } %>
+						/>
+						<label for="zenario_open_in_new_window">Open in a new window</label>
+					</div>
+				<% } %>
 				
-				<div id="zenario_link_to_translation_chain_settings" hidden>
-					<input type="checkbox" id="zenario_link_to_translation_chain" name="link_to_translation_chain"
-						<% if (m.link_to_translation_chain) { %>
-							checked="checked"
-						<% } %>
-					/>
-					<label for="zenario_link_to_translation_chain">Use translation chain</label>
-				</div>
+				<% if (m.target_loc == 'internal') { %>
+					<div id="zenario_link_to_translation_chain_settings">
+						<input type="checkbox" id="zenario_link_to_translation_chain" name="link_to_translation_chain"
+							<% if (m.link_to_translation_chain) { %>
+								checked="checked"
+							<% } %>
+						/>
+						<label for="zenario_link_to_translation_chain">Use translation chain</label>
+					</div>
+				<% } %>
 				
 				<p>Slide visibility by user:</p>
 				<select id="zenario_select_slide_visibility" name="slide_visibility">
 					{{zenarioA.microTemplate('zenario_slide_select_options', m.slide_visibility_list )}}
 				</select>
 				
-				<div id="caching_message" class="caching_message" hidden">Caching will be disabled if slides aren't visible to everyone</div>
+				<% if (m.slide_visibility != 'everyone') { %>
+					<div id="caching_message" class="caching_message">Caching will be disabled if slides aren't visible to everyone</div>
+				<% } %>
 				
-				<div id="zenario_user_field_settings" hidden>
-					<!-- List of select options generated in PHP, set in JS -->
-					<select id="zenario_dataset_boolean_and_groups_only" name="field_id">
-						{{zenarioA.microTemplate('zenario_slide_select_options', m.field_id_list )}}
-					</select>
-				</div>
 				
-				<div id="zenario_static_method_settings" hidden> 
-					<div id="zenario_module_class_name_settings">
-						<p>Module class name:</p>
-						<input id="zenario_module_class_name" name="plugin_class" value="{{m.plugin_class|e}}" type="text" maxlength="255"/>
+				<% if (m.slide_visibility == 'logged_in_with_field' || m.slide_visibility == 'logged_in_without_field' || m.slide_visibility == 'without_field') { %>
+					<div id="zenario_user_field_settings">
+						<!-- List of select options generated in PHP, set in JS -->
+						<select id="zenario_dataset_boolean_and_groups_only" name="field_id">
+							{{zenarioA.microTemplate('zenario_slide_select_options', m.field_id_list )}}
+						</select>
 					</div>
-					<div id="zenario_static_method_name_settings">
-						<p>Static method name:</p>
-						<input id="zenario_static_method_name" name="method_name" value="{{m.method_name|e}}" type="text" maxlength="255"/>
+				<% } %>
+				
+				<% if (m.slide_visibility == 'call_static_method') { %>
+					<div id="zenario_static_method_settings"> 
+						<div id="zenario_module_class_name_settings">
+							<p>Module class name:</p>
+							<input id="zenario_module_class_name" name="plugin_class" value="{{m.plugin_class|e}}" type="text" maxlength="255"/>
+						</div>
+						<div id="zenario_static_method_name_settings">
+							<p>Static method name:</p>
+							<input id="zenario_static_method_name" name="method_name" value="{{m.method_name|e}}" type="text" maxlength="255"/>
+						</div>
+						<div id="zenario_parameter_1_settings">
+							<p>Parameter 1:</p>
+							<input id="zenario_parameter_1" name="param_1" type="text" value="{{m.param_1|e}}" maxlength="255"/>
+						</div>
+						<div id="zenario_parameter_2_settings">
+							<p>Parameter 2:</p>
+							<input id="zenario_parameter_2" name="param_2" type="text" value="{{m.param_2|e}}" maxlength="255"/>
+						</div>
 					</div>
-					<div id="zenario_parameter_1_settings">
-						<p>Parameter 1:</p>
-						<input id="zenario_parameter_1" name="param_1" type="text" value="{{m.param_1|e}}" maxlength="255"/>
-					</div>
-					<div id="zenario_parameter_2_settings">
-						<p>Parameter 2:</p>
-						<input id="zenario_parameter_2" name="param_2" type="text" value="{{m.param_2|e}}" maxlength="255"/>
-					</div>
-				</div>
+				<% } %>
 				
 				<div id="zenario_slide_hidden_setting">
 					<input type="checkbox" id="zenario_slide_hidden" name="hidden" 

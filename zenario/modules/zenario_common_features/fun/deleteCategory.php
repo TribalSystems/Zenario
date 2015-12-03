@@ -62,9 +62,7 @@ if ($recurseCount<=10) {
 	
 	if (sqlNumRows($result)>0) {
 		while ($row = sqlFetchArray($result)) {
-			$this->deleteCategory($row['id'], $recurseCount);
+			zenario_common_features::deleteCategory($row['id'], $recurseCount);
 		}
 	}
 }
-
-return false;

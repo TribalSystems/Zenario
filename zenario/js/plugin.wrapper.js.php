@@ -58,36 +58,12 @@ useCache($ETag);
 
 
 //Run pre-load actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.pre_load.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.pre_load');
 
 
 useGZIP(isset($_GET['gz']) && $_GET['gz']);
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 loadSiteConfig();
-
-
-function incJS($path, $file) {
-	$file = $path. $file;
-	
-	if (file_exists($file. '.js.php')) {
-		chdir($path);
-		require $file. '.js.php';
-		chdir(CMS_ROOT);
-	
-	} elseif (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	}
-	
-	echo "\n/**/\n";
-}
 
 
 //Get a list of each Plugin
@@ -117,25 +93,27 @@ foreach ($moduleDetails as $module) {
 	echo '
 		zenario.enc(', $module['module_id'], ', "', $module['class_name'], '", "', $module['vlp_class'], '");';
 	
+	$jsDir = moduleDir($module['class_name'], 'js/');
+	
 	if (!empty($_GET['admin_frontend'])) {
-		//Add the Plugins's Admin Frontent library
-		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'admin_frontend');
+		//Add the Plugins's Admin Frontend library
+		incJS($jsDir. 'admin_frontend', true);
 	
 	} elseif (!empty($_GET['organizer'])) {
 		//Add the any JavaScript needed for Organizer
-		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'organizer');
-		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'storekeeper');
+		incJS($jsDir. 'organizer', true);
+		incJS($jsDir. 'storekeeper', true);
 	
 	} elseif (!empty($_GET['wizard'])) {
-		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'wizard');
+		incJS($jsDir. 'wizard', true);
 	
 	} else {
 		//Add the Plugin's library include if it exists
-		incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'plugin');
+		incJS($jsDir. 'plugin', true);
 		
 		//For Admins, add the Plugin's admin js if it exists
 		if (!empty($_GET['admin'])) {
-			incJS(CMS_ROOT. moduleDir($module['class_name'], 'js/'), 'admin');
+			incJS($jsDir. 'admin', true);
 		}
 	}
 }
@@ -153,8 +131,4 @@ if (!empty($_GET['organizer'])) {
 
 
 //Run post-display actions
-foreach (cms_core::$editions as $className => $dirName) {
-	if ($action = moduleDir($dirName, 'actions/wrapper.post_display.php', true)) {
-		require $action;
-	}
-}
+require editionInclude('wrapper.post_display');

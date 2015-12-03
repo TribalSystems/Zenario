@@ -86,7 +86,7 @@ zenario_pro_features.fillOrganizerLowerLeft = function() {
 	htmlPC +=
 		'<div id="zenario_page_caching"' +
 		' class="' + (times[0]? 'zenario_page_caching_on' : 'zenario_page_caching_off') + '"' +
-		' style="cursor: pointer;" onclick="zenarioAB.openSiteSettings(\'web_pages\', \'zenario_pro_features__caching\');"></div>';
+		' style="cursor: pointer;" onclick="zenarioAB.openSiteSettings(\'optimisation\', \'zenario_pro_features__caching\');"></div>';
 	
 	times[1] = times[1].replace(
 		'is_htaccess_working',

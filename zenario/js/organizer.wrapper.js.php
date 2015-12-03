@@ -35,18 +35,6 @@ useGZIP(!empty($_GET['gz']));
 
 //require CMS_ROOT. 'zenario/includes/cms.inc.php';
 
-function incJS($file) {
-	if (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	}
-	
-	echo "\n/**/\n";
-}
-
 //Include all of the standard JavaScript Admin libraries for the CMS
 incJS('zenario/libraries/mit/jquery/jquery.nestable');
 incJS('zenario/libraries/mit/jpaginator/jPaginator-min');
@@ -73,4 +61,6 @@ incJS('zenario/js/panel_type_calendar_user_timers');
 incJS('zenario/js/panel_type_google_map');
 incJS('zenario/js/panel_type_list_or_grid_or_google_map');
 
+incJS('zenario/js/panel_type_form_builder_base_class');
 incJS('zenario/js/panel_type_form_builder');
+incJS('zenario/js/panel_type_admin_box_builder');

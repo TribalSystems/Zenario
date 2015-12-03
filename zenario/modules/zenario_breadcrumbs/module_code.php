@@ -59,6 +59,48 @@ class zenario_breadcrumbs extends zenario_menu {
 		}
 	}
 	
+	public function showLayoutPreview() {
+		
+		$dummyMenuNode = array(
+			'mID' => '',
+			'name' => '',
+			'target_loc' => 'ext',
+			'open_in_new_window' => 0,
+			'anchor' => '',
+			'module_class_name' => '',
+			'method_name' => '',
+			'param_1' => '',
+			'param_2' => '',
+			'equiv_id' => '',
+			'cID' => '',
+			'cType' => '',
+			'alias' => '',
+			'use_download_page' => '',
+			'hide_private_item' => '',
+			'url' => absCMSDirURL(),
+			'visitor_version' => '',
+			'invisible' => '',
+			'accesskey' => '',
+			'ordinal' => '',
+			'rel_tag' => '',
+			'image_id' => '',
+			'rollover_image_id' => '',
+			'menu_text_module_class_name' => '',
+			'menu_text_method_name' => '',
+			'menu_text_param_1' => '',
+			'menu_text_param_2' => '',
+			'on' => true,
+			'children' => array());
+		
+		$menuArray = array($dummyMenuNode);
+		$menuArray[0]['name'] = adminPhrase('Bread');
+		$menuArray[0]['children'] = array($dummyMenuNode);
+		$menuArray[0]['children'][0]['name'] = adminPhrase('Crumbs');
+		
+		$this->drawMenu($menuArray, $recurseCount = 0, $headerObjects = array(), $subSections = array());
+	}
+
+	
 	function addExtraMergeFields(&$menuItem, &$mergeFields, $recurseCount, $i, $maxI) {
 		$mergeFields['Separator'] = $this->setting('breadcrumb_trail_separator');
 		return true;

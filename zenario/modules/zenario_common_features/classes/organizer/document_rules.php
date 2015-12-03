@@ -68,14 +68,12 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		
 		if (post('reorder')) {
-			foreach (explode(',', $ids) as $id) {
-				if ($id) {
-					updateRow('document_rules', array('ordinal' => $_POST['ordinals'][$id]), $id);
-				}
+			foreach (explodeAndTrim($ids) as $id) {
+				updateRow('document_rules', array('ordinal' => $_POST['ordinals'][$id]), $id);
 			}
 			
 		} elseif (post('duplicate')) {
-			foreach (explode(',', $ids) as $id) {
+			foreach (explodeAndTrim($ids) as $id) {
 				if ($rule = getRow('document_rules', true, $id)) {
 					$sql = "
 						UPDATE ". DB_NAME_PREFIX. "document_rules
@@ -91,7 +89,7 @@ class zenario_common_features__organizer__document_rules extends module_base_cla
 			}
 			
 		} elseif (post('delete')) {
-			foreach (explode(',', $ids) as $id) {
+			foreach (explodeAndTrim($ids) as $id) {
 				deleteRow('document_rules', $id);
 			}
 		}

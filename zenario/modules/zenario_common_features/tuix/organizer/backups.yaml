@@ -3,6 +3,7 @@
 zenario__administration:
     panels:
         backups:
+            priv: _PRIV_BACKUP_SITE
             title: Backups
             view_mode: list
             disable_grid_view: Yes
@@ -25,6 +26,7 @@ zenario__administration:
                 create:
                     priv: _PRIV_BACKUP_SITE
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create backup on site
                     ajax:
                         confirm:
@@ -52,6 +54,7 @@ zenario__administration:
                 create_and_download:
                     priv: _PRIV_BACKUP_SITE
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create and download backup
                     ajax:
                         confirm:

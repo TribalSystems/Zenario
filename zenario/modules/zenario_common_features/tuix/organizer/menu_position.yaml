@@ -27,7 +27,7 @@ zenario__menu:
                       AND mi.content_type = c.type
                       AND c.language_id = [[FOCUSED_LANGUAGE_ID]]
                 id_column: mp.tag
-                client_side: Yes
+                client_side: true
             
             panel_type: hierarchy_with_lazy_load
             reorder:
@@ -35,11 +35,16 @@ zenario__menu:
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
             
+            refiners:
+                only_existing:
+                    sql: |
+                        mp.is_dummy_child = 0
+            
             hierarchy:
                 column: parent_id
                 db_column: mp.parent_tag
             
-            disable_periodic_refresh: Yes
+            disable_periodic_refresh: true
             columns:
                 parent_id:
                     db_column: mp.parent_tag
@@ -65,7 +70,7 @@ zenario__menu:
                     db_column: mi.content_type
                 target:
                     title: Target
-                    searchable: Yes
+                    searchable: true
                     db_column: |
                         IF (mi.target_loc = 'int',
                             IF (c.id IS NOT NULL,

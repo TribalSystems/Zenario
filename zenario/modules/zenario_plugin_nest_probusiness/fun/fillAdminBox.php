@@ -39,6 +39,7 @@ switch ($path) {
 							array('tab_id' => $box['key']['id']))
 		) {
 			$box['tabs']['tab']['fields']['tab_visibility']['value'] = $details['visibility'];
+			$box['tabs']['tab']['fields']['tab__smart_group']['value'] = $details['smart_group_id'];
 			$box['tabs']['tab']['fields']['tab__field_id']['value'] = $details['field_id'];
 			$box['tabs']['tab']['fields']['tab__field_value']['value'] = $details['field_value'];
 			$box['tabs']['tab']['fields']['tab__module_class_name']['value'] = $details['module_class_name'];

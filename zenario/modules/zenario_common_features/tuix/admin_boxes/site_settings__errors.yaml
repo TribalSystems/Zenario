@@ -1,0 +1,105 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: errors
+    title: Editing error handling settings
+    tabs:
+        errors:
+            label: PHP Errors
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for handling errors in PHP.
+                
+                
+                show_sql_errors_to_visitors:
+                    site_setting:
+                        name: show_sql_errors_to_visitors
+                    label: 'Show SQL errors to visitors'
+                    type: checkbox
+                    value: ""
+                    note_below: |
+                        If this is enabled, your site will show technical details of error messages to any visitor.
+                        This can be helpful while your site is under construction, but should usually be left off for security reasons.
+                
+                
+                zenario_siteconfig:
+                    type: grouping
+                    name: zenario_siteconfig
+                    
+                show_notices:
+                    grouping: zenario_siteconfig
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    
+                    label: 'Show run-time notices'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        If run-time notices are enabled, the CMS and any Modules enabled on your site will show messages whenever they
+                        encounter anything that may indicate an error. However these messages may also appear in the normal course of running of your site.
+                        <br/>
+                        These messages can be useful for websites in development, but should never be enabled for a live site.
+
+                show_strict:
+                    grouping: zenario_siteconfig
+                    label: 'Show strict errors'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        If strict errors are enabled, the CMS and any Modules enabled on your site will show messages whenever they
+                        encounter any PHP code that is no longer compatible with the latest version of PHP.
+                        <br/>
+                        These messages can be useful for websites in development, but should never be enabled for a live site.
+                show_all:
+                    grouping: zenario_siteconfig
+                    label: 'Show all other errors'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        You should normally leave these messages enabled.
+
+
+        mysql:
+            label: MySQL Errors
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for handling errors in MySQL.
+                
+                
+                zenario_siteconfig:
+                    type: grouping
+                    name: zenario_siteconfig
+                
+                debug_use_strict_mode:
+                    grouping: zenario_siteconfig
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    
+                    label: 'Use MySQL in "strict" mode'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        Running MySQL in &quot;stritch&quot; mode is recommended for all newly created sites.
+                        <br/>
+                        If you have an old site that is not running in &quot;stritch&quot; mode then we do not
+                        recommend turning this on.
+
+                debug_send_email:
+                    grouping: zenario_siteconfig
+                    label: 'Send an email if there is a database error'
+                    type: checkbox
+                    read_only: true
+                email_address_global_support:
+                    grouping: zenario_siteconfig
+                    label: 'Email address:'
+                    type: text
+                    read_only: true
+                    indent: 1

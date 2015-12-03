@@ -310,7 +310,7 @@ class zenario_document_container extends module_base_class {
 				$thumbnailId = $documentThumbnailId;
 			} else {
 				$mimeType = getRow('files', 'mime_type', $fileId);
-				if (in_array($mimeType, array('image/gif', 'image/png', 'image/jpeg', 'image/pjpeg'))) {
+				if (isImageOrSVG($mimeType)) {
 					$thumbnailId = $fileId;
 				}
 			}
@@ -645,14 +645,14 @@ class zenario_document_container extends module_base_class {
 				if (isset($fields['canvas']) && empty($fields['canvas']['hidden'])) {
 					if ($values['canvas'] == 'fixed_width') {
 						$fields['width']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 					} else {
 						unset($fields['width']['note_below']);
 					}
 			
 					if ($values['canvas'] == 'fixed_height' || $values['canvas'] == 'fixed_width_and_height') {
 						$fields['height']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 					} elseif ($values['canvas'] == 'resize_and_crop') {
 						$fields['height']['note_below'] =
 							adminPhrase('Images may be scaled up or down maintaining aspect ratio.');

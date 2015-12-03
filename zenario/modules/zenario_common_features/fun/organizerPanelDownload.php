@@ -68,64 +68,6 @@ switch ($path) {
 		}
 		
 		break;
-	
-	case 'zenario__administration/panels/backups':
-		//Functionality for Downloading Backups
-		
-		//Check permissions for downloading backups
-		exitIfNotCheckPriv('_PRIV_BACKUP_SITE');
-		
-		//Check to see if we can proceed
-		if ($errors = initialiseBackupFunctions(false)) {
-			foreach($errors as $error) {
-				echo $error, '<br />';
-			}
-			exit;
-		}
-		
-		
-		//Offer a backup of the current state of the site for download 
-		if (!$ids) {
-		
-			//Create a gz file in the temp directory...
-			$filepath = tempnam(sys_get_temp_dir(), 'tmpfiletodownload');
-			
-			//...write the backup into it...
-			$g = gzopen($filepath, 'wb');
-			createDatabaseBackupScript($g);
-			gzclose($g);
-		
-			//...and finally offer it for download
-			header('Content-Disposition: attachment; filename="'. generateFilenameForBackups(). '"');
-			header('Content-Length: '. filesize($filepath)); 
-			readfile($filepath);
-			
-			//Remove the file from the temp directory
-			@unlink($filepath);
-		
-		
-		//Offer one of the previously saved backups for download	
-		} else {
-			//Add some security to stop the user putting nasty things into their requested filename
-			//I'm doing this by stripping out anything not in the usual backup filename format
-			if ($ids) {
-				$filename = decodeItemIdForStorekeeper($ids);
-				if (preg_match('/[^a-zA-Z0-9\._-]/', $filename)) {
-					exit;
-				}
-			}
-			
-			$filepath = setting('backup_dir'). '/'. $filename;
-			
-			//Make this page into a download
-			header('Content-Disposition: attachment; filename="'. $filename. '"');
-			header('Content-Length: '. filesize($filepath)); 
-			
-			readfile($filepath);
-		
-		}
-		
-		break;
 }
 
 return false;

@@ -38,6 +38,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //from the first row.
 //It then tries to work out whether the block is a subheading or if the block is data. If it's a subheading,
 //the values are written down and applies to the next block of data.
+$permsChecked = array();
 $subheadings = array(
 	'language_id' => '',
 	'module_class_name' => 'zenario_common_features'
@@ -220,6 +221,15 @@ for ($i = 1; true; ++$i) {
 	//If we've just scanning to see what's in the file, keep going but don't actually do the import
 	} elseif ($scanning === 'full scan' || $scanning === 'number and file')  {
 		++$numberOf['added'];
+	
+	} elseif ($checkPerms
+		   && !isset($permsChecked[$subheadings['language_id']])
+		   && !($permsChecked[$subheadings['language_id']] = checkPrivForLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $subheadings['language_id']))
+	) {
+		echo
+			adminPhrase('This spreadsheet contains phrases in [[lang]], which you do not have permissions to change',
+				array('lang' => getLanguageName($subheadings['language_id'])));
+		exit;
 	
 	//Otherwise try to import this phrase
 	} else {

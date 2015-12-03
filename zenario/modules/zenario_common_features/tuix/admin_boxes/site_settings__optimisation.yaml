@@ -1,0 +1,84 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: optimisation
+    title: Editing site optimisation settings
+    tabs:
+        speed:
+            label: Speed
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: >
+                            This tab contains settings for making your Web Pages load
+                            more quickly for visitors.
+                compress_web_pages:
+                    site_setting:
+                        name: compress_web_pages
+                    label: 'Compress Web Pages'
+                    type: checkbox
+                    value: "1"
+                    note_below: |
+                        Compress web pages, CSS files and JavaScript files to reduce bandwidth and download times;
+                        if a visitor's browser supports compression.
+                        (Images and animations will always be compressed if compression is possible, even if this setting is switched off.)
+                        <br/>
+                        If you have the zlib extension installed in php 5.4 or higher, this setting will be ignored and
+                        compression will always be done automatically by the server.
+                css_wrappers:
+                    site_setting:
+                        name: css_wrappers
+                        value: visitors_only
+                    label: 'CSS File Wrappers'
+                    type: select
+                    values:
+                        on:
+                            label: Always on
+                        visitors_only:
+                            label: On for visitors only
+                        off:
+                            label: Always off
+                    value: on
+                    note_below: |
+                        Reduce the number of downloads by combining multiple CSS files together.
+                        This will make your website load faster, but designers may want to turn this off for easier debugging.
+                        (Core files for the CMS will always be combined.)
+                have_query_cache:
+                    label: 'Caching of SQL queries enabled'
+                    type: checkbox
+                    read_only: true
+                    note_below: |
+                        Enabling the query cache in MySQL will speed up the CMS when repeated queries are made to the database,
+                                                    resulting in faster page-generation times and less load on the server.
+                                                    This feature can be enabled by your server administrator.
+                query_cache_size:
+                    label: 'Query cache Size'
+                    type: text
+                    style: 'width: 6em;'
+                    read_only: true
+        fabs:
+            ord: 10
+            label: Floating Admin Boxes
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: This tab contains settings for the floating boxes seen in admin mode.
+                fab_use_cache_dir:
+                    site_setting:
+                        name: fab_use_cache_dir
+                    label: 'Use the cache directory'
+                    type: checkbox
+                    value: 1
+                    note_below: |
+                        If enabled, files will be written to the <code>cache/</code> directory to
+                        help speed up the floating admin boxes.
+                        
+                        If you are running on a cloud server you may need to disable this.

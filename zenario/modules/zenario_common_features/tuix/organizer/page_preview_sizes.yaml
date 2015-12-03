@@ -59,21 +59,27 @@ zenario__administration:
                 css_class: page_preview_size
             collection_buttons:
                 create:
+                    priv: _PRIV_EDIT_SITE_SETTING
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_page_preview_size
+                        create_another: true
             item_buttons:
                 edit:
+                    priv: _PRIV_EDIT_SITE_SETTING
                     label: Properties
                     admin_box:
                         path: zenario_page_preview_size
                 set_default:
+                    priv: _PRIV_EDIT_SITE_SETTING
                     label: Set default
                     ajax:
                         request:
                             set_default: '1'
                 delete:
+                    priv: _PRIV_EDIT_SITE_SETTING
                     label: Delete
                     hide_in_select_mode: true
                     multiple_select: true

@@ -85,7 +85,7 @@ class zenario_project_sector_service_gallery extends module_base_class {
 				 && empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])) {
 					if ($values['first_tab/canvas'] == 'fixed_width') {
 						$box['tabs']['first_tab']['fields']['sticky_image_width']['note_below'] =
-							getPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							getPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 					} else {
 						unset($box['tabs']['first_tab']['fields']['sticky_image_width']['note_below']);
@@ -94,7 +94,7 @@ class zenario_project_sector_service_gallery extends module_base_class {
 					if ($values['first_tab/canvas'] == 'fixed_height'
 					 || $values['first_tab/canvas'] == 'resize') {
 						$box['tabs']['first_tab']['fields']['sticky_image_height']['note_below'] =
-							getPhrase('Images may be scaled down maintaining aspect ratio, but will never be scaled up.');
+							getPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
 			
 					} elseif ($values['first_tab/canvas'] == 'resize_and_crop') {
 						$box['tabs']['first_tab']['fields']['sticky_image_height']['note_below'] =

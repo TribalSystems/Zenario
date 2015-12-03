@@ -74,7 +74,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) {
 header('Content-Type: text/html; charset=UTF-8');
 
 //Include the CMS' library of functions
-require_once CMS_ROOT. 'zenario/basicheader.inc.php';
+if (!class_exists('cms_core')) require_once CMS_ROOT. 'zenario/basicheader.inc.php';
 startSession();
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
@@ -84,7 +84,7 @@ loadSiteConfig();
 
 
 //Check for any form submissions
-if (!empty($_POST) && substr($_SERVER['HTTP_USER_AGENT'], 0, 10) != 'BlackBerry') {
+if (!empty($_POST) && substr(httpUserAgent(), 0, 10) != 'BlackBerry') {
 	//Attempt to stop some XSS attacks by checking that the referer matches (except for old Blackberries which don't support this feature)
 	if (substr(arrayKey($_SERVER, 'HTTP_REFERER'), 0, strlen(httpOrhttps(). arrayKey($_SERVER, 'HTTP_HOST'))) !== httpOrhttps(). arrayKey($_SERVER, 'HTTP_HOST')) {
 		echo 'Sorry, but the referer for the form you just submitted does not seem to match this site';
@@ -98,10 +98,9 @@ require CMS_ROOT. 'zenario/api/module_api.inc.php';
 require CMS_ROOT. 'zenario/api/module_base_class/module_code.php';
 
 //Include the currently running version of the Core CMS Module
-foreach (cms_core::$editions as $className => $dirName) {
+foreach (cms_core::$editions as $className) {
 	if (inc($className)) {
 		cms_core::$edition = $className;
-		cms_core::$editionClass = new $className;
 		break;
 	}
 }
@@ -109,14 +108,11 @@ unset($className);
 unset($dirName);
 
 
-//Attempt to get the host name
-$host = httpHost();
-$hostWOPort = httpHostWithoutPort();
-
 //Check for a url redirect, and link to that item if one is found
-if ($host != primaryDomain()
- && $hostWOPort != primaryDomain()
- && $redirect = getRow('spare_domain_names', array('content_id', 'content_type'), array('requested_url' => array($host, $hostWOPort)))) {
+if (!empty($_SERVER['HTTP_HOST'])
+ && $_SERVER['HTTP_HOST'] != setting('admin_domain')
+ && $_SERVER['HTTP_HOST'] != setting('primary_domain')
+ && $redirect = getRow('spare_domain_names', array('content_id', 'content_type'), array('requested_url' => array(httpHost(), httpHostWithoutPort())))) {
 	
 	//Catch the case where a language specific domain was used as a redirect. Don't allow the redirect in this case.
 	foreach (cms_core::$langs as $langId => $lang) {
@@ -130,7 +126,7 @@ if ($host != primaryDomain()
 	
 	if ($redirect) {
 		header(
-			'location:'. linkToItem($redirect['content_id'], $redirect['content_type'], true, '', false, false, false, true),
+			'location:'. linkToItem($redirect['content_id'], $redirect['content_type'], true),
 			true, 301);
 		exit;
 	}

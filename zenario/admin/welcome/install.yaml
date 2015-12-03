@@ -115,110 +115,127 @@ install:
                         html: |
                             <h1>Step 2: System Requirements</h1>
                             <p>It looks like your server doesn't meet the requirements for Zenario.</p>
-                sub_table_open:
-                    pre_field_html: |
-                        <table class="sub_table">
-                            <tr>
-                                <td colspan="2">
-                    snippet:
-                        html: ""
-                    full_width: true
+                
+                sub_table:
+                    type: grouping
+                    name: sub_table
+                
                 server:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Web Server
                     visible_if: zenarioAW.togglePressed(1)
                 show_server:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 server_1:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Apache http server
                     visible_if: zenarioAW.togglePressed()
                 php:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: PHP
                     visible_if: zenarioAW.togglePressed(1)
                 show_php:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 php_1:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: PHP version 5.3 or later
                     visible_if: zenarioAW.togglePressed()
                 mysql:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQL
                     visible_if: zenarioAW.togglePressed(1)
                 show_mysql:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 mysql_1:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQLi extension enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 mysql_2:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: MySQL version 5.0 or later
                     visible_if: zenarioAW.togglePressed()
                 mb:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Unicode Support
                     visible_if: zenarioAW.togglePressed(1)
                 show_mb:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 mb_1:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: ctype extension enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 mb_2:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: mbstring extension enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 gd:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Image Manipulation
                     visible_if: zenarioAW.togglePressed(1)
                 show_gd:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 gd_1:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: GD Library enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 gd_2:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: GIF Read Support enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 gd_3:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: JPG Support enabled in PHP
                     visible_if: zenarioAW.togglePressed()
                 gd_4:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: PNG Support enabled in PHP
@@ -230,6 +247,7 @@ install:
                 # JavaScript. This can't be read on the server, but thankfully it's only a warning
                 # so it doesn't need to be.
                 mr:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Friendly URLs
@@ -243,6 +261,7 @@ install:
                             return zenarioAW.togglePressed(1);
                         }
                 show_mr:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
@@ -254,6 +273,7 @@ install:
                             return zenarioAW.togglePressed(1, tuixObject)
                         }
                 mr_valid_1:
+                    grouping: sub_table
                     full_width: true
                     row_class: valid
                     snippet:
@@ -262,6 +282,7 @@ install:
                     visible_if: |
                         window.isHtaccessWorking && zenarioAW.togglePressed()
                 mr_warning_1:
+                    grouping: sub_table
                     full_width: true
                     row_class: warning
                     snippet:
@@ -272,10 +293,7 @@ install:
                             and that your Zenario directory contains the .htaccess file.
                     visible_if: |
                         !window.isHtaccessWorking && zenarioAW.togglePressed()
-                sub_table_close:
-                    snippet:
-                        html: ""
-                    post_field_html: "</td></tr></table>"
+                
                 previous:
                     value: Back
                     type: submit
@@ -611,7 +629,18 @@ install:
                     full_width: true
                     snippet:
                         html: |
-                            <h1>Step 4/5: Restore a Backup</h1>
+                            <h1>Step 4: Support email address</h1>
+                            <p>Please enter an email address for receiving notification of system errors and database errors.</p>
+                email:
+                    label: "Support email address:"
+                    type: text
+                    row_class: row_form
+                    return_key_presses_button: next
+                description2:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <h1>Step 5: Restore a Backup</h1>
                             <p>Please enter the path and filename of a backup file to restore.</p>
                 path:
                     label: "Path:"

@@ -31,12 +31,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__spare_domains extends module_base_class {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if (getRow('site_settings', 'value', 'primary_domain')) {
+		if (setting('primary_domain')) {
 			$panel['no_items_message'] .= ' '.
 				adminPhrase('No Spare Domain Names have been defined.');
 		} else {
 			$panel['no_items_message'] .= ' '.
-				adminPhrase('You currently cannot use Spare Domain Names on your site as you have not set a Primary Domain. Please go to Configuration -> Site settings -> Primary Domain to set a domain.');
+				adminPhrase('You currently cannot use Spare Domain Names on your site as you have not set a primary domain. Please go to Configuration -> Site settings -> Domains to set a primary domain.');
 			
 			unset($panel['db_items']);
 			unset($panel['collection_buttons']['create']);
@@ -54,12 +54,12 @@ class zenario_common_features__organizer__spare_domains extends module_base_clas
 	}
 	
 	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
-		if (getRow('site_settings', 'value', 'primary_domain')) {
+		if (setting('primary_domain')) {
 			$panel['no_items_message'] .= ' '.
 				adminPhrase('No Spare Domain Names have been defined.');
 		} else {
 			$panel['no_items_message'] .= ' '.
-				adminPhrase('You currently cannot use Spare Domain Names on your site as you have not set a Primary Domain. Please go to Configuration -> Site settings -> Primary Domain to set a domain.');
+				adminPhrase('You currently cannot use Spare Domain Names on your site as you have not set a primary domain. Please go to Configuration -> Site settings -> Domains to set a primary domain.');
 				
 			unset($panel['db_items']);
 			unset($panel['collection_buttons']['create']);
@@ -70,7 +70,7 @@ class zenario_common_features__organizer__spare_domains extends module_base_clas
 		if (post('delete') && checkPriv('_PRIV_MANAGE_SPARE_DOMAIN_NAME')) {
 			$sql = "
 				DELETE FROM ". DB_NAME_PREFIX . "spare_domain_names
-				WHERE requested_url = '". sqlEscape(decodeItemIdForStorekeeper($ids)). "'";
+				WHERE requested_url = '". sqlEscape(decodeItemIdForOrganizer($ids)). "'";
 			sqlQuery($sql);
 		}
 	}

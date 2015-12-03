@@ -37,13 +37,14 @@ zenario__email_template_manager:
                 create:
                     priv: _PRIV_EDIT_NEWSLETTER
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a newsletter template
                     admin_box:
                         path: zenario_newsletter_template
                     hide_in_select_mode: true
             item_buttons:
                 edit:
-                    label: Edit
+                    label: Edit newsletter template
                     admin_box:
                         path: zenario_newsletter_template
                     hide_in_select_mode: true

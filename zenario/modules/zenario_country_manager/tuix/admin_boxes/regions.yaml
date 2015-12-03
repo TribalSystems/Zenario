@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_country_manager__region:
-    priv: _PRIV_EDIT_USER
     title: Creating a Region
     max_height: "250"
     key:
@@ -12,9 +11,10 @@ zenario_country_manager__region:
         details:
             label: Details
             edit_mode:
-                enabled: Yes
-                on: Yes
-                always_on: Yes
+                priv: _PRIV_MANAGE_COUNTRY
+                enabled: true
+                on: true
+                always_on: true
             fields:
                 name:
                     label: 'Region name:'

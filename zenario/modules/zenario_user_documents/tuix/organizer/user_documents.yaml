@@ -67,6 +67,7 @@ zenario__content:
                         priv: _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS
                         label: Upload a document for this user
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         upload:
                             multi: Yes
                             drag_and_drop: Yes
@@ -82,6 +83,7 @@ zenario__content:
                         priv: _PRIV_MANAGE_CONFIDENTIAL_USER_DOCUMENTS
                         label: Upload to selected folder
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         upload:
                             multi: Yes
                             drag_and_drop: Yes

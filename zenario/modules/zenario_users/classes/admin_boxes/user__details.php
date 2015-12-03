@@ -100,7 +100,7 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			unset($fields['details/status']['values']['pending']);
 			$fields['details/email_verified']['hidden'] = true;
 			
-			$box['title'] = adminPhrase('Creating a user');
+			$box['title'] = adminPhrase('Creating a user or contact');
 			
 			$fields['details/password_needs_changing']['label'] = "Ask user to change password when first logging in";
 			$fields['details/send_activation_email_to_user']['hidden'] = false;

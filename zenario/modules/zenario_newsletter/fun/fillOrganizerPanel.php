@@ -37,6 +37,11 @@ switch ($path) {
 		break;
 
 	case 'zenario__email_template_manager/panels/newsletters':
+	$panel['columns']['opened']['hidden'] = true;
+	$panel['columns']['opened_percentage']['hidden'] = true;
+	$panel['columns']['clicked']['hidden'] = true;
+	$panel['columns']['clicked_percentage']['hidden'] = true;
+	
 		$panel['title'] = adminPhrase('Draft Newsletters');
 		$panel['item']['css_class'] = 'zenario_newsletter_draft';
 
@@ -60,9 +65,83 @@ switch ($path) {
 			}
 		} else {
 			foreach($panel['items'] as $id => &$item) {
+			
 				$item['recipients'] = zenario_newsletter::newsletterRecipients($id, 'count');
 			} 
 		}
+		
+		if($refinerName == 'archive') {
+			if(!setting('zenario_newsletter__enable_opened_emails')) {
+				unset($panel['columns']['opened']);
+				unset($panel['columns']['opened_percentage']);
+			}
+			$panel['columns']['clicked']['hidden'] = false;
+			$panel['columns']['clicked_percentage']['hidden'] = false;
+		
+			$sql = '
+				SELECT newsletter_id
+				FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+			';
+		
+			$result = sqlSelect($sql);
+			$archiveExists = sqlFetchAssoc($result);
+			
+			if($archiveExists) {
+				foreach($panel['items'] as $id => &$item) {
+					//For calculating percentages
+					$sql = '
+						SELECT COUNT(DISTINCT user_id) as userCount
+						FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link as nul
+						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletters as n
+						ON n.id = nul.newsletter_id
+					';
+					
+					$result = sqlSelect($sql);
+					$smartGroupTotal = sqlFetchAssoc($result);
+					
+					if(setting('zenario_newsletter__enable_opened_emails')) {
+						//For the "Opened" column
+						$sql = '
+							SELECT COUNT(time_received) as opened
+							FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+							WHERE time_received IS NOT NULL AND newsletter_id = ' . $item['id']
+						;
+						$result = sqlSelect($sql);
+						$row = sqlFetchAssoc($result);
+						$item['opened'] = $row['opened'];
+						
+						if ($item['opened'] && $smartGroupTotal['userCount']) {
+							$percentage = $item['opened'] / $smartGroupTotal['userCount'] * 100;
+						} else {
+							$percentage = 0;
+						}
+						//For the "Opened %" column
+						$item['opened_percentage'] = number_format($percentage, 1) . "%";
+						
+					}
+			
+					//For "Clicked" column
+					$sql = '
+						SELECT COUNT(time_received) as clicked
+						FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
+						WHERE time_clicked_through IS NOT NULL AND newsletter_id = ' . $item['id'];
+					
+					$result = sqlSelect($sql);
+					$row = sqlFetchAssoc($result);
+					$item['clicked'] = $row['clicked'];
+					
+					if ($item['clicked'] && $smartGroupTotal['userCount']) {
+						$percentage = $item['clicked'] / $smartGroupTotal['userCount'] * 100;
+					} else {
+						$percentage = 0;
+					}
+					
+					//For "Clicked %" column
+					$item['clicked_percentage'] = number_format($percentage, 1) . "%";
+				}
+			}
+		}
+		
 		break;
 		
 		
@@ -117,13 +196,17 @@ switch ($path) {
 			}
 		}
 		
-		
 		break;
 	
 	
 	case 'zenario__content/panels/email_images_for_newsletters':
-		$zenario_common_features = new zenario_common_features;
-		return $zenario_common_features->fillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
+		
+		//Borrow the logic from the image library panel to handle the images
+		$c = $this->runSubClass('zenario_common_features', 'organizer', 'zenario__content/panels/image_library');
+		$c->fillOrganizerPanel('generic_image_panel', $panel, $refinerName, $refinerId, $mode);
+		
+		break;
+		
 		
 	case 'zenario__content/panels/image_library':
 		foreach ($panel['items'] as $id => &$item) {

@@ -35,18 +35,6 @@ useGZIP(!empty($_GET['gz']));
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';
 
-function incJS($file) {
-	if (file_exists($file. '.pack.js')) {
-		require $file. '.pack.js';
-	} elseif (file_exists($file. '.min.js')) {
-		require $file. '.min.js';
-	} elseif (file_exists($file. '.js')) {
-		require $file. '.js';
-	}
-	
-	echo "\n/**/\n";
-}
-
 
 //Include a function that uses eval, and shouldn't be minified
 echo '
@@ -105,6 +93,7 @@ foreach(array(
 	'copy' => 'Copy',
 	'core' => 'Core Features',
 	'couldNotOpenBox' => 'Sorry, this admin box does not exist, or you do not have the permissions needed to access it.',
+	'createAnother' => 'Save & create another',
 	'createSearch' => 'Create a search',
 	'csv' => 'CSV',
 	'deleteSearch' => 'Delete',
@@ -160,8 +149,10 @@ foreach(array(
 	'pluginNeedsReload' => 'This plugin wants to <a href="[[href]]">reload the page</a> and may not display correctly until you do so.',
 	'pm' => 'PM',
 	'prev' => 'Prev',
+	'preview' => 'Preview',
 	'publish' => 'Publish immediately',
 	'refined' => ' (filtered)',
+	'readonly' => 'Read-only',
 	'remove' => 'Remove',
 	'reset' => 'Reset to default view',
 	'retry' => 'Retry',
@@ -353,7 +344,7 @@ incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
-incJS('zenario/libraries/lgpl/tinymce_4_1_9c/jquery.tinymce');
+incJS('zenario/libraries/lgpl/tinymce_4_2_3/jquery.tinymce');
 //Include the autocomplete library for the FAB library
 incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
 //Include the selectboxes library for moving items between select lists
@@ -370,7 +361,7 @@ incJS('zenario/libraries/public_domain/mousehold/mousehold');
 incJS('zenario/libraries/mit/jssor/jssor.slider.mini');
 
 echo '
-zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_1_9c/tinymce.jquery.min.js";
+zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_2_3/tinymce.jquery.min.js";
 ace.config.set("basePath", URLBasePath + "zenario/libraries/bsd/ace/src-min-noconflict/");';
 
 

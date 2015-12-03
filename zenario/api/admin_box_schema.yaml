@@ -173,6 +173,14 @@ additionalProperties:
                 is too drastic, or will cause problems, you should not enable the "Save
                 and Continue" option in "Create" mode.
         
+        extra_button_html:
+            type: string
+            description: >
+                You can use this property to add some extra html after the save button.
+                
+                
+                This works from version 7.1 onwards.
+        
         download:
             type: boolean
             html_description: |
@@ -435,11 +443,13 @@ additionalProperties:
                             
                             forbidden_if_true:
                                 full_width:
-                                    - row_class
                                     - label
+                                    - row_class
                                 same_row:
-                                    - row_class
+                                    - indent_level
                                     - label
+                                    - legend
+                                    - row_class
                             properties:
                                 ord: *ord
                                 hidden: *hidden
@@ -457,6 +467,7 @@ additionalProperties:
                                     description: >
                                         This property allows you to place a CSS class name on the field's label.
                                         
+                                        
                                         This works from version 7.0.6 onwards.
                                 full_width:
                                     type: boolean
@@ -466,6 +477,35 @@ additionalProperties:
                                     type: boolean
                                     description: >
                                         This will place a field on the same row as the previous field.
+                                
+                                indent:
+                                    type: number
+                                    description: >
+                                        Setting this property will add the zenario_indent_level CSS class name to the field.
+                                        
+                                        
+                                        This works from version 7.1 onwards.
+                                
+                                        
+                                grouping:
+                                    type: string
+                                    description: >
+                                        Set this property to the name of a grouping to have this field
+                                        appear in the grouping.
+                                        
+                                        
+                                        To create a grouping, you can make a field with <code>type: grouping</code> and
+                                        give it a name, e.g. <code>name: my_grouping_name</code>
+                                        
+                                        
+                                        This works from version 7.1 onwards.
+                                legend:
+                                    type: string
+                                    description: >
+                                        This adds a legend above a field. Best used on the first field in a grouping. Won't be HTML escaped.
+                                        
+                                        
+                                        This works from version 7.1 onwards.
                                 
                                 pre_field_html:
                                     type: string
@@ -510,6 +550,7 @@ additionalProperties:
                                         - date
                                         - datetime
                                         - editor
+                                        - grouping
                                         - hidden
                                         - password
                                         - radio
@@ -522,6 +563,27 @@ additionalProperties:
                                         - url
                                     description: >
                                         The type of field to draw.
+                                
+                                name:
+                                    type: string
+                                    default: (defaults to the code name/id)
+                                    description: >
+                                        The name property is used for <code>type: grouping</code> and
+                                        <code>type: radio</code> fields.
+                                        
+                                        
+                                        If you have multiple <code>type: radio</code> fields on one tab, you can bind them together into
+                                        a radiogroup by giving them all the same name, e.g. <code>name: my_radiogroup</code>.
+                                        
+                                        
+                                        To create a grouping, you can make a field with <code>type: grouping</code> and
+                                        give it a name, e.g. <code>name: my_grouping_name</code>
+                                        
+                                        You can put fields in the grouping by adding the <code>grouping</code> property to
+                                        them, e.g. <code>grouping: my_grouping_name</code>
+                                        
+                                        
+                                        This works from version 7.1 onwards.
                                 
                                 upload:
                                     type: object
@@ -818,24 +880,30 @@ additionalProperties:
                                                 An error message to display if a valid Screen Name is not entered for this
                                                 field.
                                         
-                                        #New rules for image validation in 7.0.5
-                                        must_be_gif_ico_or_png:
-                                            type: string
-                                            description: >
-                                                An error message to display in a file picker if a .gif, .ico or .png file is not chosen.
-                                                This works from version 7.0.5 onwards.
-                                        
-                                        must_be_gif_jpg_or_png:
+                                        #New rules for image validation in 7.0.5 and 7.0.7
+                                        must_be_image:
                                             type: string
                                             description: >
                                                 An error message to display in a file picker if a .gif, .jpg or .png file is not chosen.
-                                                This works from version 7.0.5 onwards.
+                                                This works from version 7.0.7 onwards.
+                                        
+                                        must_be_image_or_svg:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .gif, .jpg, .png or .svg file is not chosen.
+                                                This works from version 7.0.7 onwards.
                                         
                                         must_be_gif_or_png:
                                             type: string
                                             description: >
                                                 An error message to display in a file picker if a .gif or .png file is not chosen.
                                                 This works from version 7.0.5 onwards.
+                                        
+                                        must_be_gif_ico_or_png:
+                                            type: string
+                                            description: >
+                                                An error message to display in a file picker if a .gif, .ico or .png file is not chosen.
+                                                This works from version 7.0.7 onwards.
                                         
                                         must_be_ico:
                                             type: string
@@ -850,6 +918,7 @@ additionalProperties:
                                         
                                         When the admin clicks on the checkbox, it will automatically remove this property.
                                         
+                                        
                                         This works from version 7.0.6 onwards.
                                 indeterminates:
                                     type: object
@@ -861,6 +930,7 @@ additionalProperties:
                                         To do this, enter the id of each value into this object.
                                         
                                         When the admin clicks on a checkbox, it will automatically remove the property.
+                                        
                                         
                                         This works from version 7.0.6 onwards.
                                 
@@ -924,6 +994,17 @@ additionalProperties:
                                             description: >
                                                 Setting this option will warn the Admin if they change a field but then try to
                                                 abandon their changes.
+                                
+                                is_admin_permission:
+                                    type: boolean
+                                    static: true
+                                    description: >
+                                        This is used for fields on the permissions tab of the "zenario_admin" admin box,
+                                        to flag that they are permissions.
+                                        
+                                        
+                                        This property must be written in your .yaml file.
+                                        It can't be changed in php.
                                 
                                 plugin_setting:
                                     type: object
@@ -1300,14 +1381,6 @@ additionalProperties:
                                         On a textarea field, this property sets the number of columns on the textarea.
                                         The default is to use the default width from the stylesheet.
                                 
-                                name:
-                                    type: string
-                                    description: >
-                                        This property only applies to single radio-type fields.
-                                        
-                                        It lets you override their name attribute, so that you can band them together with
-                                        other single radio-type fields into a radiogroup.
-                                
                                 empty_value:
                                     type: string
                                     description: >
@@ -1327,6 +1400,7 @@ additionalProperties:
                                         
                                         If set, it needs to be an array of values (as keys) to colour names (as values).
                                         Any missing values will default to blue.
+                                        
                                         
                                         This works from version 7.0.6 onwards.
                                     additionalProperties:
@@ -1483,6 +1557,7 @@ additionalProperties:
                                         Some intelligent defaults are set, depending on whether the field is
                                         readonly, and whether the insert_image_button or insert_link_button
                                         properties are set.
+                                        
                                         
                                         This works from version 7.0.6 onwards.
 

@@ -92,25 +92,6 @@ zenario__content:
                     sql: |
                         v.layout_id = [[REFINER__TEMPLATE]]
                                                 AND c.language_id = [[REFINER__LANGUAGE]]
-                can_chain:
-                    sql: |
-                        languages_chained.language_id IS NULL
-                                                AND equivs_chained.equiv_id IS NULL
-                    table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]content_items AS chain_with
-                                                   ON chain_with.tag_id = [[COMBINE_ITEM]]
-                                                  AND chain_with.type = c.type
-                                                INNER JOIN [[DB_NAME_PREFIX]]content_items AS chain_with_equiv
-                                                   ON chain_with_equiv.equiv_id = chain_with.equiv_id
-                                                  AND chain_with_equiv.type = chain_with.type
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS languages_chained
-                                                   ON languages_chained.equiv_id = chain_with.equiv_id
-                                                  AND languages_chained.type = chain_with.type
-                                                  AND languages_chained.language_id = c.language_id
-                                                LEFT JOIN [[DB_NAME_PREFIX]]content_items AS equivs_chained
-                                                   ON equivs_chained.type = chain_with.type
-                                                  AND equivs_chained.equiv_id = c.equiv_id
-                                                  AND equivs_chained.language_id = chain_with_equiv.language_id
                 category:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]category_item_link AS cal
@@ -455,6 +436,7 @@ zenario__content:
                 create:
                     priv: _PRIV_CREATE_FIRST_DRAFT
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_quick_create
@@ -467,8 +449,9 @@ zenario__content:
                         branch: true
                         refiner: language_equivs
                 delete_trashed_items:
-                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true
+                    hide_when_no_search_results: true
                     only_show_on_refiner: trash
                     label: Empty trash
                     ajax:
@@ -498,9 +481,12 @@ zenario__content:
                         path: zenario__content/panels/content
                         refiner: find_duplicates
                 export:
+                    hide_when_no_search_results: true
                     label: Export
                     admin_box:
                         path: zenario_export_content_items
+                        key:
+                            type: ''
                 help:
                     label: Help
                     help:
@@ -622,6 +608,8 @@ zenario__content:
                     
                 publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Publish...
                     multiple_select: true
@@ -658,6 +646,7 @@ zenario__content:
                     visible_if_for_all_selected_items: >
                         ('' + item.status).match(/draft/)
                         && item.lock_owner_id == 0
+                        && zenarioA.checkSpecificPerms(id)
                     label: Lock this draft
                     ajax:
                         confirm:
@@ -690,6 +679,7 @@ zenario__content:
                         ('' + item.status).match(/draft/)
                         && item.lock_owner_id != 0
                         && item.lock_owner_id == zenario.adminId
+                        && zenarioA.checkSpecificPerms(id)
                     label: Unlock
                     tooltip: This content item is locked by you
                     ajax:
@@ -729,6 +719,8 @@ zenario__content:
                 
                 cancel_scheduled_publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Cancel scheduled publish
                     multiple_select: true
@@ -811,6 +803,8 @@ zenario__content:
                                     
                 layout:
                     priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     parent: property_dropdown
                     label: Change layout
                     multiple_select: true
@@ -889,6 +883,8 @@ zenario__content:
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Hide
                     multiple_select: true
@@ -918,6 +914,8 @@ zenario__content:
                 hidden:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Unhide/make draft
                     multiple_select: true
                     traits:
@@ -942,6 +940,8 @@ zenario__content:
                 delete:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Delete draft
                     multiple_select: true
@@ -974,6 +974,8 @@ zenario__content:
                 trash:
                     parent: action_dropdown
                     priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
                     label: Trash
                     multiple_select: true
@@ -985,6 +987,10 @@ zenario__content:
                         path: zenario_trash
                 delete_archives:
                     priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    visible_if_for_any_selected_items: |
+                        item.archives_exist
                     parent: action_dropdown
                     hide_in_select_mode: true
                     label: Delete archived versions
@@ -1004,11 +1010,11 @@ zenario__content:
                             message_type: warning
                         request:
                             delete_archives: 1
-                    visible_if_for_any_selected_items: |
-                        item.archives_exist
                 redraft:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
                     label: Re-draft
                     css_class: create label_to_the_left
                     multiple_select: true

@@ -14,6 +14,8 @@ sections:
                     path: zenario_export_tools__export
             import:
                 priv: _PRIV_IMPORT_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 parent: action_dropdown
                 label: Import
                 tooltip: >
@@ -23,6 +25,8 @@ sections:
                     path: zenario_export_tools__import
             translate:
                 priv: _PRIV_IMPORT_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
                 parent: action_dropdown
                 label: Google Translate
                 tooltip: >

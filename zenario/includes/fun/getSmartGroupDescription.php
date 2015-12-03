@@ -28,18 +28,23 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
+$desc = '';
 $rules = getRowsArray(
 	'smart_group_rules',
-	array('field_id', 'field2_id', 'field3_id', 'not', 'value'),
+	array('field_id', 'field2_id', 'field3_id', 'field4_id', 'field5_id', 'not', 'value'),
 	array('smart_group_id' => $smartGroupId),
 	'ord'
 );
 
 if (empty($rules)) {
-	return adminPhrase('All users');
+	return adminPhrase('All users and contacts');
 }
 
-$desc = '';
+
+$or = count($rules) > 1
+   && getRow('smart_groups', 'must_match', $smartGroupId) == 'any';
+
+
 foreach ($rules as $rule) {
 	
 	//Check if a field is set, load the details, and check if it's a supported field. Only add it if it is.
@@ -52,7 +57,11 @@ foreach ($rules as $rule) {
 		}
 		
 		if ($desc !== '') {
-			$desc .= '; ';
+			if ($or) {
+				$desc .= ' or ';
+			} else {
+				$desc .= '; ';
+			}
 		}
 		
 		if ($field['type'] == 'group') {
@@ -61,25 +70,26 @@ foreach ($rules as $rule) {
 			} else {
 				$desc .= 'Member of '. $field['label'];
 		
-				//If you filter by group, an "OR" logic is allowed. Handle this as a special case
-				if ($rule['field2_id'] || $rule['field3_id']) {
-			
-					if ($rule['field2_id'] && $rule['field3_id']) {
-						$desc .= ', ';
-					} else {
-						$desc .= ' or ';
-					}
-			
-					if ($rule['field2_id']) {
-						$desc .= getRow('custom_dataset_fields', 'label', $rule['field2_id']);
-					}
-			
-					if ($rule['field2_id'] && $rule['field3_id']) {
-						$desc .= ' or ';
-					}
-			
-					if ($rule['field3_id']) {
-						$desc .= getRow('custom_dataset_fields', 'label', $rule['field3_id']);
+				//If you filter by group, an "OR" logic containing multiple groups is allowed.
+				//Check if multiple groups have been picked...
+				$groups = array();
+				if ($field['type'] == 'group') {
+					if ($rule['field2_id']) $groups[] = $rule['field2_id'];
+					if ($rule['field3_id']) $groups[] = $rule['field3_id'];
+					if ($rule['field4_id']) $groups[] = $rule['field4_id'];
+					if ($rule['field5_id']) $groups[] = $rule['field5_id'];
+				}
+				
+				//...if so, list these extra groups too
+				if (!empty($groups)) {
+					$lastI = count($groups) - 1;
+					foreach ($groups as $i => $groupId) {
+						if ($i == $lastI) {
+							$desc .= ' or ';
+						} else {
+							$desc .= ', ';
+						}
+						$desc .= getRow('custom_dataset_fields', 'label', $groupId);
 					}
 				}
 			}

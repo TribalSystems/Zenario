@@ -12,7 +12,7 @@ zenario__projects:
                 db_items:
                     table: '[[DB_NAME_PREFIX]]files AS f'
                     where_statement: |
-                        WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                        WHERE f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                         AND f.`usage` = 'project_locations'
                     id_column: f.id
                 columns:
@@ -71,6 +71,7 @@ zenario__projects:
                         priv: _PRIV_MANAGE_PROJECT_LOCATIONS
                         label: Upload one or more images
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         upload:
                             fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                             fileDesc: Images

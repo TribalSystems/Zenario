@@ -44,6 +44,7 @@ switch ($path) {
 			ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX. 'tabs',
 			array(
 				'visibility' => $values['tab/tab_visibility'],
+				'smart_group_id' => $values['tab/tab__smart_group'],
 				'field_id' => $values['tab/tab__field_id'],
 				'field_value' => $values['tab/tab__field_value'],
 				'module_class_name' => $values['tab/tab__module_class_name'],

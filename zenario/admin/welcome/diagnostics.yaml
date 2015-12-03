@@ -12,36 +12,38 @@ diagnostics:
                     full_width: true
                     snippet:
                         html: "<h1>Diagnostics</h1>"
-                sub_table_open:
-                    pre_field_html: |
-                        <table class="sub_table">
-                            <tr>
-                                <td colspan="2">
-                    snippet:
-                        html: ""
-                    full_width: true
+                
+                sub_table:
+                    type: grouping
+                    name: sub_table
+                
                 dirs:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Directories
                     visible_if: zenarioAW.togglePressed(1)
                 show_dirs:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
                 dir_1:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Backup Storage Area
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_1:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_1_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -51,27 +53,32 @@ diagnostics:
                             It should start with a slash, but do not add a trailing slash.
                     visible_if: zenarioAW.togglePressed()
                 backup_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     visible_if: zenarioAW.togglePressed()
                 backup_dir_status:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
                 dir_2:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Document Secure Store (Docstore)
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_2:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_2_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -81,28 +88,33 @@ diagnostics:
                             It should start with a slash, but do not add a trailing slash.
                     visible_if: zenarioAW.togglePressed()
                 docstore_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     visible_if: zenarioAW.togglePressed()
                 docstore_dir_status:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
                 dir_4:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Templates Directory
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_4:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_4_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -112,29 +124,34 @@ diagnostics:
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
                 template_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed()
                 template_dir_status:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
                 dir_5:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Cache Directory
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_5:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_5_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -143,29 +160,34 @@ diagnostics:
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
                 cache_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed()
                 cache_dir_status:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
                 dir_6:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Private Directory
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_6:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_6_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -175,29 +197,34 @@ diagnostics:
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
                 private_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed()
                 private_dir_status:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
                 dir_7:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Public Directory
                     visible_if: zenarioAW.togglePressed(2)
                 show_dir_7:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(2, tuixObject)"
                 dir_7_blurb:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
@@ -206,37 +233,73 @@ diagnostics:
                             This directory MUST be writable by the web server.
                     visible_if: zenarioAW.togglePressed()
                 public_dir:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed()
                 public_dir_status:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
+                
+                
+                server:
+                    grouping: sub_table
+                    full_width: true
+                    snippet:
+                        html: Web Server
+                    visible_if: zenarioAW.togglePressed(1)
+                show_server:
+                    grouping: sub_table
+                    type: toggle
+                    redraw_onchange: true
+                    same_row: true
+                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                opcache_misconfigured:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: |
+                            In your <code>php.ini</code> you have <code>opcache.enable</code>
+                            turned on, and you have <code>opcache.dups_fix</code> turned off.
+                            
+                            This may cause occasional PHP &ldquo;fatal errors&rdquo; on your site.
+                            
+                            Please edit your <code>php.ini</code> and either turn <code>opcache.enable</code> off
+                            or else turn <code>opcache.dups_fix</code> on.
+                    visible_if: zenarioAW.togglePressed()
+                
+                
                 site:
+                    grouping: sub_table
                     full_width: true
                     snippet:
                         html: Your site
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed(1)
                 show_site:
+                    grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     hide_on_install: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
-                site_special_pages_unpublished:
+                site_disabled:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: "&nbsp;"
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
-                site_disabled:
+                site_special_pages_unpublished:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
@@ -244,6 +307,7 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 site_description_missing:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
@@ -255,15 +319,17 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 spare_domains_without_primary_domain:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: |
-                            Spare Domain Names have been created for this site, but they will not function because no Primary Domain is defined.
-                            Please go to <em>Configuration -&gt; Site settings -&gt; Primary Domain</em> in Organizer to define a Primary Domain.
+                            Spare Domain Names have been created for this site, but they will not function because no primary domain is defined.
+                            Please go to <em>Configuration -&gt; Site settings -&gt; Domains</em> in Organizer to define a primary domain.
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 errors_not_shown:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
@@ -276,15 +342,16 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 email_addresses_overridden:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
-                        html: |
-                            You have &ldquo;Email debug mode&rdquo; enabled under
-                            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
+                        html: ''
+                            #You have &ldquo;Email debug mode&rdquo; enabled...
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 #email_addresses_not_overridden:
+                #    grouping: sub_table
                 #    full_width: true
                 #    row_class: sub_level
                 #    snippet:
@@ -296,6 +363,7 @@ diagnostics:
                 #    hide_on_install: true
                 #    visible_if: zenarioAW.togglePressed()
                 bad_extra_module_symlinks:
+                    grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
@@ -303,6 +371,7 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 mr_warning_1:
+                    grouping: sub_table
                     full_width: true
                     row_class: warning
                     snippet:
@@ -314,11 +383,7 @@ diagnostics:
                     hide_on_install: true
                     visible_if: |
                         zenarioAW.togglePressed() && !zenarioA.isHtaccessWorking()
-                sub_table_close:
-                    snippet:
-                        html: ""
-                    post_field_html: |
-                        </td></tr></table>
+                
                 continue:
                     value: Continue
                     type: submit

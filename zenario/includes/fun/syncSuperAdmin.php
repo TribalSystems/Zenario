@@ -28,126 +28,102 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 $adminColumns = array(
-	'id', 'authtype', 'global_id', 'username', 'password', 'password_salt', 'password_needs_changing', 
-	'status', 'last_login', 'first_name', 'last_name', 'email', 'created_date', 'modified_date', 'image_id');
-		//last_login_ip isn't in this list yet as it was newly added in 6.0.4
+	'username', 'password', 'password_salt', 'password_needs_changing', 
+	'status', 'first_name', 'last_name', 'email', 'created_date', 'modified_date', 'image_id');
 
-$adminL = array();
-$adminG = array();
-$actionsL = array();
-$actionsG = array();
-$adminIdL = false;
-$image = false;
-
-//Check if the database schema is reasonably up to date
-connectLocalDB();
-$result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "admins WHERE Field = 'image_id'");
-$dbAtRecentRevision = sqlFetchRow($result);
-$result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'");
-$dbAtRecentRevision2 = sqlFetchRow($result);
-
-//Look up the current copy of the Admin's details on the local database
-if ($dbAtRecentRevision) {
-	if ($row = getRow('admins', $adminColumns, array('authtype' => 'super', 'global_id' => $adminIdG))) {
-		$adminL = $row;
-		$adminIdL = $adminL['id'];
-		unset($adminL['id']);
-		
-		$result = getRows('action_admin_link', 'action_name', array('admin_id' => $adminIdL), array('action_name'));
-		
-		while ($row = sqlFetchAssoc($result)) {
-			$actionsL[] = $row['action_name'];
-		}
-	}
+//Check if the database schema is up to date, and if so, also sync the new permission columns
+if ($dbUpToDate = checkAdminTableColumnsExist() >= 4) {
+	$adminColumns[] = 'permissions';
+	$adminColumns[] = 'specific_languages';
+	$adminColumns[] = 'specific_content_items';
+	$adminColumns[] = 'specific_menu_areas';
 }
 
-//Look up the details on the global database
+//Attempt to connect to the global database
 if (connectGlobalDB()) {
-		//Get the full admin details and permissions for the current Admin
-		if ($adminG = getRow('admins', $adminColumns, array('authtype' => 'local', 'id' => $adminIdG))) {
-			unset($adminG['id']);
-			
-			$result = getRows('action_admin_link', 'action_name', array('admin_id' => $adminIdG), array('action_name'));
-			
-			while ($row = sqlFetchAssoc($result)) {
-				$actionsG[] = $row['action_name'];
+		//Look up the details on the global database
+		$globalAdmins = getRowsArray('admins', $adminColumns, array('authtype' => 'local'));
+	
+		//For all global admins...
+		foreach ($globalAdmins as $globalId => &$admin) {
+		
+			//...check if they have an image and get the checksum...
+			if ($admin['image_id']) {
+				$admin['image_checksum'] = getRow('files', 'checksum', array('id' => $admin['image_id']));
+			} else {
+				$admin['image_checksum'] = false;
 			}
-		} else {
-			return false;
-		}
 		
-		//Get a few details on every Global Admin
-		$result = getRows(
-			'admins',
-			array('id', 'username', 'status', 'last_login', 'first_name', 'last_name', 'email', 'created_date', 'modified_date'),
-			array('authtype' => 'local'),
-			'id');
-		
-		$adminStatuses = array();
-		while ($row = sqlFetchAssoc($result)) {
-			$adminStatuses[] = $row;
-		}
-		
-		//Check to see if the Admin has an image, and get its details if so
-		if ($adminG['image_id']) {
-			$image = getRow('files', array('data', 'filename', 'checksum'), $adminG['image_id']);
-			unset($image['id']);
+			//...and get an array of their actions
+			$admin['_actions_'] = getRowsArray('action_admin_link', 'action_name', array('admin_id' => $globalId), 'action_name');
 		}
 	connectLocalDB();
-	
-	
-	//Compare the two
-	$adminG['authtype'] = 'super';
-	$adminG['global_id'] = (int) $adminIdG;
-	
-	if (!$adminIdL || print_r($adminL, true) != print_r($adminG, true) || print_r($actionsL, true) != print_r($actionsG, true)) {
-		//Update the two if there are differences
-		if ($dbAtRecentRevision) {
-			
-			//If the admin had an image, try to find the local version of it
-			if ($image) {
-				if (!$adminG['image_id'] = getRow('files', 'id', array('checksum'=> $image['checksum'], 'usage' => 'admin'))) {
-					//If there was no local version, try to add one
-					if ($dbAtRecentRevision2) {
-						$adminG['image_id'] = addFileFromString('admin', $image['data'], $image['filename'], true);
-					}
-				}
-			}
-			
-			$adminIdL = setRow('admins', $adminG, $adminIdL);
-			
-			deleteRow('action_admin_link', array('admin_id' => $adminIdL));
-			foreach ($actionsG as $action) {
-				insertRow('action_admin_link', array('admin_id' => $adminIdL, 'action_name' => $action));
-			}
-			
-		} else {
-			$sql = "
-				INSERT INTO `". DB_NAME_PREFIX. "admins` SET
-					username = '". sqlEscape($adminG['username']). "',
-					status = 'active',
-					first_name = '". sqlEscape($adminG['first_name']). "',
-					last_name = '". sqlEscape($adminG['last_name']). "',
-					email = '". sqlEscape($adminG['email']). "',
-					is_client_account = 0";
-			sqlUpdate($sql);
-			$adminIdL = sqlInsertId();
-		}
-	}
-	
-	//Update the details on every Global Admin, if they have previously logged in
-	if ($dbAtRecentRevision) {
-		foreach ($adminStatuses as &$adminStatus) {
-			$id = array('global_id' => $adminStatus['id'], 'authtype' => 'super');
-			unset($adminStatus['id']);
-			updateRow('admins', $adminStatus, $id);
-		}
-	}
-	
-	return $adminIdL;
+} else {
+	connectLocalDB();
+	//Return an empty string if the link is not working
+		//I want the "global db not enabled" and "password not correct" states to be different,
+		//yet still both evaulate to false.
+	return '';
 }
 
-//Return an empty string if the link is not working
-	//I want the "global db not enabled" and "password not correct" states to be different,
-	//yet still both evaulate to false.
-return '';
+
+//Loop through all of the global admins we found
+foreach ($globalAdmins as $globalId => &$admin) {
+	
+	$admin['global_id'] = $globalId;
+	
+	if (checkTableDefinition(DB_NAME_PREFIX. 'admins', 'is_client_account')) {
+		$admin['is_client_account'] = 0;
+	}
+	
+	$key = array('global_id' => $admin['global_id']);
+	
+	//Skip trashed globsl admins that were never on this site in the first place
+	if ($admin['status'] == 'deleted'
+	 && !checkRowExists('admins', $key)) {
+		continue;
+	}
+	
+	//Did this admin have an image set?
+	if ($admin['image_checksum'] !== false) {
+		//If so, try to use the same image here, if we can find the image on this site as well
+		if (!$admin['image_id'] = getRow('files', 'id', array('checksum' => $admin['image_checksum'], 'usage' => 'admin'))) {
+			
+			//If we can't find it, get the image from the global database
+			connectGlobalDB();
+				$image = getRow('files', array('data', 'filename', 'checksum'), $admin['image_id']);
+			connectLocalDB();
+			
+			//Copy it to the local database and then use the copy
+			if ($image !== false) {
+				$adminG['image_id'] = addFileFromString('admin', $image['data'], $image['filename'], true);
+			}
+		}
+	} else {
+		$admin['image_id'] = 0;
+	}
+	
+	$actions = $admin['_actions_'];
+	unset($admin['image_checksum']);
+	unset($admin['_actions_']);
+	$admin['authtype'] = 'super';
+	
+	$admin['local_id'] = $localId = setRow('admins', $admin, $key);
+	
+	//Check to see if the specific permissions have changed
+	$actionsHere = getRowsArray('action_admin_link', 'action_name', array('admin_id' => $localId), 'action_name');
+	if (print_r($actions, true) != print_r($actionsHere, true)) {
+		
+		//If so, delete the old ones and re-insert all of the new ones
+		deleteRow('action_admin_link', array('admin_id' => $localId));
+		foreach ($actions as $action) {
+			insertRow('action_admin_link', array('admin_id' => $localId, 'action_name' => $action), true);
+		}
+	}
+}
+
+if (!empty($globalAdmins[$adminIdG]['local_id'])) {
+	return $globalAdmins[$adminIdG]['local_id'];
+} else {
+	return false;
+}

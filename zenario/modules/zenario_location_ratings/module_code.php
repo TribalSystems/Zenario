@@ -504,7 +504,7 @@ class zenario_location_ratings extends zenario_location_manager {
 	}
 	
 	public function showSlot() {
-		$locationId = $this->getLocationIdFromContentItem($this->cID,$this->cType);
+		$locationId = parent::getLocationIdFromContentItem($this->cID,$this->cType);
 		
 		$mergeFields = array();
 		$subSections = array();

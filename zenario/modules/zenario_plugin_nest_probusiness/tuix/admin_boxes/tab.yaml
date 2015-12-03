@@ -5,7 +5,7 @@ zenario_plugin_nest_probusiness__tab:
         id: ""
         instanceId: ""
     title: Tab
-    max_height: "300"
+    max_height: 400
     hide_tab_bar: true
     tabs:
         tab:
@@ -34,6 +34,8 @@ zenario_plugin_nest_probusiness__tab:
                             label: Only show to extranet users who are logged in
                         logged_out:
                             label: Only show to visitors who are NOT logged in
+                        in_smart_group:
+                            label: 'Only show to extranet users in the smart group:'
                         logged_in_with_field:
                             label: 'Only show to extranet users with this field:'
                         logged_in_without_field:
@@ -45,9 +47,12 @@ zenario_plugin_nest_probusiness__tab:
                     format_onchange: true
                     note_below: |
                         You can restrict the visibility of the plugins following this tab to certain kinds of user.
+                tab__smart_group:
+                    hidden: true
+                    type: select
+                    empty_value: ' -- Select -- '
                 tab__field_id:
                     hidden: true
-                    tlabel: 'Field:'
                     type: select
                     empty_value: ' -- Select -- '
                     format_onchange: true

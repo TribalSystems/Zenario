@@ -95,3 +95,47 @@ div.zenario_cache_info div.zenario_from_cache {
 	list-style-type: disc;
 	padding-left: 3em;
 }
+
+/* Cache info on frontend */
+.zenario_cache_info_tooltip {
+	background: #333333;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box .zenario_from_cache,
+.zenario_cache_info_tooltip .zenario_cache_box h2,
+.zenario_cache_info_tooltip .zenario_cache_box {
+	color: #ffffff;
+	font-family: Verdana,Tahoma,Arial,Helvetica,sans-serif;
+}
+
+.zenario_cache_info_tooltip {
+	border: 0;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box .zenario_from_cache {
+	font-size: 0.9em;
+	text-align: center;
+	font-weight: 700;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box h2 {
+	font-size: 0.8em;
+	text-align: center;
+	font-weight: 500;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box ul {
+	margin-top: 5px;
+	list-style-type: none;
+	font-size: 0.8em;
+	list-style-position: inside;
+	padding-left: 0;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box ul li {
+	text-align: center;
+}
+
+.zenario_cache_info_tooltip .zenario_cache_box table {
+	font-size: 0.8em;
+}

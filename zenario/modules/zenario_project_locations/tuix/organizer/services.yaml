@@ -46,6 +46,7 @@ zenario__projects:
                         label: Create
                         hide_in_select_mode: Yes
                         css_class: zenario_create_a_new
+                        hide_on_filter: true
                         admin_box: 
                             path: zenario_project_location_service
                 item_buttons: 

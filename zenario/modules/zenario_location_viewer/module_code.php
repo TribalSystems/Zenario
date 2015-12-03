@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_location_viewer extends module_base_class {
 	
-	var $data = array();
+	private $data = array();
 
 	public function init() {
 		$this->allowCaching(
@@ -112,12 +112,6 @@ class zenario_location_viewer extends module_base_class {
 					ifNull((int) $this->setting('max_location_image_height'), 120)
 				);
 			}
-			
-			if (inc('zenario_company_locations_manager')) {
-				$company_id = getRow(ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. 'company_location_link', 'company_id', array('location_id' => get('l_id')));
-				$company_name = getRow(ZENARIO_COMPANY_LOCATIONS_MANAGER_PREFIX. 'companies', 'company_name', array('id' => $company_id));
-				$locationDetails['parent_company'] = $company_name;
-			}
 		}
 		
 		if ($this->setting('show_map')) {
@@ -151,7 +145,7 @@ class zenario_location_viewer extends module_base_class {
 	
 	function showSlot() {
 		$this->twigFramework($this->data);
-	}
+    }
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {

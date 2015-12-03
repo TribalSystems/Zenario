@@ -50,3 +50,9 @@ signals:
     signal2:
         name: eventPluginInstanceDeleted
         static: true
+    signal3:
+        name: eventContentTrashed
+        static: true
+    signal4:
+        name: eventContentDeleted
+        static: true

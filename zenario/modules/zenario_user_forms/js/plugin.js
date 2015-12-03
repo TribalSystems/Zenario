@@ -1,4 +1,6 @@
-
+zenario_user_forms.recaptcha = function() {
+	onloadCallback()
+}
 
 zenario_user_forms.updateRestatementFields = function(id, mode) {
 	var selector;

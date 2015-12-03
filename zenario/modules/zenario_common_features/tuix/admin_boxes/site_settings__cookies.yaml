@@ -3,9 +3,10 @@
 site_settings:
     setting_group: cookies
     title: Editing cookie settings
+    hide_tab_bar: false
     tabs:
         cookies:
-            label: Cookies
+            label: Cookie Policy
             edit_mode:
                 enabled: Yes
                 priv: _PRIV_EDIT_SITE_SETTING
@@ -115,3 +116,29 @@ site_settings:
                     visible_if: |
                         zenarioAB.value('cookie_require_consent') == 'explicit' &&
                         zenarioAB.value('cookie_consent_type__explicit') == 'message_accept_reject'
+        cookie_timeouts:
+            label: Timeouts
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                description:
+                    full_width: true
+                    snippet:
+                        html: |
+                            <p>
+                                The length of time that the cookie consent, &quot;remember me&quot;
+                                and &quot;Log me in automatically&quot; options last.
+                            </p>
+                
+                zenario_siteconfig:
+                    type: grouping
+                    name: zenario_siteconfig
+                
+                cookie_timeout:
+                    grouping: zenario_siteconfig
+                    legend: Set in the <code>zenario_siteconfig.php</code> file
+                    
+                    label: 'Cookie timeout:'
+                    read_only: true
+                    type: text

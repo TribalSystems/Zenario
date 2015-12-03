@@ -141,7 +141,7 @@ if (defined('SUBDIRECTORY')) {
 //Check to see that the Admin has not copied the CMS on-top of an older version
 if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 	foreach (scandir('zenario/admin/db_updates/copy_over_top_check/') as $file) {
-		if (substr($file, 0, 1) != '.' && $file != ZENARIO_CMS_NUMERIC_VERSION. '.txt') {
+		if (substr($file, 0, 1) != '.' && $file != ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION. '.txt') {
 			echo '
 				<p>
 					You are seeing this message because you have attempted to update the CMS
@@ -181,7 +181,7 @@ if ($installed) {
 	$sql = "
 		SELECT 1
 		FROM ". DB_NAME_PREFIX. "local_revision_numbers
-		WHERE path IN ('admin/db_updates/updater', 'admin/db_updates/core', 'admin/db_updates/data_conversion')
+		WHERE path IN ('admin/db_updates/step_1_update_the_updater_itself', 'admin/db_updates/step_2_update_the_database_schema', 'admin/db_updates/step_4_migrate_the_data')
 		  AND patchfile IN ('admin.inc.php', 'local.inc.php', 'user.inc.php')
 		  AND revision_no < ". (26960). "
 		LIMIT 1";
@@ -210,7 +210,7 @@ echo
 <head>
 	<title>', adminPhrase('Welcome to Zenario'), '</title>';
 
-$v = htmlspecialchars(rawurlencode(ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO)));
+$v = htmlspecialchars(rawurlencode(ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO)));
 CMSWritePageHead('../', 'welcome', false);
 
 echo '
@@ -268,12 +268,12 @@ $allowedTasks = array(
 //T9732, Admin login panel, show warning when a redirect from other URL has occurred
 $refererHostWarning = false;
 if (!empty($_SERVER['HTTP_REFERER'])
- && ($refererHost = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST))
- && ($refererHost != httpHost())) {
+ && ($currentHost = httpHostWithoutPort())
+ && ($refererHost = httpHostWithoutPort(parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST)))
+ && ($refererHost != $currentHost)) {
 	$refererHostWarning =
-		//adminPhrase('You were just redirected from "[[refererHost]]" to "[[httpHost]]"',
-		adminPhrase('Your URL has changed. This is the admin login page at "[[httpHost]]", you were previously at "[[refererHost]]".',
-			array('refererHost' => $refererHost, 'httpHost' => httpHost()));
+		adminPhrase('Your URL has changed. This is the admin login page at "[[currentHost]]", you were previously at "[[refererHost]]".',
+			array('refererHost' => $refererHost, 'currentHost' => $currentHost));
 }
 
 
@@ -306,7 +306,7 @@ echo '
 </script>';
 
 
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
+if (strpos(httpUserAgent(), 'MSIE 6') !== false) {
 	echo '
 		<style type="text/css">
 			html {

@@ -15,7 +15,7 @@ zenario__content:
                 table: '[[DB_NAME_PREFIX]]files AS f'
                 where_statement: |
                     WHERE f.`usage` = 'background_image'
-                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 id_column: f.id
             columns:
                 id:
@@ -89,6 +89,7 @@ zenario__content:
                 #    priv: _PRIV_MANAGE_MEDIA
                 #    label: Upload
                 #    css_class: zenario_create_a_new
+                #    hide_on_filter: true
                 #    hide_in_select_mode: Yes
                 #    upload:
                 #        fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'

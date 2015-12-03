@@ -1,12 +1,25 @@
 Options -Indexes
 
 <IfModule pagespeed_module>
-	ModPagespeed on
-	#ModPagespeedRewriteLevel CoreFilters
-	#ModPagespeedDisableFilters add_head,combine_css,combine_javascript,extend_cache,inline_javascript,rewrite_javascript_external
-	ModPagespeedRewriteLevel OptimizeForBandwidth
-	ModPagespeedDisallow "*no_pagespeed*"
-	ModPagespeedDisallow "*no_cache*"
+	ModPagespeed off
+</IfModule>
+
+<IfModule mod_deflate.c>
+	#SetOutputFilter DEFLATE
+	AddOutputFilterByType DEFLATE text/css text/csv text/html text/plain text/xml application/x-javascript application/javascript
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    ExpiresByType image/vnd.microsoft.icon "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
 
 <IfModule mod_rewrite.c>
@@ -36,16 +49,6 @@ Options -Indexes
 	# A friendly URL for the XML sitemap:
 	RewriteRule ^sitemap.xml$ index.php?method_call=showSitemap [L]
 	
-	<IfModule !pagespeed_module>
-		<IfModule !mod_deflate>
-			<IfModule !mod_gzip>
-				# Attempt to apply caching/compression to any loose images or libraries
-				RewriteCond %{REQUEST_URI} !\.\.
-				RewriteRule ^(.*)\.(bmp|css|gif|ico|js|jpeg|jpg|png|woff)$ zenario/compressor.php?p=$1&e=$2 [L]
-			</IfModule>
-		</IfModule>
-	</IfModule>
-	
 	
 	# Remove cached pages and stats from public view:
 	RewriteRule ^cache/.*$ - [F,NC]
@@ -65,5 +68,5 @@ Options -Indexes
 	RewriteRule .*\.svn.*$ - [F,NC]
 	
 	# A rule for testing whether the htaccess file is working
-	RewriteRule ^zenario/includes/test_files/is_htaccess_working\.css$ zenario/compressor.php?p=zenario/includes/test_files/is_htaccess_working&e=css [L]
+	RewriteRule ^zenario/includes/test_files/is_htaccess_working\.txt$ zenario/includes/test_files/htaccess_is_working.txt [L]
 </IfModule>

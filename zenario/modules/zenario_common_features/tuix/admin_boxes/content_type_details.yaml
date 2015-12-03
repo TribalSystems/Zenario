@@ -121,3 +121,4 @@ zenario_content_type_details:
                     label: 'Enable auto-update of Summaries:'
                     type: checkbox
                     visible_if: "zenarioAB.value('summary_field') != 'hidden'"
+                    indent: 1

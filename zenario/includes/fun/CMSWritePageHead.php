@@ -29,27 +29,28 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
 $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
+$httpUserAgent = httpUserAgent();
 
 
 //Some IE specific fixes
 echo '
 <meta http-equiv="X-UA-Compatible" content="IE=Edge">';
 
-$oldIE = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false
-	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7') !== false
-	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 8') !== false;
+$oldIE = strpos($httpUserAgent, 'MSIE 6') !== false
+	|| strpos($httpUserAgent, 'MSIE 7') !== false
+	|| strpos($httpUserAgent, 'MSIE 8') !== false;
 
 $notSupportedInAdminMode = $oldIE
-	|| strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 9') !== false;
+	|| strpos($httpUserAgent, 'MSIE 9') !== false;
 
 //In admin mode, if this is IE, require 10 or later. Direct 9 and earlier to the compatibility mode page.
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false) {
+if (strpos($httpUserAgent, 'MSIE') !== false) {
 	
 	if ($isWelcomeOrWizard || checkPriv()) {
 		echo '
@@ -140,8 +141,13 @@ if ($isWelcomeOrWizard || checkPriv()) {
 	
 	echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/jquery_ui/jquery-ui.css?v=', $v, $gz, '"/>
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?v=', $v, $gz, '"/>
 <link rel="stylesheet" type="text/css" media="print" href="', $prefix, 'styles/print.min.css"/>';
+	
+	//Add the CSS for admin mode... unless this is a layout preview
+	if ($mode != 'layout_preview') {
+		echo '
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/admin.wrapper.css.php?v=', $v, $gz, '"/>';
+	}
 	
 	if ($includeOrganizer) {
 		echo '
@@ -214,9 +220,10 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	//Include the Head for any plugin instances on the page, if they have one
 	foreach(cms_core::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
-			cms_core::preSlot($slotName, 'addToPageHead');
+			$edition = cms_core::$edition;
+			$edition::preSlot($slotName, 'addToPageHead');
 				$instance['class']->addToPageHead();
-			cms_core::postSlot($slotName, 'addToPageHead');
+			$edition::postSlot($slotName, 'addToPageHead');
 		}
 	}
 }

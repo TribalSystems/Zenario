@@ -181,14 +181,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 	}
 	
-	private static function isGeneratedField($name, $field) {
-		return !in_array($name, array('key_line', 'desc', 'desc2', 'insert_desc', 'insert_options', 'update_desc', 'update_key_field', 'next', 'previous'));
-	}
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		
-	}
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		// Get dataset details
 		$datasetId = $box['key']['dataset'];
@@ -223,49 +215,27 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		if ($box['tab'] == 'actions') {
 			$box['css_class'] = '';
 		} else {
-			$box['css_class'] = 'zab_hide_save_button';
+			$box['css_class'] = 'zenario_fab_default_style zenario_fab_hide_save_button';
 		}
 		
-		// Only proceed if file
-		$file = $values['file/file'];
-		if (!$file = $values['file/file']) {
+		// Stop if step 1
+		if ($box['tab'] == 'file' || !$values['file/file']) {
 			return;
 		}
-		$path = getPathOfUploadedFileInCacheDir($file);
 		
-		// Get list of values for header to DB column matching.
-		$DBColumnSelectListValues = listCustomFields($datasetDetails['system_table'], $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 		
-		// If importing users and screen names not enabled, don't show a field for screen names
-		if (($datasetDetails['system_table'] == 'users') && !setting('user_use_screen_name')) {
-			$screenNameField = getDatasetFieldDetails('screen_name', $datasetDetails);
-			if (!empty($screenNameField['id'])) {
-				unset($DBColumnSelectListValues[$screenNameField['id']]);
-			}
-		}
-		
-		// Show an ID field for updates
-		$update = $values['file/type'] == 'update_data';
-		if ($update) {
-			$DBColumnSelectListValues['id'] = array('ord' => 0, 'label' => 'ID Column');
-		}
-		
-		// Show special fields for users
-		if ($datasetDetails['system_table'] == 'users') {
-			$DBColumnSelectListValues['name_split_on_first_space'] = array('ord' => 0.1, 'label' => 'Name -> First Name, Last Name, split on first space');
-			$DBColumnSelectListValues['name_split_on_last_space'] = array('ord' => 0.2, 'label' => 'Name -> First Name, Last Name, split on last space');
-		}
-		
-		$box['lovs']['dataset_fields'] = $DBColumnSelectListValues;
-		
-		// Create an array of field IDs to database columns to use when trying to autoset headers to DB columns
-		$datasetColumns = array();
-		foreach ($datasetFieldDetails as $fieldId => $details) {
-			$datasetColumns[$fieldId] = $details['db_column'];
-		}
-		
+		$path = getPathOfUploadedFileInCacheDir($values['file/file']);
 		$newFileUploaded = ($path != $box['key']['file_path']);
-		$keyLine = ($values['headers/key_line'] && !$newFileUploaded) ? $values['headers/key_line'] : 0;
+		$box['key']['file_path'] = $path;
+		
+		
+		// Include modules if needed
+		switch ($datasetDetails['extends_organizer_panel']) {
+			case 'zenario__locations/panel':
+				inc('zenario_location_manager');
+				break;
+		}
+		
 		
 		// Clear old generated fields from fields tab
 		$currentMatchedFields = array();
@@ -278,6 +248,31 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				unset($box['tabs']['headers']['fields'][$name]);
 			}
 		}
+		
+		// Get list of values for header to DB column matching.
+		$DBColumnSelectListValues = listCustomFields($datasetDetails['system_table'], $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		// Show an ID field for updates
+		$update = $values['file/type'] == 'update_data';
+		if ($update) {
+			$DBColumnSelectListValues['id'] = array('ord' => 0, 'label' => 'ID Column');
+		}
+		// Show special fields for users
+		if ($datasetDetails['system_table'] == 'users') {
+			$DBColumnSelectListValues['name_split_on_first_space'] = array('ord' => 0.1, 'label' => 'Name -> First Name, Last Name, split on first space');
+			$DBColumnSelectListValues['name_split_on_last_space'] = array('ord' => 0.2, 'label' => 'Name -> First Name, Last Name, split on last space');
+		}
+		$box['lovs']['dataset_fields'] = $DBColumnSelectListValues;
+		
+		
+		// Create an array of field IDs to database columns to use when trying to autoset headers to DB columns
+		$datasetColumns = array();
+		foreach ($datasetFieldDetails as $fieldId => $details) {
+			$datasetColumns[$fieldId] = $details['db_column'];
+		}
+		
+		
+		$keyLine = ($values['headers/key_line'] && !$newFileUploaded) ? $values['headers/key_line'] : 0;
+		
 		
 		$header = false;
 		$headerCount = 0;
@@ -293,7 +288,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$warningLines = array();
 		$errorLines = array();
 		$blankLines = array();
-		
 		
 		$IDColumnIndex = false;
 		
@@ -362,7 +356,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						}
 						if ($thisIsKeyLine) {
 							$header = true;
-							if ($box['tab'] == 'file' || $box['tab'] == 'headers') {
+							if ($box['tab'] == 'headers') {
 								break;
 							}
 							if ($IDColumnIndex !== false) {
@@ -415,12 +409,19 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				}
 			}
 		} else {
-			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+			require_once CMS_ROOT . 'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+			
+			// Get file type
 			$inputFileType = PHPExcel_IOFactory::identify($path);
+			
+			// Create reader object
 			$objReader = PHPExcel_IOFactory::createReader($inputFileType);
 			$objReader->setReadDataOnly(true);
+			
+			// Load spreadsheet
 			$objPHPExcel = $objReader->load($path);
 			$worksheet = $objPHPExcel->getSheet(0);
+			
 			// Columns that first and last headers are stored in
 			$startingColumn = 0;
 			$endingColumn = 0;
@@ -502,7 +503,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					if ($thisIsKeyLine) {
 						$keyLine = $lineNumber;
 						$header = true;
-						if ($box['tab'] == 'file' || $box['tab'] == 'headers') {
+						if ($box['tab'] == 'headers') {
 							break;
 						}
 						if ($IDColumnIndex !== false) {
@@ -544,18 +545,75 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			}
 		}
 		
+		// Try to autoset keyline field
+		if (!$values['headers/key_line'] || $newFileUploaded) {
+			$values['headers/key_line'] = $keyLine;
+		}
+		
+		// Set preview text
+		$values['preview/csv_preview'] = $filePreviewString;
+		
+		// Set preview errors text
+		$totalLines = $lineNumber;
+		$totalWarnings = $warningCount;
+		$totalErrors = $errorCount;
+		$totalBlanks = count($blankLines);
+		
+		$fields['preview/total_readable_lines']['snippet']['html'] = '<b>Total readable lines:</b> '. ($totalLines - $totalErrors - $totalBlanks - 1);
+		$plural = ($totalErrors == 1) ? '' : 's';
+		$errorsText = $totalErrors. ' error'.$plural;
+		$plural = ($totalWarnings == 1) ? '' : 's';
+		$warningsText = $totalWarnings. ' warning'.$plural;
+		$fields['preview/problems']['label'] = 'Problems ('.$errorsText.', '.$warningsText.'):';
+		$values['preview/problems'] = $problems;
+		
+		$fields['preview/error_options']['hidden'] = $fields['preview/desc2']['hidden'] = (count($warningLines) == 0);
+		
+		$effectedRecords = $totalLines - $totalErrors - $totalBlanks - 1 - $updateCount;
+		if ($values['preview/error_options'] == 'skip_warning_lines') {
+			$effectedRecords -= $totalWarnings;
+		}
+		
+		// Record warning lines for when saving data
+		$box['key']['warning_lines'] = implode(',', $warningLines);
+		$box['key']['error_lines'] = implode(',', $errorLines);
+		$box['key']['blank_lines'] = implode(',', $blankLines);
+		
+		
+		// Set step 4 update/insert statement
+		$plural = ($effectedRecords == 1) ? '' : 's';
+		if ($values['file/type'] == 'insert_data') {
+			$recordStatement = '<b>'.$effectedRecords. '</b> new record'.$plural.' will be created.';
+		} else {
+			$recordStatement = '<b>'.$effectedRecords. '</b> record'.$plural.' will be updated.';
+		}
+		if ($updateCount) {
+			$plural = ($updateCount == 1) ? '' : 's';
+			$recordStatement .= ' <b>'.$updateCount.'</b> record'.$plural.' will be updated.';
+		}
+		$fields['actions/records_statement']['snippet']['html'] = $recordStatement;
+		
+		
+		
+		
+		
 		if ($box['tab'] == 'actions') {
 			
 			$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
 			
+			// Remove previously generated fields
 			foreach($box['tabs']['actions']['fields'] as $name => $field) {
 				if (!in_array($name, array('records_statement', 'email_report', 'line_break', 'previous'))) {
 					unset($box['tabs']['actions']['fields'][$name]);
 				}
 			}
+			
+			// Remove fields set in step 2
 			foreach ($rowFieldIdLink as $index => $fieldId) {
 				unset($datasetFieldDetails[$fieldId]);
 			}
+			
+			// Create a field for each unset dataset field
 			$ord = 1;
 			foreach ($datasetFieldDetails as $fieldId => $datasetField) {
 				
@@ -566,6 +624,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					}
 				}
 				
+				// Create field value picker TUIX
 				$ord++;
 				$valueFieldName = 'value__'.$fieldId;
 				$fieldValuePicker = array(
@@ -573,8 +632,9 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					'same_row' => true,
 					'post_field_html' => '<br/>',
 					'type' => 'text',
-					'style' => 'width: 20em;');
-				if (isset($values[$valueFieldName]) && !empty($values[$valueFieldName])) {
+					'style' => 'width: 20em;'
+				);
+				if (!empty($values[$valueFieldName])) {
 					$fieldValuePicker['value'] = $values[$valueFieldName];
 				}
 				$valuesArray = false;
@@ -615,6 +675,8 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						$fieldValuePicker['values'] = $valuesArray;
 						break;
 				}
+				
+				// Add dataset field validation
 				$validationArray = false;
 				switch ($datasetField['validation']) {
 					case 'email':
@@ -636,6 +698,8 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				if ($validationArray) {
 					$fieldValuePicker['validation'] = $validationArray;
 				}
+				
+				// Set field label and value picker
 				$box['tabs']['actions']['fields']['label__'.$fieldId] = array(
 					'ord' => $ord + 500,
 					'same_row' => true,
@@ -647,48 +711,201 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			}
 		}
 		
-		$values['preview/csv_preview'] = $filePreviewString;
+	}
+	
+	
+	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		$datasetDetails = getDatasetDetails($box['key']['dataset']);
 		
-		if (!$values['headers/key_line'] || $newFileUploaded) {
-			$values['headers/key_line'] = $keyLine;
+		// Include modules if needed
+		switch ($datasetDetails['extends_organizer_panel']) {
+			case 'zenario__locations/panel':
+				inc('zenario_location_manager');
+				break;
 		}
 		
-		$totalLines = $lineNumber;
-		$totalWarnings = $warningCount;
-		$totalErrors = $errorCount;
-		$totalBlanks = count($blankLines);
+		// Get link between fields IDs and column index
+		$keyValues = array();
+		$dataCount = 0;
+		$firstNameFieldDetails = $lastNameFieldDetails = false;
+		foreach ($box['tabs']['headers']['fields'] as $fieldName => $field) {
+			if (isset($field['type']) && ($field['type'] == 'select') && chopPrefixOffOfString($fieldName, 'database_column__')) {
+				if (!empty($field['value'])) {
+					
+					// Look for any custom columns that have been set
+					if (($field['value'] == 'name_split_on_first_space' || $field['value'] == 'name_split_on_last_space') && !$firstNameFieldDetails && !$lastNameFieldDetails) {
+						$firstNameFieldDetails = getDatasetFieldDetails('first_name', $datasetDetails);
+						$lastNameFieldDetails = getDatasetFieldDetails('last_name', $datasetDetails);
+					}
+					
+					$keyValues[$dataCount] = $field['value'];
+				}
+				$dataCount++;
+			}
+		}
 		
-		$fields['preview/total_readable_lines']['snippet']['html'] = '<b>Total readable lines:</b> '. ($totalLines - $totalErrors - $totalBlanks - 1);
-		$plural = ($totalErrors == 1) ? '' : 's';
-		$errorsText = $totalErrors. ' error'.$plural;
-		$plural = ($totalWarnings == 1) ? '' : 's';
-		$warningsText = $totalWarnings. ' warning'.$plural;
-		$fields['preview/problems']['label'] = 'Problems ('.$errorsText.', '.$warningsText.'):';
-		$values['preview/problems'] = $problems;
+		// Get the details of dataset fields
+		$datasetFieldDetails = self::getAllDatasetFieldDetails($box['key']['dataset']);
 		
-		$fields['preview/error_options']['hidden'] = $fields['preview/desc2']['hidden'] = (count($warningLines) == 0);
+		// Get the values of fields set in step 4 which are the same for all values
+		$constantValues = array();
+		foreach ($datasetFieldDetails as $fieldId => $fieldDetails) {
+			$fieldName = 'actions/value__'.$fieldId;
+			if (isset($values[$fieldName]) && ($values[$fieldName] != '') && ($fieldDetails['type'] != 'checkboxes')) {
+				$constantValues[$fieldId] = $values[$fieldName];
+			}
+		}
 		
-		$effectedRecords = $totalLines - $totalErrors - $totalBlanks - 1 - $updateCount;
+		// Load lines to ignore
+		$errorLines = $box['key']['error_lines'] ? explode(',', $box['key']['error_lines']) : array();
+		$blankLines = $box['key']['blank_lines'] ? explode(',', $box['key']['blank_lines']) : array();
+		$warningLines = array();
 		if ($values['preview/error_options'] == 'skip_warning_lines') {
-			$effectedRecords -= $totalWarnings;
+			$warningLines = $box['key']['warning_lines'] ? explode(',', $box['key']['warning_lines']) : array();
+		}
+		$linesToSkip = array_merge($errorLines, $blankLines, $warningLines);
+		
+		
+		$keyLine = $values['headers/key_line'];
+		$unexpectedErrors = array();
+		if ($file = $values['file/file']) {
+			$path = getPathOfUploadedFileInCacheDir($file);
+			$mode = ($values['file/type'] == 'insert_data') ? 'insert' : 'update';
+			$importValues = array();
+			if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+				ini_set('auto_detect_line_endings', true);
+				$f = fopen($path, 'r');
+				$lineNumber = 0;
+				while ($line = fgets($f)) {
+					$lineNumber++;
+					
+					// Skip key line and any with errors
+					if (in_array($lineNumber, $linesToSkip) || $lineNumber == $keyLine) {
+						continue;
+					}
+					
+					// Add step 4 values
+					$importValues[$lineNumber] = $constantValues;
+					
+					$data = str_getcsv($line);
+					for ($dataCount = 0; $dataCount < count($data); $dataCount++) {
+						if (isset($keyValues[$dataCount])) {
+							$data[$dataCount] = trim($data[$dataCount]);
+							
+							// Add special cases
+							if ($keyValues[$dataCount] == 'name_split_on_first_space') {
+								if (($pos = strpos($data[$dataCount], ' ')) !== false) {
+									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
+									$importValues[$lineNumber][$lastNameFieldDetails['id']] =  substr($data[$dataCount], $pos + 1);
+								} else {
+									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
+								}
+								
+							} elseif ($keyValues[$dataCount] == 'name_split_on_last_space') {
+								if (($pos = strrpos($data[$dataCount], ' ')) !== false) {
+									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
+									$importValues[$lineNumber][$lastNameFieldDetails['id']] = substr($data[$dataCount], $pos + 1);
+								} else {
+									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
+								}
+							
+							// Add normal data
+							} else {
+								$importValues[$lineNumber][$keyValues[$dataCount]] = $data[$dataCount];
+							}
+						}
+					}
+				}
+				
+			} else {
+				require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+				$inputFileType = PHPExcel_IOFactory::identify($path);
+				$objReader = PHPExcel_IOFactory::createReader($inputFileType);
+				$objReader->setReadDataOnly(true);
+				$objPHPExcel = $objReader->load($path);
+				$worksheet = $objPHPExcel->getSheet(0);
+				$startingColumn = 0;
+				$endingColumn = 0;
+				foreach ($worksheet->getRowIterator() as $row) {
+					$lineNumber = $row->getRowIndex();
+					// Skip errors, blanks and/or warning lines
+					if (in_array($lineNumber, $linesToSkip)) {
+						continue;
+					}
+					$dataCount = 0;
+					// Get the list of matched column headers and db_columns
+					$cellIterator = $row->getCellIterator();
+					$cellIterator->setIterateOnlyExistingCells(false);
+					// Set constant values
+					if ($lineNumber > $keyLine) {
+						$importValues[$lineNumber] = $constantValues;
+					}
+					foreach ($cellIterator as $cell) {
+						$value = $cell->getCalculatedValue();
+						$columnIndex = PHPExcel_Cell::columnIndexFromString($cell->getColumn());
+						if ($lineNumber == $keyLine) {
+							if (!is_null($value) && !$startingColumn) {
+								$startingColumn = $endingColumn = $columnIndex;
+							}
+							if ($startingColumn) {
+								if (empty($value)) {
+									break;
+								}
+								if ($startingColumn != $columnIndex) {
+									$endingColumn++;
+								}
+							}
+						} else {
+							if (($columnIndex >= $startingColumn) && ($columnIndex <= $endingColumn)) {
+								if (!is_null($value) && isset($keyValues[$dataCount])) {
+									$importValues[$lineNumber][$keyValues[$dataCount]] = trim($value);
+								}
+								$dataCount++;
+							}
+						}
+					}
+				}
+			}
+			
+			// Import data
+			$unexpectedErrors = self::setImportData($box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
 		}
 		
-		$plural = ($effectedRecords == 1) ? '' : 's';
-		if ($values['file/type'] == 'insert_data') {
-			$recordStatement = '<b>'.$effectedRecords. '</b> new record'.$plural.' will be created.';
-		} else {
-			$recordStatement = '<b>'.$effectedRecords. '</b> record'.$plural.' will be updated.';
-		}
-		if ($updateCount) {
-			$plural = ($updateCount == 1) ? '' : 's';
-			$recordStatement .= ' <b>'.$updateCount.'</b> record'.$plural.' will be updated.';
-		}
-		$fields['actions/records_statement']['snippet']['html'] = $recordStatement;
 		
-		$box['key']['warning_lines'] = implode(',', $warningLines);
-		$box['key']['error_lines'] = implode(',', $errorLines);
-		$box['key']['blank_lines'] = implode(',', $blankLines);
-		$box['key']['file_path'] = $path;
+		// Send report email
+		if ($values['actions/email_report']) {
+			$adminDetails = getAdminDetails(adminId());
+			$path = getPathOfUploadedFileInCacheDir($values['file/file']);
+			$filename = pathinfo($path, PATHINFO_BASENAME);
+			$createOrUpdate = 'create';
+			if ($values['file/type'] == 'update_data') {
+				$createOrUpdate = 'update';
+			}
+			$body = "Import settings \n\n";
+			$body .= 'File: '.$filename."\n";
+			$body .= 'Mode: '.$createOrUpdate."\n";
+			$body .= 'Key line: '.$values['headers/key_line']."\n";
+			$body .= strip_tags($fields['actions/records_statement']['snippet']['html'])."\n\n";
+			$body .= "Error log: \n\n";
+			$errorLog = ($values['preview/problems'] ? $values['preview/problems'] : 'No errors or warnings');
+			$body .= $errorLog;
+			/*
+			if ($unexpectedErrors) {
+				$body .= "\n\nUnexpected Errors:\n\n";
+				$body .= $unexpectedErrors;
+			}
+			*/
+			sendEmail('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, array(), array(), 'bulk', false);
+		}
+	}
+	
+	
+	
+	
+	
+	
+	private static function isGeneratedField($name, $field) {
+		return !in_array($name, array('key_line', 'desc', 'desc2', 'insert_desc', 'insert_options', 'update_desc', 'update_key_field', 'next', 'previous'));
 	}
 	
 	private static $step2FieldWidth = 20;
@@ -1028,166 +1245,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		return $datasetFieldDetails;
 	}
 	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		$datasetDetails = getDatasetDetails($box['key']['dataset']);
-		
-		// Get fieldIDs and column index
-		$keyValues = array();
-		$dataCount = 0;
-		$firstNameFieldDetails = $lastNameFieldDetails = false;
-		foreach ($box['tabs']['headers']['fields'] as $fieldName => $field) {
-			if (isset($field['type']) && ($field['type'] == 'select') && chopPrefixOffOfString($fieldName, 'database_column__')) {
-				if (!empty($field['value'])) {
-					if (($field['value'] == 'name_split_on_first_space' || $field['value'] == 'name_split_on_last_space') && !$firstNameFieldDetails && !$lastNameFieldDetails) {
-						$firstNameFieldDetails = getDatasetFieldDetails('first_name', $datasetDetails);
-						$lastNameFieldDetails = getDatasetFieldDetails('last_name', $datasetDetails);
-					}
-					$keyValues[$dataCount] = $field['value'];
-				}
-				$dataCount++;
-			}
-		}
-		
-		$datasetFieldDetails = self::getAllDatasetFieldDetails($box['key']['dataset']);
-		$constantValues = array();
-		foreach ($datasetFieldDetails as $fieldId => $fieldDetails) {
-			$fieldName = 'actions/value__'.$fieldId;
-			if (isset($values[$fieldName]) && ($values[$fieldName] != '') && ($fieldDetails['type'] != 'checkboxes')) {
-				$constantValues[$fieldId] = $values[$fieldName];
-			}
-		}
-		$errorLines = $box['key']['error_lines'] ? explode(',', $box['key']['error_lines']) : array();
-		$blankLines = $box['key']['blank_lines'] ? explode(',', $box['key']['blank_lines']) : array();
-		$keyLine = $values['headers/key_line'];
-		$warningLines = array();
-		if ($values['preview/error_options'] == 'skip_warning_lines') {
-			$warningLines = $box['key']['warning_lines'] ? explode(',', $box['key']['warning_lines']) : array();
-		}
-		$linesToSkip = array_merge($errorLines, $blankLines, $warningLines);
-		
-		$unexpectedErrors = array();
-		if ($file = $values['file/file']) {
-			$path = getPathOfUploadedFileInCacheDir($file);
-			$mode = ($values['file/type'] == 'insert_data') ? 'insert' : 'update';
-			$importValues = array();
-			if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
-				ini_set('auto_detect_line_endings', true);
-				$f = fopen($path, 'r');
-				$lineNumber = 0;
-				while ($line = fgets($f)) {
-					$lineNumber++;
-					if (in_array($lineNumber, $linesToSkip) || $lineNumber == $keyLine) {
-						continue;
-					}
-					$importValues[$lineNumber] = $constantValues;
-					$data = str_getcsv($line);
-					for ($dataCount = 0; $dataCount < count($data); $dataCount++) {
-						if (isset($keyValues[$dataCount])) {
-							$data[$dataCount] = trim($data[$dataCount]);
-							if ($keyValues[$dataCount] == 'name_split_on_first_space') {
-								if (($pos = strpos($data[$dataCount], ' ')) !== false) {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
-									$importValues[$lineNumber][$lastNameFieldDetails['id']] =  substr($data[$dataCount], $pos + 1);
-								} else {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
-								}
-								
-							} elseif ($keyValues[$dataCount] == 'name_split_on_last_space') {
-								if (($pos = strrpos($data[$dataCount], ' ')) !== false) {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr($data[$dataCount], 0, $pos);
-									$importValues[$lineNumber][$lastNameFieldDetails['id']] = substr($data[$dataCount], $pos + 1);
-								} else {
-									$importValues[$lineNumber][$firstNameFieldDetails['id']] = $data[$dataCount];
-								}
-							} else {
-								$importValues[$lineNumber][$keyValues[$dataCount]] = $data[$dataCount];
-							}
-						}
-					}
-				}
-				
-			} else {
-				require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
-				$inputFileType = PHPExcel_IOFactory::identify($path);
-				$objReader = PHPExcel_IOFactory::createReader($inputFileType);
-				$objReader->setReadDataOnly(true);
-				$objPHPExcel = $objReader->load($path);
-				$worksheet = $objPHPExcel->getSheet(0);
-				$startingColumn = 0;
-				$endingColumn = 0;
-				foreach ($worksheet->getRowIterator() as $row) {
-					$lineNumber = $row->getRowIndex();
-					// Skip errors, blanks and/or warning lines
-					if (in_array($lineNumber, $linesToSkip)) {
-						continue;
-					}
-					$dataCount = 0;
-					// Get the list of matched column headers and db_columns
-					$cellIterator = $row->getCellIterator();
-					$cellIterator->setIterateOnlyExistingCells(false);
-					// Set constant values
-					if ($lineNumber > $keyLine) {
-						$importValues[$lineNumber] = $constantValues;
-					}
-					foreach ($cellIterator as $cell) {
-						$value = $cell->getCalculatedValue();
-						$columnIndex = PHPExcel_Cell::columnIndexFromString($cell->getColumn());
-						if ($lineNumber == $keyLine) {
-							if (!is_null($value) && !$startingColumn) {
-								$startingColumn = $endingColumn = $columnIndex;
-							}
-							if ($startingColumn) {
-								if (empty($value)) {
-									break;
-								}
-								if ($startingColumn != $columnIndex) {
-									$endingColumn++;
-								}
-							}
-						} else {
-							if (($columnIndex >= $startingColumn) && ($columnIndex <= $endingColumn)) {
-								if (!is_null($value) && isset($keyValues[$dataCount])) {
-									$importValues[$lineNumber][$keyValues[$dataCount]] = trim($value);
-								}
-								$dataCount++;
-							}
-						}
-					}
-				}
-			}
-			
-			// Import data
-			$unexpectedErrors = self::setImportData($box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
-		}
-		
-		
-		// Send report email
-		if ($values['actions/email_report']) {
-			$adminDetails = getAdminDetails(adminId());
-			$path = getPathOfUploadedFileInCacheDir($values['file/file']);
-			$filename = pathinfo($path, PATHINFO_BASENAME);
-			$createOrUpdate = 'create';
-			if ($values['file/type'] == 'update_data') {
-				$createOrUpdate = 'update';
-			}
-			$body = "Import settings \n\n";
-			$body .= 'File: '.$filename."\n";
-			$body .= 'Mode: '.$createOrUpdate."\n";
-			$body .= 'Key line: '.$values['headers/key_line']."\n";
-			$body .= strip_tags($fields['actions/records_statement']['snippet']['html'])."\n\n";
-			$body .= "Error log: \n\n";
-			$errorLog = ($values['preview/problems'] ? $values['preview/problems'] : 'No errors or warnings');
-			$body .= $errorLog;
-			/*
-			if ($unexpectedErrors) {
-				$body .= "\n\nUnexpected Errors:\n\n";
-				$body .= $unexpectedErrors;
-			}
-			*/
-			sendEmail('Dataset Import Report', $body, $adminDetails['email'], $addressToOverriddenBy, false, false, false, array(), array(), 'bulk', false);
-		}
-	}
-	
 	private static function getTablePrimaryKeyName($tableName) {
 		$sql = '
 			SHOW KEYS
@@ -1301,7 +1358,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				// Custom logic to save locations
 				} elseif ($datasetDetails['extends_organizer_panel'] == 'zenario__locations/panel') {
 					$data['last_updated_via_import'] = now();
-					$id = insertRow($datasetDetails['system_table'], $data);
+					$id = zenario_location_manager::createLocation($data);
 				
 				// Other datasets
 				} else {

@@ -51,17 +51,17 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 	$directoriesAndTheirRevisionNumbers = array(
 	
 		//Add in updates for the database updater itself
-		'zenario/admin/db_updates/updater'	=> getLatestRevisionNumber(),
+		'zenario/admin/db_updates/step_1_update_the_updater_itself'	=> LATEST_REVISION_NO,
 		
 		//Add in updates for the Core CMS
-		'zenario/admin/db_updates/core'		=> getLatestRevisionNumber(),
+		'zenario/admin/db_updates/step_2_update_the_database_schema'		=> LATEST_REVISION_NO,
 		
 		//Refresh the permissions tables, and check some others are populates
 		//These should be run every update
-		'zenario/admin/db_updates/run_every_update'	=> RUN_EVERY_UPDATE,
+		'zenario/admin/db_updates/step_3_populate_certain_tables'	=> RUN_EVERY_UPDATE,
 		
 		//Major updates may need table data converted to the correct format
-		'zenario/admin/db_updates/data_conversion'	=> getLatestRevisionNumber()
+		'zenario/admin/db_updates/step_4_migrate_the_data'	=> LATEST_REVISION_NO
 	);
 	
 	$desc = false;
@@ -185,9 +185,9 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 					//If not, ignore when checking versions, and always run when running
 					//the exporter
 					if ($andDoUpdates) {
-						//The zenario/admin/db_updates/run_every_update path should be run on the first sweep.
-						//Any other "run every update" path should be run on the second sweep
-						if ($path == 'zenario/admin/db_updates/run_every_update' XOR $i == 1) {
+						//The zenario/admin/db_updates/step_3_populate_certain_tables path should be run on the first sweep.
+						//(But the "run_every_update" directories for modules should be run on the second sweep)
+						if ($path == 'zenario/admin/db_updates/step_3_populate_certain_tables' XOR $i == 1) {
 							performDBUpdate($actualPath, $update, $uninstallPluginOnFail);
 						}
 					}
@@ -210,7 +210,7 @@ for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 							performDBUpdate($actualPath, $update, $uninstallPluginOnFail, $currentRevision, $latestRevisionNumber);
 							
 							//If this was an update to the updater, recalculate all of the revision numbers again just in case some have changed
-							if ($path == 'zenario/admin/db_updates/updater') {
+							if ($path == 'zenario/admin/db_updates/step_1_update_the_updater_itself') {
 								$currentRevisions = getAllCurrentRevisionNumbers();
 							}
 						

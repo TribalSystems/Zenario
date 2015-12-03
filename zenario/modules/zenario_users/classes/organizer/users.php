@@ -218,12 +218,12 @@ class zenario_users__organizer__users extends zenario_users {
 				deleteUser($id);
 			}
 	
-		} elseif (post('remove_users_from_this_group') && post('refiner__group_members') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
+		} elseif (post('remove_users_from_this_group') && post('refiner__group_members') && checkPriv('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $id) {
 				addUserToGroup($id, post('refiner__group_members'), $remove = true);
 			}
 	
-		} elseif (post('add_user_to_this_group') && post('refiner__group_members') && checkPriv('_PRIV_MANAGE_GROUP_MEMBERSHIP')) {
+		} elseif (post('add_user_to_this_group') && post('refiner__group_members') && checkPriv('_PRIV_EDIT_USER')) {
 			foreach (explode(',', $ids) as $userId) {
 				addUserToGroup($userId, post('refiner__group_members'));
 			}

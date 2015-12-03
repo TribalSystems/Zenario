@@ -2,6 +2,7 @@
 zenario_export_content_items:
     key:
         id: ''
+        type: ''
     title: Export
     hide_tab_bar: Yes
     save_button_message: Export

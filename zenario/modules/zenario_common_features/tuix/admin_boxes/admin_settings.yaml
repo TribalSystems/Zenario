@@ -10,7 +10,7 @@ zenario_admin:
             label: Settings
             fields:
                 #description:
-                #    full_width: Yes
+                #    full_width: true
                 #    snippet:
                 #        html: >
                 #            Use this screen to change how this Admin uses Zenario.
@@ -31,7 +31,6 @@ zenario_admin:
                         required: Please enter the number of items to show per page.
                         numeric: The number of items per page must be numeric.
                 show_help_tour_next_time:
-                    hidden: true
                     admin_setting:
                         name: show_help_tour_next_time
                     type: checkbox

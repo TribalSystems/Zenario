@@ -90,6 +90,7 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 		}
 		
 		$ord = 4;
+		$hasSomePerms = false;
 		foreach ($languages as $language) {
 			if ($box['key']['is_code'] || $language['translate_phrases']) {
 		
@@ -100,14 +101,18 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 					$phraseValue = '';
 					$protectValue = '';
 				}
-		
-		
+				
+				$hasSomePerms =
+					($hasPerms = checkPrivForLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $language['id']))
+				 || $hasSomePerms;
+				
 				$box['tabs']['phrase']['fields'][$language['id']] =
 					array(
 						'class_name' => 'zenario_common_features',
 						'ord' => $ord,
 						'label' => $language['english_name']. ':',
 						'type' => 'textarea',
+						'read_only' => !$hasPerms,
 						'rows' => '4',
 						'side_note' => 
 							"This is HTML text.
@@ -123,6 +128,7 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 						'ord' => $ord + 1,
 						'label' => 'Protect',
 						'type' => 'checkbox',
+						'read_only' => !$hasPerms,
 						'visible_if' => 'zenarioAB.editModeOn()',
 						'value' => $protectValue,
 						'side_note' =>
@@ -131,6 +137,10 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 					);
 				$ord += 2;
 			}
+		}
+		
+		if (!$hasSomePerms) {
+			unset($box['tabs']['phrase']['edit_mode']);
 		}
 		
 		//Try to set the Module's name
@@ -154,11 +164,11 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 		
 		// If this a phrase code (e.g. _HELLO_WORLD) or a phrase (e.g. Hello World)
 		if ($box['key']['is_code']) {
-			$box['title'] = adminPhrase('Modifying the Phrase "[[code]]".', $box['key']);			
+			$box['title'] = adminPhrase('Editing the Phrase "[[code]]".', $box['key']);			
 		
 		// If this is a phrase (not a code)
 		} else {
-			$box['title'] = adminPhrase('Modifying a Phrase');
+			$box['title'] = adminPhrase('Editing a Phrase');
 		}
 	}
 	
@@ -167,7 +177,8 @@ class zenario_common_features__admin_boxes__phrase extends module_base_class {
 		
 		$languages = getLanguages(false, true, true);
 		foreach ($languages as $language) {
-			if ($box['key']['is_code'] || $language['translate_phrases']) {
+			if (checkPrivForLanguage('_PRIV_MANAGE_LANGUAGE_PHRASE', $language['id'])
+			 && ($box['key']['is_code'] || $language['translate_phrases'])) {
 				setRow('visitor_phrases', 
 					array('local_text' => $values['phrase/'. $language['id']], 'protect_flag' => $values['phrase/protect_flag_'. $language['id']]), 
 					array('code' => $box['key']['code'], 'module_class_name' => $box['key']['module_class_name'], 'language_id' => $language['id']));

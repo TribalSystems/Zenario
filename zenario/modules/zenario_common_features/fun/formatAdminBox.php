@@ -33,14 +33,6 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'plugin_settings.formatAdminBox');
 	
 	
-	case 'site_settings':
-		return require funIncPath(__FILE__, 'site_settings.formatAdminBox');
-	
-	
-	case 'zenario_menu':
-		return require funIncPath(__FILE__, 'menu_node.formatAdminBox');
-	
-	
 	case 'zenario_content':
 		require funIncPath(__FILE__, 'content.formatAdminBox');
 
@@ -52,37 +44,8 @@ switch ($path) {
 			!empty($box['tabs']['meta_data']['fields']['create_menu']['hidden']) || !$values['meta_data/create_menu'];
 		
 		break;
-		
-		
-	case 'zenario_publish':
-		$fields['publish/publish_date']['hidden'] = 
-		$fields['publish/publish_hours']['hidden'] = 
-		$fields['publish/publish_mins']['hidden'] = 
-			(!($values['publish/publish_options'] == 'schedule')
-			|| $fields['publish/publish_options']['hidden']);
-		$box['max_height'] = (($values['publish/publish_options'] == 'schedule') ? 250 : 150);
-		
-		break;
-		
-		
-	case 'zenario_content_layout':
-		$box['tabs']['layout']['notices']['archived_template']['show'] = false;
-		
-		if (!$values['layout_id']) {
-			$fields['skin_id']['hidden'] = true;
-		} else {
-			$fields['skin_id']['hidden'] = false;
-			
-			$fields['skin_id']['value'] =
-			$fields['skin_id']['current_value'] =
-				templateSkinId($values['layout_id']);
-			
-			if (getRow('layouts', 'status', $values['layout_id']) != 'active') {
-				$box['tabs']['layout']['notices']['archived_template']['show'] = true;
-			}
-		}
-		
-		break;
+	
+	
 	case 'zenario_document_move':
 		$fields['details/move_to']['hidden'] = $values['details/move_to_root'];
 		break;

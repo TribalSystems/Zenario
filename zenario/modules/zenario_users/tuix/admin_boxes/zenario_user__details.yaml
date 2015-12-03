@@ -13,7 +13,7 @@ zenario_user__details:
                 enabled: Yes
             fields:
                 email: 
-                    label: "Email:"
+                    label: "Email"
                     type: text
                     format_onchange: Yes
                 email_verified: 
@@ -22,16 +22,16 @@ zenario_user__details:
                     redraw_onchange: true
                     read_only: true
                 salutation: 
-                    label: "Salutation:"
+                    label: "Salutation"
                     type: text
                 first_name: 
-                    label: "First Name:"
+                    label: "First Name"
                     type: text
                 last_name: 
-                    label: "Last Name:"
+                    label: "Last Name"
                     type: text
                 status: 
-                    label: "Status:"
+                    label: "Status"
                     type: radios
                     values: 
                         contact: 
@@ -52,7 +52,7 @@ zenario_user__details:
                             tooltip: "A suspended user who cannot log in"
                     redraw_onchange: true
                 screen_name: 
-                    label: "Screen Name:"
+                    label: "Screen Name"
                     type: text
                     visible_if: |
                         zenarioAB.value('status', 'details')
@@ -60,6 +60,13 @@ zenario_user__details:
                         && zenarioA.siteSettings.user_use_screen_name
                     maxlength: 50
                     reformat_onchange: true
+                    
+                    # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
+                    # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
+                    pre_field_html: |
+                        <input style="display:none" type="text" name="dummy_username"/>
+                        <input style="display:none" type="password" name="dummy_password"/>
+                    
                 suggest_screen_name:
                     same_row: true
                     visible_if: |
@@ -96,7 +103,7 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                 password:
-                    label: "Password:"
+                    label: "Password"
                     type: password
                     visible_if: |
                         (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
@@ -195,39 +202,39 @@ zenario_user__details:
             label: Dates
             fields:
                 created_date: 
-                    label: "Created Date:"
+                    label: "Created Date"
                     type: date
                     change_month_and_year: true
                     read_only: true
                 modified_date: 
-                    label: "Modified Date:"
+                    label: "Modified Date"
                     type: date
                     change_month_and_year: true
                     read_only: true
                 last_login: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last Login:"
+                    label: "Last Login"
                     type: date
                     change_month_and_year: true
                     read_only: true
                 ip: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last Login IP:"
+                    label: "Last Login IP"
                     type: text
                     read_only: true
                 last_profile_update_in_frontend: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
-                    label: "Last profile update:"
+                    label: "Last profile update"
                     type: date
                     change_month_and_year: true
                     read_only: true
                 suspended_date: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'suspended'
-                    label: "Suspended date:"
+                    label: "Suspended date"
                     type: date
                     change_month_and_year: true
                     read_only: true

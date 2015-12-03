@@ -5,8 +5,8 @@ zenario__administration:
         spare_domains:
             title: Domain name redirects
             no_items_message: |
-                When a Domain name redirect is defined visitors to that Domain Name are redirected to a specified Content Item
-                                            under the Primary Domain.
+                When a domain name redirect is defined visitors to that domain name are redirected
+                to a specified content item under the primary domain.
             view_mode: list
             db_items:
                 table: '[[DB_NAME_PREFIX]]spare_domain_names AS sdn'
@@ -33,9 +33,11 @@ zenario__administration:
                 create:
                     priv: _PRIV_MANAGE_SPARE_DOMAIN_NAME
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_spare_domains
+                        create_another: true
             inline_buttons:
                 view_frontend:
                     css_class: view_frontend

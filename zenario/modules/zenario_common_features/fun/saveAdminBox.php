@@ -33,114 +33,21 @@ switch ($path) {
 		return require funIncPath(__FILE__, 'plugin_settings.saveAdminBox');
 	
 	
-	case 'zenario_reusable_plugin':
-		if (engToBooleanArray($box['tabs']['instance'], 'edit_mode', 'on') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')) {
-			$nest = false;
-			if ($box['key']['duplicate']) {
-				renameInstance($box['key']['id'], $nest, $values['instance/name'], $createNewInstance = true);
-			
-			} else {
-				renameInstance($box['key']['id'], $nest, $values['instance/name'], $createNewInstance = false);
-			}
-		}
-		
-		break;
-	
-	
-	case 'zenario_alias':
-		if (checkPriv('_PRIV_EDIT_DRAFT')) {
-			$cols = array('alias' => tidyAlias($values['meta_data/alias']));
-			$key = array('id' => $box['key']['cID'], 'type' => $box['key']['cType']);
-			$equivKey = array('equiv_id' => equivId($box['key']['cID'], $box['key']['cType']), 'type' => $box['key']['cType']);
-			
-			if (getNumLanguages() > 1) {
-				if ($values['meta_data/update_translations'] == 'update_all') {
-					$key = $equivKey;
-					$cols['lang_code_in_url'] = 'default';
-				
-				} else {
-					$cols['lang_code_in_url'] = $values['meta_data/lang_code_in_url'];
-				}
-			}
-			
-			updateRow('content_items', $cols, $key);
-		}
-		
-		break;
-	
-	
-	case 'zenario_enable_site':
-		if (checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-			setSetting('site_enabled', $values['site/enable_site']);
-			setSetting('site_disabled_title', $values['site/site_disabled_title']);
-			setSetting('site_disabled_message', $values['site/site_disabled_message']);
-			
-			$box['key']['id'] = $values['site/enable_site']? 'site_enabled' : 'site_disabled';
-		}
-		
-		
-		break;
-	
-	
-	case 'zenario_delete_language':
-		deleteLanguage($box['key']['id']);
-		
-		break;
-	
-	
-	case 'zenario_site_reset':
-		exitIfNotCheckPriv('_PRIV_RESET_SITE');
-		
-		resetSite();
-		echo '<!--Reload_Storekeeper-->';
-		exit;
-	
-	
-	case 'zenario_menu':
-		return require funIncPath(__FILE__, 'menu_node.saveAdminBox');
-	
-	
 	case 'zenario_content':
 	case 'zenario_quick_create':
 		return require funIncPath(__FILE__, 'content.saveAdminBox');
-
 	
-	case 'zenario_content_layout':
-		
-		//Loop through each Content Item, saving each
-		$cID = $cType = $cVersion = false;
-		$tagIds = explode(',', $box['key']['id']);
-		foreach ($tagIds as $tagId) {
-			if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-				
-				if (!checkPriv('_PRIV_EDIT_CONTENT_ITEM_TEMPLATE', $cID, $cType)) {
-					continue;
-				}
-				
-				//Create a draft if needed
-				createDraft($cID, $cID, $cType, $cVersion, getLatestVersion($cID, $cType));
-				
-				//Update the layout
-				changeContentItemLayout($cID, $cType, $cVersion, $values['layout_id']);
-				
-				//Mark this version as updated
-				updateVersion($cID, $cType, $cVersion, $version = array(), $forceMarkAsEditsMade = true);
-			}
-		}
-		
-		break;
-		
-		
+	
 	case 'zenario_content_categories':
 		exitIfNotCheckPriv('_PRIV_EDIT_CONTENT_ITEM_CATEGORIES');
 		
 		$cID = $cType = false;
 		
-		$tagIds = explode(',', $box['key']['id']);
+		$tagIds = explodeAndTrim($box['key']['id']);
 		
 		foreach ($tagIds as $tagId) {
 			if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-				setContentItemCategories($cID, $cType, explode(',', $values['categories/categories']));
+				setContentItemCategories($cID, $cType, explodeAndTrim($values['categories/categories']));
 			}
 		}
 		
@@ -151,11 +58,11 @@ switch ($path) {
 		
 		$cID = $cType = false;
 		
-		$tagIds = explode(',', $box['key']['id']);
+		$tagIds = explodeAndTrim($box['key']['id']);
 		
 		foreach ($tagIds as $tagId) {
 			if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-				addContentItemToCategories($cID, $cType, explode(',', $values['categories_add/categories_add']));
+				addContentItemToCategories($cID, $cType, explodeAndTrim($values['categories_add/categories_add']));
 				
 				}
 		}
@@ -166,101 +73,17 @@ switch ($path) {
 		
 		$cID = $cType = false;
 		
-		$tagIds = explode(',', $box['key']['id']);
+		$tagIds = explodeAndTrim($box['key']['id']);
 		
 		foreach ($tagIds as $tagId) {
 			if (getCIDAndCTypeFromTagId($cID, $cType, $tagId)) {
-				removeContentItemCategories($cID, $cType, explode(',', $values['categories_remove/categories_remove']));
+				removeContentItemCategories($cID, $cType, explodeAndTrim($values['categories_remove/categories_remove']));
 				
 				}
 		}
 		
 		break;
-	case 'site_settings':
-		return require funIncPath(__FILE__, 'site_settings.saveAdminBox');
 	
-	
-	case 'zenario_setup_language':
-		return require funIncPath(__FILE__, 'setup_language.saveAdminBox');
-	
-	
-	case 'zenario_setup_module':
-		return require funIncPath(__FILE__, 'setup_module.saveAdminBox');
-	
-	
-	case 'zenario_publish':
-		$ids = (($box['key']['id']) ? $box['key']['id'] : $box['key']['cID']);
-		
-		foreach (explode(',', $ids) as $id) {
-			$cID = $cType = false;
-			if (!empty($box['key']['cID']) && !empty($box['key']['cType'])) {
-				$cID = $box['key']['cID'];
-				$cType = $box['key']['cType'];
-			} else {
-				getCIDAndCTypeFromTagId($cID, $cType, $id);
-			}
-			
-			if ($cID && $cType && checkPriv('_PRIV_PUBLISH_CONTENT_ITEM', $cID, $cType)) {
-				if ($values['publish/publish_options'] == 'immediately') {
-					// Publish now
-					publishContent($cID, $cType);
-					if (session('last_item') == $cType. '_'. $cID) {
-						$_SESSION['page_mode'] = $_SESSION['page_toolbar'] = 'preview';
-					}
-				} else {
-					// Publish at a later date
-					$scheduled_publish_datetime = $values['publish/publish_date'].' '.$values['publish/publish_hours'].':'.$values['publish/publish_mins'].':00';
-					$cVersion = getRow('content_items', 'admin_version', array('id' => $cID, 'type' => $cType));
-					updateRow('content_item_versions', array('scheduled_publish_datetime'=>$scheduled_publish_datetime), array('id' =>$cID, 'type'=>$cType, 'version'=>$cVersion));
-					
-					// Lock content item
-					$adminId = session('admin_userid');
-					updateRow('content_items', array('lock_owner_id'=>$adminId, 'locked_datetime'=>date('Y-m-d H:i:s')), array('id' =>$cID, 'type'=>$cType));
-				}
-			}
-		}
-		
-		break;
-	
-	
-	case 'zenario_create_vlp':
-		exitIfNotCheckPriv('_PRIV_MANAGE_LANGUAGE_CONFIG');
-		
-		setRow(
-			'visitor_phrases',
-			array(
-				'local_text' => $values['details/english_name'],
-				'protect_flag' => 1),
-			array(
-				'code' => '__LANGUAGE_ENGLISH_NAME__',
-				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
-		
-		setRow(
-			'visitor_phrases',
-			array(
-				'local_text' => $values['details/language_local_name'],
-				'protect_flag' => 1),
-			array(
-				'code' => '__LANGUAGE_LOCAL_NAME__',
-				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
-		
-		setRow(
-			'visitor_phrases',
-			array(
-				'local_text' => decodeItemIdForStorekeeper($values['details/flag_filename']),
-				'protect_flag' => 1),
-			array(
-				'code' => '__LANGUAGE_FLAG_FILENAME__',
-				'language_id' => $values['details/language_id'],
-				'module_class_name' => 'zenario_common_features'));
-		
-		$box['key']['id'] = $values['details/language_id'];
-		
-		$box['popout_message'] = '<!--Open_Admin_Box:zenario_setup_language//'. $values['details/language_id']. '-->';
-		
-		break;
 	
 	case 'zenario_document_folder':
 		if (isset($box['key']['add_folder']) && $box['key']['add_folder']) {
@@ -417,7 +240,7 @@ switch ($path) {
 	
 		// Save document tags
 		deleteRow('document_tag_link', array('document_id' => $documentId));
-		$tagIds = explode(',', $values['details/tags']);
+		$tagIds = explodeAndTrim($values['details/tags']);
 		foreach ($tagIds as $tagId) {
 			setRow('document_tag_link', 
 				array('tag_id' => $tagId, 'document_id' => $documentId), 
@@ -544,63 +367,12 @@ switch ($path) {
 		if ($values['details/move_to_root']) {
 			$values['details/move_to'] = 0;
 		}
-		foreach (explode(',', $box['key']['id']) as $id) {
+		foreach (explodeAndTrim($box['key']['id']) as $id) {
 			setRow('documents', array('folder_id' => $values['details/move_to']), $id);
 		}
 		break;
 		
-	case 'zenario_file_type':
-		exitIfNotCheckPriv('_PRIV_EDIT_CONTENT_TYPE');
-		
-		insertRow('document_types', array('type' => $values['details/type'], 'mime_type' => $values['details/mime_type']));
-		$box['key']['id'] = $values['details/type'];
-		
-		break;
-	
-	
-	case 'zenario_content_type_details':
-		if (checkPriv('_PRIV_EDIT_CONTENT_TYPE')) {
-			
-			$vals = array(
-				'content_type_name_en' => $values['details/content_type_name_en'],
-				'description_field' => $values['details/description_field'],
-				'keywords_field' => $values['details/keywords_field'],
-				'writer_field' => $values['details/writer_field'],
-				'summary_field' => $values['details/summary_field'],
-				'release_date_field' => $values['details/release_date_field'],
-				'enable_summary_auto_update' => $values['details/enable_summary_auto_update'],
-				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
-				'default_layout_id' => $values['details/default_layout_id']);
-			
-			if ($values['details/summary_field'] == 'hidden') {
-				$vals['enable_summary_auto_update'] = 0;
-			}
-			
-			switch ($box['key']['id']) {
-				case 'document':
-				case 'picture':
-				case 'html':
-					//HTML/Document/Picture fields cannot currently be mandatory
-					foreach (array('description_field', 'keywords_field', 'summary_field', 'release_date_field') as $field) {
-						if ($vals[$field] == 'mandatory') {
-							$vals[$field] = 'optional';
-						}
-					}
-					
-					break;
-					
-				
-				case 'event':
-					//Event release dates must be hidden as it is overridden by another field
-					$vals['release_date_field'] = 'hidden';
-			}
-			
-			updateRow('content_types', $vals, $box['key']['id']);
-		}
-		
-		break;
-		
-		case 'zenario_document_rename':
+	case 'zenario_document_rename':
 			$documentId = $box['key']['id'];
 			$documentName = trim($values['details/document_name']);
 			$isfolder=getRow('documents', 'type', array('type' => 'folder','id' => $documentId));
@@ -613,7 +385,7 @@ switch ($path) {
 		break;
 		
 		
-		case 'zenario_document_upload':
+	case 'zenario_document_upload':
 			$documentsUploaded = explode(',',$values['upload_document/document__upload']);
 			$currentDateTime = date("Y-m-d H:i:s");
 			$isFolder = getRow('documents', 'id', array('id' => $box['key']['id'], 'type' => 'folder'));

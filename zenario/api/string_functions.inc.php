@@ -57,24 +57,32 @@ function base16To64($hex) {
 	return base64(pack('H*', $hex));
 }
 
-function chopPrefixOffOfString($string, $prefix) {
+function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
 	$len = strlen($prefix);
 	
 	if (substr($string, 0, $len) == $prefix) {
 		return substr($string, $len);
+	} elseif ($returnStringOnFailure) {
+		return $string;
 	} else {
 		return false;
 	}
 }
 
-//Reverses encodeItemIdForStorekeeper()
-function decodeItemIdForStorekeeper($id, $prefix = '~') {
+//Reverses encodeItemIdForOrganizer()
+function decodeItemIdForOrganizer($id, $prefix = '~') {
 	$len = strlen($prefix);
 	if (substr($id, 0, $len) == $prefix) {
 		return rawurldecode(str_replace('~', '%', substr($id, $len)));
 	} else {
 		return $id;
 	}
+}
+//	function decodeItemIdForOrganizer($id) {}
+
+//Old, deprecated alias of the above
+function decodeItemIdForStorekeeper($id, $prefix = '~') {
+	return decodeItemIdForOrganizer($id, $prefix);
 }
 
 function displayHTMLAsPlainText(&$text, $excerptLength = 200, $stripTitles = false, $highlightTerm = false, $excerptCutOffPhrase = '...') {
@@ -103,12 +111,18 @@ function displayHTMLAsPlainText(&$text, $excerptLength = 200, $stripTitles = fal
 }
 
 //Given a string, this function makes it safe to use in the URL after a hash (i.e. a safe id for Storekeeper)
-function encodeItemIdForStorekeeper($id, $prefix = '~') {
+function encodeItemIdForOrganizer($id, $prefix = '~') {
 	if (is_numeric($id)) {
 		return $id;
 	} else {
 		return $prefix. str_replace('%', '~', str_replace('~', '%7E', rawurlencode($id)));
 	}
+}
+//	function encodeItemIdForOrganizer($id) {}
+
+//Old, deprecated alias of the above
+function encodeItemIdForStorekeeper($id, $prefix = '~') {
+	return encodeItemIdForOrganizer($id, $prefix);
 }
 
 //	function engToBoolean($text) {}

@@ -38,7 +38,7 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 			if ($box['key']['cVersion'] != $latestVersion) {
 				return false;
 			
-			} else if (!isDraft($box['key']['cID'], $box['key']['cType']) && !checkPriv('_PRIV_CREATE_REVISION_DRAFT')) {
+			} else if (!isDraft($box['key']['cID'], $box['key']['cType']) && !checkPriv('_PRIV_CREATE_REVISION_DRAFT', $box['key']['cID'], $box['key']['cType'])) {
 				return false;
 				
 			} else {

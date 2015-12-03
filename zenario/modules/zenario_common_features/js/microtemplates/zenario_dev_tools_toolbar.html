@@ -44,6 +44,33 @@
 	<% } %>
 </select>
 
+
+<div class="ssh_links">
+	<span>SFTP links ▼</span>
+	<ul>
+		<% for (var path in m.paths) { %>
+			<li>
+				<a href="sftp://{{sshPath|escape}}{{path|escape}}">
+					{{m.paths[path]|escape}}/
+				</a>
+			</li>
+		<% } %>
+	</ul>
+</div>
+
+<div class="ssh_links">
+	<span>SSH links ▼</span>
+	<ul>
+		<% for (var path in m.paths) { %>
+			<li>
+				<a href="ssh://{{sshPath|escape}}{{path|escape}}">
+					{{m.paths[path]|escape}}/
+				</a>
+			</li>
+		<% } %>
+	</ul>
+</div>
+
 <div class="asterisk_explination">
 	Files marked with a * contain the currently selected element or property.
 </div>

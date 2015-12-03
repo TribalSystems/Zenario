@@ -75,9 +75,11 @@ zenario__content:
                 create:
                     priv: _PRIV_MANAGE_CATEGORY
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a category
                     admin_box:
                         path: zenario_categories
+                        create_another: true
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_CATEGORY

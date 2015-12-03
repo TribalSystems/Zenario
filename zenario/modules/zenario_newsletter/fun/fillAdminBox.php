@@ -100,12 +100,12 @@ switch ($path) {
 			if (setting('zenario_newsletter__default_delete_account_text') && !$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value']) {
 				$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] = setting('zenario_newsletter__default_delete_account_text');
 			}
-			
+			$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'none';
 			if (setting('zenario_newsletter__all_newsletters_opt_out') && $details['unsubscribe_text']) {
-				$box['tabs']['unsub_exclude']['fields']['add_unsubscribe_link']['value'] = 1;
+				$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'unsub';
 			}
 			if ($details['delete_account_text']) {
-				$box['tabs']['unsub_exclude']['fields']['add_delete_account_link']['value'] = 1;
+				$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'delete';
 			}
 			if ($box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['value']) {
 				$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients_enable']['value'] = 1;
@@ -202,6 +202,7 @@ switch ($path) {
 	
 	
 	case 'site_settings':
+	
 		switch($settingGroup) {
 			case 'zenario_newsletter__site_settings_group':
 				$box['tabs']['zenario_newsletter__site_settings']['fields']['zenario_newsletter__all_newsletters_opt_out']['values'] =

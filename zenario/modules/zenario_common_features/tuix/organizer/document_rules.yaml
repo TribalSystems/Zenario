@@ -75,6 +75,7 @@ zenario__content:
                 create_rule:
                     label: Create a rule
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     admin_box:
                         path: zenario_document_rule
             item_buttons:

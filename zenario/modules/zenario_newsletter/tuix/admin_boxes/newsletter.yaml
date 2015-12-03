@@ -99,9 +99,9 @@ zenario_newsletter:
                     post_field_html: '</div style="float:right">'
                 body:
                     full_width: true
-                    style: width:98%
+                    style: |
+                        height: 20em;
                     type: editor
-                    rows: "15"
                     editor_options:
                         toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
                         convert_urls: false
@@ -123,13 +123,13 @@ zenario_newsletter:
                 test_send_email_address:
                     type: text
                     maxlength: "100"
-                    label: 'Send a test:'
+                    label: 'Send a sample email:'
                     side_note: |
-                        Please enter a subject line and some content, then save your newsletter, before sending a test email.
+                        You can enter your email address here, or perhaps that of a colleage, to send a sample or test email. You'll need to enter at least a subject line and some content.
                 test_send_button_dummy:
                     same_row: true
                     type: submit
-                    value: Test Send
+                    value: Send sample
                     visible_if: '!zenarioAB.tuix.key.id'
                     class: 'submit_disabled'
                     onclick: 'return false;'
@@ -179,13 +179,30 @@ zenario_newsletter:
                         Recipients who have previously clicked the Unsubscribe link will not receive this newsletter. There is no need to add a rule to exclude these recipients from your smart group.
                     value: 1
                     read_only: true
-                add_unsubscribe_link:
-                    label: Add an "Unsubscribe" link
-                    type: checkbox
-                    side_note: >
-                        Recipients who click the unsubscribe link will have
-                        the newsletter opt-out field checked.
+                
+                
+                unsubscribe_link:
+                    label: 'Unsubscribe link:'
+                    type: radios
+                    values:
+                        none:
+                            ord: 1
+                            label: Don't include an Unsubscribe link
+                        unsub:
+                            ord: 2
+                            label: Add an Unsubscribe link (but don't delete the user's account)
+                            side_note: |
+                                Recipients who click the unsubscribe link will have
+                                the newsletter opt-out field checked.
+                        delete:
+                            ord: 3
+                            label:  Add an Unsubscribe link (delete the user's account)
+                            side_note: |
+                                Recipients who click this will have all of their details deleted, i.e. the recipient's user record.
                     format_onchange: true
+                    validation:
+                        required_if_not_hidden: Please choose whether to show an unsubscribe link or not.
+                
                 unsubscribe_text:
                     label: 'Unsubscribe text:'
                     type: text
@@ -197,13 +214,9 @@ zenario_newsletter:
                     type: text
                     same_row: true
                     style: display:none;
-                add_delete_account_link:
-                    label: 'Add a "Delete my account" link:'
-                    type: checkbox
-                    side_note: "Recipients who click this will have all of their details deleted, i.e. the recipient's user record."
-                    format_onchange: true
+                
                 delete_account_text:
-                    label: 'Delete my account text:'
+                    label: 'Unsubscribe text:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter delete account text.
@@ -213,6 +226,9 @@ zenario_newsletter:
                     type: text
                     same_row: true
                     style: display:none;
+                
+                
+                
                 exclude_previous_newsletters_recipients_enable:
                     label: 'Exclude recipients of earlier newsletters:'
                     type: checkbox

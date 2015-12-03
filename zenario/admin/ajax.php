@@ -280,7 +280,7 @@ if ($requestedPath && !empty($tags['class_name'])) {
 				$refiners = '';
 				foreach (explode(',', get($req)) as $i => $refiner) {
 					$refiners .= $i? ',' : '';
-					$refiner = decodeItemIdForStorekeeper($refiner);
+					$refiner = decodeItemIdForOrganizer($refiner);
 					
 					if (is_numeric($refiner)) {
 						$refiners .= (int) $refiner;
@@ -353,6 +353,7 @@ if ($requestedPath && !empty($tags['class_name'])) {
 			
 			$orderBy = "";
 			$whereStatement = "";
+			$whereStatementWhenSearcingForChildren = "WHERE TRUE";
 			$extraTables = array();
 			$sortExtraTables = array();
 			
@@ -361,7 +362,7 @@ if ($requestedPath && !empty($tags['class_name'])) {
 				$tags['columns'] = array();
 			}
 			
-			$encodeItemIdForStorekeeper = engToBooleanArray($tags, 'db_items', 'encode_id_column');
+			$encodeItemIdForOrganizer = engToBooleanArray($tags, 'db_items', 'encode_id_column');
 			
 			if (!isset($tags['items']) || !is_array($tags['items'])) {
 				$tags['items'] = array();
@@ -850,6 +851,9 @@ if ($requestedPath && !empty($tags['class_name'])) {
 				}
 			
 			} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openToItemInHierarchy']))) {
+				
+				//Remember the current WHERE statement so far
+				$whereStatementWhenSearcingForChildren = $whereStatement;
 				$openItemsInHierarchy = array();
 				
 				//Display every item in the hierarchy that is open, and their parents.
@@ -947,8 +951,8 @@ if ($requestedPath && !empty($tags['class_name'])) {
 					while ($row = sqlFetchRow($result)) {
 						++$count;
 						
-						if ($encodeItemIdForStorekeeper) {
-							$row[0] = encodeItemIdForStorekeeper($row[0]);
+						if ($encodeItemIdForOrganizer) {
+							$row[0] = encodeItemIdForOrganizer($row[0]);
 						}
 						
 						$tags['__item_sort_order__'][] = $row[0];
@@ -1008,8 +1012,8 @@ if ($requestedPath && !empty($tags['class_name'])) {
 								$in .= $in? ", " : "IN (";
 							
 								$thisId = $tags['__item_sort_order__'][$i];
-								if ($encodeItemIdForStorekeeper) {
-									$thisId = decodeItemIdForStorekeeper($thisId);
+								if ($encodeItemIdForOrganizer) {
+									$thisId = decodeItemIdForOrganizer($thisId);
 								}
 							
 								if (is_numeric($thisId)) {
@@ -1031,8 +1035,8 @@ if ($requestedPath && !empty($tags['class_name'])) {
 							
 							$in .= $in? ", " : "IN (";
 						
-							if ($encodeItemIdForStorekeeper) {
-								$thisId = decodeItemIdForStorekeeper($thisId);
+							if ($encodeItemIdForOrganizer) {
+								$thisId = decodeItemIdForOrganizer($thisId);
 							}
 						
 							if (is_numeric($thisId)) {
@@ -1154,8 +1158,8 @@ if ($requestedPath && !empty($tags['class_name'])) {
 						} else {
 							$id = $row[$i = 0];
 					
-							if ($encodeItemIdForStorekeeper) {
-								$id = encodeItemIdForStorekeeper($id);
+							if ($encodeItemIdForOrganizer) {
+								$id = encodeItemIdForOrganizer($id);
 							}
 					
 							$tags['items'][$id] = array();
@@ -1175,9 +1179,10 @@ if ($requestedPath && !empty($tags['class_name'])) {
 									$csql = "
 										SELECT 1
 										FROM ". $tags['db_items']['table']. "
-										WHERE ". $hierarchyColumn. " = ". (is_numeric($row[0])? (int) $row[0] : "'". sqlEscape($row[0]). "'"). "
+										". $whereStatementWhenSearcingForChildren. "
+										  AND ". $hierarchyColumn. " = ". (is_numeric($row[0])? (int) $row[0] : "'". sqlEscape($row[0]). "'"). "
 										LIMIT 1";
-							
+								
 									$cresult = sqlQuery(addConstantsToString($csql));
 									$tags['__item_parents__'][$row[0]] = (bool) sqlFetchRow($cresult);
 								}
@@ -1407,7 +1412,14 @@ if ($requestedPath && !empty($tags['class_name'])) {
 												
 												//Otherwise store the value in an array and at the end of the loop...
 												} else {
-													$record[$cfield['db_column']] = $values[$cfield['tab_name']. '/'. $cFieldName];
+													$cfieldValue = $values[$cfield['tab_name']. '/'. $cFieldName];
+													
+													//Make sure text fields are no longer the 255 characters long
+													if ($cfield['type'] == 'text') {
+														$cfieldValue = substr($cfieldValue, 0, 255);
+													}
+													
+													$record[$cfield['db_column']] = $cfieldValue;
 												}
 											}
 										}
@@ -1555,8 +1567,9 @@ if ($requestedPath && !empty($tags['class_name'])) {
 							//Attempt to set the redraw_onchange property for that field if it is a core field
 							//(This will miss custom fields, so we'll need to set them later)
 							if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
-							 && is_array($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])) {
-								$tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']]['redraw_onchange'] = true;
+							 && ($parentField = $tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+							 && (is_array($parentField))) {
+								$parentField['redraw_onchange'] = true;
 							}
 						}
 					}
@@ -1574,7 +1587,8 @@ if ($requestedPath && !empty($tags['class_name'])) {
 					foreach (getRowsArray(
 						'custom_dataset_fields',
 						true,
-						array('dataset_id' => $dataset['id'], 'is_system_field' => 0)
+						array('dataset_id' => $dataset['id'], 'is_system_field' => 0),
+						'ord'
 					) as $cfield) {
 						$cFieldName = '__custom_field_'. $cfield['id'];
 					
@@ -1641,7 +1655,9 @@ if ($requestedPath && !empty($tags['class_name'])) {
 						getCustomFieldsParents($cfield, $parents);
 					
 						if (!empty($parents)) {
+							$firstParent = true;
 							$cfield['visible_if'] = '';
+							
 							foreach ($parents as $parent) {
 								$cfield['visible_if'] .=
 									($cfield['visible_if']? ' && ' : '').
@@ -1650,10 +1666,27 @@ if ($requestedPath && !empty($tags['class_name'])) {
 								//Attempt to set the redraw_onchange property for that field if it is on the same tab as this one
 								//(This may miss custom fields, so we'll need to set any we've missed below)
 								if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
-								 && is_array($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+								 && ($parentField = $tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+								 && (is_array($parentField))
 								 && $parent['tab_name'] == $cfield['tab_name']) {
-									$tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']]['redraw_onchange'] = true;
+									
+									$parentField['redraw_onchange'] = true;
+									
+									//Look for the immediate parent. If it's on this tab, and above the field,
+									//try to give this field a higher indent.
+									if ($firstParent
+									 && !empty($parentField['ord'])
+									 && (float) $parentField['ord'] < (float) $cfield['ord']) {
+										
+										if (empty($parentField['indent'])) {
+											$cfield['indent'] = 1;
+										} else {
+											$cfield['indent'] = 1 + (int) $parentField['indent'];
+										}
+										
+									}
 								}
+								$firstParent = false;
 							}
 						}
 					
@@ -1670,15 +1703,20 @@ if ($requestedPath && !empty($tags['class_name'])) {
 							$cfield['read_only'] = true;
 						}
 						
-						$cfield['class'] = 'zab_custom_field zab_custom_field__'. $cfield['type'];
-						$cfield['row_class'] = 'zab_custom_field_row zab_custom_field_row__'. $cfield['type'];
-						$cfield['label_class'] = 'zab_custom_field_label zab_custom_field_label__'. $cfield['type'];
+						$cfield['class'] = 'zenario_fab_custom_field zenario_fab_custom_field__'. $cfield['type'];
+						$cfield['row_class'] = 'zenario_fab_custom_field_row zenario_fab_custom_field_row__'. $cfield['type'];
+						$cfield['label_class'] = 'zenario_fab_custom_field_label zenario_fab_custom_field_label__'. $cfield['type'];
 						
 						if ($cfield['type'] == 'group') {
 							$cfield['type'] = 'checkbox';
 						} else {
 							$cfield['type'] = str_replace('centralised_', '', $cfield['type']);
 						}
+						
+						if ($cfield['type'] == 'text') {
+							$cfield['maxlength'] = 255;
+						}
+						
 						$tags['tabs'][$cfield['tab_name']]['fields'][$cFieldName] = $cfield;
 					}
 				}

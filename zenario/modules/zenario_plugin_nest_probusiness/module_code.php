@@ -55,7 +55,7 @@ class zenario_plugin_nest_probusiness extends zenario_plugin_nest {
 			if (!checkPriv()
 			 && ($perms = getRow(
 							ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX. 'tabs',
-							array('visibility', 'field_id', 'field_value', 'module_class_name', 'method_name', 'param_1', 'param_2'),
+							array('visibility', 'smart_group_id', 'field_id', 'field_value', 'module_class_name', 'method_name', 'param_1', 'param_2'),
 							array('tab_id' => $tab['id'])))
 			) {
 				//Remove tabs based on the settings chosen
@@ -72,12 +72,18 @@ class zenario_plugin_nest_probusiness extends zenario_plugin_nest {
 						$unsets[] = $tabNum;
 					}
 					
-				} elseif (userId()) {
+				} elseif ($userId = userId()) {
 					switch ($perms['visibility']) {
+						case 'in_smart_group':
+							if (!checkUserIsInSmartGroup($perms['smart_group_id'], $userId)) {
+								$unsets[] = $tabNum;
+							}
+							break;
+							
 						case 'logged_in_with_field':
 						case 'logged_in_without_field':
 						case 'without_field':
-							$fieldValue = getDatasetFieldValue(userId(), $perms['field_id']);
+							$fieldValue = getDatasetFieldValue($userId, $perms['field_id']);
 							$fieldValueMatches = (bool) $fieldValue;
 							
 							if ($perms['field_value'] && $perms['field_value'] != $fieldValue) {
@@ -98,6 +104,7 @@ class zenario_plugin_nest_probusiness extends zenario_plugin_nest {
 					}
 				} else {
 					switch ($perms['visibility']) {
+						case 'in_smart_group':
 						case 'logged_in_with_field':
 						case 'logged_in_without_field':
 						case 'logged_in':

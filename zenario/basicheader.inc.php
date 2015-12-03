@@ -93,13 +93,17 @@ function arrayKey(&$a, $k) {
 	return false;
 }
 
+function httpUserAgent() {
+	return isset($_SERVER['HTTP_USER_AGENT'])? $_SERVER['HTTP_USER_AGENT'] : '';
+}
+
 function browserBodyClass() {
 	$c = '';
-	$a = $_SERVER['HTTP_USER_AGENT'];
+	$a = httpUserAgent();
 	
 	if (strpos($a, 'MSIE') !== false) {
 		$c .= 'ie ';
-		for ($i = 9; $i > 5; --$i) {
+		for ($i = 11; $i > 5; --$i) {
 			if (strpos($a, 'MSIE '. $i) !== false) {
 				$c .= 'ie'. $i. ' ';
 				break;
@@ -139,8 +143,12 @@ function engToBoolean($text) {
 	}
 }
 
-function funIncPath($filePath, $functionName) {
-	$dir = dirname($filePath);
+function funIncPath($filePathOrModuleClassName, $functionName) {
+	if (strpos($filePathOrModuleClassName, '/') === false) {
+		$dir = CMS_ROOT. moduleDir($filePathOrModuleClassName);
+	} else {
+		$dir = dirname($filePathOrModuleClassName);
+	}
 	return $dir. '/'. (basename($dir) != 'fun'? 'fun/' : ''). $functionName. '.php';
 }
 
@@ -173,6 +181,35 @@ function request($n) {
 
 function session($n) {
 	return isset($_SESSION[$n])? $_SESSION[$n] : false;
+}
+
+
+function incCSS($file) {
+	if (file_exists($file. '.min.css')) {
+		require $file. '.min.css';
+	} elseif (file_exists($file. '.css')) {
+		require $file. '.css';
+	}
+	
+	echo "\n/**/\n";
+}
+
+function incJS($file, $wrapWrappers = false) {
+	
+	if ($wrapWrappers && file_exists($file. '.js.php')) {
+		chdir(dirname($file));
+		require CMS_ROOT. $file. '.js.php';
+		chdir(CMS_ROOT);
+	
+	} elseif (file_exists($file. '.pack.js')) {
+		require $file. '.pack.js';
+	} elseif (file_exists($file. '.min.js')) {
+		require $file. '.min.js';
+	} elseif (file_exists($file. '.js')) {
+		require $file. '.js';
+	}
+	
+	echo "\n/**/\n";
 }
 
 
@@ -308,18 +345,10 @@ function useCache($ETag = false, $maxAge = false) {
 function useGZIP($useGZIP = true) {
 	
 	if ($useGZIP
-	 && !empty($_SERVER['HTTP_USER_AGENT'])
 	 	//Note: IE 6 frequently crashes if we try to use compression
-	 && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') === false
+	 && strpos(httpUserAgent(), 'MSIE 6') === false
 	 	//If there has already been some output (e.g. an error) then that will also cause a problem
-	 && !ob_get_length()
-	 	//We shouldn't try to use compression if an apache module is already doing it
-	 && checkFunctionEnabled('apache_get_modules')
-	 && ($apache_get_modules = apache_get_modules())
-	 && (!empty($apache_get_modules)
-	  && !in_array('mod_deflate', $apache_get_modules)
-	  && !in_array('mod_gzip', $apache_get_modules)
-	  && !in_array('pagespeed_module', $apache_get_modules))) {
+	 && !ob_get_length()) {
 	
 		//In PHP versions 5.3 or earlier, use ob_gzhandler.
 		//(We can't use this in later versions of PHP due to a bug introduced in version 5.4)
@@ -328,18 +357,12 @@ function useGZIP($useGZIP = true) {
 			return;
 	
 		//Otherwise try to use zlib
-		} elseif (extension_loaded('zlib')) {
-			if (checkFunctionEnabled('ini_set')) {
-				ini_set('zlib.output_compression', 4096);
-			}
+		} elseif (extension_loaded('zlib') && checkFunctionEnabled('ini_set')) {
+			ini_set('zlib.output_compression', 4096);
 		}
 	}
 	
-	//#T9246, The Page Caching feature shouldn't be dependant on the Compressing Web Pages
-	//If we didn't use ob_start() above and the the Page Caching feature is enabled, use
-	//ob_start() anyway
-	//If the settings haven't been loaded (e.g. there's no connection to the database),
-	//and we're not sure if we need to do this, take the safe option and do it anyway.
+	//If caching is enabled, call ob_start() to start output buffering if it was not already done above.
 	if (empty(cms_core::$siteConfig) || setting('caching_enabled')) {
 		ob_start();
 	}
@@ -379,7 +402,9 @@ function clearCookie($name) {
 	
 	//Attempt to fix a bug where any cookies that were set with the wrong domain and/or path
 	//will stay still stay on the visitor's browser.
-	setcookie($name, '', 1, '/', '.'. httpHostWithoutPort());
+	if (function_exists('httpHostWithoutPort')) {
+		setcookie($name, '', 1, '/', '.'. httpHostWithoutPort());
+	}
 	setcookie($name, '', 1, '/');
 	setcookie($name, '', 1);
 	
@@ -471,6 +496,16 @@ function startSession() {
 	}
 }
 
+function editionInclude($name) {
+	foreach (cms_core::$editions as $className) {
+		if ($editionInclude = moduleDir($className, 'edition_includes/'. $name. '.php', true)) {
+			return $editionInclude;
+		}
+	}
+	
+	return 'zenario/includes/dummy_include.php';
+}
+
 
 
 
@@ -486,7 +521,6 @@ class cms_core {
 	public static $lastDBPrefix;
 	
 	public static $edition = '';
-	public static $editionClass;
 	public static $editions = array();
 	
 	public static $equivId = false;
@@ -520,6 +554,7 @@ class cms_core {
 	public static $siteConfig = array();
 	public static $specialPages = array();
 	public static $slotContents = array();
+	public static $pluginsOnPage = 0;
 	
 	public static $homeCID = 0;
 	public static $homeEquivId = 0;
@@ -558,56 +593,7 @@ class cms_core {
 	public static $apcDirs = array();
 	public static $apcFoundCodes = array();
 	public static $execEnabled = null;
-
-
-	public static function initInstance(
-		&$slotContents, $slotName,
-		$cID, $cType, $cVersion,
-		$layoutId, $templateFamily, $templateFileBaseName,
-		$specificInstanceId, $specificSlotName, $ajaxReload,
-		$runPlugins
-	) {
-		cms_core::$editionClass->initInstance(
-			$slotContents, $slotName,
-			$cID, $cType, $cVersion,
-			$layoutId, $templateFamily, $templateFileBaseName,
-			$specificInstanceId, $specificSlotName, $ajaxReload,
-			$runPlugins);
-	}
 	
-	public static function preSlot($slotName, $showPlaceholderMethod) {
-		return cms_core::$editionClass->preSlot($slotName, $showPlaceholderMethod);
-	}
-	
-	public static function postSlot($slotName, $showPlaceholderMethod) {
-		return cms_core::$editionClass->postSlot($slotName, $showPlaceholderMethod);
-	}
-	
-	public static function poweredBy() {
-		return cms_core::$editionClass->poweredBy();
-	}
-	
-	public static function publishContent($cID, $cType, $cVersion, $prev_version, $adminId = false, $adminType = false) {
-		if (cms_core::$edition) {
-			cms_core::$editionClass->publishContent($cID, $cType, $cVersion, $prev_version, $adminId, $adminType);
-		}
-	}
-	
-	public static function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
-		
-		//Only do the review when Modules are running normally and we're connected to the local db
-		if (cms_core::$edition
-		 && cms_core::$lastDBHost
-		 && cms_core::$lastDBHost == DBHOST
-		 && cms_core::$lastDBName == DBNAME
-		 && cms_core::$lastDBPrefix == DB_NAME_PREFIX) {
-			return cms_core::$editionClass->reviewDatabaseQueryForChanges($sql, $ids, $values, $table, $runSql);
-		
-		} elseif ($runSql) {
-			sqlUpdate($sql, false);
-			return sqlAffectedRows();
-		}
-	}
 	
 	public static function errorOnScreen($errno, $errstr, $errfile, $errline) {
 		cms_core::$canCache = false;

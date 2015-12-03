@@ -48,7 +48,7 @@ $runningSQL = true;
 $chunks = '';
 $statementNo = 0;
 $reading = true;
-$state = NEXTPLEASE;
+$state = ZENARIO_BU_NEXTPLEASE;
 
 //$docpath = setting('docstore_dir');
 //if (!is_readable($docpath) || !is_writeable($docpath)) {
@@ -78,7 +78,7 @@ if (($result = @sqlSelect("SHOW VARIABLES LIKE 'max_allowed_packet'"))
 //Loop until we've read the file
 while($reading) {
 	//Grab a little bit from the file, and add it to whatever we already had.
-	$reading = ($chunk = $read($g, READ_BACKUP_CHUNK_SIZE)) !== '';
+	$reading = ($chunk = $read($g, ZENARIO_BU_READ_CHUNK_SIZE)) !== '';
 	$chunks .= $chunk;
 	
 	//Split what we have into individual SQL statements
@@ -115,13 +115,9 @@ while($reading) {
 				continue;
 			
 			
+			
+			//Backups created before 7.1 replaced the database prefixes, so we need to have logic to catch those cases.
 			//Check the SQL statement, looking for the table prefix it is using.
-			
-			//DB_NAME_PREFIX is for tables in the local database; i.e. most tables. They are always restored.
-			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
-				$prefixInFile = "[['DB_NAME_PREFIX']]";
-				$actualPrefix = DB_NAME_PREFIX;
-			
 			//DB_NAME_PREFIX_GLOBAL is for tables that would be in the global database in the old multisite system. Ignore these.
 			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX_GLOBAL']]") !== false) {
 				continue;
@@ -130,49 +126,90 @@ while($reading) {
 			} elseif (strpos($statements[$i], "[['GLOBAL_NOT_NORMALLY_RESTORED']]") !== false) {
 				continue;
 			
-			//If we didn't see any of those prefixes, report it
+			//DB_NAME_PREFIX is for tables in the local database; i.e. most tables. They are always restored.
+			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
+				$searchInFile = "[['DB_NAME_PREFIX']]";
+				$replaceInFile = DB_NAME_PREFIX. 'i_m_p_';
+			
+			//If we didn't see any of those prefixes, attempt to look for the table names as the first name in the statement
 			} else {
-				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nNo Prefix or Prefix not in the correct format\n\n\n";
-				continue;
+				//Remove some of phpMyAdmin's comments from the start, which can cause us problems in the logic below
+				$statements[$i] = preg_replace('@\n[ \t]*--[^\n]*`[^\n]*`[^\n]*@', '', $statements[$i], 1);
+				
+				//Ignore any COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements if phpMyAdmin has added them
+				$matches = array();
+				if (preg_match('@\b(COMMIT|CREATE DATABASE|CREATE TABLE|DROP|INSERT|LOCK|REPLACE|SELECT|SET|SHOW|START|TRUNCATE|UNLOCK|UPDATE|USE)\b@', $statements[$i], $matches)
+				 && (!empty($matches))
+				 && ($matches[0] == 'COMMIT'
+				  || $matches[0] == 'CREATE DATABASE'
+				  || $matches[0] == 'LOCK'
+				  || $matches[0] == 'SET'
+				  || $matches[0] == 'START'
+				  || $matches[0] == 'UNLOCK'
+				  || $matches[0] == 'USE')) {
+					continue;
+				
+				//Look for the first two `s in the statement, and get the text inbetween
+				} else
+				if ((false !== ($tick1 = strpos($statements[$i], '`')))
+				 && (false !== ($tick2 = strpos($statements[$i], '`', $tick1 + 1)))
+				 && ($tableName = substr($statements[$i], $tick1 + 1, $tick2 - $tick1 - 1))) {
+					
+					//Check that the table's name begins with the DB_NAME_PREFIX,
+					//and then get just the table name without the prefix
+					if ($tableName = chopPrefixOffOfString($tableName, DB_NAME_PREFIX)) {
+						$searchInFile = '`'. DB_NAME_PREFIX. $tableName. '`';
+						$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
+					
+					} else {
+						
+						$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThe table-prefix in this backup file does not match the table-prefix for this site\n\n\n";
+						break 2;
+					}
+					
+				} else {
+					$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nTable name was not found, or backquotes were not used. Please make sure the 'Enclose table and column names with backquotes' option is checked when creating a backup.\n\n\n";
+					break 2;
+				}
 			}
-
 			
 			//Attempt to run the SQL. Note there are no further checks done on it, so of course it may not be valid.
 			//I'll also check whether it failed or succeeded
-			$success = @sqlSelect(str_replace($prefixInFile, $actualPrefix. 'i_m_p_', $statements[$i]));
+			$success = @sqlSelect(str_replace($searchInFile, $replaceInFile, $statements[$i]));
 						
 			//Even if it failed, we'll keep running the SQL statements. But we'll log the failures and report at the end.
 			if (!$success) {
 				$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nDatabase query error ". sqlErrno(). ": ". sqlError()."\n\n\n";
+				break 2;
 			}
 			
 		//If we have moved on from SQL statements, move on to the DocStore creation statements
 		//} elseif ($docpath && empty($failures) && !$needed_packet) {
 			//Watch out for DIR and FILE labels, that tell us if the next statement is the path for a directory or a file
-			//if ($state == NEXTPLEASE) {
+			//if ($state == ZENARIO_BU_NEXTPLEASE) {
 				//if ($statements[$i] == 'DIR') {
-					//$state = CREATEDIR;
+					//$state = ZENARIO_BU_CREATEDIR;
 				//} elseif ($statements[$i] == 'FILE') {
-					//$state = FILENAME;
+					//$state = ZENARIO_BU_FILENAME;
 				//}
 				
 			//Create the specified directory, if it doesn't already exist
-			//} elseif ($state == CREATEDIR) {
+			//} elseif ($state == ZENARIO_BU_CREATEDIR) {
 				//if (!file_exists(docstoreDirectoryPath($statements[$i]))) {
 					//mkdir(docstoreDirectoryPath($statements[$i]));
 				//}
 				//The next statement should be the start of a new directory or file
-				//$state = NEXTPLEASE;
+				//$state = ZENARIO_BU_NEXTPLEASE;
 				
 			//Open the specified file for writing
-			//} elseif ($state == FILENAME) {
+			//} elseif ($state == ZENARIO_BU_FILENAME) {
 				//$f = fopen(docstoreDirectoryPath($statements[$i]), 'wb');
 				
 				//The next statement should be the contents of the file
-				//$state = FILECONTENTS;
+				//$state = ZENARIO_BU_FILECONTENTS;
 				
 			//Write the contents of the file, then close it.
-			//} elseif ($state == FILECONTENTS) {
+			//} elseif ($state == ZENARIO_BU_FILECONTENTS) {
 				//Write the (remaining) data to the file
 				//fwrite($f, hex2bin($statements[$i]));
 				
@@ -180,13 +217,13 @@ while($reading) {
 				//fclose($f);
 				
 				//We're done; the next statement should be the start of a new directory or file
-				//$state = NEXTPLEASE;
+				//$state = ZENARIO_BU_NEXTPLEASE;
 			//}
 		}
 	}
 
 	//Remember any incomplete statements for the next read
-	if ($state != FILECONTENTS) {
+	if ($state != ZENARIO_BU_FILECONTENTS) {
 		$chunks = $statements[$count];
 	} else {
 		//Have an exception for writing files - we can stream the data straight into the file
@@ -205,7 +242,7 @@ while($reading) {
 }
 $close($g);
 //Close the last file, if it was left open
-if ($state == FILECONTENTS) {
+if ($state == ZENARIO_BU_FILECONTENTS) {
 	//Close the file
 	fclose($f);
 }
@@ -234,7 +271,7 @@ if (!empty($failures)) {
 	
 	//Drop the modules/plugin table from the existing installation
 	$error = false;
-	require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+	if (!function_exists('runSQL')) require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
 	runSQL(false, 'local-DROP.sql', $error);
 	runSQL(false, 'local-admin-DROP.sql', $error);
 	

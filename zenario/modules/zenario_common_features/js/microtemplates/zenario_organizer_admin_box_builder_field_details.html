@@ -1,0 +1,280 @@
+<div id="organizer_field_details_inner" class="field_details_inner">
+	<div class="field_details_header">
+		<h5>{{m.label|e}}</h5>
+		<input class="add_new_field" type="button" value="Add new field"/>
+	</div>
+	<div id="organizer_field_details_tabs" class="field_details_tabs">
+		<div id="field_tab__details" class="tab on" onclick="zenarioO.pi.showFieldDetailsSection('details');">Details</div>
+		<div id="field_tab__display" class="tab" onclick="zenarioO.pi.showFieldDetailsSection('display');">Display</div>
+		<% if (!m.is_system_field) { %>
+			<div id="field_tab__validation" class="tab" onclick="zenarioO.pi.showFieldDetailsSection('validation');">Validation</div>
+		<% } %>
+		<div id="field_tab__organizer" class="tab" onclick="zenarioO.pi.showFieldDetailsSection('organizer');">Organizer</div>
+		<% if (m.type == 'select' || m.type == 'radios' || m.type == 'checkboxes') { %>
+			<div id="field_tab__values" class="tab" onclick="zenarioO.pi.showFieldDetailsSection('values');">Values</div>
+		<% } %>
+	</div>
+	
+	<div id="organizer_field_details" class="field_details">
+		
+		<form id="organizer_field_details_form">
+		
+		<!-- Details tab -->
+		<div id="field_section__details" class="section">
+			<div class="field">
+				<div class="title">Label:</div>
+				<div class="value">
+					<input id="field__label" name="label" type="text" value="{{m.label|e}}"/>
+				</div>
+				<div class="note_below">
+					The text of the label that appears before the field.
+				</div>
+			</div>
+			<div class="field">
+				<div class="title">Code name:</div>
+				<div class="value">
+					<input id="field__db_column" name="db_column" type="text" value="{{m.db_column|e}}"/>
+				</div>
+				<div class="note_below">
+					This will be used for the name of the column in the database.
+				</div>
+			</div>
+			<% if (!m.is_system_field && (m.type == 'centralised_radios' || m.type == 'centralised_select')) { %>
+				<div class="field">
+					<div class="title">Source:</div>
+					<div class="value">
+						<select id="field__values_source" name="values_source">
+							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.values_source_options)}}
+						</select>
+					</div>
+				</div>
+				
+				<% if (m.show_source_filter) { %>
+					<div class="field" id="field_container__values_source_filter">
+						<div id="field_label__source_filter" class="title">Source filter:</div>
+						<div class="value">
+							<input name="values_source_filter" type="text" value="{{m.values_source_filter|e}}"/>
+						</div>
+						<div class="note_below">
+							Set a filter for the source
+						</div>
+					</div>
+				<% } %>
+			<% } %>
+			
+			<div class="field">
+				<div class="value">
+					<input id="field__is_protected" name="is_protected" type="checkbox" <% if (m.is_protected) { %> checked="checked" <% } %>
+					/>
+					<label for="field__is_protected" class="title">Protected</label>
+				</div>
+			</div>
+			
+			<% if (m.db_column) { %>
+				<div class="field">
+					<div class="value">
+						<input id="field__include_in_export" name="include_in_export" type="checkbox" <% if (m.include_in_export) { %> checked="checked" <% } %>/>
+						<label for="field__include_in_export" class="title">Include in export</label>
+					</div>
+				</div>
+			<% } %>
+		</div>
+		
+		<!-- Display tab -->
+		<div id="field_section__display" class="section" style="display:none;">
+			<% if (!m.is_system_field) { %>
+				<div class="field">
+					<div class="title">Conditional display on field:</div>
+					<div class="value">
+						<select name="parent_id">
+							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_optgroups', m.parent_id_options)}}
+						</select>
+					</div>
+				</div>
+			<% } %>
+			<% if (m.type == 'editor' || m.type == 'textarea') { %>
+				<div class="field">
+					<div class="title">Width of the field on the admin box:</div>
+					<div class="value">
+						<select name="width">
+							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.width_options)}}
+						</select>
+					</div>
+				</div>
+				<div class="field">
+					<div class="title">Height of the field on the admin box:</div>
+					<div class="value">
+						<select id="height">
+							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.height_options)}}
+						</select>
+					</div>
+				</div>
+			<% } %>
+			<div class="field">
+				<div class="title">Help text:</div>
+				<div class="value">
+					<input name="note_below" type="text" value="{{m.note_below|e}}"/>
+				</div>
+				<div class="note_below">
+					This is a message to administrators that explains what to enter for the field.
+					For example, like this message.
+				</div>
+			</div>
+		</div>
+		
+		<% if (!m.is_system_field) { %>
+			
+			<!-- Validation tab -->
+			<div id="field_section__validation" class="section" style="display:none;">
+				
+				<div class="field">
+					
+					<div class="value">
+						<input id="field__required" name="required" type="checkbox" <% if (m.required) { %> checked="checked" <% } %>/>
+						<label for="field__required" class="title">Required</label>
+					</div>
+					<div class="note_below">
+						An administrator will not be able to save a record until all of the required fields are complete.
+					</div>
+				</div>
+				
+				<div id="field_container__required_message" class="field" <% if (!m.required) { %> style="display:none;" <% } %>>
+					<div class="title">Message if not complete:</div>
+					<div class="value">
+						<input name="required_message" type="text" value="{{m.required_message|e}}"/>
+					</div>
+				</div>
+				
+				<% if (m.type == 'text') { %>
+					<div class="field">
+						<div class="title">Validation:</div>
+						<div class="value">
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__none" value="none"/>
+								<label for="field__validation__none">None</label>
+							</div>
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__email" value="email"/>
+								<label for="field__validation__email">Email</label>
+								<div class="note_below">Must be a valid email address</div>
+							</div>
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__emails" value="emails"/>
+								<label for="field__validation__emails">Multiple emails</label>
+								<div class="note_below">Must be a comma-seperated list of valid email addresses</div>
+							</div>
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__no_spaces" value="no_spaces"/>
+								<label for="field__validation__no_spaces">No spaces allowed</label>
+								<div class="note_below">May not contain spaces</div>
+							</div>
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__numeric" value="numeric"/>
+								<label for="field__validation__numeric">Numeric</label>
+								<div class="note_below">Must be a number</div>
+							</div>
+							<div class="radio">
+								<input type="radio" name="field__validation" id="field__validation__screen_name" value="screen_name"/>
+								<label for="field__validation__screen_name">Screen name</label>
+								<div class="note_below">Only word characters, digits and spaces are allowed</div>
+							</div>
+						</div>
+						<div class="note_below">
+							An administrator will not be able to save a record if this field does not match the validation rule chosen.
+						</div>
+					</div>
+					
+					<div id="field_container__validation_message" class="field" <% if (m.validation == 'none') { %> style="display:none;" <% } %>>
+						<div class="title">Message if not valid:</div>
+						<div class="value">
+							<input id="field__validation_message" type="text" value=""/>
+						</div>
+					</div>
+				<% } %>
+			</div>
+		<% } %>
+		
+		<!-- Organizer tab -->
+		<div id="field_section__organizer" class="section" style="display:none;">
+			<% if (!m.is_system_field) { %>
+			<div class="field">
+				<div class="value">
+					<input id="field__show_in_organizer" type="checkbox" value=""/>
+					<label for="field__show_in_organizer" class="title">Show in Organizer panel</label>
+				</div>
+			</div>
+			<% } %>
+			<div class="field" id="field_container__create_index">
+				<div class="radio_value">
+					<input id="field__create_index_1" type="radio" value="0" name="field__create_index"  
+						<% if (!m.create_index) { %> checked="checked" <% } %>
+						<% if (m.is_system_field) { %> disabled="disabled" <% } %>
+					/>
+					<label for="field__create_index_1" class="title">Don't index</label>
+				</div>
+				<div class="radio_value">
+					<input id="field__create_index_0" type="radio" value="1" name="field__create_index" 
+						<% if (m.create_index) { %> checked="checked" <% } %>
+						<% if (m.is_system_field) { %> disabled="disabled" <% } %>
+					/>
+					<label for="field__create_index_0" class="title">Index</label>
+				</div>
+				<div class="note_below">
+					<% if (!m.is_system_field) { %>
+						Index this field to give it a database table index for faster access. It may then be available in the {{m.dataset_label}} Organizer panel and you may sort and/or search on this field.
+					<% } else { %>
+						System field indexes cannot be changed
+					<% } %>
+				</div>
+			</div>
+			<% if (!m.is_system_field) { %>
+				<div id="field_container__searchable" class="field" <% if (!m.show_searchable_field) { %> style="display:none;" <% } %>>
+					<div class="value">
+						<input id="field__searchable" type="checkbox" value="" <% if (m.searchable) { %> checked="checked" <% } %> />
+						<label for="field__searchable" class="title">
+							<% if (m.is_text_field) { %>
+								Allow searching in Organizer
+							<% } else { %>
+								Allow filtering in Organizer
+							<% } %>
+						</label>
+					</div>
+				</div>
+				
+				<% if (!m.is_list_field) { %>
+					<div id="field_container__sortable" class="field" <% if (!m.create_index || !m.show_in_organizer) { %> style="display:none;" <% } %>>
+						<div class="value">
+							<input id="field__sortable" type="checkbox" value="" <% if (m.sortable) { %> checked="checked" <% } %>/>
+							<label for="field__sortable" class="title">Allow sorting in Organizer</label>
+						</div>
+					</div>
+				<% } %>
+				
+				<div id="field_container__visibility" class="field" <% if (!m.show_in_organizer) { %> style="display:none;" <% } %>>
+					<div class="title">Visibility:</div>
+					<div class="value">
+						<select name="visibility">
+							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visibility_options)}}
+						</select>
+					</div>
+					<div class="note_below">
+						Administrators will not be able to hide this field in Organizer if it is set to "Always show".
+					</div>
+				</div>
+			<% } %>
+		</div>
+		
+		<!-- Values tab -->
+		<% if (m.type == 'select' || m.type == 'radios' || m.type == 'checkboxes') { %>
+			<div id="field_section__values" class="section" style="display:none;">
+				<div id="field_values_list">
+					
+				</div>
+				<input type="button" id="organizer_add_a_field_value" value="Add a value"/>
+			</div>
+		<% } %>
+	
+	</form>
+	
+	</div>
+</div>

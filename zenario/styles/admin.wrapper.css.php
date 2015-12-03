@@ -33,17 +33,6 @@ useCache('zenario-inc-admin-css-'. LATEST_REVISION_NO);
 useGZIP(!empty($_GET['gz']));
 
 
-function incCSS($file) {
-	if (file_exists($file. '.min.css')) {
-		require $file. '.min.css';
-	} elseif (file_exists($file. '.css')) {
-		require $file. '.css';
-	}
-	
-	echo "\n/**/\n";
-}
-
-
 //Include all of the standard CSS admin libraries for the CMS
 incCSS('zenario/styles/admin_toolbar');
 incCSS('zenario/styles/admin_toolbar_buttons');

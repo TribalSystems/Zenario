@@ -45,15 +45,16 @@ zenario__languages:
                     refiner: country_code_filter
             collection_buttons:
                 create_country:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     ord: "1"
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a country
                     admin_box:
                         path: zenario_country_manager__country
+                        create_another: true
             item_buttons:
                 edit_country:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     label: Properties
                     hide_in_select_mode: true
                     admin_box:
@@ -78,7 +79,7 @@ zenario__languages:
                     hide_when_children_are_not_visible: true
                 activate_country:
                     parent: action_dropdown
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     label: Activate
                     traits:
                         suspended: true
@@ -96,7 +97,7 @@ zenario__languages:
                             action: activate_country
                 suspend_country:
                     parent: action_dropdown
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     label: Suspend
                     traits:
                         active: true
@@ -113,7 +114,7 @@ zenario__languages:
                         request:
                             action: suspend_country
                 remove_country:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     label: Delete
                     hide_in_select_mode: true
                     multiple_select: true
@@ -170,15 +171,16 @@ zenario__languages:
                     refiner: parent_id
             collection_buttons:
                 create_region:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     ord: "1"
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_country_manager__region
+                        create_another: true
             item_buttons:
                 edit_region:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
                     label: Properties
                     hide_in_select_mode: true
                     admin_box:
@@ -198,7 +200,7 @@ zenario__languages:
                         key:
                             loadRegionName: true
                 remove_region:
-                    priv: _PRIV_PUBLISH_CONTENT_ITEM
+                    priv: _PRIV_MANAGE_COUNTRY
                     label: Delete
                     hide_in_select_mode: true
                     multiple_select: true

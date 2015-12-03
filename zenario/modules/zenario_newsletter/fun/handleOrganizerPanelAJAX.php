@@ -91,6 +91,6 @@ switch ($path) {
 			'foreign_key_id' => $refinerId);
 		$privCheck = checkPriv('_PRIV_EDIT_NEWSLETTER');
 		
-		return require funIncPath(CMS_ROOT. moduleDir('zenario_common_features', 'fun'), 'media.handleOrganizerPanelAJAX');
+		return require funIncPath('zenario_common_features', 'media.handleOrganizerPanelAJAX');
 
 }

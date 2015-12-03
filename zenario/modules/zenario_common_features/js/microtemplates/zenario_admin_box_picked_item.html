@@ -1,4 +1,17 @@
-<div class="zenario_row_input_button zenario_group zenario_group_{{m.cols|e}}_cols zenario_group_col_{{m.col|e}}">
+<div class="
+	<% if(
+		m.extension == 'pdf' || 
+		m.extension == 'doc' || 
+		m.extension == 'docx' || 
+		m.extension == 'avi' || 
+		m.extension == 'ppt' || 
+		m.extension == 'xls' || 
+		m.extension == 'zip'
+		) { %>
+			zenario_doc_type_image_exists
+	<% } %>
+		zenario_row_input_button zenario_group zenario_group_{{m.cols|e}}_cols zenario_group_col_{{m.col|e}}
+	">
 	<% if (m.noItemSelected) { %>
 		<input
 			type="text"
@@ -9,6 +22,8 @@
 		/>
 
 	<% } else { %>
+	
+		<span class="zenario_picked_file_wrapper">
 	
 		<% if (m.isUpload) { %>
 			<% if (m.thumbnail) { %>
@@ -32,6 +47,8 @@
 				>Download</a>
 			<% } %>
 		<% } %>
+		
+		</span>
 	
 		<% if (m.tag_color) { %>
 			<label class="zenario_tag zenario_tag_{{m.tag_color|escape}}">
@@ -80,7 +97,7 @@
 		<% if (m.organizerPath) { %>
 			<a
 				target="_blank"
-				class="zab_picked_item_info"
+				class="zenario_fab_picked_item_info"
 				href="{{URLBasePath|e}}zenario/admin/organizer.php#{{m.organizerPath|e}}"
 			>i</a>
 		<% } %>

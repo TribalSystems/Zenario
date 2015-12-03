@@ -425,7 +425,7 @@ class zenario_plugin_nest extends module_base_class {
 			}
 			
 			
-			if (initInstance(cms_core::$slotContents[$slotNameNestId])) {
+			if (initPluginInstance(cms_core::$slotContents[$slotNameNestId])) {
 				
 				//Check for the forcePageReload and headerRedirect options in modules
 				if ($reload = cms_core::$slotContents[$slotNameNestId]['class']->checkForcePageReloadVar()) {

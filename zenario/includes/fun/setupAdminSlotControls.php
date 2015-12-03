@@ -30,6 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $html = '';
 $slotWrapperClasses = array();
 
+//Don't try to add and slot controls if this is a layout preview
+if (cms_core::$cID === -1) {
+	return;
+}
+
 
 //Add a JSON object for every slot controlbox on the page
 if (!empty($slotContents) && is_array($slotContents)) {

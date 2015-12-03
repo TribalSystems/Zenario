@@ -227,22 +227,22 @@ zenario_slideshow_2.getTransition = function(fx) {
 		case '_fade':
 			return [{$Duration:1200,$Opacity:2}];
 		case '_slide_right':
-			return [{$Duration:600,$FlyDirection:1,$Easing:$JssorEasing$.$EaseInQuad}];
+			return [{$Duration:600,x:1,$Easing:$JssorEasing$.$EaseInQuad}];
 		case '_switch':
-			return [{$Duration:1400,$Zoom:1.5,$FlyDirection:1,$Easing:{$Left:$JssorEasing$.$EaseInWave,$Zoom:$JssorEasing$.$EaseInSine},$ScaleHorizontal:0.25,$Opacity:2,$ZIndex:-10,$Brother:{$Duration:1400,$Zoom:1.5,$FlyDirection:2,$Easing:{$Left:$JssorEasing$.$EaseInWave,$Zoom:$JssorEasing$.$EaseInSine},$ScaleHorizontal:0.25,$Opacity:2,$ZIndex:-10}}];
+			return [{$Duration:1400,x:0.25,$Zoom:1.5,$Easing:{$Left:$JssorEasing$.$EaseInWave,$Zoom:$JssorEasing$.$EaseInSine},$Opacity:2,$ZIndex:-10,$Brother:{$Duration:1400,x:-0.25,$Zoom:1.5,$Easing:{$Left:$JssorEasing$.$EaseInWave,$Zoom:$JssorEasing$.$EaseInSine},$Opacity:2,$ZIndex:-10}}];
 		case '_doors':
-			return [{$Duration:1500,$Cols:2,$FlyDirection:1,$ChessMode:{$Column:3},$Easing:{$Left:$JssorEasing$.$EaseInOutCubic},$ScaleHorizontal:0.5,$Opacity:2,$Brother:{$Duration:1500,$Opacity:2}}];
+			return [{$Duration:1500,x:0.5,$Cols:2,$ChessMode:{$Column:3},$Easing:{$Left:$JssorEasing$.$EaseInOutCubic},$Opacity:2,$Brother:{$Duration:1500,$Opacity:2}}];
 		case '_rotate_up':
 			return [{$Duration:1200,$Rotate:-0.1,$FlyDirection:5,$Easing:{$Left:$JssorEasing$.$EaseInQuad,$Top:$JssorEasing$.$EaseInQuad,$Opacity:$JssorEasing$.$EaseLinear,$Rotate:$JssorEasing$.$EaseInQuad},$ScaleHorizontal:0.25,$ScaleVertical:0.5,$Opacity:2,$Brother:{$Duration:1200,$Rotate:0.1,$FlyDirection:10,$Easing:{$Left:$JssorEasing$.$EaseInQuad,$Top:$JssorEasing$.$EaseInQuad,$Opacity:$JssorEasing$.$EaseLinear,$Rotate:$JssorEasing$.$EaseInQuad},$ScaleHorizontal:0.1,$ScaleVertical:0.7,$Opacity:2}}];
 		case '_vertical_split_slide':
-			return [{$Duration:1600,$Cols:2,$FlyDirection:8,$ChessMode:{$Column:12},$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$Brother:{$Duration:1600,$Cols:2,$FlyDirection:4,$ChessMode:{$Column:12},$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2}}];
+			return [{$Duration:1600,y:2,$Cols:2,$ChessMode:{$Column:12},$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$Brother:{$Duration:1600,$Cols:2,$FlyDirection:4,$ChessMode:{$Column:12},$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2}}];
 		case '_bars_replace':
-			return [{$Duration:1200,$Delay:40,$Cols:6,$FlyDirection:1,$Formation:$JssorSlideshowFormations$.$FormationStraight,$Easing:{$Left:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$ZIndex:-10,$Brother:{$Duration:1200,$Delay:40,$Cols:6,$FlyDirection:1,$Formation:$JssorSlideshowFormations$.$FormationStraight,$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$ZIndex:-10,$Shift:-100}}];
+			return [{$Duration:1200,$Delay:40,$Cols:6,x:1,$Formation:$JssorSlideshowFormations$.$FormationStraight,$Easing:{$Left:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$ZIndex:-10,$Brother:{$Duration:1200,$Delay:40,$Cols:6,$FlyDirection:1,$Formation:$JssorSlideshowFormations$.$FormationStraight,$Easing:{$Top:$JssorEasing$.$EaseInOutQuart,$Opacity:$JssorEasing$.$EaseLinear},$Opacity:2,$ZIndex:-10,$Shift:-100}}];
 		case '_squares_wind':
 			return [{$Duration:1800,$Delay:30,$Cols:10,$Rows:5,$Clip:15,$During:{$Left:[0.3,0.7],$Top:[0.3,0.7]},$SlideOut:true,$FlyDirection:5,$Reverse:true,$Formation:$JssorSlideshowFormations$.$FormationStraightStairs,$Assembly:2050,$Easing:{$Left:$JssorEasing$.$EaseInOutSine,$Top:$JssorEasing$.$EaseOutWave,$Clip:$JssorEasing$.$EaseInOutQuad},$ScaleHorizontal:1,$ScaleVertical:0.2,$Round:{$Top:1.3}}];
 		case '_squares_expand_random':
 			return [{$Duration:1000,$Delay:80,$Cols:8,$Rows:4,$Clip:15,$Easing:$JssorEasing$.$EaseInQuad}];
 		case '_bounce_down':
-			return [{$Duration:1000,$FlyDirection:4,$Easing:$JssorEasing$.$EaseInBounce}];
+			return [{$Duration:1000,y:1,$Easing:$JssorEasing$.$EaseInBounce}];
 	};
 };

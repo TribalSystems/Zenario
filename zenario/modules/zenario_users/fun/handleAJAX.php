@@ -33,7 +33,7 @@ if (post('load_smart_group') && checkPriv('_PRIV_VIEW_USER')) {
 	echo getRow('smart_groups', 'values', post('id'));
 	exit;
 
-} elseif (post('save_smart_group') && checkPriv('_PRIV_EDIT_GROUP')) {
+} elseif (post('save_smart_group') && checkPriv('_PRIV_MANAGE_GROUP')) {
 	$json = array();
 	$key = array();
 	$values = array();
@@ -54,7 +54,7 @@ if (post('load_smart_group') && checkPriv('_PRIV_VIEW_USER')) {
 		$json['confirm_button_message'] = adminPhrase('Overwrite Smart Group');
 
 	} else {
-		exitIfNotCheckPriv('_PRIV_CREATE_GROUP');
+		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
 		$values['values'] = post('values');
 		$values['last_modified_on'] = now();
 		$values['last_modified_by'] = adminId();
@@ -79,7 +79,7 @@ if (post('load_smart_group') && checkPriv('_PRIV_VIEW_USER')) {
 	exit;
 
 
-} elseif (post('delete') && checkPriv('_PRIV_DELETE_GROUP')) {
+} elseif (post('delete') && checkPriv('_PRIV_MANAGE_GROUP')) {
 	foreach (explode(',', $ids) as $id) {
 		deleteRow('smart_groups', $id);
 		sendSignal("eventSmartGroupDeleted",array("smartGroupId" => $id));

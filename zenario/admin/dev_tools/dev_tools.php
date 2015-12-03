@@ -46,7 +46,7 @@ CMSWritePageHead($prefix, false, false);
 
 
 checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_CMS_VERSION. '.'. LATEST_REVISION_NO);
+$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../../styles/dev_tools.css?v=', $v, '" media="screen"/>';
@@ -114,6 +114,7 @@ echo '
 <script type="text/javascript">
 	var schema = ', json_encode($schema), ';
 	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaName), '\', schema, ', engToBoolean(get('skMap')), ');
+	var sshPath = "', jsEscape(httpHostWithoutPort(). CMS_ROOT), '";
 </script>
 </body>
 </html>';

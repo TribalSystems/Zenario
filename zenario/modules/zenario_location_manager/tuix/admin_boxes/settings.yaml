@@ -11,6 +11,14 @@ site_settings:
                 on: No
             label: Details
             fields:
+                zenario_location_manager__enable_pending_status:
+                    label: 'Enable pending status'
+                    site_setting:
+                        name: zenario_location_manager__enable_pending_status
+                    type: checkbox
+                    side_note: |
+                        When the pending status is enabled, any new locations will be created as pending first instead of active.
+                        You can also manually change a locations status to and from pending in the locations organizer panel.
                 zenario_location_manager__hierarchy_levels:
                     label: 'Number of levels allowed in a location hierarchy:'
                     site_setting:

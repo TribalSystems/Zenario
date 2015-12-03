@@ -124,6 +124,98 @@ zenarioA.slotControlCloseInterval = 100;
 $(document).ready(zenarioA.setSlotParents);
 
 
+zenarioA.getGridSlotDetails = function(slotName) {
+	//Get the grid span from the slot name
+	var $gridspan = $('.' + slotName + '.span.slot'),
+		grid = {
+			container: false,
+			cssClass: false,
+			columns: false,
+			width: false,
+			widthInfo: false
+		};
+	
+	if ($gridspan.length) {
+		//Attempt to get the CSS class names of the wrapper of the slot
+		//(it's easier to look this up using JavaScript than it is to work it out in fillAllAdminSlotControls() in php).
+		grid.cssClass = $gridspan.attr('class'),
+		
+		//Strip out "alpha" and "omega" from the class names
+		grid.cssClass = grid.cssClass.replace(' alpha ', ' ').replace(' omega ', ' ');
+		
+		//Get the actual width of the slot
+		var fluidWidth = false,
+			widthInfo = '',
+			pxWidth = $gridspan.width(),
+			container,
+		
+			//Try and read the number of columns from the css class names, e.g. "span3"
+			css = $gridspan.attr('class') || '',
+			columns = css.match(/\bspan\d+\b/);
+	
+		if (columns) {
+			columns = 1 * columns[0].match(/\d+/);
+		}
+	
+		try {
+			//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
+			//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
+			outerLoop:
+			foreach (document.styleSheets as var i => var s) {
+				var rules = s.rules || s.cssRules;
+		
+				innerLoop:
+				foreach (rules as var j => var rule) {
+					if (rule.selectorText
+					 && rule.style.width
+					 && ('' + rule.selectorText).match(/\.span/)
+					 && $gridspan.is(rule.selectorText)) {
+						widthInfo = rule.style.width;
+						break outerLoop;
+					}
+				}
+			}
+		} catch (e) {
+			widthInfo = '';
+		}
+	
+		if (!widthInfo) {
+			widthInfo = pxWidth + 'px';
+		} else if (!widthInfo.match(/\d+px/)) {
+			fluidWidth = true;
+		}
+	
+		if (fluidWidth) {
+			widthInfo += ' (' + pxWidth + ' px ' + phrase.atCurrentSize + ')';
+		}
+	
+		if (columns) {
+			if (columns == 1) {
+				widthInfo = '1 column, ' + widthInfo;
+			} else {
+				widthInfo = columns + ' columns, ' + widthInfo;
+			}
+		}
+		
+		grid.widthInfo = widthInfo;
+		grid.pxWidth = pxWidth;
+		grid.columns = columns;
+		
+		
+		//Work out the size of the container
+		if ((container = $gridspan.closest('div.container'))
+		 && (container = container.attr('class'))
+		 && (container = container.match(/container_(\d+)/))
+		 && (container[1])) {
+			grid.container = 1*container[1];
+		}
+	}
+	
+	return grid;
+};
+
+
+
 
 /*  Functions for managing plugin slots  */
 
@@ -140,18 +232,7 @@ zenarioA.openSlotControls = function(el, e, slotName) {
 			section,
 			sections = {info: false, notes: false, actions: false, overridden_info: false, overridden_actions: false},
 			instanceId = zenario.slots[slotName].instanceId,
-			
-			//Get the grid span from the slot name
-			$gridspan = $('.' + slotName + '.span.slot'),
-			gridCSSClass = false,
-			gridWidth = false;
-		
-		if ($gridspan.length) {
-			//Attempt to get the CSS class names of the wrapper of the slot
-			//(it's easier to look this up using JavaScript than it is to work it out in fillAllAdminSlotControls() in php).
-			gridCSSClass = $gridspan.attr('class'),
-			gridWidth = zenarioA.getSlotWidth($gridspan);
-		}
+			grid = zenarioA.getGridSlotDetails(slotName);
 		
 		if (get('zenario_fbAdminSlotControls-' + slotName).innerHTML.indexOf('zenario_long_option') == -1) {
 			width = 255;
@@ -183,20 +264,20 @@ zenarioA.openSlotControls = function(el, e, slotName) {
 		}
 		
 		//Set the CSS class that the grid is using
-		if (gridCSSClass) {
+		if (grid.cssClass) {
 			//Strip out some technical class-names that make the grid work but designers don't need to see
-			gridCSSClass = gridCSSClass.replace(' alpha ', ' ').replace(' omega ', ' ').replace(/\bspan\d*_?\d*\s/g, '');
+			grid.cssClass = grid.cssClass.replace(/\bspan\d*_?\d*\s/g, '');
 			
 			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class').show();
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class > span').text(gridCSSClass);
+			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class > span').text(grid.cssClass);
 		} else {
 			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_css_class').hide();
 		}
 		
 		//Set the width of this slot
-		if (gridWidth) {
+		if (grid.widthInfo) {
 			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width').show();
-			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width > span').text(gridWidth);
+			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width > span').text(grid.widthInfo);
 		} else {
 			$('#zenario_slot_control__' + slotName + '__info__' + 'grid_width').hide();
 		}
@@ -224,65 +305,6 @@ zenarioA.closeSlotControls = function() {
 		zenarioA.closeBox(zenarioA.openSlotControlsBox, true, {effect: 'fade', duration: 200});
 		$('.zenario_slotAdminControlBox').removeClass('zenario_adminSlotControlsOpen');
 	}
-};
-
-//Gets display information on the width of a slot.
-zenarioA.getSlotWidth = function($gridspan) {
-		
-	//Get the actual width of the slot
-	var fluidWidth = false,
-		cssWidth = '',
-		pxWidth = $gridspan.width(),
-		
-		//Try and read the number of columns from the css class names, e.g. "span3"
-		css = $gridspan.attr('class') || '',
-		columns = css.match(/\bspan\d+\b/);
-	
-	if (columns) {
-		columns = 1 * columns[0].match(/\d+/);
-	}
-	
-	try {
-		//Loop through each stylesheet/rule, checking to see if there is a grid and a "span" rule that matches this span
-		//Adapted from http://stackoverflow.com/questions/324486/how-do-you-read-css-rule-values-with-javascript
-		outerLoop:
-		foreach (document.styleSheets as var i => var s) {
-			var rules = s.rules || s.cssRules;
-		
-			innerLoop:
-			foreach (rules as var j => var rule) {
-				if (rule.selectorText
-				 && rule.style.width
-				 && ('' + rule.selectorText).match(/\.span/)
-				 && $gridspan.is(rule.selectorText)) {
-					cssWidth = rule.style.width;
-					break outerLoop;
-				}
-			}
-		}
-	} catch (e) {
-		cssWidth = '';
-	}
-	
-	if (!cssWidth) {
-		cssWidth = pxWidth + 'px';
-	} else if (!cssWidth.match(/\d+px/)) {
-		fluidWidth = true;
-	}
-	
-	if (fluidWidth) {
-		cssWidth += ' (' + pxWidth + ' px ' + phrase.atCurrentSize + ')';
-	}
-	
-	if (columns) {
-		if (columns == 1) {
-			cssWidth = '1 column, ' + cssWidth;
-		} else {
-			cssWidth = columns + ' columns, ' + cssWidth;
-		}
-	}
-	
-	return cssWidth;
 };
 
 
@@ -604,7 +626,6 @@ zenarioA.showPlugin = function(el, slotName) {
 
 
 
-
 /*  Reloading Slots  */
 
 //Callback function for refreshPluginSlot()
@@ -814,6 +835,7 @@ zenarioA.openBox = function(html, className, n, e, width, left, top, disablePage
 		$box.resizable(resizable);
 	}
 	
+	$('body').addClass('zenario_fb' + n + '__isOpen');
 	$box.show();
 };
 
@@ -985,6 +1007,7 @@ zenarioA.closeBox = function(n, keepHTML, options) {
 	}
 	
 	$('#zenario_fb' + n + '__overlay').remove();
+	$('body').removeClass('zenario_fb' + n + '__isOpen');
 	
 	if (zenarioA.checkIfBoxIsOpen(n)) {
 		document.body.focus();
@@ -1492,7 +1515,10 @@ zenarioA.setLinkURL = function(path, key, row) {
 		return;
 	}
 	
-	if (zenarioA.tinyMCE_fromFAB) {
+	//For admin boxes, make sure the full URL is used as a workaround for any relative path problems
+	//The stripAbsURLsFromAdminBoxField() function can be used later to strip these off if this is not desirable.
+	if (zenarioA.tinyMCE_fromFAB
+	 && URL.indexOf('://') === -1) {
 		URL = URLBasePath + URL;
 	}
 	
@@ -2191,22 +2217,21 @@ zenarioA.openProfile = function() {
 
 //Functionality for clicking on Menu Nodes. They should:
 	//Follow their hyperlinks in preview mode
-	//Open Organizer Quick in menu mode if the menu wand is on
-		//Or show the create a menu node admin box for the create buttons
+	//Open a FAB in menu mode
 	//Do nothing otherwise
-zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
+zenarioA.openMenuAdminBox = function(key, openSpecificBox) {
 	if (!key) {
 		key = {};
 	}
 	
-	if (alwaysOpen) {
+	if (openSpecificBox) {
 		//continue
 	
 	} else if (zenarioA.pageMode == 'preview') {
 		return true;
 	
 	} else if (zenarioA.pageMode == 'menu' && zenarioA.menuWandOn) {
-		//continue
+		openSpecificBox = 'zenario_menu_text';
 	
 	} else {
 		return false;
@@ -2218,8 +2243,8 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 		key.languageId = zenario.langId;
 	}
 	
-	if (key.id) {
-		//If this is an existing Menu Item, open it in Organizer Quick
+	if (openSpecificBox == 'organizer') {
+		//Open an existing Menu Item in Organizer Quick
 		var path = zenario.moduleNonAsyncAJAX('zenario_common_features', {getMenuItemStorekeeperDeepLink: key.id, languageId: key.languageId}, true);
 		
 		if (zenarioA.loggedOut(path)) {
@@ -2240,11 +2265,23 @@ zenarioA.openMenuAdminBox = function(key, alwaysOpen) {
 		
 	} else {
 		//Otherwise open an Admin Box
-		zenarioAB.open('zenario_menu', key);
+		zenarioAB.open(openSpecificBox, key);
 	}
 	
 	return false;
 };
+
+zenarioA.reloadMenuPlugins = function() {
+	$('.zenario_slotShownInMenuMode .zenario_slot').each(function(i, el) {
+		if (el.id && el.id.substr(0, 7) == 'plgslt_') {
+			var slotName = el.id.substr(7);
+			
+			//zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
+			zenario.refreshPluginSlot(slotName, 'lookup', undefined, false, false, false, false, false);
+		}
+	});
+};
+
 
 
 //If there is an entry (e.g. "Edit Content") in the actions dropdown that needs to be on a draft,
@@ -2279,7 +2316,8 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 		delete object.ajax.request.switch_to_edit_mode;
 		
 		//Should we show someone a warning before creating a draft?
-		if (zenarioAT.tuix.sections.edit.buttons.start_editing.ajax.confirm) {
+		if (zenarioA.checkSpecificPermsOnThisPage()
+		 && zenarioAT.tuix.sections.edit.buttons.start_editing.ajax.confirm) {
 			
 			//If so, show a confirmation box with up to three options:
 			if (confirmMessage) {
@@ -2726,7 +2764,13 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			}
 		}
 		
-		zenarioAB.open(object.admin_box.path, key, object.admin_box.tab, object.admin_box.values);
+		zenarioAB.open(
+			object.admin_box.path,
+			key,
+			object.admin_box.tab,
+			object.admin_box.values,
+			undefined,
+			engToBoolean(object.admin_box.create_another)? object.admin_box : false);
 	
 	} else if (object.popout) {
 		var id, item, title, usage,
@@ -2929,24 +2973,22 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			//Get the message/html for this box
 			var message;
 			
-			//Part of the backwards compatability hack for browsers without HTML 5 uploads above
-			if (object.upload) {
-				message = object.ajax.confirm.message;
+			if (object.ajax.confirm.message) {
+				if (object.upload) {
+					//Part of the backwards compatability hack for browsers without HTML 5 uploads above
+					message = object.ajax.confirm.message;
 			
-			//Use the multiple select message if more than one item is selected
-			} else if (itemLevel && zenarioCallingLibrary.itemsSelected > 1) {
-				if (message = object.ajax.confirm.multiple_select_message || object.ajax.confirm.message) {
-					message = ('' + message).replace(/\[\[item_count\]\]/ig, zenarioCallingLibrary.itemsSelected);
+				} else {
+					//Otherwise apply any merge fields to the label from the calling library
+					message = zenarioCallingLibrary.applyMergeFieldsToLabel(
+						object.ajax.confirm.message,
+						isHTML, itemLevel,
+						object.ajax.confirm.multiple_select_message
+					);
 				}
 			
-			//Apply mergefields to populate the message with information from the selected row
-			//Note that if they're not going to be escaped below then they need to be here.
-			} else if (object.ajax.confirm.message) {
-				message = zenarioCallingLibrary.applyMergeFields(object.ajax.confirm.message, isHTML);
-			}
-			
 			//If no message is set, try and get one using an AJAX call
-			if (!message) {
+			} else {
 				message = zenario.nonAsyncAJAX(URLBasePath + zenarioCallingLibrary.actionTarget + zenario.urlRequest(zenarioCallingLibrary.actionRequests), false);
 			}
 			
@@ -2973,7 +3015,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			var buttonsHTML = '';
 			if (isDownload || object.upload) {
 				html += 
-					'<form id="jqmodal_form" action="' + htmlspecialchars(URLBasePath + zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1') + '"' +
+					'<form id="zenario_bc_form" action="' + htmlspecialchars(URLBasePath + zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1') + '"' +
 						' onsubmit="get(\'preloader_circle\').style.visibility = \'visible\';"' +
 						' target="zenario_iframe" method="post"' + (object.upload? ' enctype="multipart/form-data"' : '') + '>';
 				
@@ -2994,7 +3036,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 				html += '</form>';
 				
 				buttonsHTML =
-					'<input type="button" class="submit_selected" value="' + htmlspecialchars(object.ajax.confirm.button_message) + '" onclick="get(\'jqmodal_form\').submit();"/>';
+					'<input type="button" class="submit_selected" value="' + htmlspecialchars(object.ajax.confirm.button_message) + '" onclick="get(\'zenario_bc_form\').submit();"/>';
 			//...otherwise it should launch a syncronous AJAX request.
 			} else {
 				buttonsHTML =
@@ -3032,7 +3074,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 };
 
 zenarioA.isHtaccessWorking = function() {
-	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/includes/test_files/is_htaccess_working.css', true) == 'Yes it is';
+	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/includes/test_files/is_htaccess_working.txt', true) == 'Yes';
 };
 
 zenarioA.checkFunctionExists = function(functionName, encapName) {
@@ -3089,19 +3131,46 @@ zenarioA.sortArrayByOrdinal = function(a, b) {
 	return zenarioA.sortLogic(a, b, 'ordinal');
 };
 
-zenarioA.sortLogic = function(a, b, prop) {
+zenarioA.sortArrayWithGrouping = function(a, b) {
+	
+	//Both fields are in the same grouping, or neither field is in a grouping.
+	if (a[2] === b[2]) {
+		//Check their ordinal normally
+		return zenarioA.sortLogic(a, b, 1);
+	
+	//Field a is not in a grouping, but field b is
+	} else if (a[2] === undefined) {
+		//a's ordinal should be checked against the ordinal of b's grouping
+		return zenarioA.sortLogic(a, b, 1, 2);
+	
+	//Field b is not in a grouping, but field a is
+	} else {
+		//b's ordinal should be checked against the ordinal of a's grouping
+		return zenarioA.sortLogic(a, b, 2, 1);
+	}
+};
+
+zenarioA.sortLogic = function(a, b, propA, propB) {
+	
+	var vA = a[propA], vB;
+	
+	if (propB === undefined) {
+		vB = b[propA];
+	} else {
+		vB = b[propB];
+	}
 	
 	//Check to see if they're identical
-	if (a[prop] === b[prop]) {
+	if (vA === vB) {
 		return 0;
 	
 	} else {
-		var aNumeric = a[prop] == 1*a[prop],
-			bNumeric = b[prop] == 1*b[prop];
+		var aNumeric = vA == 1*vA,
+			bNumeric = vB == 1*vB;
 	
 		//Try a numeric comparision
 		if (aNumeric && bNumeric) {
-			return 1*a[prop] < 1*b[prop]? -1 : 1;
+			return 1*vA < 1*vB? -1 : 1;
 	
 		//Put any numeric values before strings
 		} else if (aNumeric || bNumeric) {
@@ -3109,7 +3178,7 @@ zenarioA.sortLogic = function(a, b, prop) {
 		
 		//Otherwise try a string comparision
 		} else {
-			return ('' + a[prop]).toUpperCase() < ('' + b[prop]).toUpperCase()? -1 : 1;
+			return ('' + vA).toUpperCase() < ('' + vB).toUpperCase()? -1 : 1;
 		}
 	}
 };
@@ -3309,7 +3378,7 @@ zenarioA.disableFileDragDrop = function(el) {
 //attempt to initialise, and then only on the second attempt will the result return true.
 //To get round this we'll try up to two times.
 zenarioA.checkCookiesEnabled = function() {
-	var url = URLBasePath + 'zenario/admin/quick_ajax.php?_check_cookies_enabled=1&no_cache=1',
+	var url = URLBasePath + 'zenario/cookies.php?check_cookies_enabled=1&no_cache=1',
 		cb = new zenario.callback;
 	
 	zenario.ajax(url).after(function(result) {

@@ -30,39 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features extends module_base_class {
 	
-	/*
-	public function deleteHierarchicalDocument($documentId) {
-		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
-		deleteRow('documents', array('id' => $documentId));
-		if ($details && $details['type'] == 'folder') {
-			$children = getRows('documents', array('id', 'type'), array('folder_id' => $documentId));
-			while ($row = sqlFetchAssoc($children)) {
-				self::deleteHierarchicalDocument($row['id']);
-			}
-		} elseif ($details && $details['type'] == 'file') {
-			if ($details['file_id']) {
-				$fileDetails = getRow('files', array('path', 'filename', 'location'), $details['file_id']);
-				$symPath = CMS_ROOT . 'public' . '/' . $fileDetails['path'] . '/'. $fileDetails['filename'];
-				$symFolder = CMS_ROOT . 'public' . '/' . $fileDetails['path'];
-				if (file_exists($symPath)) {
-					unlink($symPath);
-					rmdir($symFolder);
-				}
-				if ($fileDetails['location'] == 'docstore' &&  $fileDetails['path']) {
-					unlink(setting('docstore_dir') . '/'. $fileDetails['path'] . '/' . $fileDetails['filename']);
-					rmdir(setting('docstore_dir') . '/'. $fileDetails['path']);
-				}
-				
-				//check to see if file used by another document before deleting
-				deleteRow('files', array('id' => $details['file_id']));
-			}
-			if ($details['thumbnail_id']) {
-				deleteRow('files', array('id' => $details['thumbnail_id']));
-			}
-		}
-	}
-	
-	*/
+
 	
 	public static function deleteHierarchicalDocumentPubliclink($documentId) {
 		$document = getRow('documents', array('file_id'), $documentId);
@@ -262,13 +230,13 @@ class zenario_common_features extends module_base_class {
 			}
 			
 			if ($showFirstLast && $currentPos > ($showNextPrev? 1 : 0)) {
-				$html .= $this->drawPageLink($this->phrase('_FIRST'), $pages[$pagesPos[0]], $pagesPos[0], $currentPage, $prevPage, $nextPage, 'pag_first', $links);
+				$html .= $this->drawPageLink($this->phrase('First'), $pages[$pagesPos[0]], $pagesPos[0], $currentPage, $prevPage, $nextPage, 'pag_first', $links);
 			}
 			
 			if ($showNextPrev && $prevPage !== false) {
-				$html .= $this->drawPageLink($this->phrase('_PREV'), $pages[$prevPage], $prevPage, $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
+				$html .= $this->drawPageLink($this->phrase('Prev'), $pages[$prevPage], $prevPage, $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
 			} elseif ($showNextPrev && $alwaysShowNextPrev) {
-				$html .= $this->drawPageLink($this->phrase('_PREV'), '', '', $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
+				$html .= $this->drawPageLink($this->phrase('Prev'), '', '', $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
 			}
 			
 			
@@ -296,13 +264,13 @@ class zenario_common_features extends module_base_class {
 			
 			
 			if ($showNextPrev && $nextPage !== false) {
-				$html .= $this->drawPageLink($this->phrase('_NEXT'), $pages[$nextPage], $nextPage, $currentPage, $prevPage, $nextPage, 'pag_next', $links);
+				$html .= $this->drawPageLink($this->phrase('Next'), $pages[$nextPage], $nextPage, $currentPage, $prevPage, $nextPage, 'pag_next', $links);
 			} elseif ($showNextPrev && $alwaysShowNextPrev) {
-				$html .= $this->drawPageLink($this->phrase('_NEXT'), '', '', $currentPage, $prevPage, $nextPage, 'pag_next', $links);
+				$html .= $this->drawPageLink($this->phrase('Next'), '', '', $currentPage, $prevPage, $nextPage, 'pag_next', $links);
 			}
 			
 			if ($showFirstLast && $currentPos < $count - ($showNextPrev? 2 : 1)) {
-				$html .= $this->drawPageLink($this->phrase('_LAST'), $pages[$pagesPos[$count-1]], $pagesPos[$count-1], $currentPage, $prevPage, $nextPage, 'pag_last', $links);
+				$html .= $this->drawPageLink($this->phrase('Last'), $pages[$pagesPos[$count-1]], $pagesPos[$count-1], $currentPage, $prevPage, $nextPage, 'pag_last', $links);
 			}
 		}
 		
@@ -311,12 +279,12 @@ class zenario_common_features extends module_base_class {
 	}
 	
 	
-	public static function initInstance(
+	public static function loadPluginInstance(
 		&$slotContents, $slotName,
 		$cID, $cType, $cVersion,
 		$layoutId, $templateFamily, $templateFileBaseName,
 		$specificInstanceId, $specificSlotName, $ajaxReload,
-		$runPlugins
+		$runPlugins, $overrideSettings = false
 	) {
 		$missingPlugin = false;
 		if (includeModuleAndDependencies($slotContents[$slotName]['class_name'], $missingPlugin)
@@ -342,7 +310,14 @@ class zenario_common_features extends module_base_class {
 				if ($runPlugins) {
 					setInstance($slotContents[$slotName], $cID, $cType, $cVersion, $slotName, $checkForErrorPages = true);
 					
-					if (initInstance($slotContents[$slotName])) {
+					if (!empty($overrideSettings)
+					 && is_array($overrideSettings)) {
+						foreach ($overrideSettings as $name => $value) {
+							$slotContents[$slotName]['class']->tApiSettings[$name] = $value;
+						}
+					}
+					
+					if (initPluginInstance($slotContents[$slotName])) {
 						if (!$ajaxReload && ($location = $slotContents[$slotName]['class']->checkHeaderRedirectLocation())) {
 							header("Location: ". $location);
 							exit;
@@ -351,38 +326,47 @@ class zenario_common_features extends module_base_class {
 				}
 				
 			} else {
-				$details = getModuleDetails($slotContents[$slotName]['module_id']);
+				$module = getModuleDetails($slotContents[$slotName]['module_id']);
 				
 				if ($runPlugins) {
-					setupNewBaseClassPlugin($slotName);
-					$slotContents[$slotName]['error'] = adminPhrase('[Plugin Instance not found for the Module &quot;[[module]]&quot;]', array('module' => htmlspecialchars($details['display_name'])));
+					
+					//If this is a layout preview, any version controlled plugin won't have an instance id
+					//and can't be displayed properly, but set it up as best we can.
+					if ($cID === -1
+					 && inc($className = $module['class_name'])) {
+						cms_core::$slotContents[$slotName]['class'] = new $className;
+						cms_core::$slotContents[$slotName]['class']->setInstance(array(
+							cms_core::$cID, cms_core::$cType, cms_core::$cVersion, $slotName,
+							false, false,
+							$className, $module['vlp_class'],
+							$module['id'],
+							$module['default_framework'], $module['default_framework'],
+							$module['css_class_name'],
+							false, true));
+					
+					//Otherwise if this is a layout preview, then no instance id is an error!
+					} else {
+						setupNewBaseClassPlugin($slotName);
+						$slotContents[$slotName]['error'] = adminPhrase('[Plugin Instance not found for the Module &quot;[[module]]&quot;]', array('module' => htmlspecialchars($module['display_name'])));
+					}
 				}
 			}
 		} else {
-			$details = getModuleDetails($slotContents[$slotName]['module_id']);
+			$module = getModuleDetails($slotContents[$slotName]['module_id']);
 			
 			if ($runPlugins) {
 				setupNewBaseClassPlugin($slotName);
-				$slotContents[$slotName]['error'] = adminPhrase('[Selected Module &quot;[[module]]&quot; not found, not running, or has missing dependencies]', array('module' => htmlspecialchars($details['display_name'])));
+				$slotContents[$slotName]['error'] = adminPhrase('[Selected Module &quot;[[module]]&quot; not found, not running, or has missing dependencies]', array('module' => htmlspecialchars($module['display_name'])));
 			}
 		}
 	}
 	
-	public static function preSlot($slotName, $showPlaceholderMethod) {
-		
+	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 	}
 	
-	public static function postSlot($slotName, $showPlaceholderMethod) {
-		
+	public static function postSlot($slotName, $showPlaceholderMethod, $useOb = true) {
 	}
 	
-	public static function poweredBy() {
-		echo 'Powered by <a href="http://zenar.io">Zenario</a>';
-	}
-	
-	//These have been left blank, but anyone writing an edition Module can write them should they wish
-	//to clear various caches after a Database Query.
-	//Note that setting $runSql to true should cause this function to return the results of a sqlAffectedRows() call.
 	public static function reviewDatabaseQueryForChanges(&$sql, &$ids, &$values, $table = false, $runSql = false) {
 		if ($runSql) {
 			sqlUpdate($sql, false);
@@ -390,11 +374,7 @@ class zenario_common_features extends module_base_class {
 		}
 	}
 	
-	
-	
-	
-	
-	
+
 	
 	//
 	//	Admin functions
@@ -403,11 +383,6 @@ class zenario_common_features extends module_base_class {
 	
 	
 	
-	public static function publishContent($cID, $cType, $cVersion, $prev_version, $adminId = false) {
-		deleteArchive($cID, $cType, $prev_version);
-	}
-
-
 	public function handleAJAX() {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -445,10 +420,6 @@ class zenario_common_features extends module_base_class {
 		}
 	}
 	
-	protected function validateChangeSingleLayout(&$box, $cID, $cType, $cVersion, $newLayoutId, $saving) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
@@ -462,10 +433,12 @@ class zenario_common_features extends module_base_class {
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
-	private static function setMenuPath(&$fields, $field, $value) {
+	public static function setMenuPath(&$fields, $field, $value) {
 		
 		if (!empty($fields[$field][$value])) {
 			
@@ -499,9 +472,8 @@ class zenario_common_features extends module_base_class {
 	
 	
 	
-	
 	//
-	//	Storekeeper functions
+	//	Organizer functions
 	//
 	
 	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
@@ -513,22 +485,12 @@ class zenario_common_features extends module_base_class {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		} else {
-			return require funIncPath(__FILE__, __FUNCTION__);
 		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
-		}
-		
-		if ($path == 'zenario__content/panels/content/test_bespoke_dynamic_html') {
-			//A test standalone application in Organizer, written dynamically using plain HTML
-			$panel['html'] = '
-				<h1>A test standalone application in Organizer, written dynamically using plain HTML</h1>
-				<p>The time is currently '. formatDateTimeNicely(now()). '</p>';
-		
 		} else {
 			return require funIncPath(__FILE__, __FUNCTION__);
 		}
@@ -557,13 +519,9 @@ class zenario_common_features extends module_base_class {
 	public function handleAdminToolbarAJAX($cID, $cType, $cVersion, $ids) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
-	
-	protected function languageImportResults($numberOf, $error = false, $changeButtonHTML = false) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
 
-	protected function deleteCategory($id, $recurseCount = 0) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+	public static function deleteCategory($id, $recurseCount = 0) {
+		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	public static function processDocumentRules($documentIds) {
@@ -602,20 +560,7 @@ class zenario_common_features extends module_base_class {
 	
 	public static function canCreateAdditionalAdmins() {
 		$limit = siteDescription('max_local_administrators');
-		if ($limit) {
-			$sql = '
-				SELECT COUNT(*)
-				FROM ' . DB_NAME_PREFIX . 'admins
-				WHERE is_client_account = 1
-				AND status = "active"';
-			$result = sqlSelect($sql);
-			$row = sqlFetchRow($result);
-			if ($row[0] >= $limit) {
-				return false;
-				
-			}
-		}
-		return true;
+		return !$limit || selectCount('admins', array('is_client_account' => 1, 'status' => 'active')) < $limit;
 	}
 	
 }

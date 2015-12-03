@@ -46,12 +46,8 @@ $sql = "
 $result = sqlQuery($sql);
 
 while ($fileIdsInPlugin = sqlFetchRow($result)) {
-	if ($fileIdsInPlugin = explode(',', $fileIdsInPlugin[0])) {
-		foreach ($fileIdsInPlugin as $fileId) {
-			if ($fileId = (int) trim($fileId)) {
-				$fileIds[$fileId] = $fileId;
-			}
-		}
+	foreach (explodeAndTrim($fileIdsInPlugin[0], true) as $fileId) {
+		$fileIds[$fileId] = $fileId;
 	}
 }
 

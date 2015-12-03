@@ -457,7 +457,6 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-ch
 	margin-top:0;
 }
 
-
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span {
 	font-family: "Lucida Console", Monaco, monospace;
@@ -526,7 +525,12 @@ div.zenario_slotControlsWrap .zenario_slotControl_empty {
 	opacity: 0.4;
 }
 
-
+.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_class_name_preview {
+	width: 200px;
+	background-color: #353535;
+	border: 0;
+	color: #B7B7B7;
+}
 
 div.zenario_slotAdminControlBox a,
 div.zenario_slotControlsWrap .zenario_sc {
@@ -695,13 +699,10 @@ body.zenario_pageMode_template_family .zenario_slot {
 
 .zenario_at_toolbar_container .mce-tinymce .mce-container-body .mce-panel .mce-container .mce-last.mce-btn-group .mce-first { /* Save */
 	background-color: #F0F0F0;
-    background-image: linear-gradient(to bottom, #FFFFFF, #D9D9D9);
-    background-repeat: repeat-x;
 }
 
 .zenario_at_toolbar_container .mce-tinymce .mce-container-body .mce-panel .mce-container .mce-last.mce-btn-group .mce-first:hover { /* Save */
 	background-color: #E3E3E3;
-    background-image: linear-gradient(to bottom, #F2F2F2, #CCCCCC);
 }
 
 .zenario_at_toolbar_container .mce-tinymce .mce-container-body .mce-panel .mce-container .mce-last.mce-btn-group .mce-last { /* Abandon */

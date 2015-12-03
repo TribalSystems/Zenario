@@ -51,6 +51,13 @@ site_settings:
                     empty_value: ' -- Select -- '
                     validation:
                         required: Please select the opt-out (unsubscribe) characteristic.
+            
+                zenario_newsletter__enable_opened_emails:
+                    label: 'Enable opened email tracking'
+                    side_note: 'Check this option to enable tracking of opened emails. In the "Archive" panel of newsletters you can view the tracking statistics.'
+                    site_setting:
+                        name: zenario_newsletter__enable_opened_emails
+                    type: checkbox
 
         styles:
             label: Pre-defined styles

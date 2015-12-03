@@ -214,7 +214,7 @@ _sql
 
 
 //Convert the format of inline image/movie URLs in Newsletters
-//(Note - this is mostly identical to the code above for Content areas and Email Templates in zenario/admin/db_updates/data_conversion/local.inc.php)
+//(Note - this is mostly identical to the code above for Content areas and Email Templates in zenario/admin/db_updates/step_4_migrate_the_data/content_tables.inc.php)
 if (needRevision(46)) {
 	//Get a list of checksums in the old format
 	$sql = "

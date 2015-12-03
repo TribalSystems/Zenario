@@ -37,9 +37,11 @@ zenario__administration:
                     priv: _PRIV_EDIT_CONTENT_TYPE
                     tooltip: Define a new file type
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_file_type
+                        create_another: true
                 help:
                     label: Help
                     help:

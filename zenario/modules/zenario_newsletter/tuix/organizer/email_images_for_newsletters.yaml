@@ -18,7 +18,7 @@ zenario__content:
                      ON ii.image_id = f.id
                     AND ii.foreign_key_to = 'newsletter'
                     AND ii.foreign_key_id = [[REFINER_ID]]
-                    AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                    AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                     AND f.`usage` = 'image'
                 id_column: f.id
             refiners:
@@ -108,6 +108,7 @@ zenario__content:
                 upload:
                     priv: _PRIV_EDIT_NEWSLETTER
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Upload one or more images
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'

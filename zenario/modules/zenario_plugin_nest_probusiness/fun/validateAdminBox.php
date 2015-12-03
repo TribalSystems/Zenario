@@ -33,6 +33,12 @@ switch ($path) {
 		zenario_plugin_nest::validateAdminBox('zenario_plugin_nest__tab', $settingGroup, $box, $fields, $values, $changes, $saving);
 		
 		switch ($values['tab/tab_visibility']) {
+			case 'in_smart_group':
+				if (!$values['tab/tab__smart_group']) {
+					$box['tabs']['tab']['errors'][] = adminPhrase('Please select a smart group.');
+				}
+				break;
+				
 			case 'logged_in_with_field':
 			case 'logged_in_without_field':
 			case 'without_field':

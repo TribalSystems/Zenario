@@ -1,7 +1,6 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
-    module_class_name: zenario_extranet_password_reset
     tabs:
         first_tab:
             label: Passwords
@@ -27,56 +26,4 @@ plugin_settings:
                         Please see the Module description to get a full list of
                         Merge Fields which can be used in the selected Email
                         Template.
-        
-        error_messages:
-            label: Error messages
-            fields:
-                description:
-                    full_width: Yes
-                    snippet:
-                        html: >
-                            These settings control what the user sees if the login 
-                            process fails.
-                sub_description:
-                    full_width: Yes
-                    snippet:
-                        html: "Error messages for changing password:"
-                
-                no_new_password_error_text:
-                    label: 'If no new password is entered:'
-                    type: text
-                    value: "Please enter new password."
-                    show_phrase_icon: true
-                no_new_repeat_password_error_text:
-                    label: 'If no new repeat password is entered:'
-                    type: text
-                    value: "Please repeat your new Password."
-                    show_phrase_icon: true
-                new_passwords_do_not_match:
-                    plugin_setting:
-                        name: new_passwords_do_not_match
-                    label: 'If the new password and repeat new password fields do not match:'
-                    type: text
-                    value: "Your repeated Password does not match."
-                    show_phrase_icon: true
-                new_password_length_message:
-                    plugin_setting:
-                        name: new_password_length_message
-                    label: 'If new password is not over min length:'
-                    type: text
-                    value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
-                    show_phrase_icon: true
-                new_password_not_strong_enough_message:
-                    plugin_setting:
-                        name: new_password_not_strong_enough_message
-                    label: 'If new password is not stong enough:'
-                    type: text
-                    value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
-                    show_phrase_icon: true
-                new_password_same_as_old_message:
-                    plugin_setting:
-                        name: new_password_same_as_old_message
-                    label: 'If new password is the same as the old password:'
-                    type: text
-                    value: "Your new Password is the same as your old Password."
-                    show_phrase_icon: true
+    module_class_name: zenario_extranet_password_reset

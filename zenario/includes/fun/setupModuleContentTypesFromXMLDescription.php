@@ -82,14 +82,16 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 					//Work out a slot to put this Plugin into, favouring empty "Main" slots.
 					$slotName = getTemplateMainSlot($layout['family_name'], $layout['file_base_name']);
 					
-					//Make a copy of the template files if we can
-					$layout['file_base_name'] = $layout['file_base_name'];
-					
 					//Make a copy of that Layout for the new Content Type
 					$layout['templateFamily'] = $layout['family_name'];
 					$layout['content_type'] = (string) $type['content_type_id'];
 					$layout['name'] = ifNull((string) arrayKey($type, 'default_template_name'), (string) $type['content_type_name_en']);
 					
+					//T9858, When initialising a new content type, ensure it creates a layout and template file
+					$newname = generateLayoutFileBaseName($layout['name']);
+					if (copyLayoutFiles($layout, $newname)) {
+						$layout['file_base_name'] = $newname;
+					}
 					saveTemplate($layout, $layoutId, $layout['layout_id']);
 					
 					//Put an instance of this Plugin on that template, if this module uses instances

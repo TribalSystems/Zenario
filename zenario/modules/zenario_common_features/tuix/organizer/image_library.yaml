@@ -14,7 +14,7 @@ zenario__content:
                 where_statement: |
                     WHERE f.`usage` = 'image'
                       AND f.archived = 0
-                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
             
             #panel_type: grid_or_list
             panel_type: images_with_tags_or_grid
@@ -338,6 +338,7 @@ zenario__content:
                     priv: _PRIV_MANAGE_MEDIA
                     label: Upload
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                         fileDesc: Images

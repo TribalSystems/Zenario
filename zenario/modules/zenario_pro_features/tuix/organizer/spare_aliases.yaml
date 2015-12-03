@@ -45,9 +45,11 @@ zenario__administration:
                 create:
                     priv: _PRIV_MANAGE_SPARE_ALIAS
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create
                     admin_box:
                         path: zenario_pro_features_spare_alias
+                        create_another: true
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_SPARE_ALIAS

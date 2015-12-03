@@ -67,7 +67,7 @@ function deleteFile($fileId) {
 		}
 		
 		//If the file was an image and there's no other copies with a different usage
-		if (substr($file['mime_type'], 0, 6) == 'image/'
+		if (isImageOrSVG($file['mime_type'])
 		 && !checkRowExists('files', array('id' => array('!' => $fileId), 'short_checksum' => $file['short_checksum']))) {
 			//...then delete it from the public/images/ directory
 			deletePublicImage($file);
@@ -86,7 +86,7 @@ function deletePublicImage($image) {
 	
 	if ($image
 	 && $image['short_checksum']
-	 && substr($image['mime_type'], 0, 6) == 'image/') {
+	 && isImageOrSVG($image['mime_type'])) {
 		deleteCacheDir(CMS_ROOT. 'public/images/'. $image['short_checksum'], 1);
 	}
 }
@@ -296,6 +296,19 @@ function documentMimeType($file) {
 	return ifNull(getRow('document_types', 'mime_type', array('type' => strtolower($type))), 'application/octet-stream');
 }
 
+function isImage($mimeType) {
+	return $mimeType == 'image/gif'
+		|| $mimeType == 'image/jpeg'
+		|| $mimeType == 'image/png';
+}
+
+function isImageOrSVG($mimeType) {
+	return $mimeType == 'image/gif'
+		|| $mimeType == 'image/jpeg'
+		|| $mimeType == 'image/png'
+		|| $mimeType == 'image/svg+xml';
+}
+
 
 
 function getDocumentFileLink($file, $documentPrivacy, $pagePrivacy, $documentId = false) {
@@ -368,7 +381,7 @@ function fileLink($fileId, $hash = false, $type = 'files', $customDocstorePath =
 	
 	//Otherwise attempt to create the resized version in the cache directory
 	if ($path) {
-		
+	
 		//If the image is already available, all we need to do is link to it
 		if (file_exists($path. $file['filename'])) {
 			return $path. rawurlencode($file['filename']);
@@ -432,7 +445,7 @@ function imageLink(
 						'thumbnail_24x23_width', 'thumbnail_24x23_height',
 	 					'checksum', 'short_checksum', 'filename', 'location', 'path'),
 	 				$fileId))
-	 || !(substr($image['mime_type'], 0, 6) == 'image/')) {
+	 || !(isImageOrSVG($image['mime_type']))) {
 		return false;
 	}
 	
@@ -449,7 +462,8 @@ function imageLink(
 	resizeImageByMode(
 		$mode, $image['width'], $image['height'],
 		$widthLimit, $heightLimit,
-		$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight);
+		$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
+		$image['mime_type']);
 	
 	$imageNeedsToBeResized = $image['width'] != $cropNewWidth || $image['height'] != $cropNewHeight;
 	
@@ -833,7 +847,7 @@ function updateDocumentPlainTextExtract($fileId, &$extract, &$img_file_id) {
 }
 
 function getPathOfUploadedFileInCacheDir($string) {
-	$details = explode('/', decodeItemIdForStorekeeper($string), 3);
+	$details = explode('/', decodeItemIdForOrganizer($string), 3);
 	
 	if (!empty($details[1])
 	 && file_exists($filepath = CMS_ROOT. 'cache/uploads/'. preg_replace('@\W@', '', $details[0]). '/'. $details[1])) {

@@ -29,6 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_pro_features extends zenario_common_features {
 	
+	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
@@ -145,13 +146,69 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	
+	public static function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, $recurseCount, $showInvisibleMenuItems) {
 	
-	public static function initInstance(
+		$sql = "
+			SELECT
+				m.id AS mID,
+				t.name,
+				m.target_loc,
+				m.open_in_new_window,
+				m.anchor,
+				m.module_class_name,
+				m.method_name,
+				m.param_1,
+				m.param_2,
+				m.equiv_id,
+				c.id AS cID,
+				m.content_type AS cType,
+				c.alias,
+				m.use_download_page,
+				m.hide_private_item,
+				t.ext_url,
+				c.visitor_version,
+				m.invisible,
+				m.accesskey,
+				m.ordinal,
+				m.rel_tag,
+				m.image_id,
+				m.rollover_image_id,
+				m.css_class,
+				t.descriptive_text,
+				m.menu_text_module_class_name,
+				m.menu_text_method_name,
+				m.menu_text_param_1,
+				m.menu_text_param_2
+			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
+			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
+			   ON t.menu_id = m.id
+			  AND t.language_id = '". sqlEscape($language). "'
+			LEFT JOIN ".DB_NAME_PREFIX."content_items AS c
+			   ON m.target_loc = 'int'
+			  AND m.equiv_id = c.equiv_id
+			  AND m.content_type = c.type
+			  AND c.language_id = '". sqlEscape($language). "'
+			WHERE m.parent_id = ". (int) $parentMenuId. "
+			  AND m.section_id = ". (int) $sectionId;
+		
+		if (!$showInvisibleMenuItems) {
+			$sql .= "
+			  AND m.invisible != 1";
+		}
+	
+		$sql .= "
+			ORDER BY m.ordinal";
+		
+		return sqlQuery($sql);
+	}
+	
+	
+	public static function loadPluginInstance(
 			&$slotContents, $slotName,
 			$cID, $cType, $cVersion,
 			$layoutId, $templateFamily, $templateFileBaseName,
 			$specificInstanceId, $specificSlotName, $ajaxReload,
-			$runPlugins
+			$runPlugins, $overrideSettings = false
 	) {
 	
 		if (!request('method_call')
@@ -294,12 +351,12 @@ class zenario_pro_features extends zenario_common_features {
 		}
 		
 		
-		zenario_common_features::initInstance(
+		zenario_common_features::loadPluginInstance(
 			$slotContents, $slotName,
 			$cID, $cType, $cVersion,
 			$layoutId, $templateFamily, $templateFileBaseName,
 			$specificInstanceId, $specificSlotName, $ajaxReload,
-			$runPlugins);
+			$runPlugins, $overrideSettings);
 	
 	
 		//If a Plugin refused to show itself, cache this refusal as well
@@ -307,6 +364,8 @@ class zenario_pro_features extends zenario_common_features {
 			zenario_pro_features::postSlot($slotName, 'showSlot', $useOb = false);
 		}
 	}
+	
+	
 	
 	public function pagSmart($currentPage, &$pages, &$html) {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = false, $showFirstLast = false, $alwaysShowNextPrev = false);
@@ -382,16 +441,6 @@ class zenario_pro_features extends zenario_common_features {
 	
 	
 	
-	public static function poweredBy() {
-		if (cms_core::$skinName && file_exists($file = CMS_ROOT. zenarioTemplatePath(cms_core::$templateFamily). 'skins/'. cms_core::$skinName. '/'. 'powered_by.html')) {
-			include $file;
-		} else {
-			zenario_common_features::poweredBy();
-		}
-	}
-	
-	
-	
 	
 	
 	
@@ -400,11 +449,6 @@ class zenario_pro_features extends zenario_common_features {
 	//	Admin functions
 	//
 	
-	
-	
-	public static function publishContent($cID, $cType, $cVersion, $prev_version, $adminId = false) {
-		//Do nothing, means preserve all versions
-	}
 	
 	
 	
@@ -442,7 +486,7 @@ class zenario_pro_features extends zenario_common_features {
 			echo
 			'~',
 			'<h3>',
-				adminPhrase('Accelerator'),
+				adminPhrase('Optimisation'),
 			'</h3>',
 			'<p>',
 				adminPhrase('Web Pages:'),
@@ -580,6 +624,192 @@ class zenario_pro_features extends zenario_common_features {
 	
 	private static $seenUserSyncSites = array();
 	private static $userSyncSiteConfigSiteIsValid;
+	
+	private static $pluginPageHeadHTML = array();
+	private static $pluginPageFootHTML = array();
+	
+	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
+		if (cms_core::$canCache
+		&& !request('method_call')
+		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
+		&& setting('caching_enabled') && setting('cache_plugins')
+		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
+				
+			if ($showPlaceholderMethod == 'addToPageHead') {
+				if ($useOb) ob_start();
+					
+			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
+				if ($useOb) ob_start();
+					
+			} elseif ($showPlaceholderMethod == 'showSlot') {
+				if ($useOb) ob_start();
+			}
+		}
+	}
+	
+	public static function postSlot($slotName, $showPlaceholderMethod, $useOb = true) {
+		if (cms_core::$canCache
+		&& !request('method_call')
+		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
+		&& setting('caching_enabled') && setting('cache_plugins')
+		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
+				
+			if ($showPlaceholderMethod == 'addToPageHead') {
+				//Note down any html added to the page head
+				if ($useOb) zenario_pro_features::$pluginPageHeadHTML[$slotName] = ob_get_contents();
+				if ($useOb) ob_end_flush();
+					
+			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
+				//Note down any html added to the page foot
+				if ($useOb) zenario_pro_features::$pluginPageFootHTML[$slotName] = ob_get_contents();
+				if ($useOb) ob_end_flush();
+					
+			} elseif ($showPlaceholderMethod == 'showSlot') {
+	
+				$chToLoadStatus = $GLOBALS['chToLoadStatus'];
+				$chToSaveStatus = $GLOBALS['chToSaveStatus'];
+				$chKnownRequests = $GLOBALS['chKnownRequests'];
+	
+				$chKnownRequests['slotName'] = $slotName;
+				$chKnownRequests['instanceId'] = arrayKey(cms_core::$slotContents, $slotName, 'instance_id');
+	
+	
+				//Look for this slot on the page, and check for any Nested Plugins in child-slots
+				$slots = array();
+				$len = strlen($slotName) + 1;
+				foreach (cms_core::$slotContents as $slotNameNestId => &$instance) {
+					if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
+						$slots[$slotNameNestId] = true;
+					}
+				}
+	
+				//Loop through this slot and any child slots, coming up with the rules as to when we can and can't cache a Plugin
+				//For nests with child slots, we should combine the rules
+				$canCache = true;
+				foreach ($slots as $slotNameNestId => &$vars) {
+					if (!empty(cms_core::$slotContents[$slotNameNestId]['disallow_caching'])) {
+						$canCache = false;
+						break;
+							
+					} elseif (isset(cms_core::$slotContents[$slotNameNestId]['cache_if'])) {
+						if (empty(cms_core::$slotContents[$slotNameNestId]['cache_if']['a'])) {
+							$canCache = false;
+							break;
+						} else {
+							foreach ($chToSaveStatus as $if => $set) {
+								if (empty(cms_core::$slotContents[$slotNameNestId]['cache_if'][$if])) {
+									if ($if == 'a' || !empty($chToLoadStatus[$if])) {
+										$canCache = false;
+										break 2;
+	
+									} else {
+										$chToSaveStatus[$if] = '';
+									}
+								}
+							}
+						}
+							
+					} else {
+						$canCache = false;
+						break;
+					}
+				}
+	
+				if ($canCache) {
+					$cacheStatusText = implode('', $chToSaveStatus);
+						
+					if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
+						
+						//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
+						//For nests with child slots, we should combine the rules
+						if (!empty(cms_core::$slotContents[$slotNameNestId]['clear_cache_by'])) {
+							foreach (cms_core::$slotContents[$slotNameNestId]['clear_cache_by'] as $if => $set) {
+								if ($set) {
+									touch(CMS_ROOT. $path. $if);
+									chmod(CMS_ROOT. $path. $if, 0666);
+								}
+							}
+ 						}
+	
+	
+						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
+						foreach ($slots as $slotNameNestId => &$vars) {
+							if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
+	
+								$temps = array('class' => null, 'found' => null, 'used' => null);
+								foreach ($temps as $temp => $dummy) {
+									if (isset(cms_core::$slotContents[$slotNameNestId][$temp])) {
+										$temps[$temp] = cms_core::$slotContents[$slotNameNestId][$temp];
+									}
+									unset(cms_core::$slotContents[$slotNameNestId][$temp]);
+								}
+	
+								$slots[$slotNameNestId] = array('s' => cms_core::$slotContents[$slotNameNestId], 'c' => array());
+	
+								//Note down any html added to the page head
+								if (!empty(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId])) {
+									$slots[$slotNameNestId]['h'] = zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId];
+									unset(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId]);
+								}
+	
+								if (!empty(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId])) {
+									$slots[$slotNameNestId]['f'] = zenario_pro_features::$pluginPageFootHTML[$slotNameNestId];
+									unset(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId]);
+								}
+	
+								foreach ($temps as $temp => $dummy) {
+									if (isset($temps[$temp])) {
+										cms_core::$slotContents[$slotNameNestId][$temp] = $temps[$temp];
+									}
+								}
+								if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
+									cms_core::$slotContents[$slotNameNestId]['class']->tApiGetCachableVars($slots[$slotNameNestId]['c']);
+								}
+							}
+						}
+						file_put_contents(CMS_ROOT. $path. 'vars', serialize($slots));
+						chmod(CMS_ROOT. $path. 'vars', 0666);
+						unset($slots);
+	
+	
+						//If this Plugin is displayed and not hidden, cache its HTML
+						$html = '';
+						$images = '';
+						if ($useOb && !empty(cms_core::$slotContents[$slotName]['class']) && !empty(cms_core::$slotContents[$slotName]['init'])) {
+							$html = ob_get_contents();
+								
+							//Note down any images from the cache directory that are in the page
+							foreach(preg_split('@cache/(\w+)(/[\w~_,-]+/)@', $html, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $dir) {
+								switch ($i % 3) {
+									case 1:
+										$type = $dir;
+										break;
+											
+									case 2:
+										if (in($type, 'images', 'files', 'downloads')) {
+											$images .= 'cache/'. $type. $dir. "\n";
+										}
+								}
+							}
+						}
+	
+	
+						file_put_contents(CMS_ROOT. $path. 'plugin.html', $html);
+						file_put_contents(CMS_ROOT. $path. 'tag_id', cms_core::$cType. '_'. cms_core::$cID);
+						chmod(CMS_ROOT. $path. 'plugin.html', 0666);
+						chmod(CMS_ROOT. $path. 'tag_id', 0666);
+	
+						if ($images) {
+							file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
+							chmod(CMS_ROOT. $path. 'cached_files', 0666);
+						}
+					}
+				}
+	
+				if ($useOb) ob_end_flush();
+			}
+		}
+	}
 	
 	//Check whether User Sync as been defined in a specifically-named siteconfig file
 	public static function validateUserSyncSiteConfig() {
@@ -1069,191 +1299,6 @@ class zenario_pro_features extends zenario_common_features {
 		zenario_users::syncUsers();
 	}
 	
-	public static function preSlot($slotName, $showPlaceholderMethod, $useOb = true) {
-		if (cms_core::$canCache
-		&& !request('method_call')
-		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
-		&& setting('caching_enabled') && setting('cache_plugins')
-		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
-				
-			if ($showPlaceholderMethod == 'addToPageHead') {
-				if ($useOb) ob_start();
-					
-			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
-				if ($useOb) ob_start();
-					
-			} elseif ($showPlaceholderMethod == 'showSlot') {
-				if ($useOb) ob_start();
-			}
-		}
-	}
-	
-	private static $pluginPageHeadHTML = array();
-	private static $pluginPageFootHTML = array();
-	
-	public static function postSlot($slotName, $showPlaceholderMethod, $useOb = true) {
-		if (cms_core::$canCache
-		&& !request('method_call')
-		&& isset($GLOBALS['chToLoadStatus']) && isset($GLOBALS['chAllRequests']) && isset($GLOBALS['chKnownRequests'])
-		&& setting('caching_enabled') && setting('cache_plugins')
-		&& empty(cms_core::$slotContents[$slotName]['served_from_cache'])) {
-				
-			if ($showPlaceholderMethod == 'addToPageHead') {
-				//Note down any html added to the page head
-				if ($useOb) zenario_pro_features::$pluginPageHeadHTML[$slotName] = ob_get_contents();
-				if ($useOb) ob_end_flush();
-					
-			} elseif ($showPlaceholderMethod == 'addToPageFoot') {
-				//Note down any html added to the page foot
-				if ($useOb) zenario_pro_features::$pluginPageFootHTML[$slotName] = ob_get_contents();
-				if ($useOb) ob_end_flush();
-					
-			} elseif ($showPlaceholderMethod == 'showSlot') {
-	
-				$chToLoadStatus = $GLOBALS['chToLoadStatus'];
-				$chToSaveStatus = $GLOBALS['chToSaveStatus'];
-				$chKnownRequests = $GLOBALS['chKnownRequests'];
-	
-				$chKnownRequests['slotName'] = $slotName;
-				$chKnownRequests['instanceId'] = arrayKey(cms_core::$slotContents, $slotName, 'instance_id');
-	
-	
-				//Look for this slot on the page, and check for any Nested Plugins in child-slots
-				$slots = array();
-				$len = strlen($slotName) + 1;
-				foreach (cms_core::$slotContents as $slotNameNestId => &$instance) {
-					if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
-						$slots[$slotNameNestId] = true;
-					}
-				}
-	
-				//Loop through this slot and any child slots, coming up with the rules as to when we can and can't cache a Plugin
-				//For nests with child slots, we should combine the rules
-				$canCache = true;
-				foreach ($slots as $slotNameNestId => &$vars) {
-					if (!empty(cms_core::$slotContents[$slotNameNestId]['disallow_caching'])) {
-						$canCache = false;
-						break;
-							
-					} elseif (isset(cms_core::$slotContents[$slotNameNestId]['cache_if'])) {
-						if (empty(cms_core::$slotContents[$slotNameNestId]['cache_if']['a'])) {
-							$canCache = false;
-							break;
-						} else {
-							foreach ($chToSaveStatus as $if => $set) {
-								if (empty(cms_core::$slotContents[$slotNameNestId]['cache_if'][$if])) {
-									if ($if == 'a' || !empty($chToLoadStatus[$if])) {
-										$canCache = false;
-										break 2;
-	
-									} else {
-										$chToSaveStatus[$if] = '';
-									}
-								}
-							}
-						}
-							
-					} else {
-						$canCache = false;
-						break;
-					}
-				}
-	
-				if ($canCache) {
-					$cacheStatusText = implode('', $chToSaveStatus);
-						
-					if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
-						
-						//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
-						//For nests with child slots, we should combine the rules
-						if (!empty(cms_core::$slotContents[$slotNameNestId]['clear_cache_by'])) {
-							foreach (cms_core::$slotContents[$slotNameNestId]['clear_cache_by'] as $if => $set) {
-								if ($set) {
-									touch(CMS_ROOT. $path. $if);
-									chmod(CMS_ROOT. $path. $if, 0666);
-								}
-							}
- 						}
-	
-	
-						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
-						foreach ($slots as $slotNameNestId => &$vars) {
-							if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
-	
-								$temps = array('class' => null, 'found' => null, 'used' => null);
-								foreach ($temps as $temp => $dummy) {
-									if (isset(cms_core::$slotContents[$slotNameNestId][$temp])) {
-										$temps[$temp] = cms_core::$slotContents[$slotNameNestId][$temp];
-									}
-									unset(cms_core::$slotContents[$slotNameNestId][$temp]);
-								}
-	
-								$slots[$slotNameNestId] = array('s' => cms_core::$slotContents[$slotNameNestId], 'c' => array());
-	
-								//Note down any html added to the page head
-								if (!empty(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId])) {
-									$slots[$slotNameNestId]['h'] = zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId];
-									unset(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId]);
-								}
-	
-								if (!empty(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId])) {
-									$slots[$slotNameNestId]['f'] = zenario_pro_features::$pluginPageFootHTML[$slotNameNestId];
-									unset(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId]);
-								}
-	
-								foreach ($temps as $temp => $dummy) {
-									if (isset($temps[$temp])) {
-										cms_core::$slotContents[$slotNameNestId][$temp] = $temps[$temp];
-									}
-								}
-								if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
-									cms_core::$slotContents[$slotNameNestId]['class']->tApiGetCachableVars($slots[$slotNameNestId]['c']);
-								}
-							}
-						}
-						file_put_contents(CMS_ROOT. $path. 'vars', serialize($slots));
-						chmod(CMS_ROOT. $path. 'vars', 0666);
-						unset($slots);
-	
-	
-						//If this Plugin is displayed and not hidden, cache its HTML
-						$html = '';
-						$images = '';
-						if ($useOb && !empty(cms_core::$slotContents[$slotName]['class']) && !empty(cms_core::$slotContents[$slotName]['init'])) {
-							$html = ob_get_contents();
-								
-							//Note down any images from the cache directory that are in the page
-							foreach(preg_split('@cache/(\w+)(/[\w~_,-]+/)@', $html, -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $dir) {
-								switch ($i % 3) {
-									case 1:
-										$type = $dir;
-										break;
-											
-									case 2:
-										if (in($type, 'images', 'files', 'downloads')) {
-											$images .= 'cache/'. $type. $dir. "\n";
-										}
-								}
-							}
-						}
-	
-	
-						file_put_contents(CMS_ROOT. $path. 'plugin.html', $html);
-						file_put_contents(CMS_ROOT. $path. 'tag_id', cms_core::$cType. '_'. cms_core::$cID);
-						chmod(CMS_ROOT. $path. 'plugin.html', 0666);
-						chmod(CMS_ROOT. $path. 'tag_id', 0666);
-	
-						if ($images) {
-							file_put_contents(CMS_ROOT. $path. 'cached_files', $images);
-							chmod(CMS_ROOT. $path. 'cached_files', 0666);
-						}
-					}
-				}
-	
-				if ($useOb) ob_end_flush();
-			}
-		}
-	}
 	
 	
 	public static function eventContentDeleted($cID, $cType, $cVersion) {

@@ -612,5 +612,14 @@ _sql
 	AFTER map_center_longitude
 _sql
  
+// Adding pending status to locations (Workstream T10170)
+); revision( 145
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]locations`
+	MODIFY COLUMN `status` enum('pending','active','suspended') NOT NULL DEFAULT 'active'
+_sql
+
 );
+
 

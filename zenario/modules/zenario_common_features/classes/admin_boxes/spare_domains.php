@@ -40,7 +40,7 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($box['key']['id']) {
-			$record = getRow('spare_domain_names', true, array('requested_url' => decodeItemIdForStorekeeper($box['key']['id'])));
+			$record = getRow('spare_domain_names', true, array('requested_url' => decodeItemIdForOrganizer($box['key']['id'])));
 			//$this->fillFieldValues($values, $record);
 
 			$values['details/requested_url'] = $record['requested_url'];
@@ -96,7 +96,7 @@ class zenario_common_features__admin_boxes__spare_domains extends module_base_cl
 		$cID = $cType = false;
 		getCIDAndCTypeFromTagId($cID, $cType, $values['details/content']);
 		
-		if ($requested_url = decodeItemIdForStorekeeper($box['key']['id'])) {
+		if ($requested_url = decodeItemIdForOrganizer($box['key']['id'])) {
 			$sql = "
 				UPDATE ". DB_NAME_PREFIX. "spare_domain_names SET
 					content_id = ". (int) $cID. ",

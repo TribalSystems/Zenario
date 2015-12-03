@@ -1,0 +1,8 @@
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_user_forms a{
+	padding-left: 30px;
+}
+
+#zenario_at_top_left_menu ul li ul .zenario_at__goto_user_forms a {
+	background: url('/zenario/admin/images/sprites/sprite-grid-icons-single-col.png') #393939 no-repeat scroll left;
+	background-position: -12px -442px;
+}

@@ -60,9 +60,10 @@ zenario__users:
             no_items_message: No smart groups are defined.
             collection_buttons:
                 new_create:
-                    priv: _PRIV_CREATE_GROUP
+                    priv: _PRIV_MANAGE_GROUP
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a smart group
                     admin_box:
                         path: zenario_smart_group
@@ -92,7 +93,7 @@ zenario__users:
                         branch: true
                         refiner: smart_group
                 delete:
-                    priv: _PRIV_DELETE_GROUP
+                    priv: _PRIV_MANAGE_GROUP
                     hide_in_select_mode: true
                     ord: "99"
                     label: Delete

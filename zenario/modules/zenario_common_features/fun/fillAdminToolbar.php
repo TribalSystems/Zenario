@@ -112,6 +112,26 @@ if ($cVersion == cms_core::$adminVersion) {
 }
 
 
+if (adminHasSpecificPerms()) {
+	//Check if this admin can edit any of the menu text...
+	$canEditSomeMenuText = false;
+	foreach ($menuItems as $i => &$menuItem) {
+		if (checkPrivForMenuText('_PRIV_EDIT_MENU_TEXT', $menuItem['id'], $menuItem['language_id'], $menuItem['section_id'])) {
+			$canEditSomeMenuText = true;
+			break;
+		}
+	}
+	
+	//...and if not, don't show the menu toolbar
+	if (!$canEditSomeMenuText) {
+		$menuItems = array();
+		unset($adminToolbar['toolbars']['menu1']);
+		unset($adminToolbar['toolbars']['menu_secondary']);
+		unset($adminToolbar['sections']['primary_menu_node']);
+	}
+}
+
+
 
 //Hidden Version
 if ($cVersion == cms_core::$adminVersion && cms_core::$status == 'hidden') {
@@ -132,7 +152,11 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	foreach (array('edit', 'edit_disabled') as $toolbar) {
 		if (isset($adminToolbar['toolbars'][$toolbar])) {
 			$adminToolbar['toolbars'][$toolbar]['css_class'] = 'zenario_toolbar_warning';
-			$adminToolbar['toolbars'][$toolbar]['tooltip'] .= '<br/>'. adminPhrase('Warning: this Content Item is a Draft');
+			
+			if (!empty($adminToolbar['toolbars'][$toolbar]['tooltip'])) {
+				$adminToolbar['toolbars'][$toolbar]['tooltip'] .= '<br/>';
+			}
+			$adminToolbar['toolbars'][$toolbar]['tooltip'] .= adminPhrase('Warning: this Content Item is a Draft');
 		}
 	}
 	
@@ -212,6 +236,13 @@ if (checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 } else {
 	unset($adminToolbar['toolbars']['edit']);
 	unset($adminToolbar['sections']['edit']['buttons']['publish']);
+	
+	if (isset($adminToolbar['toolbars']['edit_disabled'])) {
+		if (isDraft(cms_core::$status) && $cVersion != cms_core::$adminVersion) {
+			$adminToolbar['toolbars']['edit_disabled']['tooltip'] =
+				adminPhrase('Editing of this version is disabled because a draft version exists');
+		}
+	}
 }
 
 //Check if deletion is allowed
@@ -389,20 +420,36 @@ if (!$isMultilingual) {
 				$adminToolbar['sections']['translations']['buttons'][$ddId]['css_class'] =
 					'zenario_at_trans_dropdown zenario_at_trans_dropdown__missing';
 				
-				$adminToolbar['sections']['translations']['buttons'][$gcId] =
-					$adminToolbar['sections']['translations']['custom_template_buttons']['create'];
+				if (!checkPrivForLanguage('_PRIV_CREATE_TRANSLATION_FIRST_DRAFT', $lang['id'])) {
+					unset($adminToolbar['sections']['translations']['buttons'][$gcId]);
+			
+				} else {
+					$adminToolbar['sections']['translations']['buttons'][$gcId] =
+						$adminToolbar['sections']['translations']['custom_template_buttons']['create'];
 				
-				$adminToolbar['sections']['translations']['buttons'][$gcId]['admin_box']['key']['id'] = $lang['id'];
+					$adminToolbar['sections']['translations']['buttons'][$gcId]['admin_box']['key']['id'] =
+						$lang['id'];
+				}
 			}
 			
 			$adminToolbar['sections']['translations']['buttons'][$ddId]['ord'] = ++$ord;
 			$adminToolbar['sections']['translations']['buttons'][$ddId]['label'] =
 				adminPhrase($adminToolbar['sections']['translations']['buttons'][$ddId]['label'], $lang);
 			
-			$adminToolbar['sections']['translations']['buttons'][$gcId]['parent'] = $ddId;
-			$adminToolbar['sections']['translations']['buttons'][$gcId]['ord'] = ++$ord;
-			$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
-				adminPhrase($adminToolbar['sections']['translations']['buttons'][$gcId]['label'], $lang);
+			if (isset($adminToolbar['sections']['translations']['buttons'][$gcId])) {
+				$adminToolbar['sections']['translations']['buttons'][$gcId]['parent'] = $ddId;
+				$adminToolbar['sections']['translations']['buttons'][$gcId]['ord'] = ++$ord;
+				
+				if ($translation
+				 && $translation['id'] == cms_core::$equivId
+				 && $translation['type'] == cms_core::$cType) {
+					$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
+						adminPhrase("The original (in [[english_name]])", $lang);
+				} else {
+					$adminToolbar['sections']['translations']['buttons'][$gcId]['label'] =
+						adminPhrase($adminToolbar['sections']['translations']['buttons'][$gcId]['label'], $lang);
+				}
+			}
 		}
 	}
 }
@@ -683,7 +730,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				'level' => htmlspecialchars($level),
 				'section' => htmlspecialchars(menuSectionName($menuItem['section_id'])));
 			
-			foreach (array('edit_menu_item', 'view_menu_node_in_sk') as $button) {
+			foreach (array('edit_menu_item', 'edit_menu_text', 'view_menu_node_in_sk') as $button) {
 				if (isset($adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'])) {
 					$adminToolbar['sections']['menu'. $i]['buttons'][$button]['tooltip'] .=
 						'|'. 

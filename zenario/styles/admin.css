@@ -769,3 +769,24 @@ label.zenario_tag_grey::before {
     opacity: 0.95;
     background-position: 15px 15px
 }
+
+
+/*
+	Plugin previews, try to make the background of the page a checkered pattern
+*/
+
+body.zenario_showing_plugin_preview,
+body.zenario_showing_plugin_preview div#zenario_skin {
+	background: url('../admin/images/checkered.gif') repeat !important;
+}
+
+/*
+	Failed attempt at adding the background:
+		body.zenario_showing_plugin_preview div#zenario_skin div#zenario_layout::after {
+			content: '';
+			display: block;
+			width: 100%;
+			height 9999px
+			background: url('../admin/images/checkered.gif') repeat;
+		}
+*/

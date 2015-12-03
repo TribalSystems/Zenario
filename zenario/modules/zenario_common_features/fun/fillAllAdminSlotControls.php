@@ -119,7 +119,7 @@ if (!$moduleId) {
 		$framework = $a[0];
 		$cssClass = $a[4];
 		
-		$controls['info']['slot_css_class']['label'] = adminPhrase('CSS classes: <span>[[cssClass]]</span>', array('cssClass' => htmlspecialchars($cssClass)));
+		$controls['info']['slot_css_class']['label'] = adminPhrase('CSS classes: <input class="zenario_class_name_preview" readonly="readonly" value="[[cssClass]]">', array('cssClass' => htmlspecialchars($cssClass)));
 	} else {
 		unset($controls['info']['slot_css_class']);
 	}
@@ -165,7 +165,8 @@ if (!$moduleId) {
 	//Show options to convert the old nest plugins
 	if ($isNest
 	 && (($isVersionControlled && $canChange && $level == 1)
-	  || (!$isVersionControlled && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')))) {
+	  || (!$isVersionControlled && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')))
+	 && checkRowExists('nested_plugins', array('is_tab' => 0, 'instance_id' => $instanceId))) {
 		$controls['actions']['convert_nest']['page_modes'] = $pageMode;
 	} else {
 		unset($controls['actions']['convert_nest']);

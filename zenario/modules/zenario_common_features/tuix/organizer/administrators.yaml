@@ -20,22 +20,24 @@ zenario__users:
                 username:
                     title: Username
                     db_column: a.username
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                 first_name:
                     title: First Name
                     db_column: a.first_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
+                    width: small
                 last_name:
                     title: Last Name
                     db_column: a.last_name
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
+                    width: small
                 email:
                     title: Email
                     db_column: a.email
-                    searchable: Yes
+                    searchable: true
                 authtype:
                     title: Auth type
                     db_column: a.authtype
@@ -43,6 +45,44 @@ zenario__users:
                     values:
                         local: Local
                         super: Multi-site
+                    show_by_default: true
+                    width: small
+                permissions:
+                    title: Permissions
+                    db_column: |
+                        CASE a.permissions
+                            WHEN 'specific_actions' THEN
+                                IF ((
+                                    SELECT 1
+                                    FROM [[DB_NAME_PREFIX]]action_admin_link
+                                    AS aal
+                                    WHERE aal.admin_id = a.id
+                                    LIMIT 1
+                                ),
+                                    'specific_actions',
+                                    'no_actions'
+                                )
+                            WHEN 'specific_languages' THEN
+                                IF (a.specific_content_items != '',
+                                    IF (a.specific_languages != '',
+                                        'specific_content_items_and_languages',
+                                        'specific_content_items'
+                                    ),
+                                    'specific_languages'
+                                )
+                            ELSE a.permissions
+                        END
+                    format: enum
+                    values:
+                        all_permissions: All permissions
+                        no_actions: No permissions
+                        specific_actions: Specific actions
+                        specific_content_items: Specific content items
+                        specific_content_items_and_languages: Specific content items and languages
+                        specific_languages: Specific languages
+                        specific_menu_areas: Specific areas in the menu
+                    show_by_default: true
+                    width: large
                 is_client_account:
                     title: Is client account
                     format: yes_or_no
@@ -51,7 +91,7 @@ zenario__users:
                     db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
                 status:
                     db_column: a.status
-                    server_side_only: Yes
+                    server_side_only: true
                 created_date:
                     title: Creation Date
                     db_column: a.created_date
@@ -60,6 +100,8 @@ zenario__users:
                     title: Last Login
                     db_column: a.last_login
                     format: date
+                    show_by_default: true
+                    width: small
                 last_login_ip:
                     title: Last Login IP Address
                     db_column: a.last_login_ip
@@ -118,30 +160,68 @@ zenario__users:
                 create:
                     priv: _PRIV_CREATE_ADMIN
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     label: Create a local admininstrator
                     hide_on_refiner: trashed
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     admin_box:
                         path: zenario_admin
+                        create_another: true
+                copy_perms_from:
+                    priv: _PRIV_EDIT_ADMIN
+                    label: Copy permissions...
+                    admin_box:
+                        path: admin_copy_perms
+                    disabled_tooltip: |
+                        Requires two active, local administrators
             item_buttons:
                 edit:
                     ord: "1"
                     priv: _PRIV_VIEW_ADMIN
                     label: Properties
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     admin_box:
                         path: zenario_admin
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                #copy_perms_from:
+                #    parent: action_dropdown
+                #    priv: _PRIV_EDIT_ADMIN
+                #    label: Copy permissions from...
+                #    admin_box:
+                #        path: admin_copy_perms
+                #        key:
+                #            id_is_from: true
+                #    disabled_tooltip: |
+                #        Requires two active, local administrators
+                #    traits:
+                #        local: true
+                #        active: true
+                #copy_perms_to:
+                #    parent: action_dropdown
+                #    priv: _PRIV_EDIT_ADMIN
+                #    label: Copy permissions to...
+                #    multiple_select: true
+                #    admin_box:
+                #        path: admin_copy_perms
+                #        key:
+                #            id_is_to: true
+                #    disabled_tooltip: |
+                #        Requires two active, local administrators
+                #    traits:
+                #        local: true
+                #        active: true
+                #    without_traits:
+                #        current_admin: true
                 restore_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN
                     label: Restore
-                    multiple_select: Yes
+                    multiple_select: true
                     multiple_select_tooltip: Restore the selected local administrators
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     only_show_on_refiner: trashed
                     ajax:
                         confirm:
@@ -155,14 +235,14 @@ zenario__users:
                         request:
                             restore: "1"
                     traits:
-                        local: yes
-                        trashed: yes
+                        local: true
+                        trashed: true
                 trash_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN
                     label: Trash
-                    hide_in_select_mode: Yes
-                    multiple_select: Yes
+                    hide_in_select_mode: true
+                    multiple_select: true
                     multiple_select_tooltip: Trash the selected local administrators
                     ajax:
                         confirm:
@@ -176,13 +256,13 @@ zenario__users:
                         request:
                             trash: "1"
                     traits:
-                        local: yes
-                        active: yes
+                        local: true
+                        active: true
                     without_traits:
-                        current_admin: yes
+                        current_admin: true
             default_sort_column: username
             trash:
                 link:
                     path: zenario__users/panels/administrators
                     refiner: trashed
-                    branch: Yes
+                    branch: true

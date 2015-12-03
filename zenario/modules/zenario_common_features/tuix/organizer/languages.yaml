@@ -101,30 +101,36 @@ zenario__languages:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Add a language
                     css_class: zenario_create_a_new
-                    
-                    link:
-                        path: zenario__languages/panels/languages
-                        refiner: not_enabled
-                    #pick_items:
-                    #    path: zenario__languages/panels/languages/refiners/not_enabled////
-                    #    target_path: zenario__languages/panels/languages/refiners/not_enabled////
-                    #    min_path: zenario__languages/panels/languages/refiners/not_enabled////
-                    #    max_path: zenario__languages/panels/languages/refiners/not_enabled////
+                    hide_on_filter: true
+                    hide_in_select_mode: true
+                    pick_items:
+                        path: zenario__languages/panels/languages/refiners/not_enabled////
+                        target_path: zenario__languages/panels/languages
+                        min_path: zenario__languages/panels/languages
+                        max_path: zenario__languages/panels/languages
+                        disallow_refiners_looping_on_min_path: true
+                        request:
+                            enable_language: '1'
                 create:
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
                     label: Define a language
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
+                    hide_in_select_mode: true
                     tooltip: "Define a language that's not listed here"
                     admin_box:
                         path: zenario_create_vlp
                 default_language:
+                    priv: _PRIV_EDIT_SITE_SETTING
                     label: Set default language
+                    hide_in_select_mode: true
                     admin_box:
                         path: site_settings
                         key:
                             id: default_language
                 help:
                     label: Help
+                    hide_in_select_mode: true
                     help:
                         message: |
                             This panel lists all of the languages enabled on your site. This means the languages that visitors see when viewing your content.
@@ -142,10 +148,12 @@ zenario__languages:
                     admin_box:
                         path: zenario_setup_language
                         tab: settings
+                    hide_in_select_mode: true
                 view_dropdown:
                     label: View
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
+                    hide_in_select_mode: true
                 view_content:
                     parent: view_dropdown
                     label: Content items in this language
@@ -153,10 +161,14 @@ zenario__languages:
                         path: zenario__content/panels/content
                         branch: Yes
                         refiner: language
+                    traits:
+                        enabled: Yes
+                    hide_in_select_mode: true
                 action_dropdown:
                     label: Actions
                     multiple_select: Yes
                     hide_when_children_are_not_visible: Yes
+                    hide_in_select_mode: true
                 add_language:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
@@ -166,6 +178,7 @@ zenario__languages:
                     admin_box:
                         path: zenario_setup_language
                         tab: phrases
+                    hide_in_select_mode: true
                 delete:
                     label: Delete Phrases
                     priv: _PRIV_MANAGE_LANGUAGE_PHRASE
@@ -179,6 +192,7 @@ zenario__languages:
                             message_type: warning
                         request:
                             delete: "1"
+                    hide_in_select_mode: true
                 delete_language:
                     label: Delete language
                     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
@@ -187,3 +201,4 @@ zenario__languages:
                         can_delete: Yes
                     admin_box:
                         path: zenario_delete_language
+                    hide_in_select_mode: true

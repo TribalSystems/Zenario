@@ -191,8 +191,6 @@ if (isset($_GET['og'])) {
 //Attempt to output an image in the cache/uploads/ directory
 if ($getUploadedFileInCacheDir) {
 	
-	$imageMimeTypes = array('image/gif' => true, 'image/jpeg' => true, 'image/jpg' => true, 'image/pjpeg' => true, 'image/png' => true);
-	
 	$file = array();
 	
 	if (($filepath = getPathOfUploadedFileInCacheDir(request('getUploadedFileInCacheDir')))
@@ -201,7 +199,7 @@ if ($getUploadedFileInCacheDir) {
 		$file['data'] = file_get_contents($filepath);
 		$file['filename'] = $filename = basename($filepath);
 		
-		if (!empty($imageMimeTypes[$file['mime_type']])
+		if (isImage($file['mime_type'])
 		 && ($image = getimagesize($filepath))) {
 			$file['width'] = $image[0];
 			$file['height'] = $image[1];
@@ -354,7 +352,7 @@ if ($getUploadedFileInCacheDir) {
 				exit;
 			
 			//Check to see if this is an image
-			} elseif (substr($file['mime_type'], 0, 6) == 'image/') {
+			} elseif (isImageOrSVG($file['mime_type'])) {
 			
 			//Check to see if this is a pdf downloading from Organizer
 			} else
@@ -384,7 +382,7 @@ if ($getUploadedFileInCacheDir) {
 		//If this is an image, check to see if it is in the cache directory.
 		//If it's not yet there, resize it if needed and then attempt to put it in there
 		if (empty($file['data'])) {
-			if (substr($file['mime_type'], 0, 6) == 'image/') {
+			if (isImageOrSVG($file['mime_type'])) {
 				$result =
 					imageLink(
 						$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,

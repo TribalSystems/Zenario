@@ -32,7 +32,7 @@ class zenario_common_features__admin_boxes__change_tags extends module_base_clas
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if ($ids = $box['key']['id']) {
-			$idsArray = explode(',', $ids);
+			$idsArray = explodeAndTrim($ids);
 			$idsCount = count($idsArray);
 			$tagUsage = array();
 			$sql = '
@@ -107,7 +107,7 @@ class zenario_common_features__admin_boxes__change_tags extends module_base_clas
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		exitIfNotCheckPriv('_PRIV_MANAGE_MEDIA');
-		$ids = explode(',', $box['key']['id']);
+		$ids = explodeAndTrim($box['key']['id']);
 		$tags = array();
 		$sql = '
 			SELECT id, name AS label, color AS tag_color

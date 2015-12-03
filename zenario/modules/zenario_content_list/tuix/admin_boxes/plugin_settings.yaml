@@ -10,7 +10,7 @@ plugin_settings:
                     ord: "11"
                     plugin_setting:
                         name: content_type
-                    label: 'Source Content Type:'
+                    label: 'Source content type:'
                     type: select
                     value: html
                 category:
@@ -27,7 +27,7 @@ plugin_settings:
                         select_phrase: Select Category...
                     value: ""
         overall_list:
-            label: Overall List
+            label: Overall list
             fields:
                 translate_text:
                      plugin_setting:
@@ -56,7 +56,7 @@ plugin_settings:
                     label: Heading
                     type: text
                     value: 'List of Content'
-                
+                    indent: 1
                 heading_tags:
                     plugin_setting:
                         name: heading_tags
@@ -71,9 +71,9 @@ plugin_settings:
                         h6: Heading 6
                         p: Paragraph
                     value: h1
-                    note_below: |
+                    side_note: |
                         Choose which HTML tags the heading will be displayed in.
-                    
+                    indent: 1
                 show_headings_if_no_items:
                     plugin_setting:
                         name: show_headings_if_no_items
@@ -93,7 +93,7 @@ plugin_settings:
                     label: No items heading
                     type: text
                     value: 'No content to list'
-                    
+                    indent: 1
                 order:
                     plugin_setting:
                         name: order
@@ -104,16 +104,16 @@ plugin_settings:
                         Alphabetically: Title (alphabetically)
                         Most_Recent_First: Release date (most recent first)
                         Oldest_First: Release date (oldest first)
-                    note_below: |
+                    side_note: |
                         We recommend that you give your content items a release date.
                                                     If an item does not have a release date, the item's creation date will be used instead.
                 show_more_link:
                     plugin_setting:
                         name: show_more_link
-                    label: 'Show a link to another item:'
+                    label: 'Show a link to another item'
                     type: checkbox
                     value: "0"
-                    note_below: >
+                    side_note: >
                         Use this if you wish to show a short list here, and a link
                         to a further page with a longer list.
                     format_onchange: Yes
@@ -128,7 +128,7 @@ plugin_settings:
                     width: "150"
                     maxlength: "255"
                     value: "More..."
-                
+                    indent: 1
                 more_hyperlink_target:
                     plugin_setting:
                         name: more_hyperlink_target
@@ -143,20 +143,20 @@ plugin_settings:
                         disallow_refiners_looping_on_min_path: Yes
                         select_phrase: Select Content Item...
                         hide_remove_button: Yes
-                
+                    indent: 1
                 enable_rss:
                     plugin_setting:
                         name: enable_rss
-                    label: 'Generate RSS feed:'
+                    label: 'Generate RSS feed'
                     type: checkbox
                     value: "0"
         each_item:
-            label: Each Item
+            label: Each item
             fields:
                 show_titles:
                     plugin_setting:
                         name: show_titles
-                    label: "Show title:"
+                    label: "Show title"
                     type: checkbox
                     value: "1"
                 data_field:
@@ -178,11 +178,11 @@ plugin_settings:
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show sticky image:"
+                    label: "Show sticky image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes
-                    note_below: |
+                    side_note: |
                         The sticky image attached to the content item will be shown if it exists. For picture content items, a thumbnail will be automatically generated if no sticky image exists.
                 canvas:
                     plugin_setting:
@@ -207,6 +207,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
+                    indent: 1
                 width:
                     plugin_setting:
                         name: width
@@ -219,6 +220,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 height:
                     plugin_setting:
                         name: height
@@ -231,10 +233,11 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 show_dates:
                     plugin_setting:
                         name: show_dates
-                    label: "Show item's release date/time:"
+                    label: "Show item's release date/time"
                     type: checkbox
                     value: "0"
                     format_onchange: Yes
@@ -255,6 +258,7 @@ plugin_settings:
                             ord: "3"
                             label: Long
                     requires: show_dates
+                    indent: 1
                 show_author:
                     plugin_setting:
                         name: show_author
@@ -291,10 +295,11 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
+                    indent: 1
                 author_width:
                     plugin_setting:
                         name: author_width
-                    label: 'Width'
+                    label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width in pixels.
@@ -303,10 +308,11 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 author_height:
                     plugin_setting:
                         name: author_height
-                    label: 'Height'
+                    label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a height in pixels.
@@ -315,10 +321,11 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 author_offset:
                     plugin_setting:
                         name: author_offset
-                    label: 'Offset'
+                    label: 'Offset:'
                     type: text
                     style: 'width: 50px;'
                     value: "0"
@@ -327,19 +334,20 @@ plugin_settings:
                         max: "10"
                         before_field: true
                         style: 'width: 200px;'
-                    note_below: |
+                    side_note: |
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
+                    indent: 2
                 show_times:
                     plugin_setting:
                         name: show_times
-                    label: 'Show Time:'
+                    label: 'Show time'
                     type: checkbox
                 hide_private_items:
                     ord: "16"
                     plugin_setting:
                         name: hide_private_items
-                    label: 'Links to Private Items:'
+                    label: 'Links to private items:'
                     type: select
                     value: "1"
                     empty_value: "Show to all visitors"
@@ -350,10 +358,10 @@ plugin_settings:
                     ord: "17"
                     plugin_setting:
                         name: use_download_page
-                    label: 'Use a download page:'
+                    label: 'Use a download page'
                     type: checkbox
                     value: ""
-                    note_below: |
+                    side_note: |
                         Link to the file's download page, rather than a direct link to the file.
                                                     This option only applies to Document Content Items.
         pagination:
@@ -380,15 +388,15 @@ plugin_settings:
                         20: "20"
                         50: "50"
                         999999:
-                            label: All Possible
+                            label: All possible
                     value: "5"
-                    note_below: >
+                    side_note: >
                         If pagination is enabled, this number of summaries will be
                         shown on each page.
                 show_pagination:
                     plugin_setting:
                         name: show_pagination
-                    label: 'Paginate:'
+                    label: 'Paginate'
                     type: checkbox
                     value: "1"
                     format_onchange: Yes
@@ -398,6 +406,7 @@ plugin_settings:
                     label: 'Pagination style:'
                     type: select
                     value: zenario_common_features::pagCloseWithNPIfNeeded
+                    indent: 1
                 page_limit:
                     plugin_setting:
                         name: page_limit
@@ -409,3 +418,4 @@ plugin_settings:
                         20: "20"
                         99: "99"
                     value: "9"
+                    indent: 1

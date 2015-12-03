@@ -24,7 +24,7 @@ zenario__content:
                     INNER JOIN [[DB_NAME_PREFIX]]files AS f
                        ON f.id = ii.image_id
                       AND f.`usage` = 'image'
-                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg')
+                      AND f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
                 id_column: f.id
             
             refiners:
@@ -121,6 +121,7 @@ zenario__content:
                 upload:
                     label: Upload images
                     css_class: zenario_create_a_new
+                    hide_on_filter: true
                     upload:
                         fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
                         fileDesc: Images
