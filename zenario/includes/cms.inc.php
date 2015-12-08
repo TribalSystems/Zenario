@@ -4440,7 +4440,8 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 		$type = 'organizer';
 	}
 	
-	if (strpos($filePathOrModuleClassName, '/') === false) {
+	if (strpos($filePathOrModuleClassName, '/') === false
+	 && strpos($filePathOrModuleClassName, '\\') === false) {
 		$basePath = CMS_ROOT. moduleDir($filePathOrModuleClassName);
 		$moduleClassName = $filePathOrModuleClassName;
 	} else {
