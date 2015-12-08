@@ -184,7 +184,7 @@ class zenario_banner extends module_base_class {
 		
 		 || ($this->setting('image_source') == '_PICTURE'
 		  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $this->setting("picture")))
-		  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
+		  && ($imageId = getRow("content_item_versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
 		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID

@@ -144,7 +144,8 @@ function engToBoolean($text) {
 }
 
 function funIncPath($filePathOrModuleClassName, $functionName) {
-	if (strpos($filePathOrModuleClassName, '/') === false) {
+	if (strpos($filePathOrModuleClassName, '/') === false
+	 && strpos($filePathOrModuleClassName, '\\') === false) {
 		$dir = CMS_ROOT. moduleDir($filePathOrModuleClassName);
 	} else {
 		$dir = dirname($filePathOrModuleClassName);
