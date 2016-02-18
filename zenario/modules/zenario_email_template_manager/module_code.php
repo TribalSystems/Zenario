@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -244,7 +244,6 @@ class zenario_email_template_manager extends module_base_class {
 									" . DB_NAME_PREFIX . "plugin_instances
 								WHERE 
 									id = " . (int) arrayKey($senderCmsObjectArray,'instanceId') . "
-								LIMIT 1
 									),
 					instance_id = NULLIF(" . (int) arrayKey($senderCmsObjectArray,'instanceId') . ",0),
 					content_id = NULLIF(" . (int) arrayKey($senderCmsObjectArray,'cID') . ",0),
@@ -258,7 +257,6 @@ class zenario_email_template_manager extends module_base_class {
 										" . DB_NAME_PREFIX . "email_templates
 									WHERE 
 										id = " . (int) $templateNo  . " 
-									LIMIT 1
 										),
 					email_subject ='" . sqlEscape($subject) . "' ,
 					email_address_to ='" .sqlEscape($addr) . "',

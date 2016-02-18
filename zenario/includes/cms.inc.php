@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1349,7 +1349,7 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 		//Language codes with no alias means the home page for that language
 		if ($reqLangId && !$aliasInURL) {
 			
-			langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true);
+			langSpecialPage('zenario_home', $cID, $cType, $reqLangId, $languageMustMatch = true, $skipPermsCheck = true);
 			
 			//Slightly different logic depending on whether we are allowed slashes in the alias or not
 				//If so, this is a valid URL and we don't need to change it

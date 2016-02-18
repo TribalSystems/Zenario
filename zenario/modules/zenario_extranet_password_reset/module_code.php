@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			}
 		} elseif (request('extranet_reset_password') && ($userId = $this->getUserIdFromHashCode(request('hash')))) {
 			if (!$this->checkResetPasswordTime($userId)) {
-				// Clear hash and reset time
-				updateRow('users', array('hash' => null, 'reset_password_time' => null), array('id' => $userId));
+				updateRow('users', array('reset_password_time' => null), array('id' => $userId));
 				$this->message = $this->phrase('This link has expired. To reset your password make a new request.');
 				$this->mode = 'modeLogin';
 			} else {
@@ -56,8 +55,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 					if ($this->changePassword($userId)) {
 						$this->message = $this->phrase('Your Password has been changed.');
 						$this->mode = 'modeLoggedIn';
-						// Clear hash and reset time
-						updateRow('users', array('hash' => null, 'reset_password_time' => null), array('id' => $userId));
+						updateRow('users', array('reset_password_time' => null), array('id' => $userId));
 					}
 				}
 			}
@@ -99,7 +97,9 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			if (checkRowExists('users', array('email' => post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ))) {
 				$this->errors[] = array('Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.'));
 			} else {
-				updateUserHash($userDetails['id']);
+				if (!$userDetails['hash']) {
+					updateUserHash($userDetails['id']);
+				}
 				updateRow('users', array('reset_password_time' => now()), array('id' => $userDetails['id']));
 				$userDetails = $this->getDetailsFromEmail(post('extranet_email'));
 				$userDetails['ip_address'] = visitorIP();

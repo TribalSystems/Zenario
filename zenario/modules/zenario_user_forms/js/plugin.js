@@ -95,6 +95,26 @@ zenario_user_forms.toggleFieldVisibility = function(
 
 zenario_user_forms.submitMultiPageForm = false;
 
+zenario_user_forms.initJQueryElements = function(containerId) {
+	//jQuery datepickers
+	$('#' + containerId + ' input.jquery_form_datepicker').each(function(i, el) {
+		zenario.loadDatePicker();
+		
+		//Flexible Form functionality for date pickers that degrade gracefully into three select lists
+		//if JavaScript is not enabled.
+		if (el.id) {
+			el.value = $.datepicker.formatDate(zenario.dpf, $.datepicker.parseDate('yy-mm-dd', get(el.id + '__0').value));
+			
+			$('#' + el.id).datepicker({
+				dateFormat: zenario.dpf,
+				altField: '#' + el.id + '__0',
+				altFormat: 'yy-mm-dd',
+				showOn: 'focus'
+			});
+		}
+	});
+};
+
 zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox, pageCount) {
 	// Enter key advances to next stage instead of submitting form
 	$('#'+identifier+' :input:not(textarea)').on('keydown', function(event) {
@@ -149,7 +169,7 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 			errors = JSON.parse(errors);
 			
 			// Remove any old errors from current page
-			$('#'+currentPageId+' div.form_error').remove();
+			$('#'+currentPageId+'div.form_error').remove();
 			if (!_.isEmpty(errors)) {
 				// Show any errors
 				var html = '',

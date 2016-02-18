@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -479,25 +479,6 @@ class zenario_crm_form_integration extends module_base_class {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes){
 		switch ($path){
-			case 'zenario_user_admin_box_form':
-				if($box['key']['id']){
-					$formId = $box['key']['id'];
-					$enable_crm_integration = $values['crm_integration/enable_crm_integration'];
-					$crm_url = $values['crm_integration/crm_url'];
-					$name1 = $values['crm_integration/name1'];
-					$value1 = $values['crm_integration/value1'];
-					$name2 = $values['crm_integration/name2'];
-					$value2 = $values['crm_integration/value2'];
-					$name3 = $values['crm_integration/name3'];
-					$value3 = $values['crm_integration/value3'];
-					$name4 = $values['crm_integration/name4'];
-					$value4 = $values['crm_integration/value4'];
-					$name5 = $values['crm_integration/name5'];
-					$value5 = $values['crm_integration/value5'];
-					//update db table
-					$box['key']['id'] = self::updateFormCrmData($formId,$crm_url,$name1,$value1,$name2,$value2,$name3,$value3,$name4,$value4,$name5,$value5,$enable_crm_integration);
-				}
-				break;
 			case 'zenario_user_admin_box_form_field':
 				if($box['key']['id']){
 					$formFieldId = $box['key']['id'];
@@ -626,6 +607,36 @@ class zenario_crm_form_integration extends module_base_class {
 					$result = sqlSelect($sql);
 					while ($row = sqlFetchArray($result)) {
 						updateRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX.'form_crm_fields', array('field_crm_name' => $values['details/field_name']), array('form_field_id' => $row['form_field_id']));
+					}
+				}
+				break;
+		}
+	}
+	
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'zenario_user_admin_box_form':
+				$formId = $box['key']['id'];
+				if ($formId) {
+					$enable_crm_integration = $values['crm_integration/enable_crm_integration'];
+					$crm_url = $values['crm_integration/crm_url'];
+					$name1 = $values['crm_integration/name1'];
+					$value1 = $values['crm_integration/value1'];
+					$name2 = $values['crm_integration/name2'];
+					$value2 = $values['crm_integration/value2'];
+					$name3 = $values['crm_integration/name3'];
+					$value3 = $values['crm_integration/value3'];
+					$name4 = $values['crm_integration/name4'];
+					$value4 = $values['crm_integration/value4'];
+					$name5 = $values['crm_integration/name5'];
+					$value5 = $values['crm_integration/value5'];
+					//update db table
+					self::updateFormCrmData($formId,$crm_url,$name1,$value1,$name2,$value2,$name3,$value3,$name4,$value4,$name5,$value5,$enable_crm_integration);
+					
+					// All CRM forms must send a signal
+					if ($enable_crm_integration) {
+						updateRow('user_forms', array('send_signal' => true), $formId);
 					}
 				}
 				break;

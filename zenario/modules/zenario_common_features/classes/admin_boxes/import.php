@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -858,7 +858,28 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						} else {
 							if (($columnIndex >= $startingColumn) && ($columnIndex <= $endingColumn)) {
 								if (!is_null($value) && isset($keyValues[$dataCount])) {
-									$importValues[$lineNumber][$keyValues[$dataCount]] = trim($value);
+									
+									// Add special cases
+									if ($keyValues[$dataCount] == 'name_split_on_first_space') {
+										if (($pos = strpos(trim($value), ' ')) !== false) {
+											$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr(trim($value), 0, $pos);
+											$importValues[$lineNumber][$lastNameFieldDetails['id']] =  substr(trim($value), $pos + 1);
+										} else {
+											$importValues[$lineNumber][$firstNameFieldDetails['id']] = trim($value);
+										}
+										
+									} elseif ($keyValues[$dataCount] == 'name_split_on_last_space') {
+										if (($pos = strrpos(trim($value), ' ')) !== false) {
+											$importValues[$lineNumber][$firstNameFieldDetails['id']] = substr(trim($value), 0, $pos);
+											$importValues[$lineNumber][$lastNameFieldDetails['id']] = substr(trim($value), $pos + 1);
+										} else {
+											$importValues[$lineNumber][$firstNameFieldDetails['id']] = trim($value);
+										}
+										
+									// Add normal data
+									} else {
+										$importValues[$lineNumber][$keyValues[$dataCount]] = trim($value);
+									}
 								}
 								$dataCount++;
 							}
@@ -1274,18 +1295,20 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			$id = false;
 			
 			foreach($record as $fieldId => $value) {
-				if ($fieldId == 'id') {
-					//
-				} else {
-					if (!isset($fieldIdDetails[$fieldId])) {
-						$fieldIdDetails[$fieldId] = getRow('custom_dataset_fields', array('is_system_field', 'db_column'), $fieldId);
-					}
-					if ($fieldIdDetails[$fieldId]['is_system_field']) {
-						$data[$fieldIdDetails[$fieldId]['db_column']] = $value;
+				if ($fieldId) {
+					if ($fieldId == 'id') {
+						//
 					} else {
-						$customData[$fieldIdDetails[$fieldId]['db_column']] = $value;
+						if (!isset($fieldIdDetails[$fieldId])) {
+							$fieldIdDetails[$fieldId] = getRow('custom_dataset_fields', array('is_system_field', 'db_column'), $fieldId);
+						}
+						if ($fieldIdDetails[$fieldId]['is_system_field']) {
+							$data[$fieldIdDetails[$fieldId]['db_column']] = $value;
+						} else {
+							$customData[$fieldIdDetails[$fieldId]['db_column']] = $value;
+						}
+						$message .= $fieldIdDetails[$fieldId]['db_column'].': '.$value. "\n";
 					}
-					$message .= $fieldIdDetails[$fieldId]['db_column'].': '.$value. "\n";
 				}
 			}
 			

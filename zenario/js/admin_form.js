@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -626,7 +626,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 					
 					$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 75, function() {
 						if (zenario.browserIsIE()) {
-							that.style.removeAttribute('filter');
+							this.style.removeAttribute('filter');
 						}
 						
 						that.addJQueryElementsToTabAndFocusFirstField();
@@ -646,7 +646,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 			
 			$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 				if (zenario.browserIsIE()) {
-					that.style.removeAttribute('filter');
+					this.style.removeAttribute('filter');
 				}
 				
 				if (!needToShake
@@ -670,7 +670,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 		this.insertHTML(html, cb);
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
-				that.style.removeAttribute('filter');
+				this.style.removeAttribute('filter');
 			}
 			
 			that.addJQueryElementsToTabAndFocusFirstField();

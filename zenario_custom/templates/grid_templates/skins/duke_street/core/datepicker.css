@@ -11,7 +11,7 @@ body.no_js input.jquery_datepicker {
 
 
 /*  Default calendar icon for datepickers  */
-
+input.jquery_form_datepicker,
 input.jquery_datepicker {
 	background-image: url('calendar_small.gif');
 	background-repeat: no-repeat;

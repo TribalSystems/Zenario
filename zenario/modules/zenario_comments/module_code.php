@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -402,7 +402,7 @@ class zenario_comments extends zenario_anonymous_comments {
 			langSpecialPage('zenario_profile', $cID, $cType);
 			$profileAnchor = $this->linkToItemAnchor($cID, $cType);
 			$this->sections['Comments_Profile_Link'] = true;
-			$profileLink =  '<a '.$profileAnchor.'>your profile</a>';
+			$profileLink =  '<a '.$profileAnchor.'>'. $this->phrase('your profile').'</a>';
 			$this->mergeFields['Comments_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to comment.', array('profile_link' => $profileLink));
 		}
 		parent::showThreadActions();

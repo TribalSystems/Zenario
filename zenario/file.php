@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,10 @@ $requestedWidth = isset($_GET['width'])? (int) $_GET['width'] : '';
 $requestedHeight = isset($_GET['height'])? (int) $_GET['height'] : '';
 $key = isset($_GET['k'])? $_GET['k'] : '';
 $adminBackend = false;
+
+if ($checksum !== false) {
+	$checksum = preg_replace('/[^\\w-]/', '', $checksum);
+}
 
 //Add some logic to handle any old links to email/inline/menu images (these are now just classed as "image"s).
 if ($usage == 'email'

@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ function hideCookieConsent() {
 //Attempt to get a special page
 //We should never show unpublished pages to Visitors, and never return a Special Page in the wrong language if $languageMustMatch was set
 //Otherwise return a $cID and $cType as best we can
-function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false, $languageMustMatch = false) {
+function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false, $languageMustMatch = false, $skipPermsCheck = false) {
 	//Assume that we'll want the special page in the language that the Visitor is currently viewing, if a language is not specified
 	if ($preferredLanguageId === false) {
 		$preferredLanguageId = ifNull(session('user_lang'), setting('default_language'));
@@ -59,7 +59,7 @@ function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false
 	//Try to get the Special Page in the language that we've requested
 	if (isset(cms_core::$specialPages[$pageType. $preferredLanguageId])) {
 		if (getCIDAndCTypeFromTagId($cID, $cType, cms_core::$specialPages[$pageType. $preferredLanguageId])) {
-			if (checkPerm($cID, $cType)) {
+			if ($skipPermsCheck || checkPerm($cID, $cType)) {
 				return true;
 			}
 		}
@@ -68,7 +68,7 @@ function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false
 	//Otherwise try to fall back to the page for the default language
 	if ($preferredLanguageId && !$languageMustMatch && isset(cms_core::$specialPages[$pageType])) {
 		if (getCIDAndCTypeFromTagId($cID, $cType, cms_core::$specialPages[$pageType])) {
-			if (checkPerm($cID, $cType)) {
+			if ($skipPermsCheck || checkPerm($cID, $cType)) {
 				return true;
 			}
 		}

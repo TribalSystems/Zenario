@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -551,11 +551,11 @@ class zenario_extranet extends module_base_class {
 		//Look up what their current password is
 		if (trim($oldPassword)==='' && $oldPassword!==false)  {
 			//no password entered
-			$errorMessage = $this->setting('no_password_entered_message');
+			$errorMessage = $this->setting('no_password_entered_message') ? $this->setting('no_password_entered_message') : '_ERROR_OLD_PASSWORD';
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 		} elseif ($oldPassword && !checkUsersPassword($userId, $oldPassword)) {
 			//password incorrect
-			$errorMessage = $this->setting('wrong_password_message');
+			$errorMessage = $this->setting('wrong_password_message') ? $this->setting('wrong_password_message') : '_ERROR_PASS_NOT_VERIFIED';
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 		}
 	
@@ -564,12 +564,12 @@ class zenario_extranet extends module_base_class {
 		
 		} elseif ($oldPassword && ($newPassword === $oldPassword)) {
 			//new password is the same as old
-			$errorMessage = $this->setting('new_password_same_as_old_message');
+			$errorMessage = $this->setting('new_password_same_as_old_message') ? $this->setting('new_password_same_as_old_message') : '_ERROR_NEW_PASSWORD_SAME_AS_OLD';
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 		
 		} elseif (strlen($newPassword) < setting('min_extranet_user_password_length')) {
 			//password not long enough
-			$errorMessage = $this->setting('new_password_length_message');
+			$errorMessage = $this->setting('new_password_length_message') ? $this->setting('new_password_length_message') : '_ERROR_NEW_PASSWORD_LENGTH';
 			$errors[] = array('Error' => $this->phrase($errorMessage, array('min_password_length' => setting('min_extranet_user_password_length'))));
 		
 		} elseif (!$confirmation) {
@@ -578,12 +578,12 @@ class zenario_extranet extends module_base_class {
 		
 		} elseif ($newPassword !== $confirmation) {
 			//passwords don't match
-			$errorMessage = $this->setting('new_passwords_do_not_match');
+			$errorMessage = $this->setting('new_passwords_do_not_match') ? $this->setting('new_passwords_do_not_match') : '_ERROR_NEW_PASSWORD_MATCH';
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 	
 		} elseif (!checkPasswordStrength($newPassword,setting('min_extranet_user_password_strength'))) {
 			//password not strong enough
-			$errorMessage = $this->setting('new_password_not_strong_enough_message');
+			$errorMessage = $this->setting('new_password_not_strong_enough_message') ? $this->setting('new_password_not_strong_enough_message') : '_ERROR_NEW_PASSWORD_NOT_STRONG_ENOUGH';
 			$errors[] = array('Error' => $this->phrase($errorMessage));
 		
 		}

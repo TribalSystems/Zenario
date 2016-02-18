@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -167,12 +167,15 @@ class zenario_document_container extends module_base_class {
 
 				} elseif ($document['type'] == 'folder') {
 				
-					$level = 0;
 					$childFiles = array();
+					$level = 1;
+					
+					// Get top level files
 					if ($childFiles = self::getFilesInFolder($this->document_id)) {
 						$childFiles =  $this->addMergeFields($childFiles, $level);
-						/* HERE */
 					}
+					
+					// Get folders
 					if ($this->setting('show_files_in_folders') != 'folder') {
 						if ($childFolders = self::getFoldersInFolder($this->document_id)) {
 							self::addFilesToDocumentArray($childFiles, $childFolders, $level);
@@ -754,8 +757,8 @@ class zenario_document_container extends module_base_class {
 					FROM " . DB_NAME_PREFIX . "documents AS d 
 					LEFT JOIN " . DB_NAME_PREFIX . "document_tag_link AS dtl 
 						ON d.id = dtl.document_id 
-					WHERE dtl.tag_id IN (" . $this->setting('document_tags') . ") 
-						AND d.folder_id = " . $folderId . " 
+					WHERE dtl.tag_id IN (" . sqlEscape($this->setting('document_tags')) . ") 
+						AND d.folder_id = " . (int)$folderId . " 
 						AND d.type = 'file'
 					GROUP BY d.id
 					ORDER BY d.ordinal" ;
@@ -791,22 +794,21 @@ class zenario_document_container extends module_base_class {
 		}
 	}
 	
-	public function addFilesToDocumentArray(&$documentArray, $foldersArray, &$level) {
-		++$level;
+	public function addFilesToDocumentArray(&$documentArray, $foldersArray, $level) {
 		foreach($foldersArray as $folder) {
 			if($this->setting('show_folders_in_results')) {
 				$folder = self::addFolderMergeFields($folder, $level);
 				$documentArray[$folder['id']] = $folder;
 			}
 			if($cFiles = self::getFilesInFolder($folder['id'])) {
-				$cFiles =  $this->addMergeFields($cFiles, $level);
+				$cFiles =  $this->addMergeFields($cFiles, $level + 1);
 				
 				foreach($cFiles as $file) {
 					$documentArray[$file['id']] = $file;
 				}
 			}
 			if($this->setting('show_files_in_folders') == 'all' && $cFolders = self::getFoldersInFolder($folder['id'])) {
-				self::addFilesToDocumentArray($documentArray, $cFolders, $level);
+				self::addFilesToDocumentArray($documentArray, $cFolders, $level + 1);
 			}
 		}
 	}

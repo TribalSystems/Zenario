@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -246,7 +246,7 @@ foreach ($formFields as $fieldId => $field) {
 	}
 	
 	// Get default value of field
-	$fieldValue = false;
+	$fieldValue = isset($data[$fieldName]) ? $data[$fieldName] : false;
 	if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
 		
 		if ($submitted) {
@@ -349,18 +349,22 @@ foreach ($formFields as $fieldId => $field) {
 			break;
 		case 'date':
 			$html .= '<input type="text" readonly ';
-			if (isset($data[$fieldName])) {
-				$html .= ' value="'. $data[$fieldName] .'" ';
-			}
 			if (!($readOnly || $field['is_readonly'])) {
-				$html .= ' class="jquery_datepicker" ';
+				$html .= ' class="jquery_form_datepicker" ';
 			}
 			if ($field['field_type'] == 'restatement') {
 				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= '/>';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= ' id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= '/>';
+				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" id="' . $id . '__0"';
+				if (isset($data[$fieldName])) {
+					$html .= ' value="' . $data[$fieldName] . '"';
+				}
+				$html .= '/>';
 			}
-			$html .= '/>';
+			
 			
 			break;
 		case 'editor':
@@ -567,7 +571,6 @@ foreach ($formFields as $fieldId => $field) {
 			// If this field looks like it's using the countries list, get phrases from country manager
 			$valuesSource = getRow('custom_dataset_fields', 'values_source', array('id' => $field['user_field_id']));
 			$countryList = ($valuesSource == 'zenario_country_manager::getActiveCountries');
-			
 			
 			foreach ($values as $valueId => $label) {
 				$html .= '<option value="'. htmlspecialchars($valueId). '"';

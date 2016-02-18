@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -141,8 +141,7 @@ foreach ($formFields as $fieldId => $field) {
 		case 'date':
 			$date = '';
 			if ($data[$fieldName]) {
-				$date = DateTime::createFromFormat('d/m/Y', $data[$fieldName]);
-				$date = $date->format('Y-m-d');
+				$date = $data[$fieldName];
 			}
 			$values[$fieldId] = array('value' => $date, 'db_column' => $fieldName, 'ord' => $ord);
 			$fieldIdValueLink[$fieldId] = $date;
@@ -156,11 +155,16 @@ foreach ($formFields as $fieldId => $field) {
 			} else {
 				$valuesList = self::getUnlinkedFieldLOV($fieldId);
 			}
+			
 			$fieldIdValueLink[$fieldId] = array();
-			if (!empty($data[$fieldName])) {
-				$fieldIdValueLink[$fieldId][$data[$fieldName]] = $valuesList[$data[$fieldName]];
+			if (isset($data[$fieldName])) {
+				$value = '';
+				if ($data[$fieldName] !== '') {
+					$value = $valuesList[$data[$fieldName]];
+				}
+				$fieldIdValueLink[$fieldId][$data[$fieldName]] = $value;
 				$values[$fieldId] = array(
-					'value' => $valuesList[$data[$fieldName]], 
+					'value' => $value, 
 					'db_column' => $fieldName, 
 					'internal_value' => $data[$fieldName], 
 					'ord' => $ord);
@@ -481,6 +485,7 @@ if ($formProperties['send_signal']) {
 	if ($user_response_id) {
 		$params['responseId'] = $user_response_id;
 	}
+	
 	sendSignal('eventUserFormSubmitted', $params);
 } 
 // Redirect to page if speficied

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -787,7 +787,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 				$box['tabs'][1]['fields']['license']['snippet']['url'] = 'license.txt';
 			
 			} else {
-				echo adminPhrase('The license file "license.txt" could be found. This installer cannot proceed.');
+				echo adminPhrase('The license file "license.txt" could not be found. This installer cannot proceed.');
 				exit;
 			}
 			
@@ -1253,12 +1253,16 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 		//Check for the user by email address, without specifying their password.
 		//This will return 0 if the user wasn't found, otherwise it should return
 		//false (for user found but password didn't match)
-		} elseif (!$admin = getRow('admins', array('id', 'authtype', 'username', 'email', 'first_name', 'last_name'), array('email' => $box['tabs']['forgot']['fields']['email']['current_value']))) {
+		} elseif (!$admin = getRow('admins', array('id', 'authtype', 'username', 'email', 'first_name', 'last_name', 'status'), array('email' => $box['tabs']['forgot']['fields']['email']['current_value']))) {
 			$box['tabs']['forgot']['errors'][] = adminPhrase("Sorry, we could not find that email address associated with an active Administrator on this site's database.");
 		
 		//Super Admins shouldn't be trying to change their passwords on a local site
 		} elseif (isset($admin['authtype']) && $admin['authtype'] != 'local') {
 			$box['tabs']['forgot']['errors'][] = adminPhrase("Please go to the Controller site to reset the password for a Superadmin account.");
+		
+		//Trashed admins should not be able to trigger password resets
+		} elseif ($admin['status'] == 'deleted') {
+			$box['tabs']['forgot']['errors'][] = adminPhrase("Sorry, we could not find that email address associated with an active Administrator on this site's database.");
 		
 		} else {
 			

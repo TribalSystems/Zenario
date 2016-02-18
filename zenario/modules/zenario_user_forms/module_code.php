@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -142,6 +142,8 @@ class zenario_user_forms extends module_base_class {
 		} else {
 			$this->data['formFields'] = self::drawUserForm($this->setting('user_form'), userId(), false, array(), $this->setting('checkbox_columns'), $this->containerId);
 		}
+		
+		$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
 		
 		
 		if (!$pageBreakFields && $formProperties['use_captcha'] && empty($_SESSION['captcha_passed__'.$this->instanceId])) {
@@ -2671,15 +2673,16 @@ class zenario_user_forms extends module_base_class {
 				}
 				
 				$sql .= '
-					ORDER BY ur.response_datetime DESC';
+					ORDER BY ur.response_datetime DESC, uff.ord';
 				$result = sqlSelect($sql);
+				
 				
 				while ($row = sqlFetchAssoc($result)) {
 					if (!isset($responsesData[$row['id']])) {
 						$responsesData[$row['id']] = array();
 					}
 					if (isset($formFields[$row['form_field_id']])) {
-						$responsesData[$row['id']][$row['ord']] = $row['value'];
+						$responsesData[$row['id']][$row['form_field_id']] = $row['value'];
 					}
 				}
 				
@@ -2692,19 +2695,20 @@ class zenario_user_forms extends module_base_class {
 				// Write data
 				$rowPointer = 1;
 				foreach ($responsesData as $responseId => $responseData) {
+					
 					$rowPointer++;
 					$response = array();
 					$response[0] = $responseId;
 					$response[1] = formatDateTimeNicely($responseDates[$responseId], '_MEDIUM');
-					for ($j = 1; $j <= count($formFields); $j++) {
-						$k = $j + 1;
-						if (!isset($responseData[$j])) {
-							$response[$k] = '';
-						} else {
-							$response[$k] = $responseData[$j];
+					
+					$j = 1;
+					foreach ($formFields as $formFieldId => $name) {
+						$response[++$j] = '';
+						if (isset($responseData[$formFieldId])) {
+							$response[$j] = $responseData[$formFieldId];
 						}
-						ksort($response);
 					}
+					
 					foreach ($response as $columnPointer => $value) {
 						$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value);
 					}
@@ -2715,6 +2719,8 @@ class zenario_user_forms extends module_base_class {
 				header('Content-Type: application/vnd.ms-excel');
 				header('Content-Disposition: attachment;filename="'.$formName.' user responses.xls"');
 				$objWriter->save('php://output');
+				
+				$box['key']['form_id'] = '';
 				exit;
 		}
 	}

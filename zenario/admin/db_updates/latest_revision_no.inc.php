@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -35,4 +35,4 @@ define('INSTALLER_DEFAULT_THEME', 'duke_street');
 define('ZENARIO_MAJOR_VERSION', '7');
 define('ZENARIO_MINOR_VERSION', '1');
 define('ZENARIO_RELEASE_VERSION', '1');
-define('ZENARIO_VERSION', '7.1.1');
+define('ZENARIO_VERSION', '7.1.2');
