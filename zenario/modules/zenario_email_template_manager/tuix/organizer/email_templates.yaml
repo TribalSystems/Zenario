@@ -26,38 +26,38 @@ zenario__email_template_manager:
                     title: ID
                     format: id
                     db_column: T.id
-                    searchable: Yes
-                    show_by_default: Yes
+                    searchable: true
+                    show_by_default: true
                     width: xxsmall
                 code:
                     title: Template code
-                    db_column: code
-                    searchable: Yes
-                    show_by_default: No
+                    db_column: T.code
+                    searchable: true
+                    show_by_default: false
                     width: large
                 template_name:
                     title: Email template name
-                    db_column: template_name
-                    searchable: Yes
-                    show_by_default: Yes
+                    db_column: T.template_name
+                    searchable: true
+                    show_by_default: true
                     width: large
                 subject:
                     title: Subject
-                    db_column: subject
-                    searchable: Yes
-                    show_by_default: Yes
+                    db_column: T.subject
+                    searchable: true
+                    show_by_default: true
                     width: large
                 email_name_from:
                     title: Email name from
-                    db_column: email_name_from
-                    searchable: Yes
-                    show_by_default: Yes
+                    db_column: T.email_name_from
+                    searchable: true
+                    show_by_default: true
                     width: medium
                 email_address_from:
                     title: Email address from
-                    db_column: email_address_from
-                    searchable: Yes
-                    show_by_default: Yes
+                    db_column: T.email_address_from
+                    searchable: true
+                    show_by_default: true
                     width: medium
                 images:
                     title: Images
@@ -68,44 +68,47 @@ zenario__email_template_manager:
                             WHERE ii.foreign_key_id = T.id
                               AND ii.foreign_key_to = 'email_template'
                         )
-                    show_by_default: Yes
-                    align_right: Yes
+                    show_by_default: true
+                    align_right: true
                     width: xsmall
+                debug_override:
+                    db_column: T.debug_override
+                    format: yes_or_no
                 date_created:
                     title: Created at
-                    db_column: date_created
-                    searchable: Yes
-                    show_by_default: No
+                    db_column: T.date_created
+                    searchable: true
+                    show_by_default: false
                     format: datetime
                     width: small
                 created_by:
                     title: Created by
-                    searchable: Yes
-                    show_by_default: No
+                    searchable: true
+                    show_by_default: false
                     width: medium
                 date_modified:
                     title: Last modified at
                     db_column: "IFNULL(date_modified,'---')"
-                    searchable: Yes
-                    show_by_default: No
+                    searchable: true
+                    show_by_default: false
                     format: datetime
                     width: small
                 modified_by:
                     title: Last modified by
-                    searchable: Yes
-                    show_by_default: No
+                    searchable: true
+                    show_by_default: false
                     width: small
                 last_sent:
                     title: Last sent
-                    db_column: last_sent
-                    searchable: Yes
-                    show_by_default: Yes
+                    db_column: T.last_sent
+                    searchable: true
+                    show_by_default: true
                     format: datetime
                     empty_value: Never used
                     width: small
                 body_extract:
                     title: Body extract
-                    db_column: body
+                    db_column: T.body
                     width: xxlarge
                     show_by_default: true
                 module_name:
@@ -123,7 +126,7 @@ zenario__email_template_manager:
                         path: zenario_email_template
                 test:
                     priv: _PRIV_EDIT_SITE_SETTING
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: Send test email
                     tooltip: Manage Email Settings and send a Test Email
                     admin_box:
@@ -134,38 +137,38 @@ zenario__email_template_manager:
             item_buttons:
                 edit_template:
                     label: Edit email template
-                    multiple_select: No
+                    multiple_select: false
                     admin_box:
                         path: zenario_email_template
                 view_dropdown:
                     label: View
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 view_log:
                     parent: view_dropdown
                     label: Log
                     link:
                         path: zenario__email_template_manager/panels/email_log
-                        branch: Yes
+                        branch: true
                         refiner: email_template
                 action_dropdown:
                     label: Actions
-                    multiple_select: Yes
-                    hide_when_children_are_not_visible: Yes
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
                 duplicate_template:
                     parent: action_dropdown
                     priv: _PRIV_MANAGE_EMAIL_TEMPLATE
                     label: Duplicate
-                    multiple_select: No
+                    multiple_select: false
                     admin_box:
                         path: zenario_email_template
                         key:
                             duplicate: "1"
                 delete_template:
                     priv: _PRIV_MANAGE_EMAIL_TEMPLATE
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     label: Delete
-                    multiple_select: Yes
+                    multiple_select: true
                     
                     disabled_if_for_any_selected_items: >
                         item.protected
@@ -183,3 +186,13 @@ zenario__email_template_manager:
                             message_type: warning
                         request:
                             action: delete_template
+            inline_buttons:
+                debug_override:
+                    visible_if: |
+                        zenario.engToBoolean(item.debug_override)
+                    css_class: zenario_ib_warning
+                    admin_box:
+                        path: zenario_email_template
+                    tooltip: |
+                        Debug mode enabled. Emails sent using this template will be
+                        rerouted to the debug email address.

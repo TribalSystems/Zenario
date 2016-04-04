@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (needRevision(37)) {
+if (needRevision(46)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	//(Note if you upgrade from version 7 or earlier this will have been done manually
@@ -51,6 +51,7 @@ if (needRevision(37)) {
 	// usable.)
 	//(Again, if you upgrade from version 7 or earlier these will have also been done manually
 	// by the migration script, but they're also safe to call again.)
+	registerDatasetSystemField($datasetId, 'text', '', 'identifier', 'identifier', 'none', '', false, true);
 	registerDatasetSystemField($datasetId, 'text', 'details', 'email', 'email', 'email');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'email_verified');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'salutation');
@@ -62,12 +63,13 @@ if (needRevision(37)) {
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'password_needs_changing');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'screen_name_confirmed');
-	//registerDatasetSystemFieldregisterDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false)
+	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'send_activation_email_to_user', '');
+	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 	
-	revision(37);
+	revision(46);
 }
 
-if (needRevision(38)) {
+if (needRevision(42)) {
 	
 	if ($statusField = getDatasetFieldDetails('status', 'users')) {
 		
@@ -86,5 +88,5 @@ if (needRevision(38)) {
 		}
 	}
 	
-	revision(38);
+	revision(42);
 }

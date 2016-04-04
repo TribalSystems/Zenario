@@ -1,39 +1,35 @@
 <div 
 	id="organizer_form_field_{{m.form_field_id}}" 
-	class="form_field {{m.type}} {{m.css_classes}}" 
+	class="form_field {{m.type}} {{m.css_classes}} <% if (m.selected) { %> selected <% } %>" 
 	data-id="{{m.form_field_id}}"
 >
-	<div class="form_field_arrow">
-	</div>
+	<div class="form_field_arrow"></div>
 	<div class="form_field_details_wrapper">
-		<% if (m.type == 'checkbox') { %>
-			<input type="checkbox" disabled/>
-			<label class="label">{{m.field_label}}</label>
-		
+		<% if (m.type == 'checkbox' || m.type == 'group') { %>
+			<div class="checkbox_wrapper">
+				<input type="checkbox" disabled/>
+				<label class="label">{{m.field_label}}</label>
+			</div>
 		<% } else if (m.type == 'checkboxes') { %>
 			<span class="label">{{m.field_label}}</span>
 			<div id="organizer_form_field_values_{{m.form_field_id}}">
-				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values', m.lov)}}
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.type == 'date') { %>
 			<span class="label">{{m.field_label}}</span>
 			<input type="text" value="{{m.value}}" readonly class="datepicker"/>
 		
-		<% } else if (m.type == 'editor') { %>
-			<span class="label">{{m.field_label}}</span>
-			<img src="{{m.field_placeholder}}"/>
-			
 		<% } else if (m.type == 'radios') { %>
 			<span class="label">{{m.field_label}}</span>
 			<div id="organizer_form_field_values_{{m.form_field_id}}">
-				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_disabled', m.lov)}}
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.type == 'centralised_radios') { %>
 			<span class="label">{{m.field_label}}</span>
 			<div id="organizer_form_field_values_{{m.form_field_id}}">
-				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_disabled', m.lov)}}
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
 			</div>
 		
 		<% } else if (m.type == 'select') { %>
@@ -52,11 +48,11 @@
 			
 		<% } else if (m.type == 'text') { %>
 			<span class="label">{{m.field_label}}</span>
-			<input type="text" value="" readonly/>
+			<input type="text" value="" readonly placeholder="{{m.placeholder}}"/>
 		
 		<% } else if (m.type == 'textarea') { %>
 			<span class="label">{{m.field_label}}</span>
-			<textarea disabled></textarea>
+			<textarea disabled placeholder="{{m.placeholder}}"></textarea>
 		
 		<% } else if (m.type == 'url') { %>
 			<span class="label">{{m.field_label}}</span>
@@ -64,25 +60,41 @@
 		
 		<% } else if (m.type == 'attachment') { %>
 			<span class="label">{{m.field_label}}</span>
+			<input type="button" value="Choose a file..."/>
+			
+		<% } else if (m.type == 'file_picker') { %>
+			<span class="label">{{m.field_label}}</span>
+			<input type="button" value="Choose a file..."/>
 			
 		<% } else if (m.type == 'page_break') { %>
-			------- <span class="label">{{m.name}}</span> -------
+			------- <span class="label">Page break</span> -------
 			
 		<% } else if (m.type == 'section_description') { %>
 			<span class="label">{{m.field_label}}</span>
+			<p class="description">{{m.description}}</p>
 			
 		<% } else if (m.type == 'calculated') { %>
 			<span class="label">{{m.field_label}}</span>
+			<input type="text" value="" readonly/>
 			
 		<% } else if (m.type == 'restatement') { %>
 			<span class="label">{{m.field_label}}</span>
+			<input type="text" value="" readonly/>
 		
 		<% } else { %>
 			<span class="label">{{m.field_label}}</span>
 			<div class="other"></div>
 		<% } %>
+		
+		<% if (m.type != 'page_break' && m.type != 'section_description') { %>
+			<div id="organizer_form_field_note_below_{{m.form_field_id|e}}" class="zenario_note_below" <% if (!m.note_to_user) { %> style="display:none;" <% } %>>
+				<div class="zenario_note_icon"></div>
+				<div class="zenario_note_content">{{m.note_to_user}}</div>
+			</div>
+		<% } %>
+		
 	</div>
-	<div id="organizer_form_field_inline_buttons_{{m.form_field_id|e}}" class="form_field_inline_buttons" style="display:none;">
+	<div id="organizer_form_field_inline_buttons_{{m.form_field_id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
 		<span class="drag_icon"></span>
 		<span class="delete_icon" data-id="{{m.form_field_id|e}}">Delete</span>
 	</div>

@@ -31,11 +31,16 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__image extends module_base_class {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if (!$details = getRow('files', array('filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title'), $box['key']['id'])) {
+		if (!$details = getRow(
+			'files',
+			array('filename', 'width', 'height', 'size', 'alt_tag', 'floating_box_title', 'short_checksum'),
+			$box['key']['id'])
+		) {
 			exit;
 		}
 		
 		$box['title'] = adminPhrase('Properties of the image "[[filename]]".', $details);
+		$box['identifier']['value'] = '['. $details['short_checksum']. ']';
 		
 		$this->getImageHtmlSnippet($box['key']['id'], $box['tabs']['details']['fields']['image']['snippet']['html']);
 		

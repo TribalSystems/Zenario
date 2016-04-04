@@ -42,7 +42,7 @@ function connectLocalDB() {
 		return;
 	}
 	
-	if (!$dbSelected = connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS)) {
+	if (!$dbSelected = connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT)) {
 		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
 			echo 'A database error has occured on this section of the site. Please contact a site Administrator.';
 			exit;
@@ -86,7 +86,7 @@ function connectGlobalDB() {
 		return true;
 	}
 	
-	if ((!$dbSelected = connectToDatabase(DBHOST_GLOBAL, DBNAME_GLOBAL, DBUSER_GLOBAL, DBPASS_GLOBAL))) {
+	if ((!$dbSelected = connectToDatabase(DBHOST_GLOBAL, DBNAME_GLOBAL, DBUSER_GLOBAL, DBPASS_GLOBAL, DBPORT_GLOBAL))) {
 		if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
 			echo 'A database error has occured on this section of the site. Please contact a site Administrator.';
 			exit;
@@ -110,11 +110,18 @@ function connectGlobalDB() {
 }
 
 
-function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $reportErrors = true) {
+function connectToDatabase($dbhost = 'localhost', $dbname, $dbuser, $dbpass, $dbport = '', $reportErrors = true) {
 	$errorText = 'Database connection failure';
 	
 	try {
-		if ($dbconnection = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname)) {
+		
+		if ($dbport) {
+			$dbconnection = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname, $dbport);
+		} else {
+			$dbconnection = @mysqli_connect($dbhost, $dbuser, $dbpass, $dbname);
+		}
+		
+		if ($dbconnection) {
 			if (mysqli_query($dbconnection,'SET NAMES "UTF8"')
 			 && mysqli_query($dbconnection,"SET collation_connection='utf8_general_ci'")
 			 && mysqli_query($dbconnection,"SET collation_server='utf8_general_ci'")
@@ -369,11 +376,6 @@ function updateDataRevisionNumber2() {
 
 
 
-//
-// Functions for Super Admins
-//
-
-
 //Look for and update the copy of the Global Admins in the local table
 function syncSuperAdmin($adminIdG) {
 	return require funIncPath(__FILE__, __FUNCTION__);
@@ -382,115 +384,56 @@ function syncSuperAdmin($adminIdG) {
 
 
 
-//
-// Basic functions for initialising Modules
-//
 
-
-function checkForChangesInPhpFiles() {
+//Return a cache-killer variable based on the date of the last svn up or svn change
+//of the core software.
+//We'll check the CMS_ROOT and the zenario_custom directory for a modification time and
+//use whatever is the latest.
+//If there isn't a .svn directory then fall-back to using the latest db_update revision number.
+function zenarioCodeLastUpdated($getChecksum = true) {
+	$v = 0;
 	
-	//Safety catch - do not try to do anything if there is no database connection!
-	if (!cms_core::$lastDB) {
-		return;
+	$realDir = dirname(realpath(CMS_ROOT. 'zenario'));
+	$customDir = CMS_ROOT. 'zenario_custom';
+	
+	foreach (array(
+		$realDir. '/.svn/.',
+		$customDir. '/.svn/.',
+		$realDir. '/.svn/wc.db',
+		$customDir. '/.svn/wc.db',
+		$customDir. '/site_description.yaml',
+		$realDir. '/zenario/admin/db_updates/latest_revision_no.inc.php'
+	) as $check) {
+		if (file_exists($check)
+		 && ($mtime = (int) filemtime($check))
+		 && ($v < $mtime)) {
+			$v = $mtime;
+		}
 	}
 	
-	if (!function_exists('sendEmail')) require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	if (!$v) {
+		$v = LATEST_REVISION_NO;
+	}
 	
-	//Make sure we are in the CMS root directory.
-	//This should already be done, but I'm being paranoid...
-	chdir(CMS_ROOT);
-	
-	$time = time();
-	
-	//Get the date of the last time we ran this check and there was a change.
-	if (!($lastChanged = (int) setting('php_files_last_changed'))) {
-		//If this has never been run before then it must be run now!
-		$changed = true;
-	
-	//Otherwise, work out the time difference between that time and now
+	if ($getChecksum) {
+		return base_convert($v, 10, 36);
 	} else {
-		
-		$useFallback = true;
-		if (defined('PHP_OS') && execEnabled()) {
-			try {
-				//Check to see if there are any .php files that have changed on the system
-				//(Note that this logic doesn't include any directories, so it won't catch the case
-				// where a new file is created or a file is deleted.)
-				$find =
-					' -name "*.php"'.
-					' -not -path "./cache/*"'.
-					' -not -path "./public/*"'.
-					' -not -path "./private/*"'.
-					' -not -path "*/.*"'.
-					' -print'.
-					' | sed 1q';
-			
-				//If possble, try to use the UNIX shell
-				if (PHP_OS == 'Linux') {
-					//On Linux it's possible to set a timeout, so do so.
-					$output = array();
-					$status = false;
-					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
-					
-					//If the statement times out, then I will assume this was because the file system indexes were out of
-					//date and the find statement took a long time.
-					//If the indexes were out of date then it probably means that the code has just changed, so we'll handle
-					//the time out by assuming that it indicates a change.
-					if ($status == 124) {
-						$changed = true;
-						
-						//Temporarily clear all of the "last changed" settings to make sure we don't run
-						//any more "exec('find')"s in this script
-						setSetting('css_js_html_files_last_changed', '', false, false);
-						setSetting('php_files_last_changed', '', false, false);
-						setSetting('yaml_files_last_changed', '', false, false);
-					}
-					$useFallback = false;
-				
-				} elseif (PHP_OS == 'Darwin') {
-					$ago = $time - $lastChanged;
-					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
-					$useFallback = false;
-				}
-	
-			} catch (Exception $e) {
-				$useFallback = true;
-			}
-		}
-		
-		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
-		if ($useFallback) {
-			$dirs = array('zenario', 'zenario/admin', 'zenario/api', 'zenario/includes');
-			foreach (array('', 'fun/', 'classes/admin_boxes/', 'classes/organizer/') as $dir) {
-				foreach (moduleDirs($dir) as $dir2) {
-					$dirs[] = $dir2;
-				}
-			}
-			
-			$changed = false;
-			foreach ($dirs as $dir) {
-				chdir(CMS_ROOT. $dir);
-					foreach (array_map('filemtime', scandir('.')) as $mtime) {
-						if ($mtime > $lastChanged) {
-							$changed = true;
-							break 2;
-						}
-					}
-				chdir(CMS_ROOT);
-			}
-		}
-	}
-	chdir(CMS_ROOT);
-	
-	
-	if ($changed) {
-		setSetting('php_files_last_changed', $time);
-		setSetting('php_version', hash64(setting('site_id'). $time));
+		return $v;
 	}
 }
 
+//Returns a cache killer for URLs. Ideally it should give a different URL
+//if any PHP code changes or if any CSS or JavaScript code changes.
+//This won't be completely foolproof though, as zenarioCodeLastUpdated() relies on
+//svn to give an accurate result, and setting('css_js_version') is only accurate
+//if the site is set to Development mode.
+function zenarioCodeVersion() {
+	return
+		ZENARIO_MAJOR_VERSION. ZENARIO_MINOR_VERSION. ZENARIO_RELEASE_VERSION.
+		trim(max(zenarioCodeLastUpdated(), setting('css_js_version')));
+}
 
-function checkForChangesInYamlFiles() {
+function checkForChangesInYamlFiles($forceScan = false) {
 	
 	//Safety catch - do not try to do anything if there is no database connection!
 	if (!cms_core::$lastDB) {
@@ -508,81 +451,47 @@ function checkForChangesInYamlFiles() {
 		//If this has never been run before then it must be run now!
 		$changed = true;
 	
+	} elseif ($forceScan) {
+		$changed = true;
+	
+	//In production mode, only run this check if it looks like there's
+	//been a core software update since the last time we ran
+	} elseif (setting('site_mode') == 'production' && zenarioCodeLastUpdated(false) < $lastChanged) {
+		$changed = false;
+	
 	//Otherwise, work out the time difference between that time and now
 	} else {
-		
-		$useFallback = true;
-		if (defined('PHP_OS') && execEnabled()) {
-			try {
-				//Check to see if there are any .xml or .yaml files that have changed on the system
-				//(This logic also includes any directories, which should catch the case where a new file
-				// is created or a file is deleted.)
-				$find =
-					' -path "*modules/*/tuix*"'.
-					' -not -path "./cache/*"'.
-					' -not -path "./public/*"'.
-					' -not -path "./private/*"'.
-					' -not -path "*/.*"'.
-					' -print'.
-					' | sed 1q';
+		$changed = false;
+		foreach (moduleDirs('tuix/') as $tuixDir) {
 			
-				//If possble, try to use the UNIX shell
-				if (PHP_OS == 'Linux') {
-					//On Linux it's possible to set a timeout, so do so.
-					$output = array();
-					$status = false;
-					$changed = exec('timeout 10 find -L . -newermt @'. (int) $lastChanged. $find, $output, $status);
-					
-					//If the statement times out, then I will assume this was because the file system indexes were out of
-					//date and the find statement took a long time.
-					//If the indexes were out of date then it probably means that the code has just changed, so we'll handle
-					//the time out by assuming that it indicates a change.
-					if ($status == 124) {
-						$changed = true;
-						
-						//Temporarily clear all of the "last changed" settings to make sure we don't run
-						//any more "exec('find')"s in this script
-						setSetting('css_js_html_files_last_changed', '', false, false);
-						setSetting('php_files_last_changed', '', false, false);
-						setSetting('yaml_files_last_changed', '', false, false);
-					}
-					$useFallback = false;
-				
-				} elseif (PHP_OS == 'Darwin') {
-					$ago = $time - $lastChanged;
-					$changed = exec('find -L . -mtime -'. (int) $ago. 's'. $find);
-					$useFallback = false;
-				}
-	
-			} catch (Exception $e) {
-				$useFallback = true;
-			}
-		}
-		
-		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
-		if ($useFallback) {
-			$changed = false;
-			foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'wizards') as $type) {
-				foreach (moduleDirs('tuix/'. $type. '/') as $tuixDir) {
-					chdir(CMS_ROOT. $tuixDir);
-						foreach (array_map('filemtime', scandir('.')) as $mtime) {
-							if ($mtime > $lastChanged) {
-								$changed = true;
-								break 3;
-							}
-						}
-					chdir(CMS_ROOT);
+			$RecursiveDirectoryIterator = new RecursiveDirectoryIterator(CMS_ROOT. $tuixDir);
+			$RecursiveIteratorIterator = new RecursiveIteratorIterator($RecursiveDirectoryIterator);
+			
+			foreach ($RecursiveIteratorIterator as $file) {
+				if ($file->isFile()
+				 && $file->getMTime() > $lastChanged) {
+					$changed = true;
+					break 2;
 				}
 			}
 		}
+		chdir(CMS_ROOT);
 	}
-	chdir(CMS_ROOT);
 	
 	
 	if ($changed) {
 		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
 		if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
 		if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		
+		
+		//Look to see what datasets are on the system, and which datasets extend which FABs
+		$datasets = array();
+		$datasetFABs = array();
+		foreach (getRowsArray('custom_datasets', 'extends_admin_box') as $datasetId => $extends_admin_box) {
+			$datasetFABs[$extends_admin_box] = $datasetId;
+		}
+		
 		
 		//Scan the TUIX files, and come up with a list of what paths are in what files
 		$tuixFiles = array();
@@ -695,6 +604,11 @@ function checkForChangesInYamlFiles() {
 									
 										} elseif ($path == 'site_settings' && !empty($tag['setting_group'])) {
 											$settingGroup = $tag['setting_group'];
+										
+										//Note down if we see any changes in a file for a FAB
+										//that is used for a dataset.
+										} elseif (!empty($datasetFABs[$path])) {
+											$datasets[$datasetFABs[$path]] = $datasetFABs[$path];
 										}
 								
 									} elseif ($type == 'slot_controls') {
@@ -762,15 +676,14 @@ function checkForChangesInYamlFiles() {
 			}
 		}
 		
-		
-		$datasets = getRowsArray('custom_datasets', 'id');
+		//Rescan the TUIX files for any datasets that have changed
 		foreach ($datasets as $datasetId) {
 			saveSystemFieldsFromTUIX($datasetId);
 		}
 		
 		
 		setSetting('yaml_files_last_changed', $time);
-		setSetting('yaml_version', hash64(setting('site_id'). $time));
+		setSetting('yaml_version', base_convert($time, 10, 36));
 	}
 }
 
@@ -792,7 +705,7 @@ function saveSystemFieldsFromTUIX($datasetId) {
 			 && is_array($tags[$dataset['extends_admin_box']]['tabs'])) {
 			$tabCount = 0;
 			foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabName => $tab) {
-				if (is_array($tab)) {
+				if (is_array($tab) && (!empty($tab['label']) || !empty($tab['dataset_label']))) {
 					++$tabCount;
 					$tabDetails = getRow('custom_dataset_tabs', true, array('dataset_id' => $datasetId, 'name' => $tabName));
 					$values = array(

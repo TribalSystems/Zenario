@@ -31,20 +31,22 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__admin_boxes__export_dataset extends module_base_class {
 	
 	 public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-	 	// TODO: Add link when GUI form builder is standard
-		//$fields['download/desc']['snippet']['html'] = adminPhrase('Only dataset fields marked to be included in exports will appear in your download. To edit dataset fields click <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item//[[dataset]]//">this link<a>.', array('dataset' => $box['key']['dataset']));
+	 	
+	 	//Copy the ids from the $box['key']['id'] variable...
+	 	$box['key']['export_ids'] = $box['key']['id'];
+	 	//...then clear $box['key']['id'] so that when the FAB is saved it does not select all of the items it exported
+	 	$box['key']['id'] = '';
+	 	
+	 	
+		$fields['download/desc']['snippet']['html'] = adminPhrase(
+			'<p>Only dataset fields marked to be included in exports will appear in your download. You can mark fields by checking the "Include in export" option in the <a href="zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item_buttons/edit_gui//[[dataset]]//" target="zenario_dataset_editor">dataset editor<a>.</p>
+			<br>
+			<p>If you\'re running any filters you will export the filtered view instead of all records.</p>'
+		, array('dataset' => $box['key']['dataset']));
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$sql = '
-			SELECT f.id
-			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
-			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
-				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
-			WHERE f.dataset_id = '.(int)$box['key']['dataset']. '
-			AND f.db_column != ""
-			AND f.include_in_export = 1
-			ORDER BY t.ord, f.ord';
+		$sql = self::getExportableDatasetFieldsSQL($box['key']['dataset']);
 		$result = sqlSelect($sql);
 		$count = sqlNumRows($result);
 		if ($count <= 0) {
@@ -52,26 +54,21 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 		}
 	}
 	
-	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+	//public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		// Get dataset fields with export property
 		$dataset = getDatasetDetails($box['key']['dataset']);
-		$sql = '
-			SELECT f.id, f.db_column, f.is_system_field, f.type
-			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
-			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
-				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
-			WHERE f.dataset_id = '.(int)$dataset['id']. '
-			AND f.db_column != ""
-			AND f.include_in_export = 1
-			ORDER BY t.ord, f.ord';
+		$sql = self::getExportableDatasetFieldsSQL($dataset['id']);
 		$result = sqlSelect($sql);
-		$datasetColumns = 
-		$systemFields = 
+		$systemFields = array();
 		$customFields = array();
+		$datasetColumns = array();
+		$datasetFields = array();
+		$rowTemplate = array();
+		$data = array();
 		$ord = 0;
 		while ($row = sqlFetchAssoc($result)) {
-			
 			// Never export encrypted passwords
 			if ($dataset['system_table'] == 'users' && !setting('plaintext_extranet_user_passwords') && $row['db_column'] == 'password') {
 				continue;
@@ -80,68 +77,63 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			if ($row['is_system_field']) {
 				$systemFields[] = $row['db_column'];
 			} else {
-				$customFields[] = 'c.' . $row['db_column'];
+				$customFields[] = $row['db_column'];
 			}
 			$datasetColumns[$row['id']] = $row['db_column'];
 			$row['ord'] = ++$ord;
 			$datasetFields[$row['db_column']] = $row;
+			$rowTemplate[$row['db_column']] = '';
 		}
 		
-		// Get system fields from dataset
-		$systemFields[] = 'id';
-		$data = array();
-		$result = getRows($dataset['system_table'], $systemFields, array());
-		while ($row = sqlFetchAssoc($result)) {
-			$indexedRow = array();
-			foreach ($row as $col => $value) {
-				if ($col == 'id') {
-					continue;
-				}
-				if ($value === NULL) {
-					$value = '';
-					if (($datasetFields[$col]['type'] == 'checkbox') || ($datasetFields[$col]['type'] == 'group')) {
-						$value = '0';
+		// Array of tables to get data from
+		$recordTables = array(
+			array(
+				'table' => $dataset['system_table'],
+				'fields' => $systemFields
+			),
+			array(
+				'table' => $dataset['table'],
+				'fields' => $customFields
+			)
+		);
+		
+		// Get data
+		foreach ($recordTables as $recordTable) {
+			if (!empty($recordTable['table'])) {
+				$IdColumn = getIdColumnOfTable($recordTable['table']);
+				$recordTable['fields'][] = $IdColumn;
+				
+				
+				$sql = '
+					SELECT ' . sqlEscape(implode(', ', $recordTable['fields'])) . '
+					FROM ' . DB_NAME_PREFIX . sqlEscape($recordTable['table']) . '
+					WHERE ' . sqlEscape($IdColumn) . ' IN (' . inEscape($box['key']['export_ids']) . ')';
+				$result = sqlSelect($sql);
+				
+				while ($row = sqlFetchAssoc($result)) {
+					
+					if (!isset($data[$row[$IdColumn]])) {
+						$data[$row[$IdColumn]] = $rowTemplate;
 					}
-				}
-				$indexedRow[$datasetFields[$col]['ord']] = $value;
-			}
-			$data[$row['id']] = $indexedRow;
-		}
-		
-		// Get custom table primary key
-		$sql = '
-			SHOW KEYS 
-			FROM ' . DB_NAME_PREFIX . $dataset['table'] . '
-			WHERE Key_name = "PRIMARY"';
-		$result = sqlSelect($sql);
-		$keysRow = sqlFetchAssoc($result);
-		$primaryKey = $keysRow['Column_name'];
-		$customFields[] = 'c.' . $primaryKey;
-		
-		// Get custom fields from dataset
-		$sql = '
-			SELECT s.id, ' . sqlEscape(implode(', ', $customFields)) . '
-			FROM ' . DB_NAME_PREFIX . $dataset['system_table'] . ' s
-			LEFT JOIN ' . DB_NAME_PREFIX . $dataset['table'] . ' c
-				ON s.id = c.' . $primaryKey . '
-		';
-		$result = sqlSelect($sql);
-		while ($row = sqlFetchAssoc($result)) {
-			$id = $row['id'];
-			if (isset($data[$id])) {
-				unset($row[$primaryKey], $row['id']);
-				foreach ($row as $col => $value) {
-					if ($value === NULL) {
-						$value = '';
-						if (($datasetFields[$col]['type'] == 'checkbox') || ($datasetFields[$col]['type'] == 'group')) {
-							$value = '0';
+					
+					foreach ($row as $col => $value) {
+						// Don't export ID column
+						if ($col == $IdColumn) {
+							continue;
 						}
+						
+						// Set value
+						$data[$row[$IdColumn]][$col] = self::formatDatasetFieldValue($value, $datasetFields[$col]);
 					}
-					$ord = $datasetFields[$col]['ord'];
-					$data[$id][$ord] = $value;
 				}
 			}
-			ksort($data[$id]);
+		}
+		
+		// Sort row values
+		foreach ($data as $recordId => $record) {
+			uksort($data[$recordId], function($a, $b) use ($datasetFields) {
+				return $datasetFields[$a]['ord'] > $datasetFields[$b]['ord'] ? 1 : -1;
+			});
 		}
 		
 		$downloadFileName = $dataset['label'].' export '.date('Y-m-d');
@@ -167,7 +159,6 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			
 			// Remove file from temp directory
 			@unlink($filename);
-			exit;
 		} else {
 			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
 			$objPHPExcel = new PHPExcel();
@@ -177,7 +168,31 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			header('Content-Disposition: attachment; filename="'.$downloadFileName.'.xls"');
 			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
 			$objWriter->save('php://output');
-			exit;
 		}
+	}
+	
+	private static function formatDatasetFieldValue($value, $datasetField) {
+		if ($value === NULL) {
+			return '';
+			if (($datasetField['type'] == 'checkbox') || ($datasetField['type'] == 'group')) {
+				return '0';
+			}
+		}
+		return $value;
+	}
+	
+	private static function getExportableDatasetFieldsSQL($datasetId) {
+		$sql = '
+			SELECT f.id, f.db_column, f.is_system_field, f.type
+			FROM '.DB_NAME_PREFIX.'custom_dataset_fields f
+			INNER JOIN '.DB_NAME_PREFIX.'custom_dataset_tabs t
+				ON (f.dataset_id = t.dataset_id) AND (f.tab_name = t.name)
+			WHERE f.dataset_id = '.(int)$datasetId. '
+			AND f.db_column != ""
+			AND f.include_in_export = 1
+			AND f.type != "textarea"
+			AND f.type != "editor"
+			ORDER BY t.ord, f.ord';
+		return $sql;
 	}
 }

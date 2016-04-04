@@ -110,7 +110,6 @@ function logUserOut() {
 	unset($_SESSION['extranetUserImpersonated']);
 	unset($_SESSION['extranetUserID_pending']);
 	unset($_SESSION['extranetUser_firstname']);
-	unset($_SESSION['extranetUserIsAnEmployee']);
 	unset($_SESSION['extranetUserSteps']);
 	$_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'] = true;
 }
@@ -315,7 +314,7 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 	$DBName = DBNAME;
 	// if not thisIsHub, return hubs screen names
 	if (!$thisIsHub) {
-		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'])) {
+		if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], arrayKey($hub, 'DBPORT'))) {
 			cms_core::$lastDB = $dbSelected;
 			cms_core::$lastDBHost = $hub['DBHOST'];
 			cms_core::$lastDBName = $hub['DBNAME'];
@@ -340,7 +339,7 @@ function getSimilarScreenNames($screenName, $thisIsHub, $hub, $satellites) {
 				&& $satellite['DBNAME'] == $DBName) {
 				continue;
 			} else {
-				if ($dbSelected = connectToDatabase($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'])) {
+				if ($dbSelected = connectToDatabase($satellite['DBHOST'], $satellite['DBNAME'], $satellite['DBUSER'], $satellite['DBPASS'], arrayKey($satellite, 'DBPORT'))) {
 					cms_core::$lastDB = $dbSelected;
 					cms_core::$lastDBHost = $satellite['DBHOST'];
 					cms_core::$lastDBName = $satellite['DBNAME'];
@@ -602,6 +601,8 @@ function setUsersPassword($userId, $password, $needsChanging = -1, $plaintext = 
 	}
 	
 	updateRow('users', $details, $userId);
+	//Adding hash
+	updateUserHash($userId);
 }
 
 function checkUsersPassword($userId, $password) {

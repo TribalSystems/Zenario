@@ -41,8 +41,7 @@ sqlQuery($sql);
 
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "threads SET
-		poster_id = 0,
-		employee_post = 0
+		poster_id = 0
 	WHERE poster_id = ". (int) $userId;
 sqlQuery($sql);
 
@@ -54,8 +53,7 @@ sqlQuery($sql);
 
 $sql = "
 	UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
-		poster_id = 0,
-		employee_post = 0
+		poster_id = 0
 	WHERE poster_id = ". (int) $userId;
 sqlQuery($sql);
 

@@ -55,4 +55,11 @@ class zenario_users__organizer__groups extends zenario_users {
 			$item['content_items'] = $data[0];
 		}
 	}
+	
+	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		if (post('action') == 'delete') {
+			exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
+			deleteDatasetField($ids);
+		}
+	}
 }

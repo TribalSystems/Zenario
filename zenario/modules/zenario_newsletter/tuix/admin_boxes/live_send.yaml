@@ -18,15 +18,15 @@ zenario_live_send:
                     pre_field_html: '<div class="zenario_fbWarning">'
                     snippet:
                         html: |
-                            Are you sure you wish to send the Newsletter "[[newsletter_name]]" to [[recipients]] Recipient(s)? Click-throughs counts will be reset.
+                            Send the newsletter "[[newsletter_name]]" to [[recipients]] recipient(s)?
                     post_field_html: '</div>'
                 admin_options:
                     type: radios
                     values:
                         myself:
-                            label: Send me a copy of the email
+                            label: Send me a copy
                         all_admins:
-                            label: Send all [n] administrators a copy of the email
+                            label: Send all [n] administrators on this site a copy
                         none:
                             label: Don't send to administrators
                     value: myself
@@ -34,4 +34,4 @@ zenario_live_send:
                     full_width: true
                     snippet:
                         html: |
-                            This newsletter will be moved to the archive when sent to recipients
+                            After it is sent, this newsletter will appear in the Archive.

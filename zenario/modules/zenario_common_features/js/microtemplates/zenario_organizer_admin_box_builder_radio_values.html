@@ -1,12 +1,15 @@
-<div class="radio_value" id="organizer_field_value_{{m.value|e}}">
+<div class="radio_value" id="organizer_field_value__{{m.name|e}}__{{m.value|e}}">
 	<input 
-		id="organizer_field_value_radio_{{m.value|e}}" 
+		id="organizer_field_value_radio__{{m.name|e}}__{{m.value|e}}" 
 		type="radio" 
 		name="{{m.name|e}}" 
 		value="{{m.value|e}}"
 		<% if (m.checked) { %>
 			checked
 		<% } %>
+		<% if (m.disabled) { %>
+			disabled
+		<% } %>
 	>
-	<label for="organizer_field_value_radio_{{m.value|e}}">{{m.label|e}}</label>
+	<label for="organizer_field_value_radio__{{m.name|e}}__{{m.value|e}}">{{m.label|e}}</label>
 </div>

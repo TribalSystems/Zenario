@@ -171,8 +171,6 @@ class zenario_forum_search extends zenario_forum {
 		$this->frameworkHead('Posts', 'Post', $this->mergeFields, $this->sections);
 		
 		if ($this->posts) {
-			require_once CMS_ROOT. 'zenario/libraries/mit/markitup/bbcode2html.inc.php';
-			
 			for ($i = ($this->page - 1) * $this->pageSize, $j = 0; $i < $this->results && $j < $this->pageSize; ++$i, ++$j) {
 				
 				//For each post within our current pagination range, look up the details of that post/thread and display that row
@@ -223,8 +221,8 @@ class zenario_forum_search extends zenario_forum {
 					$mergeFields['Post_Text'] = $mergeFields['Post_Text'][0];
 					$mergeFields['Post_Text'] = str_replace('`t', '`', str_replace('`n', "\n", $mergeFields['Post_Text']));
 					
-					//Add BBCode
-					BBCode2Html($mergeFields['Post_Text'], false, false, false, false);
+					//Check the HTML is still valid
+					$mergeFields['Post_Text'] = zenario_anonymous_comments::sanitiseHTML($mergeFields['Post_Text'], true, true);
 					
 					$this->framework('Post', $mergeFields, $sections);
 				}

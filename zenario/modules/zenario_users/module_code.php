@@ -73,16 +73,20 @@ class zenario_users extends module_base_class {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
 		}
+
 	}	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 		}
+		
+		
 	}	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		if ($c = $this->runSubClass(__FILE__)) {
 			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
 		}
+			
 	}	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($c = $this->runSubClass(__FILE__)) {
@@ -371,7 +375,7 @@ class zenario_users extends module_base_class {
 			
 			require CMS_ROOT. 'zenario_usersync_config.php';
 			
-			if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'])) {
+			if ($dbSelected = connectToDatabase($hub['DBHOST'], $hub['DBNAME'], $hub['DBUSER'], $hub['DBPASS'], arrayKey($hub, 'DBPORT'))) {
 				cms_core::$lastDB = $dbSelected;
 				cms_core::$lastDBHost = $hub['DBHOST'];
 				cms_core::$lastDBName = $hub['DBNAME'];
@@ -482,7 +486,7 @@ class zenario_users extends module_base_class {
 		$result = sqlSelect($sql);
 		
 		//Connect to the other site
-		if ($dbSelected = connectToDatabase($site['DBHOST'], $site['DBNAME'], $site['DBUSER'], $site['DBPASS'])) {
+		if ($dbSelected = connectToDatabase($site['DBHOST'], $site['DBNAME'], $site['DBUSER'], $site['DBPASS'], arrayKey($site, 'DBPORT'))) {
 			cms_core::$lastDB = $dbSelected;
 			cms_core::$lastDBHost = $site['DBHOST'];
 			cms_core::$lastDBName = $site['DBNAME'];
@@ -683,28 +687,48 @@ class zenario_users extends module_base_class {
 	}
 	
 	public static function getInactiveUserDetails($period){
-			$date = self::getInactiveDate($period);
+		$date = self::getInactiveDate($period);
 
-			if(!$date){
-				return false;
-			}
-
-			$sql = "
-				SELECT id, salutation, first_name, last_name, email
-				FROM ".DB_NAME_PREFIX."users
-				WHERE status = 'active'
-				AND last_login LIKE '%".$date."%'";
-			$result = sqlSelect($sql);
-			$users = array();
-			while ($row = sqlFetchAssoc($result)) {
-				$users[] = $row;
-			}
-			
-			if($users){
-				return $users;
-			}
+		if(!$date){
 			return false;
-	
+		}
+			
+		//Live users
+		$datasetId= setting('user_dataset_field_to_receive_emails');
+		$datasetColumnNameLiveUser = false;
+		if($datasetId){
+			$datasetDetails=getDatasetFieldDetails($datasetId);
+			if(is_array($datasetDetails)){
+				$datasetColumnNameLiveUser = $datasetDetails['db_column'];
+			}else{
+				$datasetColumnNameLiveUser = false;
+			}
+		}
+
+		$sql = "
+			SELECT u.id, u.salutation, u.first_name, u.last_name, u.email
+			FROM ".DB_NAME_PREFIX."users as u";
+			
+		if($datasetColumnNameLiveUser){
+			$sql .= "	INNER JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
+						ON ucd.user_id = u.id";
+		}
+		$sql .= " WHERE u.status = 'active' AND u.last_login LIKE '%".$date."%'";
+			
+		if($datasetColumnNameLiveUser){
+			$sql .= " AND ucd.".sqlEscape($datasetColumnNameLiveUser)." = 1";
+		}
+
+		$result = sqlSelect($sql);
+		$users = array();
+		while ($row = sqlFetchAssoc($result)) {
+			$users[] = $row;
+		}
+		
+		if($users){
+			return $users;
+		}
+		return false;
 	}
 	
 	

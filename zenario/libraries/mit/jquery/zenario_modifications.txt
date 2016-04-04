@@ -176,12 +176,6 @@ jquery-ui.slider.js
 
 
 
-css/colorbox/colorbox.css
-	Replace
-		z-index:9999
-	With
-		z-index:9999999
-
 css/jqueryui/jquery-ui.css
 	This is the "Start" theme from http://jqueryui.com/themeroller/ and http://jqueryui.com/download/
 

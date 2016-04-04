@@ -30,8 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario__social/nav/comments/panel':
 	
-		require_once CMS_ROOT. 'zenario/libraries/mit/markitup/bbcode2html.inc.php';
-		
 		foreach ($panel['items'] as $id => &$item) {
 			$item['comment_on_page'] =
 				adminPhrase(
@@ -39,8 +37,8 @@ switch ($path) {
 					array(
 						'page_title' => linkToItem($item['content_id'], $item['content_type'], $fullPath = false, $request = '', $alias = false, $autoAddImportantRequests = false, $useAliasInAdminMode = true),
 						'comment_last_edit' => formatDateTimeNicely($item['comment_last_edit'])));
-	
-			BBCode2Html($item['summary'], $enableColours = false, $enableImages = false, $enableLinks = false, $enableEmoticons = false);
+			
+			$item['summary'] = zenario_anonymous_comments::sanitiseHTML($item['summary'], true, true);
 	
 			$item['frontend_link'] = linkToItem($item['content_id'], $item['content_type'], false, 'zenario_sk_return=navigation_path#zenario_comments_start_here');
 		}

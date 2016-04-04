@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	panelTypes
 ) {
 	"use strict";
@@ -134,22 +134,30 @@ methods.showButtons = function($buttons) {
 };
 
 methods.setScroll = function($panel) {
-	methods.restoreScrollPosition($panel);
 	
 	//If there's an item selected, attempt to find it's element on the page,
 	//get where it is compared to its parent, and then scroll to it
 	var item, position, scrollTo;
 	if (item = zenarioO.getKeyId(true)) {
-		//I'm having to use setTimeout() here because the position() and offset() functions
-		//Don't seem to work properly if they are called in the same thread :(
-		setTimeout(function() {
+		
+		//I was using setTimeout() here because the position() and offset() functions didn't seem to work properly if they are called in the same thread :(
+		//Currently I'm trying without it to fix another bug, but I may have to add it back if the first bug reappears...
+		//setTimeout(function() {
+			
 			if (position = $(get('organizer_item_' + item)).position()) {
 				scrollTo = Math.max(0, position.top + $panel.scrollTop() - Math.floor($panel.height() / 4));
-			
-				//$panel.scrollTop(scrollTo);
-				$panel.stop().animate({scrollTop: scrollTo}, 250);
+				
+				//Snap the view instantly to the item
+				$panel.scrollTop(scrollTo).trigger('scroll');
+				
+				//This would scroll there more slowly
+				//$panel.stop().animate({scrollTop: scrollTo}, 250);
 			}
-		}, 1);
+		
+		//}, 0);
+	
+	} else {
+		methods.restoreScrollPosition($panel);
 	}
 };
 

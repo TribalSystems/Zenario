@@ -931,4 +931,28 @@ class zenario_crm_form_integration extends module_base_class {
 			}
 		}
 	}
+	
+	public static function deleteFieldCRMData($fieldId) {
+		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', array('form_field_id' => $fieldId));
+		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', array('form_field_id' => $fieldId));
+	}
+	
+	// Signal when a form is deleted
+	public static function eventFormDeleted($formId) {
+		// Get fields from form
+		$fields = getRows('user_form_fields', array('id'), array('user_form_id' => $formId));
+		while ($field = sqlFetchAssoc($fields)) {
+			self::deleteFieldCRMData($field['id']);
+		}
+	}
+	
+	// Signal when a form field is deleted
+	public static function eventFormFieldDeleted($fieldId) {
+		self::deleteFieldCRMData($fieldId);
+	}
+	
+	// Signal when an individual form field value is deleted
+	public static function eventFormFieldValueDeleted($valueId) {
+		deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_field_values', array('form_field_value_unlinked_id' => $valueId));
+	}
 }

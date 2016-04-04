@@ -1,6 +1,4 @@
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_scheduled_task_manager__tasks,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_scheduled_task_manager__task,
-#organizer_rightColumn #organizer_panelTitle div.zenario_scheduled_task_manager__task {
+.organizer_item_image.zenario_scheduled_task_manager__task {
 	background:  1px 2px no-repeat;
 	background-image: url('images/scheduled-task-manager-list.png');
 }

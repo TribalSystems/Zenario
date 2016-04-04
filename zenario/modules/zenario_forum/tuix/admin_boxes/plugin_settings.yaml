@@ -6,19 +6,19 @@ plugin_settings:
             label: Display
             fields:
                 description:
-                    ord: "0"
-                    full_width: Yes
+                    ord: 0
+                    full_width: true
                     snippet:
                         html: >
-                            These Settings control how visitors view and interact with
-                            the Forum on this Content Item.
+                            These settings control how visitors view and interact with
+                            the forum on this content item.
                 show_user_avatars:
                     plugin_setting:
                         name: show_user_avatars
-                    label: 'Show User avatars:'
+                    label: 'Show user avatars'
                     type: checkbox
-                    value: "1"
-                    format_onchange: Yes
+                    value: 1
+                    format_onchange: true
                 avatar_width:
                     plugin_setting:
                         name: avatar_width
@@ -27,55 +27,49 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 avatar_height:
                     plugin_setting:
                         name: avatar_height
-                    label: 'Maximum Height:'
+                    label: 'Maximum height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a Height.
                         numeric: The Height must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     note_below: >
                         Images may be scaled down maintaining aspect ratio, but will
                         never be scaled up.
-                show_user_job_titles:
-                    plugin_setting:
-                        name: show_user_job_titles
-                    label: 'Show the Public Groups that each User is in:'
-                    type: checkbox
-                    value: ""
                 show_user_join_dates:
                     plugin_setting:
                         name: show_user_join_dates
-                    label: 'Show User join dates:'
+                    label: 'Show user join dates'
                     type: checkbox
                     value: ""
                 show_user_post_counts:
                     plugin_setting:
                         name: show_user_post_counts
-                    label: 'Show User post counts:'
+                    label: 'Show user post counts'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 show_user_online_status:
                     plugin_setting:
                         name: show_user_online_status
-                    label: 'Show User online status:'
+                    label: 'Show user online status'
                     type: checkbox
                     value: ""
                     note_below: |
-                        If a User has looked at a Comments Plugin or a Forum Plugin within the last 10 minutes,
-                                                    they will be classified as &quot;online&quot;.
-                                                    
-                                                    As a saved copy of this page would quickly become inaccurate,
-                                                    enabling this option will disable Plugin and Page Caching.
+                        If a user has looked at a comments plugin or a forum plugin within the last 10 minutes,
+                        they will be classified as &quot;online&quot;.
+                        
+                        As a saved copy of this page would quickly become inaccurate,
+                        enabling this option will disable plugin and page caching.
                 date_format:
                     plugin_setting:
                         name: date_format
@@ -92,9 +86,9 @@ plugin_settings:
                 allow_uploads:
                     plugin_setting:
                         name: allow_uploads
-                    label: 'Allow uploads:'
+                    label: 'Allow uploads'
                     type: checkbox
-                    value: "0"
+                    value: 0
                 image_thumbnail_width:
                     plugin_setting:
                         name: image_thumbnail_width
@@ -103,8 +97,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     note_below: >
@@ -118,15 +112,15 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a height.
                         numeric: The height must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     note_below: >
                         Images may be scaled down maintaining aspect ratio, but will
                         never be scaled up.
         order:
-            label: Order and Pagination
+            label: Order and pagination
             fields:
                 order:
                     plugin_setting:
@@ -150,16 +144,16 @@ plugin_settings:
                     type: select
                     values:
                         10:
-                            label: "10"
+                            label: 10
                         12:
-                            label: "12"
+                            label: 12
                         15:
-                            label: "15"
+                            label: 15
                         20:
-                            label: "20"
+                            label: 20
                         30:
-                            label: "30"
-                    value: "12"
+                            label: 30
+                    value: 12
                 pagination_style_threads:
                     plugin_setting:
                         name: pagination_style_threads
@@ -173,18 +167,18 @@ plugin_settings:
                     type: select
                     values:
                         5:
-                            label: "5"
+                            label: 5
                         10:
-                            label: "10"
+                            label: 10
                         12:
-                            label: "12"
+                            label: 12
                         15:
-                            label: "15"
+                            label: 15
                         20:
-                            label: "20"
+                            label: 20
                         50:
-                            label: "50"
-                    value: "12"
+                            label: 50
+                    value: 12
                 pagination_style_posts:
                     plugin_setting:
                         name: pagination_style_posts
@@ -194,47 +188,42 @@ plugin_settings:
         posting:
             label: Editing
             fields:
-                enable_colours:
-                    plugin_setting:
-                        name: enable_colours
-                    label: 'Allow colored text:'
-                    type: checkbox
-                    value: ""
                 enable_images:
                     plugin_setting:
                         name: enable_images
-                    label: 'Allow images:'
+                    label: 'Allow images in posts'
                     type: checkbox
-                    value: "1"
-                    format_onchange: Yes
-                enable_emoticons:
-                    plugin_setting:
-                        name: enable_emoticons
-                    label: 'Allow emoticons:'
-                    type: checkbox
-                    value: ""
+                    value: 1
+                    side_note: |
+                        This is not retro-active.
+                        If a post contains an image and you uncheck this checkbox,
+                        the image will not be removed until the post is next edited and saved.                        
                 enable_links:
                     plugin_setting:
                         name: enable_links
-                    label: 'Allow links:'
+                    label: 'Allow links in posts'
                     type: checkbox
-                    value: "1"
+                    value: 1
+                    side_note: |
+                        This is not retro-active.
+                        If a post contains a link and you uncheck this checkbox,
+                        the link will not be removed until the post is next edited and saved.                        
                 enable_reply_with_quote:
                     plugin_setting:
                         name: enable_reply_with_quote
-                    label: 'Enable replying with quotes:'
+                    label: 'Enable replying with quotes'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 allow_user_edit_own_post:
                     plugin_setting:
                         name: allow_user_edit_own_post
-                    label: 'Allow posters to edit their own posts:'
+                    label: 'Allow posters to edit their own posts'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 allow_user_delete_own_post:
                     plugin_setting:
                         name: allow_user_delete_own_post
-                    label: 'Allow posters to delete their own Replies:'
+                    label: 'Allow posters to delete their own replies'
                     type: checkbox
                     value: ""
                     note_below: >
@@ -243,115 +232,110 @@ plugin_settings:
                 enable_new_thread_restrictions:
                     plugin_setting:
                         name: enable_new_thread_restrictions
-                    label: 'Restrict adding new threads to a Group of Extranet Users:'
+                    label: 'Restrict adding new threads to a group of extranet users'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
-                    note_below: Note that Moderators will always be able to add new threads.
+                    format_onchange: true
+                    note_below: Note that moderators will always be able to add new threads.
                 restrict_new_thread_to_group:
                     plugin_setting:
                         name: restrict_new_thread_to_group
                     label: 'Group:'
                     type: select
                     #pick_items:
-                        #path: zenario__users/panels/users/groups
-                        #target_path: zenario__users/panels/users/groups
-                        #min_path: zenario__users/panels/users/groups
-                        #max_path: zenario__users/panels/users/groups
-                        #disallow_refiners_looping_on_min_path: Yes
+                        #path: zenario__users/panels/groups
+                        #target_path: zenario__users/panels/groups
+                        #min_path: zenario__users/panels/groups
+                        #max_path: zenario__users/panels/groups
+                        #disallow_refiners_looping_on_min_path: true
                         #one_to_one_choose_phrase: Choose Group
                         #select_phrase: Select Group...
                         #nothing_selected_phrase: No Group Selected
-                        #hide_remove_button: Yes
+                        #hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a Group of Users who can add a new thread.
+                        required_if_not_hidden: Please select a group of users who can add a new thread.
                     value: ""
                 enable_posting_restrictions:
                     plugin_setting:
                         name: enable_posting_restrictions
-                    label: 'Restrict posting replies to a Group of Extranet Users:'
+                    label: 'Restrict posting replies to a group of extranet users'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
-                    note_below: Note that Moderators will always be able to post replies.
+                    format_onchange: true
+                    note_below: Note that moderators will always be able to post replies.
                 restrict_posting_to_group:
                     plugin_setting:
                         name: restrict_posting_to_group
                     label: 'Group:'
                     type: select
                     #pick_items:
-                    #    path: zenario__users/panels/users/groups
-                    #    target_path: zenario__users/panels/users/groups
-                    #    min_path: zenario__users/panels/users/groups
-                    #    max_path: zenario__users/panels/users/groups
-                    #    disallow_refiners_looping_on_min_path: Yes
+                    #    path: zenario__users/panels/groups
+                    #    target_path: zenario__users/panels/groups
+                    #    min_path: zenario__users/panels/groups
+                    #    max_path: zenario__users/panels/groups
+                    #    disallow_refiners_looping_on_min_path: true
                     #    one_to_one_choose_phrase: Choose Group
                     #    select_phrase: Select Group...
                     #    nothing_selected_phrase: No Group Selected
-                    #    hide_remove_button: Yes
+                    #    hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a Group of Users who can post replies.
+                        required_if_not_hidden: Please select a group of users who can post replies.
                     value: ""
-                mark_employee_posts:
-                    plugin_setting:
-                        name: mark_employee_posts
-                    label: 'Style employee created threads and messages differently:'
-                    type: checkbox
-                    value: "1"
-                    note_below: 'Employees must be members of an Extranet Group with the &quot;Members are Employees&quot; option checked.'
         moderation:
             label: Moderation
             fields:
                 description_moderation:
-                    full_width: Yes
+                    full_width: true
                     snippet:
-                        html: "You can declare a Group of Extranet Users to be a Moderation Group. This will enable them to edit and delete other Users' comments."
+                        html: |
+                            You can declare a group of extranet users to be moderators.
+                            This will enable them to edit and delete other users' comments.
                 enable_extranet_moderators:
                     plugin_setting:
                         name: enable_extranet_moderators
-                    label: 'Declare a Moderation Group:'
+                    label: 'Declare a moderation group'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
-                    note_below: 'Administrators with the &quot;Moderate User Comments&quot; Permission will always be able to moderate.'
+                    format_onchange: true
+                    note_below: 'Administrators with the &quot;Moderate user comments&quot; permission will always be able to moderate.'
                 moderators:
                     plugin_setting:
                         name: moderators
-                    label: 'Moderation Group:'
+                    label: 'Moderation group:'
                     type: select
                     #pick_items:
-                    #    path: zenario__users/panels/users/groups
-                    #    target_path: zenario__users/panels/users/groups
-                    #    min_path: zenario__users/panels/users/groups
-                    #    max_path: zenario__users/panels/users/groups
-                    #    disallow_refiners_looping_on_min_path: Yes
+                    #    path: zenario__users/panels/groups
+                    #    target_path: zenario__users/panels/groups
+                    #    min_path: zenario__users/panels/groups
+                    #    max_path: zenario__users/panels/groups
+                    #    disallow_refiners_looping_on_min_path: true
                     #    one_to_one_choose_phrase: Choose Group
                     #    select_phrase: Select Group...
                     #    nothing_selected_phrase: No Group Selected
-                    #    hide_remove_button: Yes
+                    #    hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a Group.
+                        required_if_not_hidden: Please select a group.
                     value: ""
                 separator:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         separator:
-                            exists: Yes
+                            exists: true
                 description_reporting:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: You can enable reporting of abuse.
                 enable_report_a_post:
                     plugin_setting:
                         name: enable_report_a_post
-                    label: 'Enable reporting of abuse:'
+                    label: 'Enable reporting of abuse'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 enable_anonymous_report_a_post:
                     plugin_setting:
                         name: enable_anonymous_report_a_post
-                    label: 'Allow anonymous reporting:'
+                    label: 'Allow anonymous reporting'
                     type: checkbox
                     value: ""
                     note_below: If enabled, any visitor can report abuse.
@@ -360,31 +344,28 @@ plugin_settings:
                         name: email_template_for_reports
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_forum__post_report
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 email_address_for_reports:
                     plugin_setting:
                         name: email_address_for_reports
                         is_email_address: true
-                    label: 'Email Address that reports will be sent to:'
+                    label: 'Email address that reports will be sent to:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: Please enter an email address.
@@ -396,7 +377,7 @@ plugin_settings:
             label: Notification
             fields:
                 description_notification:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: >
                             If set, the CMS will send an email notification whenever a
@@ -406,17 +387,17 @@ plugin_settings:
                 send_notification_email:
                     plugin_setting:
                         name: send_notification_email
-                    label: 'Send an email notification to an Administrator:'
+                    label: 'Send an email notification to an administrator'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 notification_email_address:
                     plugin_setting:
                         name: notification_email_address
                         is_email_address: true
-                    label: 'Email Address:'
+                    label: 'Email address:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: Please enter an email address.
@@ -429,114 +410,102 @@ plugin_settings:
                         name: new_thread_notification_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template (for new threads):'
+                    label: 'Email template (for new threads):'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_forum__to_admin_new_thread_notification_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 post_notification_email_template:
                     plugin_setting:
                         name: post_notification_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template (for new posts):'
+                    label: 'Email template (for new posts):'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_forum__to_admin_post_notification_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 separator:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         separator:
-                            exists: Yes
+                            exists: true
                 description_subs:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: This allows Extranet Users to sign up for notifications.
                 enable_forum_subs:
                     plugin_setting:
                         name: enable_forum_subs
-                    label: 'Enable Subscription to Forum:'
+                    label: 'Enable subscription to forum'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 new_thread_subs_email_template:
                     plugin_setting:
                         name: new_thread_subs_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template (for new threads):'
+                    label: 'Email template (for new threads):'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template for new threads.
+                        required_if_not_hidden: Please select an email template for new threads.
                     value: zenario_forum__new_thread_subs_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 enable_thread_subs:
                     plugin_setting:
                         name: enable_thread_subs
-                    label: 'Enable subscription to threads:'
+                    label: 'Enable subscription to threads'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 post_subs_email_template:
                     plugin_setting:
                         name: post_subs_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template (for new posts):'
+                    label: 'Email template (for new posts):'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template for new posts.
+                        required_if_not_hidden: Please select an email template for new posts.
                     value: zenario_forum__post_subs_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
     module_class_name: zenario_forum

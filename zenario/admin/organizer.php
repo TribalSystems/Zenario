@@ -38,11 +38,9 @@ if (!checkPriv()) {
 }
 
 
-checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
-
 $prefix = '../';
 CMSWritePageHead($prefix, 'organizer');
+$v = zenarioCodeVersion();
 
 
 echo '</head>';
@@ -90,30 +88,7 @@ if (!empty($_GET['openedInIframe'])) {
 			<a '. adminLogoutOnclick(). '
 				title="'. adminPhrase('Logout'). '"></a>
 		</div>
-		<div
-			class="zenario_admin_name top_right_button"
-			data-step="3" data-position="down" data-intro="<p><strong>Administrator</strong></p><p>This area displays the details of the user logged in.</p>"
-		>
-			<span>'. htmlspecialchars(formatAdminName()). '</span>
-			<ul>
-				<li>
-					<a onclick="zenarioA.openProfile(); return false;">
-						<span>'. adminPhrase('View profile'). '</span>
-					</a>
-				</li>';
-	
-	if (!session('admin_global_id')) {
-		$topRightHTML .= '
-				<li>
-					<a onclick="zenarioO.changePassword(); return false;">
-						<span>'. adminPhrase('Change password'). '</span>
-					</a>
-				</li>';
-	}
-	
-	$topRightHTML .= '
-			</ul>
-		</div>';
+		<div id="organizer_top_right_buttons"></div>';
 }
 
 

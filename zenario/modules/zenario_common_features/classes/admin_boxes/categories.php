@@ -30,35 +30,25 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__admin_boxes__categories extends module_base_class {
 	
-	protected function fillFieldValues(&$values, &$rec){
-		foreach($rec as $k => $v){
-			if (isset($values[$k])) {
-				$values[$k] = $v;
-			}
-		}
-	}
-	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		if ($id = arrayKey($box, 'key', 'id')) {
-			$record = getRow('categories', true, $id);
+		if ($box['key']['id']) {
+			$record = getRow('categories', true, $box['key']['id']);
 			$box['key']['parent_id'] = $record['parent_id'];
-			$this->fillFieldValues($values, $record);
+			$values['name'] = $record['name'];
+			$values['public'] = $record['public'];
 			
-			$box['title'] = adminPhrase('Editing the category "[[name]]"', $record);
 		} else {
-			$box['title'] = adminPhrase('Creating a category');
 			$box['key']['parent_id'] = request('refiner__parent_category');
 		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$catId = arrayKey($box, 'key', 'id');
 	
 		if(isset($values['name']) && !$values['name']) {
-			$box['tabs']['details']['errors'][] = adminPhrase('_MSG_ENTER_ALL_FIELDS');
+			$box['tabs']['details']['errors'][] = adminPhrase('Please enter a name');
 		}
-		if (isset($values['name']) && checkIfCategoryExists($values['name'], $catId, $box['key']['parent_id'])) {
-			$box['tabs']['details']['errors'][] = adminPhrase('_MSG_CATEGORY_ALREADY_EXISTS', array('name' => htmlspecialchars($values['name'])));
+		if (isset($values['name']) && checkIfCategoryExists($values['name'], $box['key']['id'], $box['key']['parent_id'])) {
+			$box['tabs']['details']['errors'][] = adminPhrase('A category called "[[name]]" already exists.', array('name' => htmlspecialchars($values['name'])));
 		}
 	}
 	
@@ -66,14 +56,11 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 		
 		$row = array('name' => $values['name'], 'public' => $values['public']);
 		
-		if ($box['key']['id']) {
-			updateRow('categories', $row, $box['key']['id']);
-		} else {
+		if (!empty($box['key']['parent_id'])) {
 			$row['parent_id'] = $box['key']['parent_id'];
-			$box['key']['id'] = insertRow('categories', $row);
 		}
 		
-		
+		$box['key']['id'] = setRow('categories', $row, $box['key']['id']);
 		
 		if ($values['public']) {
 			foreach (getLanguages() as $lang) {

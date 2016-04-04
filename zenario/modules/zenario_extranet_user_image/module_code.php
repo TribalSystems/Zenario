@@ -57,7 +57,7 @@ class zenario_extranet_user_image extends module_base_class {
 				if ($image[0] >= $minWidth && $image[1] >= $minHeight) {
 					//Remove the User's old image, if they had one
 					$this->removeUserImage();
-					if ($imageId = addFileToDatabase('user', $location, $_FILES['extranet_upload_image']['name'], true)) {
+					if ($imageId = addFileToDatabase('user', $location, rawurldecode($_FILES['extranet_upload_image']['name']), true)) {
 						updateRow('users', array('image_id' => $imageId), session('extranetUserID'));
 					}
 				} else {

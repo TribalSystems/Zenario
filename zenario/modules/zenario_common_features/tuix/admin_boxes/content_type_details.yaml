@@ -1,35 +1,37 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 zenario_content_type_details:
-    priv: _PRIV_EDIT_CONTENT_TYPE
     key:
         id: ""
-    title: Content Type Settings
-    hide_tab_bar: Yes
+        opened_from_site_settings_panel: false
+    identifier:
+        label: Content type
+    hide_tab_bar: true
     tabs:
         details:
             edit_mode:
-                enabled: Yes
+                priv: _PRIV_EDIT_CONTENT_TYPE
+                enabled: true
             fields:
                 module_id:
                     label: 'Module:'
-                    read_only: Yes
+                    read_only: true
                     pick_items:
                         path: zenario__modules/panels/modules
                         target_path: zenario__modules/panels/modules
                         min_path: zenario__modules/panels/modules
                         max_path: zenario__modules/panels/modules
-                        disallow_refiners_looping_on_min_path: Yes
-                content_type_id:
-                    label: 'Content Type Id:'
-                    type: text
-                    read_only: Yes
+                        disallow_refiners_looping_on_min_path: true
                 content_type_name_en:
-                    label: 'Content Description:'
+                    label: 'Name (singular):'
                     type: text
                     maxlength: "255"
                     validation:
                         required: Please enter a name.
+                content_type_plural_en:
+                    label: 'Name (plural):'
+                    type: text
+                    maxlength: "255"
                 default_layout_id:
                     label: 'Default Layout:'
                     pick_items:
@@ -37,13 +39,14 @@ zenario_content_type_details:
                         target_path: zenario__layouts/panels/layouts
                         min_path: zenario__layouts/panels/layouts
                         max_path: zenario__layouts/panels/layouts
-                        disallow_refiners_looping_on_min_path: Yes
+                        disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose Layout
                         select_phrase: Select Layout...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                 enable_categories:
                     label: 'Support for Categories'
                     type: radios
+                    value: 0
                     values:
                         enabled:
                             ord: 1
@@ -116,7 +119,7 @@ zenario_content_type_details:
                         hidden:
                             ord: "3"
                             label: Hidden
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 enable_summary_auto_update:
                     label: 'Enable auto-update of Summaries:'
                     type: checkbox

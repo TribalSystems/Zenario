@@ -226,7 +226,6 @@ zenario_slideshow_2.highlightSlide = function(slideId) {
 // Save data entered for current slide when viewing different slide
 zenario_slideshow_2.tempSaveData = function(slideId) {
 	if (slideId && this.data.slides[slideId]) {
-		console.log(this.data.slides[slideId]);
 		// Get form data
 		var data = new Array;
 		serial = $('#zenario_slide_settings_form').serializeArray();
@@ -256,7 +255,6 @@ zenario_slideshow_2.tempSaveData = function(slideId) {
 				this.data.slides[slideId][name] = value;
 			}
 		}
-		console.log(this.data.slides[slideId]);
 	}
 };
 
@@ -538,7 +536,7 @@ zenario_slideshow_2.organizerPickUserCharacteristicCallback = function(path, key
 };
 
 zenario_slideshow_2.pickContentItemLinkFromOrganizer = function() {
-	var path = 'zenario__content/panels/content_types';
+	var path = 'zenario__content/panels/content';
 	if ($("#zenario_content_item_id").val()) {
 		path = 'zenario__content/panels/content//'+$("#zenario_content_item_id").val();
 	}
@@ -547,7 +545,7 @@ zenario_slideshow_2.pickContentItemLinkFromOrganizer = function() {
 		'zenario_slideshow_2', 'organizerPickContentItemLinkCallback', false,
 		path, 
 		'zenario__content/panels/content',
-		'zenario__content/panels/content_types', 
+		'zenario__content/panels/content', 
 		false, 
 		true);
 };

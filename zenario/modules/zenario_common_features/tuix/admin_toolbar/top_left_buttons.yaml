@@ -19,7 +19,7 @@ sections:
                 parent: drop_down
                 css_class: zenario_at__goto_content_items
                 label: Go to Content items panel
-                navigation_path: zenario__content/panels/content_types
+                navigation_path: zenario__content/panels/content/refiners/content_type//html//
             goto_modules_panel:
                 ord: 30
                 parent: drop_down

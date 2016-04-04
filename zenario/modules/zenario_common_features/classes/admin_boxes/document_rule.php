@@ -65,7 +65,8 @@ class zenario_common_features__admin_boxes__document_rule extends module_base_cl
 		}
 		
 		//($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false)
-		$fields['details/field_id']['values'] = listCustomFields('documents', false, false, true, true);
+		$fields['details/field_id']['values'] = listCustomFields('documents', false, array('!1' => 'dataset_select', '!2' => 'dataset_picker'), true, true);
+		//($dataset, $flat = true, $filter = false, $customOnly = true, $useOptGroups = false, $hideEmptyOptGroupParents = false)
 		$fields['details/folder_id']['values'] = generateDocumentFolderSelectList();
 	}
 	

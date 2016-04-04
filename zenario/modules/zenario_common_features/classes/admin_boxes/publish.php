@@ -45,17 +45,16 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 		}
 		
 		if ($count == 1) {
-			$box['tabs']['publish']['fields']['desc']['snippet']['html'] = 
-				adminPhrase('Are you sure you wish to publish the content item &quot;[[tag]]&quot;?', array('tag' => htmlspecialchars(formatTag($box['key']['cID'], $box['key']['cType']))));
+			$box['tabs']['publish']['notices']['are_you_sure']['message'] = 
+				adminPhrase('Are you sure you wish to publish the content item "[[tag]]"?', array('tag' => formatTag($box['key']['cID'], $box['key']['cType'])));
 		} else {
-			$box['tabs']['publish']['fields']['desc']['snippet']['html'] = 
+			$box['tabs']['publish']['notices']['are_you_sure']['message'] = 
 				adminPhrase('Are you sure you wish to publish the [[count]] selected content items?', array('count' => $count));
 		}
 		
-		$status = getModuleStatusByClassName('zenario_scheduled_task_manager');
-		if ($status != 'module_running') {
-			$fields['publish/publish_options']['hidden'] = true;
-		} else {
+		$clash = static::checkForClashingPublicationDates($box['key']['id']);
+		
+		if (inc('zenario_scheduled_task_manager')) {
 			$allJobsEnabled = setting('jobs_enabled');
 			$scheduledPublishingEnabled = getRow('jobs', 'enabled', array('job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features'));
 			if (!($allJobsEnabled && $scheduledPublishingEnabled)) {
@@ -71,6 +70,23 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 			} else {
 				$values['publish/publish_date'] = date('Y-m-d');
 			}
+			
+			if ($clash) {
+				$values['publish/publish_options'] = 'schedule';
+				$fields['publish/publish_options']['values']['immediately']['disabled'] = true;
+				$fields['publish/publish_options']['values']['immediately']['side_note'] = adminPhrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
+				
+				$values['publish/publish_date'] = $clash['publication_date'];
+				$values['publish/publish_hours'] = 7;
+			}
+		
+		} else {
+			$fields['publish/publish_options']['hidden'] = true;
+			
+			if ($clash) {
+				echo adminPhrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
+				exit;
+			}
 		}
 		
 	}
@@ -82,25 +98,68 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 			(!($values['publish/publish_options'] == 'schedule')
 			|| $fields['publish/publish_options']['hidden']);
 		$box['max_height'] = (($values['publish/publish_options'] == 'schedule') ? 250 : 150);
-		
 	}
+	
+	protected static function checkForClashingPublicationDates($tagIds, $date = false) {
+		$sql = "
+			SELECT DATE(v.publication_date) AS publication_date, c.id, c.type
+			FROM ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
+			   ON v.id = c.id
+			  AND v.type = c.type
+			  AND v.version = c.admin_version
+			WHERE c.tag_id IN (". inEscape($tagIds, 'sql'). ")
+			  AND v.publication_date IS NOT NULL
+			  AND v.publication_date > ";
+		
+		if ($date) {
+			$sql .= "'". sqlEscape($date). "'";
+		} else {
+			$sql .= "DATE(NOW())";
+		}
+		
+		$sql .= "
+			ORDER BY publication_date DESC
+			LIMIT 1";
+		
+		if (($result = sqlQuery($sql)) && ($clash = sqlFetchAssoc($result))) {
+			
+			$clash['tag'] = formatTag($clash['id'], $clash['type']);
+			$clash['date'] = formatDateNicely($clash['publication_date'], 'vis_date_format_short');
+			return $clash;
+		
+		} else {
+			return false;
+		}
+	}
+		
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		// Make sure chosen time is not in the past
 		if ($values['publish/publish_options'] == 'schedule') {
-			if (!empty($values['publish/publish_date'])) {
+			if (empty($values['publish/publish_date'])) {
+				$box['tabs']['publish']['errors'][] = adminPhrase('Please enter a date.');
+			
+			} else {
 				$now = strtotime('now');
 				$scheduledDate = strtotime($values['publish/publish_date'].' '. $values['publish/publish_hours'].':'.$values['publish/publish_mins']);
-				if ($now < $scheduledDate) {
-					return;
+				if ($scheduledDate < $now) {
+					$box['tabs']['publish']['errors'][] = adminPhrase('The scheduled publishing time cannot be in the past.');
 				} else {
-					$box['tabs']['publish']['errors'][] = 'The scheduled publishing time cannot be in the past.';
+					
+					if ($clash = static::checkForClashingPublicationDates($box['key']['id'], $values['publish/publish_date'])) {
+						$box['tabs']['publish']['errors']['before'] =
+							adminPhrase('You cannot schedule the publishing of a content item before its release date. "[[tag]]" has a release date of [[date]].', $clash);
+					}
 				}
-			} else {
-				$box['tabs']['publish']['errors'][] = 'Please enter a date.';
 			}
 			
+		} else {
+			if ($clash = static::checkForClashingPublicationDates($box['key']['id'])) {
+				$box['tabs']['publish']['errors']['before'] =
+					adminPhrase('You cannot publish a content item before its release date. "[[tag]]" has a release date of [[date]].');
+			}
 		}
 		
 	}

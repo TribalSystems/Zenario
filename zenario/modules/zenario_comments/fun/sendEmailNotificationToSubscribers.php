@@ -46,8 +46,8 @@ $poster = getUserDetails($comment['poster_id']);
 $formFields = array(
 	'cms_url' => absCMSDirURL(),
 	'link' => linkToItem($comment['content_id'], $comment['content_type'], true, '', false, false, true),
-	'message' => htmlspecialchars($comment['message_text']),
-	'page_title' => htmlspecialchars(getItemTitle($comment['content_id'], $comment['content_type'])),
+	'message' => $comment['message_text'],
+	'page_title' => getItemTitle($comment['content_id'], $comment['content_type']),
 	'poster_screen_name' => '');
 
 if (setting('user_use_screen_name')) {
@@ -99,7 +99,10 @@ if ($newPost
 			zenario_email_template_manager::sendEmailsUsingTemplate(
 				$row['email'],
 				$subscriptionsConfig['comment_subs_email_template'],
-				$formFields);
+				$formFields,
+				array(),
+				array(),
+				array('message' => true));
 			
 			updateRow(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',

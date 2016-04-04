@@ -86,11 +86,21 @@ if (isset($_GET['og'])
 }
 
 
-//Convert a base 16 checksum to base 64, so any old links still work
-if ($checksum
- && strlen($checksum) == 32
- && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
-	$checksum = base16To64($checksum);
+$checksumCol = 'checksum';
+if ($checksum) {
+	$slc = strlen($checksum);
+	
+	//A while ago we used to use base 16 checksums.
+	//Convert any of these to base 64, so any old links still work
+	if ($slc == 32 && preg_match('/[^ABCDEFabcdef0-9]/', $checksum) === 0) {
+		$checksum = base16To64($checksum);
+	
+	//Watch out for the short checksums appearing in the URL.
+	//The full checksums weigh in at about 21-22 characters long,
+	//whereas the short checksums are around 5 characters or longer.
+	} elseif ($slc < 20) {
+		$checksumCol = 'short_checksum';
+	}
 }
 
 
@@ -258,7 +268,7 @@ if ($getUploadedFileInCacheDir) {
 			   ON v.id = c.id
 			  AND v.type = c.type
 			  AND v.version = ". (checkPriv()? "c.admin_version" : "c.visitor_version"). "
-			WHERE f.checksum = '". sqlEscape($checksum). "'
+			WHERE f.". $checksumCol. " = '". sqlEscape($checksum). "'
 			  AND f.`usage` = 'content'";
 
 		} else {
@@ -339,7 +349,7 @@ if ($getUploadedFileInCacheDir) {
 
 		if ($checksum) {
 			$sql .= "
-		  AND checksum = '". sqlEscape($checksum). "'";
+		  AND ". $checksumCol. " = '". sqlEscape($checksum). "'";
 		}
 	}
 

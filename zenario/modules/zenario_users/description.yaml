@@ -28,7 +28,7 @@ signals:
 		static: Yes
 
 jobs:
-	job:
+	-
 		name: jobSyncUsers
 		static: Yes
 		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
@@ -39,7 +39,7 @@ jobs:
 		log_on_no_action: false
 		email_on_action: false
 		email_on_no_action: false
-	job:
+	-
 		name: jobRemoveInactivePendingUsers
 		static: true
 		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec
@@ -50,7 +50,7 @@ jobs:
 		log_on_no_action: false
 		email_on_action: true
 		email_on_no_action: false
-	job:
+	-
 		name: jobSendInactiveUserEmail
 		static: true
 		months: jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec

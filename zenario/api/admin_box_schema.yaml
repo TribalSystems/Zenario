@@ -82,6 +82,20 @@ additionalProperties:
             description: >
                 The title for the Admin Box
                 If you do not specify this property the title bar will be hidden from view.
+        
+        title_for_existing_records:
+            type: string
+            description: >
+                If you set this property, it will be used instead of the title when editing an existing record.
+                
+                (The toolkit will consider that you are editing an existing record if the $box['key']['id']
+                 variable is set.)
+                
+                You can also use merge fields, e.g.: Editing the animal "[[details/name]]".
+                
+                
+                This works from version 7.2 onwards.
+        
         key:
             type: object
             properties:
@@ -103,6 +117,44 @@ additionalProperties:
                     A variable or meta-information that you define about this Admin Box.
             description: >
                 The key of an Admin Box lets you receive and/or store meta-information and variables.
+        
+        identifier:
+            type: object
+            properties:
+                css_class:
+                    type: string
+                    description: >
+                        A CSS class name, which should be used to define an icon.
+                label: 
+                    type: string
+                    description: >
+                        You can use this to set a label next to the id.
+                value:
+                    type: *stringy
+                    description: >
+                        The value of the id to show.
+                        
+                        Defaults to the $box['key']['id'] variable if not set.
+                    default: (Defaults to the $box['key']['id'] variable)
+            description: >
+                This adds a green box at the top left with the current id.
+                
+                
+                This works from version 7.2 onwards.
+        
+        configure:
+            type: object
+            properties:
+                link:
+                    type: string
+                    description: >
+                        A href for the link.
+                tooltip:
+                    type: string
+                    description: >
+                        A tooltip for the link.
+            description: >
+                This adds a link at the bottom left, which will be styled as a cogwheel.
         
         tab:
             type: *stringy
@@ -594,11 +646,10 @@ additionalProperties:
                                         accept:
                                             type: string
                                             description: >
-                                                The types of file(s) to accept from a file upload (e.g.
-                                                audio/*
-                                                video/*
-                                                image/*
-                                                MIME_type)
+                                                A list of file extensions or mime-types to accept, e.g.:
+                                                image/*,image/jpeg,.jpg
+                                                
+                                                Defaults to the extensions property if not set.
                                         extensions:
                                             type: object
                                             additionalProperties:
@@ -606,9 +657,10 @@ additionalProperties:
                                                 description: >
                                                     An extension of file to accept
                                             description: >
-                                                A list of extensions or types of file to accept from Dropbox.
+                                                A list of file extensions to accept from Dropbox, e.g.:
+                                                .gif,.jpg,.png
                                                 
-                                                See https://www.dropbox.com/developers/dropins/chooser/js for more information.
+                                                Defaults to the accept property if not set.
                                         
                                         multi:
                                             type: boolean
@@ -657,14 +709,12 @@ additionalProperties:
                                                 navigation path you cannot leave the min_path and target_path properties unset.
                                         target_path:
                                             type: string
-                                            default: (defaults to the path property)
                                             description: >
                                                 The tag path of the panel in Organizer where the "Choose" button should be shown.
                                                 
                                                 This must be a tag path.
                                         min_path:
                                             type: string
-                                            default: (defaults to the path property)
                                             description: >
                                                 You must enter the tag path of a panel to act as a barrier to navigation.
                                                 
@@ -732,28 +782,6 @@ additionalProperties:
                                             type: boolean
                                             description: >
                                                 This hides the remove button from the interface.
-                                        
-                                        by_language:
-                                            type: boolean
-                                            description: >
-                                                This property can be used on any picker that selects a Content Item.
-                                                Setting it will start the Admin out in the "By Language" Panel, under the
-                                                appropriate language.
-                                                
-                                                This property is deprecated and you should avoid using it.
-                                        equivalence:
-                                            type: boolean
-                                            description: >
-                                                This property can be used on any picker that selects a Content Item.
-                                                Setting it will turn that picker into an Equivalence picker; i.e. you're not
-                                                selecting a specific Content Item, but instead you're picking that Content Item
-                                                or one of its chained Translations.
-                                                
-                                                If this property is set, you can pass any Content ID and Type in as a value for this
-                                                field, and the CMS will automatically show the Admin the appropriate
-                                                translation based upon the language that they are currently editing.
-                                                
-                                                This property is deprecated and you should avoid using it.
                                 
                                 
                                 snippet:

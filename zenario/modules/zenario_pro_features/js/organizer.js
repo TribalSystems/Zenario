@@ -31,7 +31,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenario_pro_features
 ) {
 	"use strict";

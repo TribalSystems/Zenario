@@ -27,3 +27,8 @@ Fixed a bug where the menu would be hidden in iOS when the URL bar changed size
 	            	lastWidth = newWidth;
 	            }
             });
+
+Added a class when responsive menu ip open
+	jquery.slimmenu.js
+		Added the following code:
+			 $(this).toggleClass('on');

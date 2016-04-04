@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf
+	extensionOf, methodsOf, has
 ) {
 	"use strict";
 
@@ -104,7 +104,6 @@ zenario.lib(function(
 	zenarioO.itemsSelected
 	zenarioO.selectCreatedIds()
 	zenarioO.saveSelection()
-	zenarioO.selectedItems
 	zenarioO.searchedItems
 
 	zenarioO.checkButtonHidden()
@@ -162,7 +161,7 @@ zenarioVO.init('zenarioVO', 'zenario_filters');
 
 //Go to the "Content by Layout" panel by default
 zenarioO.defaultPath = 'zenario__content/panels/content';
-zenarioO.defaultPathInIframePreload = 'loading_message/panel';
+zenarioO.defaultPathInIframePreload = 'dummy_item/panels/loading_message';
 
 
 
@@ -225,8 +224,6 @@ zenarioO.print = function() {
 		var table = $('.organizer_list_view').removeAttr('style').html();
 		
 		//table.$('.organizer_column').removeAttr('style');
-		
-		//console.log(title);
 		
 		var mywindow = window.open('', title, 'height=50,width=50');
         mywindow.document.write('<html><head><title></title>');
@@ -340,7 +337,7 @@ zenarioO.init = function(reload) {
 	}
 	
 	
-	var store, url = URLBasePath + 'zenario/admin/ajax.php?_json=1';
+	var store, url = URLBasePath + 'zenario/admin/organizer.ajax.php';
 	
 	//Attempt to get the map from the local store
 	//if (zenarioO.map = zenario.checkSessionStorage(url, {}, true)) {
@@ -382,8 +379,9 @@ zenarioO.init2 = function() {
 	zenarioA.tooltips();
 	
 	
-	zenarioO.createSortArrayTopLevel('sortedTopLevelItems');
+	zenarioO.sortedTopLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map);
 	zenarioO.setNavigation();
+	zenarioO.setTopRightButtons();
 	
 	if (zenarioA.canDoHTML5Upload()) {
 		get('organizer_rightColumn').addEventListener('dragover', function() {
@@ -506,6 +504,7 @@ zenarioO.initNewPanelInstance = function(path, refiner) {
 	var panelType = zenarioO.getPanelType(path),
 		panelInstance = new zenarioO.panelTypes[panelType]();
 	
+	panelInstance.panelType = panelType;
 	panelInstance.cmsSetsPath(path);
 	panelInstance.cmsSetsRefiner(refiner);
 	panelInstance.init();
@@ -546,7 +545,6 @@ zenarioO.checkQueue = function(sameLoad) {
 			zenarioO.pi.cmsSetsSelectedItems(queued.selectedItems);
 			
 			//zenarioO.pi.selectedItems = queued.selectedItems;
-			//zenarioO.selectedItems = queued.selectedItems;
 			//zenarioO.saveSelection(true);
 		
 		} else {
@@ -784,8 +782,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	}
 	
 	
-	var filtersSet = false,
-		panelInstance = false,
+	var panelInstance = false,
 		filters = zenarioO.loadFromBranches(path, branch, 'filters'),
 		searchTerm = zenarioO.loadFromBranches(path, branch, 'searches'),
 		advancedValues = false,
@@ -799,7 +796,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 	
 	//If this panel requires a refiner but none has been set, don't attempt to show it and go to the panel above instead.
 	if (!refiner && engToBoolean(zenarioO.followPathOnMap(path, 'refiner_required'))) {
-		zenarioA.showMessage('A refiner was required, but none was set.', true, error);
+		zenarioA.showMessage('A refiner was required, but none was set.', true, 'error');
 		return;
 	}
 	
@@ -871,44 +868,19 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		filters = $.extend(true, {}, filters);
 	
 	} else {
-		//Otherwise start with empty filters, or default filters if any are set by default
+		//Otherwise start with empty filters
 		filters = {};
-		
-		//Check the quick filter buttons to see if any should be set by default
-		var qi,
-			button,
-			value_;
-		
-		if (panel.quick_filter_buttons) {
-			foreach (panel.quick_filter_buttons as qi => button) {
-				if (button.column && engToBoolean(button.enabled_by_default)) {
-				
-					if (button.value !== undefined) {
-						value_ = button.value;
-					} else {
-						value_ = 1;
-					}
-				
-					filters[button.column] = {
-						enabled_by_default: true,
-						shown: true,
-						not: engToBoolean(button.invert),
-						value_: value_
-					};
-				}
-			}
-		}
 	}
 	
 	//Look through the filters on this page, checking to see if any have been set.
 	//If any are not set them strip them away as we don't need any junk data.
-	//(However we do need to remember if a default filter is turned off, so that it does not default back on again...)
 	foreach (filters as var c => var filter) {
 		if (zenarioO.filterSetOnColumn(c, filters)) {
-			filtersSet = true;
 		
-		} else if (!filter.enabled_by_default) {
-			delete filters[c];
+		//However leave an empty object so we can tell the different between specifically turning something off,
+		//and something that was never turned on
+		} else if (filters[c]) {
+			filters[c] = {};
 		}
 	}
 	
@@ -923,7 +895,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 		data = false,
 		store,
 		go2 = function(data) {
-			zenarioO.go2(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filtersSet, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
+			zenarioO.go2(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data);
 		};
 	
 	if (url) {
@@ -965,19 +937,19 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 					requests._start = (zenarioO.refreshToPage-1) * thisPageSize;
 				} else {
 					requests._start = 0;
+				}
+		
+				if (itemToSelect) {
+					requests._item = itemToSelect;
+		
+				//Try to get the previously selected item from the previous panel, if there was one
+				} else if (backwards) {
+					var requestItem;
 			
-					if (itemToSelect) {
-						requests._item = itemToSelect;
-			
-					//Try to get the previously selected item from the previous panel, if there was one
-					} else if (backwards) {
-						var requestItem;
-				
-						if (typeof backwards == 'object' && backwards.selectedItemFromLastPanel) {
-							requests._item = backwards.selectedItemFromLastPanel;
-						} else if (requestItem = zenarioO.getSelectedItemFromLastPanel(path)) {
-							requests._item = requestItem;
-						}
+					if (typeof backwards == 'object' && backwards.selectedItemFromLastPanel) {
+						requests._item = backwards.selectedItemFromLastPanel;
+					} else if (requestItem = zenarioO.getSelectedItemFromLastPanel(path)) {
+						requests._item = requestItem;
 					}
 				}
 			}
@@ -1097,7 +1069,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
 
 //Part 2 of the go function, run when we've got the data back from the server
 	//(Or run straight away if the server was never polled)
-zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filtersSet, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
+zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, defaultSortColumn, thisPageSize, inCloseUpView, itemToSelect, panelInstance, searchTerm, filters, refiner, lastRefiners, server_side, backwards, runFunctionAfter, data) {
 	
 	//For debugging
 	if (data
@@ -1176,8 +1148,11 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		panelInstance;
 	
 	//Save filters
+	if (data._filters !== undefined) {
+		filters = data._filters;
+		delete data._filters;
+	}
 	zenarioO.branches[zenarioO.branches.length-1].filters[zenarioO.path] = filters;
-	zenarioO.filtersSet = filtersSet;
 	
 	//Focus on this part of the map
 	delete zenarioO.tuix;
@@ -1186,6 +1161,21 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		zenarioO.focus = zenarioO.tuix;	
 	
 	zenarioO.pi.cmsSetsPanelTUIX(zenarioO.tuix);
+	
+	
+	//Setup filters
+	zenarioO.filtersSet = false;
+	zenarioO.filtersSetInViewOptions = false;
+	foreach (filters as var c => var filter) {
+		if (zenarioO.filterSetOnColumn(c, filters)) {
+			zenarioO.filtersSet = true;
+			
+			if (zenarioO.canFilterColumn(c)) {
+				zenarioO.filtersSetInViewOptions = true;
+				break;
+			}
+		}
+	}
 	
 	zenarioO.markIfViewIsFiltered();
 	
@@ -1225,11 +1215,11 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 		zenarioO.sortDesc = engToBoolean(zenarioO.followPathOnMap(path, 'default_sort_desc'));
 	}
 	
-	zenarioO.sortedColumns = zenarioO.getSortedIdsOfTUIXElements('columns', 'ord');
-	zenarioO.sortedItemButtons = zenarioO.getSortedIdsOfTUIXElements('item_buttons', 'ord');
-	zenarioO.sortedInlineButtons = zenarioO.getSortedIdsOfTUIXElements('inline_buttons', 'ord');
-	zenarioO.sortedCollectionButtons = zenarioO.getSortedIdsOfTUIXElements('collection_buttons', 'ord');
-	zenarioO.sortedQuickFilterButtons = zenarioO.getSortedIdsOfTUIXElements('quick_filter_buttons', 'ord');
+	zenarioO.sortedColumns = zenarioO.getSortedIdsOfTUIXElements('columns');
+	zenarioO.sortedItemButtons = zenarioO.getSortedIdsOfTUIXElements('item_buttons');
+	zenarioO.sortedInlineButtons = zenarioO.getSortedIdsOfTUIXElements('inline_buttons');
+	zenarioO.sortedCollectionButtons = zenarioO.getSortedIdsOfTUIXElements('collection_buttons');
+	zenarioO.sortedQuickFilterButtons = zenarioO.getSortedIdsOfTUIXElements('quick_filter_buttons');
 	
 	//Work out which columns should be shown
 	zenarioO.shownColumns = zenarioO.getShownColumns(path, defaultSortColumn, zenarioO.tuix.columns);
@@ -1406,7 +1396,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 			
 				var url =
 					URLBasePath +
-					'zenario/admin/ajax.php?_json=1&path=' + zenarioO.shallowLinks['content_item'] +
+					'zenario/admin/organizer.ajax.php?path=' + zenarioO.shallowLinks['content_item'] +
 					'&_get_item_links=' + contentTags[lang][parent] +
 					'&languageId=' + encodeURIComponent(lang);
 				
@@ -1434,7 +1424,7 @@ zenarioO.go2 = function(path, url, devToolsURL, requests, branch, goNum, default
 			
 			var url =
 				URLBasePath +
-				'zenario/admin/ajax.php?_json=1&path=' + zenarioO.shallowLinks['menu_item'] +
+				'zenario/admin/organizer.ajax.php?path=' + zenarioO.shallowLinks['menu_item'] +
 				'&_get_item_links=' + menuIds[lang] +
 				'&languageId=' + encodeURIComponent(lang) +
 				'&refinerName=language' +
@@ -1535,6 +1525,7 @@ zenarioO.go3 = function(goNum, searchTerm, backwards, runFunctionAfter) {
 	
 	zenarioO.setWrapperClass('loaded', true);
 	zenarioO.setWrapperClass('filters_set', zenarioO.filtersSet);
+	zenarioO.setWrapperClass('filters_set_in_view_options', zenarioO.filtersSetInViewOptions);
 	
 	if (runFunctionAfter) {
 		runFunctionAfter();
@@ -1756,14 +1747,19 @@ zenarioO.searchAndSortItems = function(searchTerm) {
 };
 
 zenarioO.stop = false;
-zenarioO.disableInteraction = function() {
+zenarioO.stopWarningMessage = false;
+zenarioO.disableInteraction = function(warningMessage) {
 	zenarioO.stop = true;
+	if (warningMessage) {
+		zenarioO.stopWarningMessage = warningMessage;
+	}
 	$('#organizer_search_term').prop('disabled', true);
 	zenarioO.setWrapperClass('interaction_disabled', true);
 };
 
 zenarioO.enableInteraction = function() {
 	zenarioO.stop = false;
+	zenarioO.stopWarningMessage = false;
 	$('#organizer_search_term').prop('disabled', false);
 	zenarioO.setWrapperClass('interaction_disabled', false);
 };
@@ -1775,6 +1771,7 @@ zenarioO.setPanel = function() {
 		$header = $('#organizer_header'),
 		$panel = $('#organizer_rightColumnContent'),
 		$footer = $('#organizer_lowerMiddleColumn'),
+		itemsGone = false;
 		n = 0;
 	
 	
@@ -1789,22 +1786,33 @@ zenarioO.setPanel = function() {
 	
 	var selectedItems = _.clone(zenarioO.pi.returnSelectedItems());
 	
-	
 	foreach (selectedItems as var i) {
 		//Remove any items that have disappeared since this panel was last shown
 		if (!zenarioO.tuix.items[i]) {
 			delete selectedItems[i];
+			itemsGone = true;
 		
 		} else {
 			++n;
 		}
 	}
 	
+	//T10250, When deleting an item in Organizer, select the next one
+	//If the admin just pressed a button, and that caused the item(s) that were selected to disappear,
+	//then try to select the next item.
+	if (itemsGone && n == 0) {
+		if (zenarioO.selectNextItem
+		 && zenarioO.tuix.items[zenarioO.selectNextItem]) {
+			selectedItems[zenarioO.selectNextItem] = true;
+			++n;
+		}
+	
 	//If multiple-select is not enabled, ensure we've not got too many items selected
-	if (!zenarioO.multipleSelectEnabled && n > 1) {
+	} else if (!zenarioO.multipleSelectEnabled && n > 1) {
 		selectedItems = {};
 		n = 0;
 	}
+	delete zenarioO.selectNextItem;
 	
 	//If we don't have any record of any selected items, but we were asked to select one in the URL,
 	//then select that one
@@ -1864,7 +1872,7 @@ zenarioO.setPanel = function() {
 	zenarioO.setTrash();
 	
 	
-	//Check that Storekeeper/the panel is the right size
+	//Check that Organizer and the panel are the right size
 	zenarioO.size(true);
 	
 	
@@ -1887,6 +1895,12 @@ zenarioO.setPanel = function() {
 		zenarioA.showTutorial(topLevel, true);
 	}
 	zenarioA.seen_help_tour = true;
+	
+	//Little hack to fix a few sizing bugs:
+	//Run another size check after all of the scripts have finished running.
+	setTimeout(function() {
+		zenarioO.size(true);
+	}, 0);
 };
 
 
@@ -1894,6 +1908,9 @@ zenarioO.setPanel = function() {
 //Go backwards, if possible
 zenarioO.back = function(times) {
 	if (zenarioO.stop) {
+		if (zenarioO.stopWarningMessage) {
+			alert(zenarioO.stopWarningMessage);
+		}
 		return false;
 	}
 	
@@ -1926,33 +1943,43 @@ zenarioO.back = function(times) {
 zenarioO.knownBranches = {};
 zenarioO.lookForBranches = function(map, path, panelPath, parentKey) {
 	
+	var isBranch, p, i, link;
+	
 	if (map._path_here) {
 		panelPath = map._path_here;
 	}
 	
-	foreach (map as var i) {
+	foreach (map as i) {
 		if (map[i] && typeof map[i] == 'object') {
 			
-			var p = path? path + '/' + i : i;
+			p = path? path + '/' + i : i;
 			
 			//Old logic: developers must manually specify which things are branches
 			//var isBranch = map[i].link && typeof map[i].link == 'object' && map[i].link.branch;
 			
 			//New logic: all links are branches except for top/second-level items,
 			//and top-level items may not contain links
-			var isBranch = false;
-			if (parentKey !== undefined && map[i].link && typeof map[i].link == 'object') {
+			isBranch = false;
+			if (parentKey !== undefined
+			 && (link = map[i].link)
+			 && (typeof link == 'object')) {
+				 
 				if (parentKey != 'nav') {
-					map[i].link.branch = isBranch = true;
+					link.branch = isBranch = true;
 				
 				} else {
-					map[i].link.branch = isBranch = false;
+					link.branch = isBranch = false;
 					
 					//Automatically turn links with refiners into deep links to that refiner
-					if (map[i].link.refiner
-					 && map[i].link.path
-					 && map[i].link.path.indexOf('//') == -1) {
-						map[i].link.path += '/refiners/' + map[i].link.refiner + '////';
+					if (link.refiner
+					 && link.path
+					 && link.path.indexOf('//') == -1) {
+						
+						link.path += '/refiners/' + link.refiner + '//';
+						if (link.refinerId) {
+							link.path += link.refinerId;
+						}
+						link.path += '//';
 					}
 				}
 			}
@@ -2043,7 +2070,7 @@ zenarioO.setHash = function() {
 };
 
 
-zenarioO.getHash = function(ignoreSelectedItem, firstNBranches) {
+zenarioO.getHash = function(ignoreSelectedItem) {
 	
 	var hash = '',
 		path = zenarioO.path,
@@ -2078,7 +2105,7 @@ zenarioO.getHash = function(ignoreSelectedItem, firstNBranches) {
 	
 	//Attempt to include the current branches taken in the URL by creating a deep link
 	foreach (zenarioO.branches as var i) {
-		if (i > 0 && ((firstNBranches === undefined) || (i <= firstNBranches))) {
+		if (i > 0) {
 			b = zenarioO.branches[i];
 			
 			//Is this branch in the map?
@@ -2526,6 +2553,13 @@ zenarioO.itemClickThroughLink = function(id) {
 
 
 
+zenarioO.topRightButtonClick = function(id) {
+	if (zenarioO.stop) {
+		return false;
+	}
+	
+	zenarioA.action(zenarioO, zenarioO.map.top_right_buttons[id], false, -1);
+};
 
 zenarioO.topLevelClick = function(id, j, first) {
 	if (zenarioO.stop) {
@@ -2876,32 +2910,8 @@ zenarioO.uploadComplete = function() {
 };
 
 zenarioO.selectCreatedIds = function() {
-	
 	zenario.ajax(URLBasePath + 'zenario/ajax.php?method_call=getNewId', true, true).after(function(newIds) {
-		
-		var id, items = '';
-		if (!_.isEmpty(newIds)) {
-			zenarioO.deselectAllItems();
-			zenarioO.pi.cmsSetsSelectedItems(newIds);
-			zenarioO.setHash();
-			
-			foreach (newIds as id) {
-				items += (items? ',' : '') + id;
-			}
-		}
-	
-		//Clear the local storage, as there have probably just been changes
-		zenario.outdateCachedData();
-	
-		get('organizer_preloader_circle').style.display = 'none';
-	
-		if (items) {
-			//Make sure show the specific items if possible
-			zenarioO.go(zenarioO.path + '//' + items);
-		} else {
-			//Otherwise use a normal refresh.
-			zenarioO.reload();
-		}
+		zenarioO.refreshToShowItem(newIds);
 	});
 };
 
@@ -3007,7 +3017,8 @@ zenarioO.refreshPage = function(hash, dontAutoDetectMode, task) {
 		(zenarioA.fromCID? '&fromCID=' + zenarioA.fromCID + '&fromCType=' + zenarioA.fromCType : '');
 };
 
-zenarioO.refreshToShowItem = function(itemId) {
+//Refresh the panel to show an item after a button click or admin box is saved.
+zenarioO.refreshToShowItem = function(itemId, growlIfItemIsVisible, growlIfItemIsNotVisible) {
 	if (zenarioO.stop) {
 		return false;
 	}
@@ -3018,41 +3029,93 @@ zenarioO.refreshToShowItem = function(itemId) {
 		return;
 	}
 	
-	//Escape the item id if needed
-	if (zenarioO.tuix.db_items && zenarioO.tuix.db_items.encode_id_column) {
-		itemId = zenario.encodeItemIdForOrganizer(itemId);
-	}
-	
-	var itemIds = (itemId + '').split(',');
+	var i, itemIds,
+		path = zenarioO.path,
+		selectedItems;
 	
 	//Normally, when refreshing to show one item, the system checks to
 	//see what page that item is on, and specifically shows that page.
 	//But If there are no items or multiple items selected,
 	//then the system won't be able to use this logic.
 	//So as a fallback, we'll try and stay on the current page.
-	if (itemIds.length != 1
-	 && zenarioO.page) {
+	if (zenarioO.page) {
 		zenarioO.refreshToPage = zenarioO.page;
 	}
 	
-	selectedItems = {};
-	foreach (itemIds as var i) {
-		selectedItems[itemIds[i]] = true;
+	//T10250, When deleting an item in Organizer, select the next one
+	//If an item or items are currently selected, remember which item is next in
+	//the list after them for use in our logic later.
+	zenarioO.selectNextItem = zenarioO.getNextItem();
+	
+	
+	//Accept a string, array or object as an input
+	if (itemId === false
+	 || itemId === undefined) {
+		itemIds = [];
+	
+	} else if (_.isObject(itemId)) {
+		itemIds = _.keys(itemId);
+	
+	} else if (_.isArray(itemId)) {
+		itemIds = itemId;
+	
+	} else {
+		itemIds = (itemId + '').split(',');
 	}
 	
-	zenarioO.pi.cmsSetsSelectedItems(selectedItems);
 	
-	zenarioO.setHash();
+	//If any items were specified, use these instead of the currently selected items.
+	//(If no items were specificed, keep using the currently selected items.)
+	if (itemIds.length) {
+		selectedItems = {};
+		foreach (itemIds as i) {
+	
+			//Escape the item id if needed
+			if (zenarioO.tuix.db_items
+			 && zenarioO.tuix.db_items.encode_id_column) {
+				itemIds[i] = zenario.encodeItemIdForOrganizer(itemIds[i]);
+			}
+			
+			selectedItems[itemIds[i]] = true;
+		}
+		
+		zenarioO.pi.cmsSetsSelectedItems(selectedItems);
+		zenarioO.setHash();
+		
+		path += '//' + itemIds.join(',');
+		if (zenarioO.inspectionView) {
+			path += '/';
+		}
+	}
+	
 	zenarioO.stopRefreshing();
 	
 	//Clear the local storage, as there have probably just been changes
 	zenario.outdateCachedData();
 	
-	if (zenarioO.inspectionView) {
-		zenarioO.go(zenarioO.path + '//' + itemId + '/');
-	} else {
-		zenarioO.go(zenarioO.path + '//' + itemId);
-	}
+	//zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, dontUseCache, itemToSelect, sameLoad, runFunctionAfter, periodic, inCloseUpView) {
+	zenarioO.go(path, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, function() {
+		
+		var name;
+		
+		if (itemId
+		 && (itemId + '').indexOf(',') == -1
+		 && zenarioO.pi
+		 && zenarioO.tuix) {
+			
+			
+			
+			if (growlIfItemIsVisible
+			 && (name = zenarioA.formatOrganizerItemName(zenarioO.tuix, itemId))) {
+				zenarioO.pi.displayToastMessage(growlIfItemIsVisible.replace(/\[\[name\]\]/ig, htmlspecialchars(name)));
+			}
+		
+			if (growlIfItemIsNotVisible
+			 && !(zenarioO.tuix.items && zenarioO.tuix.items[itemId])) {
+				zenarioO.pi.displayToastMessage(growlIfItemIsNotVisible);
+			}
+		}
+	});
 };
 
 //Keep refreshing panels that can change
@@ -3086,6 +3149,35 @@ zenarioO.doCSVExport = function() {
 	zenarioO.CSVExport = true;
 	zenarioO.reload();
 };
+
+
+zenarioO.getNextItem = function() {
+	
+	var id, ord,
+		nextId,
+		nextOrd = -1,
+		item_sort_order,
+		selectedItems;
+	
+	if (!(item_sort_order = zenarioO.tuix && zenarioO.tuix.__item_sort_order__)
+	 || !(selectedItems = zenarioO.pi && zenarioO.pi.returnSelectedItems())) {
+		return false;
+	}
+	
+	foreach (item_sort_order as ord => id) {
+		ord = 1*ord + 1;
+		if (ord > nextOrd
+		 && selectedItems[id]
+		 && (nextId = item_sort_order[ord])
+		 && (!selectedItems[nextId])) {
+			nextOrd = ord;
+		}
+	}
+	
+	return nextOrd != -1 && item_sort_order[nextOrd];
+	
+};
+
 
 
 //Get the current collection key, as well as the current item id(s) if this is something on the item level
@@ -4056,12 +4148,22 @@ zenarioO.getSortedIdsOfTUIXElements = function(toSort, column, desc) {
 		format = false,
 		sortedArray = [];
 	
-	if (toSort == 'items' && zenarioO.tuix.columns && zenarioO.tuix.columns[column]) {
+	if (!column) {
+		column = 'ord';
+	}
+	
+	if (toSort == 'items'
+	 && zenarioO.tuix.columns
+	 && zenarioO.tuix.columns[column]) {
 		format = zenarioO.tuix.columns[column].format;
 	}
 	
-	if (zenarioO.tuix[toSort]) {
-		foreach (zenarioO.tuix[toSort] as i => thing) {
+	if (!_.isObject(toSort)) {
+		toSort = zenarioO.tuix[toSort];
+	}
+	
+	if (toSort) {
+		foreach (toSort as i => thing) {
 			if (thing) {
 				//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
 				value = thing[column];
@@ -4095,63 +4197,6 @@ zenarioO.getSortedIdsOfTUIXElements = function(toSort, column, desc) {
 	}
 	
 	return sortedArray;
-};
-
-//A copy and paste of the above function, for the top level Menu Nodes
-zenarioO.createSortArrayTopLevel = function(name) {
-	var value,
-		numeric;
-	zenarioO[name] = [];
-	foreach (zenarioO.map as var i) {
-		//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
-		value = zenarioO.map[i].ord;
-		
-		if (value == (numeric = 1*value)) {
-			zenarioO[name].push([i, numeric, true]);
-		} else if (value) {
-			zenarioO[name].push([i, value.toLowerCase(), false]);
-		} else {
-			zenarioO[name].push([i, 0, true]);
-		}
-	}
-	
-	//Sort this array
-	zenarioO[name].sort(zenarioO.sortArray);
-	
-	//Remove fields that were just there to help sort
-	foreach (zenarioO[name] as var i) {
-		zenarioO[name][i] = zenarioO[name][i][0];
-	}
-};
-
-//A copy and paste of the above function, for the second level Menu Nodes
-zenarioO.createSortArraySecondLevel = function(name, topLevelItem) {
-	var value,
-		numeric;
-	
-	zenarioO[name] = [];
-	if (zenarioO.map[topLevelItem].nav) {
-		foreach (zenarioO.map[topLevelItem].nav as var i) {
-			//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
-			value = zenarioO.map[topLevelItem].nav[i].ord;
-			
-			if (value == (numeric = 1*value)) {
-				zenarioO[name].push([i, numeric, true]);
-			} else if (value) {
-				zenarioO[name].push([i, value.toLowerCase(), false]);
-			} else {
-				zenarioO[name].push([i, 0, true]);
-			}
-		}
-	}
-	
-	//Sort this array
-	zenarioO[name].sort(zenarioO.sortArray);
-	
-	//Remove fields that were just there to help sort
-	foreach (zenarioO[name] as var i) {
-		zenarioO[name][i] = zenarioO[name][i][0];
-	}
 };
 
 //Given two elements from the above function, say which order they should be in
@@ -4331,7 +4376,7 @@ zenarioO.columnValue = function(i, c, dontHTMLEscape) {
 				var html = '<table class="organizer_no_border item_link"><tr>';
 				
 				if (item.css_class) {
-					html += '<td><div class="listicon ' + item.css_class + '"><a' + href + '></a></div></td>';
+					html += '<td><div class="listicon organizer_item_image ' + item.css_class + '"><a' + href + '></a></div></td>';
 				}
 				
 				html += '<td class="organizer_item_link_text" width="95%">';
@@ -4518,12 +4563,11 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 			
 			//Don't allow the back button if it has been disabled using <back_link></back_link>
 		 || (branchLevel === 0 && !zenarioO.tuix.back_link)
-			
-			//Don't allow the back button if this is the panel for a second-level nav
-		 || ((branchLevel <= 1)
-		  && (hash = zenarioO.getHash(true, branchLevel))
-		  && ((branchLevel === 0 && hash == zenarioO.currentTopLevelPath)
-		   || (branchLevel === 1 && hash == zenarioO.currentTopLevelPath)))) {
+		 
+			//If the current top level has a refiner in it, treat the end-point of the refiner
+			//(i.e. the second branch-level) as the start and don't allow anything to reference
+			//the first branch level (which you can never actually navigate to).
+		 || (branchLevel < 2 && zenarioO.currentTopLevelPathHasRefiner)) {
 			
 			return false;
 		}
@@ -4630,19 +4674,26 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 //rely on the zenarioO.setNavigation() function being called first!
 zenarioO.setNavigation = function() {
 	var i, j,
+		itemNo, jtemNo,
 		ti = -1,
 		selected1st,
 		selected2nd,
-		longestMatch = 0,
+		length,
+		longestMatch = -1,
+		commonPrefix,
+		sortedSecondLevelItems,
 		data = {
 			items: [],
 			selected1st: 0
-		};
+		},
 		
-	//Work out which top level item was selected, either by looking at the first branch, or if there are no
-	//branches, the current path.
-	var path = zenarioO.path,
-		navPath = zenarioO.getHash(true);
+		//Work out which top level item was selected, either by looking at the first branch, or if there are no
+		//branches, the current path.
+		path = zenarioO.path,
+		navPath = zenarioO.getHash(true),
+		thisNavPath;
+	
+	zenarioO.currentTopLevelPathHasRefiner = false;
 	
 	if (zenarioO.branches.length > 1) {
 		path = zenarioO.branches[1].from;
@@ -4651,22 +4702,26 @@ zenarioO.setNavigation = function() {
 	
 	//Loop through all of the first and second level navs
 	foreach (zenarioO.map as i) {
-		if (typeof zenarioO.map[i] == 'object' && zenarioO.map[i].nav) {
+		if (i != 'top_right_buttons'
+		 && typeof zenarioO.map[i] == 'object'
+		 && zenarioO.map[i].nav) {
 			foreach (zenarioO.map[i].nav as j) {
 				if (typeof zenarioO.map[i].nav[j] == 'object') {
 					
 					//Work out which first/second level nav should be selected by comparing its path against the navigation path
-					var thisNavPath = i + '/nav/' + j + '/panel';
+					thisNavPath = i + '/nav/' + j + '/panel';
 					
 					if (zenarioO.map[i].nav[j].link
 					 && zenarioO.map[i].nav[j].link.path) {
 						thisNavPath = zenarioO.map[i].nav[j].link.path;
 					}
 					
-					var length = (thisNavPath + '').length + 1;
+					length = (thisNavPath + '').length;
 					
 					if (longestMatch < length
-					 && (navPath + '/').substr(0, length) == thisNavPath + '/') {
+					 && (commonPrefix = (navPath + '/').substr(0, length))
+					 && (commonPrefix == thisNavPath
+					  || commonPrefix == thisNavPath + '/')) {
 						longestMatch = length;
 						selected1st = i;
 						selected2nd = j;
@@ -4679,10 +4734,11 @@ zenarioO.setNavigation = function() {
 	
 	
 	//Loop through each top level nav
-	foreach (zenarioO.sortedTopLevelItems as var itemNo) {
+	foreach (zenarioO.sortedTopLevelItems as itemNo) {
 		i = zenarioO.sortedTopLevelItems[itemNo];
 		
-		if (zenarioA.hidden(zenarioO.map[i])) {
+		if (i == 'top_right_buttons'
+		 || zenarioA.hidden(zenarioO.map[i])) {
 			continue;
 		}
 		
@@ -4708,17 +4764,11 @@ zenarioO.setNavigation = function() {
 		}
 		
 		//Sort the second level nav under this top level
-		zenarioO.createSortArraySecondLevel('sortedSecondLevelItems', i);
+		sortedSecondLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map[i].nav);
 		
 		//Loop through each second level nav
-		foreach (zenarioO.sortedSecondLevelItems as var jtemNo) {
-			j = zenarioO.sortedSecondLevelItems[jtemNo];
+		foreach (sortedSecondLevelItems as jtemNo => j) {
 			
-			if (zenarioA.hidden(zenarioO.map[i].nav[j])) {
-				continue;
-			}
-			
-			var path;
 			if (zenarioO.map[i].nav[j].link
 			 && zenarioO.map[i].nav[j].link.path) {
 				path = zenarioO.map[i].nav[j].link.path;
@@ -4728,6 +4778,14 @@ zenarioO.setNavigation = function() {
 			
 			if (i === selected1st && j === selected2nd) {
 				zenarioO.currentTopLevelPath = path;
+				
+				if (path.match(/\/\//)) {
+					zenarioO.currentTopLevelPathHasRefiner = true;
+				}
+			}
+			
+			if (zenarioA.hidden(zenarioO.map[i].nav[j])) {
+				continue;
 			}
 			
 			data.items[ti].items[++si] = {
@@ -4735,6 +4793,7 @@ zenarioO.setNavigation = function() {
 				selected: i === selected1st && j === selected2nd,
 				href: '#' + path,
 				onclick: "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;",
+				css_class: zenarioO.map[i].nav[j].css_class,
 				label: ifNull(zenarioO.map[i].nav[j].label, zenarioO.map[i].nav[j].name),
 				tooltip: zenarioO.map[i].nav[j].tooltip
 			};
@@ -4810,6 +4869,38 @@ zenarioO.setDataAttributes = function(tuix, mergefields) {
 	}
 };
 
+zenarioO.setTopRightButtons = function() {
+	
+	delete zenarioO.map.top_right_buttons.ord;
+	var sortedTopRightButtons = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map.top_right_buttons);
+	
+	var bi = -1,
+		button,
+		buttons = [],
+		disabled,
+		i, itemNo;
+	
+	foreach (sortedTopRightButtons as itemNo => i) {
+		button = zenarioO.map.top_right_buttons[i];
+		
+		//Check if this button is hidden
+		if (zenarioO.checkButtonHidden(button)) {
+			continue;
+		}
+		
+		disabled = zenarioO.checkDisabled(button);
+		buttons[++bi] = zenarioO.setButtonAction('zenarioO.topRightButtonClick', button, disabled, i, undefined, undefined, '');
+	}
+	
+	//Add parent/child relationships
+	zenarioO.setButtonKin(buttons);
+	
+	$('#organizer_top_right_buttons').html(zenarioA.microTemplate('zenario_organizer_top_right_button', buttons));
+	
+	zenarioA.tooltips('#organizer_top_right_buttons a[title]', {position: {my: 'right center', at: 'left center', collision: 'flipfit'}, show: false, hide: false});
+
+};
+
 zenarioO.setButtons = function() {
 	
 	var selectedItems = zenarioO.pi.returnSelectedItems();
@@ -4852,10 +4943,8 @@ zenarioO.getQuickFilters = function() {
 	var bi = -1,
 		button,
 		buttons = [],
-		buttonsPos = {},
 		disabled,
-		i, itemNo,
-		pi, parentButton, parentId;
+		i, itemNo;
 	
 	foreach (zenarioO.sortedQuickFilterButtons as itemNo => i) {
 		button = zenarioO.tuix.quick_filter_buttons[i];
@@ -4866,68 +4955,15 @@ zenarioO.getQuickFilters = function() {
 		}
 		
 		disabled = zenarioO.checkDisabled(button);
-		
-		
-		buttons[++bi] = {
-				id: i,
-				tuix: button,
-				css_class: ifNull(button.css_class, '', ''),
-				label: button.label,
-				disabled: disabled
-			};
-		buttonsPos[i] = bi;
-		
-		if (disabled && button.disabled_tooltip) {
-			buttons[bi].tooltip = button.disabled_tooltip;
-		} else {
-			buttons[bi].tooltip = button.tooltip;
-		}
-		
-		buttons[bi].onclick = "zenarioO.toggleQuickFilter('" + jsEscape(i) + "'); return false;";
+		buttons[++bi] = zenarioO.setButtonAction('zenarioO.toggleQuickFilter', button, disabled, i, undefined, undefined, '');
 		
 		buttons[bi].enabled = zenarioO.quickFilterEnabled(i);
 	}
 	
 	//Add parent/child relationships
-	foreach (buttons as bi => button) {
-		if (parentId = button.tuix.parent) {
-			pi = buttonsPos[parentId];
-			
-			if (parentButton = buttons[pi]) {
-				
-				if (!parentButton.children) {
-					parentButton.children = [];
-					parentButton.css_class += ' organiser_button_with_children';
-				}
-				
-				if (button.enabled
-				 && !engToBoolean(parentButton.remove_filter)) {
-					parentButton.childEnabled = true;
-				}
-				
-				parentButton.children.push(button);
-			}
-		}
-	}
-	
-	//Remove children from the top-level buttons
-	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		button = buttons[bi];
-		if (button.tuix.parent || (engToBoolean(button.tuix.hide_when_children_are_not_visible) && !button.children)) {
-			buttons.splice(bi, 1);
-		}
-	}
+	zenarioO.setButtonKin(buttons);
 	
 	return buttons;
-	
-	//if (buttons.length) {
-	//	$('#organizer_quickFilter').show().html(zenarioA.microTemplate('zenario_organizer_quick_filter_button', buttons));
-	//	zenarioA.tooltips('#organizer_quickFilter');
-	//	zenarioA.tooltips('#organizer_quickFilter ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-	//	
-	//} else {
-	//	$('#organizer_quickFilter').hide().html('');
-	//}
 };
 
 //zenarioO.setCollectionButtons = function(transition) {
@@ -4936,10 +4972,8 @@ zenarioO.getCollectionButtons = function() {
 	var bi = -1,
 		button,
 		buttons = [],
-		buttonsPos = {},
 		disabled,
-		i, itemNo,
-		pi, parentButton, parentId;
+		i, itemNo;
 	
 	foreach (zenarioO.sortedCollectionButtons as itemNo => i) {
 		button = zenarioO.tuix.collection_buttons[i];
@@ -4955,73 +4989,13 @@ zenarioO.getCollectionButtons = function() {
 		}
 		
 		disabled = zenarioO.checkDisabled(button);
-		
-		
-		buttons[++bi] = {
-				id: i,
-				tuix: button,
-				css_class: ifNull(button.css_class, 'label_without_icon'),
-				label: ifNull(button.label, button.name),
-				disabled: disabled
-			};
-		buttonsPos[i] = bi;
-		
-		if (disabled && button.disabled_tooltip) {
-			buttons[bi].tooltip = button.disabled_tooltip;
-		} else {
-			buttons[bi].tooltip = button.tooltip;
-		}
-		
-		
-		if (disabled) {
-			buttons[bi].onclick = "return false;";
-			
-		} else if (button.navigation_path) {
-			buttons[bi].href = '#/' + button.navigation_path;
-		
-		} else if (button.frontend_link) {
-			buttons[bi].href = zenario.addBasePath(button.frontend_link);
-		
-		} else {
-			buttons[bi].onclick = "zenarioO.collectionButtonClick('" + jsEscape(i) + "'); return false;";
-		}
+		buttons[++bi] = zenarioO.setButtonAction('zenarioO.collectionButtonClick', button, disabled, i);
 	}
 	
 	//Add parent/child relationships
-	foreach (buttons as bi => button) {
-		if (parentId = button.tuix.parent) {
-			pi = buttonsPos[parentId];
-			
-			if (parentButton = buttons[pi]) {
-				
-				if (!parentButton.children) {
-					parentButton.children = [];
-					parentButton.css_class += ' organiser_button_with_children';
-				}
-				
-				parentButton.children.push(button);
-			}
-		}
-	}
-	
-	//Remove children from the top-level buttons
-	for (bi = buttons.length - 1; bi >= 0; --bi) {
-		button = buttons[bi];
-		if (button.tuix.parent || (engToBoolean(button.tuix.hide_when_children_are_not_visible) && !button.children)) {
-			buttons.splice(bi, 1);
-		}
-	}
+	zenarioO.setButtonKin(buttons);
 	
 	return buttons;
-	
-	//if (buttons.length) {
-	//	zenarioO.showCollectionButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
-	//	zenarioA.tooltips('#organizer_collectionToolbarButtons');
-	//	zenarioA.tooltips('#organizer_collectionToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-	//	
-	//} else {
-	//	zenarioO.hideCollectionButtons(transition);
-	//}
 };
 
 zenarioO.buttonsPrevHTML = '';
@@ -5120,12 +5094,12 @@ zenarioO.getItemButtons = function() {
 		bi = -1,
 		button,
 		buttons = [],
-		buttonsPos = {},
 		parent,
 		disabled,
 		i, itemNo,
-		pi, parentButton, parentId,
-		selectedItems = zenarioO.pi.returnSelectedItems();
+		selectedItems = zenarioO.pi.returnSelectedItems(),
+		id = zenarioO.getKeyId(true),
+		item = id && zenarioO.tuix.items && zenarioO.tuix.items[id];
 	
 	if (zenarioO.itemsSelected > 0) {
 		foreach (zenarioO.sortedItemButtons as itemNo => i) {
@@ -5157,15 +5131,7 @@ zenarioO.getItemButtons = function() {
 			}
 			
 			disabled = zenarioO.checkDisabled(button, selectedItems);
-			
-			
-			buttons[++bi] = {
-				id: i,
-				tuix: button,
-				css_class: ifNull(button.css_class, 'label_without_icon'),
-				disabled: disabled
-			};
-			buttonsPos[i] = bi;
+			buttons[++bi] = zenarioO.setButtonAction('zenarioO.itemButtonClick', button, disabled, i, undefined, item);
 			
 			
 			buttons[bi].label = zenarioO.applyMergeFieldsToLabel(
@@ -5184,31 +5150,79 @@ zenarioO.getItemButtons = function() {
 					button.multiple_select_tooltip
 				);
 			}
-			
-			
-			if (disabled) {
-				buttons[bi].onclick = "return false;";
-				
-			} else if (button.navigation_path) {
-				var id, item;
-				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.tuix.items[id]) && (item.navigation_path)) {
-					buttons[bi].href = '#/' + item.navigation_path;
-				} else {
-					buttons[bi].href = '#/' + button.navigation_path;
-				}
-			
-			} else if (button.frontend_link) {
-				var id, item;
-				if ((id = zenarioO.getKeyId(true)) && (item = zenarioO.tuix.items[id]) && (item.frontend_link)) {
-					buttons[bi].href = zenario.addBasePath(item.frontend_link);
-				} else {
-					buttons[bi].href = zenario.addBasePath(button.frontend_link);
-				}
-			
-			} else {
-				buttons[bi].onclick = "zenarioO.itemButtonClick('" + jsEscape(i) + "'); return false;";
-			}
 		}
+	}
+	
+	//Add parent/child relationships
+	zenarioO.setButtonKin(buttons);
+	
+	return buttons;
+};
+
+
+
+zenarioO.setButtonAction = function(funName, button, disabled, buttonId, itemId, item, defaultCSS) {
+	
+	if (defaultCSS === undefined) {
+		defaultCSS = 'label_without_icon';
+	}
+	
+	var merge = {
+		id: buttonId,
+		tuix: button,
+		css_class: button.css_class || defaultCSS,
+		label: button.label || button.name,
+		disabled: disabled
+	};
+	
+	if (disabled) {
+		merge.onclick = "return false;";
+		
+	} else if (button.navigation_path) {
+		if (item && item.navigation_path) {
+			merge.href = '#/' + item.navigation_path;
+		} else {
+			merge.href = '#/' + button.navigation_path;
+		}
+	
+	} else if (button.frontend_link) {
+		if (item && item.frontend_link) {
+			merge.href = zenarioO.parseReturnLink(item.frontend_link);
+		} else {
+			merge.href = zenarioO.parseReturnLink(button.frontend_link);
+		}
+	
+	} else if (button.onclick) {
+		merge.onclick = button.onclick;
+		
+		//If this button is for one specific item (e.g. an inline button), ensure that item is selected first
+		if (itemId && item) {
+			merge.onclick = "zenarioO.selectItems('" + jsEscape(itemId) + "'); zenario.stop(event); " + merge.onclick;
+		}
+	
+	} else {
+		merge.onclick = funName + "('" + jsEscape(buttonId) + (itemId === undefined? '' : "', '" + jsEscape(itemId)) + "'); return false;";
+	}
+	
+	if (disabled && button.disabled_tooltip) {
+		merge.tooltip = button.disabled_tooltip;
+	} else {
+		merge.tooltip = button.tooltip;
+	}
+	
+	return merge;
+};
+
+
+
+zenarioO.setButtonKin = function(buttons) {
+	
+	var bi, button,
+		pi, parentId, parentButton,
+		buttonsPos = {};
+	
+	foreach (buttons as bi => button) {
+		buttonsPos[button.id] = bi;
 	}
 	
 	//Add parent/child relationships
@@ -5223,6 +5237,11 @@ zenarioO.getItemButtons = function() {
 					parentButton.css_class += ' organiser_button_with_children';
 				}
 				
+				if (button.enabled
+				 && !engToBoolean(button.tuix.remove_filter)) {
+					parentButton.childEnabled = true;
+				}
+				
 				parentButton.children.push(button);
 			}
 		}
@@ -5235,20 +5254,8 @@ zenarioO.getItemButtons = function() {
 			buttons.splice(bi, 1);
 		}
 	}
-	
-	return buttons;
-	
-	//if (buttons.length) {
-	//	zenarioO.showItemButtons(zenarioA.microTemplate('zenario_organizer_button', buttons), transition);
-	//	zenarioA.tooltips('#organizer_itemToolbarButtons');
-	//	zenarioA.tooltips('#organizer_itemToolbarButtons ul ul', {position: {my: 'left+2 center', at: 'right center', collision: 'flipfit'}});
-	//	
-	//} else {
-	//	zenarioO.hideItemButtons(transition);
-	//}
-	//
-	//zenarioO.setWrapperClass('multiple_items_selected', zenarioO.itemsSelected > 1);
 };
+
 
 //Check to see whether a button should be disabled
 zenarioO.checkDisabled = function(button, items) {
@@ -5307,7 +5314,8 @@ zenarioO.checkButtonHidden = function(button, items) {
 	
 	var id,
 		singleItem = undefined,
-		singleItemId = undefined;
+		singleItemId = undefined,
+		hide_on_refiner;
 	
 	//Check to see if there is only one item selected
 	if (items) {
@@ -5357,13 +5365,20 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check if this button should never be shown in a certain refiner
-	if (button.hide_on_refiner && zenarioO.refiner) {
-		if (typeof button.hide_on_refiner == 'object') {
-			if (engToBoolean(button.hide_on_refiner[zenarioO.refiner.name])) {
+	if (zenarioO.refiner && (hide_on_refiner = button.hide_on_refiner)) {
+		//I want to check if someone has entered true for hide_on_refiner, but need to deal
+		//with the fact that true sometimes converted to a number 1, or a string "1".
+		//Thankfully this is easy to do in JavaScript, as 1*"1" === 1,
+		//but 1*"any-other-string" !== 1
+		if (1 === 1 * hide_on_refiner) {
+			return true;
+		
+		} else if (typeof hide_on_refiner == 'object') {
+			if (engToBoolean(hide_on_refiner[zenarioO.refiner.name])) {
 				return true;
 			}
 		} else {
-			if (zenarioO.refiner.name == button.hide_on_refiner) {
+			if (zenarioO.refiner.name == hide_on_refiner) {
 				return true;
 			}
 		}
@@ -5371,11 +5386,6 @@ zenarioO.checkButtonHidden = function(button, items) {
 	
 	//Some buttons should not be shown when there is a search or a filter set
 	if (zenarioO.filteredView && engToBoolean(button.hide_on_filter)) {
-		return true;
-	}
-	
-	//Don't show a <call_js_function> button for a function that does not exist
-	if (button.call_js_function && !zenarioA.checkFunctionExists(button.call_js_function['function'], button.call_js_function.encapsulated_object)) {
 		return true;
 	}
 	
@@ -5510,7 +5520,6 @@ zenarioO.getInlineButtons = function(id) {
 	
 	var bi = -1,
 		buttons = [],
-		buttonsPos = {},
 		disabled,
 		i, itemNo, ids;
 	
@@ -5529,51 +5538,13 @@ zenarioO.getInlineButtons = function(id) {
 		}
 		
 		disabled = zenarioO.checkDisabled(button, ids);
-		
-		
-		buttons[++bi] = {
-			id: i,
-			tuix: button,
-			css_class: ifNull(button.css_class, 'label_without_icon'),
-			label: ifNull(button.label, button.name),
-			disabled: disabled
-		};
-		buttonsPos[i] = bi;
-		
-		if (disabled && button.disabled_tooltip) {
-			buttons[bi].tooltip = button.disabled_tooltip;
-		} else {
-			buttons[bi].tooltip = button.tooltip;
-		}
+		buttons[++bi] = zenarioO.setButtonAction('zenarioO.inlineButtonClick', button, disabled, i, id, zenarioO.tuix.items[id]);
 		
 		if (buttons[bi].tooltip) {
 			buttons[bi].tooltip = zenarioO.applyMergeFields(buttons[bi].tooltip, false, id);
 		}
 		if (buttons[bi].label) {
 			buttons[bi].label = zenarioO.applyMergeFields(buttons[bi].label, false, id);
-		}
-		
-		if (disabled) {
-			buttons[bi].onclick = "return false;";
-			
-		} else if (button.navigation_path) {
-			var item;
-			if ((item = zenarioO.tuix.items[id]) && (item.navigation_path)) {
-				buttons[bi].href = '#/' + item.navigation_path;
-			} else {
-				buttons[bi].href = '#/' + button.navigation_path;
-			}
-		
-		} else if (button.frontend_link) {
-			var item;
-			if ((item = zenarioO.tuix.items[id]) && (item.frontend_link)) {
-				buttons[bi].href = zenarioO.parseReturnLink(item.frontend_link);
-			} else {
-				buttons[bi].href = zenarioO.parseReturnLink(button.frontend_link);
-			}
-		
-		} else {
-			buttons[bi].onclick = "zenarioO.inlineButtonClick('" + jsEscape(i) + "', '" + jsEscape(id) + "'); return false;";
 		}
 	}
 	
@@ -5652,7 +5623,7 @@ zenarioO.setPanelTitle = function() {
 		
 		if (zenarioO.tuix.item && zenarioO.tuix.item.css_class) {
 			get('organizer_panelTitle').innerHTML =
-				'<div class="listicon ' + zenarioO.tuix.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
+				'<div class="listicon organizer_item_image ' + zenarioO.tuix.item.css_class + '"></div><div>' + htmlspecialchars(title) + '</div>';
 		} else {
 			get('organizer_panelTitle').innerHTML = htmlspecialchars(title);
 		}
@@ -5776,7 +5747,8 @@ zenarioO.choose = function() {
 			path = zenarioO.path,
 			panel = $.extend(true, {}, zenarioO.tuix),
 			row,
-			selectedItems = zenarioO.pi.returnSelectedItems();
+			selectedItems = zenarioO.pi.returnSelectedItems(),
+			callback = false;
 		
 		key._items = {};
 		foreach (selectedItems as var i) {
@@ -5796,10 +5768,24 @@ zenarioO.choose = function() {
 		
 		zenarioO.closeSelectMode();
 		
-		if (window.zenarioOMultipleSelect) {
-			windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, undefined, panel);
+		if (_.isFunction(window.zenarioOCallbackObject)) {
+			callback = window.zenarioOCallbackObject;
+		} else if (_.isFunction(window.zenarioOCallbackFunction)) {
+			callback = window.zenarioOCallbackFunction;
+		}
+		
+		if (callback) {
+			if (window.zenarioOMultipleSelect) {
+				callback(path, key, undefined, panel);
+			} else {
+				callback(path, key, row, panel);
+			}
 		} else {
-			windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, row, panel);
+			if (window.zenarioOMultipleSelect) {
+				windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, undefined, panel);
+			} else {
+				windowParent[window.zenarioOCallbackObject][window.zenarioOCallbackFunction](path, key, row, panel);
+			}
 		}
 	}
 };
@@ -5850,9 +5836,8 @@ zenarioO.updateYourWorkInProgress = function() {
 		$dropdown.removeClass('zenario_ywip_loaded').addClass('zenario_ywip_loading');
 		
 		url =
-			URLBasePath + 'zenario/admin/ajax.php' +
-			'?_json=1' +
-			'&path=zenario__content/panels/content' +
+			URLBasePath + 'zenario/admin/organizer.ajax.php' +
+			'?path=zenario__content/panels/content' +
 			'&_sort_col=last_modified_datetime' +
 			'&_sort_desc=1' +
 			'&_start=0' +
@@ -5879,18 +5864,19 @@ zenarioO.sizing = false;
 zenarioO.lastSize = false;
 zenarioO.size = function(refresh) {
 			
-	var outerGap = 46,
-		colGap = 46,
+	var headerHeight = 46,
+		footerHeight = 57,
 		contentGap = 40,
-		graphicGap = 66,
-		titleGap = 0,
-		buttonsGap = 30,
+		titleHeight = 0,
+		buttonsHeight = 30,
 		bordersWidth = 2,
 		rightColumnContentBorderWidth = 2,
 		headerHeight = 35,
 		headerToolbar = 55,
+		bottomWrapHeight = 45,
 		leftColAdjustment,
-		$zenario_fbog = $('#zenario_fbog'),
+		domOrgWrapper = get('zenario_fbog'),
+		$zenario_fbog = $(domOrgWrapper),
 		width, height, el;
 	
 	
@@ -5937,18 +5923,22 @@ zenarioO.size = function(refresh) {
 				$header = $('#organizer_header'),
 				$panel = $(domPanel),
 				$footer = $(domFooter),
-				$buttons = $('#organizer_buttons');
+				$buttons = $('#organizer_buttons'),
+				$bottomWrap = $('#organizer_bottomWrap');
 			
 			if (!$header.is(':visible')) {
 				headerToolbar = 0;
 			}
 			if (!$buttons.is(':visible')) {
-				buttonsGap = 0;
+				buttonsHeight = 0;
+			}
+			if (!$bottomWrap.is(':visible')) {
+				footerHeight = 0;
 			}
 
 			
-			if ($zenario_fbog.length) {
-				get('zenario_fbog').className = zenarioA.getSKBodyClass();
+			if (domOrgWrapper) {
+				domOrgWrapper.className = zenarioA.getSKBodyClass(window, zenarioO.pi && zenarioO.pi.panelType);
 			}
 			
 			//This line fixes a bug where the height of the floating div keeps changing when Storekeeper is opened
@@ -5957,27 +5947,20 @@ zenarioO.size = function(refresh) {
 				Math.floor($zenario_fbog.height(height));
 			}
 			
-			if (!zenarioO.tuix || !zenarioO.tuix.banner) {
-				graphicGap = 0;
-			}
-			
-			if (window.zenarioONotFull) {
-				--colGap;
-			}
-			
-			get('organizer_leftColumn').style.height = ((1*height - outerGap - colGap) - 2) + 'px';
-			get('organizer_rightColumn').style.height = get('organizer_preloader_circle').style.height = (1*height - outerGap - colGap) + 'px';
-			get('organizer_Outer').style.height = (1*height - outerGap) + 'px';
+			get('organizer_rightColumn').style.height =
+			get('organizer_preloader_circle').style.height = (1*height - headerHeight - footerHeight) + 'px';
+			get('organizer_leftColumn').style.height = ((1*height - headerHeight - footerHeight) - 2) + 'px';
+			get('organizer_Outer').style.height = (1*height - headerHeight) + 'px';
 			
 			if (get('organizer_colsortfields')) {
 				if (zenario.browserIsIE(6)) {
-					get('organizer_colsortfields').style.height = (1*height - outerGap - 130) + 'px';
+					get('organizer_colsortfields').style.height = (1*height - headerHeight - 130) + 'px';
 				} else {
-					get('organizer_colsortfields').style.maxHeight = (1*height - outerGap - 130) + 'px';
+					get('organizer_colsortfields').style.maxHeight = (1*height - headerHeight - 130) + 'px';
 				}
 			}
 			
-			var rightColumnContentHeight = ((1*height - outerGap - colGap - contentGap - graphicGap - buttonsGap - bordersWidth - zenarioO.columnPadding + titleGap - headerToolbar) - 13);
+			var rightColumnContentHeight = ((1*height - headerHeight - footerHeight - contentGap - buttonsHeight - bordersWidth - zenarioO.columnPadding + titleHeight - headerToolbar) - 13);
 			if (domPanel) {
 				domPanel.style.height = rightColumnContentHeight + 'px';
 			}

@@ -27,9 +27,12 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+$dataset = getDatasetDetails('users');
+
+// Get fields on form
 $formFields = self::getUserFormFields($userFormId);
 
-// Get form extra properties
+// Get form properties
 $formProperties = getRow(
 	'user_forms',
 	array(
@@ -60,20 +63,19 @@ $formProperties = getRow(
 		'extranet_users_use_captcha',
 		'profanity_filter_text'
 	),
-	array('id' => $userFormId)
+	$userFormId
 );
 
 $values = array();
+$userSystemFields = array();
+$userCustomFields = array();
+$unlinkedFields = array();
 $checkBoxValues = array();
-$user_fields = array();
-$user_custom_fields = array();
-$unlinked_fields = array();
-$user_multi_value_fields = false;
-$email_field = false;
-$duplicate_email_found = false;
+$filePickerValues = array();
+
 $fieldIdValueLink = array();
 
-// List of attachments to add to the email depending on site setting
+// List of attachments to add to emails depending on site setting
 $attachments = array();
 
 foreach ($formFields as $fieldId => $field) {
@@ -81,25 +83,34 @@ foreach ($formFields as $fieldId => $field) {
 	$fieldName = self::getFieldName($field);
 	$type = self::getFieldType($field);
 	$ord = $field['ord'];
-	// Ignore field if readonly
-	if ($field['is_readonly']){
-		continue;
-	}
 	
 	if ($field['is_system_field']){
 		$valueType = 'system';
-		$values = &$user_fields;
+		$values = &$userSystemFields;
 	} elseif ($field['user_field_id']) {
 		$valueType = 'custom';
-		$values = &$user_custom_fields;
+		$values = &$userCustomFields;
 	} else {
 		$valueType = 'unlinked';
-		$values = &$unlinked_fields;
+		$values = &$unlinkedFields;
 	}
+	
+	// Array to store link between input name and file picker value
+	$filePickerValueLink = array();
+	
+	// Get loaded data for field
+	if ($type == 'checkboxes' || $type == 'file_picker') {
+		$loadedFieldValue = $data;
+	} else {
+		$loadedFieldValue = isset($data[$fieldName]) ? $data[$fieldName] : null;
+	}
+	
+	$fieldValue = self::getFormFieldValue($field, $type, true, $loadedFieldValue, false, false, $filePickerValueLink);
+	
 	switch ($type){
 		case 'group':
 		case 'checkbox':
-			if (isset($data[$fieldName])) {
+			if (!empty($fieldValue)) {
 				$checked = 1;
 				$eng = adminPhrase('Yes');
 			} else {
@@ -107,74 +118,50 @@ foreach ($formFields as $fieldId => $field) {
 				$eng = adminPhrase('No');
 			}
 			
-			$values[$fieldId] = array('value' => $eng, 'internal_value' => $checked, 'db_column' => $fieldName, 'ord' => $ord);
+			$values[$fieldId] = array('value' => $eng, 'internal_value' => $checked);
 			$fieldIdValueLink[$fieldId] = $checked;
 			break;
 		case 'checkboxes':
-			$internal_values = array();
-			$label_values = array();
-			
-			if ($userFieldId) {
-				$valuesList = getDatasetFieldLOV($userFieldId);
-			} else {
-				$valuesList = self::getUnlinkedFieldLOV($fieldId);
-			}
-			$fieldIdValueLink[$fieldId] = array();
-			foreach ($valuesList as $valueId => $label) {
-				$selected = isset($data[$valueId. '_'. $fieldName]);
-				if ($selected) {
-					$internal_values[] = $valueId;
-					$label_values[] = $label;
-					$fieldIdValueLink[$fieldId][$valueId] = $label;
-				}
-			}
 			// Store checkbox values to save in record
 			$checkBoxValues[$fieldId] = array(
-				'internal_value' => implode(',',$internal_values), 
-				'value' => implode(',',$label_values), 
+				'internal_value' => $fieldValue['ids'], 
+				'value' => $fieldValue['labels'], 
 				'ord' => $ord, 
 				'db_column' => $fieldName,
 				'value_type' => $valueType,
 				'user_field_id' => $userFieldId,
-				'type' => $type);
+				'type' => $type,
+				'readonly' => $field['is_readonly']
+			);
 			break;
 		case 'date':
 			$date = '';
-			if ($data[$fieldName]) {
-				$date = $data[$fieldName];
+			if ($fieldValue) {
+				$date = $fieldValue;
 			}
-			$values[$fieldId] = array('value' => $date, 'db_column' => $fieldName, 'ord' => $ord);
+			$values[$fieldId] = array('value' => $date);
 			$fieldIdValueLink[$fieldId] = $date;
 			break;
 		case 'radios':
 		case 'select':
 		case 'centralised_radios':
 		case 'centralised_select':
+			
 			if ($userFieldId) {
 				$valuesList = getDatasetFieldLOV($userFieldId);
 			} else {
 				$valuesList = self::getUnlinkedFieldLOV($fieldId);
 			}
-			
+			$value = isset($valuesList[$fieldValue]) ? $valuesList[$fieldValue] : '';
 			$fieldIdValueLink[$fieldId] = array();
-			if (isset($data[$fieldName])) {
-				$value = '';
-				if ($data[$fieldName] !== '') {
-					$value = $valuesList[$data[$fieldName]];
-				}
-				$fieldIdValueLink[$fieldId][$data[$fieldName]] = $value;
-				$values[$fieldId] = array(
-					'value' => $value, 
-					'db_column' => $fieldName, 
-					'internal_value' => $data[$fieldName], 
-					'ord' => $ord);
-			}
+			$fieldIdValueLink[$fieldId][$fieldValue] = $value;
+			$values[$fieldId] = array('value' => $value,  'internal_value' => $fieldValue);
 			break;
 		
 		case 'text':
 		case 'url':
 		case 'calculated':
-			$value = $data[$fieldName] ? $data[$fieldName] : '';
+			$value = $fieldValue ? $fieldValue : '';
 			switch ($field['db_column']) {
 				case 'salutation':
 					$value = substr($value, 0, 25);
@@ -190,64 +177,150 @@ foreach ($formFields as $fieldId => $field) {
 					break;
 				default:
 					$value = substr($value, 0, 255);
+					break;
 			}
-			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ord' => $ord);
-			$fieldIdValueLink[$fieldId] = $data[$fieldName];
+			$values[$fieldId] = array('value' => $value);
+			$fieldIdValueLink[$fieldId] = $fieldValue;
 			break;
 		case 'editor':
 		case 'textarea':
-			$value = $data[$fieldName] ? $data[$fieldName] : '';
-			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ord' => $ord);
-			$fieldIdValueLink[$fieldId] = $data[$fieldName];
+			$value = $fieldValue ? $fieldValue : '';
+			$values[$fieldId] = array('value' => $value);
+			$fieldIdValueLink[$fieldId] = $fieldValue;
 			break;
 		case 'attachment':
 			$fileId = false;
-			if (!empty($data[$fieldName]) && file_exists(CMS_ROOT.$data[$fieldName])) {
-				$filename = substr(basename($data[$fieldName]), 0, -7);
-				$fileId = addFileToDatabase('forms', CMS_ROOT.$data[$fieldName], $filename);
-				$values[$fieldId] = array('value' => $filename, 'internal_value' => $fileId, 'db_column' => $fieldName, 'ord' => $ord, 'attachment' => true);
+			if (!empty($fieldValue) && file_exists(CMS_ROOT . $fieldValue)) {
+				$filename = substr(basename($fieldValue), 0, -7);
+				$fileId = addFileToDatabase('forms', CMS_ROOT . $fieldValue, $filename);
+				$values[$fieldId] = array('value' => $filename, 'internal_value' => $fileId, 'attachment' => true);
 				if (setting('zenario_user_forms_admin_email_attachments')) {
 					$attachments[] = fileLink($fileId);
 				}
 			}
 			$fieldIdValueLink[$fieldId] = $fileId;
 			break;
+		
+		case 'file_picker':
+			
+			$labelValues = array();
+			$internalValues = array();
+			
+			if ($fieldValue) {
+				$fileIds = str_getcsv((string)$fieldValue, ',', '"', '//');
+				foreach ($fileIds as $fileId) {
+					
+					// If numeric file ID do nothing as this is already saved
+					if (is_numeric($fileId) && checkRowExists('custom_dataset_files_link', array('dataset_id' => $dataset['id'], 'field_id' => $userFieldId, 'linking_id' => $userId, 'file_id' => $fileId))) {
+						$filename = getRow('files', 'filename', $fileId);
+						$labelValues[] = $filename;
+						$internalValues[] = $fileId;
+					} elseif (file_exists(CMS_ROOT . $fileId)) {
+						
+						// Validate file size (10MB)
+						if (filesize(CMS_ROOT . $fileId) > (1024 * 1024 * 10)) {
+							continue;
+						}
+						
+						$filename = substr(basename($fileId), 0, -7);
+						
+						// Validate file extension
+						if (trim($field['extensions'])) {
+							$type = explode('.', $filename);
+							$type = $type[count($type) - 1];
+							$extensions = explode(',', $field['extensions']);
+							foreach ($extensions as $index => $extension) {
+								$extensions[$index] = trim(str_replace('.', '', $extension));
+							}
+							if (!in_array($type, $extensions)) {
+								continue;
+							}
+						}
+						if (!checkDocumentTypeIsAllowed($filename)) {
+							continue;
+						}
+						
+						// Just store file as a response attachment if not saving data, otherwise save as user file
+						$usage = 'forms';
+						if ($formProperties['save_data']) {
+							$usage = 'dataset_file';
+						}
+						
+						$postKey = arrayKey($filePickerValueLink, $fileId);
+						
+						$fileId = addFileToDatabase($usage, CMS_ROOT . $fileId, $filename);
+						
+						// Change post value to file ID from cache path now file is uploaded
+						if ($postKey) {
+							$data[$postKey] = $fileId;
+						}
+						
+						if ($fileId) {
+							if (setting('zenario_user_forms_admin_email_attachments')) {
+								$attachments[] = fileLink($fileId);
+							}
+							$labelValues[] = $filename;
+							$internalValues[] = $fileId;
+						}
+					}
+				}
+			}
+			
+			$filePickerValues[$fieldId] = array(
+				'value' => implode(',', $labelValues), 
+				'internal_value' => implode(',', $internalValues), 
+				'db_column' => $fieldName, 
+				'user_field_id' => $userFieldId, 
+				'ord' => $ord
+			);
+			break;
+		
 	}
+	
 	if (isset($values[$fieldId])) {
 		$values[$fieldId]['type'] = $type;
+		$values[$fieldId]['readonly'] = $field['is_readonly'];
+		$values[$fieldId]['db_column'] = $fieldName;
+		$values[$fieldId]['ord'] = $ord;
 	}
 }
 // Unset reference
 unset($values);
 
-$zenario_extranet = inc('zenario_extranet');
 
 // Save data against user record
-if ($formProperties['save_data'] && $zenario_extranet) {
+if ($formProperties['save_data'] && inc('zenario_extranet')) {
+	
 	$fields = array();
-	foreach ($user_fields as $fieldData) {
-		$fields[$fieldData['db_column']] = $fieldData['value'];
+	foreach ($userSystemFields as $fieldData) {
+		if (empty($fieldData['readonly'])) {
+			$fields[$fieldData['db_column']] = $fieldData['value'];
+		}
 	}
 	
 	// Try to save data if email field is on form
 	if (isset($fields['email']) || $userId) { 
 		// Duplicate email found
 		if ($userId || $userId = getRow('users', 'id', array('email' => $fields['email']))) {
-			$duplicate_email_found = true;
 			switch ($formProperties['user_duplicate_email_action']) {
-				case 'merge': // Don’t delete previously populated fields
+				// Don’t change previously populated fields
+				case 'merge': 
 					$fields['modified_date'] = now();
 					self::mergeUserData($fields, $userId, $formProperties['log_user_in']);
-					self::mergeUserCustomData($user_custom_fields, $userId);
-					self::mergeUserMultiCheckboxData($checkBoxValues, $userId);
+					self::saveUserCustomData($userCustomFields, $userId, true);
+					self::saveUserMultiCheckboxData($checkBoxValues, $userId, true);
+					self::saveUserFilePickerData($filePickerValues, $userId, true);
 					break;
-				case 'overwrite': // Delete previously populated fields
+				// Change previously populated fields
+				case 'overwrite': 
 					$fields['modified_date'] = now();
 					$userId = self::saveUser($fields, $userId);
-					self::saveUserCustomData($user_custom_fields, $userId);
+					self::saveUserCustomData($userCustomFields, $userId);
 					self::saveUserMultiCheckboxData($checkBoxValues, $userId);
+					self::saveUserFilePickerData($filePickerValues, $userId);
 					break;
-				case 'ignore': // Don’t update any fields
+				// Don’t update any fields
+				case 'ignore': 
 					break;
 			}
 		// No duplicate email found
@@ -263,7 +336,7 @@ if ($formProperties['save_data'] && $zenario_extranet) {
 			$userId = self::saveUser($fields);
 			
 			// Save new user custom data
-			self::saveUserCustomData($user_custom_fields, $userId);
+			self::saveUserCustomData($userCustomFields, $userId);
 			self::saveUserMultiCheckboxData($checkBoxValues, $userId);
 		}
 		if ($userId) {
@@ -280,6 +353,7 @@ if ($formProperties['save_data'] && $zenario_extranet) {
 		}
 	}
 }
+
 
 // Save a record of the submission
 $user_response_id = false;
@@ -298,7 +372,7 @@ if ($formProperties['save_record']) {
 			insertRow(ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 				array('user_id' => $userId, 'form_id' => $userFormId, 'response_datetime' => now()));
 		
-		$values = $user_fields + $user_custom_fields + $unlinked_fields;
+		$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues;
 		
 		// Single value form fields
 		foreach ($values as $fieldId => $fieldData) {
@@ -320,6 +394,7 @@ if ($formProperties['save_record']) {
 	}
 }
 
+
 // Send emails
 // Profanity check
 $profanityFilterEnabled = setting('zenario_user_forms_set_profanity_filter');
@@ -327,7 +402,7 @@ $profanityToleranceLevel = setting('zenario_user_forms_set_profanity_tolerence')
 
 if ($formProperties['profanity_filter_text']) {
 	
-	$profanityValuesToCheck = $user_fields + $user_custom_fields + $unlinked_fields;
+	$profanityValuesToCheck = $userSystemFields + $userCustomFields + $unlinkedFields;
 	$wordsCount = 0;
 	$allValuesFromText = "";
 	
@@ -354,7 +429,7 @@ if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityT
 	$adminEmailMergeFields = false;
 	
 	if ($sendEmailToUser || $sendEmailToAdmin) {
-		$values = $user_fields + $user_custom_fields + $checkBoxValues + $unlinked_fields;
+		$values = $userSystemFields + $userCustomFields + $checkBoxValues + $unlinkedFields;
 	}
 	
 	// Send an email to the user
@@ -475,7 +550,7 @@ if ($formProperties['profanity_filter_text']) {
 // Send a signal if specified
 if ($formProperties['send_signal']) {
 	$formProperties['user_form_id'] = $userFormId;
-	$values = $user_fields + $user_custom_fields + $checkBoxValues + $unlinked_fields;
+	$values = $userSystemFields + $userCustomFields + $checkBoxValues + $unlinkedFields;
 	$formattedData = self::getTemplateEmailMergeFields($values, $userId);
 	$params = array(
 		'data' => $formattedData, 
@@ -485,7 +560,6 @@ if ($formProperties['send_signal']) {
 	if ($user_response_id) {
 		$params['responseId'] = $user_response_id;
 	}
-	
 	sendSignal('eventUserFormSubmitted', $params);
 } 
 // Redirect to page if speficied

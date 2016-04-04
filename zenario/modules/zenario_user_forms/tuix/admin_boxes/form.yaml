@@ -24,6 +24,7 @@ zenario_user_admin_box_form:
                     type: text
                     side_note: The title will be displayed above a form to visitors
                     visible_if: zenarioAB.value('show_title');
+                    indent: 1
                 title_tag:
                     label: 'Title tag:'
                     type: select
@@ -41,52 +42,55 @@ zenario_user_admin_box_form:
                     label: 'Action after form submission:'
                     type: radios
                     values:
-                        show_success_message:
-                            label: 'Only show a success message'
                         redirect_after_submission:
-                            label: 'Redirect to a thank you page'
+                            label: 'Redirect to a "thank you" page'
+                        show_success_message:
+                            label: 'Remain on form, show a success message'
                         none:
-                            label: 'Stay on form'
+                            label: 'Remain on form with no message'
                     value: show_success_message
                     format_onchange: true
                     
                 redirect_location:
-                    label: 'Thank you page:'
+                    label: '"Thank you" page:'
                     pick_items:
-                        path: zenario__content/panels/content_types
-                        min_path: zenario__content/panels/content_types
+                        path: zenario__content/panels/content/refiners/content_type//html//
+                        min_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        select_phrase: Select page...
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select...
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a thank you page.
+                        required_if_not_hidden: 'Please select a content item with a "thank you" message.'
+                    indent: 1
                 success_message:
-                    label: 'Message:'
+                    label: 'Success message:'
                     type: text
                     maxlength: 255
+                    indent: 1
                     
                 submit_button_text:
-                    label: 'Submit button text:'
+                    label: '"Submit" button text:'
                     type: text
                     maxlength: 255
                     validation:
                         required_if_not_hidden: Please enter default text for the submit button.
                 default_next_button_text:
-                    label: 'Default next button text:'
+                    label: '"Next" button text:'
                     type: text
                     maxlength: 255
                     validation:
                         required_if_not_hidden: Please enter default text for the next button.
                     side_note: |
-                        This option only applies to multi-page forms.
+                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
                 default_previous_button_text:
-                    label: 'Default back button text:'
+                    label: '"Back" button text:'
                     type: text
                     maxlength: 255
                     validation:
                         required_if_not_hidden: Please enter default text for the back button.
                     side_note: |
-                        This option only applies to multi-page forms.
+                        Only applies to multi-page forms. Can be overridden by the text of buttons on a specific page of the form.
                 translate_text:
                     label: 'Use the phrases system'
                     type: checkbox
@@ -219,7 +223,7 @@ zenario_user_admin_box_form:
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select an email template for user emails.
@@ -259,7 +263,7 @@ zenario_user_admin_box_form:
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
                         required_if_not_hidden: Please select an email template for admin emails.

@@ -1,0 +1,108 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+top_right_buttons:
+    back:
+        css_class: organizer_back_button
+        onclick: |
+            zenarioO.back(1);
+    admin_name:
+        css_class: zenario_admin_name
+        hide_when_children_are_not_visible: true
+        label: ''
+        data-step: 3
+        data-position: down
+        data-intro: |
+            <p><strong>Administrator</strong></p>
+            <p>This area displays the details of the user logged in.</p>
+
+    view_profile:
+        parent: admin_name
+        label: View profile
+        onclick: |
+            zenarioAB.open(
+                'zenario_admin',
+                {id: zenario.adminId}
+            ).after(function() {
+                document.location.reload(true);
+            });
+    change_password:
+        parent: admin_name
+        label: Change password
+        onclick: |
+            zenarioO.changePassword();
+        disabled_tooltip: |
+            Your details are stored in a global database outside of this site's database.
+            You can only make changes via the control site.
+    enable_dev_tools:
+        priv: _PRIV_EDIT_ADMIN
+        visible_if: !zenarioA.adminSettings.show_dev_tools
+        parent: admin_name
+        label: Enable developer tools
+        onclick: |
+            zenario.ajax(
+                zenario.AJAXLink('zenario_common_features'),
+                {show_dev_tools: 1}
+            ).after(function() {
+                document.location.reload(true);
+            });
+    disable_dev_tools:
+        priv: _PRIV_EDIT_ADMIN
+        visible_if: zenarioA.adminSettings.show_dev_tools
+        parent: admin_name
+        label: Disable developer tools
+        onclick: |
+            zenario.ajax(
+                zenario.AJAXLink('zenario_common_features'),
+                {show_dev_tools: 0}
+            ).after(function() {
+                document.location.reload(true);
+            });
+    
+    #no_children:
+    #    css_class: zenario_admin_name
+    #    label: This button will be invisible
+    #    hide_when_children_are_not_visible: true
+    #
+    #test:
+    #    css_class: zenario_admin_name
+    #    label: Test
+    #
+    #test_admin_box:
+    #    parent: test
+    #    label: admin_box
+    #    admin_box:
+    #        path: zenario_file_type
+    #
+    #test_navigation_path:
+    #    parent: test
+    #    label: navigation_path
+    #    navigation_path: zenario__content/panels/content/refiners/content_type//blog//
+    #
+    #test_frontend_link1:
+    #    parent: test
+    #    label: frontend_link1
+    #    frontend_link: http://localhost/HEAD/index.php?cID=html_6
+    #
+    #test_frontend_link2:
+    #    parent: test
+    #    label: frontend_link2
+    #    frontend_link: html_4
+    #
+    #test_help:
+    #    parent: test
+    #    label: help
+    #    help:
+    #        message: Hello world!
+    #
+    #test_link:
+    #    parent: test
+    #    label: link
+    #    link:
+    #        path: zenario__content/panels/content
+    #
+    #test_popout:
+    #    parent: test
+    #    label: popout
+    #    popout:
+    #        href: private/images/IzrgHi3eSwaHnoRmRuebMdB_RIE/boat-image.jpg
+    #        title: Hi there

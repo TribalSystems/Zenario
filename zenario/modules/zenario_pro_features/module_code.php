@@ -120,27 +120,6 @@ class zenario_pro_features extends zenario_common_features {
 		//...your PHP code...//
 	}
 	
-
-	public function showAdminFloatingBoxTab($targetClassName, $floatingBoxName, $tabLabel, $primaryKey, $editMode, &$showEditButton) {
-		
-		//...your PHP code...//
-	}
-
-	public function validateAdminFloatingBoxTab($targetClassName, $floatingBoxName, $tabLabel, $primaryKey) {
-		$errorArray = array();
-		
-		//...your PHP code...//
-		
-		echo json_encode(array('valid' => empty($errorArray), 'errArray' => $errorArray));
-	}
-
-	public function saveAdminFloatingBoxTab($targetClassName, $floatingBoxName, $tabLabel, $primaryKey) {
-		
-		//...your PHP code...//
-		
-		echo json_encode(array());
-	}
-	
 	
 	
 	
@@ -874,7 +853,7 @@ class zenario_pro_features extends zenario_common_features {
 		//would messi with the affected rows/insert id.
 		//To avoid this, create a new connection.
 		if (!zenario_pro_features::$localDB) {
-			zenario_pro_features::$localDB = connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS);
+			zenario_pro_features::$localDB = connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT);
 		}
 		cms_core::$lastDB = zenario_pro_features::$localDB;
 		cms_core::$lastDBHost = DBHOST;

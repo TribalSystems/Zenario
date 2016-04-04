@@ -6,19 +6,19 @@ plugin_settings:
             label: Display
             fields:
                 description:
-                    ord: "0"
-                    full_width: Yes
+                    ord: 0
+                    full_width: true
                     snippet:
                         html: >
-                            These Settings control how visitors view and interact with
+                            These settings control how visitors view and interact with
                             the comments on this Content Item.
                 show_user_avatars:
                     plugin_setting:
                         name: show_user_avatars
-                    label: 'Show User avatars:'
+                    label: 'Show user avatars'
                     type: checkbox
-                    value: "1"
-                    format_onchange: Yes
+                    value: 1
+                    format_onchange: true
                 avatar_width:
                     plugin_setting:
                         name: avatar_width
@@ -27,8 +27,8 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 avatar_height:
@@ -39,43 +39,37 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter a Height.
                         numeric: The Height must be a number.
-                    value: "120"
-                    maxlength: "5"
+                    value: 120
+                    maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     note_below: >
                         Images may be scaled down maintaining aspect ratio, but will
                         never be scaled up.
-                show_user_job_titles:
-                    plugin_setting:
-                        name: show_user_job_titles
-                    label: 'Show the Public Groups that each User is in:'
-                    type: checkbox
-                    value: ""
                 show_user_join_dates:
                     plugin_setting:
                         name: show_user_join_dates
-                    label: 'Show User join dates:'
+                    label: 'Show User join dates'
                     type: checkbox
                     value: ""
                 show_user_post_counts:
                     plugin_setting:
                         name: show_user_post_counts
-                    label: 'Show User post counts:'
+                    label: 'Show User post counts'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 show_user_online_status:
                     plugin_setting:
                         name: show_user_online_status
-                    label: 'Show User online status:'
+                    label: 'Show User online status'
                     type: checkbox
                     value: ""
                     note_below: |
-                        If a User has looked at a comments Plugin or a Forum Plugin within the last 10 minutes,
-                                                    they will be classified as &quot;online&quot;.
-                                                    
-                                                    As a saved copy of this page would quickly become inaccurate,
-                                                    enabling this option will disable Plugin and Page Caching.
+                        If a user has looked at a comments plugin or a forum plugin within the last 10 minutes,
+                        they will be classified as &quot;online&quot;.
+                        
+                        As a saved copy of this page would quickly become inaccurate,
+                        enabling this option will disable plugin and page caching.
                 date_format:
                     plugin_setting:
                         name: date_format
@@ -110,18 +104,18 @@ plugin_settings:
                     type: select
                     values:
                         5:
-                            label: "5"
+                            label: 5
                         10:
-                            label: "10"
+                            label: 10
                         12:
-                            label: "12"
+                            label: 12
                         15:
-                            label: "15"
+                            label: 15
                         20:
-                            label: "20"
+                            label: 20
                         50:
-                            label: "50"
-                    value: "12"
+                            label: 50
+                    value: 12
                 pagination_style_posts:
                     plugin_setting:
                         name: pagination_style_posts
@@ -131,57 +125,55 @@ plugin_settings:
         posting:
             label: Editing
             fields:
-                enable_colours:
-                    plugin_setting:
-                        name: enable_colours
-                    label: 'Allow colored text:'
-                    type: checkbox
-                    value: ""
                 enable_images:
                     plugin_setting:
                         name: enable_images
-                    label: 'Allow images:'
+                    label: 'Allow images in comments'
                     type: checkbox
-                    value: "1"
-                    format_onchange: Yes
-                enable_emoticons:
-                    plugin_setting:
-                        name: enable_emoticons
-                    label: 'Allow emoticons:'
-                    type: checkbox
-                    value: ""
+                    value: 1
+                    side_note: |
+                        This is not retro-active.
+                        If a comment contains an image and you uncheck this checkbox,
+                        the image will not be removed until the comment is next edited and saved.
                 enable_links:
                     plugin_setting:
                         name: enable_links
-                    label: 'Allow links:'
+                    label: 'Allow links in comments'
                     type: checkbox
-                    value: "1"
+                    value: 1
+                    side_note: |
+                        This is not retro-active.
+                        If a comment contains a link and you uncheck this checkbox,
+                        the link will not be removed until the comment is next edited and saved.
                 enable_reply_with_quote:
                     plugin_setting:
                         name: enable_reply_with_quote
-                    label: 'Enable replying with quotes:'
+                    label: 'Enable replying with quotes'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 allow_user_edit_own_post:
                     plugin_setting:
                         name: allow_user_edit_own_post
-                    label: 'Allow posters to edit their own posts:'
+                    label: 'Allow posters to edit their own posts'
                     type: checkbox
-                    value: "1"
+                    value: 1
                 allow_user_delete_own_post:
                     plugin_setting:
                         name: allow_user_delete_own_post
-                    label: 'Allow posters to delete own posts:'
+                    label: 'Allow posters to delete own posts'
                     type: checkbox
                     value: ""
                 enable_posting_restrictions:
                     plugin_setting:
                         name: enable_posting_restrictions
-                    label: 'Restrict comment writing by Group:'
+                    label: 'Restrict comment writing by group'
                     type: checkbox
                     value: ""
-                    note_below: 'Only members of the stated Group are allowed to write comments. Users in the Moderation Group, and Administrators with the &quot;Moderate User Comments&quot; permission, will always be able to write comments.'
-                    format_onchange: Yes
+                    note_below: |
+                        Only members of the stated group are allowed to write comments.
+                        Users in the moderation group, and administrators with the &quot;Moderate User Comments&quot; permission,
+                        will always be able to write comments.
+                    format_onchange: true
                 restrict_posting_to_group:
                     plugin_setting:
                         name: restrict_posting_to_group
@@ -192,63 +184,57 @@ plugin_settings:
                     #    target_path: zenario__users/panels/groups
                     #    min_path: zenario__users/panels/groups
                     #    max_path: zenario__users/panels/groups
-                    #    disallow_refiners_looping_on_min_path: Yes
-                    #    one_to_one_choose_phrase: Choose Group
-                    #    select_phrase: Select Group...
-                    #    nothing_selected_phrase: No Group Selected
-                    #    hide_remove_button: Yes
+                    #    disallow_refiners_looping_on_min_path: true
+                    #    one_to_one_choose_phrase: Choose group
+                    #    select_phrase: Select group...
+                    #    nothing_selected_phrase: No group selected
+                    #    hide_remove_button: true
                     value: ""
                     validation:
-                        required_if_not_hidden: Please select a Group.
-                mark_employee_posts:
-                    plugin_setting:
-                        name: mark_employee_posts
-                    label: 'Style employee created comments differently:'
-                    type: checkbox
-                    value: "1"
-                    note_below: 'Employees must be members of an Extranet Group with the &quot;Members are Employees&quot; option checked.'
+                        required_if_not_hidden: Please select a group.
         moderation:
             label: Moderation
             fields:
                 description_moderation:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: |
-                            You can declare a Group of 
-                                                            Extranet Users to be a Moderation Group. This will enable them to edit and delete other Users' comments.
+                            You can declare a group of extranet users to be moderators.
+                            This will enable them to edit and delete other users' comments.
                 enable_extranet_moderators:
                     plugin_setting:
                         name: enable_extranet_moderators
-                    label: 'Declare a Moderation Group:'
+                    label: 'Declare a moderation group'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
-                    note_below: 'Administrators with the &quot;Moderate User Comments&quot; Permission will always be able to moderate.'
+                    format_onchange: true
+                    note_below: |
+                        Administrators with the &quot;Moderate User Comments&quot; permission will always be able to moderate.
                 moderators:
                     plugin_setting:
                         name: moderators
-                    label: 'Moderation Group:'
+                    label: 'Moderation group:'
                     type: select
                     #pick_items:
                     #    path: zenario__users/panels/groups
                     #    target_path: zenario__users/panels/groups
                     #    min_path: zenario__users/panels/groups
                     #    max_path: zenario__users/panels/groups
-                    #    disallow_refiners_looping_on_min_path: Yes
+                    #    disallow_refiners_looping_on_min_path: true
                     #    one_to_one_choose_phrase: Choose Group
                     #    select_phrase: Select Group...
                     #    nothing_selected_phrase: No Group Selected
-                    #    hide_remove_button: Yes
+                    #    hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a Group.
+                        required_if_not_hidden: Please select a group.
                     value: ""
                 separator:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         separator:
-                            exists: Yes
+                            exists: true
                 description_reporting:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: >
                             You can enable reporting of abuse, and you can require that
@@ -256,14 +242,14 @@ plugin_settings:
                 enable_report_a_post:
                     plugin_setting:
                         name: enable_report_a_post
-                    label: 'Enable reporting of abuse:'
+                    label: 'Enable reporting of abuse'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 enable_anonymous_report_a_post:
                     plugin_setting:
                         name: enable_anonymous_report_a_post
-                    label: 'Allow anonymous reporting:'
+                    label: 'Allow anonymous reporting'
                     type: checkbox
                     value: ""
                     note_below: If enabled, any visitor can report abuse.
@@ -272,30 +258,27 @@ plugin_settings:
                         name: email_template_for_reports
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_report
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 comments_require_approval:
                     plugin_setting:
                         name: comments_require_approval
-                    label: 'Screen comments:'
+                    label: 'Screen comments'
                     type: checkbox
-                    format_onchange: Yes
+                    format_onchange: true
                     note_below: >
                         If enabled, comments must be approved by a moderator before
                         they go live.
@@ -304,31 +287,28 @@ plugin_settings:
                         name: email_template_for_approve_requests
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_awaiting_approval
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 email_address_for_reports:
                     plugin_setting:
                         name: email_address_for_reports
                         is_email_address: true
                     label: 'Email Address that reports will be sent to:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: Please enter an email address.
@@ -340,7 +320,7 @@ plugin_settings:
             label: Notification
             fields:
                 description_notification:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: >
                             If set, the CMS will send an email notification whenever a
@@ -350,17 +330,17 @@ plugin_settings:
                 send_notification_email:
                     plugin_setting:
                         name: send_notification_email
-                    label: 'Send an email notification to an Administrator:'
+                    label: 'Send an email notification to an Administrator'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 notification_email_address:
                     plugin_setting:
                         name: notification_email_address
                         is_email_address: true
                     label: 'Email Address:'
                     type: text
-                    maxlength: "255"
+                    maxlength: 255
                     value: ""
                     validation:
                         required_if_not_hidden: Please enter an email address.
@@ -373,61 +353,55 @@ plugin_settings:
                         name: notification_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__to_admin_comment_notification_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
                 separator:
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         separator:
-                            exists: Yes
+                            exists: true
                 description_subs:
-                    full_width: Yes
+                    full_width: true
                     snippet:
-                        html: This allows Extranet Users to sign up for notifications.
+                        html: This allows extranet users to sign up for notifications.
                 enable_subs:
                     plugin_setting:
                         name: enable_subs
-                    label: 'Enable Subscription:'
+                    label: 'Enable subscription'
                     type: checkbox
                     value: ""
-                    format_onchange: Yes
+                    format_onchange: true
                 comment_subs_email_template:
                     plugin_setting:
                         name: comment_subs_email_template
                         foreign_key_to: email_template
                         dangling_cross_references: remove
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
-                        disallow_refiners_looping_on_min_path: Yes
-                        one_to_one_choose_phrase: Choose Email Template
-                        select_phrase: Select an Email Template...
-                        nothing_selected_phrase: No Email Template Selected
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose email template
+                        select_phrase: Select an email template...
+                        nothing_selected_phrase: No email template selected
+                        hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email Template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_subs_en
-                    note_below: >
-                        Please see the Module description to get a full list of
-                        merge fields which can be used in the selected Email
-                        Template.
+                    note_below: _insert_email_template_note_here_
     module_class_name: zenario_comments

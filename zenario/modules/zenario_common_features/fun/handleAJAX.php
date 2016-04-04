@@ -130,29 +130,6 @@ if (checkPriv()) {
 					}
 				}
 			}
-			
-			//I've removed the "Code last changed" section as the time that the system reports isn't
-			//actually the time the code was last changed, it's actually the time that the system
-			//noticed that the code had changed.
-			//(There's a subtle difference which can cause a lot of confusion.)
-			/*
-			$codeLastChanged = 0;
-			if (($php_files_last_changed = setting('php_files_last_changed'))
-			 && (is_numeric($php_files_last_changed))) {
-				$codeLastChanged = $php_files_last_changed;
-			}
-			if (($yaml_files_last_changed = setting('yaml_files_last_changed'))
-			 && (is_numeric($yaml_files_last_changed))
-			 && ($codeLastChanged < $yaml_files_last_changed)) {
-				$codeLastChanged = $yaml_files_last_changed;
-			}
-			
-			if ($codeLastChanged
-			 && ($codeLastChanged = date("Y-m-d H:i:s", $codeLastChanged))
-			 && ($codeLastChanged = formatDateTimeNicely($codeLastChanged))) {
-				$section['fields'][] = array('label' => adminPhrase('Code last changed:'), 'value' => $codeLastChanged);
-			}
-			*/
 		}
 		$infoBox['sections'][] = $section;
 		
@@ -176,24 +153,13 @@ if (checkPriv()) {
 		}
 		
 		if (globalDBDefined()) {
-			$section['fields'][] = array('label' => adminPhrase('Local Database:'), 'value' => DBNAME);
-			$section['fields'][] = array('label' => adminPhrase('Global Database:'), 'value' => DBNAME_GLOBAL);
+			$section['fields'][] = array('label' => adminPhrase('Local database:'), 'value' => 
+				adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+			$section['fields'][] = array('label' => adminPhrase('Global database:'), 'value' => 
+				adminPhrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
 		} else {
-			$section['fields'][] = array('label' => adminPhrase('Database Name:'), 'value' => DBNAME);
-		}
-		
-		if (defined('DBHOST_GLOBAL') && DBHOST_GLOBAL != DBHOST) {
-			$section['fields'][] = array('label' => adminPhrase('Local DB Host:'), 'value' => DBHOST);
-			$section['fields'][] = array('label' => adminPhrase('Global DB Host:'), 'value' => DBHOST_GLOBAL);
-		} else {
-			$section['fields'][] = array('label' => adminPhrase('Database Host:'), 'value' => DBHOST);
-		}
-		
-		if (defined('DB_NAME_PREFIX_GLOBAL') && DB_NAME_PREFIX_GLOBAL != DB_NAME_PREFIX) {
-			$section['fields'][] = array('label' => adminPhrase('Local DB Prefix:'), 'value' => DB_NAME_PREFIX);
-			$section['fields'][] = array('label' => adminPhrase('Global DB Prefix:'), 'value' => DB_NAME_PREFIX_GLOBAL);
-		} else {
-			$section['fields'][] = array('label' => adminPhrase('Database Prefix:'), 'value' => DB_NAME_PREFIX);
+			$section['fields'][] = array('label' => adminPhrase('Database:'), 'value' =>
+				adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
 		}
 		$infoBox['sections'][] = $section;
 		
@@ -238,6 +204,10 @@ if (checkPriv()) {
 		echo formatDateNicely(now(), get('previewDateFormat'), true);
 		exit;
 	
+	//Toggle dev tools on/off
+	} elseif (isset($_POST['show_dev_tools']) && checkPriv('_PRIV_EDIT_ADMIN')) {
+		setAdminSetting('show_dev_tools', (int) !empty($_POST['show_dev_tools']));
+	
 	//Otherwise handle requests for slots
 	} else {
 		//Update the last modification date if making a change to a Content Item
@@ -259,14 +229,31 @@ if (checkPriv()) {
 			//(But don't touch any other versions/content items, even if they're also hidden.)
 			unhidePlugin(post('cID'), post('cType'), post('cVersion'), post('slotName'));
 	
-		//Insert a Wireframe Plugin into a slot
+		//Insert a version-controlled plugin into a slot
 		} elseif (get('addPlugin')) {
-			echo adminPhrase(
-					'Are you sure you wish to insert a [[display_name]] into [[slotName]]?<br/><br/>This will affect [[pages]] Content Item(s), <b>[[published]] Published</b>.',
-					array('pages' => checkTemplateUsage($layoutId, false, false),
+			
+			$mrg = array('pages' => checkTemplateUsage($layoutId, false, false),
 							'published' => checkTemplateUsage($layoutId, false, true),
 							'display_name' => htmlspecialchars(getModuleDisplayName(get('addPlugin'))),
-							'slotName' => htmlspecialchars(get('slotName'))));
+							'slotName' => htmlspecialchars(get('slotName')));
+			
+			if ($mrg['pages'] == 1) {
+				echo adminPhrase(
+					'Are you sure you wish to insert a [[display_name]] into slot [[slotName]] on this layout?
+					<br/><br/>
+					This will affect [[pages]] content item, <b>[[published]] published</b>.
+					<br/><br/>
+					The content item will gain its own version-controlled [[display_name]], which you can modify on the Edit tab.'
+				, $mrg);
+			} else {
+				echo adminPhrase(
+					'Are you sure you wish to insert a [[display_name]] into slot [[slotName]] on this layout?
+					<br/><br/>
+					This will affect [[pages]] content items, <b>[[published]] published</b>.
+					<br/><br/>
+					Each content item will gain its own version-controlled [[display_name]], which you can modify on the Edit tab.'
+				, $mrg);
+			}
 	
 		} elseif (post('addPlugin') && checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT') && $layoutId && $templateFamily) {
 			updatePluginInstanceInTemplateSlot(0, post('slotName'), $templateFamily, $layoutId, post('addPlugin'));

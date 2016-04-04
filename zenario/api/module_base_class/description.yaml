@@ -1,4 +1,6 @@
 ---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
 display_name: '[[MODULE_DIRECTORY_NAME]]'
 required_cms_version: '[[ZENARIO_MAJOR_VERSION]].[[ZENARIO_MINOR_VERSION]]'
 author_name: ""
@@ -10,6 +12,7 @@ description: >
     </p>
 keywords: ""
 is_pluggable: '[[HAS_SHOWSLOT_FUNCTION]]'
+fill_organizer_nav: '[[HAS_FILLORGANIZERNAV_FUNCTION]]'
 can_be_version_controlled: false
 nestable: '[[HAS_SHOWSLOT_FUNCTION]]'
 vlp_class_name: '[[MODULE_DIRECTORY_NAME]]'

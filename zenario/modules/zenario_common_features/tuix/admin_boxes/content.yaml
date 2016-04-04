@@ -29,6 +29,9 @@ zenario_content:
         source_menu_parent: ""
         quick_create_content: ""
         quick_create_menu: ""
+    identifier:
+        css_class: content_draft
+        label: Content item ID
     title: Creating a content item
     tabs:
         meta_data:

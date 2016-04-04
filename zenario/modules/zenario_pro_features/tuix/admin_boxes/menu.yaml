@@ -6,17 +6,17 @@ zenario_menu:
         advanced:
             custom_fields:
                 zenario_pro_features__descriptive_text:
-                    ord: "10"
+                    ord: 10
                     label: 'Additional text:'
                     type: textarea
-                    rows: "2"
-                    cols: "80"
+                    rows: 2
+                    cols: 80
         text:
             fields:
                 zenario_pro_features__invisible:
-                    ord: "2000"
+                    ord: 4000
                     label: 'Invisible in menu navigation'
                     type: checkbox
-                    note_below: >
+                    side_note: >
                         If invisible, menu text will appear in breadcrumb trail
                         only.

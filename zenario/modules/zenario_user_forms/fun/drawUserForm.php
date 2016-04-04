@@ -27,11 +27,18 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
+$dataset = getDatasetDetails('users');
+$formProperties = getRow(
+	'user_forms', 
+	array('translate_text', 'default_next_button_text', 'default_previous_button_text'), 
+	array('id' => $userFormId)
+);
 $formFields = self::getUserFormFields($userFormId);
-$formProperties = getRow('user_forms', array('translate_text', 'default_next_button_text', 'default_previous_button_text'), array('id' => $userFormId));
 $translate = $formProperties['translate_text'];
-$submitted = false;
 
+$submitted = false;
+$preloadUserData = false;
+$data = array();
 
 //If $loadData is an array, use that as the data
 if ($loadData && is_array($loadData)) {
@@ -39,42 +46,8 @@ if ($loadData && is_array($loadData)) {
 	$submitted = true;
 //If $loadData is a number, try to load data for that user
 } elseif ($loadData && is_numeric($loadData)) {
-	$data = array();
-	if ($dataset = getDatasetDetails('users')) {
-		$sql ="
-			SELECT *
-			FROM ". DB_NAME_PREFIX. "users AS u
-			LEFT JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
-			ON ucd.user_id = u.id
-			WHERE u.id = ". (int) $loadData;
-		$result = sqlQuery($sql);
-		if ($row = sqlFetchAssoc($result)) {
-			$data = $row;
-		}
-		
-		$sql ="
-			SELECT cdfv.field_id, cdf.db_column, cdvl.value_id
-			FROM ". DB_NAME_PREFIX. "custom_dataset_values_link AS cdvl
-			INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_field_values AS cdfv
-			ON cdvl.value_id = cdfv.id
-			INNER JOIN ". DB_NAME_PREFIX. "custom_dataset_fields AS cdf
-			ON cdfv.field_id = cdf.id
-			WHERE cdvl.linking_id = ". (int) $loadData. "
-			  AND cdvl.dataset_id = ".(int) $dataset['id'];
-		$result = sqlQuery($sql);
-		
-		while ($row = sqlFetchAssoc($result)) {
-			$data[$row['value_id'] . '_' . $row['db_column']] = true;
-		}
-		unset($row);
-		
-	}
-//If $loadData is not provided, start with no data loaded
-} else {
-	$data = array();
+	$preloadUserData = $loadData;
 }
-
-$pageBreakFields = getRowsArray('user_form_fields', 'id', array('field_type' => 'page_break', 'user_form_id' => $userFormId), array('ord'));
 
 // Begin form field HTML
 $html = '';
@@ -84,19 +57,24 @@ $html .= '<input type="hidden" name="filter_list" id="' . $containerId . '_filte
 $html .= '<input type="hidden" name="filter_list_id" id="' . $containerId . '_filter_list_id"/>';
 $html .= '<input type="hidden" name="filter_list_value" id="' . $containerId . '_filter_list_value"/>';
 
+// Variables to handle wrapper divs
 $currentDivWrapClass = false;
 $wrapDivOpen = false;
 
+// Check whether this is a multi page form
+$pageBreakFields = getRowsArray('user_form_fields', 'id', array('field_type' => 'page_break', 'user_form_id' => $userFormId), array('ord'));
 if ($pageBreakFields) {
 	$html .= '<fieldset id="'.$containerId.'_page_1" class="page_1">';
 	$page = 1;
 }
+
+// Start drawing form fields
 foreach ($formFields as $fieldId => $field) {
 	
 	$type = self::getFieldType($field);
-	$userFieldId = $field['user_field_id'];
 	$fieldName = self::getFieldName($field);
-	
+	$userFieldId = $field['user_field_id'];
+	$fieldIsReadonly = ($readOnly || $field['is_readonly']);
 	
 	// Create wrapper divs
 	if ($wrapDivOpen && ($currentDivWrapClass != $field['div_wrap_class'])) {
@@ -109,42 +87,48 @@ foreach ($formFields as $fieldId => $field) {
 	}
 	$currentDivWrapClass = $field['div_wrap_class'];
 	
-	
-	// Add page break and naviagation buttons
+	// Add page breaks and navigation buttons
 	if ($type == 'page_break') {
 		if ($fieldId != reset($pageBreakFields)) {
 			$previousButtonText = $field['previous_button_text'] ? $field['previous_button_text'] : $formProperties['default_previous_button_text'];
-			$html .= '<input type="button" name="previous" value="'.self::formPhrase($previousButtonText, array(), $translate).'" class="previous"/>';
+			$html .= '<input type="button" name="previous" value="' . self::formPhrase($previousButtonText, array(), $translate) . '" class="previous"/>';
 		}
 		$nextButtonText = $field['next_button_text'] ? $field['next_button_text'] : $formProperties['default_next_button_text'];
-		$html .= '<input type="button" name="next" value="'.self::formPhrase($nextButtonText, array(), $translate).'" class="next"/>';
-		$html .= '</fieldset><fieldset id="'.$containerId.'_page_'.++$page.'" class="page_'.$page.'" style="display:none;">';
+		$html .= '<input type="button" name="next" value="' . self::formPhrase($nextButtonText, array(), $translate) . '" class="next"/>';
+		$html .= '</fieldset><fieldset id="' . $containerId . '_page_' . ++$page . '" class="page_' . $page . '" style="display:none;">';
 		continue;
 	}
 	
+	// Get ID of inputs for mirror fields and label elements
+	$id = $containerId . '_field_value_' . $fieldId;
+	
+	// Use form field label over dataset label
 	if ($field['field_label'] !== null) {
 		$field['label'] = $field['field_label'];
 	}
 	
+	// Field error
 	$errorHTML = '';
 	if (isset($errors[$fieldId])) {
-		$errorHTML = '<div class="form_error">'.$errors[$fieldId]['message'].'</div>';
+		$errorHTML = '<div class="form_error">' . $errors[$fieldId]['message'] . '</div>';
 	}
+	// Field label
 	$labelHTML = '';
 	if (!empty($field['label'])) {
-		$labelHTML = '<div class="field_title">'. self::formPhrase($field['label'], array(), $translate) .'</div>';
+		$labelHTML = '<div class="field_title">' . self::formPhrase($field['label'], array(), $translate) . '</div>';
 	}
 	
-	$html .= '<div';
-	$html .= ' id="'.$containerId.'_field_'.htmlspecialchars($fieldId).'"';
+	$html .= '<div id="' . $containerId . '_field_' . htmlspecialchars($fieldId) . '" data-id="' . htmlspecialchars($fieldId) . '"';
 	
-	// For mirrored and calculated fields, use normal field type
+	// Calculated fields should be readonly text fields showing 0 as default
 	if ($type == 'calculated') {
 		if (empty($data[$fieldName])) {
 			$data[$fieldName] = 0;
 		}
 		$type = 'text';
 		$field['is_readonly'] = true;
+	
+	// Restatement (mirror) fields should be readonly fields the same type as their target field
 	} elseif ($type == 'restatement') {
 		if (isset($formFields[$field['restatement_field']])) {
 			// Set to text type if mirroring a calculated field, otherwise attempt to mimic restated field type
@@ -165,7 +149,13 @@ foreach ($formFields as $fieldId => $field) {
 			}
 		}
 	}
-	$html .= ' class="form_field field_'.htmlspecialchars($type);
+	
+	// Field CSS classes
+	$html .= ' class="form_field field_' . htmlspecialchars($type) . ' ' . htmlspecialchars($field['css_classes']);
+	if ($fieldIsReadonly) {
+		$html .= ' readonly ';
+	}
+	$html .= '"';
 	
 	// Handle hiding a field
 	$hidden = false;
@@ -212,23 +202,15 @@ foreach ($formFields as $fieldId => $field) {
 		}
 	}
 	
-	if ($readOnly || $field['is_readonly']) {
-		$html .= ' readonly ';
-	}
-	
-	// Add css classes
-	$html .= ' '.htmlspecialchars($field['css_classes']).'"';
-	
 	// Hide hidden fields
 	if ($hidden) {
 		$html .= ' style="display:none;" ';
 	}
 	$html .= '>';
 	
-	// Position errors and labels for checkboxes
+	// Position errors and labels for checkbox type fields
 	if (!in_array($type, array('checkbox', 'group'))) {
-		$html .= $labelHTML;
-		$html .= $errorHTML;
+		$html .= $labelHTML . $errorHTML;
 	}
 	
 	// Set field size
@@ -245,49 +227,41 @@ foreach ($formFields as $fieldId => $field) {
 			break;
 	}
 	
-	// Get default value of field
-	$fieldValue = isset($data[$fieldName]) ? $data[$fieldName] : false;
-	if (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
-		
-		if ($submitted) {
-			if (isset($data[$fieldName])) {
-				$fieldValue = $data[$fieldName];
-			}
-		} elseif (!empty($field['default_value'])) {
-			$fieldValue = $field['default_value'];
-		} elseif (!empty($field['default_value_class_name']) && !empty($field['default_value_method_name'])) {
-			
-			inc($field['default_value_class_name']);
-			$fieldValue = call_user_func(array($field['default_value_class_name'], $field['default_value_method_name']), $field['default_value_param_1'], $field['default_value_param_2']);
-		}
+	// Get loaded data for field
+	if ($type == 'checkboxes' || $type == 'file_picker') {
+		$loadedFieldValue = $data;
+	} else {
+		$loadedFieldValue = isset($data[$fieldName]) ? $data[$fieldName] : null;
 	}
 	
-	// Get id of inputs for mirror fields and labels
-	$id = $containerId.'_field_value_'.$fieldId;
+	// Get this form fields current value
+	$fieldValue = self::getFormFieldValue($field, $type, $submitted, $loadedFieldValue, $preloadUserData, $dataset);
 	
+	// Draw fields
 	switch ($type) {
 		case 'group':
 		case 'checkbox':
-			$html .= '<input type="checkbox" ';
-			if ($fieldValue && (($fieldValue == 1) || $fieldValue == 'on')) {
-				$html .= 'checked ';
+			$html .= $errorHTML . '<input type="checkbox" ';
+			if (!empty($fieldValue)) {
+				$html .= ' checked="checked" ';
 			}
-			if ($readOnly || $field['is_readonly']) {
-				$html .= 'disabled ';
+			if ($fieldIsReadonly) {
+				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
 			}
 			$html .= '/>';
-			if (($readOnly || $field['is_readonly']) && isset($data[$fieldName]) && $field['field_type'] != 'restatement') {
-				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($data[$fieldName]).'" />';
+			if ($fieldIsReadonly && !empty($fieldValue) && $field['field_type'] != 'restatement') {
+				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($fieldValue) . '"/>';
 			}
-			$html .= $labelHTML;
-			$html .= $errorHTML;
+			$html .= '<label class="field_title" for="' . htmlspecialchars($id) . '">'. self::formPhrase($field['label'], array(), $translate) .'</label>';
 			break;
 		case 'checkboxes':
+			
+			// Get list of values
 			if ($userFieldId) {
 				$valuesList = getDatasetFieldLOV($userFieldId);
 			} else {
@@ -295,7 +269,7 @@ foreach ($formFields as $fieldId => $field) {
 			}
 			
 			$html .= '<div class="checkboxes_wrap';
-			if ($sortIntoCols = !($checkboxColumns == 1) && $checkboxColumns) {
+			if ($checkboxColumns > 1) {
 				$items = count($valuesList);
 				$cols = (int)$checkboxColumns;
 				$rows = ceil($items/$cols);
@@ -303,129 +277,119 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' columns_'.$checkboxColumns;
 			}
 			$html .= '">';
+			
+			$fieldValues = array();
+			if ($fieldValue) {
+				$fieldValues = explode(',', $fieldValue['ids']);
+			}
+			
 			foreach ($valuesList as $valueId => $label) {
+				
 				$checkBoxHtml = '';
-				$name = htmlspecialchars($valueId.'_'.$fieldName); 
-				$multiFieldId = $id.'_'.$valueId;
-				$selected = isset($data[$valueId. '_'. $fieldName]);
+				$name = $valueId . '_' . $fieldName; 
+				$multiFieldId = $id . '_' . $valueId;
+				
+				
+				$selected = in_array($valueId, $fieldValues);
 				$checkBoxHtml .= '<div class="field_checkbox"><input type="checkbox" ';
 				if ($selected) {
 					$checkBoxHtml .= ' checked="checked"';
 				}
-				if ($readOnly || $field['is_readonly']) {
+				if ($fieldIsReadonly) {
 					$checkBoxHtml .= ' disabled ';
 				}
 				if ($field['field_type'] == 'restatement') {
-					$checkBoxHtml .= ' data-mirror-of="'.$multiFieldId.'" ';
+					$checkBoxHtml .= ' data-mirror-of="' . htmlspecialchars($multiFieldId) . '" ';
+					
 					// Stop mirror field labels selecting target field checkboxes
 					$multiFieldId = '';
+					
 				} else {
-					$checkBoxHtml .= ' name="'.$name.'" id="'.$multiFieldId.'" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
+					$checkBoxHtml .= ' name="' . htmlspecialchars($name) . '" id="' . htmlspecialchars($multiFieldId) . '" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
 				}
-				$checkBoxHtml .= '/><label for="'.$multiFieldId.'">';
-				$checkBoxHtml .= self::formPhrase($label, array(), $translate);
-				$checkBoxHtml .= '</label></div>';
-				
-				
-				if (($readOnly || $field['is_readonly']) && $selected && $field['field_type'] != 'restatement') {
-					$checkBoxHtml .= '<input type="hidden" name="'.$name.'" value="'.$selected.'" />';
+				$checkBoxHtml .= '/>';
+				if ($fieldIsReadonly && $selected && $field['field_type'] != 'restatement') {
+					$checkBoxHtml .= '<input type="hidden" name="' . htmlspecialchars($name) . '" value="' . $selected . '" />';
 				}
+				$checkBoxHtml .= '<label for="'.$multiFieldId.'">' . self::formPhrase($label, array(), $translate) . '</label></div>';
 				
 				
-				if (($sortIntoCols) && ($currentRow > $rows)) {
+				if (($checkboxColumns > 1) && ($currentRow > $rows)) {
 					$currentRow = 1;
 					$currentCol++;
 				}
-				if (($sortIntoCols) && ($currentRow == 1)) {
+				if (($checkboxColumns > 1) && ($currentRow == 1)) {
 					$html .= '<div class="col_'.$currentCol.' column">';
 				}
-				
 				$html .= $checkBoxHtml;
-				if (($sortIntoCols) && ($currentRow++ == $rows)) {
+				if (($checkboxColumns > 1) && ($currentRow++ == $rows)) {
 					$html .= '</div>';
 				}
 			}
 			$html .= '</div>';
 			break;
 		case 'date':
-			$html .= '<input type="text" readonly ';
-			if (!($readOnly || $field['is_readonly'])) {
-				$html .= ' class="jquery_form_datepicker" ';
+			$html .= '<input type="text" readonly class="jquery_form_datepicker" ';
+			if ($fieldIsReadonly) {
+				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 				$html .= '/>';
 			} else {
-				$html .= ' id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= ' id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
 				$html .= '/>';
 				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" id="' . $id . '__0"';
-				if (isset($data[$fieldName])) {
-					$html .= ' value="' . $data[$fieldName] . '"';
+				if (!empty($fieldValue)) {
+					$html .= ' value="' . htmlspecialchars($fieldValue) . '" ';
 				}
 				$html .= '/>';
-			}
-			
-			
-			break;
-		case 'editor':
-			// TODO: Mirrored field for editors. (some way to use tinymce onchange event?)
-			
-			if ($readOnly || $field['is_readonly']) {
-				$html .= '<div class="field_data" ';
-				if ($field['field_type'] == 'restatement') {
-					$html .= ' data-mirror-of="'.$id.'" ';
-				}
-				$html .= ' >';
-				if (isset($data[$fieldName])) {
-					$html .= $data[$fieldName];
-				}
-				$html .= '</div>';
-			} else {
-				$html .= '<textarea name="'. htmlspecialchars($fieldName). '" class="tinymce" id="'.$id.'" />';
-				if (isset($data[$fieldName])) {
-					$html .= $data[$fieldName];
-				}
-				$html .= '</textarea>';
 			}
 			
 			break;
 		case 'radios':
+			
+			// Get list of values
 			if ($userFieldId) {
 				$valuesList = getDatasetFieldLOV($userFieldId);
 			} else {
 				$valuesList = self::getUnlinkedFieldLOV($fieldId);
 			}
+			
 			foreach ($valuesList as $valueId => $label) {
 				
-				$multiFieldId = $id.'_'.$valueId;
+				$multiFieldId = $id . '_' . $valueId;
 				
-				$html .= '<div class="field_radio"><input type="radio"  value="'. htmlspecialchars($valueId) .'"';
+				$html .= '<div class="field_radio"><input type="radio"  value="' . htmlspecialchars($valueId) . '"';
 				if ($valueId == $fieldValue) {
 					$html .= ' checked="checked" ';
 				}
-				if ($readOnly || $field['is_readonly']) {
+				if ($fieldIsReadonly) {
 					$html .= ' disabled ';
 				}
 				if ($field['field_type'] == 'restatement') {
-					$html .= ' name="'.htmlspecialchars($fieldName).'_'.$field['form_field_id'].'" data-mirror-of="'.$multiFieldId.'" ';
+					$html .= ' name="' . htmlspecialchars($fieldName . '_' . $field['form_field_id']) . '" data-mirror-of="' . htmlspecialchars($multiFieldId) . '" ';
+					
 					// Stop mirror field labels selecting target field radios
 					$multiFieldId = '';
+					
 				} else {
-					$html .= ' name="'. htmlspecialchars($fieldName). '" id="'.$multiFieldId.'" onclick="zenario_user_forms.updateRestatementFields(this.id, \'radio\');" ';
+					$html .= ' name="'. htmlspecialchars($fieldName). '" id="' . htmlspecialchars($multiFieldId) . '" onclick="zenario_user_forms.updateRestatementFields(this.id, \'radio\');" ';
 				}
-				$html .= '/><label for="'.$multiFieldId.'"/>';
-				$html .= self::formPhrase($label, array(), $translate);
-				$html .= '</label></div>'; 
+				$html .= '/><label for="'.$multiFieldId.'"/>' . self::formPhrase($label, array(), $translate) . '</label></div>'; 
 			}
-			if (($readOnly || $field['is_readonly']) && !empty($data[$fieldName]) && $field['field_type'] != 'restatement') {
-				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($data[$fieldName]).'" />';
+			
+			if ($fieldIsReadonly && !empty($fieldValue) && $field['field_type'] != 'restatement') {
+				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($fieldValue).'" />';
 			}
 			
 			break;
 		case 'centralised_radios':
+			
+			// Get list of values
 			if ($userFieldId) {
 				$values = getDatasetFieldLOV($userFieldId);
-				$valuesSource = getRow('custom_dataset_fields', 'values_source', array('id' => $field['user_field_id']));
+				$valuesSource = $field['dataset_values_source'];
 			} else {
 				$values = self::getUnlinkedFieldLOV($fieldId);
 				$valuesSource = $field['values_source'];
@@ -437,23 +401,25 @@ foreach ($formFields as $fieldId => $field) {
 			$count = 1;
 			foreach ($values as $valueId => $label) {
 				
-				$multiFieldId = $id.'_'.$count++;
+				$multiFieldId = $id . '_' . $count++;
 				
-				$html .= '<div class="field_radio"><input type="radio" value="'. htmlspecialchars($valueId) .'"';
+				$html .= '<div class="field_radio"><input type="radio" value="' . htmlspecialchars($valueId) . '"';
 				if ($valueId == $fieldValue) {
 					$html .= 'checked="checked"';
 				}
-				if ($readOnly || $field['is_readonly']) {
+				if ($fieldIsReadonly) {
 					$html .= ' disabled ';
 				}
 				if ($field['field_type'] == 'restatement') {
-					$html .= ' name="'.htmlspecialchars($fieldName).'_'.$field['form_field_id'].'" data-mirror-of="'.$multiFieldId.'" ';
+					$html .= ' name="' . htmlspecialchars($fieldName . '_' . $field['form_field_id']) . '" data-mirror-of="' . htmlspecialchars($multiFieldId) . '" ';
+					
 					// Stop mirror field labels selecting target field radios
 					$multiFieldId = '';
+					
 				} else {
-					$html .= ' name="'. htmlspecialchars($fieldName). '" id="'.$multiFieldId.'" onclick="zenario_user_forms.updateRestatementFields(this.id, \'radio\');" ';
+					$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($multiFieldId) . '" onclick="zenario_user_forms.updateRestatementFields(this.id, \'radio\');" ';
 				}
-				$html .= '/><label for="'.$multiFieldId.'">';
+				$html .= '/><label for="' . htmlspecialchars($multiFieldId) . '">';
 				if ($countryList && $translate) {
 					$html .=  phrase('_COUNTRY_NAME_'.$valueId, array(), 'zenario_country_manager');
 				} else {
@@ -461,14 +427,18 @@ foreach ($formFields as $fieldId => $field) {
 				}
 				$html .= '</label></div>';
 			}
-			if (($readOnly || $field['is_readonly']) && isset($data[$fieldName]) && $field['field_type'] != 'restatement') {
-				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($data[$fieldName]).'" />';
+			
+			if ($fieldIsReadonly && isset($fieldValue) && $field['field_type'] != 'restatement') {
+				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($fieldValue).'" />';
 			}
+			
 			break;
 		case 'select':
+			
+			// Get list of values
 			if ($userFieldId) {
 				$valuesList = getDatasetFieldLOV($userFieldId);
-				$valuesSource = getRow('custom_dataset_fields', 'values_source', array('id' => $field['user_field_id']));
+				$valuesSource = $field['dataset_values_source'];
 			} else {
 				$valuesList = self::getUnlinkedFieldLOV($fieldId);
 				$valuesSource = $field['values_source'];
@@ -478,36 +448,33 @@ foreach ($formFields as $fieldId => $field) {
 			$countryList = ($valuesSource == 'zenario_country_manager::getActiveCountries');
 			
 			$html .= '<select ';
-			if ($readOnly || $field['is_readonly']) {
+			if ($fieldIsReadonly) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}
-			$html .= '>';
+			$html .= '><option value="">' . self::formPhrase('-- Select --', array(), $translate) . '</option>';
 			
-			$html .= '<option value="">'.self::formPhrase('-- Select --', array(), $translate).'</option>';
 			foreach ($valuesList as $valueId => $label) {
-				$html .= '<option value="'. htmlspecialchars($valueId) . '"';
+				$html .= '<option value="' . htmlspecialchars($valueId) . '"';
 				if ($valueId == $fieldValue) {
-					$html .= ' selected="selected"';
+					$html .= ' selected="selected" ';
 				}
 				$html .= '>';
-				
 				if ($countryList && $translate) {
 					phrase('_COUNTRY_NAME_'.$valueId, array(), 'zenario_country_manager');
 				} else {
 					$html .= self::formPhrase($label, array(), $translate);
 				}
-				
-				
 				$html .= '</option>';
 			}
 			$html .= '</select>';
-			if (($readOnly || $field['is_readonly']) && ($field['field_type'] != 'restatement')) {
-				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.$fieldValue.'" />';
+			
+			if ($fieldIsReadonly && ($field['field_type'] != 'restatement')) {
+				$html .= '<input type="hidden" name="' . htmlspecialchars($fieldName) . '" value="' . htmlspecialchars($fieldValue) . '" />';
 			}
 			
 			break;
@@ -537,14 +504,13 @@ foreach ($formFields as $fieldId => $field) {
 			}
 			
 			$html .= '<select ';
-			if ($readOnly || $field['is_readonly']) {
+			if ($fieldIsReadonly) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onchange="
-					zenario_user_forms.updateRestatementFields(this.id);';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);';
 				
 				// Check if this field is a source field for other centralised select lists
 				$targetFields = getRowsArray(
@@ -572,6 +538,7 @@ foreach ($formFields as $fieldId => $field) {
 			$valuesSource = getRow('custom_dataset_fields', 'values_source', array('id' => $field['user_field_id']));
 			$countryList = ($valuesSource == 'zenario_country_manager::getActiveCountries');
 			
+			
 			foreach ($values as $valueId => $label) {
 				$html .= '<option value="'. htmlspecialchars($valueId). '"';
 				if ($valueId == $fieldValue) {
@@ -586,9 +553,11 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= '</option>';
 			}
 			$html .= '</select>';
-			if (($readOnly || $field['is_readonly']) && ($field['field_type'] != 'restatement')) {
+			
+			if ($fieldIsReadonly && ($field['field_type'] != 'restatement')) {
 				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.$fieldValue.'" />';
 			}
+			
 			break;
 		case 'url':
 		case 'text':
@@ -596,25 +565,22 @@ foreach ($formFields as $fieldId => $field) {
 			if ($field['field_validation'] == 'email') {
 				$type = 'email';
 			}
-			$html .= '<input type="'.$type.'" size="'. htmlspecialchars($size).'"';
+			$html .= '<input type="' . $type . '" size="' . htmlspecialchars($size) . '"';
 			
-			if ($readOnly || $field['is_readonly']) {
+			if ($fieldIsReadonly) {
 				$html .= ' readonly ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}
 			
-			if (isset($data[$fieldName]) && $data[$fieldName] !== '' && $data[$fieldName] !== false) {
-				$html .= ' value="'. htmlspecialchars($data[$fieldName]). '"';
-			} elseif ($fieldValue) {
+			if ($fieldValue !== false) {
 				$html .= ' value="'. htmlspecialchars($fieldValue). '"';
 			}
-			
 			if (isset($field['placeholder']) && $field['placeholder'] !== '' && $field['placeholder'] !== null) {
-				$html .= ' placeholder="'.htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) .'"';
+				$html .= ' placeholder="' . htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) . '"';
 			}
 			
 			$maxlength = 255;
@@ -632,37 +598,33 @@ foreach ($formFields as $fieldId => $field) {
 					$maxlength = 100;
 					break;
 			}
-			$html .= ' maxlength="'.$maxlength.'" ';
-			$html .= '/>';
+			$html .= ' maxlength="' . $maxlength . '" />';
+			
 			break;
 		case 'textarea':
-			$html .= '<textarea name="'. htmlspecialchars($fieldName) .'" rows="4" cols="51"';
-			if (isset($field['placeholder']) && $field['placeholder'] !== '' && $field['placeholder'] !== null) {
-				$html .= ' placeholder="'.htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) .'"';
-			}
 			
-			if ($readOnly || $field['is_readonly']) {
+			$html .= '<textarea name="' . htmlspecialchars($fieldName) . '" rows="4" cols="51"';
+			if (isset($field['placeholder']) && $field['placeholder'] !== '' && $field['placeholder'] !== null) {
+				$html .= ' placeholder="' . htmlspecialchars(self::formPhrase($field['placeholder'], array(), $translate)) . '"';
+			}
+			if ($fieldIsReadonly) {
 				$html .= ' readonly ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="'.$id.'" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
+				$html .= ' name="'. htmlspecialchars($fieldName).'" id="' . htmlspecialchars($id) . '" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}
-			
 			$html .= '>';
-			if (isset($data[$fieldName]) && $data[$fieldName] !== '' && $data[$fieldName] !== false) {
-				$html .= htmlspecialchars($data[$fieldName]);
-			} elseif ($fieldValue) {
+			
+			if ($fieldValue !== false) {
 				$html .= htmlspecialchars($fieldValue);
 			}
-			
 			$html .= '</textarea>';
+			
 			break;
 		case 'attachment':
-			// TODO: Mirrored field for attachment
-			
-			if ($readOnly || $field['is_readonly']) {
+			if ($fieldIsReadonly) {
 				$html .= '<div class="field_data">';
 				$html .= htmlspecialchars($data[$fieldName]);
 				$html .= '</div>';
@@ -678,10 +640,102 @@ foreach ($formFields as $fieldId => $field) {
 				}
 			}
 			break;
+		case 'file_picker':
+			
+			if ($fieldIsReadonly) {
+				
+				$html .= '<div class="files">';
+				if ($fieldValue) {
+					$fileIds = str_getcsv((string)$fieldValue, ',', '"', '//');
+					
+					$count = 0;
+					foreach ($fileIds as $fileId) {
+						if (is_numeric($fileId) 
+							&& checkRowExists(
+								'custom_dataset_files_link', 
+								array(
+									'dataset_id' => $dataset['id'], 
+									'field_id' => $userFieldId, 
+									'linking_id' => userId(), 
+									'file_id' => $fileId
+								)
+							)
+							&& ($fileLink = fileLink($fileId))
+						) {
+							
+							$file = getRow('files', array('filename'), $fileId);
+							$name = $file['filename'];
+							
+							$html .= '<div class="file_row">';
+							$html .= '<p><a href="' . $fileLink . '" target="_blank">' . $file['filename'] . '</a></p>';
+							$html .= '<input name="file_picker_' . $fieldId . '_' . (++$count) . '" type="hidden" value="' . $fileId . '" />';
+							$html .= '</div>';
+						}
+					}
+				} else {
+					$html .= self::formPhrase('No file found...', array(), $translate);
+				}
+				$html .= '</div>';
+				
+				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($fieldValue) .'" />';
+			} else {
+				$filesJSON = array();
+				if ($fieldValue) {
+					$fileIds = str_getcsv((string)$fieldValue, ',', '"', '//');
+					
+					foreach ($fileIds as $fileId) {
+						
+						$fileData = array(
+							'id' => $fileId
+						);
+						
+						// If numeric file ID make sure this is linked to the user to prevent someone seeing someone elses file details
+						if (is_numeric($fileId) 
+							&& checkRowExists(
+								'custom_dataset_files_link', 
+								array(
+									'dataset_id' => $dataset['id'], 
+									'field_id' => $userFieldId, 
+									'linking_id' => userId(), 
+									'file_id' => $fileId
+								)
+							)
+						) {
+							$file = getRow('files', array('filename'), $fileId);
+							$name = $file['filename'];
+							
+							$fileData['download_link'] = fileLink($fileId);
+							
+						// Otherwise show filename from cache path
+						} else {
+							$name = substr(basename($fileId), 0, -7);
+						}
+						
+						$fileData['name'] = $name;
+						
+						$filesJSON[] = $fileData;
+					}
+				}
+				$html .= '<div class="loaded_files" style="display:none;">' . json_encode($filesJSON) . '</div>';
+				$html .= '<div class="files"></div>';
+				$html .= '<div class="progress_bar" style="display:none;"></div>';
+				$html .= '<div class="file_upload_button"><span>' . self::formPhrase('Upload file', array(), $translate) . '</span>';
+				$html .= '<input class="file_picker_field" type="file" name="' . htmlspecialchars($fieldName) . '"';
+				$fileCount = 1;
+				if ($field['multiple_select']) {
+					$html .= ' multiple';
+					$fileCount = 5;
+				}
+				$html .= ' data-limit="' . $fileCount . '"';
+				if ($field['extensions']) {
+					$html .= 'data-extensions="' . htmlspecialchars($field['extensions']) . '"';
+				}
+				$html .= '/></div>';
+			}
+			break;
+		
 		case 'section_description':
-			$html .= '<div class="description">';
-			$html .= '<p>'.$field['description'].'</p>';
-			$html .= '</div>';
+			$html .= '<div class="description"><p>' . htmlspecialchars($field['description']) . '</p></div>';
 			break;
 	}
 	

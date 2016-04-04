@@ -266,12 +266,29 @@ function getStatusPhrase($status) {
 	return '';
 }
 
+function getContentTypeDetails($cType) {
+	$details = getRow('content_types', true, $cType);
+	
+	if (!$details['content_type_plural_en']) {
+		$details['content_type_plural_en'] == $details['content_type_name_en'];
+	}
+	
+	$char2 = substr($details['content_type_plural_en'], 1, 1);
+	if ($char2 === strtolower($char2)) {
+		$details['content_type_plural_lower_en'] = strtolower(substr($details['content_type_plural_en'], 0, 1)). substr($details['content_type_plural_en'], 1);
+	} else {
+		$details['content_type_plural_lower_en'] = $details['content_type_plural_en'];
+	}
+	
+	return $details;
+}
+
 
 function checkContentTypeRunning($cType) {
 	return
 		$cType == 'html' || (
 			($moduleId = getRow('content_types', 'module_id', array('content_type_id' => $cType)))
-		 && (getModuleStatus($moduleId) == 'module_running')
+		 && (in(getModuleStatus($moduleId), 'module_running', 'module_is_abstract'))
 		 && (moduleDir(getModuleName($moduleId)))
 		);
 }
@@ -594,7 +611,7 @@ function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false)
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function syncInlineFileLinks(&$files, &$html, &$htmlChanged, $usage = 'image') {
+function syncInlineFileLinks(&$files, &$html, &$htmlChanged, $usage = 'image', $publishingAPublicPage = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -1320,7 +1337,7 @@ function validateAlias($alias, $cID = false, $cType = false, $equivId = false) {
 		if (($result = sqlQuery($sql))
 		 && ($row = sqlFetchAssoc($result))) {
 			$tag = formatTag($row['id'], $row['type']);
-			$error[] = adminPhrase('Please select a unique friendly name. "[[alias]]" is already taken by "[[tag]]".', array('alias' => $alias, 'tag' => $tag));
+			$error[] = adminPhrase('Please choose an alias that is unique. "[[alias]]" is already the alias for "[[tag]]".', array('alias' => $alias, 'tag' => $tag));
 		}
 	}
 	
@@ -2023,20 +2040,21 @@ function checkTemplateFamilyInFS($template_family) {
 
 //Include a checksum calculated from the modificaiton dates of any css/js/html files
 //Note that this is only calculated for admins, and cached for visitors
-function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
+function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $forceScan = false) {
 	
-	//Safety catch - do not try to do anything if there is no database connection!
+	//Do not try to do anything if there is no database connection!
 	if (!cms_core::$lastDB) {
-		return;
+		return false;
 	}
 	
-	//require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	//Don't run if the templates directory is missing
+	if (!is_dir($templateDir = CMS_ROOT. 'zenario_custom/templates/')) {
+		return false;
+	}
 	
-	//Make sure we are in the CMS root directory.
-	//This should already be done, but I'm being paranoid...
-	chdir(CMS_ROOT);
 	
 	$time = time();
+	$changed = false;
 	
 	//Get the date of the last time we ran this check and there was a change.
 	if (!($lastChanged = (int) setting('css_js_html_files_last_changed'))) {
@@ -2046,23 +2064,26 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 	} elseif ($forceScan) {
 		$changed = true;
 	
-	//Otherwise, work out the time difference between that time and now
+	//Don't run this in production mode unless $forceScan or $runInProductionMode is set
+	} elseif (!$runInProductionMode && setting('site_mode') == 'production') {
+		return false;
+	
+	//Otherwise, check if there have been any files changed since the last modification time
 	} else {
 		
 		//Check to see if there are any .css, .js or .html files that have changed on the system
 		$useFallback = true;
 		
 		if (defined('PHP_OS') && execEnabled()) {
+			//Make sure we are in the CMS root directory.
+			chdir($templateDir);
+			
 			try {
 				//Look for any .css, .js or .html files that have been created or modified since this was last run.
 				//(Unfortunately this won't catch the case where the files are deleted.)
 				//We'll also look for any changes to *anything* in the zenario_custom/templates directory.
 				//(This will catch the case where files are deleted, as the modification times of directories are included.)
 				$find =
-					' \\( -name "*.css*" -o -name "*.js*" -o -name "*.html" -o -path "./zenario_custom/templates*" \\)'.
-					' -not -path "./cache/*"'.
-					' -not -path "./public/*"'.
-					' -not -path "./private/*"'.
 					' -not -path "*/.*"'.
 					' -print'.
 					' | sed 1q';
@@ -2080,12 +2101,6 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 					//the time out by assuming that it indicates a change.
 					if ($status == 124) {
 						$changed = true;
-						
-						//Temporarily clear all of the "last changed" settings to make sure we don't run
-						//any more "exec('find')"s in this script
-						setSetting('css_js_html_files_last_changed', '', false, false);
-						setSetting('php_files_last_changed', '', false, false);
-						setSetting('yaml_files_last_changed', '', false, false);
 					}
 					$useFallback = false;
 			
@@ -2100,96 +2115,22 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 			}
 		}
 		
-		//If we couldn't use the command line, we'll need to do roughly the same logic using PHP functions
+		//If we couldn't use the command line, we'll do the same logic using a RecursiveDirectoryIterator
 		if ($useFallback) {
-			$changed = false;
+			$RecursiveDirectoryIterator = new RecursiveDirectoryIterator($templateDir);
+			$RecursiveIteratorIterator = new RecursiveIteratorIterator($RecursiveDirectoryIterator);
 			
-			//Check the JavaScript and Styles directories in the CMS
-			$dirs = array(CMS_ROOT. 'zenario/js/', CMS_ROOT. 'zenario/styles/');
-			
-			//Check all tempalte files
-			if (file_exists($dir = CMS_ROOT. zenarioTemplatePath('grid_templates'))) {
-				$dirs[] = $dir;
-			}
-	
-			//Loop through the zenario_custom/templates directory, looking for Skins
-			if (is_dir($dir = CMS_ROOT. zenarioTemplatePath())) {
-				foreach (scandir($dir) as $family) {
-					if (substr($family, 0, 1) != '.' && is_dir($dir2 = $dir. $family)) {
-						$dirs[] = $dir2;
-				
-						if (is_dir($dir3 = $dir2. '/skins/')) {
-							foreach (scandir($dir3) as $skin) {
-								if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
-									//For each Skin, add it to the list of directories
-									$dirs[] = $dir4;
-							
-									//Recurse through its subdirectories, adding each subdirectory as well
-									foreach(
-										new RecursiveIteratorIterator(
-											new RecursiveDirectoryIterator($dir4),
-											RecursiveIteratorIterator::SELF_FIRST
-										)
-									as $path => $SplFileInfo) {
-										if (strpos($path, '/.') === false
-										 && strpos($path, '\\.') === false) {
-											if ($SplFileInfo->isDir()) {
-												$dirs[] = $path;
-											}
-										}
-									}
-								}
-							}
-						}
-					}
+			foreach ($RecursiveIteratorIterator as $file) {
+				if ($file->isFile()
+				 && $file->getMTime() > $lastChanged) {
+					$changed = true;
+					break;
 				}
-			}
-			
-			
-			//Also check for the js/ and adminstyles/ directories in Modules, and Module Swatches
-			foreach (array(
-				'zenario/modules/',
-				'zenario_extra_modules/',
-				'zenario_custom/modules/',
-				'zenario_custom/frameworks/'
-			) as $mDir) {
-				if (is_dir($dir = CMS_ROOT. $mDir)) {
-					foreach (scandir($dir) as $module) {
-						if (substr($module, 0, 1) != '.') {
-							if ($mDir != 'zenario_custom/frameworks/') {
-								foreach (array('/adminstyles/', '/js/', '/js/templates/') as $dir2) {
-									if (is_dir($dir3 = $dir. $module. $dir2)) {
-										$dirs[] = $dir3;
-									}
-								}
-							}
-					
-							if (is_dir($dir2 = $dir. $module. '/frameworks/')) {
-								foreach (scandir($dir2) as $framework) {
-									if (substr($framework, 0, 1) != '.') {
-										if (is_dir($dir3 = $dir2. $framework)) {
-											$dirs[] = $dir3;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-	
-			foreach ($dirs as $dir) {
-				chdir($dir);
-					foreach (array_map('filemtime', scandir('.')) as $mtime) {
-						if ($mtime > $lastChanged) {
-							$changed = true;
-							break 2;
-						}
-					}
-				chdir(CMS_ROOT);
 			}
 		}
 	}
+	
+	//Make sure we are in the CMS root directory.
 	chdir(CMS_ROOT);
 	
 	
@@ -2281,7 +2222,7 @@ function checkForChangesInCssJsAndHtmlFiles($forceScan = false) {
 		}
 		
 		setSetting('css_js_html_files_last_changed', $time);
-		setSetting('css_js_version', hash64(setting('site_id'). $time, 16));
+		setSetting('css_js_version', base_convert($time, 10, 36));
 	}
 	
 	return $changed;
@@ -3087,7 +3028,7 @@ function runModule($id, $test) {
 	
 	//Check to see if there are any other versions of the same module running.
 	//If we find another version running, don't let this version be activated!
-	} elseif (checkRowExists('modules', array('id' => array('!' => $id), 'class_name' => $module['class_name'], 'status' => 'module_running'))) {
+	} elseif (checkRowExists('modules', array('id' => array('!' => $id), 'class_name' => $module['class_name'], 'status' => array('module_running', 'module_is_abstract')))) {
 		return adminPhrase('_ANOTHER_VERSION_OF_PLUGIN_IS_INSTALLED');
 	
 	} elseif (!loadModuleDescription($module['class_name'], $desc)) {
@@ -3159,7 +3100,7 @@ function runModule($id, $test) {
 			return false;
 		
 		} else {
-			updateRow('modules', array('status' => 'module_running'), $id);
+			updateRow('modules', array('status' => 'module_running'), array('id' => $id, 'status' => array('module_suspended', 'module_not_initialized')));
 			
 			//Have a safety feature whereby if the installation fails, the module will be immediately uninstalled
 			//However this shouldn't be used for upgrading a module to a different version
@@ -3173,7 +3114,7 @@ function runModule($id, $test) {
 
 function suspendModule($id) {
 	suspendModuleCheckForDependencies(getModuleDetails($id));
-	updateRow('modules', array('status' => 'module_suspended'), $id);
+	updateRow('modules', array('status' => 'module_suspended'), array('id' => $id, 'status' => 'module_running'));
 }
 
 function succeedModule($id, $preview = false) {
@@ -3274,8 +3215,11 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					css_class_name = '". sqlEscape($desc['css_class_name']). "',
 					nestable = ". engToBoolean($desc['nestable']);
 					
+			if (!$dbUpdateSafeMode && engToBooleanArray($desc, 'is_abstract')) {
+				$sql .= ",
+					status = 'module_is_abstract'";
 			
-			if ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
+			} elseif ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
 				$sql .= ",
 					status = 'module_running'";
 			}
@@ -3284,6 +3228,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 				$category = (!empty($desc['category'])) ? ("'".sqlEscape($desc['category'])."'") : "NULL";
 				$sql .= ",
 					is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
+					fill_organizer_nav = ". engToBoolean($desc['fill_organizer_nav']). ",
 					can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 					missing = 0,
 					category = ". $category;
@@ -3298,7 +3243,11 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 					nestable = VALUES(nestable)";
 					
 			
-			if ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
+			if (!$dbUpdateSafeMode && engToBooleanArray($desc, 'is_abstract')) {
+				$sql .= ",
+					status = 'module_is_abstract'";
+			
+			} elseif ($runModulesOnInstall && engToBoolean($desc['start_running_on_install'])) {
 				$sql .= ",
 					status = 'module_running'";
 			}
@@ -3306,6 +3255,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 			if (!$dbUpdateSafeMode) {
 				$sql .= ",
 					is_pluggable = VALUES(is_pluggable),
+					fill_organizer_nav = VALUES(fill_organizer_nav),
 					can_be_version_controlled = VALUES(can_be_version_controlled),
 					missing = 0,
 					category = VALUES(category)";
@@ -3586,7 +3536,11 @@ function getPluginsUsageOnLayouts($instanceIds) {
 }
 
 //Check how many content items use a Library plugin
-function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnly = false) {
+function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnly = false, $reportContentItems = false) {
+	
+	if (!$instanceIds) {
+		return 0;
+	}
 	
 	$layoutIds = array();
 	if (!$itemLayerOnly) {
@@ -3611,77 +3565,89 @@ function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnl
 		}
 	}
 	
-	$usage = 0;
-	if ($instanceIds) {
+	if ($reportContentItems) {
 		$sql = "
-			SELECT COUNT(DISTINCT c.tag_id) AS ciu_". (int) $instanceIds. "_". engToBoolean($publishedOnly). "_". engToBoolean($itemLayerOnly). "
-			FROM ". DB_NAME_PREFIX. "content_items AS c
-			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
-			   ON c.id = v.id
-			  AND c.type = v.type";
-		
-		if ($publishedOnly) {
-			$sql .= "
-			  AND v.version = c.visitor_version";
-		} else {
-			$sql .= "
-			  AND v.version IN (c.admin_version, c.visitor_version)";
-		}
-		
-		$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
-               ON l.layout_id = v.layout_id";
-		
-		if ($itemLayerOnly) {
-			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
-		} else {
-			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
-		}
-		
-		$sql .= "
-		   ON pil.instance_id IN (". inEscape($instanceIds, 'numeric'). ")
-		  AND pil.content_id = c.id
-		  AND pil.content_type = c.type
-		  AND pil.content_version = v.version";
-		
-		if ($itemLayerOnly) {
-			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
-		} else {
-			$sql .= "
-				LEFT JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
-		}
-		
-		$sql .= "
-			   ON t.family_name = l.family_name
-			  AND t.file_base_name = l.file_base_name
-			  AND t.slot_name = pil.slot_name";
-		
-		if ($publishedOnly) {
-			$sql .= "
-			WHERE c.status IN ('published_with_draft', 'published')";
-		} else {
-			$sql .= "
-			WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden', 'hidden_with_draft', 'trashed_with_draft', 'published')";
-		}
-		
-		if (!$itemLayerOnly) {
-			$sql .= "
-			  AND (
-				t.slot_name IS NOT NULL
-			   OR
-				v.layout_id IN (". inEscape($layoutIds, 'numeric'). ")
-			  )";
-		}
-		
-		$result = sqlQuery($sql);
-		$row = sqlFetchRow($result);
-		$usage = $row[0];
+			SELECT c.id, c.type";
+	} else {
+		$sql = "
+			SELECT COUNT(DISTINCT c.tag_id) AS ciu_". (int) $instanceIds. "_". engToBoolean($publishedOnly). "_". engToBoolean($itemLayerOnly);
 	}
 	
-	return $usage;
+	$sql .= "
+		FROM ". DB_NAME_PREFIX. "content_items AS c
+		INNER JOIN ". DB_NAME_PREFIX. "content_item_versions as v
+		   ON c.id = v.id
+		  AND c.type = v.type";
+	
+	if ($publishedOnly) {
+		$sql .= "
+		  AND v.version = c.visitor_version";
+	} else {
+		$sql .= "
+		  AND v.version IN (c.admin_version, c.visitor_version)";
+	}
+	
+	$sql .= "
+		INNER JOIN ". DB_NAME_PREFIX. "layouts AS l
+		   ON l.layout_id = v.layout_id";
+	
+	if ($itemLayerOnly) {
+		$sql .= "
+			INNER JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
+	} else {
+		$sql .= "
+			LEFT JOIN ". DB_NAME_PREFIX. "plugin_item_link as pil";
+	}
+	
+	$sql .= "
+	   ON pil.instance_id IN (". inEscape($instanceIds, 'numeric'). ")
+	  AND pil.content_id = c.id
+	  AND pil.content_type = c.type
+	  AND pil.content_version = v.version";
+	
+	if ($itemLayerOnly) {
+		$sql .= "
+			INNER JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
+	} else {
+		$sql .= "
+			LEFT JOIN ". DB_NAME_PREFIX. "template_slot_link as t";
+	}
+	
+	$sql .= "
+		   ON t.family_name = l.family_name
+		  AND t.file_base_name = l.file_base_name
+		  AND t.slot_name = pil.slot_name";
+	
+	if ($publishedOnly) {
+		$sql .= "
+		WHERE c.status IN ('published_with_draft', 'published')";
+	} else {
+		$sql .= "
+		WHERE c.status IN ('first_draft', 'published_with_draft', 'hidden', 'hidden_with_draft', 'trashed_with_draft', 'published')";
+	}
+	
+	if (!$itemLayerOnly) {
+		$sql .= "
+		  AND (
+			t.slot_name IS NOT NULL
+		   OR
+			v.layout_id IN (". inEscape($layoutIds, 'numeric'). ")
+		  )";
+	}
+	
+	$result = sqlQuery($sql);
+	
+	if ($reportContentItems) {
+		$citems = array();
+		while ($row = sqlFetchAssoc($result)) {
+			$citems[] = $row;
+		}
+		return $citems;
+	
+	} else {
+		$row = sqlFetchRow($result);
+		return $row[0];
+	}
 }
 
 
@@ -4283,20 +4249,8 @@ function revision($revisionNumber) {
 			if ($errNo == 1060 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
 				continue;
 			
-			//Ignore "primary key already exists" errors
-			} elseif ($errNo == 1068 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
-				continue;
-			
 			//Ignore errors if we try to drop columns or unique keys that do not exist
 			} elseif ($errNo == 1091) {
-				continue;
-			
-			//Ignore "Table doesn't exist" and "Table already exists" error messages when renaming tables
-			} elseif (($errNo == 1146 || $errNo == 1050) && preg_match('/\s*ALTER\s*TABLE\s*\S*\s*RENAME\s*TO\s*\S*\s*/i', $sql)) {
-				continue;
-			
-			//Ignore "Table already created" error messages
-			} elseif ($errNo == 1050 && preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
 				continue;
 			}
 			
@@ -4325,22 +4279,6 @@ function revision($revisionNumber) {
 	} else {
 		updateDataRevisionNumber();
 	}
-}
-
-
-//Process a table join, and add the words "LEFT JOIN" to the start if they are missing
-function prefixTableJoin($tableJoin) {
-	$tableJoin = preg_replace('/\s\s+/', ' ', trim($tableJoin));
-	$words = preg_split('/\W+/', strtoupper($tableJoin), 4);
-	
-	if (arrayKey($words, 1) != 'JOIN'
-	 && arrayKey($words, 2) != 'JOIN'
-	 && arrayKey($words, 1) != 'STRAIGHT_JOIN'
-	 && arrayKey($words, 2) != 'STRAIGHT_JOIN') {
-		$tableJoin = 'LEFT JOIN '. $tableJoin;
-	}
-	
-	return $tableJoin;
 }
 
 //Take a string, and add any defined constants in using the [[CONSTANT_NAME]] format
@@ -4422,6 +4360,8 @@ function loadModuleDescription($moduleName, &$tags) {
 	$replaces['[[ZENARIO_RELEASE_VERSION]]'] = ZENARIO_RELEASE_VERSION;
 	$replaces['[[ZENARIO_VERSION]]'] = ZENARIO_VERSION;
 	
+	$contents = false;
+	
 	//If the is_pluggable property is missing...
 	if (!isset($tags['module']['is_pluggable'])) {
 		//This property has an old name, check that for backwards-compatability purposes
@@ -4430,13 +4370,24 @@ function loadModuleDescription($moduleName, &$tags) {
 		} else {
 			//Otherwise attempt to intelligently guess whether this Module uses instances by looking for
 			//the showSlot function in its module code.
-			if (($path = moduleDir($baseModuleName, 'module_code.php', true))
-			 && ($contents = file_get_contents($path))
+			if (($path = moduleDir($baseModuleName, 'module_code.php', true)) && ($contents = file_get_contents($path))
 			 && (preg_match('/function\s+showSlot/', $contents))) {
 				$replaces['[[HAS_SHOWSLOT_FUNCTION]]'] = true;
 			} else {
 				$replaces['[[HAS_SHOWSLOT_FUNCTION]]'] = false;
 			}
+		}
+	}
+	
+	//If the fill_organizer_nav property is missing...
+	if (!isset($tags['module']['fill_organizer_nav'])) {
+		//Attempt to intelligently guess whether this Module uses instances by looking for
+		//the showSlot function in its module code.
+		if (($contents || (($path = moduleDir($baseModuleName, 'module_code.php', true)) && ($contents = file_get_contents($path))))
+		 && (preg_match('/function\s+fillOrganizerNav/', $contents))) {
+			$replaces['[[HAS_FILLORGANIZERNAV_FUNCTION]]'] = true;
+		} else {
+			$replaces['[[HAS_FILLORGANIZERNAV_FUNCTION]]'] = false;
 		}
 	}
 	unset($contents);
@@ -5109,7 +5060,6 @@ function restoreLocationalSiteSettings() {
 		WHERE name IN (
 			'css_js_version', 'css_js_html_files_last_changed',
 			'yaml_version', 'yaml_files_last_changed',
-			'php_version', 'php_files_last_changed',
 			'module_description_hash'
 		)";
 	@sqlSelect($sql);
@@ -5206,7 +5156,7 @@ function handleAdminBoxAJAX() {
 		 && (checkPriv('_PRIV_MANAGE_MEDIA') || checkPriv('_PRIV_EDIT_DRAFT') || checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN'))
 		 && isImageOrSVG(documentMimeType($_FILES['Filedata']['name']))) {
 			
-			$imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], $mustBeAnImage = true);
+			$imageId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), $mustBeAnImage = true);
 			$image = getRow('files', array('id', 'filename', 'width', 'height'), $imageId);
 			echo json_encode($image);
 		
@@ -5248,7 +5198,13 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 	
 	if (!cleanDownloads()
 	 || !($dir = createCacheDir($sha, 'uploads', false))) {
-		echo adminPhrase('Could not upload this file because your cache/ directory is not writable!');
+		echo
+			adminPhrase('Zenario cannot currently receive uploaded files, because one of the
+cache/, public/ or private/ directories is not writeable.
+
+To correct this, please ask your system administrator to perform a
+"chmod 777 cache/ public/ private/" to make them writeable.
+(If that does not work, please check that all subdirectories are also writeable.)');
 		exit;
 	}
 	
@@ -5347,7 +5303,6 @@ function putUploadFileIntoCacheDir($filename, $tempnam, $html5_backwards_compati
 
 
 
-
 function getListOfSmartGroupsWithCounts() {
 	$smartGroups = getRowsArray('smart_groups', 'name', array(), 'name');
 	foreach ($smartGroups as $smartGroupId => &$name) {
@@ -5429,20 +5384,21 @@ function registerDataset(
 	$extends_admin_box = '', $extends_organizer_panel = '',
 	$view_priv = '', $edit_priv = ''
 ) {
-	return 
-		setRow(
-			'custom_datasets',
-			array(
-				'label' => $label,
-				'system_table' => $system_table,
-				'extends_admin_box' => $extends_admin_box,
-				'extends_organizer_panel' => $extends_organizer_panel,
-				'view_priv' => $view_priv,
-				'edit_priv' => $edit_priv),
-			array('table' => $table));
+	$datasetId = setRow(
+					'custom_datasets',
+					array(
+						'label' => $label,
+						'system_table' => $system_table,
+						'extends_admin_box' => $extends_admin_box,
+						'extends_organizer_panel' => $extends_organizer_panel,
+						'view_priv' => $view_priv,
+						'edit_priv' => $edit_priv),
+					array('table' => $table));
+	saveSystemFieldsFromTUIX($datasetId);
+	return $datasetId;
 }
 
-function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false) {
+function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false) {
 	
 	if ($dbColumn === false) {
 		$dbColumn = $fieldName;
@@ -5470,12 +5426,10 @@ function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $db
 				'fundamental' => $fundamental),
 			$fieldId
 		);
-		
-		return $fieldId;
 	
 	} else {
 		//Otherwise register a new field
-		return 
+		$fieldId = 
 			setRow(
 				'custom_dataset_fields',
 				array(
@@ -5487,6 +5441,12 @@ function registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $db
 					'fundamental' => $fundamental),
 				array('dataset_id' => $datasetId, 'db_column' => $dbColumn, 'is_system_field' => 1));
 	}
+	
+	if ($isRecordName) {
+		updateRow('custom_datasets', array('label_field_id' => $fieldId), $datasetId);
+	}
+	
+	return $fieldId;
 }
 
 function deleteDatasetField($fieldId) {
@@ -5497,7 +5457,17 @@ function deleteDatasetField($fieldId) {
 		
 		sendSignal('eventDatasetFieldDeleted', array('datasetId' => $dataset['id'], 'fieldId' => $field['id']));
 		
-		if ($field['type'] == 'checkboxes') {
+		if ($field['type'] == 'file_picker') {
+			$sql = "
+				DELETE FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+				WHERE field_id = ". (int) $field['id']. "
+				  AND dataset_id = ". (int) $dataset['id'];
+			
+			if (sqlQuery($sql)) {
+				removeUnusedDatasetFiles();
+			}
+		
+		} elseif ($field['type'] == 'checkboxes') {
 			$sql = "
 				DELETE fv.*, vl.*
 				FROM ". DB_NAME_PREFIX. "custom_dataset_field_values AS fv
@@ -5505,6 +5475,7 @@ function deleteDatasetField($fieldId) {
 				ON vl.value_id = fv.id
 				WHERE fv.field_id = ". (int) $field['id'];
 			sqlQuery($sql);
+		
 		} else {
 			$sql = "
 				ALTER TABLE `". DB_NAME_PREFIX. sqlEscape($dataset['table']). "`
@@ -5543,6 +5514,7 @@ function getDatasetFieldDefinition($type) {
 	
 	switch ($type) {
 		case 'checkboxes':
+		case 'file_picker':
 			return '';
 		
 		case 'checkbox':
@@ -5551,6 +5523,8 @@ function getDatasetFieldDefinition($type) {
 		
 		case 'radios':
 		case 'select':
+		case 'dataset_select':
+		case 'dataset_picker':
 			return " int(10) unsigned NOT NULL default 0";
 		
 		case 'centralised_radios':
@@ -5586,8 +5560,6 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 	
 	} else {
 		switch ($filter) {
-			//enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field')
-		
 			case 'boolean_and_list_only':
 				$key['type'] = array('checkbox', 'checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select');
 				break;
@@ -5620,6 +5592,8 @@ function listCustomFields($dataset, $flat = true, $filter = false, $customOnly =
 						'centralised_radios',
 						'select',
 						'centralised_select',
+						'dataset_select',
+						'dataset_picker',
 						'text',
 						'textarea',
 						'url'
@@ -5718,13 +5692,13 @@ function getCustomFieldsParents($field, &$fields) {
 	
 	if ($parent = getRow(
 		'custom_dataset_fields',
-		array('id', 'dataset_id', 'tab_name', 'field_name', 'is_system_field', 'label', 'parent_id'),
+		array('id', 'dataset_id', 'tab_name', 'field_name', 'db_column', 'is_system_field', 'label', 'parent_id'),
 		array('dataset_id' => $field['dataset_id'], 'id' => $field['parent_id'])
 	)) {
 		if (!isset($fields[$parent['id']])) {
 			
 			if (!$parent['is_system_field']) {
-				$parent['field_name'] = '__custom_field_'. $parent['id'];
+				$parent['field_name'] = '__custom_field__'. ifNull($parent['db_column'], $parent['id']);
 			}
 			$parent['tab_name/field_name'] = $parent['tab_name']. '/'. $parent['field_name'];
 			
@@ -5736,6 +5710,11 @@ function getCustomFieldsParents($field, &$fields) {
 }
 
 function checkColumnExistsInDB($table, $column) {
+	
+	if (!$table || !$column) {
+		return false;
+	}
+	
 	$sql = "
 		SHOW COLUMNS
 		FROM `". DB_NAME_PREFIX. sqlEscape($table). "`
@@ -5770,19 +5749,26 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 			}
 		}
 		
+		//Get the column definition
+		$def = getDatasetFieldDefinition($field['type']);
+		if ($def === false) {
+			echo adminPhrase('Error: bad field type!');
+			exit;
+		}
 		
 		//Start building the query we'll need
 		$sql = "
 			ALTER TABLE `". DB_NAME_PREFIX. sqlEscape($dataset['table']). "`";
 		
-		if ($field['type'] == 'checkboxes') {
+		if ($def === '') {
+			//Some fields (e.g. checkboxes, file pickers) don't store their values in the table
 			if ($exists) {
-				//Make sure checkboxes don't have columns defined
+				//If they do have a column here we need to drop it
 				$sql .= "
 					DROP COLUMN";
 			
 			} else {
-				//nothing doing for checkboxes
+				//Otherwise there's nothing to do
 				return;
 			}
 			
@@ -5806,7 +5792,6 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 		
 		$sql .= " `". sqlEscape($field['db_column']). "`";
 		
-		$def = getDatasetFieldDefinition($field['type']);
 		
 		if ($def === false) {
 			echo adminPhrase('Error: bad field type!');
@@ -5828,8 +5813,7 @@ function createDatasetFieldInDB($fieldId, $oldName = false) {
 		
 		
 		//Add a key if needed
-		if ($field['type'] != 'checkboxes'
-		 && ($field['create_index'])) {
+		if ($def !== '' && $field['create_index']) {
 			$sql = "
 				ALTER TABLE `". DB_NAME_PREFIX. sqlEscape($dataset['table']). "`
 				ADD KEY (`". sqlEscape($field['db_column']). "`";
@@ -5931,7 +5915,7 @@ function loadTUIX(
 		unset($modules['zenario_common_features']);
 	}
 	
-	//Include every Module's XML files in dependency order
+	//Include every Module's TUIX files in dependency order
 	$limit = 9999;
 	do {
 		$progressBeingMade = false;
@@ -6078,6 +6062,10 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 		
 		//If a specific path has been requested, show all of the tags under than path
 		if ($requestedPath) {
+			$includeThisSubTree = true;
+		
+		//Always send the top right buttons
+		} elseif (substr($path, 0, 28) == 'organizer/top_right_buttons/') {
 			$includeThisSubTree = true;
 		
 		//If getting an overall map, only show certain needed tags, to save space
@@ -6230,6 +6218,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 				 || $tag == 'combine_items'
 				 || $parent == 'refiners'
 				 || $parent == 'panels'
+				 || $parent == 'nav'
 				 || $tag == 'panel'
 				 || $tag == 'pick_items'
 				 || $tag == 'reorder'
@@ -6352,6 +6341,7 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 					|| $parentKey == 'inline_buttons'
 					|| $parentKey == 'collection_buttons'
 					|| $parentKey == 'quick_filter_buttons'
+					|| $parentKey == 'top_right_buttons'
 					|| $parentKey == 'nav';
 	
 	} elseif ($type == 'admin_boxes' || $type == 'welcome' || $type == 'wizards') {
@@ -6571,7 +6561,6 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 				}
 				
 				//Change the old equivId to the new equivId
-				updateRow('categories', array('landing_page_equiv_id' => $newEquivId), array('landing_page_equiv_id' => $currentEquivId, 'landing_page_content_type' => $cType));
 				updateRow('content_items', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'type' => $cType));
 				updateRow('menu_nodes', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'content_type' => $cType));
 				updateRow('special_pages', array('equiv_id' => $newEquivId), array('equiv_id' => $currentEquivId, 'content_type' => $cType));

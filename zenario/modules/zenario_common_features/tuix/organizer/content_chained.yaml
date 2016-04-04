@@ -7,6 +7,7 @@ zenario__content:
             key:
                 cType: ""
                 language: ""
+                layoutId: ''
                 equivId: ""
             enable_close_up_view: true
             view_mode: list

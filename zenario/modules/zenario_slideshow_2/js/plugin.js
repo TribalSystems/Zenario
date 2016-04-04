@@ -194,7 +194,8 @@ zenario_slideshow_2.initiateSlideshow = function(slides, AJAXLink, slotName, ins
     	ScaleSlider = function() {
 			var bodyWidth = $(window).width();
 			var resizeWidth = 0;
-			if (settings.desktop_resize_greater_than_image) {
+			
+			if (parseInt(settings.desktop_resize_greater_than_image)) {
 				resizeWidth = bodyWidth;
 			} else {
 				resizeWidth = Math.min(bodyWidth, parseInt(width));

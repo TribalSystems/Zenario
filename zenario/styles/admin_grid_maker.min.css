@@ -103,5 +103,5 @@ div.zenario_grid_download_bg{text-align:center}#colorbox textarea{width:50em;hei
 .zenario_grid_copy_box textarea{padding:10px}#toast-container{margin-right:70px}#toast-container .toast-message{font-family:Verdana,Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold}
 #toast-container>div,#toast-container .toast-message a:hover{color:#FFF}#toast-container>div{-ms-filter:"alpha(opacity=95)";filter:alpha(opacity=95);opacity:.95;width:360px;-webkit-border-radius:4px;-moz-border-radius:4px;border-radius:4px;-webkit-box-shadow:0 0 18px rgba(0,0,0,.75);-moz-box-shadow:0 0 18px rgba(0,0,0,.75);box-shadow:0 0 18px rgba(0,0,0,.75)}
 .toast,.toast-success,.toast-error,.toast-info,.toast-warning{background-color:#202020;border:solid 2px #bdbdbd}#toast-container>.toast-success{background-image:url("../admin/images/grid_maker/tick.png") !important}
-.grid_maker_wrap #close_button{background:url("../admin/images/sprites/org-icons-v2.png") no-repeat;background-position:-58px -208px;width:34px;height:34px;position:absolute;right:6px;top:6px;display:block;cursor:pointer}
+.grid_maker_wrap #close_button{background:url("../admin/images/sprites/org-icons-v5.png") no-repeat;background-position:-58px -208px;width:34px;height:34px;position:absolute;right:6px;top:6px;display:block;cursor:pointer}
 .grid_maker_wrap #close_button:hover{background-position:-108px -208px}

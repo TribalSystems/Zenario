@@ -15,7 +15,7 @@ class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
      *
      * @param Twig_Token $token A Twig_Token instance
      *
-     * @return Twig_NodeInterface A Twig_NodeInterface instance
+     * @return Twig_Node A Twig_Node instance
      */
     public function parse(Twig_Token $token)
     {
@@ -23,16 +23,27 @@ class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
         $stream = $this->parser->getStream();
         $count = null;
         $plural = null;
+        $notes = null;
 
         if (!$stream->test(Twig_Token::BLOCK_END_TYPE)) {
             $body = $this->parser->getExpressionParser()->parseExpression();
         } else {
             $stream->expect(Twig_Token::BLOCK_END_TYPE);
             $body = $this->parser->subparse(array($this, 'decideForFork'));
-            if ('plural' === $stream->next()->getValue()) {
+            $next = $stream->next()->getValue();
+
+            if ('plural' === $next) {
                 $count = $this->parser->getExpressionParser()->parseExpression();
                 $stream->expect(Twig_Token::BLOCK_END_TYPE);
-                $plural = $this->parser->subparse(array($this, 'decideForEnd'), true);
+                $plural = $this->parser->subparse(array($this, 'decideForFork'));
+
+                if ('notes' === $stream->next()->getValue()) {
+                    $stream->expect(Twig_Token::BLOCK_END_TYPE);
+                    $notes = $this->parser->subparse(array($this, 'decideForEnd'), true);
+                }
+            } elseif ('notes' === $next) {
+                $stream->expect(Twig_Token::BLOCK_END_TYPE);
+                $notes = $this->parser->subparse(array($this, 'decideForEnd'), true);
             }
         }
 
@@ -40,12 +51,12 @@ class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
 
         $this->checkTransString($body, $lineno);
 
-        return new Twig_Extensions_Node_Trans($body, $plural, $count, $lineno, $this->getTag());
+        return new Twig_Extensions_Node_Trans($body, $plural, $count, $notes, $lineno, $this->getTag());
     }
 
     public function decideForFork(Twig_Token $token)
     {
-        return $token->test(array('plural', 'endtrans'));
+        return $token->test(array('plural', 'notes', 'endtrans'));
     }
 
     public function decideForEnd(Twig_Token $token)
@@ -57,13 +68,15 @@ class Twig_Extensions_TokenParser_Trans extends Twig_TokenParser
      * Gets the tag name associated with this token parser.
      *
      * @param string The tag name
+     * 
+     * @return string
      */
     public function getTag()
     {
         return 'trans';
     }
 
-    protected function checkTransString(Twig_NodeInterface $body, $lineno)
+    protected function checkTransString(Twig_Node $body, $lineno)
     {
         foreach ($body as $i => $node) {
             if (

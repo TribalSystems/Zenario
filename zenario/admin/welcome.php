@@ -91,7 +91,7 @@ $installed =
  && (defined('DBNAME'))
  && (defined('DBUSER'))
  && (defined('DBPASS'))
- && (cms_core::$lastDB = cms_core::$localDB = @connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, false))
+ && (cms_core::$lastDB = cms_core::$localDB = @connectToDatabase(DBHOST, DBNAME, DBUSER, DBPASS, DBPORT, false))
  && ($result = @cms_core::$localDB->query("SHOW TABLES LIKE '". DB_NAME_PREFIX. "site_settings'"))
  && ($installStatus = 2)
  && ($result->num_rows)
@@ -210,7 +210,7 @@ echo
 <head>
 	<title>', adminPhrase('Welcome to Zenario'), '</title>';
 
-$v = htmlspecialchars(rawurlencode(ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO)));
+$v = zenarioCodeVersion();
 CMSWritePageHead('../', 'welcome', false);
 
 echo '

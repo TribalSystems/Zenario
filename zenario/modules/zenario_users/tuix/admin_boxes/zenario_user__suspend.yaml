@@ -4,7 +4,7 @@ zenario_user__suspend:
     priv: _PRIV_CHANGE_USER_STATUS
     key:
         id: ""
-    max_height: "160"
+    max_height: 200
     tabs:
         email:
             label: Email
@@ -13,21 +13,22 @@ zenario_user__suspend:
                 always_on: Yes
             fields:
                 send_email_to_user:
-                    label: 'Send email to User:'
+                    label: 'Send email to user'
                     type: checkbox
                     format_onchange: Yes
                 email_to_send:
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
                         max_path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
-                        select_phrase: Select Email Template...
+                        select_phrase: Select email template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an Email Template
+                        required: Please select an email template
                     hidden: Yes
                     note_below: >
-                        An email based on the selected Email Template will be sent
-                        to the User.
+                        An email based on the selected email template will be sent
+                        to the user.
+                    indent: 1

@@ -140,8 +140,8 @@ _text
 				} elseif (get('refiner__content_type')) {
 					$mrg = array(
 						'ctype' => getContentTypeName(get('refiner__content_type')));
-					$panel['title'] = adminPhrase('Content Items of the type "[[ctype]]"', $mrg);
-					$panel['no_items_message'] = adminPhrase('There are no Content Items of the type "[[ctype]]".', $mrg);
+					$panel['title'] = adminPhrase('[[ctype]] content items', $mrg);
+					$panel['no_items_message'] = adminPhrase('There are no [[ctype]] content items.', $mrg);
 					
 					foreach ($panel['items'] as $id => &$item) {
 						$item['item_count'] = selectCount('content_items', array(

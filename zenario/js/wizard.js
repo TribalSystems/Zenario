@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenarioAF
 ) {
 	"use strict";
@@ -97,7 +97,7 @@ zenarioW.draw2 = function() {
 
 //Get a URL needed for an AJAX request
 zenarioW.returnAJAXURL = function() {
-	return URLBasePath + 'zenario/wizard_ajax.php?' + zenario.urlRequest(zenarioW.getRequest).substr(1);
+	return URLBasePath + 'zenario/wizard.ajax.php?' + zenario.urlRequest(zenarioW.getRequest).substr(1);
 };	
 
 

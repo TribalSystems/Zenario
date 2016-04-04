@@ -59,6 +59,22 @@ class zenario_common_features__organizer__site_settings extends module_base_clas
 			imageLink($width, $height, $url, setting('custom_logo'), 24, 23);
 			$panel['items']['branding']['list_image'] = $url;
 		}
+		
+		//Add options for every installed content type
+		foreach (getRowsArray(
+			'content_types', array('content_type_name_en', 'content_type_plural_en'), array(), 'content_type_name_en'
+		) as $cType => $details) {
+			$details['content_type_plural_en'] = ifNull($details['content_type_plural_en'], $details['content_type_name_en']);
+	
+			$panel['items']['content_type_'. $cType] = array(
+				'css_class' => 'content_type_'. $cType,
+				'name' => adminPhrase('[[content_type_plural_en]]', $details),
+				'desc' => adminPhrase('Settings for the content type "[[content_type_plural_en]]"', $details),
+				'is_not_site_setting' => true,
+				'is_ctype' => true
+			);
+		}
+
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

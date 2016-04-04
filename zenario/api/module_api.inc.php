@@ -254,9 +254,10 @@ class zenario_api {
 	}
 	
 	protected final function openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = false, $fadeOutAndIn = true, $usePost = true) {
+		
 		return '
 				<form method="'. ($usePost? 'post' : 'get'). '" '. $extraAttributes. '
-				  onsubmit="'. htmlspecialchars($onSubmit). ' return zenario.formSubmit(this, '. ($scrollToTopOfSlot? 1 : 0). ', '. ($fadeOutAndIn? 1 : 0). ', \''. jsEscape($this->slotName). '\');"
+				  onsubmit="'. htmlspecialchars($onSubmit). ' return zenario.formSubmit(this, '. engToBoolean($scrollToTopOfSlot). ', '. (is_bool($fadeOutAndIn)? engToBoolean($fadeOutAndIn) : ('\'' . jsEscape($fadeOutAndIn) . '\'')). ', \''. jsEscape($this->slotName). '\');"
 				  action="'. htmlspecialchars(ifNull($action, linkToItem(cms_core::$cID, cms_core::$cType, false, '', cms_core::$alias, true))). '">
 					'. $this->remember('cID', $this->cID). '
 					'. $this->remember('tab', $this->tabId). '
@@ -458,26 +459,23 @@ class zenario_api {
 	
 	protected final function linkToItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$usePrimaryDomain = false
+		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
-		return linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain);
+		return linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode);
 	}
 	
 	protected final function linkToItemAnchor(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$usePrimaryDomain = false
+		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
-		return ' href="'. htmlspecialchars(linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain)). '"';
+		return ' href="'. htmlspecialchars(linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode)). '"';
 	}
 	
 	protected final function linkToItemAnchorAndJS(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
-		$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-		$usePrimaryDomain = false
+		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
-		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode, $usePrimaryDomain), $this->linkToItemJS($cID, $cType, $request));
+		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode), $this->linkToItemJS($cID, $cType, $request));
 	}
 	
 	protected final function linkToItemJS($cID, $cType = 'html', $request = '') {
@@ -1485,7 +1483,7 @@ class zenario_api {
 						
 							} elseif ($thing == 'URL' || $thing == 'CANONICAL_URL') {
 								//Output the URL
-								echo htmlspecialchars(linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, $thing == 'CANONICAL_URL', true, true));
+								echo htmlspecialchars(linkToItem(cms_core::$cID, cms_core::$cType, true, '', false, $thing == 'CANONICAL_URL', true));
 							}
 					
 						//Display some text from another Plugin

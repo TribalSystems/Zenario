@@ -17,18 +17,11 @@ site_settings:
                             This tab contains settings for making your Web Pages load
                             more quickly for visitors.
                 compress_web_pages:
-                    site_setting:
-                        name: compress_web_pages
-                    label: 'Compress Web Pages'
+                    label: Compression enabled
                     type: checkbox
                     value: "1"
                     note_below: |
-                        Compress web pages, CSS files and JavaScript files to reduce bandwidth and download times;
-                        if a visitor's browser supports compression.
-                        (Images and animations will always be compressed if compression is possible, even if this setting is switched off.)
-                        <br/>
-                        If you have the zlib extension installed in php 5.4 or higher, this setting will be ignored and
-                        compression will always be done automatically by the server.
+                        Compress files to reduce bandwidth and download times, if a visitor's browser supports compression.
                 css_wrappers:
                     site_setting:
                         name: css_wrappers

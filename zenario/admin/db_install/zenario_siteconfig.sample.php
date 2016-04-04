@@ -13,6 +13,8 @@ define('DBNAME', '[[DBNAME]]');
 define('DBUSER', '[[DBUSER]]');
 //Database password:
 define('DBPASS', '[[DBPASS]]');
+//Database port number:
+define('DBPORT', '[[DBPORT]]');
 //Prefix for all table names (to keep them distinct from other apps):
 define('DB_NAME_PREFIX', '[[DB_NAME_PREFIX]]');
 //Use MySQL in "strict" mode:
@@ -29,6 +31,7 @@ define('DEBUG_USE_STRICT_MODE', true);
 //define('DBNAME_GLOBAL', '[[DBNAME_GLOBAL]]');
 //define('DBUSER_GLOBAL', '[[DBUSER_GLOBAL]]');
 //define('DBPASS_GLOBAL', '[[DBPASS_GLOBAL]]');
+//define('DBPORT_GLOBAL', '[[DBPORT_GLOBAL]]');
 //define('DB_NAME_PREFIX_GLOBAL', '[[DB_NAME_PREFIX_GLOBAL]]');
 
 

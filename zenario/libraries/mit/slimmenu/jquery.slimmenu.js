@@ -62,6 +62,7 @@
             $menu_collapser.on('click', '.collapse-button', function(e)
             {
                 e.preventDefault();
+                $(this).toggleClass('on');
                 $menu.slideToggle($options.animSpeed, $options.easingEffect);
             });
 

@@ -1,12 +1,22 @@
 <div
 	data-position="top"
 	onclick="zenarioAB.enableOrDisableSite();"
-	{% if (zenarioA.siteSettings.site_enabled) { %}
-		class="organizer_enabled_disabled site_enabled"
-		title="Site Enabled"
-	{% } else { %}
+	
+	data-tooltip-options="
+		{position: {my: 'left center', at: 'right top', collision: 'flipfit'}}
+	"
+	
+	{% if (!zenarioA.siteSettings.site_enabled) { %}
 		class="organizer_enabled_disabled site_disabled"
-		title="Site Disabled"
+		title="Site disabled and in development mode."
+	
+	{% } else if (zenarioA.siteSettings.site_mode == 'production') { %}
+		class="organizer_enabled_disabled site_enabled"
+		title="Site enabled and in production mode."
+	
+	{% } else { %}
+		class="organizer_enabled_disabled site_enabled_development"
+		title="Site enabled and in development mode."
 	{% } %}
 ></div>
 <div

@@ -32,7 +32,7 @@ zenario__content:
             item:
                 name: Language
                 names: Languages
-                css_class: ""
+                css_class: language
                 tooltip_when_link_is_active: 'View content in the Language &quot;[[name]]&quot;.'
                 link:
                     path: zenario__content/panels/content

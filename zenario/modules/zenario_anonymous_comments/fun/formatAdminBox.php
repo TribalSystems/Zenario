@@ -29,9 +29,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
-		$box['tabs']['posting']['fields']['enable_emoticons']['hidden'] = 
-			!$values['posting/enable_images'];
-		
 		$box['tabs']['moderation']['fields']['email_template_for_reports']['hidden'] = 
 			!$values['moderation/enable_report_a_post'];
 

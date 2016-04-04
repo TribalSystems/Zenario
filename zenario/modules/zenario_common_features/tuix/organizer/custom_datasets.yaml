@@ -29,22 +29,24 @@ zenario__administration:
                     title: Type
                     width: xxlarge
                     show_by_default: Yes
+                
+                gui_blacklist: {}
+            
             item:
                 css_class: 'menu_section'
-                tooltip_when_link_is_active: Define fields in this dataset
-                link:
-                    path: zenario__administration/panels/custom_tabs_and_fields
-                    refiner: dataset_id
-            
-            item_buttons:
                 
-                # Hidden because branched before this feature was complete
+                # Old editor (now removed)
+                #tooltip_when_link_is_active: Define fields in this dataset
+                #link:
+                #    path: zenario__administration/panels/custom_tabs_and_fields
+                #    refiner: dataset_id
+            
+            # New GUI editor
+            item_buttons:
                 edit_gui:
                     label: Edit (GUI)
                     link:
                         path: zenario__administration/panels/custom_tabs_and_fields_gui
                         refiner: dataset_id
-                    hidden: true
-            
-            # Note there are no buttons; creating new/editing existing datasets is not implemented yet!
+                    visible_if_for_all_selected_items: item.gui_blacklist == false
                     

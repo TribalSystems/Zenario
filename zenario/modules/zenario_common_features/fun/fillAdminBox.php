@@ -487,54 +487,6 @@ switch ($path) {
 			
 		}
 		break;
-		
-	case 'zenario_migrate_old_documents':
-		// Only show button if ctype_document module is running
-		if (getModuleStatusByClassName('zenario_ctype_document') == 'module_running') {
-			if ($box['key']['id']) {
-				
-				$fields['details/html']['snippet']['html'] = adminPhrase('For each document meta data field below, select a dataset field to migrate the data to. If no dataset field is chosen then the data won\'t be saved. (<a [[link]]>Edit dataset fields</a>)', array('link' => 'href="'. htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__administration/panels/custom_datasets'). '" target="_blank"'));
-				
-				// Set select lists for dataset fields
-				$link = '';
-				$datasetDetails = getDatasetDetails('documents');
-				if ($details = getDatasetDetails('documents')) {
-					$link = absCMSDirURL(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item//'.$details['id'].'//';
-				}
-				$textDocumentDatasetFields = 
-					getRowsArray('custom_dataset_fields', 'label', array('type' => 'text', 'dataset_id' => $datasetDetails['id']));
-				if (empty($textDocumentDatasetFields)) {
-					$fields['details/title']['hidden'] = $fields['details/language_id']['hidden'] = true;
-					$fields['details/title_warning']['hidden'] = $fields['details/language_id_warning']['hidden'] = false;
-					$fields['details/title_warning']['snippet']['html'] = 
-					$fields['details/language_id_warning']['snippet']['html'] = 
-						'No "Text" type fields found in the document dataset, go <a href="'.$link.'">here</a> to create one.';
-				} else {
-					$fields['details/title']['values'] = $fields['details/language_id']['values'] = $textDocumentDatasetFields;
-				}
-				$textAreaDocumentDatasetFields = 
-					getRowsArray('custom_dataset_fields', 'label', array('type' => 'textarea', 'dataset_id' => $datasetDetails['id']));
-				if (empty($textAreaDocumentDatasetFields)) {
-					$fields['details/description']['hidden'] = $fields['details/keywords']['hidden'] = true;
-					$fields['details/description_warning']['hidden'] = $fields['details/keywords_warning']['hidden'] = false;
-					$fields['details/description_warning']['snippet']['html'] = 
-					$fields['details/keywords_warning']['snippet']['html'] = 
-						'No "Textarea" type fields found in the document dataset, go <a href="'.$link.'" target="_blank">here</a> to create one.';
-				} else {
-					$fields['details/description']['values'] = $fields['details/keywords']['values'] = $textAreaDocumentDatasetFields;
-				}
-				$editorDocumentDatasetFields = 
-					getRowsArray('custom_dataset_fields', 'label', array('type' => 'editor', 'dataset_id' => $datasetDetails['id']));
-				if (empty($editorDocumentDatasetFields)) {
-					$fields['details/content_summary']['hidden'] = true;
-					$fields['details/content_summary_warning']['hidden'] = false;
-					$fields['details/content_summary_warning']['snippet']['html'] = 'No "Editor" type fields found in the document dataset, go <a href="'.$link.'">here</a> to create one.';
-				} else {
-					$fields['details/content_summary']['values'] = $editorDocumentDatasetFields;
-				}
-			}
-		}
-		break;
 	
 	
 	case 'zenario_reorder_documents':

@@ -42,7 +42,7 @@ $sql .= "
 
 if ($runningModulesOnly) {
 	$sql .= "
-	  AND m.status = 'module_running'";
+	  AND m.status IN ('module_running', 'module_is_abstract')";
 }
 
 $sql .= "

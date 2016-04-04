@@ -46,7 +46,7 @@ if (post('upload') && $privCheck) {
 	}
 	
 	//Try to add the uploaded image to the database
-	$fileId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
+	$fileId = addFileToDatabase('image', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 	
 	if ($fileId) {
 		
@@ -110,24 +110,30 @@ if (post('upload') && $privCheck) {
 
 
 } elseif (post('view_public_link')) {
+	
+	$rememberWhatThisWas = cms_core::$mustUseFullPath;
+	cms_core::$mustUseFullPath = false;
+	
 	$width = $height = $url = false;
 	if (imageLink($width, $height, $url, $ids)) {
-		//if ($url
 		
 		echo
 			'<!--Message_Type:Success-->',
-			adminPhrase('<h3>The URL to your image is shown below:</h3><p>Full hyperlink:<br>[[full]]<br>Internal hyperlink:<br>[[internal]]</p>',
+			'<h3>', adminPhrase('The URL to your image is shown below:'), '</h3>',
+			'<p>', adminPhrase('Full hyperlink:<br/>[[full]]<br/><br/>Internal hyperlink:<br/>[[internal]]<br/>',
 				array(
 					'full' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars(absCMSDirURL(). $url). '"/>',
 					'internal' => '<input type="text" style="width: 488px;" value="'. htmlspecialchars($url). '"/>'
-				));
+			)), '</p>',
+			'<p>', adminPhrase('If you later make this image private, these links will stop working.'), '</p>';
 		
 	} else {
 		echo
 			'<!--Message_Type:Error-->',
 			adminPhrase('Could not generate public link');
 	}
-	
+
+	cms_core::$mustUseFullPath = $rememberWhatThisWas;
 }
 
 return false;

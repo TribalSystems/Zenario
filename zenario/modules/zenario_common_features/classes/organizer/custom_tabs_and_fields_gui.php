@@ -30,19 +30,16 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__custom_tabs_and_fields_gui extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
 		//Load details on this data-set
 		if ($dataset = getDatasetDetails($refinerId)) {
 			$panel['title'] = adminPhrase('Managing the dataset "[[label]]"', $dataset);
 			$panel['dataset_label'] = $dataset['label'];
 			$panel['items'] = array();
 			
+			$panel['use_groups_field'] = ($dataset['system_table'] == 'users');
+			
 			// Load centralised list
-			$moduleFilesLoaded = array();
-			$tags = array();
-			loadTUIX(
-				$moduleFilesLoaded, $tags, $type = 'admin_boxes', 'zenario_custom_field',
-				$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = true, $exitIfError = true
-			);
 			$centralisedLists = getCentralisedLists();
 			$panel['centralised_lists']['values'] = array();
 			$count = 1;
@@ -61,88 +58,203 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 				}
 			}
 			
+			// Load pickable datasets
+			$panel['datasets'] = array();
+			$result = getRows(
+				'custom_datasets',
+				array('id', 'label'),
+				array('extends_organizer_panel' => array('!' => ''), 'label_field_id' => array('!' => 0)),
+				'label'
+			);
+			$ord = 1;
+			while ($row = sqlFetchAssoc($result)) {
+				$panel['datasets'][$row['id']] = array('label' => $row['label'], 'ord' => $ord++);
+			}
+			
+			
 			// Get system field indexes
 			$systemKeys = array();
-			$sql = '
-				SHOW KEYS
-				FROM ' . DB_NAME_PREFIX . $dataset['system_table'] . '
-				WHERE Key_name != "PRIMARY"';
-			$result = sqlSelect($sql);
-			while ($row = sqlFetchAssoc($result)) {
-				$systemKeys[$row['Column_name']] = true;
+			if ($dataset['system_table']) {
+				$sql = '
+					SHOW KEYS
+					FROM ' . DB_NAME_PREFIX . $dataset['system_table'] . '
+					WHERE Key_name != "PRIMARY"';
+				$result = sqlSelect($sql);
+				while ($row = sqlFetchAssoc($result)) {
+					$systemKeys[$row['Column_name']] = true;
+				}
 			}
+			
 			
 			//If this extends a system admin box, load the tabs and fields
 			if ($dataset['extends_admin_box']) {
 				$moduleFilesLoaded = array();
 				$tags = array();
 				loadTUIX(
-					$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box']
+					$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box'],
+					$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = true, $exitIfError = true
 				);
-				$tabOrdinal = 0;
+				
 				$panel['existing_db_columns'] = array();
-				$tabs = getRowsArray('custom_dataset_tabs', true, array('dataset_id' => $dataset['id']), 'ord');
-				foreach ($tabs as $tab) {
-					$tab['ord'] = ++$tabOrdinal;
-					$tab['label'] = $tab['label'] ? $tab['label'] : ($tab['default_label'] ? $tab['default_label'] : '');
-					
-					$panel['items'][$tab['name']] = $tab;
-					$fieldOrdinal = 0;
-					$fields = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $dataset['id'], 'tab_name' => $tab['name']), 'ord');
-					foreach ($fields as $id => $field) {
+				
+				
+				// Get fields from TUIX
+				if (!empty($tags[$dataset['extends_admin_box']]['tabs'])
+					&& is_array($tags[$dataset['extends_admin_box']]['tabs'])
+				) {
+					// Loop through system tabs in TUIX
+					$tabOrdinal = 0;
+					foreach ($tags[$dataset['extends_admin_box']]['tabs'] as $tabName => $tab) {
 						
+						// Only load tabs with labels
+						if (empty($tab['label']) && empty($tab['default_label'])) {
+							continue;
+						}
+						
+						$panel['items'][$tabName] = array(
+							'ord' => ++$tabOrdinal,
+							'label' => ifNull(arrayKey($tab, 'dataset_label'), arrayKey($tab, 'label')),
+							'is_system_field' => 1,
+							'name' => $tabName,
+							'system_fields' => array()
+						);
+						
+						if (!empty($tab['fields'])
+							&& is_array($tab['fields'])
+						) {
+							// Loop through system fields in TUIX
+							$fieldOrdinal = 0;
+							foreach ($tab['fields'] as $fieldName => $field) {
+								
+								$panel['items'][$tabName]['system_fields'][$fieldName] = array(
+									'ord' => (float)ifNull(arrayKey($field, 'ord'), ++$fieldOrdinal),
+									'label' => ifNull(arrayKey($field, 'dataset_label'), arrayKey($field, 'label')),
+									'is_system_field' => 1,
+									'type' => arrayKey($field, 'type'),
+									'grouping' => arrayKey($field, 'grouping')
+								);
+								
+							}
+						}
+						
+					}
+				}
+				
+				// Get custom data for system tabs and custom tabs
+				$tabs = getRowsArray('custom_dataset_tabs', true, array('dataset_id' => $dataset['id']));
+				foreach ($tabs as $tab) {
+					if  ($tab['is_system_field']) {
+						if (isset($panel['items'][$tab['name']])) {
+							$panel['items'][$tab['name']]['parent_field_id'] = $tab['parent_field_id'];
+							if ($tab['ord']) {
+								$panel['items'][$tab['name']]['ord'] = (int)$tab['ord'];
+							}
+							if ($tab['label']) {
+								$panel['items'][$tab['name']]['label'] = $tab['label'];
+							} elseif ($tab['default_label']) {
+								$panel['items'][$tab['name']]['label'] = $tab['default_label'];
+							}
+							$panel['items'][$tab['name']]['fields'] = array();
+						}
+					} else {
+						$panel['items'][$tab['name']] = array(
+							'ord' => (int)$tab['ord'],
+							'name' => $tab['name'],
+							'label' => $tab['label'],
+							'is_system_field' => 0,
+							'parent_field_id' => (int)$tab['parent_field_id'],
+							'fields' => array()
+						);
+					}
+					
+					$fields = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $dataset['id'], 'tab_name' => $tab['name']));
+					foreach ($fields as $fieldId => $field) {
+						if ($field['is_system_field']) {
+							if (!isset($panel['items'][$tab['name']]['system_fields'][$field['field_name']])) {
+								continue;
+							}
+						}
+						
+						$fieldProperties = array(
+							'id' => (int)$field['id'],
+							'parent_id' => (int)$field['parent_id'],
+							'is_system_field' => (int)$field['is_system_field'],
+							'is_protected' => (int)$field['protected'],
+							'ord' => (float)$field['ord'],
+							'label' => $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : ''),
+							'type' => $field['type'],
+							'width' => $field['width'],
+							'height' => $field['height'],
+							'values_source' => $field['values_source'],
+							'values_source_filter' => $field['values_source_filter'],
+							'dataset_foreign_key_id' => $field['dataset_foreign_key_id'],
+							'required' => (int)$field['required'],
+							'required_message' => $field['required_message'],
+							'validation' => $field['validation'],
+							'validation_message' => $field['validation_message'],
+							'note_below' => $field['note_below'],
+							'side_note' => $field['side_note'],
+							'db_column' => $field['db_column'],
+							'show_in_organizer' => (int)$field['show_in_organizer'],
+							'create_index' => (int)$field['create_index'],
+							'searchable' => (int)$field['searchable'],
+							'sortable' => (int)$field['sortable'],
+							'include_in_export' => (int)$field['include_in_export'],
+							'indent' => (int)$field['indent'],
+							'multiple_select' => (int)$field['multiple_select'],
+							'store_file' => $field['store_file'],
+							'extensions' => $field['extensions'],
+							
+							'admin_box_visibility' => $field['admin_box_visibility'],
+							'organizer_visibility' => $field['show_by_default'] ? 1 : ($field['always_show'] ? 2 : ''),
+							
+							'remove' => false,
+						);
 						
 						if (in_array($field['type'], array('checkboxes', 'radios', 'select', 'centralised_radios', 'centralised_select'))) {
+							// Add LOV for multi field types
 							$fieldValueOrdinal = 0;
 							$fieldValues = getDatasetFieldLOV($field, false);
-							
-							$field['lov'] = array();
+							$fieldProperties['lov'] = array();
 							foreach ($fieldValues as $valueId => $value) {
 								$value['ord'] = ++$fieldValueOrdinal;
 								$value['id'] = $valueId;
-								$field['lov'][$valueId] = $value;
+								$fieldProperties['lov'][$valueId] = $value;
 							}
 						} elseif ($field['type'] == 'editor') {
-							$field['field_placeholder'] = 'images/admin_box_builder/editor_placeholder.png';
+							// Show placeholder for editor types
+							$fieldProperties['field_placeholder'] = 'images/admin_box_builder/editor_placeholder.png';
 						}
 						
 						if ($field['is_system_field']) {
-							$field['css_classes'] = 'system_field';
+							$fieldProperties['css_classes'] = 'system_field';
+							
+							// Always show key fields as having an index
 							if (!empty($systemKeys[$field['db_column']])) {
-								$field['create_index'] = true;
+								$fieldProperties['create_index'] = true;
 							}
 							
-							if (!empty($tags[$dataset['extends_admin_box']]['tabs'][$tab['name']]['fields'][$field['field_name']])) {
-								$fieldTags = $tags[$dataset['extends_admin_box']]['tabs'][$tab['name']]['fields'][$field['field_name']];
-								if (!empty($fieldTags['type'])) {
-									$field['type'] = $fieldTags['type'];
-								}
+							// Try to get field type for other_system_fields
+							if ($field['type'] == 'other_system_field' 
+								&& !empty($panel['items'][$tab['name']]['system_fields'][$field['field_name']]['type'])
+							) {
+								$fieldProperties['tuix_type'] = $panel['items'][$tab['name']]['system_fields'][$field['field_name']]['type'];
+							}
+							// Look for groupings on system fields
+							if (!empty($panel['items'][$tab['name']]['system_fields'][$field['field_name']]['grouping'])) {
+								$fieldProperties['grouping'] = $panel['items'][$tab['name']]['system_fields'][$field['field_name']]['grouping'];
 							}
 						}
+						
+						// Record all used db_columns
 						if ($field['db_column']) {
 							$panel['existing_db_columns'][$id] = $field['db_column'];
 						}
-						// Clean boolean values for javascript
-						$field['always_show'] = (int)$field['always_show'];
-						$field['create_index'] = (int)$field['create_index'];
-						$field['include_in_export'] = (int)$field['include_in_export'];
-						$field['is_protected'] = (int)$field['protected'];
-						unset($field['protected']);
-						$field['is_system_field'] = (int)$field['is_system_field'];
-						$field['required'] = (int)$field['required'];
-						$field['searchable'] = (int)$field['searchable'];
-						$field['show_by_default'] = (int)$field['show_by_default'];
-						$field['show_in_organizer'] = (int)$field['show_in_organizer'];
-						$field['sortable'] = (int)$field['sortable'];
-						$field['ord'] = ++$fieldOrdinal;
-						$field['label'] = $field['label'] ? $field['label'] : ($field['default_label'] ? $field['default_label'] : '');
-						
-						// Set remove to false
-						$field['remove'] = false;
-						
-						$panel['items'][$tab['name']]['fields'][$id] = $field;
+						$panel['items'][$tab['name']]['fields'][$fieldId] = $fieldProperties;
 					}
+					unset($panel['items'][$tab['name']]['system_fields']);
 				}
+				
 			}
 			$panel['parent_select_list']['values'] = listCustomFields($dataset['id'], false, 'boolean_and_groups_only', false, true);
 			
@@ -158,23 +270,45 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 			switch (post('mode')) {
 				case 'save':
 					if (post('data') && ($data = json_decode(post('data'), true))) {
+						
+						// Loop through fields and remove tabs and fields marked for removal. This is so a field created with the same db col as a deleted field will not have it's db column deleted if it's created before the old field is deleted.
 						foreach ($data as $tabName => $tab) {
-							if (is_array($tab)) {
-								
-								if (!empty($tab['remove'])) {
-									// Delete tab and all fields and field values
-									if (deleteRow('custom_dataset_tabs', array('dataset_id' => $dataset['id'], 'name' => $tabName, 'is_system_field' => 0)) > 0) {
-										$fieldsToDelete = getRowsArray('custom_dataset_fields', 'id', array('dataset_id' => $dataset['id'], 'tab_name' => $tabName, 'is_system_field' => 0));
-										if (deleteRow('custom_dataset_fields', array('dataset_id' => $dataset['id'], 'tab_name' => $tabName, 'is_system_field' => 0))) {
-											foreach ($fieldsToDelete as $fieldId => $field) {
-												deleteRow('custom_dataset_field_values', array('field_id' => $fieldId));
-											}
+							if (!empty($tab['remove'])) {
+								$tabsDeleted = deleteRow(
+									'custom_dataset_tabs', 
+									array('dataset_id' => $dataset['id'], 'name' => $tabName, 'is_system_field' => 0)
+								);
+								if ($tabsDeleted > 0) {
+									$fieldsToDelete = getRowsArray(
+										'custom_dataset_fields', 
+										array('id'), 
+										array('dataset_id' => $dataset['id'], 'tab_name' => $tabName, 'is_system_field' => 0)
+									);
+									
+									foreach ($fieldsToDelete as $fieldId => $fieldDetails) {
+										deleteDatasetField($fieldId);
+									}
+								}
+							} else {
+								if (!empty($tab['fields'])) {
+									foreach ($tab['fields'] as $fieldId => $field) {
+										if (!empty($field['remove'])) {
+											deleteDatasetField($fieldId);
 										}
 									}
-								} else {
+								}
+							}
+						}
+						
+						// Get current dataset fields
+						$datasetFields = getRowsArray('custom_dataset_fields', array('db_column', 'type', 'is_system_field'), array('dataset_id' => $dataset['id']));
+						
+						foreach ($data as $tabName => $tab) {
+							if (is_array($tab)) {
+								if (empty($tab['remove']))  {
 									$values = array(
 										'ord' => $tab['ord'],
-										'label' => $tab['label']
+										'label' => substr($tab['label'], 0, 255)
 									);
 									$ids = array(
 										'dataset_id' => $dataset['id']
@@ -182,6 +316,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 									if (empty($tab['is_system_field'])) {
 										$values['parent_field_id'] = $tab['parent_field_id'];
 									}
+									// Get next tab name for new tabs
 									if (!empty($tab['is_new_tab'])) {
 										$sql = "
 											SELECT
@@ -196,69 +331,113 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 									}
 									$tabName = $ids['name'];
 									
-									// Save tab
+									// Save tab details
 									setRow('custom_dataset_tabs', $values, $ids);
+									
 									if (!empty($tab['fields'])) {
 										foreach ($tab['fields'] as $fieldId => $field) {
 											if (is_array($field)) {
-												if (!empty($field['remove'])) {
-													deleteDatasetField($fieldId);
-												} else {
+												
+												// Do not allow other_system_fields to be edited other than ordinal
+												if (!empty($datasetFields[$fieldId]) && $datasetFields[$fieldId]['type'] == 'other_system_field') {
+													setRow('custom_dataset_fields', array('ord' => $field['ord']), $fieldId);
+													continue;
+												}
+												
+												if (empty($field['remove'])) {
 													$values = array(
 														'tab_name' => $tabName,
 														'ord' => $field['ord'],
-														'label' => $field['label'],
-														'protected' => $field['is_protected'],
-														'note_below' => $field['note_below'],
-														'include_in_export' => !empty($field['include_in_export']) ? 1 : 0
+														'label' => empty($field['label']) ? '' : substr($field['label'], 0, 255),
+														'protected' => !empty($field['is_protected']),
+														'note_below' => empty($field['note_below']) ? '' : substr($field['note_below'], 0, 255),
+														'side_note' => empty($field['side_note']) ? '' : substr($field['side_note'], 0, 255),
+														'include_in_export' => !empty($field['include_in_export'])
 													);
+													
 													$ids = array();
-													if (!$field['is_system_field']) {
+													if (!$field['is_system_field'] && empty($datasetFields[$fieldId]['is_system_field'])) {
 														$values['dataset_id'] = $dataset['id'];
 														$values['type'] = $field['type'];
-														$values['db_column'] = $field['db_column'];
-														$values['height'] = !empty($field['height']) ? $field['height'] : 0;
-														$values['width'] = !empty($field['width']) ? $field['width'] : 0;
-														$values['parent_id'] = $field['parent_id'];
-														$values['required'] = $field['required'];
-														$values['required_message'] = $field['required'] ? $field['required_message'] : NULL;
+														$values['db_column'] = substr($field['db_column'], 0, 255);
+														$values['height'] = empty($field['height']) ? 0 : $field['height'];
+														$values['width'] = empty($field['width']) ? 0 : $field['width'];
+														
+														$values['admin_box_visibility'] = $field['admin_box_visibility'];
+														$values['parent_id'] = (($field['admin_box_visibility'] != 'show_on_condition') || empty($field['parent_id'])) ? 0 : $field['parent_id'];
+														$values['note_below'] = ($field['admin_box_visibility'] == 'hidden') ? '' : $values['note_below'];
+														$values['side_note'] = ($field['admin_box_visibility'] == 'hidden') ? '' : $values['side_note'];
+														
+														$values['required'] = !empty($field['required']);
+														$values['required_message'] = empty($field['required']) ? null : (empty($field['required_message']) ? null : substr($field['required_message'], 0, 255));
+														
 														$values['validation'] = $field['validation'];
-														$values['validation_message'] = ($field['validation'] != 'none') ? $field['validation_message'] : NULL;
-														$values['show_in_organizer'] = $field['show_in_organizer'];
-														$values['create_index'] = !empty($field['create_index']);
-														$values['searchable'] = !empty($field['searchable']) && $values['show_in_organizer'];
+														$values['validation_message'] = ($field['validation'] == 'none') ? null : substr($field['validation_message'], 0, 255);
+														
+														$values['show_in_organizer'] = !empty($field['show_in_organizer']);
+														$values['create_index'] = !empty($field['create_index']) && !empty($field['show_in_organizer']);
+														$values['searchable'] = !empty($field['searchable']) && !empty($field['show_in_organizer']);
 														$values['sortable'] = !empty($field['sortable']) && $values['show_in_organizer'] && $values['create_index'];
-														$values['show_by_default'] = !empty($field['show_by_default']) && $values['show_in_organizer'];
-														$values['always_show'] = !empty($field['always_show']) && $values['show_in_organizer'];
-														$values['values_source'] = $field['values_source'] ? $field['values_source'] : '';
-														$values['values_source_filter'] = $field['values_source'] ? $field['values_source_filter'] : '';
+														$values['show_by_default'] = !empty($field['organizer_visibility']) && ($field['organizer_visibility'] == 1) && $values['show_in_organizer'];
+														$values['always_show'] = !empty($field['organizer_visibility']) && ($field['organizer_visibility'] == 2) && $values['show_in_organizer'];
+														
+														$values['values_source'] = empty($field['values_source']) ? '' : $field['values_source'];
+														$values['values_source_filter'] = !empty($field['values_source']) && isset($field['values_source_filter']) ? substr($field['values_source_filter'], 0, 255) : '';
+														
+														if ($field['type']) {
+															if ($field['type'] == 'dataset_select' || $field['type'] == 'dataset_picker') {
+																$values['dataset_foreign_key_id'] = !empty($field['dataset_foreign_key_id']) ? $field['dataset_foreign_key_id'] : 0;
+															}
+														}
+														
+														$values['indent'] = empty($field['indent']) ? 0 : (int)$field['indent'];
+														
+														if ((empty($datasetFields[$fieldId]) && ($field['type'] == 'file_picker')) 
+															|| (!empty($datasetFields[$fieldId]) && ($datasetFields[$fieldId]['type'] == 'file_picker'))
+														) {
+															$values['multiple_select'] = !empty($field['multiple_select']);
+															$values['store_file'] = !empty($field['store_file']) ? $field['store_file'] : null;
+															$values['extensions'] = !empty($field['extensions']) ? substr($field['extensions'], 0, 255) : '';
+														}
+														
 													}
 													
+													// Get old name for createDatasetFieldInDB so it can be renamed if db_column is different
 													$oldName = false;
-													if (empty($field['is_new_field'])) {
+													if (empty($field['is_new_field']) && !empty($datasetFields[$fieldId])) {
 														$ids['id'] = $field['id'];
-														$oldField = getDatasetFieldDetails($field['id']);
-														$oldName = $oldField['db_column'];
+														if (!empty($datasetFields[$fieldId]['db_column'])) {
+															$oldName = $datasetFields[$fieldId]['db_column'];
+														}
 													}
 													
 													// Save field
 													$fieldId = setRow('custom_dataset_fields', $values, $ids);
-													
-													if (!$field['is_system_field']) {
+													if (!$field['is_system_field'] 
+														&& empty($datasetFields[$fieldId]['is_system_field'])
+														&& (!empty($field['is_new_field']) || ($oldName && $oldName !== $field['db_column']))
+													) {
 														createDatasetFieldInDB($fieldId, $oldName);
 													}
 													
 													// Save values
-													if (!empty($field['lov'])) {
+													if (!empty($field['lov'])
+														&& !empty($field['type'])
+														&& in_array($field['type'], array('checkboxes', 'radios', 'select'))
+														&& empty($datasetFields[$fieldId]['is_system_field'])
+													) {
 														foreach ($field['lov'] as $valueId => $value) {
 															if (is_array($value)) {
+																
+																// Delete value if remove is set
 																if (!empty($value['remove'])) {
-																	// Delete value
 																	deleteRow('custom_dataset_field_values', $valueId);
+																
+																// Otherwise save value
 																} else {
 																	$values = array(
 																		'ord' => $value['ord'],
-																		'label' => $value['label'],
+																		'label' => substr($value['label'], 0, 255),
 																		'field_id' => $fieldId
 																	);
 																	$ids = array();
@@ -293,7 +472,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 						$errors = array();
 						
 						if ($type == 'tab') {
-							// Validate tab details
+							
+							if (!empty($items[$tab]) && empty($items[$tab]['remove'])) {
+								
+								if (empty($items[$tab]['label'])) {
+									$errors[] = adminPhrase('Please enter a label');
+								}
+								
+							}
+							
 						} elseif ($type == 'field') {
 							
 							if (!empty($items[$tab]['fields'][$id]) && empty($items[$tab]['fields'][$id]['remove'])) {
@@ -314,7 +501,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 												foreach ($items as $tab2) {
 													if (isset($tab2['fields']) && is_array($tab2['fields'])) {
 														foreach ($tab2['fields'] as $field2) {
-															if (isset($field2['db_column']) && $field2['db_column'] == $field['db_column']) {
+															if (isset($field2['db_column']) && substr($field2['db_column'], 0, 255) == substr($field['db_column'], 0, 255)) {
 																$isUnique = false;
 																break 2;
 															}
@@ -326,15 +513,40 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 												}
 											}
 										}
-										break;
-									case 'display':
+										// Must choose condition if show_on_condition is chosen
+										if ($field['admin_box_visibility'] == 'show_on_condition') {
+											if (empty($field['parent_id'])) {
+												$errors[] = adminPhrase('Please select a conditional display field.');
+											}
+										}
+										
+										// Must select file storage option
+										if ($field['type'] == 'file_picker') {
+											if (empty($field['store_file'])) {
+												$errors[] = adminPhrase('Please select a file storage method.');
+											}
+										}
 										break;
 									case 'validation':
-										if (!empty($field['is_required']) && empty($field['required_message'])) {
-											$errors[] = adminPhrase('Please enter a message if not complete.');
-										}
-										if ($field['validation'] != 'none' && empty($field['validation_message'])) {
-											$errors[] = adminPhrase('Please enter a message if not valid.');
+										if (empty($field['is_system_field'])) {
+											
+											if (!empty($field['required']) 
+												&& (!isset($field['required_message']) 
+													|| trim($field['required_message']) === '' 
+													|| $field['required_message'] === null
+												)
+											) {
+												$errors[] = adminPhrase('Please enter a message if not complete.');
+											}
+											
+											if ($field['validation'] != 'none' 
+												&& (!isset($field['validation_message'])
+													|| trim($field['validation_message']) === '' 
+													|| $field['validation_message'] === null
+												)
+											) {
+												$errors[] = adminPhrase('Please enter a message if not valid.');
+											}
 										}
 										break;
 									case 'values':
@@ -363,12 +575,21 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							foreach ($result as $id => $label) {
 								$lov[] = array(
 									'id' => $id,
-									'label' => $label
+									'label' => $label,
+									'disabled' => true
 								);
 							}
 						}
 						echo json_encode($lov);
 					}
+					break;
+				
+				case 'get_field_record_count':
+					$field = array();
+					if ($fieldId = post('field_id')) {
+						$field['record_count'] = countDatasetFieldRecords($fieldId);
+					}
+					echo json_encode($field);
 					break;
 			}
 		}

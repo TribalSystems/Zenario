@@ -31,7 +31,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenario_wysiwyg_editor
 ) {
 	"use strict";
@@ -74,7 +74,7 @@ zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, sum
 	
 	zenarioA.getSkinDesc();
 	$('div#' + editorId).tinymce({
-		script_url: URLBasePath + zenarioA.tinyMCEPath,
+		script_url: URLBasePath + zenario.tinyMCEPath,
 
 		plugins: ["advlist autolink lists link image charmap hr anchor",
         "searchreplace code",
@@ -211,7 +211,7 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 	
 	
 	var saveLink = get(containerId + '_save_link').value;
-	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
+	var content = zenario.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_wysiwyg_editor.AJAX(
 		saveLink,

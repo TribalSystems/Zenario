@@ -51,3 +51,8 @@
 #cboxBottomRight {
 	visibility: hidden;
 }
+
+.zenario_page_preview_colorbox #cboxClose {
+	left:3px;
+	right:auto;
+}

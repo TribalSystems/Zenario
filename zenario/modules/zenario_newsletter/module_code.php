@@ -73,7 +73,7 @@ class zenario_newsletter extends module_base_class {
 				case 'populate': 
 					$sql = "
 						INSERT IGNORE INTO ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
-							(newsletter_id, user_id, tracker_hash, remove_hash, delete_account_hash, username, `email`) "
+							(newsletter_id, user_id, tracker_hash, remove_hash, delete_account_hash, identifier, `email`) "
 						. implode(" UNION ", $parts);
 					sqlUpdate($sql, false);
 					return sqlAffectedRows();
@@ -109,7 +109,7 @@ class zenario_newsletter extends module_base_class {
 						SHA(CONCAT(u.id, '_', ". (int) $id. ", '_tracker')) AS tracker_hash,
 						SHA(CONCAT(u.id, '_', ". (int) $id. ", '_unsubscribe')) AS remove_hash,
 						SHA(CONCAT(u.id, '_', ". (int) $id. ", '_remove')) AS delete_account_hash,
-						u.screen_name,
+						u.identifier,
 						u.email";
 				break;
 			
@@ -191,13 +191,14 @@ class zenario_newsletter extends module_base_class {
 	function loadDetails($id) {
 		$sql = "
 			SELECT 
-				newsletter_name, 
-				subject, 
-				status, 
-				email_address_from, 
-				email_name_from, 
-				body, 
-				unsubscribe_text, 
+				newsletter_name,
+				subject,
+				status,
+				email_address_from,
+				email_name_from,
+				head,
+				body,
+				unsubscribe_text,
 				delete_account_text
 			FROM ". DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE id = ". (int) $id;
@@ -236,7 +237,8 @@ class zenario_newsletter extends module_base_class {
 	
 
 	//Send a test email
-	function testSendNewsletter($body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom, $newsletterId) {
+	function testSendNewsletter($head, $body, $adminDetails, $email, $subject, $emailAddresFrom, $emailNameFrom, $newsletterId) {
+		
 		$newsletterArray = array("id" => $newsletterId,"body" => $body);
 		$body = zenario_newsletter::createTrackerHyperlinks($newsletterArray);
 		//Check if there is a User set up with this email address
@@ -250,14 +252,19 @@ class zenario_newsletter extends module_base_class {
 			$user['title'] = adminPhrase('(Title)');
 		}
 		
-		$subject .= ' | TEST SEND';
+		$newsletterURL = zenario_newsletter::getTrackerURL();
+		$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($subject, $user, $newsletterURL);
+		$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($body, $user, $newsletterURL);
+		
+		$newsletterSubject .= ' | TEST SEND';
+		self::putHeadOnBody($head, $newsletterBody);
 
 		//Attempt to send the email
 		$emailOverriddenBy = false;
 		return sendEmail(
-			zenario_newsletter::applyNewsletterMergeFields($subject, $user, zenario_newsletter::getTrackerURL()),
-			zenario_newsletter::applyNewsletterMergeFields($body, $user, zenario_newsletter::getTrackerURL()),
-			$email, 
+			$newsletterSubject,
+			$newsletterBody,
+			$email,
 			$emailOverriddenBy,
 			$user['first_name']. ' '. $user['last_name'],
 			$emailAddresFrom, $emailNameFrom
@@ -325,15 +332,43 @@ class zenario_newsletter extends module_base_class {
 			$admins[] = $row;
 		}
 		// Get newsletter
+		$newsletter = self::getNewsletter($id);
+		
+		// Apply merge fields and send emails
+		foreach ($admins as $id => $admin) {
+			
+			$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($newsletter['subject'], $admin, $newsletter['url']);
+			$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $admin, $newsletter['url']);
+			
+			self::putHeadOnBody($newsletter['head'], $newsletterBody);
+			$newsletterSubject .= ' - ADMIN COPY';
+			
+			$emailOverriddenBy = false;
+			sendEmail(
+				$newsletterSubject,
+				$newsletterBody,
+				$admin['email'],
+				$emailOverriddenBy,
+				$admin['first_name']. ' '. $admin['last_name'],
+				$newsletter['email_address_from'],
+				$newsletter['email_name_from'],
+				array(),
+				array(),
+				'bulk');
+		}
+	}
+	
+	public static function getNewsletter($id) {
 		$sql = "
 			SELECT 
-				id, 
-				subject, 
-				email_address_from, 
-				email_name_from, 
-				url, 
-				body, 
-				unsubscribe_text, 
+				id,
+				subject,
+				email_address_from,
+				email_name_from,
+				url,
+				head,
+				body,
+				unsubscribe_text,
 				delete_account_text
 			FROM "
 				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
@@ -341,44 +376,33 @@ class zenario_newsletter extends module_base_class {
 				id = ". (int) $id;
 		$result = sqlSelect($sql);
 		$newsletter = sqlFetchAssoc($result);
-		// Apply merge fields and send emails
-		foreach ($admins as $id => $admin) {
-			$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($newsletter['subject'], $admin, $newsletter['url']);
-			$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $admin, $newsletter['url']);
-			$emailOverriddenBy = false;
-			sendEmail(
-				$newsletterSubject. ' - ADMIN COPY',
-				$newsletterBody,
-				$admin['email'], 
-				$emailOverriddenBy,
-				$admin['first_name']. ' '. $admin['last_name'],
-				$newsletter['email_address_from'], 
-				$newsletter['email_name_from'], 
-				array(),
-				array(),
-				'bulk');
+		
+		return $newsletter;
+	}
+	
+	//If this newsletter has HTML in the <head>, we'll need to send the email as a full webpage
+	public static function putHeadOnBody(&$head, &$body) {
+		
+		if ($head && trim($head)) {
+			$body =
+'<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+'. $head. '
+</head>
+<body>
+'. $body. '
+</body>
+</html>';
 		}
 	}
 	
 	//Code to send a newsletter
 	//Ideally should be run as a job
 	public static function sendNewsletter($id) {
-		$sql = "
-			SELECT 
-				id, 
-				subject, 
-				email_address_from, 
-				email_name_from, 
-				url, 
-				body, 
-				unsubscribe_text, 
-				delete_account_text
-			FROM "
-				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
-			WHERE 
-				id = ". (int) $id;
-		$result = sqlQuery($sql);
-		$newsletter = sqlFetchAssoc($result);
+		$newsletter = self::getNewsletter($id);
+		
+		//Add unsubscribe/delete account links at the bottom if enabled
 		if ($newsletter['unsubscribe_text']) {
 			$newsletter['body'] .= '<p style="font-size: 11px;">' . htmlspecialchars($newsletter['unsubscribe_text']) . ' <a href="[[REMOVE_FROM_GROUPS_LINK]]">[[REMOVE_FROM_GROUPS_LINK]]</a></p>';
 		}
@@ -387,11 +411,12 @@ class zenario_newsletter extends module_base_class {
 			$newsletter['body'] .= '<p style="font-size: 11px;">' . htmlspecialchars($newsletter['delete_account_text']) . ' <a href="[[DELETE_ACCOUNT_LINK]]">[[DELETE_ACCOUNT_LINK]]</a></p>';
 		}
 		
+		
 		$sql = "
 			SELECT 
-				user_id, 
-				tracker_hash, 
-				remove_hash, 
+				user_id,
+				tracker_hash,
+				remove_hash,
 				delete_account_hash
 			FROM "
 				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletter_user_link
@@ -417,11 +442,11 @@ class zenario_newsletter extends module_base_class {
 
 		$sql = "
 			SELECT 
-				id, 
+				id,
 				email,
 				salutation,
-				salutation as title, 
-				first_name, 
+				salutation as title,
+				first_name,
 				last_name
 			FROM "
 				. DB_NAME_PREFIX. "users
@@ -449,20 +474,22 @@ class zenario_newsletter extends module_base_class {
 		$newsletterSubject = zenario_newsletter::applyNewsletterMergeFields($newsletter['subject'], $user, $newsletter['url'], $hashes['remove_hash'], $hashes['delete_account_hash']);
 		$newsletterBody = zenario_newsletter::applyNewsletterMergeFields($newsletter['body'], $user, $newsletter['url'], $hashes['remove_hash'], $hashes['delete_account_hash']);
 		
+		if (setting('zenario_newsletter__enable_opened_emails')) {
+			$newsletterBody .= ' <img alt="&nbsp;" height="1" width="1" src="'. htmlspecialchars($newsletter['url']). 'tracker.php?t='. htmlspecialchars($hashes['tracker_hash']). '"/>';
+		}
+		self::putHeadOnBody($newsletter['head'], $newsletterBody);
+		
 		$emailOverriddenBy = false;
 		
-		if(setting('zenario_newsletter__enable_opened_emails')) {
-			$newsletterBody = $newsletterBody .zenario_newsletter::applyTrackingGif($hashes['tracker_hash'], $newsletter['url']);
-		}
 		
 		if (sendEmail(
 			$newsletterSubject,
 			$newsletterBody,
-			$user['email'], 
+			$user['email'],
 			$emailOverriddenBy,
 			$user['first_name']. ' '. $user['last_name'],
-			$newsletter['email_address_from'], 
-			$newsletter['email_name_from'], 
+			$newsletter['email_address_from'],
+			$newsletter['email_name_from'],
 			array(),
 			array(),
 			'bulk'
@@ -521,6 +548,8 @@ class zenario_newsletter extends module_base_class {
 								$outputHTML .= 'href="'. htmlspecialchars($trackerHyperlink) . '"';
 								$linkCount = $linkCount + 1;
 							}
+						} else {
+							$outputHTML .= 'href="'. $str2. '"';
 						}
 						
 					} else {
@@ -576,12 +605,13 @@ class zenario_newsletter extends module_base_class {
 
 	public static function deleteNewsletter($id) {
 		if (zenario_newsletter::checkIfNewsletterIsADraft($id)) {
+			
+			sendSignal('eventNewsletterDeleted', array($id));
+			
 			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletters', $id);
 			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_sent_newsletter_link', array('newsletter_id' => $id));
 			deleteRow(ZENARIO_NEWSLETTER_PREFIX . 'newsletter_smart_group_link', array('newsletter_id' => $id));
-			
-			$key = array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id);
-			deleteRow('inline_images', $key);
+			deleteRow('inline_images', array('foreign_key_to' => 'newsletter', 'foreign_key_id' => $id));
 		}
 	}
 
@@ -592,8 +622,5 @@ class zenario_newsletter extends module_base_class {
 		deleteRow('inline_images', $key);
 	}
 	
-	protected static function applyTrackingGif($trackerHash, $url) {
-		return ' <img alt="&nbsp;" height="1" width="1" src="'. htmlspecialchars($url). 'tracker.php?t='. htmlspecialchars($trackerHash). '"/>';
-	}
 
 }

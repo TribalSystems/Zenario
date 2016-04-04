@@ -84,77 +84,33 @@ zenario.moduleBaseClass = function(
 
 	
 	this.AJAXLink = function(requests) {
-		return URLBasePath + 'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=handleAJAX' + zenario.urlRequest(requests);
-	}
+		zenario.AJAXLink(this.moduleClassName, requests);
+	};
 	
 	this.pluginAJAXLink = function(slotNameOrContainedElement, requests) {
-		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
-			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
-		
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=handlePluginAJAX' +
-			'&cID=' + zenario.cID +
-			'&cType=' + zenario.cType +
-		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
-			'&instanceId=' + instanceId +
-			'&slotName=' + slotName +
-			zenario.urlRequest(requests);
-	}
+		zenario.pluginAJAXLink(this.moduleClassName, slotNameOrContainedElement, requests);
+	};
 	
 	this.showFileLink = function(requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showFile' +
-			zenario.urlRequest(requests);
-	}
+		zenario.showFileLink(this.moduleClassName, requests);
+	};
 	
 	this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
-		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
-			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
-		
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showFloatingBox' +
-			'&cID=' + zenario.cID +
-			'&cType=' + zenario.cType +
-		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
-			'&instanceId=' + instanceId +
-			'&slotName=' + slotName +
-			zenario.urlRequest(requests);
-	}
+		zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
+	};
 	
 	this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout) {
-		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
-			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
-		
-		if (hideLayout === undefined) {
-			hideLayout = true;
-		}
-		
-		return zenario.linkToItem(zenario.cID, zenario.cType,
-			'moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showSingleSlot' +
-			(hideLayout? '&hideLayout=1' : '') +
-		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
-			'&instanceId=' + instanceId +
-			'&slotName=' + slotName +
-			zenario.urlRequest(requests));
-	}
+		zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout);
+	};
 	
 	this.showImageLink = function(requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showImage' +
-			zenario.urlRequest(requests);
-	}
+		zenario.showImageLink(this.moduleClassName, requests);
+	};
 	
 	this.showStandalonePageLink = function(requests) {
-		return URLBasePath + 
-			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(this.moduleClassName) + '&method_call=showStandalonePage' +
-			zenario.urlRequest(requests);
-	}
+		zenario.showStandalonePageLink(this.moduleClassName, requests);
+	};
+	
 	
 	
 	

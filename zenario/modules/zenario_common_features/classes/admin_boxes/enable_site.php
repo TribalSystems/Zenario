@@ -33,7 +33,11 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
 		if (setting('site_enabled')) {
-			$box['tabs']['site']['fields']['enable_site']['value'] = 1;
+			if (setting('site_mode') == 'production') {
+				$box['tabs']['site']['fields']['enable_site_production']['value'] = 1;
+			} else {
+				$box['tabs']['site']['fields']['enable_site_development']['value'] = 1;
+			}
 		} else {
 			$box['tabs']['site']['fields']['disable_site']['value'] = 1;
 		}
@@ -43,12 +47,20 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
+		$box['tabs']['site']['notices']['checked']['show'] = false;
+		if (!empty($fields['site/force_scan']['pressed'])) {
+			$box['tabs']['site']['notices']['checked']['show'] = true;
+			
+			checkForChangesInYamlFiles($forceScan = true);
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
+		}
 	}
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if ($values['site/enable_site']) {
+		if ($values['site/enable_site_production']
+		 || $values['site/enable_site_development']) {
 			if (checkIfDBUpdatesAreNeeded($andDoUpdates = false)) {
 				$box['tabs']['site']['errors'][] =
 					adminPhrase('You must apply database updates before you can enable your site.');
@@ -94,11 +106,24 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 	
 		if (checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-			setSetting('site_enabled', $values['site/enable_site']);
 			setSetting('site_disabled_title', $values['site/site_disabled_title']);
 			setSetting('site_disabled_message', $values['site/site_disabled_message']);
 			
-			$box['key']['id'] = $values['site/enable_site']? 'site_enabled' : 'site_disabled';
+			if ($values['site/enable_site_production']) {
+				setSetting('site_mode', 'production');
+				setSetting('site_enabled', 1);
+				$box['key']['id'] = 'site_enabled';
+			
+			} elseif ($values['site/enable_site_development']) {
+				setSetting('site_mode', 'development');
+				setSetting('site_enabled', 1);
+				$box['key']['id'] = 'site_enabled';
+			
+			} else {
+				setSetting('site_mode', 'development');
+				setSetting('site_enabled', '');
+				$box['key']['id'] = 'site_disabled';
+			}
 		}
 	}
 }

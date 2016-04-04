@@ -206,6 +206,11 @@ class module_base_class extends zenario_api {
 	
 	
 	
+	public function fillOrganizerNav(&$nav) {
+		
+		//...your PHP code...//
+	}
+	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		
 		//...your PHP code...//

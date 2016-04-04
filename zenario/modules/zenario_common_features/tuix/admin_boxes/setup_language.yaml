@@ -4,6 +4,9 @@ zenario_setup_language:
     title: ""
     key:
         id: ""
+    identifier:
+        css_class: language
+        label: Language code
     tabs:
         settings:
             label: Settings

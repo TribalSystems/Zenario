@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf
+	extensionOf, methodsOf, has
 ) {
 	"use strict";
 
@@ -63,8 +63,8 @@ zenarioAT.init = function(firstLoad) {
 	
 	var url =
 		URLBasePath +
-		'zenario/admin/ajax.php?_at=1&_json=1' +
-		'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests)) +
+		'zenario/admin/admin_toolbar.ajax.php' +
+		'?get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests)) +
 		zenario.urlRequest(zenarioAT.getKey());
 	
 	zenarioAT.url = url;
@@ -75,8 +75,8 @@ zenarioAT.init = function(firstLoad) {
 	
 	//var url =
 	//	URLBasePath +
-	//	'zenario/admin/ajax.php?_at=1&_json=1' +
-	//	'&get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
+	//	'zenario/admin_toolbar.ajax.php' +
+	//	'?get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests));
 	//
 	//zenarioAT.url = url + zenario.urlRequest(zenarioAT.getKey());
 	//
@@ -443,7 +443,10 @@ zenarioAT.draw = function() {
 						buttons[bi].href = zenario.addBasePath(button.frontend_link);
 					}
 					
-					if (!buttons[bi].href) {
+					if (button.onclick) {
+						buttons[bi].onclick = button.onclick;
+					
+					} else if (!buttons[bi].href) {
 						buttons[bi].onclick = "zenarioAT.clickButton('" + jsEscape(section) + "', '" + jsEscape(i) + "'); return false;";
 					}
 				}

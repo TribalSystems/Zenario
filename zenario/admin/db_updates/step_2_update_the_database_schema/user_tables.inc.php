@@ -614,6 +614,27 @@ _sql
 	ADD COLUMN `include_in_export` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
+
+//Create a table for storing smart group rules in the new format
+);	revision( 31740
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_rules`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
+		`smart_group_id` int(10) unsigned NOT NULL,
+		`ord` int(10) unsigned NOT NULL,
+		`field_id` int(10) unsigned NOT NULL,
+		`field2_id` int(10) unsigned NOT NULL default 0,
+		`field3_id` int(10) unsigned NOT NULL default 0,
+		`not` tinyint(1) NOT NULL default 0,
+		`value` text,
+		PRIMARY KEY (`smart_group_id`, `ord`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+
 ); revision( 31760
 
 , <<<_sql
@@ -672,34 +693,126 @@ _sql
 	AFTER `field4_id`
 _sql
 
-); revision( 33773
-, <<<_sql
-	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
-	MODIFY COLUMN `captcha_type` enum('word', 'math','google_recaptcha') DEFAULT 'word'
-_sql
-
-);
-
- revision( 33774
- 
- , <<<_sql
-	UPDATE `[[DB_NAME_PREFIX]]user_forms`
-	SET captcha_type = 'word'
-	WHERE captcha_type = 'google_recaptcha'
-_sql
- 
+); revision( 33946
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
 	MODIFY COLUMN `captcha_type` enum('word', 'math','pictures') DEFAULT 'word'
 _sql
 
 
+
+//Add the option to have foreign keys in datasets
+); revision( 34000
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `type`
+		enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker')
+	NOT NULL default 'other_system_field'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `dataset_foreign_key_id` int(10) unsigned NOT NULL default 0
+	AFTER `values_source_filter`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_datasets`
+	ADD COLUMN `label_field_id` int(10) unsigned NOT NULL default 0
+	AFTER `edit_priv`
+_sql
+
+); revision( 34056
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `side_note` text AFTER `note_below`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `admin_box_visibility` enum('show', 'show_on_condition', 'hide') NOT NULL DEFAULT 'show' AFTER `db_column`
+_sql
+
+
+//Create a table for storing picked files in datasets
+);	revision( 34400
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_files_link`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]custom_dataset_files_link` (
+		`dataset_id` int(10) NOT NULL,
+		`field_id` int(10) NOT NULL,
+		`linking_id` int(10) NOT NULL,
+		`file_id` int(10) NOT NULL,
+		PRIMARY KEY (`field_id`,`linking_id`,`file_id`),
+		KEY (`dataset_id`),
+		KEY (`linking_id`),
+		KEY (`file_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+//Add the options for file pickers in datasets
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	MODIFY COLUMN `type`
+		enum('group','checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','other_system_field','dataset_select','dataset_picker','file_picker')
+	NOT NULL default 'other_system_field'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `multiple_select` tinyint(1) NOT NULL default 0
+	AFTER `dataset_foreign_key_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `store_file` enum('in_docstore', 'in_database') NULL default NULL
+	AFTER `multiple_select`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `extensions` varchar(255) NOT NULL default ''
+	AFTER `store_file`
+_sql
+
+//Add a column for indent level for dataset fields
+);	revision( 34402
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `indent` int(10) unsigned NOT NULL DEFAULT 0
+_sql
+
+
 //Add a "must match all/any" option for Smart Groups
-); revision( 33776
+); revision( 34460
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]smart_groups`
 	ADD COLUMN `must_match` enum('all', 'any') NOT NULL default 'all'
 	AFTER `name`
 _sql
 
+
+//Add a missing key to the users table
+); revision( 34663
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`status`)
+_sql
+
+
+//Make the default label column a little bigger on the custom_dataset_tabs table
+//to avoid database errors
+); revision( 34664
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs`
+	MODIFY COLUMN `default_label` varchar(255) NOT NULL DEFAULT ''
+_sql
+
 );
+
+
+

@@ -75,6 +75,10 @@ class zenario_location_viewer extends module_base_class {
 			return false;
 		}
 		
+		if ($this->setting('use_location_name_for_page_title') && $locationDetails['description']) {
+			$this->setPageTitle($locationDetails['description']);
+		}
+		
 		if ($this->setting('show_title')) {
 			$this->data['show_title'] = true;
 		}
@@ -131,6 +135,15 @@ class zenario_location_viewer extends module_base_class {
 				arrayKey($locationDetails,'longitude'),
 				arrayKey($locationDetails,'map_zoom')
 			);
+		}
+		
+		
+		if(is_array($locationDetails) && $locationDetails){
+		
+			foreach($locationDetails as $key=> $details){
+				$locationDetails[$key]=nl2br($details);
+			}
+		
 		}
 		$this->data['location'] = $locationDetails;
 		return true;

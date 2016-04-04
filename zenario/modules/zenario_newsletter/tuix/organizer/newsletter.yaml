@@ -331,13 +331,14 @@ zenario__email_template_manager:
                     sql: 'nul.newsletter_id = [[REFINER_ID]]'
             columns:
                 id:
-                    title: id
+                    title: ID
                     db_column: u.id
                     searchable: Yes
                     align_right: Yes
-                username:
-                    title: Username
-                    db_column: nul.username
+                    width: xsmall
+                identifier:
+                    title: Identifier
+                    db_column: nul.identifier
                     show_by_default: Yes
                     searchable: Yes
                 salutation:
@@ -415,7 +416,7 @@ zenario__email_template_manager:
             #        label: Export in CSV
             #        css_class: export
             #        do_csv_export: Yes
-            default_sort_column: username
+            default_sort_column: identifier
             item:
                 name: Recipient
                 names: Recipients

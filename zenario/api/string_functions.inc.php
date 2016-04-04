@@ -223,6 +223,61 @@ function validateScreenName($screenName) {
 	return !$invalid;
 }
 
+function sanitiseHTML($html, $allowable_tags = '', $allowedStyles = array(), $allowedAttributes = array()) {
+
+	$DOMDocument = new DOMDocument('1.0', 'UTF-8');
+	libxml_use_internal_errors(true);
+		
+		$DOMDocument->loadHTML('<?xml encoding="UTF-8">' . $html);
+		
+		//Or possibly:
+		//$DOMDocument->loadHTML('<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/></head><body>' . $html. '</body></html>');
+	libxml_use_internal_errors(false);
+
+	$elements = $DOMDocument->getElementsByTagName('*');
+	
+	$allowedAttributes['src'] = true;
+
+	foreach ($elements as $item) {
+		if ($item->attributes
+		 && $item->attributes->length) {
+			foreach ($item->attributes as $a => $b) {
+				
+				//Always allow hrefs in links, and srcs in images
+				if ($a == 'href' && $item->tagName == 'a') {
+				} elseif ($a == 'src' && $item->tagName == 'img') {
+				
+				} elseif ($a == 'style') {
+					$styles = array();
+					
+					if (!empty($allowedStyles)) {
+						
+						foreach (explode(';', $item->getAttribute('style')) as $style) {
+							$keyValue = explode(':', $style);
+							if ($keyValue[0] = trim($keyValue[0])) {
+								if (!empty($allowedStyles[$keyValue[0]])) {
+									$styles[] = $keyValue[0]. ':'. $keyValue[1];
+								}
+							}
+						}
+					}
+					
+					if (!empty($styles)) {
+						$item->setAttribute('style', implode(';', $styles));
+					} else {
+						$item->removeAttribute($a);
+					}
+				
+				} elseif (empty($allowedAttributes[$a])) {
+					$item->removeAttribute($a);
+				}
+			}
+		}
+	}
+	
+	return strip_tags($DOMDocument->saveHTML(), $allowable_tags);
+}
+
 function trimNonWordCharactersUnicode($string) {
 	$out = @preg_replace('/[^\p{L}\p{M}\d\-]/u', '', $string);
 	

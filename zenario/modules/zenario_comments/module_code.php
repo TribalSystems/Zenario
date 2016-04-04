@@ -114,10 +114,6 @@ class zenario_comments extends zenario_anonymous_comments {
 			$mergeFields['Username_Link'] = $this->getUserScreenNameLink($userId, $coreDetails['screen_name']);
 		}
 		
-		if ($this->setting('show_user_job_titles')) {
-			$sections['Show_User_Title'] = $sections['Posting_Show_Title'] = $this->getUserTitles($userId);
-		}
-		
 		if ($this->setting('show_user_online_status')) {
 			if ($forumDetails['online']) {
 				$sections['Show_Online'] = $sections['Posting_Show_Online'] = true;
@@ -304,8 +300,7 @@ class zenario_comments extends zenario_anonymous_comments {
 		
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
-				poster_id = 0,
-				employee_post = 0
+				poster_id = 0
 			WHERE poster_id = ". (int) $userId;
 		sqlQuery($sql);
 		

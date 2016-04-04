@@ -3,7 +3,7 @@
 <% var i = 0; %>
 
 <select id="view" onchange="devTools.updateEditor();">
-	<% if (devTools.skMap) { %>
+	<% if (devTools.orgMap) { %>
 		<optgroup label="{{++i|escape}}. Source Files (for top level navigation and panel locations)">
 	<% } else if (devTools.mode == 'zenarioO') { %>
 		<optgroup label="{{++i|escape}}. Source Files (for this panel)">
@@ -23,7 +23,11 @@
 		<option value="combined" {{'combined' == m.selectedFile? ' selected="selected"' : ''}}>Combined source files (static)</option>
 	</optgroup>
 	
-	<% if (!devTools.skMap) { %>
+	<% if (devTools.orgMap) { %>
+		<optgroup label="{{++i|escape}}. Current">
+			<option value="orgmap" {{'orgmap' == m.selectedFile? ' selected="selected"' : ''}}>Current value (dynamic)</option>
+		</optgroup>
+	<% } else { %>
 		<% if (m.organizer_query_ids || m.organizer_query_details) { %>
 			<optgroup label="{{++i|escape}}. Storekeeper Queries">
 				<% if (m.organizer_query_ids && m.organizer_query_details) { %>

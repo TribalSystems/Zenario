@@ -5,22 +5,22 @@ zenario__administration:
         site_settings:
             title: Site Settings
             view_mode: list
-            disable_grid_view: Yes
-            disable_periodic_refresh: Yes
+            disable_grid_view: true
+            disable_periodic_refresh: true
             columns:
                 name:
                     title: Settings
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                     width: large
                 desc:
                     width: xxlarge
                     title: Description
-                    show_by_default: Yes
-                    searchable: Yes
+                    show_by_default: true
+                    searchable: true
                 keywords:
                     title: Keywords
-                    searchable: Yes
+                    searchable: true
             item:
                 name: Settings
                 names: Settings
@@ -66,7 +66,7 @@ zenario__administration:
                 documents:
                     name: Documents
                     desc: >
-                        Settings for documents.
+                        Settings for documents (new system).
                     keywords: documents
                 email:
                     name: Email
@@ -98,10 +98,9 @@ zenario__administration:
                         image thumbnail working copy jpeg file upload sizes
                         file download restrict by IP
                 head_and_foot:
-                    name: Head and Foot
+                    name: Head, Body and Foot slots
                     desc: |
-                        Add HTML to the <head> tag or to the bottom of
-                        the <body> tag of all pages on your site.
+                        Add HTML to the <head> or <body> tag of all pages on your site.
                 domains:
                     priv: _PRIV_VIEW_SITE_SETTING
                     name: Domains
@@ -170,10 +169,16 @@ zenario__administration:
                         path: site_settings
                     visible_if_for_all_selected_items: |
                         !item.is_not_site_setting
+                edit_ctype:
+                    label: Properties
+                    admin_box:
+                        path: zenario_content_type_details
+                    visible_if_for_all_selected_items: |
+                        item.is_ctype
                 site_reset:
                     priv: _PRIV_RESET_SITE
                     label: Site Reset
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_reset'
                     disabled_if: |
@@ -187,7 +192,7 @@ zenario__administration:
                 disable_site:
                     priv: _PRIV_EDIT_SITE_SETTING
                     label: Disable this Site
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_enabled'
                     admin_box:
@@ -195,7 +200,7 @@ zenario__administration:
                 enable_site:
                     priv: _PRIV_EDIT_SITE_SETTING
                     label: Enable this Site
-                    hide_in_select_mode: Yes
+                    hide_in_select_mode: true
                     visible_if_for_all_selected_items: |
                         id == 'site_disabled'
                     admin_box:
@@ -203,7 +208,7 @@ zenario__administration:
                 
                 #view_dropdown:
                 #    label: View
-                #    hide_when_children_are_not_visible: Yes
+                #    hide_when_children_are_not_visible: true
                 #profile:
                 #    parent: view_dropdown
                 #    label: Profile
@@ -215,10 +220,10 @@ zenario__administration:
                 #        id == 'profile'
                 #action_dropdown:
                 #    label: Actions
-                #    hide_when_children_are_not_visible: Yes
+                #    hide_when_children_are_not_visible: true
                 #change_password:
                 #    parent: action_dropdown
-                #    local_admins_only: Yes
+                #    local_admins_only: true
                 #    label: Change Password
                 #    frontend_link: 'zenario/admin/welcome.php?task=change_password&og=zenario__administration/nav/configure_settings/panel//profile'
                 #    visible_if_for_all_selected_items: |

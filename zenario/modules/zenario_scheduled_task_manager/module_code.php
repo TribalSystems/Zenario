@@ -152,11 +152,15 @@ class zenario_scheduled_task_manager extends module_base_class {
 		}
 		
 		$offtime = false;
+		$warnAboutStuckTasksEvery15Mins = false;
 		if ($times[4] == 59) {
 			$times[4] = 12;
 		} elseif ($times[4] % 5) {
 			$offtime = true;
 		} else {
+			if ($times[4] % 15) {
+				$warnAboutStuckTasksEvery15Mins = true;
+			}
 			$times[4] = (int) ($times[4] / 5);
 		}
 
@@ -218,7 +222,7 @@ class zenario_scheduled_task_manager extends module_base_class {
 			//Jobs that are still "in progress" should not have a second copy run.
 			if ($job['status'] == 'in_progress') {
 				//However if we see that they've been in progress for more than four hours then send an email
-				if ($job['stuck']) {
+				if ($warnAboutStuckTasksEvery15Mins && $job['stuck']) {
 					self::sendLogEmails(
 						$managerClassName, $serverTime,
 						$job['job_name'], $job['id'], 'error',

@@ -4,7 +4,7 @@ zenario_user__activate:
     priv: _PRIV_CHANGE_USER_STATUS
     key:
         id: ""
-    max_height: "160"
+    max_height: 200
     tabs:
         email:
             label: Email
@@ -16,15 +16,15 @@ zenario_user__activate:
                     ord: 1
                     full_width: 1
                     snippet:
-                        html: "You are about to change this user's account to be Active; this means that the user will be able to log in to a password-protected area of your site."
+                        html: "You are about to change this user's account to be active; this means that the user will be able to log in to a password-protected area of your site."
                 send_email_to_user:
                     ord: "30"
-                    label: 'Send email to User:'
+                    label: 'Send email to user'
                     type: checkbox
                     format_onchange: Yes
                 email_to_send:
                     ord: "40"
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
@@ -33,8 +33,9 @@ zenario_user__activate:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an Email Template
+                        required: Please select an email template
                     hidden: Yes
-                    note_below: >
-                        An email based on the selected Email Template will be sent
-                        to the User.
+                    side_note: >
+                        An email based on the selected email template will be sent
+                        to the user.
+                    indent: 1

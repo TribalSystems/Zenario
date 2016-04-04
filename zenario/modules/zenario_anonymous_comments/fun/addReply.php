@@ -34,13 +34,12 @@ $sql = "
 		content_id = ". (int) $this->cID. ",
 		content_type = '". sqlEscape($this->cType). "',
 		date_posted = NOW(),
-		employee_post = ". (int) !empty($_SESSION['extranetUserIsAnEmployee']). ",
 		poster_id = ". (int) $userId. ",
 		poster_ip = '". sqlEscape(visitorIP()). "',
 		poster_name = '". sqlEscape($name). "',
 		poster_email = '". sqlEscape($email). "',
 		poster_session_id = '". sqlEscape(session_id()). "',
-		message_text = '". sqlEscape($this->adjustMessageText($messageText)). "',
+		message_text = '". sqlEscape(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 		status = '" . $this->defaultReplyStatus() . "'";
 
 sqlUpdate($sql);

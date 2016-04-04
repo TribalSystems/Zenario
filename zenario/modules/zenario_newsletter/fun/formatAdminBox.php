@@ -57,8 +57,8 @@ switch ($path) {
 
 			$clearCopyFromSourceFields = true;
 			if (inc('zenario_email_template_manager')) {
-				$email = zenario_email_template_manager::getTemplateByCode($values['meta_data/load_content_source_email_template']);
-				$box['tabs']['meta_data']['fields']['body']['current_value'] = $email['body'];
+				$emailTemplate = zenario_email_template_manager::getTemplateByCode($values['meta_data/load_content_source_email_template']);
+				$values['meta_data/body'] = $emailTemplate['body'];
 			}
 		}
 		if (($values['meta_data/load_content_source'] == 'use_newsletter_template')
@@ -66,8 +66,9 @@ switch ($path) {
 				&& (engToBooleanArray($box,'tabs','meta_data','fields','load_content_continue','pressed') || (!$values['meta_data/body'])) ) {
 
 			$clearCopyFromSourceFields = true;
-			$email = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', 'body', array('id' => $values['meta_data/load_content_source_newsletter_template']));
-			$box['tabs']['meta_data']['fields']['body']['current_value'] = $email;
+			$emailTemplate = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('head', 'body'), array('id' => $values['meta_data/load_content_source_newsletter_template']));
+			$values['meta_data/body'] = $emailTemplate['body'];
+			$values['advanced/head'] = $emailTemplate['head'];
 		}
 		if (($values['meta_data/load_content_source'] == 'copy_from_archived_newsletter')
 				&& $values['meta_data/load_content_source_archived_newsletter'] 
@@ -75,7 +76,8 @@ switch ($path) {
 
 			$clearCopyFromSourceFields= true;
 			$newsletter = $this->loadDetails($values['meta_data/load_content_source_archived_newsletter']);
-			$box['tabs']['meta_data']['fields']['body']['current_value'] = $newsletter['body'];
+			$values['meta_data/body'] = $newsletter['body'];
+			$values['advanced/head'] = $newsletter['head'];
 		}
 
 		if (engToBooleanArray($box,'tabs','meta_data','fields','load_content_cancel','pressed')) {
@@ -84,10 +86,10 @@ switch ($path) {
 
 		if ($clearCopyFromSourceFields) {
 			$values['meta_data/load_content_source'] = 'nothing_selected';
-			$box['tabs']['meta_data']['fields']['load_content_source']['current_value'] = 'nothing_selected';
-			$box['tabs']['meta_data']['fields']['load_content_source_email_template']['current_value'] = '';
-			$box['tabs']['meta_data']['fields']['load_content_source_newsletter_template']['current_value'] = '';
-			$box['tabs']['meta_data']['fields']['load_content_source_archived_newsletter']['current_value'] = '';
+			$values['meta_data/load_content_source'] = 'nothing_selected';
+			$values['meta_data/load_content_source_email_template'] = '';
+			$values['meta_data/load_content_source_newsletter_template'] = '';
+			$values['meta_data/load_content_source_archived_newsletter'] = '';
 
 			$box['tabs']['meta_data']['fields']['load_content_continue']['pressed'] = '';
 			$box['tabs']['meta_data']['fields']['load_content_cancel']['pressed'] = '';
@@ -113,7 +115,7 @@ switch ($path) {
 			$values['unsub_exclude/unsubscribe_link'] = 'none';
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['show'] = true;
 			$box['tabs']['unsub_exclude']['notices']['no_opt_out_group']['message'] =
-				adminPhrase('You must select an unsubscribe user characteristic in newsletter configuration settings');
+				adminPhrase('You must select an Unsubscribe user flag in Configuration->Site Settings->Newsletters');
 			if (isset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out'])) {
 				unset($box['tabs']['unsub_exclude']['fields']['exclude_recipients_with_opt_out']);
 			}
@@ -142,10 +144,10 @@ switch ($path) {
 				foreach (explodeAndTrim($values['meta_data/test_send_email_address']) as $email) {
 					$body = $values['meta_data/body'];
 					if ($values['unsub_exclude/unsubscribe_link'] == 'unsub') {
-						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/unsubscribe_text']) . ' [[REMOVE_FROM_GROUPS_LINK]]</p>';
+						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/unsubscribe_text']) . ' <a href="[[REMOVE_FROM_GROUPS_LINK]]">[[REMOVE_FROM_GROUPS_LINK]]</a></p>';
 					}
 					if ($values['unsub_exclude/unsubscribe_link'] == 'delete') {
-						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/delete_account_text']) . ' [[DELETE_ACCOUNT_LINK]]</p>';
+						$body .= '<p>' . htmlspecialchars($values['unsub_exclude/delete_account_text']) . ' <a href="[[DELETE_ACCOUNT_LINK]]">[[DELETE_ACCOUNT_LINK]]</a></p>';
 					}
 					
 					if (!validateEmailAddress($email)) {
@@ -157,6 +159,7 @@ switch ($path) {
 					
 					} else
 					if (($box['key']['id']) &&!$this->testSendNewsletter(
+						$values['advanced/head'],
 						$body, $adminDetails, $email,
 						$values['meta_data/subject'],
 						$values['meta_data/email_address_from'],

@@ -39,10 +39,12 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 	foreach($desc['content_types'] as $type) {
 		if (!empty($type['content_type_id'])
 		 && !empty($type['content_type_name_en'])) {
+		 	
 			$sql = "
 				INSERT INTO ". DB_NAME_PREFIX. "content_types SET
 					content_type_id = '". sqlEscape($type['content_type_id']). "',
 					content_type_name_en = '". sqlEscape($type['content_type_name_en']). "',
+					content_type_plural_en = '". sqlEscape(arrayKey($type, 'content_type_plural_en')). "',
 					writer_field = '". ifNull(sqlEscape(arrayKey($type, 'writer_field')), 'hidden'). "',
 					description_field = '". ifNull(sqlEscape(arrayKey($type, 'description_field')), 'optional'). "',
 					keywords_field = '". ifNull(sqlEscape(arrayKey($type, 'keywords_field')), 'optional'). "',
@@ -50,8 +52,11 @@ if (!empty($desc['content_types']) && is_array($desc['content_types'])) {
 					release_date_field = '". ifNull(sqlEscape(arrayKey($type, 'release_date_field')), 'optional'). "',
 					enable_summary_auto_update = ". engToBooleanArray($type, 'enable_summary_auto_update'). ",
 					enable_categories = ". engToBooleanArray($type, 'enable_categories'). ",
+					is_creatable = ". (isset($type['is_creatable']) ? engToBooleanArray($type, 'is_creatable') : '1') . ",
 					module_id = ". (int) $moduleId. "
 				ON DUPLICATE KEY UPDATE
+					content_type_name_en = IF (content_type_name_en = '', '". sqlEscape($type['content_type_name_en']). "', content_type_name_en),
+					content_type_plural_en = IF (content_type_plural_en = '', '". sqlEscape($type['content_type_plural_en']). "', content_type_plural_en),
 					module_id = ". (int) $moduleId;
 			sqlQuery($sql);
 			

@@ -79,9 +79,29 @@ class zenario_meta_data extends module_base_class {
 			if (!empty($file)) {
 				$width = $height = $url = false;
 				imageLink($width, $height, $url, $file['id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'));
-				$this->mergeFields['Writer_Alt'] = $file['alt_tag'];
 				if ($this->mergeFields['Writer_Src'] = $url) {
+					$this->mergeFields['Writer_Alt'] = $file['alt_tag'];
 					$this->showSections['show_writer_image'] = true;
+				}
+			}
+		}
+		if ($this->setting('show_sticky_image')) {
+			$sql = '
+				SELECT f.id, f.alt_tag
+				FROM '.DB_NAME_PREFIX.'content_item_versions v
+				INNER JOIN '.DB_NAME_PREFIX.'files f
+					ON v.sticky_image_id = f.id
+				WHERE v.id = '.(int)$this->cID.'
+					AND v.type = "'.sqlEscape($this->cType).'"
+					AND v.version = '.(int)$this->cVersion;
+			$result = sqlSelect($sql);
+			$file = sqlFetchAssoc($result);
+			if (!empty($file)) {
+				$width = $height = $url = false;
+				imageLink($width, $height, $url, $file['id'], $this->setting('sticky_image_width'), $this->setting('sticky_image_height'), $this->setting('sticky_image_canvas'), $this->setting('sticky_image_offset'));
+				if ($this->mergeFields['Sticky_Image_Src'] = $url) {
+					$this->mergeFields['Sticky_Image_Alt'] = $file['alt_tag'];
+					$this->showSections['show_sticky_image'] = true;
 				}
 			}
 		}
@@ -127,11 +147,6 @@ class zenario_meta_data extends module_base_class {
 				++$c;
 				$section = array('Category' => htmlspecialchars($cat['public_name']));
 				
-				if ($cat['landing_page_equiv_id'] && $cat['landing_page_content_type']) {
-					langEquivalentItem($cat['landing_page_equiv_id'], $cat['landing_page_content_type']);
-					$section['Category_Link'] = $this->linkToItemAnchor($cat['landing_page_equiv_id'], $cat['landing_page_content_type']);
-				}
-				
 				$this->showSections['categories'][] = $section;
 			}
 			
@@ -147,19 +162,23 @@ class zenario_meta_data extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-		        $fields['first_tab/date_format']['hidden'] = 
-		        	!(arrayKey($values,'first_tab/show_date'));
-		        	
-		        $fields['first_tab/canvas']['hidden'] = !$values['first_tab/show_writer_image'];
-		        $fields['first_tab/width']['hidden'] =
-		        	$fields['first_tab/canvas']['hidden'] ||
-		        	!in($values['first_tab/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-		        $fields['first_tab/height']['hidden'] =
-		        	$fields['first_tab/canvas']['hidden'] ||
-		        	!in($values['first_tab/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-		        $fields['first_tab/offset']['hidden'] =
-		        	$fields['first_tab/canvas']['hidden'] ||
-		        	$values['first_tab/canvas'] != 'resize_and_crop';
+				$fields['first_tab/date_format']['hidden'] = !$values['first_tab/show_date'];
+				
+				$fields['first_tab/canvas']['hidden'] = !$values['first_tab/show_writer_image'];
+				$fields['first_tab/width']['hidden'] = $fields['first_tab/canvas']['hidden'] 
+					|| !in($values['first_tab/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/height']['hidden'] = $fields['first_tab/canvas']['hidden'] 
+					|| !in($values['first_tab/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/offset']['hidden'] = $fields['first_tab/canvas']['hidden'] 
+					|| $values['first_tab/canvas'] != 'resize_and_crop';
+				
+				$fields['first_tab/sticky_image_canvas']['hidden'] = !$values['first_tab/show_sticky_image'];
+				$fields['first_tab/sticky_image_width']['hidden'] = $fields['first_tab/sticky_image_canvas']['hidden'] 
+					|| !in($values['first_tab/sticky_image_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/sticky_image_height']['hidden'] = $fields['first_tab/sticky_image_canvas']['hidden'] 
+					|| !in($values['first_tab/sticky_image_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+				$fields['first_tab/sticky_image_offset']['hidden'] = $fields['first_tab/sticky_image_canvas']['hidden'] 
+					|| $values['first_tab/sticky_image_canvas'] != 'resize_and_crop';
 				break;
 		}
 	}

@@ -55,7 +55,7 @@ zenario_user__convert_to_user:
                     label: "Password:"
                     type: password
                     validation:
-                        required: "Please enter a password"
+                        required: "Please enter a password, or click Suggest to have one auto-generated."
                 reveal_password:
                     same_row: true
                     value: Reveal

@@ -114,6 +114,54 @@ common_definitions:
             description: >
                 Setting this property will deselect any items on the current panel before
                 navigation.
+        
+    hide_in_select_mode: &hide_in_select_mode
+        type: boolean
+        description: >
+            Do not show this button when in Select Mode.
+    select_mode_only: &select_mode_only
+        type: boolean
+        description: >
+            Do not show this button when not in Select Mode.
+    hide_in_quick_mode: &hide_in_quick_mode
+        type: boolean
+        description: >
+            Do not show this button when in Quick Mode.
+    quick_mode_only: &quick_mode_only
+        type: boolean
+        description: >
+            Do not show this button when not in Quick Mode.
+    
+            Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
+            this button will appear in both Select Mode and Quick Mode.
+    only_show_on_refiner: &only_show_on_refiner
+        type:
+            - string
+            - object
+        description: >
+            Only show the button if the named refiner has been applied.
+    
+            This takes the name of a refiner as a string, or you
+            can use an associative array of refiner names as keys.
+    hide_on_refiner: &hide_on_refiner
+        type:
+            - boolean
+            - string
+            - object
+        description: >
+            Hide the button if the named refiner has been applied.
+    
+            This takes the name of a refiner as a string, or you
+            can use an associative array of refiner names as keys.
+            
+            From version 7.2 you can also pass a value of true to
+            hide it on any refiner.
+    hide_on_filter: &hide_on_filter
+        type: boolean
+        description: >
+            Hide this button when a search or a filter is applied.
+            
+            This works from version 7.1 onwards.
 
 
 $schema: 'http://json-schema.org/draft-04/schema#'
@@ -140,14 +188,6 @@ additionalProperties:
         ord: *ord
         hidden: *hidden
         visible_if: *visible_if
-        youtube_video_id:
-            type: string
-            description: >
-                A youtube video URL about this panel. This will be showing in the help tour.
-        youtube_thumbnail_title:
-            type: string
-            description: >
-                The title of the youtube video thumbnail in the help tour.
         
         nav:
             type: object
@@ -173,7 +213,24 @@ additionalProperties:
                         type: object
                         required:
                             - path
-                        properties: *link_properties
+                        properties:
+                            path:
+                                type: string
+                                description: >
+                                    The tag-path of a panel to link to.
+                
+                                    This must be a tag-path; you may not enter a navigation path.
+                            refiner:
+                                type: string
+                                description: >
+                                    If the panel you are linking has a refiner defined,
+                                    you can create a link to panel that will use that refiner by entering its name here.
+                            refinerId:
+                                type: string
+                                description: >
+                                    You can use this property to set the value of the refiner that you link to.
+                                    
+                                    This works from version 7.2 onwards.
                         description: >
                             If you set a link on a nav element, an administrator will be taken to
                             the link's destination panel when they click on it.
@@ -755,18 +812,6 @@ additionalProperties:
                                     description: >
                                         A tooltip for this button if it is disabled.
                                 
-                                enabled_by_default:
-                                    type: boolean
-                                    description: >
-                                        New in version 7.0.5.
-                                        
-                                        Set this property to enable the filter by default when an
-                                        administrator first visits the panel.
-                                        
-                                        You must set this property by writing it in your TUIX files.
-                                        You cannot define or modify it in your fillOrganizerPanel()
-                                        or preFillOrganizerPanel() methods.
-                                
                                 column:
                                     type: string
                                     description: >
@@ -800,49 +845,13 @@ additionalProperties:
                                         other quick-filter button. (But if this is in a drop-down, only the buttons
                                         in the drop-down will be affected.)
                                 
-                                hide_in_select_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Select Mode.
-                                select_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Select Mode.
-                                hide_in_quick_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Quick Mode.
-                                quick_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Quick Mode.
-                                
-                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
-                                        this button will appear in both Select Mode and Quick Mode.
-                                only_show_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Only show the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Hide the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_filter:
-                                    type: boolean
-                                    description: >
-                                        Hide this button when a search or a filter is applied.
-                                        
-                                        This works from version 7.1 onwards.
+                                hide_in_select_mode: *hide_in_select_mode
+                                select_mode_only: *select_mode_only
+                                hide_in_quick_mode: *hide_in_quick_mode
+                                quick_mode_only: *quick_mode_only
+                                only_show_on_refiner: *only_show_on_refiner
+                                hide_on_refiner: *hide_on_refiner
+                                hide_on_filter: *hide_on_filter
                     
                     refiners:
                         type: object
@@ -1179,9 +1188,6 @@ additionalProperties:
                                         - admin_box
                                 -
                                     required:
-                                        - call_js_function
-                                -
-                                    required:
                                         - navigation_path
                                 -
                                     required:
@@ -1197,10 +1203,13 @@ additionalProperties:
                                         - link
                                 -
                                     required:
-                                        - panel
+                                        - onclick
                                 -
                                     required:
                                         - organizer_quick
+                                -
+                                    required:
+                                        - panel
                                 -
                                     required:
                                         - pick_items
@@ -1261,49 +1270,13 @@ additionalProperties:
                         
                         
                                 #Collection Buttons share the following child-properties with Item Buttons
-                                hide_in_select_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Select Mode.
-                                select_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Select Mode.
-                                hide_in_quick_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Quick Mode.
-                                quick_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Quick Mode.
-                                
-                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
-                                        this button will appear in both Select Mode and Quick Mode.
-                                only_show_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Only show the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Hide the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_filter:
-                                    type: boolean
-                                    description: >
-                                        Hide this button when a search or a filter is applied.
-                                        
-                                        This works from version 7.1 onwards.
+                                hide_in_select_mode: *hide_in_select_mode
+                                select_mode_only: *select_mode_only
+                                hide_in_quick_mode: *hide_in_quick_mode
+                                quick_mode_only: *quick_mode_only
+                                only_show_on_refiner: *only_show_on_refiner
+                                hide_on_refiner: *hide_on_refiner
+                                hide_on_filter: *hide_on_filter
                                 
                                 
                                 #Collection Buttons also use the following property:
@@ -1382,6 +1355,8 @@ additionalProperties:
                                         
                                                 These will be in the $_GET when seeking confirmation, and in the $_POST
                                                 when performing the action.
+                                
+                                
                                 admin_box: &admin_box
                                     type: object
                                     description: >
@@ -1401,6 +1376,7 @@ additionalProperties:
                                                     A variable or meta-information to pass into the key of the Admin Box.
                                             description: >
                                                 Any variables set here will be passed on to the key of the Admin Box.
+                                        
                                         create_another:
                                             type: boolean
                                             description: >
@@ -1409,6 +1385,7 @@ additionalProperties:
                                                 a new one (as if this button was pressed a second time).
                                         
                                                 This works from version 7.1 onwards.
+                                        
                                         tab:
                                             type: *stringy
                                             description: >
@@ -1431,30 +1408,12 @@ additionalProperties:
                                                 <p>These values will override the default values for the fields, but won't
                                                 overwritten any values set in PHP in your <code>fillAdminBox()</code> method.</p>
                                 
-                                call_js_function: &call_js_function
-                                    type: object
-                                    commented_out_html_description: |
-                                        <p>This is advanced functionality, mainly aimed at buttons and toolbars on the Admin Toolbar but will also work with Organizer buttons, that can be used to call a specific function from the CMS' library of JavaScript functions.</p>
-                                        <p>If your Plugin is on the current page you could also create a button that called a JavaScript function from its library.</p>
-                                        <p>The function being called should accept the following two paramaters:</p>
-                                        <ul>
-                                        <li>The button that was just pressed, as a JSON object</li>
-                                        <li>The currently selected id or ids (this will be a comma-separated list if multiple items are selected).</li>
-                                        </ul>
-                                        <h2>Buttons are Hidden when Functions do not exist</h2>
-                                        <p>If the function you specify does not actually exist, this will cause the button (or the whole toolbar, if you placed this property on a toolbar) to be hidden.</p>
-                                    required:
-                                        - function
-                                    properties:
-                                        encapsulated_object:
-                                            type: string
-                                            description: >
-                                                If the function you are calling is part of an encapsulated object, you should
-                                                name that object in this property.
-                                        function:
-                                            type: string
-                                            description: >
-                                                The name of the function you wish to call.
+                                onclick: &onclick
+                                    type: string
+                                    description: >
+                                        Some JavaScript code to run when your button is clicked.
+                                    
+                                        This works from version 7.1 onwards.
                                 
                                 navigation_path:
                                     type: string
@@ -1753,9 +1712,6 @@ additionalProperties:
                                         - admin_box
                                 -
                                     required:
-                                        - call_js_function
-                                -
-                                    required:
                                         - navigation_path
                                 -
                                     required:
@@ -1769,6 +1725,9 @@ additionalProperties:
                                 -
                                     required:
                                         - link
+                                -
+                                    required:
+                                        - onclick
                                 -
                                     required:
                                         - organizer_quick
@@ -1870,49 +1829,13 @@ additionalProperties:
                                         From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 #Item Buttons share the following child-properties with Collection Buttons
-                                hide_in_select_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Select Mode.
-                                select_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Select Mode.
-                                hide_in_quick_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Quick Mode.
-                                quick_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Quick Mode.
-                                        
-                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
-                                        this button will appear in both Select Mode and Quick Mode.
-                                only_show_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Only show the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Hide the button if the named refiner has been applied.
-                                        
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_filter:
-                                    type: boolean
-                                    description: >
-                                        Hide this button when a search or a filter is applied.
-                                        
-                                        This works from version 7.1 onwards.
+                                quick_mode_only: *quick_mode_only
+                                select_mode_only: *select_mode_only
+                                hide_in_quick_mode: *hide_in_quick_mode
+                                quick_mode_only: *quick_mode_only
+                                only_show_on_refiner: *only_show_on_refiner
+                                hide_on_refiner: *hide_on_refiner
+                                hide_on_filter: *hide_on_filter
                                 
                                 
                                 #Item Buttons also use the following properties:
@@ -1947,7 +1870,7 @@ additionalProperties:
                                 
                                 #In addition, an Item Button should have one (and only one) of the following properties as an action:
                                 ajax: *ajax
-                                call_js_function: *call_js_function
+                                onclick: *onclick
                                 organizer_quick: *organizer_quick
                                 combine_items: *pick_items
                                 admin_box: *admin_box
@@ -2019,9 +1942,6 @@ additionalProperties:
                                         - admin_box
                                 -
                                     required:
-                                        - call_js_function
-                                -
-                                    required:
                                         - navigation_path
                                 -
                                     required:
@@ -2032,6 +1952,9 @@ additionalProperties:
                                 -
                                     required:
                                         - link
+                                -
+                                    required:
+                                        - onclick
                                 -
                                     required:
                                         - organizer_quick
@@ -2074,53 +1997,17 @@ additionalProperties:
                                         From version 7.1 you can use merge fields in this tooltip when one item is selected.
                                 
                                 #Item Buttons share the following child-properties with Collection Buttons
-                                hide_in_select_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Select Mode.
-                                select_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Select Mode.
-                                hide_in_quick_mode:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when in Quick Mode.
-                                quick_mode_only:
-                                    type: boolean
-                                    description: >
-                                        Do not show this button when not in Quick Mode.
-                                        
-                                        Note that if you set both <code>select_mode_only</code> and <code>quick_mode_only</code> then
-                                        this button will appear in both Select Mode and Quick Mode.
-                                only_show_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Only show the button if the named refiner has been applied.
-                                
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_refiner:
-                                    type:
-                                        - string
-                                        - object
-                                    description: >
-                                        Hide the button if the named refiner has been applied.
-                                        
-                                        This takes the name of a refiner as a string, or you
-                                        can use an associative array of refiner names as keys.
-                                hide_on_filter:
-                                    type: boolean
-                                    description: >
-                                        Hide this button when a search or a filter is applied.
-                                        
-                                        This works from version 7.1 onwards.
+                                hide_in_select_mode: *hide_in_select_mode
+                                select_mode_only: *select_mode_only
+                                hide_in_quick_mode: *hide_in_quick_mode
+                                quick_mode_only: *quick_mode_only
+                                only_show_on_refiner: *only_show_on_refiner
+                                hide_on_refiner: *hide_on_refiner
+                                hide_on_filter: *hide_on_filter
                                 
                                 #In addition, an Item Button should have one (and only one) of the following properties as an action:
                                 ajax: *ajax
-                                call_js_function: *call_js_function
+                                onclick: *onclick
                                 organizer_quick: *organizer_quick
                                 admin_box: *admin_box
                         
@@ -2471,6 +2358,40 @@ additionalProperties:
                     
                 #This will be merged with the properties property above in dev_tools.js
                 merge:
+                    collection_buttons:
+                        additionalProperties:
+                            properties:
+                                ajax:        
+                                    properties:
+                                        pass_matched_ids:
+                                            type: boolean
+                                            description: >
+                                                This will put the id of each item in the current panel
+                                                into your $ids variable.
+                                                
+                                                Items will be included even if they are not on the current page.
+                                                
+                                                Items will not be included if they do not match a filter/refiner/search
+                                                on the current panel.
+                                                
+                                                
+                                                This works from version 7.2 onwards.
+                                        
+                                admin_box:        
+                                    properties:
+                                        pass_matched_ids:
+                                            type: boolean
+                                            description: >
+                                                This will put the id of each item in the current panel
+                                                into your $box['key']['id'] variable.
+                                                
+                                                Items will be included even if they are not on the current page.
+                                                
+                                                Items will not be included if they do not match a filter/refiner/search
+                                                on the current panel.
+                                                
+                                                
+                                                This works from version 7.2 onwards.
                     item_buttons:
                         additionalProperties:
                             properties:
@@ -2588,8 +2509,175 @@ additionalProperties:
                         description: >
                             If sorting is being done on the server, the CMS will put an array of ids
                             (sorted into the correct order) into this variable.
+        
+        
+        data-intro:
+            type: string
+            description: >
+                A HTML description to display when showing in the help tour.
+        data-step:
+            type: number
+            description: >
+                This controls the order in which this element will appear in the help tour.
+                
+                All of the step-numbers will be normalised before being displayed, so the number
+                you see in the help tour may not be the exact number you enter here.
+        data-position:
+            type: string
+            description: >
+                The position (relative to the current element) to show the help tour.
+                
+                We recommend that you set this to "right".
+        
+        
+        youtube_video_id:
+            type: string
+            description: >
+                A youtube video URL about this panel. This will be showing in the help tour.
+        youtube_thumbnail_title:
+            type: string
+            description: >
+                The title of the youtube video thumbnail in the help tour.
                             
-                            
+
+
+
+properties:
+    top_right_buttons:
+        type: object
+        description: >
+            These buttons appear at the top right of Organizer
+        
+        additionalProperties:
+            type: object
+            oneOf:
+                -
+                    required:
+                        - admin_box
+                -
+                    required:
+                        - navigation_path
+                -
+                    required:
+                        - frontend_link
+                -
+                    required:
+                        - help
+                -
+                    required:
+                        - hide_when_children_are_not_visible
+                -
+                    required:
+                        - link
+                -
+                    required:
+                        - onclick
+                -
+                    required:
+                        - popout
+            properties:
+                ord: *ord
+                css_class: *css_class
+                label:
+                    type: string
+                    description: >
+                        A label for this button
+                tooltip:
+                    type: string
+                    description: >
+                        A tooltip for this button
+                
+                parent:
+                    type: string
+                    description: >
+                        Enter the name of another collection button here to make your button appear
+                        under the named button as a dropdown.
+                        
+                        There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                
+                hidden: *hidden
+                visible_if: *visible_if
+                
+                hide_when_children_are_not_visible:
+                    type: boolean
+                    description: >
+                        If you set this property, the button will be hidden when it has no
+                        visible children.
+                
+                disabled:
+                    type: boolean
+                    description: >
+                        If you set this property, the button will be disabled.
+                
+                disabled_if:
+                    type: string
+                    description: >
+                        A snippet of JavaScript code to be evaluated.
+                        
+                        If the code provided evaluates to <code>true</code> the button will be disabled.
+                        
+                        See http://zenar.io/visibility-in-tuix for examples.
+                
+                disabled_tooltip:
+                    type: string
+                    default: (defaults to the tooltip property)
+                    description: >
+                        A tooltip for this button if it is disabled.
+                
+                admin_box: *admin_box
+                onclick: *onclick
+                
+                navigation_path:
+                    type: string
+                    description: >
+                        This property allows you to create a button that takes you to a specified navigation path in Organizer when pressed.
+                
+                        Be aware that this will be a one-way link; as you are entering a navigation path, you will override any existing
+                        navigation history with the history from the navigation path.
+                frontend_link:
+                    type: string
+                    description: >
+                        This property allows you to link to the front end by providing a URL.
+                
+                        You can provide an external URL (which will always open in a new window),
+                        or an internal link relative to the CMS root directory.
+                
+                help: *help
+                
+                link:
+                    type: object
+                    static: true
+                    required:
+                        - path
+                    properties: *link_properties
+                    description: >
+                        If you set a link, an administrator will be taken to the
+                        specified location in Organizer when they click on it.
+                        
+                        
+                        This property must be written in your .yaml file.
+                        It can't be changed in php.
+        
+                popout: *popout
+                
+                
+                data-intro:
+                    type: string
+                    description: >
+                        A HTML description to display when showing in the help tour.
+                data-step:
+                    type: number
+                    description: >
+                        This controls the order in which this element will appear in the help tour.
+                
+                        All of the step-numbers will be normalised before being displayed, so the number
+                        you see in the help tour may not be the exact number you enter here.
+                data-position:
+                    type: string
+                    description: >
+                        The position (relative to the current element) to show the help tour.
+                
+                        We recommend that you set this to "right".
                             
             
 

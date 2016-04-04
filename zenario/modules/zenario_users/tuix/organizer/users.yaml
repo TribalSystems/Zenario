@@ -239,6 +239,7 @@ zenario__users:
                     label: Export
                     admin_box:
                         path: zenario_export_dataset
+                        pass_matched_ids: true
                         key:
                             dataset:
                     ord: 999999

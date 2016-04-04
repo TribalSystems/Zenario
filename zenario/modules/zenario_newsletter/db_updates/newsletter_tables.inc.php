@@ -167,7 +167,7 @@ _sql
 _sql
 
 
-//Updates for zenario 6
+//Updates for version 6
 );	revision( 41
 , <<<_sql
 	UPDATE `[[DB_NAME_PREFIX]]admins` AS a
@@ -863,6 +863,42 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
 	ADD INDEX `time_received` (`newsletter_id`, `time_received`)
+_sql
+
+);	revision( 166
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	CHANGE COLUMN `username` `identifier` varchar(50) NOT NULL
+_sql
+
+);	revision( 167
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	DROP INDEX `username`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_user_link`
+	ADD INDEX `identifier` (`newsletter_id`, `identifier`)
+_sql
+
+);	revision( 170
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	MODIFY COLUMN `body` mediumtext
+_sql
+
+);	revision( 171
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters`
+	ADD COLUMN `head` mediumtext
+	AFTER `url`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletter_templates`
+	ADD COLUMN `head` mediumtext
+	AFTER `name`
 _sql
 
 );

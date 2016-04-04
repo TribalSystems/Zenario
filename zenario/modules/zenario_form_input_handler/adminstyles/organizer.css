@@ -1,7 +1,7 @@
 #organizer_leftColumn div.organizer_legend a.zenario_form_input_handler_top_level,
 #organizer_leftColumn div.organizer_legend a.zenario_form_input_handler_top_level:hover,
 #organizer_leftColumn div.legend_on a.zenario_form_input_handler_top_level {
-	background:transparent url('../../../admin/images/sprites/sprite-grid-icons-single-col.png') no-repeat scroll;
+	background:transparent url('../../../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat scroll;
 }
 
 #organizer_leftColumn div.organizer_legend a.zenario_form_input_handler_top_level {
@@ -14,14 +14,12 @@
 }
 
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_form_input_handler_form_submissions,
-#organizer_rightColumn #organizer_panelTitle div.zenario_form_input_handler_form_submissions {
+.organizer_item_image.zenario_form_input_handler_form_submissions {
 	background:  center center no-repeat;
 	background-image: url('images/form-submissions-list.png');
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_form_input_handler_rule_sets,
-#organizer_rightColumn #organizer_panelTitle div.zenario_form_input_handler_rule_sets {
+.organizer_item_image.zenario_form_input_handler_rule_sets {
 	background:  center center no-repeat;
 	background-image: url('images/rule-sets-list.png');
 }

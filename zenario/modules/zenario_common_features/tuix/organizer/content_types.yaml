@@ -11,11 +11,6 @@ zenario__content:
                     [[DB_NAME_PREFIX]]content_types AS ct
                     LEFT JOIN [[DB_NAME_PREFIX]]modules AS m
                        ON m.id = ct.module_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]layouts AS l
-                       ON l.layout_id = ct.default_layout_id
-                    LEFT JOIN [[DB_NAME_PREFIX]]template_files AS tf
-                       ON tf.family_name = l.family_name
-                      AND tf.file_base_name = l.file_base_name
                 id_column: ct.content_type_id
                 client_side: Yes
             columns:
@@ -24,40 +19,14 @@ zenario__content:
                     searchable: Yes
                     db_column: ct.content_type_name_en
                     show_by_default: Yes
-                item_count:
-                    title: Count
-                    db_column: |
-                        (
-                            SELECT COUNT(DISTINCT c.id, c.type)
-                            FROM [[DB_NAME_PREFIX]]content_items AS c
-                            WHERE c.type = ct.content_type_id
-                              AND c.status NOT IN ('trashed','deleted')
-                        )
-                    show_by_default: Yes
-                    align_right: Yes
-                    width: xsmall
                 content_type_id:
                     title: ID
                     format: id
                     searchable: Yes
                     db_column: ct.content_type_id
-                default_tempalte:
-                    title: Default layout
-                    db_column: "IFNULL(t.name,'[Not set]')"
-                    table_join: '[[DB_NAME_PREFIX]]layouts t ON ct.default_layout_id = t.layout_id'
-                    searchable: Yes
-                default_tf_missing:
-                    db_column: tf.missing
-                    format: yes_or_no
                 not_enabled:
-                    db_column: "m.status IS NULL OR m.status != 'module_running'"
+                    db_column: "m.status NOT IN ('module_running', 'module_is_abstract')"
             default_sort_column: content_type_name_en
-            label_format_for_grid_view: |
-                [[content_type_name_en]]
-                ([[item_count]])
-                [[not_enabled]]
-            label_format_for_popouts: '[[content_type_name_en]]'
-            label_format_for_picked_items: '[[content_type_name_en]]'
             item:
                 tooltip_when_link_is_active: 'View content of the type &quot;[[content_type_name_en]]&quot;.'
                 link:
@@ -65,54 +34,14 @@ zenario__content:
                     refiner: content_type
             
             item_buttons:
-                settings:
-                    priv: _PRIV_EDIT_CONTENT_TYPE
-                    hide_in_select_mode: Yes
-                    label: Content type properties
-                    admin_box:
-                        path: zenario_content_type_details
-                view_dropdown:
-                    label: View
-                    hide_when_children_are_not_visible: Yes
                 view_content:
                     parent: view_dropdown
-                    label: Content items
+                    label: View content items
                     link:
                         path: zenario__content/panels/content
                         refiner: content_type
-            
-            inline_buttons:
-                template_file_missing:
-                    css_class: zenario_ib_warning
-                    tooltip: |
-                        The template file for the default layout is missing!
-                    visible_if: >
-                        item.default_tf_missing
-            
-            collection_buttons:
-                help:
-                    label: Help
-                    help:
-                        message: |
-                            The content of the website - all "web pages" in broad terms - is grouped into "content types".
-                            
-                            The principal content type is HTML Page, although the site can contain Documents, News and other types (such as Events, Pictures, Videos, Projects and other things both standard and custom).
-                            
-                            Click to go inside a content type folder, in there you will see all content items of that type.
-                            
-                            A content item can only belong to one content type.
-                            
-                            Certain administrators can configure settings for content types, to specify whether fields such as Summary, Description, Keywords and Release Date may be entered for content items of that type, and whether they should be mandatory. (For example, News content items should normally have a mandatory Release Date.) To configure, select a content type and click "Propertes".
             hidden_nav:
                 layouts:
                     link:
                         path: zenario__layouts/panels/layouts
                         refiner: content_type
-                content_type_language_equivs:
-                    link:
-                        path: zenario__content/panels/language_equivs
-                        refiner: content_type_language_equivs
-            trash:
-                link:
-                    path: zenario__content/panels/content
-                    refiner: trash

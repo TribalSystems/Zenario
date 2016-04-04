@@ -14,9 +14,16 @@ zenario__modules:
                     [[DB_NAME_PREFIX]]modules as m
                 id_column: m.id
                 client_side: true
-                #Don't show missing modules if they were never run
+                
+                # Don't show missing modules if they were never run
+                # Also hide abstract modules from full/quick/select mode
                 where_statement: >
                     WHERE (missing = 0 OR status != 'module_not_initialized')
+                      AND
+                        IF ('[[ORGANIZER_MODE]]' IN ('full', 'quick', 'select'),
+                            status != 'module_is_abstract',
+                            TRUE
+                        )
             
             default_sort_column: display_name
             

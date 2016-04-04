@@ -39,7 +39,6 @@ $sql = "
 		date_posted = NOW(),
 		date_updated = NOW(),
 		last_updated_order = ". (int) $latestUpdated. ",
-		employee_post = ". (int) !empty($_SESSION['extranetUserIsAnEmployee']). ",
 		poster_id = ". (int) $userId. ",
 		post_count = 0,
 		title = '". sqlEscape($threadTitle). "'";

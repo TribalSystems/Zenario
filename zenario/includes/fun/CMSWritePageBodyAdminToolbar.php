@@ -35,7 +35,7 @@ $zenarioATLinks = array(
 if (request('zenario_sk_return')) {
 	$zenarioATLinks['organizer_hash'] = request('zenario_sk_return');
 } else {
-	$zenarioATLinks['organizer_hash'] = 'zenario__content/panels/content_types/item//'. cms_core::$cType. '//item//'. cms_core::$langId. '//'. cms_core::$cType. '_'. cms_core::$cID;
+	$zenarioATLinks['organizer_hash'] = 'zenario__content/panels/content/refiners/content_type//'. cms_core::$cType. '//'. cms_core::$cType. '_'. cms_core::$cID;
 }
 
 

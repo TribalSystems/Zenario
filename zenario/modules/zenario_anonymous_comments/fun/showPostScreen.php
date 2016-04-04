@@ -28,15 +28,6 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-//IE6 doesn't like AJAX reloads with PunyMCE in them; give it a full page load
-if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6') !== false) {
-	foreach ($_GET as $var => $value) {
-		$this->registerGetRequest($var);
-	}
-	$this->forcePageReload();
-}
-
-
 //Show any errors from a previous submissin
 if (!empty($this->postingErrors)) {
 	$this->sections['Post_Errors'] = true;
@@ -62,34 +53,39 @@ $this->showUserInfo($this->sections['Post_Message'], $this->sections, userId());
 
 
 if (isset($_POST['comm_message'])) {
-	$this->sections['Post_Message']['Post_Text'] = htmlspecialchars($_POST['comm_message']);
+	$this->sections['Post_Message']['Post_Text'] = zenario_anonymous_comments::sanitiseHTML($_POST['comm_message'], $this->setting('enable_images'), $this->setting('enable_links'));
 
 } elseif ($quoteMode == 'edit' && !empty($this->post['id'])) {
-	$this->sections['Post_Message']['Post_Text'] =  htmlspecialchars($this->post['message_text']);
+	$this->sections['Post_Message']['Post_Text'] =  zenario_anonymous_comments::sanitiseHTML($this->post['message_text'], $this->setting('enable_images'), $this->setting('enable_links'));
 	
 } elseif ($quoteMode == 'quote' && $this->canQuotePost() && !empty($this->post['id'])) {
 	$this->sections['Post_Message']['Post_Text'] =
-		htmlspecialchars(
-			'[quote]'.
-				'[b]'. $this->phrase('_SAID', array('user' => $this->getUserScreenName($this->post['poster_id']))). '[/b]'. "\n".
+		zenario_anonymous_comments::sanitiseHTML(
+			'<blockquote>'.
+				'<b>'. $this->phrase('_SAID', array('user' => $this->getUserScreenName($this->post['poster_id']))). '</b>'.
+				"<br/>".
 				$this->post['message_text'].
-			"[/quote]\n\n"
-		);
+			"</blockquote><p>&nbsp;</p>"
+		, $this->setting('enable_images'), $this->setting('enable_links'));
 
 } else {
 	$this->sections['Post_Message']['Post_Text'] = '';
 }
 
-if (!$this->sections['Post_Message']['Post_Text'] && (strpos($_SERVER['HTTP_USER_AGENT'], 'Firefox') !== false)) {
-	$this->sections['Post_Message']['Post_Text'] = '[[HIDE_ME]]';
-}
-
-$this->sections['Post_Message']['Post_Text'] = '<textarea id="editor__'. $this->containerId. '" name="comm_message">'. $this->sections['Post_Message']['Post_Text']. '</textarea>';
+$this->sections['Post_Message']['Post_Text'] = '
+	<textarea id="value_for_'. $this->getEditorId(). '" name="comm_message" style="display: none;"></textarea>
+	<div id="toolbar_container_for_'. $this->getEditorId(). '" class="zenario_tinymce_toolbar_container"></div>
+	<div id="'. $this->getEditorId(). '" name="comm_message">'. $this->sections['Post_Message']['Post_Text']. '</div>';
 
 $form_attributes = ' class="'. htmlspecialchars(request('comm_request')). '"';
 if($this->form_encode_type){
 	$form_attributes .= ' enctype="' . $this->form_encode_type . '"';
 }
+
+
+$onSubmit .= "
+	zenario.get('value_for_". jsEscape($this->getEditorId()). "').value =
+		zenario.tinyMCEGetContent(tinyMCE.get('". jsEscape($this->getEditorId()). "'));";
 
 $this->sections['Post_Message']['Open_Form'] = $this->openForm($onSubmit, $form_attributes). 
 	$this->remember('comm_request').
@@ -106,28 +102,24 @@ if (request('comm_request') != 'report_post') {
 	}
 }
 
-if ($quoteMode != 'quote'){
+if (!empty($this->post) && $quoteMode != 'quote') {
 	$this->getExtraPostInfo($this->post, $this->sections['Post_Message'], $this->sections , true);
 }
 
-if (post('comm_enter_text')) {
-	//Hack for a bug in Firefox and reloading TinyMCE via AJAX
-	$this->callScript(
-		'zenario_anonymous_comments', 'loadWithDelay',
-		$this->containerId,
-		(int) $this->setting('enable_colours'),
-		(int) $this->setting('enable_images'),
-		(int) $this->setting('enable_emoticons'),
-		(int) $this->setting('enable_links'));
-} else {
+//if (post('comm_enter_text')) {
+//	//Hack for a bug in Firefox and reloading TinyMCE via AJAX
+//	$this->callScript(
+//		'zenario_anonymous_comments', 'loadWithDelay',
+//		$this->getEditorId(),
+//		(int) $this->setting('enable_images'),
+//		(int) $this->setting('enable_links'));
+//} else {
 	$this->callScript(
 		'zenario_anonymous_comments', 'load',
-		$this->containerId,
-		(int) $this->setting('enable_colours'),
+		$this->getEditorId(),
 		(int) $this->setting('enable_images'),
-		(int) $this->setting('enable_emoticons'),
 		(int) $this->setting('enable_links'));
-}
+//}
 
 
 if (request('comm_request') == 'post_reply') {

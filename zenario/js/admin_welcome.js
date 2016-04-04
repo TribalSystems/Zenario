@@ -42,7 +42,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenarioAF
 ) {
 	"use strict";
@@ -110,11 +110,11 @@ zenarioAW.draw2 = function() {
 
 //Get a URL needed for an AJAX request
 zenarioAW.returnAJAXURL = function() {
-	return URLBasePath + 'zenario/admin/welcome_ajax.php' +
-									'?_json=1&_ab=1' +
-									'&task=' + encodeURIComponent(zenarioAW.task) +
-									'&get=' + encodeURIComponent(JSON.stringify(zenarioAW.getRequest)) +
-									zenario.urlRequest(ifNull(zenarioAW.key, zenarioAW.tuix.key));
+	return URLBasePath +
+		'zenario/admin/welcome.ajax.php' +
+		'?task=' + encodeURIComponent(zenarioAW.task) +
+		'&get=' + encodeURIComponent(JSON.stringify(zenarioAW.getRequest)) +
+		zenario.urlRequest(ifNull(zenarioAW.key, zenarioAW.tuix.key));
 };
 
 
@@ -133,7 +133,7 @@ zenarioAW.quickValidateWelcomePageGo = function() {
 	
 	var f, field,
 		rowClasses = {},
-		url = URLBasePath + 'zenario/admin/welcome_ajax.php?quickValidate=1';
+		url = URLBasePath + 'zenario/admin/welcome.ajax.php?quickValidate=1';
 	
 	foreach (this.tuix.tabs[this.tuix.tab].fields as f => field) {
 		rowClasses[f] = ifNull(field.row_class, '', '');

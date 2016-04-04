@@ -129,12 +129,12 @@ foreach ($formFields as $fieldId => $field) {
 			$requiredFields[$fieldId] = array('name' => $fieldName, 'message' => $validationMessage, 'type' => $type);
 		}
 		
-	} elseif ($type == 'attachment') {
+	} elseif ($type == 'attachment' || $type == 'file_picker') {
 		$fileFields[] = $fieldName;
 	}
 	
 	// If this field relies on another field, check if it should be set to mandatory
-	if ($field['mandatory_condition_field_id'] && isset($formFields[$field['mandatory_condition_field_id']]) && ($field['mandatory_condition_field_value'] !== null)) {
+	if ($field['mandatory_condition_field_id'] && isset($formFields[$field['mandatory_condition_field_id']])) {
 		$requiredFieldId = $field['mandatory_condition_field_id'];
 		$requiredField = $formFields[$requiredFieldId];
 		$requiredFieldName = self::getFieldName($requiredField);
@@ -155,35 +155,36 @@ foreach ($formFields as $fieldId => $field) {
 			case 'centralised_radios':
 			case 'centralised_select':
 			case 'select':
-				if (isset($data[$requiredFieldName]) && $data[$requiredFieldName] === $field['mandatory_condition_field_value']) {
+				if (isset($data[$requiredFieldName]) 
+					&& (($data[$requiredFieldName] === $field['mandatory_condition_field_value']) 
+						|| ($field['mandatory_condition_field_value'] === null && $data[$requiredFieldName] !== '')
+					)
+				) {
 					$field['is_required'] = true;
 				}
 				break;
 		}
 	}
 	if ($field['is_required']) {
+		
+		// Get loaded data for field
+		if ($type == 'checkboxes' || $type == 'file_picker') {
+			$loadedFieldValue = $data;
+		} else {
+			$loadedFieldValue = isset($data[$fieldName]) ? $data[$fieldName] : null;
+		}
+		
+		$fieldValue = self::getFormFieldValue($field, $type, $submitted = true, $loadedFieldValue, false, false);
+		
 		switch ($type){
 			case 'group':
 			case 'checkbox':
-				if (!isset($data[$fieldName])) {
+				if (!$fieldValue) {
 					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'checkboxes':
-				$isChecked = false;
-				if ($userFieldId) {
-					$valuesList = getDatasetFieldLOV($userFieldId);
-				} else {
-					$valuesList = self::getUnlinkedFieldLOV($fieldId);
-				}
-				foreach ($valuesList as $valueId => $label) {
-					if (isset($data[$valueId. '_' . $fieldName])) {
-						$isChecked = true;
-						break;
-					}
-				}
-				
-				if (!$isChecked) {
+				if (empty($fieldValue['ids'])) {
 					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
@@ -192,7 +193,7 @@ foreach ($formFields as $fieldId => $field) {
 			case 'editor':
 			case 'textarea':
 			case 'url':
-				if ($data[$fieldName] === '' || $data[$fieldName] === false) {
+				if ($fieldValue === null || $fieldValue === '') {
 					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
@@ -200,7 +201,7 @@ foreach ($formFields as $fieldId => $field) {
 			case 'centralised_radios':
 			case 'centralised_select':
 			case 'select':
-				if (!isset($data[$fieldName]) || $data[$fieldName] === '') {
+				if (!$fieldValue) {
 					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
@@ -209,7 +210,11 @@ foreach ($formFields as $fieldId => $field) {
 					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
-			
+			case 'file_picker':
+				if (!$fieldValue) {
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+				}
+				break;
 		}
 	}
 	
@@ -221,6 +226,7 @@ foreach ($formFields as $fieldId => $field) {
 		}
 	}
 }
+
 // If there are files and validation failed, save the file to cache and set in POST
 foreach ($fileFields as $key => $fieldName) {
 	if (isset($_FILES[$fieldName]) && is_uploaded_file($_FILES[$fieldName]['tmp_name']) && cleanDownloads()) {
@@ -231,14 +237,6 @@ foreach ($fileFields as $key => $fieldName) {
 			$_POST[$fieldName] = $_REQUEST[$fieldName] = $newName;
 		}
 	}
-	//Stop the user trying to trick the CMS into submitting a different file in a different location
-	if (!empty($_POST[$fieldName])) {
-		if (strpos($_POST[$fieldName], '..') !== false
-		 || !preg_match('@^cache/uploads/[\w\-\_]+/[\w\.-]+\.upload$@', $_POST[$fieldName])) {
-			unset($_POST[$fieldName]);
-		}
-	}
-	unset($_GET[$fieldName]);
 }
 
 return $requiredFields;

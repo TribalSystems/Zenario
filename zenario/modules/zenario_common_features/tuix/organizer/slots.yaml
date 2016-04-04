@@ -63,50 +63,46 @@ zenario__content:
                         zenarioO.refiner && zenarioO.refiner.name == 'template'
             
             item_buttons:
-                edit_reusable:
-                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: Properties
-                    call_js_function:
-                        encapsulated_object: zenarioO
-                        function: setupSlotAdminBox
-                    custom_admin_box:
-                        path: plugin_settings
-                    traits:
-                        full: true
-                        reusable: true
-                edit_wireframe:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Properties
-                    call_js_function:
-                        encapsulated_object: zenarioO
-                        function: setupSlotAdminBox
-                    custom_admin_box:
-                        path: plugin_settings
-                    traits:
-                        full: true
-                        wireframe: true
-                edit_reusable_css_and_framework:
-                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: 'Framework & CSS'
-                    call_js_function:
-                        encapsulated_object: zenarioO
-                        function: setupSlotAdminBox
-                    custom_admin_box:
-                        path: plugin_css_and_framework
-                    traits:
-                        full: true
-                        reusable: true
-                edit_wireframe_css_and_framework:
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: 'Framework & CSS'
-                    call_js_function:
-                        encapsulated_object: zenarioO
-                        function: setupSlotAdminBox
-                    custom_admin_box:
-                        path: plugin_css_and_framework
-                    traits:
-                        full: true
-                        wireframe: true
+                #edit_reusable:
+                #    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                #    label: Properties
+                #    onclick: |
+                #        zenarioO.setupSlotAdminBox();
+                #    custom_admin_box:
+                #        path: plugin_settings
+                #    traits:
+                #        full: true
+                #        reusable: true
+                #edit_wireframe:
+                #    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                #    label: Properties
+                #    onclick: |
+                #        zenarioO.setupSlotAdminBox();
+                #    custom_admin_box:
+                #        path: plugin_settings
+                #    traits:
+                #        full: true
+                #        wireframe: true
+                #edit_reusable_css_and_framework:
+                #    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                #    label: 'Framework & CSS'
+                #    onclick: |
+                #        zenarioO.setupSlotAdminBox();
+                #    custom_admin_box:
+                #        path: plugin_css_and_framework
+                #    traits:
+                #        full: true
+                #        reusable: true
+                #edit_wireframe_css_and_framework:
+                #    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                #    label: 'Framework & CSS'
+                #    onclick: |
+                #        zenarioO.setupSlotAdminBox();
+                #    custom_admin_box:
+                #        path: plugin_css_and_framework
+                #    traits:
+                #        full: true
+                #        wireframe: true
                         
                 insert_dropdown:
                     label: Insert

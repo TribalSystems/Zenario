@@ -356,6 +356,34 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 	}
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
-		
+		switch ($path) {
+			case 'zenario__content/panels/image_library':
+				if (post('download_image')) {
+					$fileId = $ids;
+					$file =  getRow('files', array('id', 'filename', 'path'), $fileId);
+					if ($file) {
+						if ($file['path']) {
+							header('Content-Description: File Transfer');
+							header('Content-Type: application/octet-stream');
+							header('Content-Disposition: attachment; filename="'.$file['filename'].'"');
+							header("Content-Type: application/force-download");
+							header("Content-Type: application/octet-stream");
+							header("Content-Type: application/download");
+							header('Content-Transfer-Encoding: binary');
+							header('Connection: Keep-Alive');
+							header('Expires: 0');
+							header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+							header('Pragma: public');
+							header('Content-Length: ' . filesize(docstoreFilePath($file['id'])));
+							
+							readfile(docstoreFilePath($file['id']));
+						} else {
+							header('location: '. absCMSDirURL(). 'zenario/file.php?adminDownload=1&download=1&id=' . $file['id']);
+						}
+						exit;
+					}
+				}
+				break;
+		}
 	}
 }

@@ -49,7 +49,7 @@
 			document, window, window.opener, window.parent,
 			zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 			zenario.get, zenario.engToBoolean, zenario.htmlspecialchars, zenario.ifNull, zenario.jsEscape, zenarioA.phrase,
-			zenario.extensionOf, zenario.methodsOf,
+			zenario.extensionOf, zenario.methodsOf, zenario.has,
 			extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6
 		);
 	};

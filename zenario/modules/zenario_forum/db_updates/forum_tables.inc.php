@@ -242,7 +242,31 @@ _sql
 		KEY(`file_id`)
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
-
 );
 
-?>
+
+
+
+//Convert all code from bbcode to sanitised HTML
+if (needRevision(160)) {
+	
+	require_once CMS_ROOT. 'zenario/libraries/mit/markitup/bbcode2html.inc.php';
+
+	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
+	$allowedStyles = array('padding-left' => true, 'text-decoration' => true);
+	
+	$result = getRows(ZENARIO_FORUM_PREFIX. 'user_posts', array('id', 'message_text'), array());
+	while ($row = sqlFetchAssoc($result)) {
+		
+		BBCode2Html($row['message_text'], false, true, true, false);
+		
+		updateRow(
+			ZENARIO_FORUM_PREFIX. 'user_posts',
+			array('message_text' => sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)),
+			$row['id']);
+	}
+	unset($row);
+	unset($result);
+	
+	revision(160);
+}

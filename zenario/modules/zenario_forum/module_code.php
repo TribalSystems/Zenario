@@ -556,7 +556,7 @@ class zenario_forum extends zenario_comments {
 		//Add the comment
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_FORUM_PREFIX. "user_posts SET
-				message_text = '". sqlEscape($this->adjustMessageText($messageText)). "',
+				message_text = '". sqlEscape(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 				date_updated = NOW(),
 				updater_id = ". (int) $userId. "
 			WHERE thread_id = ". (int) $this->threadId. "
@@ -586,7 +586,11 @@ class zenario_forum extends zenario_comments {
 	
 	function showPostScreen($labelText, $submitButtonText, $quoteMode, $titleText = false, $onSubmit = '') {
 		if($this->allow_uploads){
-			$onSubmit .= "if(this.comm_message.value == '') {alert('" . $this->phrase('_ERROR_MESSAGE') . "');return false;}";
+			$onSubmit .= "
+				if (!zenario.tinyMCEGetContent(tinyMCE.get('". jsEscape($this->getEditorId()). "'))) {
+					alert('". jsEscape($this->phrase('_ERROR_MESSAGE')). "');
+					return false;
+				}";
 		}
 		parent::showPostScreen($labelText, $submitButtonText, $quoteMode, $titleText, $onSubmit);
 	}
@@ -773,7 +777,6 @@ class zenario_forum extends zenario_comments {
 				date_posted,
 				date_updated,
 				last_updated_order,
-				employee_post,
 				poster_id,
 				updater_id,
 				view_count,
@@ -819,7 +822,6 @@ class zenario_forum extends zenario_comments {
 				date_updated,
 				'published' AS status,
 				first_post,
-				employee_post,
 				poster_id,
 				updater_id,
 				message_text,
@@ -1131,7 +1133,7 @@ class zenario_forum extends zenario_comments {
 			langSpecialPage('zenario_profile', $cID, $cType);
 			$profileAnchor = $this->linkToItemAnchor($cID, $cType);
 			$this->sections['Forum_Profile_Link'] = true;
-			$profileLink =  '<a '.$profileAnchor.'>your profile</a>';
+			$profileLink =  '<a '.$profileAnchor.'>'.$this->phrase('your profile').'</a>';
 			$this->mergeFields['Forum_Profile_Link'] = $this->phrase('You must confirm your screen name on [[profile_link]] in order to create a thread.', array('profile_link' => $profileLink));
 		} elseif ($this->lockedForum()) {
 			$this->sections['Forum_Locked'] = true;
@@ -1186,7 +1188,6 @@ class zenario_forum extends zenario_comments {
 				$mergeFields['Date_Posted'] = formatDateTimeNicely($thread['updater_id'], $this->setting('date_format'));
 				$mergeFields['Posted_By'] = $this->getUserScreenNameLink($thread['poster_id']);
 				$mergeFields['Posted_By_On'] = $this->phrase('_BY_ON', array('by' => $mergeFields['Posted_By'], 'on' => $mergeFields['Date_Posted']));
-				$mergeFields['Employee'] = $thread['employee_post'] && $this->setting('mark_employee_posts')? 'employee' : '';
 				$mergeFields['Title'] = htmlspecialchars($thread['title']);
 				$mergeFields['Post_Count'] = $thread['post_count'];
 				$mergeFields['Replies_Count'] = $thread['post_count']-1;

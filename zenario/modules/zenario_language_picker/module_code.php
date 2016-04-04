@@ -103,7 +103,7 @@ class zenario_language_picker extends module_base_class {
 			foreach ($this->langs as $langId => &$lang) {
 				$lang['link'] = linkToItem(
 					$lang['cID'], $lang['cType'], false, '', $lang['alias'],
-					$autoAddImportantRequests = true, false, false, false,
+					$autoAddImportantRequests = true, false,
 					$lang['equivId'], $langId);
 			}
 			

@@ -54,6 +54,7 @@ zenario_form_input_handler__ruleset_rule:
                 email_template_number:
                     label: |
                         Email template to use:
+                    empty_value: '-- Please select an Email Template --'
                     type: select
                     validation:
                         required_if_not_hidden: Please select an email template for this rule.

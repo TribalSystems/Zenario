@@ -63,8 +63,14 @@ foreach(lookupExistingCMSTables() as $table) {
 	
 	//New logic (T10131, A couple of small improvements to the CMS backup system):
 		//We're no longer replacing the table prefix, so we're compatabile with phpMyAdmin, mysql and mysqldump
-		$importTable = $table['actual_name'];
-		$createTable = $createTable['Create Table'];
+		//$importTable = $table['actual_name'];
+		//$createTable = $createTable['Create Table'];
+	
+	//Third attempt:
+		//This tries to come up with something that will still work with mysql/phpMyAdmin, but will also allow for
+		//restores to databases with different table prefixes
+		$importTable = '/*\\prefix:\''. DB_NAME_PREFIX. '\':prefix\\*/`'. $table['actual_name']. '`';
+		$createTable = str_replace('`'. $table['actual_name']. '`', $importTable, $createTable['Create Table']);
 	
 	//Get details on each column in the current table
 	$sql = 'SHOW COLUMNS FROM `'. $table['actual_name']. '`';
@@ -83,10 +89,10 @@ foreach(lookupExistingCMSTables() as $table) {
 	}
 	
 	//Prepare the start of an insert statement for that table
-	$insertInto = 'INSERT INTO `'. $importTable. '` ('. $columnList. ') VALUES';
+	$insertInto = 'INSERT INTO '. $importTable. ' ('. $columnList. ') VALUES';
 
 	//Start generating the backup script for this table. Add a drop table if exists statement
-	$inserts = 'DROP TABLE IF EXISTS `'. $importTable. '`;'.
+	$inserts = 'DROP TABLE IF EXISTS '. $importTable. ';'.
 		
 		"\n\n".
 		
@@ -96,7 +102,7 @@ foreach(lookupExistingCMSTables() as $table) {
 		"\n\n".
 		
 		//Disable indexs for faster inserting
-		'ALTER TABLE `'. $importTable. '` DISABLE KEYS;'.
+		'ALTER TABLE '. $importTable. ' DISABLE KEYS;'.
 		
 		"\n";
 	
@@ -186,7 +192,7 @@ foreach(lookupExistingCMSTables() as $table) {
 	$inserts = "\n\n".
 		
 		//Enable keys again
-		'ALTER TABLE `'. $importTable. '` ENABLE KEYS;'.
+		'ALTER TABLE '. $importTable. ' ENABLE KEYS;'.
 		
 		"\n\n\n";
 	

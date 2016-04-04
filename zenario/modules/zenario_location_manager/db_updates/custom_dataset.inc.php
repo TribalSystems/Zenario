@@ -43,7 +43,7 @@ _sql
  
 );
 
-if (needRevision(127)) {
+if (needRevision(148)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	$datasetId = registerDataset(
@@ -63,7 +63,8 @@ if (needRevision(127)) {
 	// is optional, but when they are registered automatically they default to the "other_system_field" type and are
 	// not selectable in things such as User Forms. Specifically registering them like this will ensure they are
 	// usable.)
-	registerDatasetSystemField($datasetId, 'text', 'details', 'name', 'description');
+	registerDatasetSystemField($datasetId, 'text', 'details', 'external_id');
+	registerDatasetSystemField($datasetId, 'text', 'details', 'name', 'description', 'none', '', false, true);
 	registerDatasetSystemField($datasetId, 'text', 'details', 'address_line_1', 'address1');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'address_line_2', 'address2');
 	registerDatasetSystemField($datasetId, 'text', 'details', 'locality');
@@ -76,37 +77,10 @@ if (needRevision(127)) {
 	registerDatasetSystemField($datasetId, 'text', 'details', 'email', 'email', 'email');
 	registerDatasetSystemField($datasetId, 'url', 'details', 'url');
 	registerDatasetSystemField($datasetId, 'textarea', 'summary', 'summary');
-	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '')
+	registerDatasetSystemField($datasetId, 'date', 'details', 'url last accessed', 'last_accessed');
+	registerDatasetSystemField($datasetId, 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
+	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 
 
-	revision(127);
+	revision(148);
 }
-
-if (needRevision(134)) {
-	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-	registerDatasetSystemField($dataset['id'], 'date', 'details', 'url last accessed', 'last_accessed');
-	
-	revision(134);
-}
-
-if (needRevision(138)) {
-	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-	deleteRow('custom_dataset_tabs', array('dataset_id' => $dataset['id'], 'name' => 'summary'));
-	
-	revision(138);
-}
-
-if (needRevision(139)) {
-	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-	deleteRow('custom_dataset_tabs', array('dataset_id' => $dataset['id'], 'name' => 'details_plus'));
-	
-	revision(139);
-}
-
-// Add location status as a dataset system field
-if (needRevision(143)) {
-	$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
-	registerDatasetSystemField($dataset['id'], 'centralised_radios', 'details', 'status', 'status', 'none', 'zenario_location_manager::locationStatus');
-	revision(143);
-}
-

@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
+$v = zenarioCodeVersion();
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
@@ -64,9 +64,6 @@ echo '
 //Add JS needed for the CMS in Admin mode
 if ($isWelcomeOrWizard || $inAdminMode) {
 	
-	if (!$isWelcomeOrWizard) {
-		checkForChangesInPhpFiles();
-	}
 	if (!$isWelcome) {
 		checkForChangesInYamlFiles();
 	}
@@ -85,7 +82,7 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 	}
 	
 	if ($includeOrganizer) {
-		$moduleCodeHash = setting('php_version'). '___'. setting('yaml_version');
+		$moduleCodeHash = zenarioCodeLastUpdated(). '___'. setting('yaml_version');
 		
 		$jsModuleIds = '';
 		foreach (getRunningModules() as $module) {
@@ -98,17 +95,26 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 		}
 		
 		$sql = "
-			SELECT 1
+			SELECT DISTINCT tfc.panel_type
 			FROM ". DB_NAME_PREFIX. "tuix_file_contents AS tfc
 			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
 			   ON m.class_name = tfc.module_class_name
-			  AND m.status = 'module_running'
-			WHERE tfc.panel_type IN ('google_map', 'list_or_grid_or_google_map')
-			LIMIT 1";
+			  AND m.status IN ('module_running', 'module_is_abstract')
+			WHERE tfc.panel_type IN ('google_map', 'list_or_grid_or_google_map', 'schematic_builder')";
+		$panelTypes = array();
+		$result = sqlSelect($sql);
+		while ($row = sqlFetchRow($result)) {
+			$panelTypes[$row[0]] = true;
+		}
 		
-		if (($result = sqlSelect($sql)) && (sqlFetchRow($result))) {
+		if (isset($panelTypes['google_map']) || isset($panelTypes['list_or_grid_or_google_map'])) {
 			echo '
 <script type="text/javascript" src="https://maps.google.com/maps/api/js"></script>';
+		}
+		
+		if (isset($panelTypes['schematic_builder'])) {
+			echo '
+<script type="text/javascript" src="', $prefix, 'libraries/mit/fabricJS/fabricJS.min.js"></script>';
 		}
 		
 		echo '
@@ -173,12 +179,13 @@ if (!$isWelcomeOrWizard && $inAdminMode) {
 	if (!empty(cms_core::$siteConfig)) {
 		foreach (cms_core::$siteConfig as $setting => &$value) {
 			if ($value
-			 && ($setting == 'cookie_require_consent'
+			 && ($setting == 'admin_domain'
+			  || $setting == 'cookie_require_consent'
 			  || $setting == 'default_language'
-			  || $setting == 'admin_domain'
-			  || $setting == 'primary_domain'
 			  || $setting == 'organizer_title'
 			  || $setting == 'organizer_date_format'
+			  || $setting == 'primary_domain'
+			  || $setting == 'site_mode'
 			  || $setting == 'vis_time_format'
 			  || is_numeric($value))) {
 				$settings[$setting] = cms_core::$siteConfig[$setting];

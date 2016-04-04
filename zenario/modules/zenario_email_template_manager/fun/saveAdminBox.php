@@ -42,6 +42,15 @@ switch ($path) {
 			$columns['subject'] = $values['meta_data/subject'];
 			$columns['email_address_from'] = $values['meta_data/email_address_from'];
 			$columns['email_name_from'] = $values['meta_data/email_name_from'];
+			
+			$columns['debug_email_address'] =
+				($columns['debug_override'] = $values['meta_data/debug_override'])? $values['meta_data/debug_email_address'] : '';
+
+			$columns['cc_email_address'] =
+				($columns['send_cc'] = $values['meta_data/send_cc'])? $values['meta_data/cc_email_address'] : '';
+
+			$columns['bcc_email_address'] =
+				($columns['send_bcc'] = $values['meta_data/send_bcc'])? $values['meta_data/bcc_email_address'] : '';
 		}
 		
 		if (engToBooleanArray($box['tabs']['body'], 'edit_mode', 'on')) {

@@ -146,7 +146,7 @@ full_slot:
         replace_reusable_on_item_layer:
             ord: 85
             priv: _PRIV_MANAGE_ITEM_SLOT
-            label: Show a different plugin on this content item...
+            label: Replace plugin on this content item...
             page_modes:
                 edit: true
                 layout: true
@@ -172,7 +172,7 @@ full_slot:
         insert_reusable_on_layout_layer:
             ord: 87
             priv: _PRIV_MANAGE_TEMPLATE_SLOT
-            label: Show a different plugin on this layout...
+            label: Replace plugin on this layout...
             page_modes:
                 layout: true
             onclick: return zenarioA.pickNewPlugin(this, slotName, 2);

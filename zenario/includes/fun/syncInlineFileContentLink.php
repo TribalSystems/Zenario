@@ -30,6 +30,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $files = array();
 $content = '';
 
+if ($publishing) {
+	$citemPrivacy = getRow('translation_chains', 'privacy', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
+	$publishingAPublicPage = $citemPrivacy == 'public';
+} else {
+	$publishingAPublicPage = false;
+}
+
+
 
 //Add images linked via Version Controlled modules
 $fileIds = array();
@@ -78,7 +86,7 @@ $result = sqlQuery($sql);
 
 while ($row = sqlFetchAssoc($result)) {
 	$htmlChanged = false;
-	syncInlineFileLinks($files, $row['value'], $htmlChanged);
+	syncInlineFileLinks($files, $row['value'], $htmlChanged, 'image', $publishingAPublicPage);
 	
 	//Keep a block of all of the content to put into the cache table
 	$content .= $row['value']. "\n";
@@ -112,7 +120,6 @@ setRow('content_cache', array('text' => $text, 'text_wordcount' => str_word_coun
 //and set them to either public or private (depending on this item's privacy setting) when
 //the content item is published.
 if ($publishing && !empty($files)) {
-	$citemPrivacy = getRow('translation_chains', 'privacy', array('equiv_id' => equivId($cID, $cType), 'type' => $cType));
 	
 	if ($citemPrivacy == 'public') {
 		$privacy = 'public';

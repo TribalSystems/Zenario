@@ -491,7 +491,7 @@ input, textarea, button {
 	width: 18px;
 	height: 18px;
 	display: block;
-	background: url('../admin/images/sprites/sprite-grid-icons-single-col.png') no-repeat -17px -1296px;
+	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -17px -1296px;
 	cursor:pointer;
 }
 
@@ -530,25 +530,24 @@ input, textarea, button {
 	margin-left: 8px;
 }
 
-#organizer_rightColumn #organizer_panelTitle div.page_preview_size,
-#organizer_rightColumn div.organizer_row div.organizer_cell div.page_preview_size {
+.organizer_item_image.page_preview_size {
 	background:url('../admin/images/page_preview_icons/desktop-list-icon.png') no-repeat -15px center;
 }
 
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_desktop {
+.organizer_item_image.zenario_preview_icon_desktop {
 	background:url('../admin/images/page_preview_icons/desktop-list-icon.png') no-repeat -15px center;
 }
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_laptop {
+.organizer_item_image.zenario_preview_icon_laptop {
 	background:url('../admin/images/page_preview_icons/laptop-list-icon.png') no-repeat -15px center;
 }
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_tablet {
+.organizer_item_image.zenario_preview_icon_tablet {
 	background:url('../admin/images/page_preview_icons/ipad-portrait-list-icon.png') no-repeat -15px center;
 }
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_tablet_landscape {
+.organizer_item_image.zenario_preview_icon_tablet_landscape {
 	background:url('../admin/images/page_preview_icons/ipad-landscape-icon.png') no-repeat -15px center;
 }
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_preview_icon_smartphone {
+.organizer_item_image.zenario_preview_icon_smartphone {
 	background:url('../admin/images/page_preview_icons/mobile-list-icon.png') no-repeat -15px center;
 }
 

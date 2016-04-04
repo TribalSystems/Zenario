@@ -190,9 +190,7 @@ class zenario_advanced_search extends module_base_class {
 				c.id,
 				c.parent_id,
 				c.name,
-				c.public,
-				c.landing_page_equiv_id,
-				c.landing_page_content_type
+				c.public
 			FROM " . DB_NAME_PREFIX . "categories AS c
 			INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
 				ON c.id = cil.category_id AND c.public=1";

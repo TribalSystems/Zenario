@@ -37,6 +37,6 @@ lib/Twig/Extensions/Node/Trans.php:
 
 lib/Twig/Extensions/Extension/I18n.php
 	Replace:
-            'trans' => new Twig_Filter_Function('gettext'),
+            new Twig_SimpleFilter('trans', 'gettext'),
     With:
-            'trans' => new Twig_Filter_Function('phrase'),
+            new Twig_SimpleFilter('trans', 'phrase'),

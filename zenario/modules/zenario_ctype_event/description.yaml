@@ -39,6 +39,7 @@ content_types:
     content_type:
         content_type_id: event
         content_type_name_en: Event
+        content_type_plural_en: Events
         default_template_name: Event Layout
         enable_summary_auto_update: No
         description_field: optional

@@ -335,19 +335,41 @@ if (!cms_core::$isDraft) {
 
 
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying'])) {
-	$adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']['pick_items']['path'] = 'zenario__content/panels/content_types/item//'. $cType. '//';
+	$adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']['pick_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//';
 }
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting'])) {
-	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/panels/content_types/item//'. $cType. '//';
+	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//';
+}
+if (isset($adminToolbar['sections']['top_left_buttons']['buttons']['goto_content_items'])) {
+	$adminToolbar['sections']['top_left_buttons']['buttons']['goto_content_items']['navigation_path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//'. $cType. '_'. $cID;
 }
 
-
 if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
-	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] .=
-				 adminPhrase('Title:'). ' '. htmlspecialchars(cms_core::$pageTitle).
-		'<br/>'. adminPhrase('Language:'). ' '. htmlspecialchars(getLanguageName(cms_core::$langId)).
-		'<br/>'. adminPhrase('Description:'). ' '. htmlspecialchars(cms_core::$description).
-		'<br/>'. adminPhrase('Keywords:'). ' '. htmlspecialchars(cms_core::$keywords);
+	$cTypeDetails = getContentTypeDetails($cType);
+	
+	$tooltip =
+		adminPhrase('Title:'). ' '. htmlspecialchars(cms_core::$pageTitle).
+		'<br/>'. adminPhrase('Language:'). ' '. htmlspecialchars(getLanguageName(cms_core::$langId));
+	
+	if ($cTypeDetails['description_field'] != 'hidden') {
+		$tooltip .= 
+			'<br/>'. adminPhrase('Description:'). ' '. htmlspecialchars(cms_core::$description);
+	}
+	if ($cTypeDetails['keywords_field'] != 'hidden') {
+		$tooltip .= 
+			'<br/>'. adminPhrase('Keywords:'). ' '. htmlspecialchars(cms_core::$keywords);
+	}
+	if ($cTypeDetails['release_date_field'] != 'hidden') {
+		$tooltip .= 
+			'<br/>'. adminPhrase('Release date:'). ' ';
+		
+		if ($version['publication_date']) {
+			$tooltip .= 
+				htmlspecialchars(formatDateNicely($version['publication_date']));
+		}
+	}
+	
+	$adminToolbar['sections']['edit']['buttons']['item_meta_data']['tooltip'] .= $tooltip;
 }
 
 if (isset($adminToolbar['sections']['edit']['buttons']['item_template'])) {
@@ -678,6 +700,15 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				if ($menuItem['name'] === null) {
 					$adminToolbar['toolbars']['menu'. $i]['css_class'] .= 'zenario_toolbar_warning';
 					$adminToolbar['toolbars']['menu'. $i]['tooltip'] .= '<br/>'. adminPhrase('Warning: text of menu node is missing in this language.');
+				}
+				
+				if (isset($adminToolbar['sections']['menu'. $i]['buttons']['delete'])) {
+					if ($childCount = selectCount('menu_nodes', array('parent_id' => $menuItem['id']))) {
+						$adminToolbar['sections']['menu'. $i]['buttons']['delete']['ajax']['confirm']['message'] .=
+							"\n\n".
+							adminPhrase('Note, it has [[children]] child node(s)! These, and any further child nodes below them, will be deleted.',
+								array('children' => $childCount));
+					}
 				}
 				
 				$adminToolbar['sections']['menu'. $i] = $adminToolbar['sections']['secondary_menu_node'];
@@ -1100,14 +1131,10 @@ foreach ($pagePreviews as $pagePreview) {
 	
 	$pagePreviewButton = array(
 		'parent' => 'page_preview_sizes',
-		'label' => $width.' x '.$height.', '.$description,
-		'custom_width' => $width,
-		'custom_height' => $height,
-		'custom_description' => $label,
+		'label' => $width.' × '.$height.', '.$description,
 		'css_class' => 'zenario_small_preview_icon_'.$pagePreview['type'],
-		'call_js_function' => array(
-			'encapsulated_object' => 'zenarioA',
-			'function' => 'showPagePreview'));
+		'onclick' => "zenarioA.showPagePreview(". (int) $width. ", ". (int) $height. ", '". jsEscape($description). "')"
+	);
 			
 	if ($pagePreview['is_default']) {
 		$pagePreviewButton['label'] .= ' (Default)';

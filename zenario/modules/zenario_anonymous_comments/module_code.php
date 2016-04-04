@@ -51,6 +51,46 @@ class zenario_anonymous_comments extends module_base_class {
 	var $sections = array();
 	var $postingErrors = array();
 	
+	var $editorId = false;
+	
+	public function getEditorId() {
+		if ($this->editorId === false) {
+			$this->editorId = 'editor__'. preg_replace('@\D@', '', ifNull(microtime(), time()));
+		}
+		return $this->editorId;
+	}
+	
+	
+	public static function sanitiseHTML($html, $allowImages, $allowLinks) {
+		
+		//disallowed: <h1><h2><h3><h4><h5><h6><div>
+		$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol>';
+		
+		if ($allowLinks) {
+			$allowable_tags .= '<a>';
+		}
+		if ($allowImages) {
+			$allowable_tags .= '<img>';
+		}
+		
+		$allowedStyles = array('padding-left' => true, 'text-decoration' => true);
+		
+		return sanitiseHTML($html, $allowable_tags, $allowedStyles);
+	}
+	
+	public function addToPageHead() {
+		//Ensure that the toolbar is always visible
+		echo '
+			<style type="text/css">
+				div.zenario_tinymce_toolbar_container > .mce-panel {
+					display: block !important;
+				}
+			</style>';
+	}
+	
+	
+	
+	
 	
  /**
   * The clearRequest() method removes an entry from the $_POST and the $_GET
@@ -108,12 +148,6 @@ class zenario_anonymous_comments extends module_base_class {
 	}
 	
 	
-	
-	
-	//Workaround for a bug with PunyMCE and leaving unclosed tags at the end of messages
-	function adjustMessageText($text) {
-		return preg_replace('@\[\w\]$@', '', $text);
-	}
 	
 	
 	//Add a comment onto the thread
@@ -347,7 +381,7 @@ class zenario_anonymous_comments extends module_base_class {
 		//Add the comment
 		$sql = "
 			UPDATE ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments SET
-				message_text = '". sqlEscape($this->adjustMessageText($messageText)). "',
+				message_text = '". sqlEscape(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 				date_updated = NOW(),
 				updater_id = ". (int) $userId. "
 			WHERE content_id = ". (int) $this->cID. "
@@ -357,30 +391,6 @@ class zenario_anonymous_comments extends module_base_class {
 		$result = sqlQuery($sql);
 		
 		$this->sendEmailNotification((int) $this->post['id'], false);
-	}
-	
-	//Get a User's titles
-	function getUserTitles($userId) {
-		
-		$titles = array();
-		
-		$groups = getUserGroups((int) $userId);
-		
-		foreach ($groups as $group) {
-			$groupId = datasetFieldId($group);
-			$isVisibleGroupId = datasetFieldId($group . '_visible');
-			if (substr($group, -strlen('_hidden')) === '_hidden') {
-				
-			} else {
-				$titles[] = array('Title' => getGroupLabel($groupId));
-			}
-		}
-		
-		if (count($titles)) {
-			return $titles;
-		} else {
-			return false;
-		}
 	}
 	
 	//Get a user's screen_name, if we're showing screennames
@@ -517,7 +527,6 @@ class zenario_anonymous_comments extends module_base_class {
 				date_posted,
 				date_updated,
 				status,
-				employee_post,
 				poster_id,
 				poster_name,
 				poster_email,
@@ -653,8 +662,6 @@ class zenario_anonymous_comments extends module_base_class {
 		$this->frameworkHead('Posts', 'Post', $this->mergeFields, $this->sections);
 		
 		if ($this->posts) {
-			require_once CMS_ROOT. 'zenario/libraries/mit/markitup/bbcode2html.inc.php';
-			
 			$first = true;
 			foreach($this->posts as &$post) {
 				
@@ -669,15 +676,11 @@ class zenario_anonymous_comments extends module_base_class {
 				
 				$mergeFields['Date_Posted'] = formatDateTimeNicely($post['date_posted'], $this->setting('date_format'));
 				$mergeFields['Post_Text'] = $post['message_text'];
-				$mergeFields['Employee'] = $post['employee_post'] && $this->setting('mark_employee_posts')? 'employee' : '';
 				
 				if ($post['status'] == 'pending') {
 					$sections['Pending_Post'] = true;
 				}
 				
-				BBCode2Html($mergeFields['Post_Text'],
-					$this->setting('enable_colours'), $this->setting('enable_images'),
-					$this->setting('enable_links'), $this->setting('enable_emoticons'));
 				$this->showUserInfo($mergeFields, $sections, $post['poster_id'], $post);
 				
 				$this->getExtraPostInfo($post, $mergeFields, $sections /*, arrayKey($_REQUEST,'comm_request') == 'edit_post'*/);

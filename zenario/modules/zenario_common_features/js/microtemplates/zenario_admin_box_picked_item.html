@@ -55,6 +55,19 @@
 				{{m.label|e}}
 			</label>
 		<% } else { %>
+			<% if (!m.isUpload) { %>
+				<% if (m.list_image) { %>
+					<div
+						class="zenario_fab_picked_item_image"
+						style="background-image: url('{{zenario.addBasePath(m.list_image)|e}}');"
+					></div>
+				<% } else if (m.css_class) { %>
+					<div
+						class="zenario_fab_picked_item_icon organizer_item_image {{m.css_class|e}}"
+					></div>
+				<% } %>
+			<% } %>
+			
 			<input
 				type="text"
 				value="{{m.label|e}}"

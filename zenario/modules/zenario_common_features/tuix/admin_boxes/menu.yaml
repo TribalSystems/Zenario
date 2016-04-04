@@ -17,28 +17,24 @@ zenario_menu:
             label: Menu node
             edit_mode:
                 enabled: ""
+            show_errors_after_field: description
             fields:
                 warning:
                     ord: 0
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html:
                 
                 description:
                     ord: 0.5
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: "The navigation hierarchy of this site is comprised of menu nodes. Use this screen to set this menu node's text."
                 multilingual_description:
                     ord: 1
-                    same_row: Yes
+                    same_row: true
                     snippet:
                         html: ""
-                section_id:
-                    ord: 2
-                    label: 'Menu section:'
-                    type: text
-                    read_only: Yes
                 menu_title:
                     ord: 3
                     label: 'Menu text:'
@@ -59,7 +55,7 @@ zenario_menu:
                     class: zenario_textbox_noborder
                 parent_path_of__menu_title:
                     ord: 1004
-                    same_row: Yes
+                    same_row: true
                     type: hidden
                 target_loc:
                     ord: 1005
@@ -69,42 +65,50 @@ zenario_menu:
                     values:
                         none:
                             ord: 1
-                            label: "Don't link"
+                            label: Don't link
+                            side_note: Use this for a menu node that has child nodes.
                         int:
                             ord: 2
-                            label: 'Internal - link to a content item'
+                            label: Internal
+                            side_note: Link to a content item.
                         ext:
                             ord: 3
-                            label: 'External - link to a full URL'
+                            label: External
+                            side_note: Link to a URL on another site.
                         exts:
                             ord: 4
-                            label: 'Link by language - link to different external URL / Content alias by language'
-                    format_onchange: Yes
+                            label: Link by language
+                            side_note: Link to a different external URL in each language
+                    format_onchange: true
                 hyperlink_target:
                     ord: 1006
+                    indent: 1
                     label: 'Content item:'
                     pick_items:
-                        equivalence: Yes
-                        path: zenario__content/panels/language_equivs
-                        min_path: zenario__content/panels/language_equivs
-                        max_path: zenario__content/panels/language_equivs
-                        target_path: zenario__content/panels/language_equivs
-                        disallow_refiners_looping_on_min_path: Yes
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
                         select_phrase: Select a content item...
-                        hide_remove_button: Yes
+                        hide_remove_button: true
                     validation:
                         required_if_not_hidden: "You've set the destination to be to a content item, please select a content item."
-                    format_onchange: Yes
+                    format_onchange: true
                     side_note: "Multilingual sites: if a translation exists in the visitor's language, the link destination always will be to that translation."
-                hyperlink_anchor:
-                    ord: 1006.5
-                    label: 'Anchor name:'
-                    type: text
-                    maxlength: 255
-                    side_note: >
-                        If you have an anchor on the page, you can specify it here and you'll be taken to its location on navigation.
-                hide_private_item:
+                use_download_page:
                     ord: 1007
+                    indent: 2
+                    label: Use a download page
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        Link to the file's download page, rather than a direct link to the file.
+                        This option only applies to Document content items.
+                    hidden: true
+                hide_private_item:
+                    indent: 1
+                    ord: 1008
                     label: 'Privacy:'
                     type: select
                     values:
@@ -123,16 +127,8 @@ zenario_menu:
                     side_note: >
                         If the linked-to content item is private, you can control
                         when the menu node is displayed.
-                use_download_page:
-                    ord: 1008
-                    label: 'Use a download page:'
-                    type: checkbox
-                    value: ""
-                    side_note: |
-                        Link to the file's download page, rather than a direct link to the file.
-                                                    This option only applies to Document content items.
-                    hidden: Yes
                 ext_url:
+                    indent: 1
                     ord: 1009
                     label: 'External URL:'
                     type: url
@@ -140,10 +136,30 @@ zenario_menu:
                     validation:
                         required_if_not_hidden: Please enter a URL
                 open_in_new_window:
+                    indent: 1
                     ord: 1010
                     label: 'Open in a new window'
                     type: checkbox
-            show_errors_after_field: description
+                
+                link_to_anchor:
+                    ord: 3001
+                    indent: 1
+                    label: Link to anchor
+                    type: checkbox
+                    redraw_onchange: true
+                hyperlink_anchor:
+                    indent: 2
+                    ord: 3002
+                    label: 'Anchor name:'
+                    type: text
+                    maxlength: 255
+                    visible_if: |
+                        zenarioAB.value('link_to_anchor')
+                    validation:
+                        required_if_not_hidden: Please enter an anchor name.
+                    side_note: >
+                        If you have an anchor on the page, you can specify it here and you'll be
+                        taken to its location on navigation.
         advanced:
             label: Advanced
             edit_mode:
@@ -151,7 +167,7 @@ zenario_menu:
             fields:
                 description:
                     ord: 0
-                    full_width: Yes
+                    full_width: true
                     snippet:
                         html: "Your site can have rich menu nodes, with images, additional text and custom CSS. You may specify these things here. Note that your menu plugin's framework must support these things otherwise they may not appear."
                 image_id:
@@ -181,6 +197,7 @@ zenario_menu:
                     format_onchange: true
                 rollover_image_id:
                     ord: 1.2
+                    indent: 1
                     label: 'Rollover image:'
                     upload:
                         multi: false
@@ -217,24 +234,28 @@ zenario_menu:
                     format_onchange: true
                 menu__module_class_name:
                     ord: 7.2
+                    indent: 1
                     hidden: true
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
                 menu__method_name:
                     ord: 7.3
+                    indent: 1
                     hidden: true
                     label: 'Static method name:'
                     type: text
                     maxlength: 127
                 menu__param_1:
                     ord: 7.4
+                    indent: 1
                     hidden: true
                     label: 'Parameter 1:'
                     type: text
                     maxlength: 255
                 menu__param_2:
                     ord: 7.5
+                    indent: 1
                     hidden: true
                     label: 'Parameter 2:'
                     type: text
@@ -248,24 +269,28 @@ zenario_menu:
                     format_onchange: true
                 menu_text__module_class_name:
                     ord: 7.52
+                    indent: 1
                     hidden: true
                     label: 'Module class name:'
                     type: text
                     maxlength: 200
                 menu_text__method_name:
                     ord: 7.53
+                    indent: 1
                     hidden: true
                     label: 'Static method name:'
                     type: text
                     maxlength: 127
                 menu_text__param_1:
                     ord: 7.54
+                    indent: 1
                     hidden: true
                     label: 'Parameter 1:'
                     type: text
                     maxlength: 255
                 menu_text__param_2:
                     ord: 7.55
+                    indent: 1
                     hidden: true
                     label: 'Parameter 2:'
                     type: text

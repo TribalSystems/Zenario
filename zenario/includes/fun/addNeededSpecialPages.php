@@ -28,7 +28,8 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 //If a language has not yet been enabled, then we cannot do anything.
-if (!setting('default_language')) {
+if (!setting('default_language')
+ || !checkRowExists('languages', array())) {
 	return;
 }
 

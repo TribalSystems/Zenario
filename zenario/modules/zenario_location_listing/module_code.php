@@ -49,8 +49,7 @@ class zenario_location_listing extends module_base_class {
 		
 		return true;
 	}
-	
-	
+
 	protected function getLocationCount() {
 		$result = sqlSelect($this->buildmysql_query(true));
 		$row = sqlFetchRow($result);
@@ -58,6 +57,11 @@ class zenario_location_listing extends module_base_class {
 	}
 	
 	protected function buildmysql_query($count = false) {
+		$dbColumnName  = false;
+		if ((int) $this->setting('location_filter')) {
+			$dbColumnName  = getRow('custom_dataset_fields','db_column',array('id'=>$this->setting('location_filter')));
+		}
+		
 		
 		if ($count) {
 			$sql = "
@@ -147,6 +151,12 @@ class zenario_location_listing extends module_base_class {
 		}
 		
 		if (!$count) {
+		
+			if($dbColumnName){
+				$sql .= "
+					AND cd.".$dbColumnName."= 1";
+			}
+		
 			$orderBy = array();
 			switch ($this->setting('order_by_1')){
 				case 'sector_score':
@@ -293,6 +303,23 @@ class zenario_location_listing extends module_base_class {
 		switch ($path) {
 			case 'plugin_settings':
 				$box['tabs']['display']['fields']['pagination']['values'] = paginationOptions();
+				
+				//Checkboxes
+				$dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
+				$datasetId = $dataset['id'];
+				$sql = "
+					SELECT f.id, f.label
+					FROM ".DB_NAME_PREFIX."custom_dataset_fields AS f
+					WHERE f.dataset_id = ". (int) $datasetId. "
+					AND f.type = 'checkbox'
+					AND f.is_system_field = 0
+					ORDER BY f.label";
+				$result = sqlQuery($sql);
+				$i=1;
+				while($row = sqlFetchAssoc($result)) {
+					$box['tabs']['first_tab']['fields']['location_filter']['values'][$row['id']] = array('label' =>$row['label'], 'ord'=> $i);
+					$i++;
+				}
 				break;
 
 		}

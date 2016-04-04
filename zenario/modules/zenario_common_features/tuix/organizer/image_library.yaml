@@ -352,24 +352,35 @@ zenario__content:
                         path: zenario__content/panels/image_tags
             item_buttons:
                 edit:
-                    label: Properties
-                    tooltip: Rename image or add a title
+                    label: Edit image properties
                     admin_box:
                         path: zenario_image
-                view_dropdown:
-                    label: View
+                actions_dropdown:
+                    label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 view:
-                    parent: view_dropdown
-                    label: Image
+                    parent: actions_dropdown
+                    label: View
                     popout:
                         href: zenario/file.php
                         options:
                             type: image
-                
+                download:
+                    parent: actions_dropdown
+                    hide_in_select_mode: true
+                    label: Download
+                    ajax:
+                        confirm:
+                            download: true
+                            message: 'Are you sure you wish to download the image "[[filename]]"?'
+                            message_type: warning
+                            button_message: Download
+                            cancel_button_message: Cancel
+                        request:
+                            download_image: 1
                 view_public_link: 
-                    parent: view_dropdown
+                    parent: actions_dropdown
                     hide_in_select_mode: true
                     label: View public link
                     multiple_select: false
@@ -418,17 +429,28 @@ zenario__content:
                         item.privacy != 'private'
                     ajax:
                         confirm:
-                            message: |
+                            message: >
                                 Are you sure you wish to make the image "[[filename]]" private?
                                 
-                                Private images have an cryptic directory path to prevent unauthorised visitor access;
-                                they may not be indexed by search engines.
                                 
-                            multiple_select_message: |
+                                Private images have an cryptic directory path to prevent unauthorised visitor access;
+                                they will not be indexed by search engines.
+                                
+                                
+                                Visitors can still see private images if you link to them using a banner, image
+                                container or other managed link.
+                                
+                            multiple_select_message: >
                                 Are you sure you wish to make the selected images private?
                                 
+                                
                                 Private images have an cryptic directory path to prevent unauthorised visitor access;
-                                they may not be indexed by search engines.
+                                they will not be indexed by search engines.
+                                
+                                
+                                Visitors can still see private images if you link to them using a banner, image
+                                container or other managed link.
+                            
                             button_message: Make private
                             cancel_button_message: Cancel
                             message_type: warning

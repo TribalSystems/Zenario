@@ -7,6 +7,10 @@ zenario_plugin_nest_probusiness__tab:
     title: Tab
     max_height: 400
     hide_tab_bar: true
+    identifier:
+        css_class: zenario_nest_tab
+        label: 'Tab number:'
+        value: ''
     tabs:
         tab:
             label: Details
@@ -14,15 +18,11 @@ zenario_plugin_nest_probusiness__tab:
                 enabled: true
                 always_on: true
             fields:
-                tab:
-                    label: 'Tab:'
-                    type: text
-                    read_only: true
                 name_or_title:
                     label: 'Title text or phrase code:'
                     type: text
                     maxlength: "100"
-                    note_below: |
+                    side_note: |
                         Tabs will only be visible where a tab-based framework is selected in this nest's properties. If the field above contains phrase codes, visitor phrases will be merged into it. Insert [[_YOUR_PHRASE]] to merge a phrase whose code is _YOUR_PHRASE.
                 tab_visibility:
                     label: 'Visible to:'
@@ -45,7 +45,7 @@ zenario_plugin_nest_probusiness__tab:
                         call_static_method:
                             label: "Call a module's static method to decide (advanced):"
                     format_onchange: true
-                    note_below: |
+                    side_note: |
                         You can restrict the visibility of the plugins following this tab to certain kinds of user.
                 tab__smart_group:
                     hidden: true

@@ -130,3 +130,30 @@ _sql
 	ADD COLUMN comment_subs_email_template varchar(255)
 _sql
 );
+
+
+//Convert all code from bbcode to sanitised HTML
+if (needRevision(160)) {
+	
+	require_once CMS_ROOT. 'zenario/libraries/mit/markitup/bbcode2html.inc.php';
+	
+	$allowable_tags = '<br><p><pre><blockquote><code><em><strong><span><sup><sub><ul><li><ol><a><img>';
+	$allowedStyles = array('padding-left' => true, 'text-decoration' => true);
+	
+	$result = getRows(ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments', array('id', 'message_text'), array());
+	while ($row = sqlFetchAssoc($result)) {
+		
+		BBCode2Html($row['message_text'], false, true, true, false);
+		
+		updateRow(
+			ZENARIO_ANONYMOUS_COMMENTS_PREFIX. 'user_comments',
+			array('message_text' => sanitiseHTML($row['message_text'], $allowable_tags, $allowedStyles)),
+			$row['id']);
+	}
+	unset($row);
+	unset($result);
+	
+	revision(160);
+}
+
+

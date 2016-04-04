@@ -17,7 +17,7 @@
 {% if show_categories %}
 	<h2>
 		{% for item in categories %}
-			<a {{item.Category_Link}}>{{item.Category}}</a>{{item.Comma}}
+			<a>{{item.Category}}</a>{{item.Comma}}
 		{% endfor %}
 	</h2>
 {% endif %}
@@ -42,3 +42,6 @@
 	<img alt="{{Writer_Alt}}" src="{{Writer_Src}}"/>
 {% endif %}
 
+{% if show_sticky_image %}
+	<img alt="{{Sticky_Image_Alt}}" src="{{Sticky_Image_Src}}"/>
+{% endif %}

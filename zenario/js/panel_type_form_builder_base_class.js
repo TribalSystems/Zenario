@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	panelTypes
 ) {
 	"use strict";
@@ -129,7 +129,7 @@ methods.showDetailsSection = function(section) {
 // Init the add new fields button
 methods.initAddNewFieldsButton = function() {
 	var that = this;
-	$('input.add_new_field').on('click', function() {
+	$(this.formEditorSelector).find('input.add_new_field, span.add_new_field').on('click', function() {
 		// Validate and save the current field, if the field is valid then show the new fields list and unselect the current field
 		var afterValidate = function(errors) {
 			if (_.isEmpty(errors)) {
@@ -165,10 +165,13 @@ methods.sendAJAXRequest = function(requests) {
 	
 	$.extend(actionRequests, requests);
 	
+	get('organizer_preloader_circle').style.display = 'block';
 	var result = zenario.ajax(
 		URLBasePath + actionTarget,
 		actionRequests
-	);
+	).after(function() {
+		get('organizer_preloader_circle').style.display = 'none';
+	});
 	return result;
 };
 
@@ -180,7 +183,8 @@ methods.changeMadeToPanel = function() {
 		window.onbeforeunload = function() {
 			return that.saveChangesWarningMessage;
 		}
-		zenarioO.disableInteraction();
+		var warningMessage = 'You should either save your changes or click reset to discard them before leaving';
+		zenarioO.disableInteraction(warningMessage);
 		zenarioO.setButtons();
 	}
 };
@@ -204,12 +208,15 @@ methods.saveChanges = function() {
 		zenarioO.enableInteraction();
 		
 		that.changingForm = false;
+		that.changesSaved = true;
+		
 		zenarioO.reload();
 	});
 };
 
 // Format the field details section
 methods.formatFieldDetails = function() {
+
 	this.save();
 	this.setCurrentFieldDetails();
 };
@@ -220,8 +227,12 @@ methods.createSelectList = function(options, selectedValue, emptyValue, optgroup
 	
 	// Add empty value option at start
 	if (emptyValue) {
+		var label = '-- Select --';
+		if (emptyValue !== true) {
+			label = emptyValue;
+		}
 		emptyOption = {
-			label: '-- Select --',
+			label: label,
 			value: '',
 			ord: -1
 		};
@@ -278,13 +289,16 @@ methods.createSelectList = function(options, selectedValue, emptyValue, optgroup
 };
 
 // Create a list of values from an object that can be passeed to a radios microtemplate
-methods.createRadioList = function(options, checkedValue, name) {
+methods.createRadioList = function(options, checkedValue, name, disabled) {
 	var radioList = [];
 	for (key in options) {
 		if (options.hasOwnProperty(key)) {
 			var option = _.clone(options[key]);
 			if (key == checkedValue) {
 				option.checked = true;
+			}
+			if (disabled === true) {
+				option.disabled = true;
 			}
 			option.value = key;
 			option.name = name;
@@ -303,7 +317,12 @@ methods.showButtons = function($buttons) {
 	
 	if (this.changingForm) {
 		//Change the buttons to apply/cancel buttons
-		$buttons.html(zenarioA.microTemplate('zenario_organizer_apply_cancel_buttons', {}));
+		var mergeFields = {
+			confirm_text: this.saveButtonText,
+			confirm_css: 'form_editor',
+			cancel_text: this.cancelButtonText
+		};
+		$buttons.html(zenarioA.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
 		
 		//Add an event to the Apply button to save the changes
 		var lock = false
@@ -330,11 +349,16 @@ methods.showButtons = function($buttons) {
 		
 		$buttons.find('#organizer_cancelButton')
 			.click(function() {
-				window.onbeforeunload = false;
-				zenarioO.enableInteraction();
-				
-				that.changingForm = false;
-				zenarioO.reload();
+				if (confirm('Are you sure you want to discard all your changes?')) {
+					window.onbeforeunload = false;
+					zenarioO.enableInteraction();
+					
+					// Reset field tab
+					that.currentFieldTab = false;
+					
+					that.changingForm = false;
+					zenarioO.reload();
+				}
 			});
 		
 	} else {
@@ -344,7 +368,126 @@ methods.showButtons = function($buttons) {
 };
 
 
+
+// Init list of field values for multi value field types
+methods.initFieldValues = function(field) {
+	var that = this;
+	// Handle remove button
+	$('#field_values_list .delete_icon').off().on('click', function() {
+		var id = $(this).data('id');
+		// Remove from stored values
+		field.lov[id] = {remove: true};
+		// Remove from preview
+		$('#organizer_field_value_' + id).remove();
+		// Remove from details section
+		$(this).parent().parent().remove();
+		that.valuesChanged = true;
+		that.changeMadeToPanel();
+	});
+	
+	// Update form labels
+	$('#field_values_list input').off().on('keyup', function() {
+		var id = $(this).data('id');
+		$('#organizer_field_value_' + id + ' label').text($(this).val());
+		that.valuesChanged = true;
+		that.changeMadeToPanel();
+	});
+};
+
+// Init button to add a new field value
+methods.initAddNewFieldValuesButton = function(field) {
+	var that = this;
+	$('#organizer_add_a_field_value').on('click', function() {
+		
+		// Save current values
+		that.save();
+		
+		// Save new value
+		var id = 't' + that.maxNewCustomFieldValue++,
+			value = {
+				id: id,
+				label: 'Untitled',
+				ord: _.size(field['lov']) + 100,
+				is_new_value: true
+			};
+		field.lov[id] = value;
+		
+		// Redraw list to include new field
+		that.setCurrentFieldValues(field);
+		that.changeMadeToPanel();
+	});
+};
+
+// Set a fields values HTML
+methods.setCurrentFieldValues = function(field) {
+	var id = this.current.id,
+		items = field.lov,
+		mergeFields = this.getOrderedItems(items),
+		html = '';
+	
+	this.valuesChanged = true;
+	
+	// Set values HTML
+	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', mergeFields);
+	$('#field_values_list').html(html);
+	
+	// Init values
+	this.initFieldValues(field);
+	
+	// Update preview
+	if ($.inArray(field.type, ['checkboxes', 'radios']) > -1) {
+		if (field.type == 'checkboxes') {
+			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', mergeFields);
+		} else if (field.type == 'radios') {
+			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', mergeFields);
+		}
+		$('#organizer_form_field_values_' + id).html(html);
+	}
+};
+
+// Get current field values from list
+methods.getCurrentFieldValues = function(field) {
+	var that = this,
+		lov = _.clone(field.lov);
+	
+	$('#field_values_list div.field_value').each(function(i, value) {
+		var id = $(this).data('id');
+		lov[id] = {
+			id: id,
+			label: $(value).find('input').val(),
+			ord: i + 1
+		}
+		if (field.lov[id]) {
+			
+			if (field.lov[id].is_new_value) {
+				lov[id].is_new_value = true;
+			}
+			if (field.lov[id].crm_value) {
+				lov[id].crm_value = field.lov[id].crm_value;
+			}
+		}
+	});
+	return lov;
+};
+
+methods.shakeBox = function(selector) {
+	$(selector).effect({
+		effect: 'bounce',
+		duration: 125,
+		direction: 'right',
+		times: 2,
+		distance: 5,
+		mode: 'effect'
+	});
+};
+
+
 // Base methods
+
+//Called whenever Organizer has saved an item and wants to display a toast message to the administrator
+methods.displayToastMessage = function(message, itemId) {
+	//Do nothing, don't show the message!
+};
 
 //Called by Organizer whenever it needs to set the panel data.
 methods.cmsSetsPanelTUIX = function(tuix) {
@@ -386,7 +529,7 @@ methods.returnShowLeftColumn = function() {
 //or do something different by returning a URL to a different PHP script
 methods.returnAJAXURL = function() {
 	return URLBasePath
-		+ 'zenario/admin/ajax.php?_json=1&path='
+		+ 'zenario/admin/organizer.ajax.php?path='
 		+ encodeURIComponent(this.path)
 		+ zenario.urlRequest(this.returnAJAXRequests());
 };

@@ -38,7 +38,6 @@ class zenario_common_features__admin_boxes__image_tag extends module_base_class 
 				exit;
 			}
 			
-			$box['title'] = adminPhrase('Editing the tag "[[name]]".', $details);
 			$values['details/name'] = $details['name'];
 			$values['details/color'] = $details['color'];
 		}

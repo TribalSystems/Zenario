@@ -253,12 +253,15 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 					$box['tabs']['privacy']['hidden'] = true;
 					$box['key']['target_menu_section'] = null;
 					$box['key']['target_menu_parent'] = null;
+					
+					$box['identifier']['css_class'] = getItemIconClass($content['id'], $content['type'], true, $content['status']);
 				}
 		
 				//$box['tabs']['meta_data']['fields']['status']['value'] = $content['status'];
 				$box['tabs']['meta_data']['fields']['language_id']['value'] = $content['language_id'];
 		
-				$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $content['type']. '//';
+				$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] =
+					'zenario__layouts/panels/layouts/refiners/content_type//'. $content['type']. '//';
 		
 				if ($version =
 					getRow(
@@ -313,7 +316,24 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 			} else {
 				//If we are enforcing a specific Content Type, ensure that only layouts of that type can be picked
 				if ($box['key']['target_cType']) {
-					$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['target_cType']. '//';
+					$box['tabs']['template']['fields']['layout_id']['pick_items']['path'] =
+						'zenario__layouts/panels/layouts/refiners/content_type//'. $box['key']['target_cType']. '//';
+					
+					
+					//T10208, Creating content items: auto-populate release date and author where used
+					$contentTypeDetails = getContentTypeDetails($box['key']['target_cType']);
+	
+					if ($contentTypeDetails['writer_field'] != 'hidden'
+					 && isset($fields['meta_data/writer_id'])
+					 && ($adminDetails = getAdminDetails(adminId()))) {
+						$values['meta_data/writer_id'] = adminId();
+						$values['meta_data/writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
+					}
+	
+					if ($contentTypeDetails['release_date_field'] != 'hidden'
+					 && isset($fields['meta_data/publication_date'])) {
+						$values['meta_data/publication_date'] = dateNow();
+					}
 				}
 			}
 		}

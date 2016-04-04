@@ -30,8 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features extends module_base_class {
 	
-
-	
 	public static function deleteHierarchicalDocumentPubliclink($documentId) {
 		$document = getRow('documents', array('file_id'), $documentId);
 		$file = getRow('files',  array('short_checksum'), $document['file_id']);
@@ -45,7 +43,7 @@ class zenario_common_features extends module_base_class {
 		}
 	}
 	
-	public function deleteHierarchicalDocument($documentId) {
+	public static function deleteHierarchicalDocument($documentId) {
 		$details = getRow('documents', array('type', 'file_id', 'thumbnail_id'), $documentId);
 		
 		if ($details && $details['type'] == 'folder') {
@@ -83,18 +81,10 @@ class zenario_common_features extends module_base_class {
 		}
 	}
 	
-	
-	
-	
-	
-	
-	
-	
 	public function deleteDocumentTag($tagId) {
 		deleteRow('document_tags', array('id' => $tagId));
 		
 	}
-	
 	
 	public static function addExtractToDocument($file_id) {
 		$documentProperties = array();
@@ -111,6 +101,58 @@ class zenario_common_features extends module_base_class {
 		}
 		return $documentProperties;
 	}
+	
+	public static function generateDocumentPublicLink($documentId) {
+		$error = new zenario_error();
+		
+		$document = getRow('documents', array('file_id', 'filename'), $documentId);
+		$file = getRow(
+			'files', 
+			array('id', 'filename', 'path', 'created_datetime', 'short_checksum'),
+			array('id' => $document['file_id'])
+		);
+		if($file['filename']) {
+			if (cleanDownloads()) {
+				$dirPath = createCacheDir($file['short_checksum'], 'public/downloads', false);
+			}
+			if (!$dirPath) {
+				$error->add('message', 'Could not generate public link because public file structure incorrect');
+				return $error;
+			}
+			
+			$symFolder =  CMS_ROOT . $dirPath;
+			$symPath = $symFolder . $document['filename'];
+			
+			$frontLink = $dirPath . $document['filename'];
+			if (!windowsServer() && ($path = docstoreFilePath($file['id'], false))) {
+				if (!file_exists($symPath)) {
+					if(!file_exists($symFolder)) {
+						mkdir($symFolder);
+					}
+					symlink($path, $symPath);
+				} 
+				
+				updateRow('documents', array('privacy' => 'public'), $documentId);
+				
+				return $frontLink;
+				
+			} else {
+				if (windowsServer()) {
+					$error->add('message', 'Could not generate public link because the CMS is installed on a windows server.');
+				} else {
+					$error->add('message', 'Could not generate public link because this document is not stored in the Docstore.</br>Make sure the Docstore directory is correctly setup and re-upload this document.');
+				}
+			}
+		} else {
+			$error->add('message', 'Could not generate public link because no file exists');
+		}
+		return $error;
+	}
+	
+	
+	
+	
+	
 	
 	// Centralised list for user status
 	public static function userStatus($mode, $value = false) {
@@ -475,6 +517,10 @@ class zenario_common_features extends module_base_class {
 	//
 	//	Organizer functions
 	//
+	
+	public function fillOrganizerNav(&$nav) {
+		return require funIncPath(__FILE__, __FUNCTION__);
+	}
 	
 	public function lineStorekeeperCSV($path, &$columns, $refinerName, $refinerId) {
 		if ($c = $this->runSubClass(__FILE__)) {

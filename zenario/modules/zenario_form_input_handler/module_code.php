@@ -525,7 +525,7 @@ class zenario_form_input_handler extends module_base_class {
 				
 				$emailTemp = zenario_email_template_manager::getTemplateById($values['email_template_number']);
 				
-				$fields['email_template_number']['values'] = zenario_email_template_manager::getTemplateNamesOrderedByName();
+				$fields['email_template_number']['values'] = zenario_email_template_manager::getTemplateNames();
 				if ($emailTemp) {
 					$values['email_template_number'] = $emailTemp['code'];
 				}

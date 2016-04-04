@@ -5,8 +5,12 @@ zenario_plugin_nest__tab:
         id: ""
         instanceId: ""
     title: Tab
-    max_height: "150"
-    hide_tab_bar: Yes
+    max_height: 150
+    hide_tab_bar: true
+    identifier:
+        css_class: zenario_nest_tab
+        label: 'Tab number:'
+        value: ''
     tabs:
         tab:
             label: Details
@@ -14,16 +18,13 @@ zenario_plugin_nest__tab:
                 enabled: Yes
                 always_on: Yes
             fields:
-                tab:
-                    label: 'Tab:'
-                    type: text
-                    read_only: Yes
                 name_or_title:
                     label: 'Title or Title Phrase Code:'
                     type: text
                     maxlength: "100"
-                    note_below: |
+                    side_note: |
                         Tabs will only be visible where a tab based framework is selected in this nest's Settings.
-                                                    Visitor Phrases will be merged into the field above. For example, use [[_MY_PHRASE]] to merge a Phrase called _MY_PHRASE.
+                        Visitor Phrases will be merged into the field above.
+                        For example, use [[_MY_PHRASE]] to merge a Phrase called _MY_PHRASE.
     save_button_message: 'Save & Close'
     save_and_continue_button_message: 'Save & Continue'

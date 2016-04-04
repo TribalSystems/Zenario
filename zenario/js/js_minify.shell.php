@@ -29,7 +29,6 @@
 
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('TINYMCE_DIR', 'zenario/libraries/lgpl/tinymce_4_2_3');
 define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
@@ -62,14 +61,29 @@ Notes:
 }
 
 //Macros and replacements
-class macros {
-	public static $patterns = array();
-	public static $replacements = array();
+function applyCompilationMacros($code) {
+	
+	//Check if this JavaScript file uses the zenario.lib function.
+	//If so, we can use the has() shortcut.
+	//If not, we need to write out zenario.has() in full.
+	if (false !== strpos($code, 'zenario.lib(')
+	 && false !== strpos($code, 'extensionOf, methodsOf, has')) {
+		$has = 'has';
+	} else {
+		$has = 'zenario.has';
+	}
+	
+	//"foreach" is a macro for "for .. in ... hasOwnProperty"
+	$patterns = array();
+	$replacements = array();
+	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
+	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
+	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
+	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
+
+	return preg_replace($patterns, $replacements, $code);
 }
-macros::$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
-macros::$replacements[] = 'for (\2\3 in \1) { if (!zenario.has(\1, \3)) continue; \4 \5 = \1[\3];';
-macros::$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
-macros::$replacements[] = 'for (\2\3 in \1) { if (!zenario.has(\1, \3)) continue;';
+
 
 //Change directory to the CMS root directory
 $prefix = '';
@@ -85,6 +99,11 @@ do {
 	}
 	$prefix .= '../';
 } while (true);
+
+//Define a constant to mark than any further include files have been legitamately included
+define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
+define('NOT_ACCESSED_DIRECTLY', true);
+require 'zenario/admin/db_updates/latest_revision_no.inc.php';
 
 //Use the closure compiler for .js files if it has been installed
 //(otherwise we must use YUI Compressor which gives slightly larger filesizes).
@@ -134,7 +153,7 @@ if ($arg1 == 'p') {
 }
 
 
-function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
+function minify($dir, $file, $level, $ext = '.js') {
 	
 	$isCSS = $ext == '.css';
 	$yamlToJSON = $ext == '.yaml';
@@ -142,10 +161,6 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 	if ($yamlToJSON) {
 		$srcFile = $dir. $file. $ext;
 		$minFile = $dir. $file. '.json';
-	} elseif ($punyMCE) {
-		$srcFile = $dir. $file. '_src'. $ext;
-		$minFile = $dir. $file. $ext;
-		//$mapFile = $dir. $file. '.map';
 	} else {
 		$srcFile = $dir. $file. $ext;
 		$minFile = $dir. $file. '.min'. $ext;
@@ -213,7 +228,7 @@ function minify($dir, $file, $level, $ext = '.js', $punyMCE = false) {
 					 && !$yamlToJSON
 					 && substr($dir, 0, 18) != 'zenario/libraries/') {
 						$tmpFile = tempnam(sys_get_temp_dir(), 'js');
-						file_put_contents($tmpFile, preg_replace(macros::$patterns, macros::$replacements, file_get_contents($srcFile)));
+						file_put_contents($tmpFile, applyCompilationMacros(file_get_contents($srcFile)));
 						$srcFile = $tmpFile;
 					}
 					
@@ -385,31 +400,19 @@ if ((is_dir($dir = 'zenario/libraries/mit/jquery/css/')) && ($scan = scandir($di
 }
 
 //Minify TinyMCE files
-minify(TINYMCE_DIR. '/', 'tinymce.jquery', $level, '.js');
-minify(TINYMCE_DIR. '/themes/modern/', 'theme', $level, '.js');
-if ($scan = scandir(TINYMCE_DIR. '/plugins')) {
+minify(TINYMCE_DIR, 'tinymce.jquery', $level, '.js');
+minify(TINYMCE_DIR. 'themes/modern/', 'theme', $level, '.js');
+if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
 	foreach ($scan as $module) {
-		if (substr($module, 0, 1) != '.' && is_dir($dir = TINYMCE_DIR. '/plugins/'. $module. '/')) {
+		if (substr($module, 0, 1) != '.' && is_dir($dir = TINYMCE_DIR. 'plugins/'. $module. '/')) {
 			minify($dir, 'plugin', $level, '.js');
 		}
 	}
 }
 
 
-//Minify PunyMCE files
-minify('zenario/libraries/lgpl/punymce/', 'puny_mce', $level, '.js', true);
-if ($scan = scandir('zenario/libraries/lgpl/punymce/plugins')) {
-	foreach ($scan as $module) {
-		if (substr($module, 0, 1) != '.' && substr($module, -7) != '_src.js') {
-			if (is_dir($dir = 'zenario/libraries/lgpl/punymce/plugins/'. $module. '/')) {
-				minify($dir, $module, $level, '.js', true);
-			} elseif (substr($module, -3) == '.js') {
-				minify('zenario/libraries/lgpl/punymce/plugins/', substr($module, 0, -3), $level, '.js', true);
-			}
-		}
-	}
-}
-
+//Minify colorbox
+minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
 
 //Minify jQuery Roundabout
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
@@ -422,6 +425,9 @@ minify('zenario/libraries/bsd/modernizr/', 'modernizr', $level, '.js');
 minify('zenario/libraries/mit/intro/', 'introjs', $level, '.css');
 minify('zenario/libraries/mit/intro/', 'introjs-rtl', $level, '.css');
 minify('zenario/libraries/mit/intro/', 'intro', $level, '.js');
+
+//Minify jPaginator
+minify('zenario/libraries/mit/jpaginator/', 'jPaginator', $level, '.js');
 
 //Minify Respond
 minify('zenario/libraries/mit/respond/', 'respond', $level, '.js');

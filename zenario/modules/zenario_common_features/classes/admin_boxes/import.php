@@ -37,7 +37,17 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			case 'file':
 				// --- Validate file tab --- 
 				if (!empty($box['tabs']['file']['fields']['next']['pressed']) && $values['file/file']) {
-					$box['tab'] = 'headers';
+					$path = getPathOfUploadedFileInCacheDir($values['file/file']);
+					if (pathinfo($path, PATHINFO_EXTENSION) == 'csv') {
+						$string = file_get_contents($path);
+						$isUTF8 = mb_detect_encoding($string, 'UTF-8', true);
+						if ($isUTF8 === false) {
+							$errors[] = adminPhrase('CSV files must be UTF-8 encoded to be imported.');
+						}
+					}
+					if (empty($errors)) {
+						$box['tab'] = 'headers';
+					}
 				}
 				break;
 			case 'headers':
@@ -96,8 +106,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							if ($updateMode) {
 								if (!$IDColumn) {
 									$errors[] = adminPhrase('You must match the key field to a field name');
-								} elseif(isset($datasetFieldDetails[$IDColumn]) && !$datasetFieldDetails[$IDColumn]['is_system_field']) {
-									$errors[] = adminPhrase('The database column chosen for the key field must be a system field');
 								}
 							}
 							// Validate required fields
@@ -250,7 +258,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		}
 		
 		// Get list of values for header to DB column matching.
-		$DBColumnSelectListValues = listCustomFields($datasetDetails['system_table'], $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
+		$DBColumnSelectListValues = listCustomFields($datasetDetails, $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 		// Show an ID field for updates
 		$update = $values['file/type'] == 'update_data';
 		if ($update) {
@@ -1016,9 +1024,15 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 						}
 						
-						// Find matching records to update
-						$currentRows = getRowsArray($datasetDetails['system_table'], $field['db_column'], array($field['db_column'] => $value));
-						$rowCount = count($currentRows);
+						// Find matching records to update by DB Column
+						$matchingRows = array();
+						if ($field['is_system_field']) {
+							$matchingRows = getRows($datasetDetails['system_table'], $field['db_column'], array($field['db_column'] => $value));
+						} else {
+							$matchingRows = getRows($datasetDetails['table'], $field['db_column'], array($field['db_column'] => $value));
+						}
+						
+						$rowCount = sqlNumRows($matchingRows);
 						if ($rowCount == 0) {
 							$errorMessage = 'No existing record found for ID column '.$field['db_column'];
 							self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
@@ -1138,7 +1152,11 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				if ($field['values_source']) {
 					$lov = getCentralisedListValues($field['values_source']);
 					if (!isset($lov[$value])) {
-						$errorMessage = 'Unknown list value';
+						$displayValue = $value;
+						if (strlen($value) >= 33) {
+							$displayValue = substr($value, 0, 30) . '...';
+						}
+						$errorMessage = 'Unknown list value "' . $displayValue . '"';
 						self::addErrorMessage($problems, $errorCount, $errorMessage, $lineNumber, $columnIndex);
 					}
 				}
@@ -1148,7 +1166,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				
 				if ($value = trim($lineValues[$ord])) {
 					if (!self::$systemDataIDColumn) {
-						self::$systemDataIDColumn = self::getTablePrimaryKeyName($datasetDetails['system_table']);
+						self::$systemDataIDColumn = getIdColumnOfTable($datasetDetails['system_table']);
 					}
 					$currentRow = getRowsArray($datasetDetails['system_table'], self::$systemDataIDColumn, array(self::$systemDataIDColumn => $value));
 					$rowCount = count($currentRow);
@@ -1266,21 +1284,11 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		return $datasetFieldDetails;
 	}
 	
-	private static function getTablePrimaryKeyName($tableName) {
-		$sql = '
-			SHOW KEYS
-			FROM ' . DB_NAME_PREFIX . sqlEscape($tableName) . '
-			WHERE Key_name = "PRIMARY"';
-		$result = sqlSelect($sql);
-		$row = sqlFetchAssoc($result);
-		return $row['Column_name'];
-	}
-	
 	private static function setImportData($datasetId, $importData, $mode, $insertMode, $keyFieldID) {
 		
 		$datasetDetails = getDatasetDetails($datasetId);
-		$customDataIDColumn = self::getTablePrimaryKeyName($datasetDetails['table']);
-		$systemDataIDColumn = self::getTablePrimaryKeyName($datasetDetails['system_table']);
+		$systemDataIDColumn = !empty($datasetDetails['system_table']) ? getIdColumnOfTable($datasetDetails['system_table']) : false;
+		$customDataIDColumn = !empty($datasetDetails['table']) ? getIdColumnOfTable($datasetDetails['table']) : false;
 		
 		$fieldIdDetails = array();
 		$errorMessage = '';
@@ -1311,6 +1319,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					}
 				}
 			}
+			
 			
 			// Create or update records
 			if ($mode == 'insert') {
@@ -1385,49 +1394,52 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				
 				// Other datasets
 				} else {
-					$id = insertRow($datasetDetails['system_table'], $data);
-				}
-				// If record was created successfully, add custom data
-				if ($id && is_numeric($id)) {
-					if (!empty($customData)) {
-						$customData[$customDataIDColumn] = $id;
-						insertRow($datasetDetails['table'], $customData);
+					if ($datasetDetails['system_table']) {
+						$id = insertRow($datasetDetails['system_table'], $data);
 					}
-				} elseif (is_object($id) && get_class($id) == 'zenario_error') {
+				}
+				
+				// Add custom data
+				if ($datasetDetails['table']) {
+					$ids = array();
+					if ($id) {
+						$ids[$customDataIDColumn] = $id;
+					}
+					$id = setRow($datasetDetails['table'], $customData, $ids);
+				}
+				
+				if (is_object($id) && get_class($id) == 'zenario_error') {
 					foreach ($id->errors as $errorField => $error) {
 						$message .= 'Error code: '. phrase($error);
 					}
 					$error = true;
-				} else {
-					$message .= "Error: could not import";
-					$error = true;
 				}
+				
 				$message .= "\n\n";
 			
 			// Update records
 			} elseif ($mode == 'update') {
 				
 				// List of IDs to update (just for saftey, should normaly only be 1)
-				$idsToUpdate = array();
+				$idsToUpdate = false;
 				
 				if ($keyFieldID == 'id') {
 					$idsToUpdate[] = $record['id'];
 				} else {
 					if (!empty($fieldIdDetails[$keyFieldID]['is_system_field'])) {
-						$idsToUpdate = getRowsArray(
+						$idsToUpdate = getRows(
 							$datasetDetails['system_table'], 
 							$systemDataIDColumn, 
 							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
 						);
 					} else {
-						$idsToUpdate = getRowsArray(
+						$idsToUpdate = getRows(
 							$datasetDetails['table'], 
 							$customDataIDColumn, 
-							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
+							array($fieldIdDetails[$keyFieldID]['db_column'] => $customData[$fieldIdDetails[$keyFieldID]['db_column']])
 						);
 					}
 				}
-				
 				
 				// Custom logic to update users
 				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
@@ -1440,22 +1452,24 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					$data['last_updated_via_import'] = now();
 				}
 				
-				
 				// Update records
-				foreach ($idsToUpdate as $recordId) {
-					if (!empty($data)) {
+				if ($idsToUpdate !== false) {
+					while ($row = sqlFetchRow($idsToUpdate)) {
 						
-						if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
-							saveUser($data, $recordId);
-						} else {
-							updateRow($datasetDetails['system_table'], $data, array($systemDataIDColumn => $recordId));
+						$recordId = $row[0];
+						
+						if ($datasetDetails['system_table'] && !empty($data)) {
+							if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
+								saveUser($data, $recordId);
+							} else {
+								updateRow($datasetDetails['system_table'], $data, array($systemDataIDColumn => $recordId));
+							}
+						}
+						if ($datasetDetails['table'] && !empty($customData)) {
+							setRow($datasetDetails['table'], $customData, array($customDataIDColumn => $recordId));
 						}
 					}
-					if (!empty($customData)) {
-						setRow($datasetDetails['table'], $customData, array($customDataIDColumn => $recordId));
-					}
 				}
-				
 			}
 			if ($error) {
 				$errorMessage .= $message;

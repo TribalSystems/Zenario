@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf
+	extensionOf, methodsOf, has
 ) {
 	"use strict";
 
@@ -68,7 +68,7 @@ zenario.adminId = 0;
 
 
 
-//WiP callback class	
+//Callback class	
 zenario.callback = function() {
 	this.isOwnCallback = false;
 	this.isWrapper = false;
@@ -147,9 +147,9 @@ methods.checkComplete = function() {
 
 //Some different examples of how to use the callback function above
 //window.test = function() {
-//	var url1 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_1&_limit=1',
-//		url2 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_2&_limit=1',
-//		url3 = URLBasePath + 'zenario/admin/ajax.php?_json=1&_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_3&_limit=1';
+//	var url1 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_1&_limit=1',
+//		url2 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_2&_limit=1',
+//		url3 = URLBasePath + 'zenario/admin/organizer.ajax.php?_start=0&_get_item_name=1&path=zenario__content%2Fpanels%2Flanguage_equivs&_item=html_3&_limit=1';
 //	
 //	zenario.ajax(url1, false, true).after(function(data) {
 //		console.log(1, data.items.html_1.tag);
@@ -181,49 +181,6 @@ methods.checkComplete = function() {
 //	});
 //};
 
-
-
-zenario.loadedLibraries = {};
-zenario.loadLibrary = function(path, callback) {
-	
-	var library;
-	
-	if (library = zenario.loadedLibraries[path]) {
-		if (library.loaded) {
-			callback();
-		} else {
-			library.cb.after(callback);
-		}
-	
-	} else {
-		library = zenario.loadedLibraries[path] = {cb: new zenario.callback, loaded: false};
-	
-		library.cb.after(callback);
-	
-		$.getScript(path, function() {
-			library.loaded = true;
-			library.cb.call();
-		});
-	}
-};
-
-
-
-//Redirect the user to a URL using JavaScript
-zenario.goToURL = function(URL, useChromeFix) {
-	document.location.href = URL;
-	
-	if (useChromeFix) {
-		//Hack to fix a bug with Chrome :(
-		setTimeout(
-			function() {
-				document.location.href = URL;
-			}, 500);
-	}
-	
-	return false;
-};
-
 //A version of nonAsyncAJAX for modules
 //As this uses zenario.nonAsyncAJAX() we should start to avoid using this from now on...
 zenario.moduleNonAsyncAJAX =
@@ -233,6 +190,301 @@ zenario.handlePluginAJAX =
 zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCache) {
 	return zenario.nonAsyncAJAX(URLBasePath + 'zenario/ajax.php?moduleClassName=' + moduleClassName + '&method_call=handleAJAX' + zenario.urlRequest(requests), post, json, useCache);
 };
+
+
+
+
+	//Make a non-asyncornous AJAX call.
+	//Note that this is deprecated!
+	zenario.nonAsyncAJAX = function(url, post, json, useCache) {
+		
+		//if (zenarioA.adminSettings.show_dev_tools
+		// && window.console
+		// && console.trace) {
+		//	console.trace('Synchronous AJAX request made');
+		//	//or
+		//	var e = new Error();
+		//	console.log(e.stack);
+		//}
+		
+		url = zenario.addBasePath(url);
+		
+		var xmlHttp = {};
+		
+		//If this isn't a post request, only launch this request if it cannot be found in the storage
+		if (post
+		 || !useCache
+		 || !(xmlHttp.responseText = zenario.checkSessionStorage(url))) {
+			xmlHttp = new Object();
+		
+			if (window.ActiveXObject) {
+				xmlHttp = new ActiveXObject('Microsoft.XMLHTTP');
+			} else if (window.XMLHttpRequest) {
+				xmlHttp = new XMLHttpRequest();
+			}
+		
+			//Use GET or POST, as requested.
+			if (!post) {
+				//If you're using GET then any variables need to be set in the URL
+				xmlHttp.open('GET', url, false);
+				xmlHttp.send(null);
+			
+				if (useCache) {
+					zenario.setSessionStorage(xmlHttp.responseText, url);
+				}
+		
+			} else {
+				//If you're using POST then variables need to be set in the POST.
+				// (This uses the same format as GET, however without the initial ?)
+			
+				//Check to see if the caller took the time to seperate the two different inputs out,
+				//or if they have dumped them all into the url
+				if (post === true) {
+					//If post has just been set to true, try to check the url for the actual inputs!
+					var qMark = url.indexOf('?');
+				
+					if (qMark == -1) {
+						//Case where POST must be used, but there are not actually any requests
+						post = '';
+					} else {
+						//Get variables from the URL and put them in the POST
+						post = url.substr(qMark+1);
+						url = url.substr(0, qMark);
+					}
+			
+				} else if (typeof post != 'string') {
+					post = zenario.urlRequest(post);
+				}
+			
+				xmlHttp.open('POST', url, false);
+				xmlHttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xmlHttp.send(post);
+			}
+		}
+	
+		//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
+		if (!json) {
+			return xmlHttp.responseText;
+		} else {
+			try {
+				return JSON.parse(xmlHttp.responseText);
+			} catch (e) {
+				if (xmlHttp.responseText) {
+					if (zenarioA.init) {
+						zenarioA.floatingBox(xmlHttp.responseText, true, 'error');
+					} else {
+						alert(xmlHttp.responseText);
+					}
+				}
+			}
+		}
+	};
+	
+	//An easy-as-possible drop-in replacement for zenario.nonAsyncAJAX(), which is now deprecated.
+	//It returns a zenario.callback object.
+		//url: The URL of the request
+		//post: Pass some POST requests in here to use POST. Or set to true to use POST without any POST requests.
+		//json: Set to true to decode a JSON response
+		//useCache: Store the response in the session cache, and use the cached results next time.
+			//Won't apply to POST requests.
+			//The cache results are cleared automatically if the data_rev in the database changes.
+		//retry: If there's an error, show a "retry" button on the error message.
+			//Only works in admin mode.
+			//Can be a function to call, or true to recall this function
+		//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
+	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings) {
+		url = zenario.addBasePath(url);
+		
+		var qMark, name, setting, options,
+			type = post? 'POST' : 'GET',
+			result = false,
+			aborted = false,
+			hadErrorAndHandledIt = false,
+			cb = new zenario.callback,
+			oldDataRevisionNumber = zenario.dataRev(),
+			
+			//If the request is a success, note down the data.
+			success = function(data) {
+				if (aborted) return;
+				result = data;
+			},
+			
+			//If there was an error, attempt to handle it
+			error = function(resp, statusType, statusText) {
+				if (aborted) return;
+				
+				if (zenarioA.AJAXErrorHandler) {
+					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
+					hadErrorAndHandledIt = true;
+				}
+			},
+			
+			//Call this function when we have the data and need to return it
+			complete = function() {
+				if (aborted || hadErrorAndHandledIt) return;
+				
+				var parsedResult = false;
+				
+				//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
+				if (json) {
+					//If this is admin mode, try to use zenarioA.readData() as that has some error-handling built in
+					if (zenarioA.readData) {
+						if (!(parsedResult = zenarioA.readData(result, undefined, undefined, retry))) {
+							return;
+						}
+					
+					//Otherwise just use JSON.parse() and alert() to handle the errors
+					} else {
+						try {
+							parsedResult = JSON.parse(result);
+						} catch (e) {
+							if (result) {
+								alert(result);
+							}
+							return;
+						}
+					}
+			
+					cb.call(parsedResult);
+				} else {
+					cb.call(result);
+				}
+				
+				//If we were supposed to be using the cache, remember this result for next time
+				if (useCache) {
+					zenario.setSessionStorage(result, url);
+				}
+			},
+			
+			//Call this function to trigger the AJAX request
+			doRequest = function() {
+				result = false;
+				aborted = false;
+				hadErrorAndHandledIt = false;
+				
+				//Check to see if the caller took the time to seperate the two different inputs out,
+				//or if they have dumped them all into the url
+				if (post === true) {
+					//If post has just been set to true, try to check the url for the actual inputs!
+					qMark = url.indexOf('?');
+		
+					if (qMark == -1) {
+						//Case where POST must be used, but there are not actually any requests
+						post = '';
+					} else {
+						//Get variables from the URL and put them in the POST
+						post = url.substr(qMark+1);
+						url = url.substr(0, qMark);
+					}
+				}
+				
+				options = {
+					data: post,
+					type: type,
+					dataType: 'text',
+					success: success,
+					error: error,
+					complete: complete
+				}
+				
+				// Add any extra settings
+				if (settings !== undefined) {
+					foreach (settings as name => setting) {
+						options[name] = setting;
+					}
+				}
+				
+				//Do the AJAX request
+				var req = $.ajax(url, options);
+				req.zenario_retry = retry;
+				
+				//Set a timeout on the request. If the timeout expires, we'll either retry or just give in
+				//if retry is not specified.
+				if (timeout) {
+					setTimeout(function() {
+						if (req.readyState < 4) {
+							if (retry) {
+								aborted = true;
+								req.abort();
+								timeout *= 2;
+								retry();
+							} else {
+								req.abort();
+							}
+						}
+					}, timeout);
+				}
+			};
+		
+		if (retry === true) {
+			retry = doRequest;
+		}
+		
+		//For GET requests, should we try using the cache in the session storage?
+		if (useCache && oldDataRevisionNumber && !post) {
+			//Don't do anything if no_cache is set in the URL
+			if (url.indexOf('no_cache') != -1) {
+				var test = url.split(/&|\?/g);
+				foreach (test as var t) {
+					if (test[t] == 'no_cache') {
+						useCache = false;
+					} else if (test[t].substr(0, 9) == 'no_cache=' && engToBoolean(test[t].substr(9))) {
+						useCache = false;
+					}
+				}
+			}
+		
+			//Look for this request in the session storage
+			if (useCache) {
+				var name = zenario.userId + '_' + zenario.adminId + '_' + url,
+					store = zenario.sGetItem(true, name);
+				
+				//If we found it then we'll need to look up the current data revision number to see if it was in-date.
+				//(We'll also need to look it up if we never knew it in the first place!)
+				if (store || !oldDataRevisionNumber) {
+					zenario.checkDataRevisionNumber(true, function() {
+						var currentDataRevisionNumber = zenario.dataRev();
+						
+						//If we didn't find it, or what we found was out of date, we still need to look it up again.
+						//Also, if it was out of date, we need to clear everything else out!
+						if (oldDataRevisionNumber !== currentDataRevisionNumber) {
+							doRequest();
+						
+						} else if (!store) {
+							doRequest();
+						
+						//Otherwise we can use the cached value!
+						} else {
+							result = store;
+							useCache = false;
+							complete();
+						}
+					
+					});
+					return cb;
+				}
+			}
+		}
+		
+		//If we didn't use the cache above, run the function now
+		doRequest();
+		return cb;
+	};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //Listen out for changes to the hash on the URL, to add support for browser back buttons and AJAX reloading
 zenario.currentHash = '';
@@ -439,7 +691,8 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 		
 		if (fadeOutAndIn && !zenario.colorboxOpen) {
 			//Fade the slot out to give a graphical hint that something is happening
-			$('#plgslt_' + slotName).stop(true, true).animate({opacity: .5}, 200);
+			var fadeOutAndInSelector = (fadeOutAndIn === 1 || fadeOutAndIn === true) ? ('#plgslt_' + slotName) : fadeOutAndIn;
+			$(fadeOutAndInSelector).stop(true, true).animate({opacity: .5}, 200);
 		}
 		
 		if ($el.attr('method') == 'post') {
@@ -1472,6 +1725,30 @@ if (!Math.log10) {
 		return Math.log(n) / Math.log(10);
 	};
 }
+
+
+//Functions for TinyMCE
+
+//A hack to try and remove some of the bad/repeated html that TinyMCE sometimes generates,
+//e.g. duplicate id/style tags
+zenario.tinyMCEGetContent = function(editor) {
+	var html,
+		$html = $('<div/>').html(editor.getContent());
+	
+	//Bugfix for task #9380 "Problem where some of the CMS' <div>s had been entered into a WYSIWYG Editor"
+	$html.find('[id^="plgslt_"]').each(function(i, el) {
+		 $(el).removeAttr('id class style');
+	});
+	
+	html = $html.html();
+	
+	//Fix for request #2908 "Bug with WYSIWYG Editor: You can't delete an empty <h1> tag"
+	if (html == '<h1>&nbsp;</h1>') {
+		html = '';
+	}
+	
+	return html;
+};
 
 
 

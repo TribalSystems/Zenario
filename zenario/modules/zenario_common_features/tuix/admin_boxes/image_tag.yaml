@@ -7,6 +7,7 @@ zenario_image_tag:
     hide_tab_bar: true
     max_height: 175
     title: Creating a tag
+    title_for_existing_records: 'Editing the tag "[[details/name]]".'
     tabs:
         details:
             edit_mode:

@@ -31,7 +31,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $forumMessage = getRow(ZENARIO_FORUM_PREFIX. "user_posts", array('message_text', 'poster_id'), array('id' => $postId));
 
 $userId = $forumMessage['poster_id'];
-$messageText = $forumMessage['message_text'];
 
 
 $formFields = array(
@@ -41,7 +40,7 @@ $formFields = array(
 			$this->forum['forum_content_id'], $this->forum['forum_content_type'], true,
 			'', false, false, true),
 	'forum_title' => getItemTitle($this->forum['forum_content_id'], $this->forum['forum_content_type']),
-	'message' => $messageText,
+	'message' => $forumMessage['message_text'],
 	'thread_link' =>
 		linkToItem(
 			$this->forum['thread_content_id'], $this->forum['thread_content_type'], true,
@@ -64,7 +63,10 @@ if ($this->setting('send_notification_email')
 		$newThreadTitle === false?
 			$this->setting('post_notification_email_template')
 		 :	$this->setting('new_thread_notification_email_template'),
-		$formFields);
+		$formFields,
+		array(),
+		array(),
+		array('message' => true));
 }
 
 
@@ -106,7 +108,10 @@ if ($newPost
 				$newThreadTitle === false?
 					$this->setting('post_subs_email_template')
 				 :	$this->setting('new_thread_subs_email_template'),
-				$formFields);
+				$formFields,
+				array(),
+				array(),
+				array('message' => true));
 			
 			updateRow(
 				ZENARIO_COMMENTS_PREFIX. 'user_subscriptions',

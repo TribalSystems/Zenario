@@ -1,0 +1,4 @@
+<tr class="crm_value">
+	<td><input type="text" disabled readonly value="{{m.label|e}}"/></td>
+	<td><input type="text" name="crm_value_{{m.id|e}}" value="<% if (m.crm_value === undefined) { %>{{m.label|e}}<% } else { %>{{m.crm_value|e}}<% } %>" class="crm_value_input" data-id="{{m.id|e}}"/></td>
+</tr>

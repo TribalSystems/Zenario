@@ -33,7 +33,9 @@ class zenario_common_features__organizer__skin_files extends module_base_class {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__layouts/panels/skin_files') return;
 		
-		checkForChangesInCssJsAndHtmlFiles();
+		if (in($mode, 'full', 'quick', 'select')) {
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

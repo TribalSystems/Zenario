@@ -54,7 +54,7 @@ zenario_quick_create:
                             $('#row__template_id input.launch_keeper').removeClass('submit_disabled');
                             $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
                             $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
-                            $('#zenarioAFB_save').removeClass('submit_disabled').removeAttr('disabled');
+                            $('#zenario_fabSave').removeClass('submit_disabled').removeAttr('disabled');
                         }
                     post_field_html: |
                         <label for="quick_create">
@@ -112,7 +112,7 @@ zenario_quick_create:
                     ord: 60
                     label: 'Layout:'
                     pick_items:
-                        path: zenario__content/panels/content_types/hidden_nav/layouts//html//
+                        path: zenario__layouts/panels/layouts/refiners/content_type//html//
                         target_path: zenario__layouts/panels/layouts
                         min_path: zenario__layouts/panels/layouts
                         max_path: zenario__layouts/panels/layouts
@@ -135,7 +135,7 @@ zenario_quick_create:
                             $('#row__template_id input.launch_keeper').addClass('submit_disabled');
                             $('#more_options_button_content').removeClass('submit_disabled').removeAttr('disabled');
                             $('#more_options_button_menu').addClass('submit_disabled').attr('disabled', 'disabled');
-                            $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#zenario_fabSave').addClass('submit_disabled').attr('disabled', 'disabled');
                         }
                     post_field_html: |
                         <label for="more_options_content">
@@ -171,7 +171,7 @@ zenario_quick_create:
                             $('#row__template_id input.launch_keeper').addClass('submit_disabled');
                             $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
                             $('#more_options_button_menu').removeClass('submit_disabled').removeAttr('disabled');
-                            $('#zenarioAFB_save').addClass('submit_disabled').attr('disabled', 'disabled');
+                            $('#zenario_fabSave').addClass('submit_disabled').attr('disabled', 'disabled');
                         }
                     post_field_html: |
                         <label for="more_options_menu">

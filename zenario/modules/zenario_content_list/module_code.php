@@ -248,7 +248,11 @@ class zenario_content_list extends module_base_class {
 					$item['Sticky_Image_Src'] = $url;
 					$item['Sticky_Image_Width'] = $width;
 					$item['Sticky_Image_Height'] = $height;
+					$item['Sticky_image_class_name']="sticky_image";
+				}else{
+					$item['Sticky_image_class_name']="sticky_image_placeholder";
 				}
+
 				
 				$this->getStyledExtensionIcon(pathinfo($row['filename'], PATHINFO_EXTENSION), $item);
 					
@@ -309,7 +313,7 @@ class zenario_content_list extends module_base_class {
 			$this->lookForContentSelect().
 			$sql.
 			$this->orderContentBy().
-			paginationLimit($this->page, $this->setting('page_size'));
+			paginationLimit($this->page, $this->setting('page_size'), $this->setting('offset'));
 		
 		return sqlQuery($sql);
 	}
@@ -404,6 +408,7 @@ class zenario_content_list extends module_base_class {
 			}
 		}
 		
+		
 		$this->framework(
 			'Outer', 
 			array(
@@ -431,7 +436,7 @@ class zenario_content_list extends module_base_class {
 				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),
-				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
+				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items')
 			)
 		);
 		
@@ -498,15 +503,15 @@ class zenario_content_list extends module_base_class {
 		
 		$this->fillAdminSlotControlsShowFilterSettings($controls, $key);
 		
-		if (checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
-			$controls['actions']['create_a_content_item'] = array(
-				'ord' => 50,
-				'label' => adminPhrase('Create a Content Item'),
-				'page_modes' => array('edit' => true),
-				'onclick' => "
-					zenarioAB.open('zenario_content', ". json_encode($key). ");
-					return false;");
-		}
+		//if (checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
+		//	$controls['actions']['create_a_content_item'] = array(
+		//		'ord' => 50,
+		//		'label' => adminPhrase('Create a Content Item'),
+		//		'page_modes' => array('edit' => true),
+		//		'onclick' => "
+		//			zenarioAB.open('zenario_content', ". json_encode($key). ");
+		//			return false;");
+		//}
 		
 	}
 	

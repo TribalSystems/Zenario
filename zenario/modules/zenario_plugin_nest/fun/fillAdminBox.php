@@ -63,7 +63,7 @@ switch ($path) {
 								array('nest' => htmlspecialchars($instance['instance_name'])));
 		}
 		
-		$box['tabs']['tab']['fields']['tab']['value'] = $details['tab'];
+		$box['identifier']['value'] = $details['tab'];
 		$box['tabs']['tab']['fields']['name_or_title']['value'] = $details['name_or_title'];
 		
 		break;

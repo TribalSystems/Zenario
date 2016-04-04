@@ -278,6 +278,26 @@ plugin_settings:
                         show_start_and_end_date:
                             label: Show start and end date
                     value: show_start_and_end_date
+                    format_onchange: Yes
+                date_format:
+                    visible_if: "zenarioAB.value('date_display') != 'dont_show'"
+                    plugin_setting:
+                        name: date_format
+                    label: 'Date format:'
+                    type: radios
+                    value: _MEDIUM
+                    values:
+                        _SHORT:
+                            ord: "1"
+                            label: Short
+                        _MEDIUM:
+                            ord: "2"
+                            label: Medium
+                        _LONG:
+                            ord: "3"
+                            label: Long
+                    requires: show_dates
+                    indent: 1
                 time_display:
                     label: 'Time display:'
                     plugin_setting:
@@ -294,6 +314,33 @@ plugin_settings:
         pagination:
             label: Pagination
             fields:
+                offset:
+                    plugin_setting:
+                        name: offset
+                    label: 'Offset results:'
+                    type: select
+                    values:
+                        0: 
+                            label: "No offset"
+                            ord: 0
+                        1: "1"
+                        2: "2"
+                        3: "3"
+                        4: "4"
+                        5: "5"
+                        6: "6"
+                        7: "7"
+                        8: "8"
+                        9: "9"
+                        10: "10"
+                        10: "11"
+                        12: "12"
+                        15: "15"
+                        20: "20"
+                        50: "50"
+                    value: "0"
+                    side_below: >
+                        e.g. if you select 1 your results will start from the 2nd resulting event
                 page_size:
                     plugin_setting:
                         name: page_size

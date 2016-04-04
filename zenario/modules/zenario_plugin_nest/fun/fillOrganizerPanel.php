@@ -59,7 +59,7 @@ switch ($path) {
 			$item['traits'] = array();
 			if ($item['is_tab']) {
 				$item['traits']['is_tab'] = true;
-				$item['css_class'] = 'tab';
+				$item['css_class'] = 'zenario_nest_tab';
 			} else {
 				$item['traits']['is_not_tab'] = true;
 				

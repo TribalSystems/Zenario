@@ -338,14 +338,18 @@ class zenario_extranet extends module_base_class {
 			case 'plugin_settings':
 				$defaultLangId = setting('default_language');
 				
-				setRow("visitor_phrases", array("local_text" => $values['email_address_required_error_text']), array("code" => "_ERROR_EXTRANET_EMAIL", "language_id" => $defaultLangId));
-				setRow("visitor_phrases", array("local_text" => $values['password_required_error_text']), array("code" => "_ERROR_EXTRANET_PASSWORD", "language_id" => $defaultLangId));
-				
-				setRow("visitor_phrases", array("local_text" => $values['invalid_email_error_text']), array("code" => "_ERROR_INVALID_EXTRANET_EMAIL", "language_id" => $defaultLangId));
-				setRow("visitor_phrases", array("local_text" => $values['screen_name_required_error_text']), array("code" => "_ERROR_EXTRANET_SCREEN_NAME", "language_id" => $defaultLangId));
-				
-				setRow("visitor_phrases", array("local_text" => $values['no_new_password_error_text']), array("code" => "_ERROR_NEW_PASSWORD", "language_id" => $defaultLangId));
-				setRow("visitor_phrases", array("local_text" => $values['no_new_repeat_password_error_text']), array("code" => "_ERROR_REPEAT_NEW_PASSWORD", "language_id" => $defaultLangId));
+				foreach (array(
+					'error_messages/invalid_email_error_text' => '_ERROR_INVALID_EXTRANET_EMAIL',		
+					'error_messages/screen_name_required_error_text' => '_ERROR_EXTRANET_SCREEN_NAME',		
+					'error_messages/email_address_required_error_text' => '_ERROR_EXTRANET_EMAIL',			
+					'error_messages/password_required_error_text' => '_ERROR_EXTRANET_PASSWORD',		
+					'error_messages/no_new_password_error_text' => '_ERROR_NEW_PASSWORD',
+					'error_messages/no_new_repeat_password_error_text' => '_ERROR_REPEAT_NEW_PASSWORD'
+				) as $fieldName => $code) {
+					if (isset($fields[$fieldName])) {
+						setRow('visitor_phrases', array('local_text' => $values[$fieldName]), array('code' => $code, 'language_id' => $defaultLangId));
+					}
+				}
 				
 				break;
 		}

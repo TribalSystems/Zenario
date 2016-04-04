@@ -191,6 +191,8 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 						 || !engToBooleanArray($tab, 'edit_mode', 'on')
 						 || engToBooleanArray($field, 'read_only');
 						
+						$currentValue = $readOnly? 'value' : 'current_value';
+						
 						if (isset($field['value']) && is_array($field['value'])) {
 							unset($field['value']);
 						}
@@ -198,8 +200,13 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 							unset($field['current_value']);
 						}
 						
-						if (!isset($field[$readOnly? 'value' : 'current_value'])) {
-							$field[$readOnly? 'value' : 'current_value'] = '';
+						if (!isset($field[$currentValue])) {
+							$field[$currentValue] = '';
+						
+						//Make sure that checkboxes are either 0 or 1, and catch the case where zeros were
+						//being treated as strings (which is bad because '0' == true in JavaScript).
+						} elseif (isset($field['type']) && $field['type'] == 'checkbox') {
+							$field[$currentValue] = engToBoolean($field[$currentValue]);
 						}
 						
 						//Logic for Multiple-Edit
@@ -219,64 +226,20 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 					
 					$fields[$tabName. '/'. $fieldName] = &$tab['fields'][$fieldName];
 					if ($isField) {
-						$values[$tabName. '/'. $fieldName] = &$tab['fields'][$fieldName][$readOnly? 'value' : 'current_value'];
+						$values[$tabName. '/'. $fieldName] = &$tab['fields'][$fieldName][$currentValue];
 						$changes[$tabName. '/'. $fieldName] = $changed;
 					}
 					
 					if (!isset($fields[$fieldName])) {
 						$fields[$fieldName] = &$tab['fields'][$fieldName];
 						if ($isField) {
-							$values[$fieldName] = &$tab['fields'][$fieldName][$readOnly? 'value' : 'current_value'];
+							$values[$fieldName] = &$tab['fields'][$fieldName][$currentValue];
 							$changes[$fieldName] = $changed;
 						}
 					}
 					
 					if ($isField) {
-						//If this field is for an equivalence, make sure it shows the Content Item in the current language when being displayed
-						//And also make sure that it is in the Default Language when it is saved
-						if (engToBooleanArray($field, 'pick_items', 'equivalence')) {
-							//Try to guess what language this should be in
-							if (!$preDisplay) {
-								$langIdToUse = setting('default_language');
-							} else {
-								$langIdToUse = ifNull(arrayKey($box, 'key', 'languageId'), setting('default_language'));
-								
-								//Attempt to change the opening path to the correct path for the language. But only do this if we recognise the format.
-								if (empty($field['pick_items']['path']) || $field['pick_items']['path'] == 'zenario__content/panels/language_equivs') {
-									$field['pick_items']['path'] = 'zenario__content/panels/languages/item//'. $langIdToUse. '//collection_buttons/equivs////';
-								}
-							}
-							
-							//Attempt to convert the chosen Content Item to the correct language equivalent
-							foreach (array('', '_') as $u) {
-								if (isset($field[$u. 'value'])) {
-									$cID = $field[$u. 'value'];
-									$cType = false;
-									if (langEquivalentItem($cID, $cType, $langIdToUse)) {
-										if ($field[$u. 'value'] != $cType. '_'. $cID) {
-											$field[$u. 'value'] = $cType. '_'. $cID;
-										}
-									}
-								}
-							}
-						
-						} elseif (engToBooleanArray($field, 'pick_items', 'by_language')) {
-							//Try to guess what language this should be in
-							if ($preDisplay) {
-								if (!empty($values[$tabName. '/'. $fieldName]) && $langIdToUse = getRow('content_items', 'language_id', array('tag_id' => $values[$tabName. '/'. $fieldName]))) {
-								
-								} else {
-									$langIdToUse = ifNull(arrayKey($box, 'key', 'languageId'), setting('default_language'));
-								}
-								
-								//Attempt to change the opening path to the correct path for the language. But only do this if we recognise the format.
-								if (empty($field['pick_items']['path']) || substr($field['pick_items']['path'], 0, 26) == 'zenario__content/panels/languages') {
-									$field['pick_items']['path'] = 'zenario__content/panels/languages/item//'. $langIdToUse. '//';
-								}
-							}
-						
 						//Editor fields will need the addImageDataURIsToDatabase() run on them
-						} else
 						if (isset($field['current_value'])
 						 && arrayKey($box, 'tabs', $tabName, 'fields', $fieldName, 'type')  == 'editor'
 						 && !empty($box['tabs'][$tabName]['fields'][$fieldName]['insert_image_button'])) {
@@ -463,9 +426,12 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 //Sync updates from the server to the array stored on the client
 function syncAdminBoxFromServerToClient($serverTags, $clientTags, &$output) {
 	
-	$keys = array_merge(arrayValuesToKeys(array_keys($serverTags)), arrayValuesToKeys(array_keys($clientTags)));
+	$keys = arrayValuesToKeys(array_keys($serverTags));
+	foreach ($clientTags as $key0 => &$dummy) {
+		$keys[$key0] = true;
+	}
 	
-	foreach ($keys as $key0 => $dummy) {
+	foreach ($keys as $key0 => &$dummy) {
 		if (!isset($serverTags[$key0])) {
 			$output[$key0] = array('[[__unset__]]' => true);
 		
@@ -496,7 +462,7 @@ function syncAdminBoxFromServerToClient($serverTags, $clientTags, &$output) {
 	}
 }
 
-function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $storekeeperQueryIds = false, $storekeeperQueryDetails = false) {
+function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $organizerQueryIds = false, $organizerQueryDetails = false) {
 	
 	$modules_loaded = array();
 	if (!empty($modules)) {
@@ -508,8 +474,8 @@ function displayDebugMode(&$tags, &$modules, &$moduleFilesLoaded, $tagPath, $sto
 		'tag_path' => substr($tagPath, 1),
 		'modules_loaded' => $modules_loaded,
 		'modules_files_loaded' => $moduleFilesLoaded,
-		'organizer_query_ids' => $storekeeperQueryIds,
-		'organizer_query_details' => $storekeeperQueryDetails
+		'organizer_query_ids' => $organizerQueryIds,
+		'organizer_query_details' => $organizerQueryDetails
 	);
 	
 	header('Content-Type: text/javascript; charset=UTF-8');

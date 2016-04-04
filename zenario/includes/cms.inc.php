@@ -131,7 +131,7 @@ function showCookieConsentBox() {
 	//Add the login link for admins if this looks like a logged out admin
 	if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
 	 && !checkPriv()
-	 && setting('admin_domain_is_public')) { 
+	 && setting('admin_domain_is_public')) {
 		
 		$url =
 			(setting('admin_use_ssl')? 'https://' : httpOrhttps()).
@@ -507,16 +507,22 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 	$type = explode('.', $path);
 	$type = $type[count($type) - 1];
 	
+	if (!file_exists($path)) {
+		echo 'Could not find file '. $path;
+		exit;
+	}
+	
 	//Attempt to use a cached copy of this TUIX file
 		//JSON is a lot faster to read than the other formats, so for speed purposes we create cached JSON copies of files
+	$filemtime = false;
 	$cachePath = false;
 	if ($useCache || $updateCache) {
 		$cachePath = tuixCacheDir($path);
 	}
 	if ($useCache && $cachePath
-	 && file_exists($path)
-	 && file_exists($cachePath)
-	 && filemtime($cachePath) > filemtime($path)
+	 && ($filemtime = filemtime($path))
+	 && (file_exists($cachePath))
+	 && (filemtime($cachePath) == $filemtime)
 	 && ($tags = json_decode(file_get_contents($cachePath), true))) {
 		return $tags;
 	}
@@ -535,8 +541,32 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 		case 'yml':
 		case 'yaml':
 			
+			//Check to see if the file is actually there
+			if (!file_exists($path)) {
+				//T10201: Add a workaround to fix an occasional bug where the tuix_file_contents table is out of date
+				//Try to catch the case where the file was deleted in the filesystem but
+				//not from the tuix_file_contents table, and we've not noticed this yet
+				if (cms_core::$lastDB
+				 && cms_core::$lastDB == cms_core::$localDB) {
+				 	
+				 	//Look for bad rows from the table
+					$sql = "
+						DELETE FROM ". DB_NAME_PREFIX. "tuix_file_contents
+						WHERE '". sqlEscape($path). "' LIKE CONCAT('%modules/', module_class_name, '/tuix/', type, '/', filename)";
+					
+					//If we found any, delete them and flag that the cache table might be out of date
+					if ($affectedRows = sqlUpdate($sql, false)) {
+						setSetting('yaml_files_last_changed', '');
+						
+						//Attempt to continue normally
+						return array();
+					}
+				}
+			}
+			
 			$contents = file_get_contents($path);
 			
+			//If it was missing or unreadable, display an error and then exit.
 			if ($contents === false) {
 				echo 'Could not read file '. $path;
 				exit;
@@ -601,6 +631,10 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 	if ($updateCache && $cachePath) {
 		@file_put_contents($cachePath, json_encode($tags));
 		@chmod($cachePath, 0666);
+		
+		if ($filemtime) {
+			@touch($cachePath, $filemtime);
+		}
 	}
 	
 	return $tags;
@@ -1159,44 +1193,20 @@ function addFieldToSQL(&$sql, $table, $field, $values, $editing, $details = arra
 
 
 
-function getAllContentTypes() {
-	$sql = "SELECT content_type_id
-			FROM ".DB_NAME_PREFIX."content_types
-			ORDER BY content_type_id";
-	$result = sqlQuery($sql);
-
-	while ($row = sqlFetchArray ($result)) {
-		$types[] = $row['content_type_id'];
-	}
-	return $types;
-}
-
-function getContentTypes($contentType=0) {
-	$sql = "SELECT content_type_id,
-				content_type_name_en,
-				default_layout_id
-		FROM ".DB_NAME_PREFIX."content_types";
+function getContentTypes($contentType = false, $onlyCreatable = false) {
 	
+	$key = array();
 	if ($contentType) {
-		$sql .= " WHERE content_type_id = '" . sqlEscape($contentType) . "'";
+		$key['content_type_id'] = $contentType;
 	}
-	
-	$sql .= " ORDER BY content_type_id";
-	
-	$result = sqlQuery($sql);
-	$contentTypes = array();
-	while ($row = sqlFetchArray ($result)) {
-		array_push( $contentTypes, $row ) ;
+	if ($onlyCreatable) {
+		$key['is_creatable'] = true;
 	}
-	return $contentTypes;
+	return getRowsArray('content_types', array('content_type_id', 'content_type_name_en', 'default_layout_id'), $key, 'content_type_id');
 }
 
 function getContentTypeName($cType) {
 	return getRow('content_types', 'content_type_name_en', $cType);
-}
-
-function getContentTypeDetails($cType) {
-	return getRow('content_types', true, $cType);
 }
 
 function getTemplateDetails($layoutId) {
@@ -2880,7 +2890,6 @@ function showAdminAddMenuItem($sectionId, $language, $parentMenuId) {
 function linkToItem(
 	$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 	$autoAddImportantRequests = false, $useAliasInAdminMode = false,
-	$usePrimaryDomain = false, $returnAliasAndLanguageCode = false,
 	$equivId = false, $languageId = false
 ) {
 	
@@ -2890,7 +2899,8 @@ function linkToItem(
 		getCIDAndCTypeFromTagId($cID, $cType, $tagId);
 	}
 	
-	//In 6.1, we're no longer allowing this function to be called with a non-numeric alias or other bad data
+	//From version 6.1 onwards, we're no longer allowing this function to be called
+	//by placing the alias in the $cID variable
 	if (!$cID || !is_numeric($cID) || !$cType) {
 		return false;
 	}
@@ -2977,20 +2987,19 @@ function linkToItem(
 	}
 	
 	//On multi-lingual sites, use a language-specific domain if one is set up
-	if ($useAlias && $multilingual) {
-		if (!empty(cms_core::$langs[$languageId]['domain'])) {
-			$domain = cms_core::$langs[$languageId]['domain'];
-		
-			//If we're using a language specific domain, we don't need to add the language code into the URL later
-			$langSpecificDomain = true;
-		
-		//Catch the case where we were on a language specific domain but need to change back to a
-		//language without a language specific name
-		} else {
-			$usePrimaryDomain = true;
-		}
-	}
+	if ($useAlias && $multilingual && !empty(cms_core::$langs[$languageId]['domain'])) {
+		$domain = cms_core::$langs[$languageId]['domain'];
 	
+		//If we're using a language specific domain, we don't need to add the language code into the URL later
+		$langSpecificDomain = true;
+	
+	//Always try to use the admin domain in admin mode
+	} elseif ($adminMode && !$useAlias && ($adminDomain = setting('admin_domain'))) {
+		$domain = $adminDomain;
+
+	} else {
+		$domain = primaryDomain();
+	}
 	
 	//If there is nothing in the request then links to the homepage
 	//should always use just the domain name (with maybe the language code for multilingual sites)
@@ -3001,16 +3010,10 @@ function linkToItem(
 		$returnSlashForHomepage = true;
 	}
 	
-	if ($fullPath) {
-		//Always try to use the admin domain in admin mode
-		if ($adminMode
-		 && !$useAlias
-		 && ($adminDomain = setting('admin_domain'))) {
-			$domain = $adminDomain;
-	
-		} elseif (!$domain) {
-			$domain = primaryDomain();
-		}
+	//If this isn't the correct domain, use the full path to switch to it
+	if ($fullPath
+	 || empty($_SERVER['HTTP_HOST'])
+	 || ($domain && $domain != $_SERVER['HTTP_HOST'])) {
 		
 		$fullPath = httpOrHttps(). $domain. SUBDIRECTORY;
 	} else {
@@ -3062,21 +3065,13 @@ function linkToItem(
 			
 			//If we're not allowed slashes in the URL, and we need to add the language code,
 			//add it to the end after a comma.
-			if ($needToUseLangCode && ($returnAliasAndLanguageCode || !$mod_rewrite_slashes)) {
+			if ($needToUseLangCode && !$mod_rewrite_slashes) {
 				$aliasOrCID .= ','. $languageId;
 			}
 		}
 		
 	} else {
 		$aliasOrCID = $cType. '_'. $cID;
-	}
-	
-	if ($returnAliasAndLanguageCode) {
-		if (!$usingAlias) {
-			return false;
-		} else {
-			return $aliasOrCID;
-		}
 	}
 	
 	//If enabled in the site settings, attempt to add the full menu tree into the friendly URL
@@ -3338,31 +3333,62 @@ function getDatasetFieldsDetails($dataset) {
 	return $out;
 }
 
-function getDatasetFieldValue($recordId, $field, $dataset = false) {
-	if (($field = getDatasetFieldDetails($field, $dataset))
-	 && ($dataset = getDatasetDetails(ifNull($dataset, $field['dataset_id'])))) {
-		if ($field['is_system_field']) {
-			if ($field['db_column']) {
-				return getRow($dataset['system_table'], $field['db_column'], $recordId);
-			}
-		} else {
-			if ($field['type'] == 'checkboxes') {
-				$values = getDatasetFieldLOV($field, false);
-				return inEscape(
-						getRowsArray(
-							'custom_dataset_values_link',
-							'value_id',
-							array(
-								'linking_id' => $recordId,
-								'value_id' => array_keys($values))),
-						'numeric');
-			} else {
-				return getRow($dataset['table'], $field['db_column'], $recordId);
-			}
-		}
+function getDatasetFieldValue($recordId, $cfield, $dataset = false) {
+	if (!is_array($cfield)) {
+		$cfield = getDatasetFieldDetails($cfield, $dataset);
+	}
+	if (!$cfield) {
+		return false;
+	}
+	if (empty($dataset)) {
+		$dataset = getDatasetDetails($cfield['dataset_id']);
+	}
+	if (!$dataset) {
+		return false;
 	}
 	
-	return false;
+	if ($cfield['is_system_field']) {
+		if ($cfield['db_column']) {
+			return getRow($dataset['system_table'], $cfield['db_column'], $recordId);
+		}
+	
+	} else {
+		//Checkbox values are stored in the custom_dataset_values_link table
+		if ($cfield['type'] == 'checkboxes') {
+			
+			if (!isset($cfield['values'])) {
+				$cfield['values'] = getDatasetFieldLOV($cfield, false);
+			}
+			
+			if (empty($cfield['values'])) {
+				return '';
+			} else {
+				return inEscape(
+					getRowsArray(
+						'custom_dataset_values_link',
+						'value_id',
+						array(
+							'linking_id' => $recordId,
+							'value_id' => array_keys($cfield['values']))),
+					'numeric');
+			}
+		
+		//For file pickers, load file ids from the custom_dataset_files_link table
+		} elseif ($cfield['type'] == 'file_picker') {
+			return inEscape(
+				getRowsArray(
+					'custom_dataset_files_link',
+					'file_id',
+					array(
+						'dataset_id' => $dataset['id'],
+						'field_id' => $cfield['id'],
+						'linking_id' => $recordId)),
+				'numeric');
+		
+		} else {
+			return getRow($dataset['table'], $cfield['db_column'], $recordId);
+		}
+	}
 }
 
 //Checkboxes are stored in the custom_dataset_values_link table as there could be more than one of them.
@@ -3400,6 +3426,81 @@ function updateDatasetCheckboxField($datasetId, $fieldId, $linkingId, $values) {
 	}
 	
 	sqlQuery($sql);
+}
+
+//As above, but for picked files
+function updateDatasetFilePickerField($datasetId, $cField, $linkingId, $values) {
+	if (!is_array($values)) {
+		$values = explodeAndTrim($values);
+	}
+	if (!is_array($cField)) {
+		$cField = getRow('custom_dataset_fields', array('id', 'store_file', 'multiple_select'), $cField);
+	}
+	
+	//Loop through making sure that the selected values are in the database.
+	$selectedIds = array();
+	foreach ($values as $id) {
+		if ($id) {
+			
+			if ($location = getPathOfUploadedFileInCacheDir($id)) {
+				$id = addFileToDatabase(
+					'dataset_file', $location,
+					$filename = false, $mustBeAnImage = false, $deleteWhenDone = false,
+					$addToDocstoreDirIfPossible = $cField['store_file'] == 'in_docstore'
+				);
+			}
+			
+			$selectedIds[$id] = $id;
+			setRow(
+				'custom_dataset_files_link',
+				array(),
+				array(
+					'dataset_id' => $datasetId,
+					'field_id' => $cField['id'],
+					'linking_id' => $linkingId,
+					'file_id' => $id
+			));
+			
+			if (!$cField['multiple_select']) {
+				break;
+			}
+		}
+	}
+	
+	//Remove any values from the database that *weren't* selected
+	$sql = "
+		DELETE
+		FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+		WHERE dataset_id = ". (int) $datasetId. "
+		  AND field_id = ". (int) $cField['id']. "
+		  AND linking_id = ". (int) $linkingId;
+	
+	if (!empty($selectedIds)) {
+		$sql .= "
+		  AND file_id NOT IN (". inEscape($selectedIds, 'numeric'). ")";
+	}
+	
+	if (sqlQuery($sql)) {
+		removeUnusedDatasetFiles();
+	}
+}
+
+//Delete any dataset files from the system that are now not used anywhere
+function removeUnusedDatasetFiles() {
+
+	$sql = "
+		SELECT f.id
+		FROM ". DB_NAME_PREFIX. "files AS f
+		LEFT JOIN ". DB_NAME_PREFIX. "custom_dataset_files_link AS cdfl
+		   ON cdfl.file_id = f.id
+		WHERE f.`usage` = 'dataset_file'
+		  AND cdfl.file_id IS NULL
+		GROUP BY f.id";
+	
+	$result = sqlSelect($sql);
+	while ($file = sqlFetchAssoc($result)) {
+		deleteFile($file['id']);
+	}
 }
 
 
@@ -3449,6 +3550,20 @@ function getDatasetFieldLOV($field, $flat = true) {
 				cms_core::$dbupCurrentRevision = false;
 			}
 		}
+	
+	} elseif (chopPrefixOffOfString($field['type'], 'dataset_')) {
+		if ($labelDetails = getDatasetLabelFieldDetails($field['dataset_foreign_key_id'])) {
+			
+			$lov = getRowsArray($labelDetails['table'], $labelDetails['db_column'], array(), $labelDetails['db_column']);
+			
+			if (!$flat) {
+				$ord = 0;
+				foreach ($lov as &$v) {
+					$v = array('ord' => ++$ord, 'label' => $v);
+				}
+			}
+		}
+	
 	} else {
 		if ($flat) {
 			$cols = 'label';
@@ -3479,6 +3594,13 @@ function countDatasetFieldRecords($field, $dataset = false) {
 				ON vl.value_id = fv.id
 				WHERE fv.field_id = ". (int) $field['id'];
 		
+		} elseif ($field['type'] == 'file_picker') {
+			$sql = "
+				SELECT COUNT(DISTINCT linking_id)
+				FROM ". DB_NAME_PREFIX. "custom_dataset_files_link
+				WHERE dataset_id = ". (int) $dataset['id']. "
+				  AND field_id = ". (int) $field['id'];
+		
 		} elseif (in($field['type'], 'checkbox', 'group', 'radios', 'select')) {
 			$sql = "
 				SELECT COUNT(*)
@@ -3500,6 +3622,32 @@ function countDatasetFieldRecords($field, $dataset = false) {
 	} else {
 		return false;
 	}
+}
+
+function getDatasetLabelFieldDetails($otherDatasetId) {
+	
+	$details = array();
+	
+	if (($otherDatasetId)
+	 && ($otherDataset = getDatasetDetails($otherDatasetId))
+	 && ($otherDataset['label_field_id'])
+	 && ($otherLabelField = getDatasetFieldBasicDetails($otherDataset['label_field_id']))
+	 && ($details['db_column'] = $otherLabelField['db_column'])) {
+		
+		if ($otherLabelField['is_system_field']) {
+			$details['table'] = $otherDataset['system_table'];
+		} else {
+			$details['table'] = $otherDataset['table'];
+		}
+		
+		if ($details['table']
+		 && ($details['id_column'] = getIdColumnOfTable($details['table'], true))) {
+			
+			return $details;
+		}
+	}
+	
+	return false;
 }
 
 
@@ -3912,9 +4060,7 @@ function getContentItemCategories($cID, $cType, $publicOnly = false, $langId = f
 				c.id,
 				c.parent_id,
 				c.name,
-				c.public,
-				c.landing_page_equiv_id,
-				c.landing_page_content_type
+				c.public
 			FROM " . DB_NAME_PREFIX . "categories AS c
 			INNER JOIN " . DB_NAME_PREFIX . "category_item_link AS cil
 				ON c.id = cil.category_id
@@ -3933,8 +4079,6 @@ function getContentItemCategories($cID, $cType, $publicOnly = false, $langId = f
 		while ($row = sqlFetchArray($result)) {
 			if (!$row['public']) {
 				$row['public_name'] = false;
-				$row['landing_page_equiv_id'] = false;
-				$row['landing_page_content_type'] = false;
 			} else {
 				$row['public_name'] = phrase('_CATEGORY_'. $row['id'], false, '', $langId);
 			}
@@ -4383,7 +4527,8 @@ function canActivateModule($name, $fetchBy = 'name', $activate = false) {
 	$missingPlugin = false;
 	
 	if ($module = getModuleDetails($name, $fetchBy)) {
-		if ($module['status'] != 'module_running') {
+		if ($module['status'] != 'module_running'
+		 && $module['status'] != 'module_is_abstract') {
 			return false;
 		
 		} elseif ($activate && !includeModuleAndDependencies($module['class_name'], $missingPlugin)) {
@@ -4417,7 +4562,7 @@ function activateModule($name) {
 function inc($moduleClass) {
 	$missingPlugin = array();
 	if (($module = getModuleDetails($moduleClass, 'class'))
-	 && ($module['status'] == 'module_running')
+	 && ($module['status'] == 'module_running' || $module['status'] == 'module_is_abstract')
 	 && (includeModuleAndDependencies($module['class_name'], $missingPlugin))) {
 		setModulePrefix($module);
 		return true;
@@ -4497,7 +4642,7 @@ function getModuleDependencies($moduleName) {
 		FROM ". DB_NAME_PREFIX. "module_dependencies AS d
 		LEFT OUTER JOIN ". DB_NAME_PREFIX. "modules AS m
 		   ON d.dependency_class_name = m.class_name
-		  AND m.status = 'module_running'
+		  AND m.status IN ('module_running', 'module_is_abstract')
 		WHERE d.module_class_name = '". sqlEscape($moduleName). "'
 		  AND `type` = 'dependency'";
 	
@@ -5085,7 +5230,7 @@ function sendSignal($signalName, $signalParams) {
 				   ON e.module_id = m.id
 				WHERE e.signal_name = '". sqlEscape($signalName). "'
 				  AND e.suppresses_module_class_name != ''
-				  AND m.status = 'module_running'
+				  AND m.status IN ('module_running', 'module_is_abstract')
 			  )
 			ORDER BY signal_name, module_class_name";
 	
@@ -5284,4 +5429,18 @@ function getCentralisedListValues($valuesSource, $filter = false) {
 		return call_user_func($source, $listMode, $filter);
 	}
 	return array();
+}
+
+
+function getCentralisedListValue($valuesSource, $id) {
+	if ($valuesSource
+		&& ($source = explode('::', $valuesSource, 3))
+		&& (!empty($source[0]))
+		&& (!empty($source[1]))
+		&& (!isset($source[2]))
+		&& (inc($source[0]))
+	) {
+		return call_user_func($source, ZENARIO_CENTRALISED_LIST_MODE_VALUE, $id);
+	}
+	return false;
 }

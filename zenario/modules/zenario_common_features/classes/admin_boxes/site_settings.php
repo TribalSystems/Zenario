@@ -33,7 +33,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		if (is_array(arrayKey($box,'tabs'))) {
 			foreach ($box['tabs'] as $tabName => &$tab) {
-				if (is_array($tab)) {
+				if (!empty($tab['fields'])
+				 && is_array($tab['fields'])) {
 					foreach ($tab['fields'] as &$field) {
 						if ($setting = arrayKey($field, 'site_setting', 'name')) {
 							$field['value'] = setting($setting);
@@ -50,31 +51,31 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['email']['fields']['email_address_system'])) {
-			$box['tabs']['email']['fields']['email_address_system']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
+		if (isset($fields['email/email_address_system'])) {
+			$fields['email/email_address_system']['value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 
-		if (isset($box['tabs']['filesizes']['fields']['apache_max_filesize'])) {
-			$box['tabs']['filesizes']['fields']['apache_max_filesize']['value'] = apacheMaxFilesize();
+		if (isset($fields['filesizes/apache_max_filesize'])) {
+			$fields['filesizes/apache_max_filesize']['value'] = apacheMaxFilesize();
 		}
 
-		if (isset($box['tabs']['filesizes']['fields']['max_allowed_packet'])) {
-			$box['tabs']['filesizes']['fields']['max_allowed_packet']['value'] = '?';
+		if (isset($fields['filesizes/max_allowed_packet'])) {
+			$fields['filesizes/max_allowed_packet']['value'] = '?';
 	
 			if ($result = @sqlSelect("SHOW VARIABLES LIKE 'max_allowed_packet'")) {
 				$settings = array();
 				if ($row = sqlFetchRow($result)) {
-					$box['tabs']['filesizes']['fields']['max_allowed_packet']['value'] = $row[1];
+					$fields['filesizes/max_allowed_packet']['value'] = $row[1];
 				}
 			}
 		}
 
-		if (isset($box['tabs']['default_language']['fields']['default_language'])) {
-			getLanguageSelectListOptions($box['tabs']['default_language']['fields']['default_language']);
+		if (isset($fields['default_language/default_language'])) {
+			getLanguageSelectListOptions($fields['default_language/default_language']);
 		}
 
-		if (isset($box['tabs']['urls']['fields']['mod_rewrite_suffix'])) {
-			$box['tabs']['urls']['fields']['mod_rewrite_suffix']['values'] = array('.htm' => '.htm', '.html' => '.html');
+		if (isset($fields['urls/mod_rewrite_suffix'])) {
+			$fields['urls/mod_rewrite_suffix']['values'] = array('.htm' => '.htm', '.html' => '.html');
 	
 			//Hide/show different options and notes, depending on whether language specific domains are
 			//used, and whether every language has a language specific URL
@@ -85,90 +86,134 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		
 				if ($langSpecificDomainsUsed) {
 					if ($langSpecificDomainsNotUsed) {
-						$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+						$fields['urls/note_d']['hidden'] = true;
 					} else {
-						$box['tabs']['urls']['fields']['translations_hide_language_code']['hidden'] =
-						$box['tabs']['urls']['fields']['note_a']['hidden'] =
-						$box['tabs']['urls']['fields']['note_b']['hidden'] =
-						$box['tabs']['urls']['fields']['note_c']['hidden'] = true;
+						$fields['urls/translations_hide_language_code']['hidden'] =
+						$fields['urls/note_a']['hidden'] =
+						$fields['urls/note_b']['hidden'] =
+						$fields['urls/note_c']['hidden'] = true;
 					}
 				} else {
-					$box['tabs']['urls']['fields']['note_c']['hidden'] =
-					$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+					$fields['urls/note_c']['hidden'] =
+					$fields['urls/note_d']['hidden'] = true;
 				}
 			} else {
-				$box['tabs']['urls']['fields']['note_c']['hidden'] =
-				$box['tabs']['urls']['fields']['note_d']['hidden'] = true;
+				$fields['urls/note_c']['hidden'] =
+				$fields['urls/note_d']['hidden'] = true;
 			}
 		}
 
-		if (isset($box['tabs']['dates']['fields']['vis_date_format_short'])) {
-			formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_short'], true);
-			formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_med']);
-			formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_long']);
-			formatDateFormatSelectList($box['tabs']['dates']['fields']['vis_date_format_datepicker'], true, true);
-			formatDateFormatSelectList($box['tabs']['dates']['fields']['organizer_date_format'], true, true);
+		if (isset($fields['dates/vis_date_format_short'])) {
+			formatDateFormatSelectList($fields['dates/vis_date_format_short'], true);
+			formatDateFormatSelectList($fields['dates/vis_date_format_med']);
+			formatDateFormatSelectList($fields['dates/vis_date_format_long']);
+			formatDateFormatSelectList($fields['dates/vis_date_format_datepicker'], true, true);
+			formatDateFormatSelectList($fields['dates/organizer_date_format'], true, true);
 		}
 
-		foreach (array('admin_domain', 'primary_domain') as $domainSetting) {
+		foreach (array(
+			'admin_domain' => 'Use [[domain]] as the admin domain; redirect all administrators to [[domain]]',
+			'primary_domain' => 'Use [[domain]] as the primary domain; redirect all visitors to [[domain]]'
+		) as $domainSetting => $phrase) {
 			if (isset($box['tabs'][$domainSetting]['fields'][$domainSetting])) {
 				if (setting($domainSetting)) {
-					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][setting($domainSetting)] = array('ord' => 2, 'label' => 'http:// or https://'. setting($domainSetting));
+					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][setting($domainSetting)] =
+						array('ord' => 2, 'label' => adminPhrase($phrase, array('domain' => setting($domainSetting))));
 				}
 				if ($_SERVER['HTTP_HOST'] != setting($domainSetting)) {
-					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][$_SERVER['HTTP_HOST']] = array('ord' => 3, 'label' => 'http:// or https://'. $_SERVER['HTTP_HOST']);
+					$box['tabs'][$domainSetting]['fields'][$domainSetting]['values'][$_SERVER['HTTP_HOST']] =
+						array('ord' => 3, 'label' => adminPhrase($phrase, array('domain' => $_SERVER['HTTP_HOST'])));
 				}
 			}
 		}
+		
+		$path = 'zenario/has_database_changed_and_is_cache_out_of_date.php';
+		$post = true;
+		if (isset($fields['primary_domain/new']) && !(checkCURLEnabled() && ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)))) {
+			unset($fields['primary_domain/new']['note_below']);
+		}
+		if (isset($fields['cookie_free_domain/cookie_free_domain']) && !(checkCURLEnabled() && ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)))) {
+			unset($fields['cookie_free_domain/cookie_free_domain']['note_below']);
+		}
 
-
-		if (isset($box['tabs']['speed']['fields']['have_query_cache'])) {
+		//Check whether compression is enabled on the server
+		
+		
+		if (isset($fields['speed/compress_web_pages'])) {
+			if (in_array('mod_deflate', apache_get_modules())) {
+				$values['speed/compress_web_pages'] = 1;
+				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['note_below'] .=
+					'<br/>'.
+					adminPhrase('Compression is enabled on this server (<code>mod_deflate</code> is enabled in Apache).');
+			
+			} else
+			if (extension_loaded('zlib')
+			 && checkFunctionEnabled('ini_get')
+			 && engToBoolean(ini_get('zlib.output_compression'))
+			) {
+				$values['speed/compress_web_pages'] = 1;
+				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['note_below'] .=
+					'<br/>'.
+					adminPhrase('Compression is enabled on this server (<code>zlib.output_compression</code> is set in your <code>php.ini</code> and/or <code>.htaccess</code> file).');
+			
+			} else {
+				$values['speed/compress_web_pages'] = '';
+				$fields['speed/compress_web_pages']['read_only'] = true;
+				$fields['speed/compress_web_pages']['note_below'] .=
+					'<br/>'.
+					adminPhrase('Compression is not enabled on this server. To enable, do one of the following: <br/> &nbsp; &bull; Enable <code>mod_deflate</code> in Apache<br/> &nbsp; &bull; Enable <code>zlib.output_compression</code> in your <code>php.ini</code><br/> &nbsp; &bull; Enable <code>zlib.output_compression</code> in your <code>.htaccess</code> file');
+			}
+		}
+		
+		if (isset($fields['speed/have_query_cache'])) {
 			if ($result = @sqlSelect("SHOW VARIABLES LIKE '%query_cache%'")) {
 				$settings = array();
 				while ($row = sqlFetchRow($result)) {
 					$settings[$row[0]] = $row[1];
 				}
 		
-				if (!$box['tabs']['speed']['fields']['query_cache_size']['hidden'] = !(
-					$box['tabs']['speed']['fields']['have_query_cache']['value'] =
-					$box['tabs']['speed']['fields']['have_query_cache']['current_value'] =
+				if (!$fields['speed/query_cache_size']['hidden'] = !(
+					$fields['speed/have_query_cache']['value'] =
+					$fields['speed/have_query_cache']['current_value'] =
 						engToBooleanArray($settings, 'have_query_cache') && engToBooleanArray($settings, 'query_cache_type')
 				)) {
-					$box['tabs']['speed']['fields']['query_cache_size']['value'] =
-					$box['tabs']['speed']['fields']['query_cache_size']['current_value'] = formatFilesizeNicely((int) arrayKey($settings, 'query_cache_size'), $precision = 1, $adminMode = true);
+					$fields['speed/query_cache_size']['value'] =
+					$fields['speed/query_cache_size']['current_value'] = formatFilesizeNicely((int) arrayKey($settings, 'query_cache_size'), $precision = 1, $adminMode = true);
 				}
 	
 			} else {
-				$box['tabs']['speed']['fields']['have_query_cache']['post_field_html'] = ' '. adminPhrase('(Could not check)');
-				$box['tabs']['speed']['fields']['query_cache_size']['hidden'] = true;
+				$fields['speed/have_query_cache']['post_field_html'] = ' '. adminPhrase('(Could not check)');
+				$fields['speed/query_cache_size']['hidden'] = true;
 			}
 		}
 
-		if (isset($box['tabs']['test']['fields']['test_send_email_address'])) {
+		if (isset($fields['test/test_send_email_address'])) {
 			$adminDetails = getAdminDetails(adminId());
-			$box['tabs']['test']['fields']['test_send_email_address']['value'] = $adminDetails['admin_email'];
+			$fields['test/test_send_email_address']['value'] = $adminDetails['admin_email'];
 		}
 
 		//Working copy images store a number for enabled. But the UI is a checkbox for enabled, and then a number if enabled.
 		//Convert the format when displaying the fields
-		if (isset($box['tabs']['image_sizes']['fields']['thumbnail_wc'])) {
+		if (isset($fields['image_sizes/thumbnail_wc'])) {
 			if (setting('thumbnail_wc_image_size')) {
-				$box['tabs']['image_sizes']['fields']['thumbnail_wc']['value'] = 1;
+				$fields['image_sizes/thumbnail_wc']['value'] = 1;
 			} else {
-				$box['tabs']['image_sizes']['fields']['thumbnail_wc']['value'] = '';
-				$box['tabs']['image_sizes']['fields']['thumbnail_wc_image_size']['value'] = 300;
+				$fields['image_sizes/thumbnail_wc']['value'] = '';
+				$fields['image_sizes/thumbnail_wc_image_size']['value'] = 300;
 			}
 		}
-		if (isset($box['tabs']['image_sizes']['fields']['working_copy_image'])) {
+		if (isset($fields['image_sizes/working_copy_image'])) {
 			if (setting('working_copy_image_size')) {
-				$box['tabs']['image_sizes']['fields']['working_copy_image']['value'] = 1;
+				$fields['image_sizes/working_copy_image']['value'] = 1;
 			} else {
-				$box['tabs']['image_sizes']['fields']['working_copy_image']['value'] = '';
-				$box['tabs']['image_sizes']['fields']['working_copy_image_size']['value'] = 1000;
+				$fields['image_sizes/working_copy_image']['value'] = '';
+				$fields['image_sizes/working_copy_image_size']['value'] = 1000;
 			}
 		}
 
-		if (isset($box['tabs']['security']['fields']['require_security_code_on_admin_login'])) {
+		if (isset($fields['security/require_security_code_on_admin_login'])) {
 			
 			if (engToBoolean(siteDescription('require_security_code_on_admin_login'))) {
 				$values['security/require_security_code_on_admin_login'] = 1;
@@ -177,7 +222,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['styles']['fields']['email_style_formats'])) {
+		if (isset($fields['styles/email_style_formats'])) {
 	
 			$yaml = array('email_style_formats' => siteDescription('email_style_formats'));
 	
@@ -190,8 +235,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		}
 
 		//Set the value of the template directory
-		if (isset($box['tabs']['template_dir']['fields']['template_dir'])) {
-			$box['tabs']['template_dir']['fields']['template_dir']['value'] = CMS_ROOT. 'zenario_custom/templates/grid_templates';
+		if (isset($fields['template_dir/template_dir'])) {
+			$fields['template_dir/template_dir']['value'] = CMS_ROOT. 'zenario_custom/templates/grid_templates';
 		}
 
 		//On multisite sites, don't allow local Admins to change the directory paths
@@ -206,7 +251,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 		//Hack to stop a buggy error message from appearing if the admin never opens the second tab on the branding FAB,
 		//as the _was_hidden_before property was never set by the JavaScript on the client side.
 		//Fix this problem by setting the _was_hidden_before property for the field.
-		if (isset($box['tabs']['og']['fields']['organizer_favicon'])) {
+		if (isset($fields['og/organizer_favicon'])) {
 			if ($values['og/organizer_favicon'] != 'custom') {
 				$fields['og/custom_organizer_favicon']['_was_hidden_before'] = true;
 			}
@@ -215,69 +260,69 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (isset($box['tabs']['debug']['fields']['debug_override_email_address'])) {
-			$box['tabs']['debug']['fields']['debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
+		if (isset($fields['debug/debug_override_email_address'])) {
+			$fields['debug/debug_override_email_address']['hidden'] = !$values['debug/debug_override_enable'];
 		}
 
-		if (isset($box['tabs']['errors']['fields']['show_notices'])) {
-			$box['tabs']['errors']['fields']['show_notices']['value'] =
-			$box['tabs']['errors']['fields']['show_notices']['current_value'] = (error_reporting() & E_NOTICE) == E_NOTICE;
+		if (isset($fields['errors/show_notices'])) {
+			$fields['errors/show_notices']['value'] =
+			$fields['errors/show_notices']['current_value'] = (error_reporting() & E_NOTICE) == E_NOTICE;
 		}
 
-		if (isset($box['tabs']['errors']['fields']['show_strict'])) {
-			$box['tabs']['errors']['fields']['show_strict']['value'] =
-			$box['tabs']['errors']['fields']['show_strict']['current_value'] = (error_reporting() & E_STRICT) == E_STRICT;
+		if (isset($fields['errors/show_strict'])) {
+			$fields['errors/show_strict']['value'] =
+			$fields['errors/show_strict']['current_value'] = (error_reporting() & E_STRICT) == E_STRICT;
 		}
 
-		if (isset($box['tabs']['errors']['fields']['show_all'])) {
-			$box['tabs']['errors']['fields']['show_all']['value'] =
-			$box['tabs']['errors']['fields']['show_all']['current_value'] = ((error_reporting() | E_NOTICE | E_STRICT) & (E_ALL | E_NOTICE | E_STRICT)) == (E_ALL | E_NOTICE | E_STRICT);
+		if (isset($fields['errors/show_all'])) {
+			$fields['errors/show_all']['value'] =
+			$fields['errors/show_all']['current_value'] = ((error_reporting() | E_NOTICE | E_STRICT) & (E_ALL | E_NOTICE | E_STRICT)) == (E_ALL | E_NOTICE | E_STRICT);
 		}
 
-		if (isset($box['tabs']['cookie_domain']['fields']['cookie_domain'])) {
-			$box['tabs']['cookie_domain']['fields']['cookie_domain']['value'] =
-			$box['tabs']['cookie_domain']['fields']['cookie_domain']['current_value'] = COOKIE_DOMAIN;
+		if (isset($fields['cookie_domain/cookie_domain'])) {
+			$fields['cookie_domain/cookie_domain']['value'] =
+			$fields['cookie_domain/cookie_domain']['current_value'] = COOKIE_DOMAIN;
 		}
 
-		if (isset($box['tabs']['cookie_timeouts']['fields']['cookie_timeout'])) {
-			$box['tabs']['cookie_timeouts']['fields']['cookie_timeout']['value'] =
-			$box['tabs']['cookie_timeouts']['fields']['cookie_timeout']['current_value'] = secondsToAdminPhrase(COOKIE_TIMEOUT);
+		if (isset($fields['cookie_timeouts/cookie_timeout'])) {
+			$fields['cookie_timeouts/cookie_timeout']['value'] =
+			$fields['cookie_timeouts/cookie_timeout']['current_value'] = secondsToAdminPhrase(COOKIE_TIMEOUT);
 		}
 
-		if (isset($box['tabs']['mysql']['fields']['debug_use_strict_mode']) && defined('DEBUG_USE_STRICT_MODE')) {
-			$box['tabs']['mysql']['fields']['debug_use_strict_mode']['value'] =
-			$box['tabs']['mysql']['fields']['debug_use_strict_mode']['current_value'] = DEBUG_USE_STRICT_MODE;
+		if (isset($fields['mysql/debug_use_strict_mode']) && defined('DEBUG_USE_STRICT_MODE')) {
+			$fields['mysql/debug_use_strict_mode']['value'] =
+			$fields['mysql/debug_use_strict_mode']['current_value'] = DEBUG_USE_STRICT_MODE;
 		}
 
-		if (isset($box['tabs']['mysql']['fields']['debug_send_email']) && defined('DEBUG_SEND_EMAIL')) {
-			$box['tabs']['mysql']['fields']['debug_send_email']['value'] =
-			$box['tabs']['mysql']['fields']['debug_send_email']['current_value'] = DEBUG_SEND_EMAIL;
+		if (isset($fields['mysql/debug_send_email']) && defined('DEBUG_SEND_EMAIL')) {
+			$fields['mysql/debug_send_email']['value'] =
+			$fields['mysql/debug_send_email']['current_value'] = DEBUG_SEND_EMAIL;
 		}
 
-		if (isset($box['tabs']['mysql']['fields']['email_address_global_support']) && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
-			$box['tabs']['mysql']['fields']['email_address_global_support']['value'] =
-			$box['tabs']['mysql']['fields']['email_address_global_support']['current_value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
+		if (isset($fields['mysql/email_address_global_support']) && defined('EMAIL_ADDRESS_GLOBAL_SUPPORT')) {
+			$fields['mysql/email_address_global_support']['value'] =
+			$fields['mysql/email_address_global_support']['current_value'] = EMAIL_ADDRESS_GLOBAL_SUPPORT;
 		}
 
-		if (isset($box['tabs']['dates']['fields']['vis_date_format_short'])) {
-			$box['tabs']['dates']['fields']['vis_date_format_short__preview']['current_value'] =
+		if (isset($fields['dates/vis_date_format_short'])) {
+			$fields['dates/vis_date_format_short__preview']['current_value'] =
 				formatDateNicely(now(), $values['dates/vis_date_format_short'], true);
 	
-			$box['tabs']['dates']['fields']['vis_date_format_med__preview']['current_value'] =
+			$fields['dates/vis_date_format_med__preview']['current_value'] =
 				formatDateNicely(now(), $values['dates/vis_date_format_med'], true);
 	
-			$box['tabs']['dates']['fields']['vis_date_format_long__preview']['current_value'] =
+			$fields['dates/vis_date_format_long__preview']['current_value'] =
 				formatDateNicely(now(), $values['dates/vis_date_format_long'], true);
 		}
 
-		if (isset($box['tabs']['sitemap']['fields']['sitemap_url'])) {
-			if (!$box['tabs']['sitemap']['fields']['sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
+		if (isset($fields['sitemap/sitemap_url'])) {
+			if (!$fields['sitemap/sitemap_url']['hidden'] = !$values['sitemap/sitemap_enabled']) {
 				if (setting('mod_rewrite_enabled')) {
-					$box['tabs']['sitemap']['fields']['sitemap_url']['value'] =
-					$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
+					$fields['sitemap/sitemap_url']['value'] =
+					$fields['sitemap/sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. 'sitemap.xml';
 				} else {
-					$box['tabs']['sitemap']['fields']['sitemap_url']['value'] =
-					$box['tabs']['sitemap']['fields']['sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
+					$fields['sitemap/sitemap_url']['value'] =
+					$fields['sitemap/sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
 				}
 			}
 		}
@@ -286,7 +331,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			$box['tabs']['antiword']['notices']['error']['show'] =
 			$box['tabs']['antiword']['notices']['success']['show'] = false;
 	
-			if (!empty($box['tabs']['antiword']['fields']['test']['pressed'])) {
+			if (!empty($fields['antiword/test']['pressed'])) {
 				$extract = '';
 				setSetting('antiword_path', $values['antiword/antiword_path'], $updateDB = false);
 		
@@ -303,7 +348,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			$box['tabs']['pdftotext']['notices']['error']['show'] =
 			$box['tabs']['pdftotext']['notices']['success']['show'] = false;
 	
-			if (!empty($box['tabs']['pdftotext']['fields']['test']['pressed'])) {
+			if (!empty($fields['pdftotext/test']['pressed'])) {
 				$extract = '';
 				setSetting('pdftotext_path', $values['pdftotext/pdftotext_path'], $updateDB = false);
 		
@@ -320,7 +365,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			$box['tabs']['ghostscript']['notices']['error']['show'] =
 			$box['tabs']['ghostscript']['notices']['success']['show'] = false;
 
-			if (!empty($box['tabs']['ghostscript']['fields']['test']['pressed'])) {
+			if (!empty($fields['ghostscript/test']['pressed'])) {
 				$extract = '';
 				setSetting('ghostscript_path', $values['ghostscript/ghostscript_path'], $updateDB = false);
 
@@ -332,12 +377,12 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['test']['fields']['test_send_button'])) {
+		if (isset($fields['test/test_send_button'])) {
 	
 			$box['tabs']['test']['notices']['test_send_error']['show'] = false;
 			$box['tabs']['test']['notices']['test_send_sucesses']['show'] = false;
 	
-			if (engToBooleanArray($box['tabs']['test']['fields']['test_send_button'], 'pressed')) {
+			if (engToBooleanArray($fields['test/test_send_button'], 'pressed')) {
 				$box['tabs']['test']['notices']['test_send']['show'] = true;
 		
 				$error = '';
@@ -410,7 +455,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 
 
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		if (isset($box['tabs']['admin_domain']['fields']['admin_domain'])) {
+		if (isset($fields['admin_domain/admin_domain'])) {
 			if ($values['admin_domain/admin_domain'] != 'none'
 			 && $values['admin_domain/admin_domain'] != $_SERVER['HTTP_HOST']
 			 && $values['admin_domain/admin_domain'] != setting('admin_domain')) {
@@ -418,20 +463,20 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['primary_domain']['fields']['primary_domain'])) {
+		$path = 'zenario/has_database_changed_and_is_cache_out_of_date.php';
+		$post = true;
+		if (isset($fields['primary_domain/primary_domain'])) {
 			if ($values['primary_domain/primary_domain'] == 'new') {
 				if ($values['primary_domain/new']) {
-					$path = 'zenario/has_database_changed_and_is_cache_out_of_date.php';
-					$post = true;
 					if ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)) {
 						if ($specifiedDomainCheck = curl(($cookieFreeDomain = httpOrHttps(). $values['primary_domain/new']. SUBDIRECTORY). $path, $post)) {
 							if ($thisDomainCheck == $specifiedDomainCheck) {
 								//Success, looks correct
 							} else {
-								$box['tabs']['primary_domain']['errors'][] = adminPhrase('[[domain]] is pointing to a different site, or possibly an out-of-date copy of this site.', array('domain' => $cookieFreeDomain));
+								$box['tabs']['primary_domain']['errors'][] = adminPhrase('We tried to check "[[domain]]", but it does not point to this site. Please check your domain and try again.', array('domain' => $cookieFreeDomain));
 							}
 						} else {
-							$box['tabs']['primary_domain']['errors'][] = adminPhrase('A CURL request to [[domain]] failed. Either this is an invalid URL or Zenario is not at this location.', array('domain' => $cookieFreeDomain));
+							$box['tabs']['primary_domain']['errors'][] = adminPhrase('We tried to check "[[domain]]", but it does not point to this site. Please check your domain and try again.', array('domain' => $cookieFreeDomain));
 						}
 					}
 				} else {
@@ -440,22 +485,20 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['cookie_free_domain']['fields']['cookie_free_domain'])) {
+		if (isset($fields['cookie_free_domain/cookie_free_domain'])) {
 			if ($values['cookie_free_domain/use_cookie_free_domain']) {
 				if ($values['cookie_free_domain/cookie_free_domain']) {
 					if ($values['cookie_free_domain/cookie_free_domain'] != adminDomain()
 					 && $values['cookie_free_domain/cookie_free_domain'] != primaryDomain()) {
-						$path = 'zenario/has_database_changed_and_is_cache_out_of_date.php';
-						$post = true;
 						if ($thisDomainCheck = curl(absCMSDirURL(). $path, $post)) {
 							if ($specifiedDomainCheck = curl(($cookieFreeDomain = httpOrHttps(). $values['cookie_free_domain/cookie_free_domain']. SUBDIRECTORY). $path, $post)) {
 								if ($thisDomainCheck == $specifiedDomainCheck) {
 									//Success, looks correct
 								} else {
-									$box['tabs']['cookie_free_domain']['errors'][] = adminPhrase('[[domain]] is pointing to a different site, or possibly an out-of-date copy of this site.', array('domain' => $cookieFreeDomain));
+									$box['tabs']['cookie_free_domain']['errors'][] = adminPhrase('We tried to check "[[domain]]", but it does not point to this site. Please check your domain and try again.', array('domain' => $cookieFreeDomain));
 								}
 							} else {
-								$box['tabs']['cookie_free_domain']['errors'][] = adminPhrase('A CURL request to [[domain]] failed. Either this is an invalid URL or Zenario is not at this location.', array('domain' => $cookieFreeDomain));
+								$box['tabs']['cookie_free_domain']['errors'][] = adminPhrase('We tried to check "[[domain]]", but it does not point to this site. Please check your domain and try again.', array('domain' => $cookieFreeDomain));
 							}
 						}
 					} else {
@@ -467,7 +510,7 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		if (isset($box['tabs']['image_sizes']['fields']['jpeg_quality'])) {
+		if (isset($fields['image_sizes/jpeg_quality'])) {
 			if (!$values['image_sizes/jpeg_quality']) {
 				$box['tabs']['image_sizes']['errors'][] = adminPhrase('Please enter a JPEG Quality.');
 	

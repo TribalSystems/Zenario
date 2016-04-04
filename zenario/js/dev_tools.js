@@ -45,7 +45,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	$toolbar, $editor, $sidebar, $sidebarInner,
 	devTools, editor
 ) {
@@ -55,8 +55,9 @@ zenario.lib(function(
 devTools.internalCMSProperties = {
 	class_name: {description: 'This property tracks which module created each element.'},
 	priv: {isGlobal: true, description: "If you give an element the <code>priv</code> property and enter the name of an admin permission, the element will be <code>unset()</code> if the current admin does not have the permission you specified.\n\nThis property must be written in your .yaml file. It can't be changed in php."},
-	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
+	_filters: {description: 'Data on the filters that the admin selected'},
 	_path_here: {description: 'This is the tag-path to a panel; i.e. the names of all of the elements and properties that lead here.'},
+	_sync: {description: 'This property helps sync the TUIX of this Admin Box between the client and the server. All elements and properties are download from the server to the client, but only certain elements and properties may be uploaded by the client.'},
 	_was_hidden_before: {description: 'This flags that a field was hidden when the admin box was last drawn. It can be modified by the client, so you shouldn\'t rely on it in your PHP code for security decisions.'}
 };
 devTools.deprecatedTraitProperties = {
@@ -86,10 +87,10 @@ devTools.initR = function(schema) {
 };
 
 
-devTools.init = function(mode, schemaName, schema, skMap) {
+devTools.init = function(mode, schemaName, schema, orgMap) {
 	devTools.schemaName = schemaName;
 	devTools.mode = mode;
-	devTools.skMap = mode == 'zenarioO' && skMap;
+	devTools.orgMap = mode == 'zenarioO' && orgMap;
 	devTools.rootPath = '';
 	devTools.pages = {};
 	
@@ -262,7 +263,7 @@ devTools.load = function() {
 	if (!devTools.mode
 	 || !windowOpener
 	 || !windowOpener[devTools.mode]
-	 || (!devTools.skMap && !windowOpener[devTools.mode].url)) {
+	 || (!devTools.orgMap && !windowOpener[devTools.mode].url)) {
 		
 		//It might be nice to use the dev tools to make something from scratch.
 		//But for now, just stop with an error.
@@ -270,10 +271,10 @@ devTools.load = function() {
 		return;
 	}
 	
-	//Work out the full URL to zenario/admin/ajax.php including the appropriate mode and any requests
+	//Work out the full URL to the TUIX ajax file, including the appropriate mode and any requests
 	var url;
-	if (devTools.skMap) {
-		url = URLBasePath + 'zenario/admin/ajax.php?_debug=1';
+	if (devTools.orgMap) {
+		url = URLBasePath + 'zenario/admin/organizer.ajax.php?_debug=1';
 		devTools.path = '';
 	
 	} else {
@@ -287,14 +288,16 @@ devTools.load = function() {
 	}
 	
 	
-	//Attempt to load the data from zenario/admin/ajax.php with the _debug flag set
+	//Attempt to load the data from the TUIX ajax file, with the _debug flag set
 	//This gives the data in a slightly different format with more information than usual
 	zenario.ajax(url, false, true).after(function(data) {
 			
 		devTools.focus = data;
 		devTools.tagPath = ifNull(devTools.focus.tag_path, devTools.path, '');
 		
-		if (devTools.skMap) {
+		if (devTools.orgMap) {
+			devTools.map = $.extend(true, {}, windowOpener[devTools.mode].map);
+			devTools.filterNav(devTools.map);
 			devTools.filterNav(devTools.focus.tuix);
 		}
 		
@@ -346,8 +349,18 @@ devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 		topLevel = topLevel[0];
 	}
 	
+	//Don't show "branch" properties thar the system has automatically added
+	delete tuix.branch;
 	
 	foreach (tuix as var key) {
+		
+		//Show everything in the dummy_item and top_right_buttons
+		if (parentKey === undefined
+		 && (key == 'dummy_item'
+		  || key == 'top_right_buttons')) {
+			continue;
+		}
+		
 		//Only show:
 		if (key !== 'class_name' && (
 			//Top level items
@@ -361,17 +374,18 @@ devTools.filterNav = function(tuix, topLevel, parentKey, parentParentKey) {
 			//The _path_here property of panels
 		 || (parentKey === 'panel' && key === '_path_here')
 		)) {
-			//Don't show second levels for non-selected sections
-			if (parentParentKey === undefined
-			 && parentKey != topLevel
-			 && (key === 'nav' || key === 'panel')) {
-			 	if (key === 'panel') {
-					delete tuix[key];
-			 	} else {
-					tuix[key] = {};
-				}
-				
-			} else if (typeof tuix[key] == 'object') {
+			//This code would hide second levels for non-selected sections
+			//if (parentParentKey === undefined
+			// && parentKey != topLevel
+			// && (key === 'nav' || key === 'panel')) {
+			// 	if (key === 'panel') {
+			//		delete tuix[key];
+			// 	} else {
+			//		tuix[key] = {};
+			//	}
+			//	
+			//} else 
+			if (typeof tuix[key] == 'object') {
 				devTools.filterNav(tuix[key], topLevel, key, parentKey);
 			}
 		} else {
@@ -393,7 +407,7 @@ devTools.updateToolbar = function(refresh) {
 	var merge = {
 		files: {},
 		paths: {},
-		selectedFile: devTools.skMap? 'combined' : 'current',
+		selectedFile: devTools.orgMap? 'orgmap' : 'current',
 		organizer_query_ids: devTools.focus.organizer_query_ids,
 		organizer_query_details: devTools.focus.organizer_query_details
 	};
@@ -452,6 +466,12 @@ devTools.updateEditor = function() {
 	//Show the current TUIX
 	if (view == 'current') {
 		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].tuix, format) + padding);
+		//editor.setReadOnly(false);
+		devTools.rootPath = devTools.tagPath;
+	
+	//Show the current TUIX for the top level nav in Organizer
+	} else if (view == 'orgmap') {
+		editor.setValue(devTools.toFormat(devTools.map, format) + padding);
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
 	
@@ -653,12 +673,12 @@ devTools.highlightFilesContainingSelection = function(path) {
 		if (view == 'current') {
 			contains = devTools.checkPathIsInData(localPath, windowOpener[devTools.mode].focus);
 		
+		} else if (view == 'orgmap') {
+			contains = devTools.checkPathIsInData(localPath, devTools.map);
+		
 		} else if (view == 'combined') {
 			contains = devTools.checkPathIsInData(localPath, devTools.focus.tuix);
 		
-		} else if (view == 'map') {
-			contains = devTools.checkPathIsInData(fullPath, windowOpener[devTools.mode].map);
-
 		} else if (devTools.focus.files[view] && devTools.focus.files[view].tags) {
 			contains = devTools.checkPathIsInData(fullPath, devTools.focus.files[view].tags);
 			
@@ -808,7 +828,7 @@ devTools.formatRequiredPropertiesInSchema = function(sche) {
 devTools.validate = function() {
 	
 	var session = editor.getSession(),
-		showErrors = devTools.lastView == 'current' || devTools.lastView == 'combined' || devTools.lastView == 'map',
+		showErrors = devTools.lastView == 'current' || devTools.lastView == 'combined' || devTools.lastView == 'orgmap',
 		showWarnings = devTools.lastView != 'organizer_query_ids' && devTools.lastView != 'organizer_query_details';
 	
 	if (!showErrors && !showWarnings) {
@@ -929,16 +949,13 @@ devTools.splitLineByKey = function(text, format) {
 	
 	//Use a regular expression that should match a key definition at the start of a line
 	if (format == 'yaml') {
-		reg = /^[\s\t]*(\w+):/;
-		line.quote = '';
+		reg = /^([\s\t]*)("?)([\w-]+)\2:/;
 	
 	} else if (format == 'json') {
-		reg = /^[\s\t]*"?(\w+)"?:/;
-		line.quote = '"';
+		reg = /^([\s\t]*)("?)([\w-]+)\2:/;
 	
 	} else if (format == 'log') {
-		reg = /^[\s\t]*([\w\/]+):/;
-		line.quote = '';
+		reg = /^([\s\t]*)()([\w\/-]+):/;
 	
 	} else {
 		return false;
@@ -946,15 +963,13 @@ devTools.splitLineByKey = function(text, format) {
 	
 	if (text !== undefined
 	 && (match = text.match(reg))) {
-		match = match[0];
+		
+		line.indent = match[1];
+		line.quote = match[2];
+		line.key = match[3];
 		
 		//Do some string manipulation to add a prefix of "____here____" to the start of the key
-		line.indent = match.split(/["\w\/]+/),
-		line.key = match.match(/[\w\/]+/);
-		line.indent = line.indent[0];
-		line.key = line.key[0];
-		
-		line.rest = text.substr(match.length);
+		line.rest = text.substr(match[0].length);
 		
 		return line;
 	}
@@ -985,16 +1000,11 @@ devTools.locatePosition = function(posIn, callbackIn) {
 		lines,
 		l,
 		line,
-		reg,
 		sche = false;
 	
-	//Use a regular expression that should match a key definition at the start of a line
 	if (devTools.format == 'yaml') {
-		reg = /[\s\t]*(\w+):/g;
 	
 	} else if (devTools.format == 'json') {
-		reg = /[\s\t]*"?(\w+)"?:/g;
-		quote = '"';
 	
 	} else {
 		return;

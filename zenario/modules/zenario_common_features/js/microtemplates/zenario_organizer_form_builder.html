@@ -1,16 +1,17 @@
-<div class="organizer_form_builder_view">
+<div id="organizer_form_builder" class="organizer_form_builder_view">
 	<div class="form_fields_palette">
-		<div id="organizer_field_type_list_outer" class="field_type_list_outer">
+		<div class="form_fields_palette_outer">
+		<div id="organizer_field_type_list_outer" class="field_type_list_outer" <% if (m.details_section != 'field_type_list') { %> style="display:none;" <% } %>>
 			<div class="field_type_list_header field_type_section">
-			<h5>Add a field</h5>
-				<span class="arrows_icon"></span>
+				<h5>Add a field</h5>
+				<input class="form_settings" type="button" value="Form settings"/>
 			</div>
 			<div id="organizer_field_type_list" class="field_type_list field_type_section">
 				<div class="types_list">
 					<div class="field_type" data-type="checkbox"><span class="checkbox"></span><h4>Checkbox</h4></div>
 					<div class="field_type" data-type="checkboxes"><span class="checkboxes"></span><h4>Checkboxes</h4></div>
 					<div class="field_type" data-type="date"><span class="date"></span><h4>Date</h4></div>
-					<div class="field_type" data-type="editor"><span class="editor"></span><h4>Editor</h4></div>
+					<!--<div class="field_type" data-type="editor"><span class="editor"></span><h4>Editor</h4></div>-->
 					<div class="field_type" data-type="radios"><span class="radios"></span><h4>Radios</h4></div>
 					<div class="field_type" data-type="select"><span class="select"></span><h4>Select list</h4></div>
 					<div class="field_type" data-type="text"><span class="text"></span><h4>Text</h4></div>
@@ -19,7 +20,7 @@
 					<div class="field_type" data-type="attachment"><span class="attachment"></span><h4>Attachment</h4></div>
 					<div class="field_type" data-type="restatement"><span class="restatement"></span><h4>Mirrored</h4></div>
 					<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
-					<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Section description</h4></div>
+					<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Subheading</h4></div>
 					<div class="field_type" data-type="page_break"><span class="page_break"></span><h4>Page break</h4></div>
 				</div>
 			</div>
@@ -34,17 +35,18 @@
 				<h5>Linked fields</h5>
 			</div>
 			<div id="organizer_linked_field_type_list" class="field_type_list field_type_section">
-				{{zenarioA.microTemplate('zenario_organizer_form_builder_dataset_tab', m.dataset_fields)}}
+				{{zenarioA.microTemplate('zenario_organizer_form_builder_dataset_tab', {})}}
 			</div>
 		</div>
-		<div id="organizer_field_details_outer" class="field_details_outer" style="display:none;">
-			{{zenarioA.microTemplate('zenario_organizer_form_builder_field_details', {})}}
+		<div id="organizer_field_details_outer" class="field_details_outer" <% if (m.details_section != 'field_details') { %> style="display:none;" <% } %>>
+			{{zenarioA.microTemplate('zenario_organizer_form_builder_field_details', m.field)}}
+		</div>
 		</div>
 	</div>
 	
 	<div class="form_outer">
 		<div class="form_header">
-			<h5>Preview area <span>(possible exploratory text)</span></h5>
+			<h5>{{m.form_title}}</h5>
 		</div>
 		<div id="organizer_form_fields" class="form">
 			{{zenarioA.microTemplate('zenario_organizer_form_builder_field', m.items)}}

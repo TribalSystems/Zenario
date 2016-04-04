@@ -31,28 +31,6 @@ class zenario_user_forms extends module_base_class {
 	
 	public $data = array();
 	
-	public function addToPageHead() {
-		if ($this->setting('user_form')){
-			$formProperties = getRow('user_forms', array('captcha_type'), $this->setting('user_form'));
-			if(isset($formProperties['captcha_type'])){
-				if($formProperties['captcha_type'] == 'pictures' && setting('google_recaptcha_site_key') && setting('google_recaptcha_secret_key')){
-					$siteKey = setting('google_recaptcha_site_key');
-					$theme = setting('google_recaptcha_widget_theme');
-					echo "<script type='text/javascript'>
-							var onloadCallback = function() {
-								grecaptcha.render('zenario_user_forms_google_recaptcha_section', {
-								'sitekey' : '".$siteKey."',
-								'theme' : '".$theme."'
-							});
-						};
-					</script>";
-					echo '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>';
-				}
-			}
-		}
-	}
-	
-	
 	public function init() {
 		
 		$this->allowCaching(
@@ -77,7 +55,7 @@ class zenario_user_forms extends module_base_class {
 		if ($pageBreakFields) {
 			$this->data['multiPageFormFinalBackButton'] = '<input type="button" name="previous" value="'.self::formPhrase($formProperties['default_previous_button_text'], array(), $translate).'" class="previous"/>';
 			$this->data['multiPageFormFinalPageEnd'] = '</fieldset>';
-			$this->callScript('zenario_user_forms', 'initMultiPageForm', $this->pluginAJAXLink(), $this->containerId, $this->data['identifier'], ($this->setting('display_mode') == 'in_modal_window'), count($pageBreakFields) + 1);
+			$this->callScript('zenario_user_forms', 'initMultiPageForm', $this->pluginAJAXLink('validateMultiPageForm=1'), $this->containerId, $this->data['identifier'], ($this->setting('display_mode') == 'in_modal_window'), count($pageBreakFields) + 1);
 		}
 		
 		// Add a captcha to the form
@@ -131,11 +109,12 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 			}
+			
 			// $_POST for keeping data after submission error, userId() for preloading user data
 			$this->data['formFields'] = self::drawUserForm($this->setting('user_form'), $_POST, false, $this->data['errors'], $this->setting('checkbox_columns'), $this->containerId);
 		
 		// Handle any centralised lists that are being filtered
-		} elseif (post('filter_list') && post('filter_list_value') && ($this->instanceId == post('instanceId'))) {
+		} elseif ((post('filter_list') && post('filter_list_value') && ($this->instanceId == post('instanceId'))) || post('preload_from_post')) {
 			$this->data['formFields'] = self::drawUserForm($this->setting('user_form'), $_POST, false, array(), $this->setting('checkbox_columns'), $this->containerId);
 		
 		// Otherwise just draw form
@@ -144,7 +123,6 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
-		
 		
 		if (!$pageBreakFields && $formProperties['use_captcha'] && empty($_SESSION['captcha_passed__'.$this->instanceId])) {
 			if (!userId() || $formProperties['extranet_users_use_captcha']) {
@@ -160,7 +138,7 @@ class zenario_user_forms extends module_base_class {
 							<a tabindex="-1" style="border-style: none;" href="#" title="Refresh Image" onclick="document.getElementById(\'siimage\').src = \'zenario/libraries/mit/securimage/securimage_show.php?sid=\' + Math.random(); this.blur(); return false">
 								<img src="zenario/libraries/mit/securimage/images/refresh.png" alt="Reload Image" onclick="this.blur()" align="bottom" border="0">
 							</a><br />
-							Enter Code:<br />
+							Do the maths:<br />
 							<input type="text" name="captcha_code" size="12" maxlength="16" class="math_captcha_input" id="'.$this->containerId.'_math_captcha_input"/>
 						</p>';
 				}elseif($formProperties['captcha_type'] == 'pictures'){
@@ -225,372 +203,68 @@ class zenario_user_forms extends module_base_class {
 				$this->data['showFormJS'] = $this->refreshPluginSlotAnchor($requests, false, false);
 			}
 		}
+		
+		$this->callScript('zenario_user_forms', 'initFilePickerFields', $this->containerId, $this->pluginAJAXLink('filePickerUpload=1'));
+		
 		return true;
-	}
-	
-	public function getFormIdentifier() {
-		return $this->containerId.'_user_form';
-	}
-	
-	private function drawMenu($nodeId) {
-		$nodes = array();
-		do {
-			$text = getRow('menu_text', 'name', array('menu_id' => $nodeId, 'language_id' => setting('default_language')));
-			$nodes[] = $text;
-			$nodeId = getMenuParent($nodeId);
-		} while ($nodeId != 0);
-		$cID = $cType = false;
-		langSpecialPage('zenario_home', $cID, $cType);
-		if (!($this->cID == $cID && $this->cType == $cType)) {
-			$equivId = equivId($cID, $cType);
-			$sectionId = menuSectionId('Main');
-			$menuId = getRow('menu_nodes', 'id', array('section_id' => $sectionId, 'equiv_id' => $equivId, 'content_type' => $cType));
-			$nodes[] = getRow('menu_text', 'name', array('menu_id' => $menuId, 'language_id' => setting('default_language')));
-		}
-		return $nodes;
 	}
 	
 	public function showSlot() {
 		$this->twigFramework($this->data);
 	}
 	
+	public function addToPageHead() {
+		if ($this->setting('user_form')){
+			$formProperties = getRow('user_forms', array('captcha_type'), $this->setting('user_form'));
+			if(isset($formProperties['captcha_type'])){
+				if($formProperties['captcha_type'] == 'pictures' && setting('google_recaptcha_site_key') && setting('google_recaptcha_secret_key')){
+					$siteKey = setting('google_recaptcha_site_key');
+					$theme = setting('google_recaptcha_widget_theme');
+					echo "<script type='text/javascript'>
+							var onloadCallback = function() {
+								grecaptcha.render('zenario_user_forms_google_recaptcha_section', {
+								'sitekey' : '".$siteKey."',
+								'theme' : '".$theme."'
+							});
+						};
+					</script>";
+					echo '<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>';
+				}
+			}
+		}
+	}
+	
 	public function handlePluginAJAX() {
-		// Validate pages of multi-stage forms
-		$errors = self::validateUserForm($this->setting('user_form'), $_POST, (int)post('_pageNo'));
-		$formDetails = getRow('user_forms', array('use_captcha', 'captcha_type', 'translate_text'), $this->setting('user_form'));
-		// For now, ignore captcha on multipage forms
-		/*
-		if ((post('_pageNo') == post('_pageCount')) && $formDetails['use_captcha'] && ($error = $this->getCaptchaError($formDetails['captcha_type'], $formDetails['translate_text'])) && empty($_SESSION['captcha_passed__'.$this->instanceId])) {
-			$errors['captcha'] = $error;
-		}
-		*/
-		echo json_encode($errors);
-	}
-	
-	private function getCaptchaError($type, $translate) {
-		if ($type == 'word') {
-			if ($this->checkCaptcha()) {
-				$_SESSION['captcha_passed__'. $this->instanceId] = true;
-			} else {
-				return self::formPhrase('Please correctly verify that you are human', array(), $translate);
+		if (request('validateMultiPageForm')) {
+			// Validate pages of multi-stage forms
+			$errors = self::validateUserForm($this->setting('user_form'), $_POST, (int)post('_pageNo'));
+			$formDetails = getRow('user_forms', array('use_captcha', 'captcha_type', 'translate_text'), $this->setting('user_form'));
+			// For now, ignore captcha on multipage forms
+			/*
+			if ((post('_pageNo') == post('_pageCount')) && $formDetails['use_captcha'] && ($error = $this->getCaptchaError($formDetails['captcha_type'], $formDetails['translate_text'])) && empty($_SESSION['captcha_passed__'.$this->instanceId])) {
+				$errors['captcha'] = $error;
 			}
-		} elseif ($type == 'math' && isset($_POST['captcha_code'])) {
-			require_once CMS_ROOT. 'zenario/libraries/mit/securimage/securimage.php';
-			$securimage = new Securimage();
-			
-			if ($securimage->check($_POST['captcha_code']) != false) {
-				$_SESSION['captcha_passed__'. $this->instanceId] = true;
-			} else {
-				return self::formPhrase('Please correctly verify that you are human', array(), $translate);
-			}
-		}elseif($type == 'pictures' && isset($_POST['g-recaptcha-response']) && setting('google_recaptcha_site_key') && setting('google_recaptcha_secret_key')){
-			$recaptchaResponse = $_POST['g-recaptcha-response'];
-			$secretKey = setting('google_recaptcha_secret_key');
-			$URL = "https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$recaptchaResponse;
-			$request = file_get_contents($URL);
-			$response = json_decode($request, true);
-
-			if(is_array($response)){
-				if(isset($response['success'])){
-					if($response['success']){
-						$_SESSION['captcha_passed__'. $this->instanceId] = true;
-					}else{
-						return self::formPhrase('Please correctly verify that you are human', array(), $translate);
+			*/
+			echo json_encode($errors);
+		} elseif (request('filePickerUpload')) {
+			$data = array('files' => array());
+			// Upload the file
+			foreach ($_FILES as $fieldName => $file) {
+				if (!empty($file['tmp_name']) && is_uploaded_file($_FILES[$fieldName]['tmp_name']) && cleanDownloads()) {
+					$randomDir = createRandomDir(30, 'uploads');
+					$newName = $randomDir. preg_replace('/\.\./', '.', preg_replace('/[^\w\.-]/', '', $_FILES[$fieldName]['name'])).'.upload';
+					if (move_uploaded_file($_FILES[$fieldName]['tmp_name'], CMS_ROOT. $newName)) {
+						$data['files'][] = array('name' => urldecode($_FILES[$fieldName]['name']), 'id' => $newName);
+						chmod(CMS_ROOT. $newName, 0666);
 					}
 				}
 			}
-		
-		}
-
-		return false;
-	}
-	
-	private static function getFormEncType($formId) {
-		if (checkRowExists('user_form_fields', array('field_type' => 'attachment', 'user_form_id' => $formId))) {
-			return 'enctype="multipart/form-data"';
-		}
-		return '';
-	}
-	
-	public static function getUserFormFields($userFormId, $formFieldId = false, $type = false) {
-		$formFields = array();
-		$sql = "
-			SELECT 
-				uff.id AS form_field_id, 
-				uff.user_field_id, 
-				uff.ord, 
-				uff.is_readonly, 
-				uff.is_required,
-				uff.mandatory_condition_field_id,
-				uff.mandatory_condition_field_value,
-				uff.visibility,
-				uff.visible_condition_field_id,
-				uff.visible_condition_field_value,
-				uff.label AS field_label,
-				uff.name,
-				uff.placeholder,
-				uff.size,
-				uff.default_value,
-				uff.default_value_class_name,
-				uff.default_value_method_name,
-				uff.default_value_param_1,
-				uff.default_value_param_2,
-				uff.note_to_user,
-				uff.css_classes,
-				uff.div_wrap_class,
-				uff.required_error_message,
-				uff.validation AS field_validation,
-				uff.validation_error_message,
-				uff.field_type,
-				uff.next_button_text,
-				uff.previous_button_text,
-				uff.description,
-				uff.numeric_field_1,
-				uff.numeric_field_2,
-				uff.calculation_type,
-				uff.restatement_field,
-				uff.values_source,
-				uff.values_source_filter,
-				cdf.id AS field_id, 
-				cdf.type, 
-				cdf.db_column, 
-				cdf.label, 
-				cdf.is_system_field, 
-				cdf.dataset_id, 
-				cdf.validation, 
-				cdf.validation_message
-			FROM ". DB_NAME_PREFIX ."user_forms AS uf
-			INNER JOIN ". DB_NAME_PREFIX ."user_form_fields AS uff
-				ON uf.id = uff.user_form_id
-			LEFT JOIN ". DB_NAME_PREFIX ."custom_dataset_fields AS cdf
-				ON uff.user_field_id = cdf.id
-			WHERE uf.id = ". (int)$userFormId;
-		if ($formFieldId !== false) {
-			$sql .= '
-				AND uff.id = '.(int)$formFieldId;
-		}
-		$sql .= "
-			ORDER BY uff.ord";
-		$result = sqlQuery($sql);
-		while ($row = sqlFetchAssoc($result)) {
-			// Filter on type
-			if ($type) {
-				$row['type'] = self::getFieldType($row);
-				if ($row['type'] != $type) {
-					continue;
-				}
-			}
-			$row['ord'] = (int)$row['ord'];
-			$row['form_field_id'] = (int)$row['form_field_id'];
-			$row['is_readonly'] = (int)$row['is_readonly'];
-			$row['is_required'] = (int)$row['is_required'];
-			$row['user_field_id'] = (int)$row['user_field_id'];
-			$row['visible_condition_field_id'] = (int)$row['visible_condition_field_id'];
-			$row['mandatory_condition_field_id'] = (int)$row['mandatory_condition_field_id'];
-			$row['field_id'] = (int)$row['field_id'];
-			$row['is_system_field'] = (int)$row['is_system_field'];
-			$row['dataset_id'] = (int)$row['dataset_id'];
-			$row['numeric_field_1'] = (int)$row['numeric_field_1'];
-			$row['numeric_field_2'] = (int)$row['numeric_field_2'];
-			$formFields[$row['form_field_id']] = $row;
-		}
-		return $formFields;
-	}
-	
-	public static function drawUserForm($userFormId, $loadData = false, $readOnly = false, $errors = array(), $checkboxColumns = 1, $containerId = '') {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public static function validateUserForm($userFormId, $data, $pageNo = 0) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	public static function saveUserForm($userFormId, $data, $userId, $url = false, $breadCrumbs = false) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
-	
-	
-	public static function formPhrase($phrase, $mergeFields = array(), $translate) {
-		if ($translate) {
-			return phrase($phrase, $mergeFields, 'zenario_user_forms');
-		}
-		return $phrase;
-	}
-	
-	public static function getFieldType($field) {
-		return (!empty($field['type']) ? $field['type'] : $field['field_type']);
-	}
-	
-	public static function getFieldName($field) {
-		return ($field['db_column'] ? $field['db_column'] : 'unlinked_'. $field['field_type'].'_'.$field['form_field_id']);
-	}
-	
-	public static function filterFormFieldsByPage(&$formFields, $pageNo) {
-		$currentPageNo = 1;
-		foreach ($formFields as $fieldId => $field) {
-			if ($pageNo != $currentPageNo) {
-				unset($formFields[$fieldId]);
-			}
-			if ($field['field_type'] == 'page_break') {
-				unset($formFields[$fieldId]);
-				$currentPageNo++;
-			}
+			echo json_encode($data);
 		}
 	}
 	
-	protected static function getTemplateEmailMergeFields($values, $userId, $sendToAdmin = false) {
-		$emailMergeFields = array();
-		foreach($values as $fieldId => $fieldData) {
-			if (isset($fieldData['attachment'])) {
-				if ($sendToAdmin) {
-					$fieldData['value'] = absCMSDirURL() . 'zenario/file.php?adminDownload=1&id=' . $fieldData['internal_value'];
-				} else {
-					$fieldData['value'] = absCMSDirURL() . fileLink($fieldData['internal_value']);
-				}
-			}
-			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
-				$fieldData['value'] = $fieldData['value'];
-			}
-			$emailMergeFields[$fieldData['db_column']] = $fieldData['value'];
-		}
-		
-		if ($userId) {
-			if (setting('plaintext_extranet_user_passwords')) {
-				$userDetails = getUserDetails($userId);
-				$emailMergeFields['password'] = $userDetails['password'];
-			}
-			$emailMergeFields['user_id'] = $userId;
-		}
-		
-		$emailMergeFields['cms_url'] = absCMSDirURL();
-		return $emailMergeFields;
-	}
 	
-	protected static function mergeUserData($fields, $userId, $login) {
-		$userDetails = getUserDetails($userId);
-		$mergeFields = array();
-		foreach ($fields as $fieldName => $value) {
-			if (isset($userDetails[$fieldName]) && empty($userDetails[$fieldName])) {
-				$mergeFields[$fieldName] = $value;
-			}
-		}
-		if ($login) {
-			$mergeFields['status'] = 'active';
-		}
-		saveUser($mergeFields, $userId);
-	}
 	
-	protected static function mergeUserCustomData($fields, $userId) {
-		$userDetails = getUserDetails($userId);
-		$mergeFields = array();
-		foreach($fields as $fieldId => $fieldData) {
-			if (isset($userDetails[$fieldData['db_column']]) && empty($userDetails[$fieldData['db_column']])) {
-				$mergeFields[$fieldData['db_column']] = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
-			}
-		}
-		updateRow('users_custom_data', $mergeFields, array('user_id' => $userId));
-	}
-	
-	protected static function mergeUserMultiCheckboxData($checkboxValues, $userId) {
-		$dataset = getDatasetDetails('users');
-		foreach ($checkboxValues as $fieldId => $fieldData) {
-			if ($fieldData['value_type'] != 'unlinked') {
-				$valuesList = getDatasetFieldLOV($fieldData['user_field_id']);
-				$valueFound = false;
-				// Find if this field has been previously completed
-				foreach ($valuesList as $id => $label) {
-					if (checkRowExists('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $id, 'linking_id' => $userId))) {
-						$valueFound = true;
-					}
-				}
-				// If no values found, save data
-				if (!$valueFound && $fieldData['internal_value']) {
-					$valuesList = explode(',', $fieldData['internal_value']);
-					foreach ($valuesList as $value) {
-						insertRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $value, 'linking_id' => $userId));
-					}
-				}
-			}
-		}
-	}
-	
-	protected static function saveUser($fields, $userId = false) {
-		$newId = saveUser($fields, $userId);
-		
-		if ($userId) {
-			sendSignal(
-				'eventUserModified',
-				array('id' => $userId));
-		} else {
-			sendSignal(
-				'eventUserCreated',
-				array('id' => $newId));
-		}
-		return $newId;
-	}
-	
-	protected static function saveUserCustomData($user_custom_fields, $userId) {
-		
-		$sql = "";
-		foreach ($user_custom_fields as $fieldId => $fieldData) {
-			if ($sql) {
-				$sql .= ',';
-			}
-			$fieldValue = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
-			$sql .= '`' . sqlEscape($fieldData['db_column']) . "`='" . sqlEscape($fieldValue) . "'";
-		}
-		if ($sql) {
-			if (!checkRowExists('users_custom_data', array('user_id' => $userId))) {
-				insertRow('users_custom_data', array('user_id' => $userId));
-			}
-			$sql = "UPDATE ". DB_NAME_PREFIX. "users_custom_data SET " . $sql .
-			" WHERE user_id=" . (int)$userId;
-			sqlQuery($sql);
-		}
-	}
-	
-	protected static function saveUserMultiCheckboxData($checkBoxValues, $userId) {
-		$dataset = getDatasetDetails('users');
-		foreach ($checkBoxValues as $fieldId => $fieldData) {
-			if ($fieldData['value_type'] != 'unlinked') {
-				$valuesList = getDatasetFieldLOV($fieldData['user_field_id']);
-				// Delete current saved values
-				foreach ($valuesList as $id => $label) {
-					deleteRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $id, 'linking_id' => $userId));
-				}
-				// Save new values
-				if ($fieldData['internal_value']) {
-					$valuesList = explode(',', $fieldData['internal_value']);
-					foreach ($valuesList as $value) {
-						insertRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $value, 'linking_id' => $userId));
-					}
-				}
-			}
-		}
-	}
-	
-	private static function getFormModuleIds() {
-		$ids = array();
-		$formModuleClassNames = array('zenario_user_forms', 'zenario_extranet_profile_edit');
-		foreach($formModuleClassNames as $moduleClassName) {
-			if ($id = getModuleIdByClassName($moduleClassName)) {
-				$ids[] = $id;
-			}
-		}
-		return $ids;
-	}
-	
-	private static function getModuleClassNameByInstanceId($id) {
-		$sql = '
-			SELECT class_name
-			FROM '.DB_NAME_PREFIX.'modules m
-			INNER JOIN '.DB_NAME_PREFIX.'plugin_instances pi
-				ON m.id = pi.module_id
-			WHERE pi.id = '.(int)$id;
-		$result = sqlSelect($sql);
-		$row = sqlFetchRow($result);
-		return $row[0];
-	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		switch ($path) {
@@ -816,7 +490,6 @@ class zenario_user_forms extends module_base_class {
 			switch ($path) {
 				case 'zenario__user_forms/panels/zenario_user_forms__forms':
 					if (post('archive_form')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
 						foreach(explode(',', $ids) as $id) {
@@ -824,39 +497,21 @@ class zenario_user_forms extends module_base_class {
 						}
 					}
 					if (post('delete_form')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
-						$moduleIds = self::getFormModuleIds();
-						$instanceIds = array();
-						$sql = '
-							SELECT id
-							FROM '.DB_NAME_PREFIX.'plugin_instances
-							WHERE module_id IN ('. inEscape($moduleIds, 'numeric'). ')
-							ORDER BY name';
-						$result = sqlSelect($sql);
-						while ($row = sqlFetchAssoc($result)) {
-							$instanceIds[] = $row['id'];
-						}
-						
-						foreach (explode(',', $ids) as $id) {
-							// Delete form if no responses and not used in a plugin
-							$formInUse = false;
-							foreach ($instanceIds as $instanceId) {
-								if (checkRowExists('plugin_settings', array('instance_id' => $instanceId, 'name' => 'user_form', 'value' => $id))) {
-									$formInUse = true;
+						foreach (explode(',', $ids) as $formId) {
+							
+							$error = self::deleteForm($formId);
+							if (isError($error)) {
+								foreach ($error->errors as $message) {
+									echo $message . "\n";
 								}
 							}
-							if (checkRowExists(ZENARIO_USER_FORMS_PREFIX.'user_response', array('form_id' => $id)) || $formInUse) {
-								echo 'Only forms not used in plugins and without any responses logged can be deleted!';
-								return;
-							}
-							deleteRow('user_forms', $id);
+							
 						}
 					}
 					
 					if (post('duplicate_form')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
 						$formProperties = getRow('user_forms', true, $ids);
@@ -895,7 +550,6 @@ class zenario_user_forms extends module_base_class {
 				case 'zenario__user_forms/panels/zenario_user_forms__form_fields':
 					$formId = (int)post('refiner__user_form_id');
 					if (post('reorder')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
 						// Update ordinals
@@ -927,41 +581,27 @@ class zenario_user_forms extends module_base_class {
 						}
 						return;
 					} elseif (post('delete')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
 						$ids = explode(',', $ids);
-						foreach ($ids as $id) {
-							$message = false;
-							$targetName = '';
-							$dependsField = '';
-							// Remove deleted fields if not being used
-							if (($dependsField = getRow('user_form_fields', array('id','name'), array('restatement_field' => $id, 'user_form_id' => $formId))) && !in_array($dependsField['id'], $ids)) {
-								$message = true;
-							} elseif (($dependsField = getRow('user_form_fields', array('id','name'), array('numeric_field_1' => $id, 'user_form_id' => $formId))) && !in_array($dependsField['id'], $ids)) {
-								$message = true;
-							} elseif (($dependsField = getRow('user_form_fields', array('id','name'), array('numeric_field_2' => $id, 'user_form_id' => $formId))) && !in_array($dependsField['id'], $ids)) {
-								$message = true;
-							} else {
-								deleteRow('user_form_fields', array('id' =>$id, 'user_form_id' => $formId));
-							}
-							
-							if ($message) {
-								$targetName = getRow('user_form_fields', 'name', $id);
-								echo 'Unable to delete the field "'.$targetName.'" as the field "'.$dependsField['name'].'" depends on it.<br/>';
+						foreach ($ids as $fieldId) {
+							$error = self::deleteFormField($fieldId, false);
+							if (isError($error)) {
+								foreach ($error->errors as $message) {
+									echo $message . "\n";
+								}
 							}
 						}
-						// Update remaining field ordinals
 						
+						// Update remaining field ordinals
 						$formFieldIds = getRowsArray('user_form_fields', 'id', array('user_form_id' => $refinerId), 'ord');
 						$ord = 0;
-						foreach($formFieldIds as $id) {
+						foreach($formFieldIds as $fieldId) {
 							$ord++;
-							updateRow('user_form_fields', array('ord' => $ord), array('id' => $id));
+							updateRow('user_form_fields', array('ord' => $ord), $fieldId);
 						}
 						
 					} elseif (post('add_page_break')) {
-						
 						exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 						
 						$record = array();
@@ -976,7 +616,6 @@ class zenario_user_forms extends module_base_class {
 					break;
 			
 				case 'zenario__user_forms/panels/zenario_user_forms__user_responses':
-					
 					exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 					
 					$form_id = $refinerId;
@@ -1006,31 +645,7 @@ class zenario_user_forms extends module_base_class {
 			}
 		}
 	}
-	
-	public static function getPageBreakCount($formId) {
-		$sql = '
-			SELECT COUNT(*)
-			FROM '.DB_NAME_PREFIX.'user_form_fields
-			WHERE field_type = \'page_break\'
-			AND user_form_id = '.(int)$formId;
-		$result = sqlSelect($sql);
-		$row = sqlFetchRow($result);
-		return $row[0];
-	}
-	
-	private function isFormCRMEnabled($formId) {
-		if (inc('zenario_crm_form_integration')) {
-			$formCRMDetails = getRow(
-				ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', 
-				array('enable_crm_integration'), 
-				array('form_id' => $formId)
-			);
-			if ($formCRMDetails['enable_crm_integration']) {
-				return true;
-			}
-		}
-		return false;
-	}
+
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch($path) {
@@ -1064,7 +679,8 @@ class zenario_user_forms extends module_base_class {
 					unset($box['tabs']['form_fields']['fields']['crm_response']);
 				}
 				
-				$formFields = getRowsArray('user_form_fields', array('name', 'id', 'field_type', 'ord'), array('user_form_id' => request('refiner__form_id')), 'ord');
+				$formFields = self::getUserFormFields(request('refiner__form_id'));
+				
 				$userResponse = array();
 				$result = getRows(ZENARIO_USER_FORMS_PREFIX. 'user_response_data',
 					array('form_field_id', 'value', 'internal_value'),
@@ -1073,21 +689,30 @@ class zenario_user_forms extends module_base_class {
 					$userResponse[$row['form_field_id']] = array('value' => $row['value'], 'internal_value' => $row['internal_value']);
 				}
 				
-				foreach ($formFields as $formField) {
-					if ($formField['field_type'] == 'page_break' || $formField['field_type'] == 'section_description') {
+				foreach ($formFields as $fieldId => $formField) {
+					
+					$type = self::getFieldType($formField);
+					
+					if ($type == 'page_break' || $type == 'section_description') {
 						continue;
 					}
 					$field = array(
 						'class_name' => 'zenario_user_forms',
 						'label' => $formField['name'],
 						'ord' => $formField['ord'] + 10);
-					if ($formField['field_type'] == 'attachment') {
-						$responseValue = isset($userResponse[$formField['id']]['internal_value']) ? $userResponse[$formField['id']]['internal_value'] : '';
+					if ($type == 'attachment' || $type == 'file_picker') {
+						$responseValue = isset($userResponse[$fieldId]['internal_value']) ? $userResponse[$fieldId]['internal_value'] : '';
+						
+						if ($responseValue && ($file = getRow('files', array('mime_type'), $responseValue)) && isImage($file['mime_type'])) {
+							$link = 'zenario/file.php?adminDownload=1&download=1&id=' . $responseValue;
+							$field['post_field_html'] = '<a href="' . $link . '">' . adminPhrase('Download') . '</a>';
+						}
+						
 						$field['upload'] = array();
 						$field['download'] = true;
 					} else {
-						$responseValue = isset($userResponse[$formField['id']]['value']) ? $userResponse[$formField['id']]['value'] : '';
-						if ($formField['field_type'] == 'textarea') {
+						$responseValue = isset($userResponse[$fieldId]['value']) ? $userResponse[$fieldId]['value'] : '';
+						if ($type == 'textarea') {
 							$field['type'] = 'textarea';
 							$field['rows'] = 5;
 						} else {
@@ -1095,7 +720,7 @@ class zenario_user_forms extends module_base_class {
 						}
 					}
 					$field['value'] = $responseValue;
-					$box['tabs']['form_fields']['fields']['form_field_' . $formField['id']] = $field;
+					$box['tabs']['form_fields']['fields']['form_field_' . $fieldId] = $field;
 				}
 				break;
 			case 'zenario_user_dataset_field_picker':
@@ -1285,6 +910,7 @@ class zenario_user_forms extends module_base_class {
 					$formTextFieldLabels;
 				break;
 			
+			/*
 			case 'zenario_user_admin_box_form_field':
 				
 				// If no conditional field types, hide conditional mandatory option and conditional visible option
@@ -1582,11 +1208,13 @@ class zenario_user_forms extends module_base_class {
 					} else {
 						$values['advanced/default_value_mode'] = 'none';
 					}
+
 				} else {
 					$box['tabs']['advanced']['hidden'] = true;
 				}
 				
 				break;
+			*/
 			
 			case 'zenario_email_template':
 				$forms = getRowsArray('user_forms', 'name', array('status' => 'active'), 'name');
@@ -1604,6 +1232,7 @@ class zenario_user_forms extends module_base_class {
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
+			
 			case 'zenario_user_admin_box_form':
 				$fields['details/translate_text']['hidden'] = !checkRowExists('languages', array('translate_phrases' => 1));
 				
@@ -1691,6 +1320,8 @@ class zenario_user_forms extends module_base_class {
 				}
 				
 				break;
+			
+			/*
 			case 'zenario_user_admin_box_form_field':
 				// Display translation boxes for translatable fields with a value entered
 				$languages = getLanguages(false, true, true);
@@ -1900,6 +1531,7 @@ class zenario_user_forms extends module_base_class {
 				}
 				
 				break;
+			*/
 			case 'zenario_email_template':
 				if ($formId = $values['body/user_form']) {
 					// Get list of form fields for form
@@ -1973,58 +1605,6 @@ class zenario_user_forms extends module_base_class {
 		}
 	}
 	
-	public static function getConditionalFields($formId, $withLabelAndOrd = false) {
-		$conditionalFields = array();
-		$sql = '
-			SELECT uff.id, uff.name, IFNULL(cdf.type, uff.field_type) AS type
-			FROM '.DB_NAME_PREFIX.'user_form_fields uff
-			LEFT JOIN '.DB_NAME_PREFIX.'custom_dataset_fields cdf
-				ON uff.user_field_id = cdf.id
-			WHERE uff.user_form_id = '.(int)$formId. '
-			AND IFNULL(cdf.type, uff.field_type) IN 
-				(\'checkbox\', \'radios\', \'select\', \'centralised_radios\', \'centralised_select\')
-			ORDER BY type, uff.name';
-		$result = sqlSelect($sql);
-		$ord = 0;
-		while ($row = sqlFetchAssoc($result)) {
-			$row['type'] = str_replace('_', ' ', ucfirst($row['type']));
-			$conditionalFields[$row['id']] = array(
-				'ord' => ++$ord,
-				'label' => $row['type'].': "'.$row['name'].'"'
-			);
-		}
-		return $conditionalFields;
-	}
-	
-	public static function getConditionalFieldValuesList($fieldId, $withLabelAndOrd = false) {
-		$values = array();
-		$fieldDetails = getRow('user_form_fields', array('user_field_id', 'field_type'), array('id' => $fieldId));
-		if ($customFieldId = $fieldDetails['user_field_id']) {
-			$fieldType = getRow('custom_dataset_fields', 'type', array('id' => $customFieldId));
-			if ($fieldType == 'checkbox') {
-				$values = array(0 => 'Unchecked', 1 => 'Checked');
-			} else {
-				$values = getDatasetFieldLOV($customFieldId);
-			}
-		} else {
-			if ($fieldDetails['field_type'] == 'checkbox') {
-				$values = array(0 => 'Unchecked', 1 => 'Checked');
-			} else {
-				$values = self::getUnlinkedFieldLOV($fieldId);
-			}
-		}
-		if ($withLabelAndOrd) {
-			$ord = 0;
-			foreach ($values as $key => &$value) {
-				$value = array(
-					'ord' => ++$ord,
-					'label' => $value
-				);
-			}
-		}
-		return $values;
-	}
-
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
 			case 'zenario_user_dataset_field_picker':
@@ -2057,6 +1637,7 @@ class zenario_user_forms extends module_base_class {
 					$errors[] = adminPhrase('This form is currently not using the data submitted in any way. Please select at least one of the following options.');
 				}
 				break;
+			/*
 			case 'zenario_user_admin_box_form_field':
 				// Validate lov tab
 				$errors = &$box['tabs']['lov']['errors'];
@@ -2129,7 +1710,7 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 				break;
-			
+			*/
 			case 'zenario_user_forms__export_user_responses':
 				$errors = &$box['tabs']['details']['errors'];
 				if ($values['details/responses_to_export'] === 'specific_date_range') {
@@ -2158,7 +1739,8 @@ class zenario_user_forms extends module_base_class {
 			
 		}
 	}
-
+	
+	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'site_settings':
@@ -2348,6 +1930,7 @@ class zenario_user_forms extends module_base_class {
 					$box['key']['id'] = $newId;
 				}
 				break;
+			/*
 			case 'zenario_user_admin_box_form_field':
 				$record = array();
 				$formId = $box['key']['form_id'];
@@ -2593,7 +2176,7 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 				break;
-			
+			*/
 			case 'zenario_user_forms__export_user_responses':
 				
 				exitIfNotCheckPriv('_PRIV_VIEW_FORM_RESPONSES');
@@ -2658,8 +2241,7 @@ class zenario_user_forms extends module_base_class {
 						break;
 					case 'last_week':
 						$sql .= '
-							AND ur.response_datetime >= (CURDATE() - INTERVAL DAYOFWEEK(CURDATE()) - 1 DAY)
-						';
+							AND ur.response_datetime >= (CURDATE() - INTERVAL DAYOFWEEK(CURDATE()) - 1 DAY)';
 						break;
 					case 'specific_date_range':
 						$from = $values['details/date_from'] . ' 00:00:00';
@@ -2724,6 +2306,702 @@ class zenario_user_forms extends module_base_class {
 				exit;
 		}
 	}
+	
+	// Delete a form
+	public static function deleteForm($formId) {
+		
+		$error = new zenario_error();
+		
+		// Get form details
+		$formDetails = getRow('user_forms', array('name'), $formId);
+		if ($formDetails === false) {
+			$error->add(adminPhrase('Error. Form with ID "[[id]]" does not exist.', array('id' => $formId)));
+			return $error;
+		}
+		
+		// Don't delete forms used in plugins
+		$moduleIds = self::getFormModuleIds();
+		$instanceIds = array();
+		$sql = '
+			SELECT id
+			FROM '.DB_NAME_PREFIX.'plugin_instances
+			WHERE module_id IN ('. inEscape($moduleIds, 'numeric'). ')
+			ORDER BY name';
+		$result = sqlSelect($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			$instanceIds[] = $row['id'];
+		}
+		foreach ($instanceIds as $instanceId) {
+			if (checkRowExists('plugin_settings', array('instance_id' => $instanceId, 'name' => 'user_form', 'value' => $formId))) {
+				$error->add(adminPhrase('Error. Unable to delete form "[[name]]" as it is used in a plugin.', $formDetails));
+				return $error;
+			}
+		}
+		
+		// Don't delete forms with logged responses
+		if (checkRowExists(ZENARIO_USER_FORMS_PREFIX.'user_response', array('form_id' => $formId))) {
+			$error->add(adminPhrase('Error. Unable to delete form "[[name]]" as it has logged user responses.', $formDetails));
+			return $error;
+		}
+		
+		// Send signal that the form is now deleted (sent before actual delete in case modules need to look at any metadata or form fields)
+		sendSignal('eventFormDeleted', array($formId));
+		
+		// Delete form
+		deleteRow('user_forms', $formId);
+		
+		// Delete form fields
+		$result = getRows('user_form_fields', array('id'), array('user_form_id' => $formId));
+		while ($row = sqlFetchAssoc($result)) {
+			self::deleteFormField($row['id'], false, false);
+		}
+		
+		// Delete responses
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'user_response', array('form_id' => $formId));
+		
+		return true;
+	}
+	
+	// Delete a form field
+	public static function deleteFormField($fieldId, $updateOrdinals = true, $formExists = true) {
+		
+		$error = new zenario_error();
+		$formFields = self::getUserFormFields(false, $fieldId);
+		$formField = arrayKey($formFields, $fieldId);
+		
+		if ($formExists) {
+			
+			// Get form field details
+			if (empty($formField)) {
+				$error->add(adminPhrase('Error. Form field with ID "[[id]]" does not exist.', array('id' => $fieldId)));
+				return $error;
+			}
+			
+			// Don't delete form fields used by other fields
+			$sql = '
+				SELECT id, name
+				FROM ' . DB_NAME_PREFIX . 'user_form_fields
+				WHERE restatement_field = ' . (int)$fieldId . '
+				OR numeric_field_1 = ' . (int)$fieldId . '
+				OR numeric_field_2 = ' . (int)$fieldId;
+			$result = sqlSelect($sql);
+			if (sqlNumRows($result) > 0) {
+				$row = sqlFetchAssoc($result);
+				$formField['name2'] = $row['name'];
+				$error->add(adminPhrase('Unable to delete the field "[[name]]" as the field "[[name2]]" depends on it.', $formField));
+				return $error;
+			}
+		}
+		
+		// Send signal that the form field is now deleted (sent before actual delete in case modules need to look at any metadata or field values)
+		sendSignal('eventFormFieldDeleted', array($fieldId));
+		
+		// Delete form field
+		deleteRow('user_form_fields', $fieldId);
+		
+		// Update remaining field ordinals
+		if ($updateOrdinals && !empty($formField)) {
+			$result = getRows('user_form_fields', array('id'), array('user_form_id' => $formField['user_form_id']), 'ord');
+			$ord = 0;
+			while ($row = sqlFetchAssoc($result)) {
+				updateRow('user_form_fields', array('ord' => ++$ord), $row['id']);
+			}
+		}
+		
+		// Delete any field values
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', array('form_field_id' => $fieldId));
+		
+		// Delete any update links
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'form_field_update_link', array('target_field_id' => $fieldId));
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'form_field_update_link', array('source_field_id' => $fieldId));
+		
+		// Delete any files saved as a response if not used elsewhere
+		$type = self::getFieldType($formField);
+		if ($type == 'attachment' || $type == 'file_picker') {
+			$responses = getRows(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('internal_value'), array('form_field_id' => $fieldId));
+			while ($response = sqlFetchAssoc($responses)) {
+				if (!empty($response['internal_value'])) {
+					$sql = '
+						SELECT urd.form_field_id
+						FROM ' . DB_NAME_PREFIX . ZENARIO_USER_FORMS_PREFIX . 'user_response_data urd
+						INNER JOIN ' . DB_NAME_PREFIX . 'user_form_fields uff
+							ON urd.form_field_id = uff.id
+						LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+							ON uff.user_field_id = cdf.id
+						WHERE (uff.field_type = "attachment" OR cdf.type = "file_picker")
+						AND urd.form_field_id != ' . (int)$fieldId . '
+						AND urd.internal_value = ' . (int)$response['internal_value'];
+					$otherFieldResponsesWithSameFile = sqlSelect($sql);
+					if (sqlNumRows($otherFieldResponsesWithSameFile) <= 0) {
+						deleteFile($response['internal_value']);
+					}
+				}
+			}
+		}
+		
+		// Delete any response data
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('form_field_id' => $fieldId));
+		return true;
+	}
+	
+	public static function deleteFormFieldValue($valueId) {
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'form_field_values', array('id' => $valueId));
+		sendSignal('eventFormFieldValueDeleted', array($valueId));
+	}
+	
+	
+	private function drawMenu($nodeId) {
+		$nodes = array();
+		do {
+			$text = getRow('menu_text', 'name', array('menu_id' => $nodeId, 'language_id' => setting('default_language')));
+			$nodes[] = $text;
+			$nodeId = getMenuParent($nodeId);
+		} while ($nodeId != 0);
+		$cID = $cType = false;
+		langSpecialPage('zenario_home', $cID, $cType);
+		if (!($this->cID == $cID && $this->cType == $cType)) {
+			$equivId = equivId($cID, $cType);
+			$sectionId = menuSectionId('Main');
+			$menuId = getRow('menu_nodes', 'id', array('section_id' => $sectionId, 'equiv_id' => $equivId, 'content_type' => $cType));
+			$nodes[] = getRow('menu_text', 'name', array('menu_id' => $menuId, 'language_id' => setting('default_language')));
+		}
+		return $nodes;
+	}
+	
+	public function getFormIdentifier() {
+		return $this->containerId.'_user_form';
+	}
+	
+	private function getCaptchaError($type, $translate) {
+		if ($type == 'word') {
+			if ($this->checkCaptcha()) {
+				$_SESSION['captcha_passed__'. $this->instanceId] = true;
+			} else {
+				return self::formPhrase('Please correctly verify that you are human', array(), $translate);
+			}
+		} elseif ($type == 'math' && isset($_POST['captcha_code'])) {
+			require_once CMS_ROOT. 'zenario/libraries/mit/securimage/securimage.php';
+			$securimage = new Securimage();
+			
+			if ($securimage->check($_POST['captcha_code']) != false) {
+				$_SESSION['captcha_passed__'. $this->instanceId] = true;
+			} else {
+				return self::formPhrase('Please correctly verify that you are human', array(), $translate);
+			}
+		}elseif($type == 'pictures' && isset($_POST['g-recaptcha-response']) && setting('google_recaptcha_site_key') && setting('google_recaptcha_secret_key')){
+			$recaptchaResponse = $_POST['g-recaptcha-response'];
+			$secretKey = setting('google_recaptcha_secret_key');
+			$URL = "https://www.google.com/recaptcha/api/siteverify?secret=".$secretKey."&response=".$recaptchaResponse;
+			$request = file_get_contents($URL);
+			$response = json_decode($request, true);
+
+			if(is_array($response)){
+				if(isset($response['success'])){
+					if($response['success']){
+						$_SESSION['captcha_passed__'. $this->instanceId] = true;
+					}else{
+						return self::formPhrase('Please correctly verify that you are human', array(), $translate);
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static function getFormEncType($formId) {
+		$sql = '
+			SELECT uff.id
+			FROM ' . DB_NAME_PREFIX . 'user_form_fields uff
+			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields AS cdf
+				ON uff.user_field_id = cdf.id
+			WHERE uff.user_form_id = ' . (int)$formId . '
+			AND (uff.field_type = "attachment"
+				OR cdf.type = "file_picker"
+			)';
+		$result = sqlSelect($sql);
+		if (sqlNumRows($result) > 0) {
+			return 'enctype="multipart/form-data"';
+		}
+		return '';
+	}
+	
+	private static function getFormFieldValue($field, $type, $submitted, $loadedFieldValue, $userId, $dataset, &$filePickerValueLink = array()) {
+		
+		$value = false;
+		
+		// If form was submitted, use form data
+		if ($submitted) {
+			if ($type == 'checkboxes') {
+				$values = array();
+				$labels = array();
+				if (!empty($field['user_field_id'])) {
+					$valuesList = getDatasetFieldLOV($field['user_field_id']);
+				} else {
+					$valuesList = self::getUnlinkedFieldLOV($field['form_field_id']);
+				}
+				$fieldName = self::getFieldName($field);
+				
+				if ($valuesList && is_array($loadedFieldValue)) {
+					foreach ($valuesList as $valueId => $label) {
+						if (isset($loadedFieldValue[$valueId . '_' . $fieldName])) {
+							$labels[] = $label;
+							$values[] = $valueId;
+						}
+					}
+				}
+				$value = array(
+					'ids' => implode(',', $values),
+					'labels' => implode(',', $labels)
+				);
+			} elseif ($type == 'file_picker') {
+				
+				$values = array();
+				
+				$filesCount = 0;
+				$maxFilesCount = $field['multiple_select'] ? 5 : 1;
+				$files = array_intersect_key($loadedFieldValue, array_flip(preg_grep('/^file_picker_' . $field['form_field_id'] . '_\d+$/', array_keys($loadedFieldValue))));
+				foreach ($files as $inputName => $fileValue) {
+					
+					$values[] = '"' . str_replace('"', '\\"', $fileValue) . '"';
+					$filePickerValueLink[$fileValue] = $inputName;
+					
+					if (++$filesCount >= $maxFilesCount) {
+						break;
+					}
+				}
+				$value = implode(',', $values);
+				
+			} else {
+				$value = $loadedFieldValue;
+			}
+		
+		// If preloading users data try and get data
+		} elseif ($userId && !empty($field['user_field_id'])) {
+			
+			if ($type == 'checkboxes') {
+				$value = array();
+				$value['ids'] = getDatasetFieldValue($userId, $field['user_field_id'], $dataset);
+			} else {
+				$value = getDatasetFieldValue($userId, $field['user_field_id'], $dataset);
+			}
+		
+		// If no data to get, look for a default value
+		} elseif (in_array($type, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
+			if ($field['default_value'] !== null) {
+				$value = $field['default_value'];
+			} elseif (!empty($field['default_value_class_name']) && !empty($field['default_value_method_name'])) {
+				inc($field['default_value_class_name']);
+				$value = call_user_func(array($field['default_value_class_name'], $field['default_value_method_name']), $field['default_value_param_1'], $field['default_value_param_2']);
+			}
+		}
+		return $value;
+	}
+	
+	public static function getUserFormFields($userFormId, $formFieldId = false, $type = false) {
+		$formFields = array();
+		$sql = "
+			SELECT 
+				uff.id AS form_field_id, 
+				uff.user_field_id,
+				uff.user_form_id,
+				uff.ord, 
+				uff.is_readonly, 
+				uff.is_required,
+				uff.mandatory_condition_field_id,
+				uff.mandatory_condition_field_value,
+				uff.visibility,
+				uff.visible_condition_field_id,
+				uff.visible_condition_field_value,
+				uff.label AS field_label,
+				uff.name,
+				uff.placeholder,
+				uff.size,
+				uff.default_value,
+				uff.default_value_class_name,
+				uff.default_value_method_name,
+				uff.default_value_param_1,
+				uff.default_value_param_2,
+				uff.note_to_user,
+				uff.css_classes,
+				uff.div_wrap_class,
+				uff.required_error_message,
+				uff.validation AS field_validation,
+				uff.validation_error_message,
+				uff.field_type,
+				uff.next_button_text,
+				uff.previous_button_text,
+				uff.description,
+				uff.numeric_field_1,
+				uff.numeric_field_2,
+				uff.calculation_type,
+				uff.restatement_field,
+				uff.values_source,
+				uff.values_source_filter,
+				
+				cdf.id AS field_id, 
+				cdf.type, 
+				cdf.db_column, 
+				cdf.label,
+				cdf.default_label,
+				cdf.is_system_field, 
+				cdf.dataset_id, 
+				cdf.validation, 
+				cdf.validation_message,
+				cdf.multiple_select,
+				cdf.store_file,
+				cdf.extensions,
+				cdf.values_source AS dataset_values_source
+				
+			FROM ". DB_NAME_PREFIX ."user_forms AS uf
+			INNER JOIN ". DB_NAME_PREFIX ."user_form_fields AS uff
+				ON uf.id = uff.user_form_id
+			LEFT JOIN ". DB_NAME_PREFIX ."custom_dataset_fields AS cdf
+				ON uff.user_field_id = cdf.id
+			WHERE TRUE";
+		if ($userFormId !== false) {
+			$sql .= "
+				AND uf.id = ". (int)$userFormId;
+		}
+		if ($formFieldId !== false) {
+			$sql .= '
+				AND uff.id = '.(int)$formFieldId;
+		}
+		$sql .= "
+			ORDER BY uff.ord";
+		
+		$result = sqlQuery($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			// Filter on type
+			if ($type) {
+				$row['type'] = self::getFieldType($row);
+				if ($row['type'] != $type) {
+					continue;
+				}
+			}
+			
+			// Use dataset label for dataset field names
+			if ($row['field_id']) {
+				$row['name'] = $row['label'] ? $row['label'] : $row['default_label'];
+			}
+			
+			$row['ord'] = (int)$row['ord'];
+			$row['form_field_id'] = (int)$row['form_field_id'];
+			$row['is_readonly'] = (int)$row['is_readonly'];
+			$row['is_required'] = (int)$row['is_required'];
+			$row['user_field_id'] = (int)$row['user_field_id'];
+			$row['visible_condition_field_id'] = (int)$row['visible_condition_field_id'];
+			$row['mandatory_condition_field_id'] = (int)$row['mandatory_condition_field_id'];
+			$row['field_id'] = (int)$row['field_id'];
+			$row['is_system_field'] = (int)$row['is_system_field'];
+			$row['dataset_id'] = (int)$row['dataset_id'];
+			$row['numeric_field_1'] = (int)$row['numeric_field_1'];
+			$row['numeric_field_2'] = (int)$row['numeric_field_2'];
+			$formFields[$row['form_field_id']] = $row;
+		}
+		return $formFields;
+	}
+	
+	public static function drawUserForm($userFormId, $loadData = false, $readOnly = false, $errors = array(), $checkboxColumns = 1, $containerId = '') {
+		return require funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	public static function validateUserForm($userFormId, $data, $pageNo = 0) {
+		return require funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	public static function saveUserForm($userFormId, &$data, $userId, $url = false, $breadCrumbs = false) {
+		return require funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	
+	public static function formPhrase($phrase, $mergeFields = array(), $translate) {
+		if ($translate) {
+			return phrase($phrase, $mergeFields, 'zenario_user_forms');
+		}
+		return $phrase;
+	}
+	
+	public static function getFieldType($field) {
+		return (!empty($field['type']) ? $field['type'] : $field['field_type']);
+	}
+	
+	public static function getFieldName($field) {
+		return ($field['db_column'] ? $field['db_column'] : 'unlinked_'. $field['field_type'].'_'.$field['form_field_id']);
+	}
+	
+	public static function filterFormFieldsByPage(&$formFields, $pageNo) {
+		$currentPageNo = 1;
+		foreach ($formFields as $fieldId => $field) {
+			if ($pageNo != $currentPageNo) {
+				unset($formFields[$fieldId]);
+			}
+			if ($field['field_type'] == 'page_break') {
+				unset($formFields[$fieldId]);
+				$currentPageNo++;
+			}
+		}
+	}
+	
+	protected static function getTemplateEmailMergeFields($values, $userId, $sendToAdmin = false) {
+		$emailMergeFields = array();
+		foreach($values as $fieldId => $fieldData) {
+			if (isset($fieldData['attachment'])) {
+				if ($sendToAdmin) {
+					$fieldData['value'] = absCMSDirURL() . 'zenario/file.php?adminDownload=1&id=' . $fieldData['internal_value'];
+				} else {
+					$fieldData['value'] = absCMSDirURL() . fileLink($fieldData['internal_value']);
+				}
+			}
+			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
+				$fieldData['value'] = $fieldData['value'];
+			}
+			$emailMergeFields[$fieldData['db_column']] = $fieldData['value'];
+		}
+		
+		if ($userId) {
+			if (setting('plaintext_extranet_user_passwords')) {
+				$userDetails = getUserDetails($userId);
+				$emailMergeFields['password'] = $userDetails['password'];
+			}
+			$emailMergeFields['user_id'] = $userId;
+		}
+		
+		$emailMergeFields['cms_url'] = absCMSDirURL();
+		return $emailMergeFields;
+	}
+	
+	protected static function mergeUserData($fields, $userId, $login) {
+		$userDetails = getUserDetails($userId);
+		$mergeFields = array();
+		foreach ($fields as $fieldName => $value) {
+			if (isset($userDetails[$fieldName]) && empty($userDetails[$fieldName])) {
+				$mergeFields[$fieldName] = $value;
+			}
+		}
+		if ($login) {
+			$mergeFields['status'] = 'active';
+		}
+		saveUser($mergeFields, $userId);
+	}
+	
+	protected static function saveUser($fields, $userId = false) {
+		$newId = saveUser($fields, $userId);
+		
+		if ($userId) {
+			sendSignal(
+				'eventUserModified',
+				array('id' => $userId));
+		} else {
+			sendSignal(
+				'eventUserCreated',
+				array('id' => $newId));
+		}
+		return $newId;
+	}
+	
+	protected static function saveUserCustomData($userCustomFields, $userId, $merge = false) {
+		$userDetails = getUserDetails($userId);
+		$mergeFields = array();
+		// Don't save readonly fields or, if merging, only if no previous field data exists
+		foreach ($userCustomFields as $fieldId => $fieldData) {
+			if (empty($fieldData['readonly']) && (!$merge || (isset($userDetails[$fieldData['db_column']]) && empty($userDetails[$fieldData['db_column']])))) {
+				$mergeFields[$fieldData['db_column']] = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
+			}
+		}
+		if (!empty($mergeFields)) {
+			setRow('users_custom_data', $mergeFields, array('user_id' => $userId));
+		}
+	}
+	
+	protected static function saveUserMultiCheckboxData($checkBoxValues, $userId, $merge = false) {
+		$dataset = getDatasetDetails('users');
+		foreach ($checkBoxValues as $fieldId => $fieldData) {
+			if (empty($fieldData['readonly']) && $fieldData['value_type'] != 'unlinked') {
+				
+				$valuesList = getDatasetFieldLOV($fieldData['user_field_id']);
+				$canSave = false;
+				
+				if ($merge) {
+					$valueFound = false;
+					// Find if this field has been previously completed
+					foreach ($valuesList as $id => $label) {
+						if (checkRowExists('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $id, 'linking_id' => $userId))) {
+							$valueFound = true;
+							break;
+						}
+					}
+					// If no values found, save data
+					if (!$valueFound && $fieldData['internal_value']) {
+						$canSave = true;
+					}
+				} else {
+					// Delete current saved values
+					foreach ($valuesList as $id => $label) {
+						deleteRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $id, 'linking_id' => $userId));
+					}
+					// Save new values
+					if ($fieldData['internal_value']) {
+						$canSave = true;
+					}
+				}
+				
+				if ($canSave) {
+					$valuesList = explode(',', $fieldData['internal_value']);
+					foreach ($valuesList as $value) {
+						insertRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'value_id' => $value, 'linking_id' => $userId));
+					}
+				}
+			}
+		}
+	}
+	
+	
+	protected static function saveUserFilePickerData($filePickerValues, $userId, $merge = false) {
+		$dataset = getDatasetDetails('users');
+		foreach ($filePickerValues as $fieldId => $fieldData) {
+			if (empty($fieldData['readonly'])) {
+				$fileExists = checkRowExists(
+					'custom_dataset_files_link', 
+					array(
+						'dataset_id' => $dataset['id'], 
+						'field_id' => $fieldData['user_field_id'], 
+						'linking_id' => $userId
+					)
+				);
+				if (!$merge || ($merge && !$fileExists)) {
+					
+					// Remove other files stored against this field for this user
+					deleteRow(
+						'custom_dataset_files_link', 
+						array(
+							'dataset_id' => $dataset['id'], 
+							'field_id' => $fieldData['user_field_id'], 
+							'linking_id' => $userId
+						)
+					);
+					
+					$fileIds = explode(',', $fieldData['internal_value']);
+					
+					foreach ($fileIds as $fileId) {
+						// Add the new file
+						setRow(
+							'custom_dataset_files_link', 
+							array(), 
+							array(
+								'dataset_id' => $dataset['id'], 
+								'field_id' => $fieldData['user_field_id'], 
+								'linking_id' => $userId, 
+								'file_id' => $fileId)
+						);
+					}
+				}
+			}
+		}
+	}
+	
+	private static function getFormModuleIds() {
+		$ids = array();
+		$formModuleClassNames = array('zenario_user_forms', 'zenario_extranet_profile_edit');
+		foreach($formModuleClassNames as $moduleClassName) {
+			if ($id = getModuleIdByClassName($moduleClassName)) {
+				$ids[] = $id;
+			}
+		}
+		return $ids;
+	}
+	
+	private static function getModuleClassNameByInstanceId($id) {
+		$sql = '
+			SELECT class_name
+			FROM '.DB_NAME_PREFIX.'modules m
+			INNER JOIN '.DB_NAME_PREFIX.'plugin_instances pi
+				ON m.id = pi.module_id
+			WHERE pi.id = '.(int)$id;
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		return $row[0];
+	}
+	
+		
+	public static function getPageBreakCount($formId) {
+		$sql = '
+			SELECT COUNT(*)
+			FROM '.DB_NAME_PREFIX.'user_form_fields
+			WHERE field_type = \'page_break\'
+			AND user_form_id = '.(int)$formId;
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		return $row[0];
+	}
+	
+	private function isFormCRMEnabled($formId) {
+		if (inc('zenario_crm_form_integration')) {
+			$formCRMDetails = getRow(
+				ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_data', 
+				array('enable_crm_integration'), 
+				array('form_id' => $formId)
+			);
+			if ($formCRMDetails['enable_crm_integration']) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/*
+	public static function getConditionalFields($formId, $withLabelAndOrd = false) {
+		$conditionalFields = array();
+		$sql = '
+			SELECT uff.id, uff.name, IFNULL(cdf.type, uff.field_type) AS type
+			FROM '.DB_NAME_PREFIX.'user_form_fields uff
+			LEFT JOIN '.DB_NAME_PREFIX.'custom_dataset_fields cdf
+				ON uff.user_field_id = cdf.id
+			WHERE uff.user_form_id = '.(int)$formId. '
+			AND IFNULL(cdf.type, uff.field_type) IN 
+				(\'checkbox\', \'group\', \'radios\', \'select\', \'centralised_radios\', \'centralised_select\')
+			ORDER BY type, uff.name';
+		$result = sqlSelect($sql);
+		$ord = 0;
+		while ($row = sqlFetchAssoc($result)) {
+			$row['type'] = str_replace('_', ' ', ucfirst($row['type']));
+			$conditionalFields[$row['id']] = array(
+				'ord' => ++$ord,
+				'label' => $row['type'].': "'.$row['name'].'"'
+			);
+		}
+		return $conditionalFields;
+	}
+	
+	public static function getConditionalFieldValuesList($fieldId, $withLabelAndOrd = false) {
+		$values = array();
+		$fieldDetails = getRow('user_form_fields', array('user_field_id', 'field_type'), array('id' => $fieldId));
+		if ($customFieldId = $fieldDetails['user_field_id']) {
+			$fieldType = getRow('custom_dataset_fields', 'type', array('id' => $customFieldId));
+			if ($fieldType == 'checkbox' || $fieldType == 'group') {
+				$values = array(0 => 'Unchecked', 1 => 'Checked');
+			} else {
+				$values = getDatasetFieldLOV($customFieldId);
+			}
+		} else {
+			if ($fieldDetails['field_type'] == 'checkbox') {
+				$values = array(0 => 'Unchecked', 1 => 'Checked');
+			} else {
+				$values = self::getUnlinkedFieldLOV($fieldId);
+			}
+		}
+		if ($withLabelAndOrd) {
+			$ord = 0;
+			foreach ($values as $key => &$value) {
+				$value = array(
+					'ord' => ++$ord,
+					'label' => $value
+				);
+			}
+		}
+		return $values;
+	}
+	*/
+	
 	
 	public static function getMaxOrdinalOfFormFields($formId) {
 		$sql = '
@@ -2850,6 +3128,33 @@ class zenario_user_forms extends module_base_class {
 	}
 	
 	public static function scanTextForProfanities($txt) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+		$profanityCsvFilePath = CMS_ROOT . 'zenario/libraries/not_to_redistribute/profanity-filter/profanities.csv';
+		$csvFile = fopen($profanityCsvFilePath,"r");
+		
+		$profanityArr = array();
+		$preparedProfanityWords = array();
+		
+		while(!feof($csvFile)) {
+			$currentProfanity = fgetcsv($csvFile);
+			$profanityArr[$currentProfanity[0]] = $currentProfanity[1];
+		}
+		
+		foreach ($profanityArr as $k=>$v) {
+			$k = str_replace('-','\\W*',$k);
+			$preparedProfanityWords[$k] = $v;
+		}
+		
+		fclose($csvFile);
+		
+		$profanityCount = 0;
+		$txt = strip_tags($txt);
+		$txt = html_entity_decode($txt,ENT_QUOTES);
+		
+		foreach ($preparedProfanityWords as $k=>$v) {
+			preg_match_all("#\b".$k."(?:es|s)?\b#si",$txt, $matches, PREG_SET_ORDER);
+			$profanityCount += count($matches)*$v;
+		}
+		
+		return $profanityCount;
 	}
 }

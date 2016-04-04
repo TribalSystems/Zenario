@@ -309,6 +309,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 			}
 		}
 		
+		checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
+		
 		echo json_encode($a);
 		exit;
 	
@@ -383,10 +385,6 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		
 		} else {
 			header('Content-Type: text/html; charset=UTF-8');
-			
-			//require_once(CMS_ROOT. 'zenario/adminheader.inc.php');
-			//checkForChangesInCssJsAndHtmlFiles();
-			//$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
 			
 			echo
 			'<!DOCTYPE HTML>

@@ -30,7 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $module = getModuleDetails($moduleId);
 
 if (!$uninstallRunningModules){
-	if ($module['status'] == 'module_running') {
+	if ($module['status'] == 'module_running'
+	 || $module['status'] == 'module_is_abstract') {
 		echo adminPhrase('Running modules cannot be Uninstalled');
 		exit;
 	}

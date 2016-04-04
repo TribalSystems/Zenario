@@ -42,7 +42,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenarioAF, boxNum
 ) {
 	"use strict";
@@ -63,6 +63,7 @@ methods.init = function(globalName, microtemplatePrefix) {
 	this.cachedAJAXSnippets = {};
 	this.changed = {};
 	this.toggleLevelsPressed = {};
+	this.lastFieldInFocus = false;
 };
 
 
@@ -128,7 +129,7 @@ methods.start = function(path, key, tab, values) {
 	this.key = ifNull(key, {});
 	this.tab = tab;
 	this.shownTab = false;
-	this.url = this.getURL();
+	this.url = this.getURL('start');
 	
 	this.retryAJAX(
 		this.url,
@@ -221,14 +222,18 @@ methods.initFields = function() {
 
 methods.loadValuesFromOrganizerPath = function(field) {
 	
-	var i, panel;
+	var i, panel, item;
 	
 	if (field.load_values_from_organizer_path && !field.values) {
 		field.values = {};
-		if (panel = zenarioA.getSKItem(field.load_values_from_organizer_path)) {
+		if (panel = zenarioA.getItemFromOrganizer(field.load_values_from_organizer_path)) {
 			if (panel.items) {
-				foreach (panel.items as i) {
-					field.values[zenario.decodeItemIdForOrganizer(i)] = zenarioA.formatSKItemName(panel, i);
+				foreach (panel.items as i => item) {
+					field.values[zenario.decodeItemIdForOrganizer(i)] = {
+						list_image: item.list_image,
+						css_class: item.css_class || (panel.item && panel.item.css_class),
+						label: zenarioA.formatOrganizerItemName(panel, i)
+					};
 				}
 			}
 		}
@@ -372,7 +377,7 @@ methods.toggleLevel = function(tuixObject) {
 
 methods.format = function(wipeValues) {
 	var url;
-	if (!this.loaded || !(url = this.getURL())) {
+	if (!this.loaded || !(url = this.getURL('format'))) {
 		return;
 	}
 	
@@ -397,7 +402,7 @@ methods.format = function(wipeValues) {
 
 methods.validate = function(differentTab, tab, wipeValues, callBack) {
 	var url;
-	if (!this.loaded || !(url = this.getURL())) {
+	if (!this.loaded || !(url = this.getURL('validate'))) {
 		return;
 	}
 	
@@ -465,7 +470,7 @@ methods.switchToATabWithErrors = function() {
 
 methods.save = function(confirm, saveAndContinue, createAnother) {
 	var url;
-	if (!this.loaded || !(url = this.getURL())) {
+	if (!this.loaded || !(url = this.getURL('save'))) {
 		return;
 	}
 	
@@ -490,7 +495,7 @@ methods.save = function(confirm, saveAndContinue, createAnother) {
 		_box: this.sendStateToServer()};
 	
 	if (engToBoolean(this.tuix.download) || (this.tuix.confirm && engToBoolean(this.tuix.confirm.download))) {
-		this.save2(zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest(post)), saveAndContinue, createAnother);
+		this.save2(zenario.nonAsyncAJAX(this.getURL('save'), zenario.urlRequest(post)), saveAndContinue, createAnother);
 	} else {
 		this.retryAJAX(
 			url,
@@ -517,7 +522,7 @@ methods.save2 = function(data, saveAndContinue, createAnother) {
 			this.showConfirm(saveAndContinue, createAnother);
 		
 		} else if (('' + data).substr(0, 15) == '<!--Download-->') {
-			get('zenario_iframe_form').action = this.getURL();
+			get('zenario_iframe_form').action = this.getURL('download');
 			get('zenario_iframe_form').innerHTML =
 				'<input type="hidden" name="_download" value="1"/>' +
 				'<input type="hidden" name="_box" value="' + htmlspecialchars(this.sendStateToServer()) + '"/>';
@@ -667,7 +672,7 @@ methods.animateInTab = function(html, cb, $shakeme) {
 	
 	//A new/different tab - fade it in
 	} else {
-		this.insertHTML(html, cb);
+		this.insertHTML(html, cb, true);
 		$('#zenario_abtab').clearQueue().show().animate({opacity: 1}, 150, function() {
 			if (zenario.browserIsIE()) {
 				this.style.removeAttribute('filter');
@@ -829,11 +834,12 @@ methods.drawFields = function(cb) {
 	return html;
 };
 
-methods.insertHTML = function(html, cb) {
+methods.insertHTML = function(html, cb, isNewTab) {
 	var id,
 		tab = get('zenario_abtab'),
 		details,
-		language;
+		language,
+		DOMlastFieldInFocus;
 	
 	tab.innerHTML = html;
 	this.tabHidden = false;
@@ -845,6 +851,12 @@ methods.insertHTML = function(html, cb) {
 	}
 	
 	cb.call();
+	
+	if (!isNewTab
+	 && this.lastFieldInFocus
+	 && (DOMlastFieldInFocus = get(this.lastFieldInFocus))) {
+		DOMlastFieldInFocus.focus();
+	}
 };
 
 methods.hideShowFields = function(onShowFunction) {
@@ -1018,6 +1030,11 @@ methods.checkValues = function(wipeValues) {
 			}
 		}
 	}
+	
+	if (document
+	 && document.activeElement) {
+		this.lastFieldInFocus = document.activeElement.id;
+	}
 };
 
 	
@@ -1094,6 +1111,7 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 		extraAttAfter = {},
 		isNormalTextField = true,
 		parentsValuesExist = false;
+
 	
 	//Load field values if an LOV is in use
 	if (lov === undefined) {
@@ -1462,7 +1480,7 @@ methods.drawField = function(cb, tab, id, customTemplate, lov, field, value, rea
 					},
 				options,
 				readonlyOptions = {
-						script_url: URLBasePath + zenarioA.tinyMCEPath,
+						script_url: URLBasePath + zenario.tinyMCEPath,
 		
 						inline: false,
 						menubar: false,
@@ -1899,12 +1917,47 @@ methods.hierarchicalSelect = function(value, field, sortOrder, parentsValuesExis
 methods.chooseFromDropbox = function(id) {
 				
 	var that = this,
-		field, options;
+		field,
+		options,
+		e, extension, extensions, split;
 
 	if (!this.tuix.tabs[this.tuix.tab]
 	 || !(field = this.tuix.tabs[this.tuix.tab].fields[id])
 	 || !(field.upload)) {
 		return false;
+	}
+	
+	if (extensions = field.upload.extensions || field.upload.accept) {
+		if (_.isString(extensions)) {
+			extensions = extensions.split(',');
+		} else {
+			extensions = _.toArray(extensions);
+		}
+	}
+	
+	//Dropbox has a set format that it uses.
+	//Attempt to automatically convert a few common things to the correct format
+	foreach (extensions as e => extension) {
+		
+		//Look for expressions such as "image/*", and convert them into the dropbox equivalents
+		split = extension.split('/');
+		if (split[1] !== undefined) {
+			if (split[0] == 'images') {
+				extensions[e] = 'image';
+			} else {
+				extensions[e] = split[0];
+			}
+		
+		//Look for file extensions without a "." in front of them, and automatically add the "."
+		} else
+		if (extension != 'text'
+		 && extension != 'documents'
+		 && extension != 'images'
+		 && extension != 'video'
+		 && extension != 'audio'
+		 && extension.substr(0, 1) != '.') {
+			extensions[e] = '.' + extension;
+		}
 	}
 	
 	options = {
@@ -1929,7 +1982,7 @@ methods.chooseFromDropbox = function(id) {
 		// only be able to select files with these extensions. You may also specify
 		// file types, such as "video" or "images" in the list. For more information,
 		// see File types below. By default, all extensions are allowed.
-		extensions: field.upload.extensions? _.toArray(field.upload.extensions) : undefined,
+		extensions: extensions,
 
 		// Required. Called when a user selects an item in the Chooser.
 		success: function(files) {
@@ -2121,6 +2174,8 @@ methods.pickedItemsArray = function(field, value) {
 	var items = (value + '').split(','),
 		picked_items = {},
 		panel,
+		label,
+		item,
 		file,
 		k, i;
 	
@@ -2153,19 +2208,25 @@ methods.pickedItemsArray = function(field, value) {
 			} else
 			if (field.pick_items
 			 && ((field.pick_items.target_path
-			   && (panel = zenarioA.getSKItem(field.pick_items.target_path, i)))
+			   && (panel = zenarioA.getItemFromOrganizer(field.pick_items.target_path, i)))
 			  || (field.pick_items.path
 			   && field.pick_items.path != field.pick_items.target_path
 			   && field.pick_items.path.indexOf('//') == -1
-			   && (panel = zenarioA.getSKItem(field.pick_items.path, i)))
+			   && (panel = zenarioA.getItemFromOrganizer(field.pick_items.path, i)))
 			)) {
 				if (!field.values) {
 					field.values = {};
 				}
 				
-				field.values[i] =
-				picked_items[i] =
-					zenarioA.formatSKItemName(panel, i);
+				label = zenarioA.formatOrganizerItemName(panel, i);
+				item = panel.items && panel.items[i] || {};
+				
+				picked_items[i] = label;
+				field.values[i] = {
+					list_image: item.list_image,
+					css_class: item.css_class || (panel.item && panel.item.css_class),
+					label: label
+				};
 			
 			//If an id was set but no label, and this is an upload field,
 			//then attempt to look up the filename
@@ -2452,6 +2513,7 @@ methods.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 				widthAndHeight,
 				path,
 				src,
+				valueObject = field.values && _.isObject(field.values[item]) && field.values[item] || {},
 				mi = {
 					id: id,
 					item: item,
@@ -2459,7 +2521,10 @@ methods.drawPickedItems = function(id, readOnly, tempReadOnly, tab) {
 					first: i == 0,
 					last: i == sortedPickedItems.length - 1,
 					readOnly: readOnly,
-					tempReadOnly: tempReadOnly};
+					tempReadOnly: tempReadOnly,
+					css_class: valueObject.css_class,
+					list_image: valueObject.list_image
+				};
 			
 			if (mi.newRow = (++col > cols)) {
 				col = 1;
@@ -2615,14 +2680,18 @@ methods.pickItems = function(id) {
 
 methods.setPickedItems = function(path, key, row, panel) {
 	var id = this.SKTarget,
-		item, 
-		ditem;
+		i, eni, item,
 		values = {};
 	
-	foreach (key._items as item) {
-		ditem = zenario.decodeItemIdForOrganizer(item);
+	foreach (key._items as eni) {
+		i = zenario.decodeItemIdForOrganizer(eni);
+		item = panel.items && panel.items[i] || {};
 		
-		values[ditem] = zenarioA.formatSKItemName(panel, item);
+		values[i] = {
+			list_image: item.list_image,
+			css_class: item.css_class || (panel.item && panel.item.css_class),
+			label: zenarioA.formatOrganizerItemName(panel, i)
+		};
 	}
 	
 	this.addToPickedItems(values, id);
@@ -2771,7 +2840,8 @@ methods.fieldChange = function(id, lov) {
 		return;
 	}
 	
-	var tab = this.tuix.tab,
+	var that = this,
+		tab = this.tuix.tab,
 		field = this.tuix.tabs[tab].fields[id];
 	
 	if (field.indeterminate) {
@@ -2791,7 +2861,13 @@ methods.fieldChange = function(id, lov) {
 		this.meMarkChanged(id);
 	}
 	
-	this.validateFormatOrRedrawForField(field);
+	//If a field has changed, check whether we need to redraw, format or validate the FAB.
+	//However, if this was done immediately it would mess up people's tab-switching, as the fields
+	//would be destroyed mid-tab-select.
+	//I'm using setTimeout() as little hack to allow the tab switching to finish first.
+	setTimeout(function() {
+		that.validateFormatOrRedrawForField(field);
+	}, 1);
 };
 
 methods.validateFormatOrRedrawForField = function(field) {
@@ -2917,11 +2993,12 @@ methods.meChange = function(changed, id, confirm) {
 };
 
 
-methods.currentValue = function(f, tab) {
-	if (tab == this.tuix.tab) {
+methods.currentValue = function(f, tab, readOnly) {
+	
+	if (!readOnly && tab == this.tuix.tab) {
 		return this.readField(f);
 	} else {
-		return this.value(f, tab);
+		return this.value(f, tab, readOnly);
 	}
 };
 
@@ -3032,7 +3109,7 @@ methods.readField = function(f) {
 		if (field.type == 'editor') {
 			if (window.tinyMCE) {
 				if (tinyMCE.get(f)) {
-					content = zenarioA.tinyMCEGetContent(tinyMCE.get(f));
+					content = zenario.tinyMCEGetContent(tinyMCE.get(f));
 				}
 			}
 		} else if (field.type == 'code_editor') {
@@ -3112,6 +3189,11 @@ methods.readTab = function() {
 		}
 	}
 	
+	if (document
+	 && document.activeElement) {
+		this.lastFieldInFocus = document.activeElement.id;
+	}
+	
 	return values;
 };
 
@@ -3143,14 +3225,14 @@ methods.redrawTab = function() {
 
 
 //Get a URL needed for an AJAX request
-methods.getURL = function() {
+methods.getURL = function(action) {
 	//Outdate any validation attempts
 	++this.onKeyUpNum;
 	
-	return this.returnAJAXURL();
+	return this.returnAJAXURL(action);
 };
 
-methods.returnAJAXURL = function() {
+methods.returnAJAXURL = function(action) {
 	return '...';
 };
 
@@ -3309,7 +3391,7 @@ methods.getValueArrayofArrays = function(leaveAsJSONString) {
 	return zenario.nonAsyncAJAX(this.getURL(), zenario.urlRequest({_read_values: true, _box: this.sendStateToServer()}), !leaveAsJSONString);
 };
 
-methods.getValues1D = function(pluginSettingsOnly) {
+methods.getValues1D = function(pluginSettingsOnly, includeTabNames, readOnly) {
 	
 	var t, tab, f, field, name, values = {};
 	
@@ -3320,10 +3402,14 @@ methods.getValues1D = function(pluginSettingsOnly) {
 				foreach (tab.fields as f => field) {
 					if (pluginSettingsOnly) {
 						if (name = field.plugin_setting && field.plugin_setting.name) {
-							values[name] = this.currentValue(f, t);
+							values[name] = this.currentValue(f, t, readOnly);
 						}
 					} else {
-						values[f] = this.currentValue(f, t);
+						values[f] = this.currentValue(f, t, readOnly);
+					}
+					
+					if (includeTabNames) {
+						values[t + '/' + f] = values[f];
 					}
 				}
 			}

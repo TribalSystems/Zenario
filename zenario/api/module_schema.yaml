@@ -64,6 +64,28 @@ properties:
             If you don't specify this property, or don't write a <code>description.yaml</code> file for your
             module, then the CMS will take an intelligent guess based on whether you have
             the <code>showSlot()</code> function in your module_code.php.
+    is_abstract:
+        type: boolean
+        description: >
+            If you set this property, your module will always be running if it is present in the filesystem,
+            but it cannot be suspended and it will not appear in Organizer.
+            
+            You can use this from version 7.2 onwards.
+    fill_organizer_nav:
+        type: boolean
+        default: "(Intelligent default)"
+        description: >
+            If you set this property, Organizer will call your module's fillOrganizerNav() method
+            when loading Organizer.
+            
+            If you don't have any navigation, or you have navigation but don't want to modify it
+            in PHP, you should set this to false for a faster load time.
+        
+            If you don't specify this property, or don't write a <code>description.yaml</code> file for your
+            module, then the CMS will take an intelligent guess based on whether you have
+            the <code>fillOrganizerNav()</code> function in your module_code.php.
+            
+            You can use this from version 7.2 onwards.
     default_instance_name:
         type: string
         default: "(Your module's class name)"
@@ -351,8 +373,15 @@ properties:
                 content_type_name_en:
                     type: string
                     description: >
-                        An English name for the content type.
+                        An English name for the content type, e.g. "Web page".
                         This will be shown to administrators.
+                content_type_plural_en:
+                    type: string
+                    description: >
+                        A plural name, e.g. "Web pages". Defaults to content_type_name_en if not set. 
+                        This will be shown to administrators.
+                        
+                        This works from version 7.2 onwards.
                 default_template_name:
                     type: string
                     description: >

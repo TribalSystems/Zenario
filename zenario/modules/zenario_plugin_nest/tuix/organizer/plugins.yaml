@@ -155,7 +155,7 @@ zenario__modules:
                             request:
                                 upload_banner: "1"
                     nest_settings:
-                        label: Nest properties
+                        label: Edit nest and nested plugins
                         only_show_on_refiner: nest
                         admin_box:
                             path: plugin_settings

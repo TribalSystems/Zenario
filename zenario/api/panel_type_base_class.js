@@ -43,7 +43,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	panelTypes
 ) {
 	"use strict";
@@ -112,7 +112,7 @@ methods.cmsSetsSearchTerm = function(searchTerm) {
 //or do something different by returning a URL to a different PHP script
 methods.returnAJAXURL = function() {
 	return URLBasePath
-		+ 'zenario/admin/ajax.php?_json=1&path='
+		+ 'zenario/admin/organizer.ajax.php?path='
 		+ encodeURIComponent(this.path)
 		+ zenario.urlRequest(this.returnAJAXRequests());
 };
@@ -252,6 +252,11 @@ methods.showButtons = function($buttons) {
 //It's also called on the first load of your panel after your showPanel() and setButtons() methods have been called.
 methods.sizePanel = function($header, $panel, $footer, $buttons) {
 	//...
+};
+
+//Called whenever Organizer has saved an item and wants to display a toast message to the administrator
+methods.displayToastMessage = function(message, itemId) {
+	toastr.success(message);
 };
 
 //This is called when an admin navigates away from your panel, or your panel is about to be refreshed/reloaded.

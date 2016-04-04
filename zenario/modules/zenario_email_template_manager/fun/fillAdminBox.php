@@ -39,24 +39,31 @@ switch ($path) {
 			}
 			
 			if ($box['key']['duplicate']) {
-				$box['title'] = adminPhrase('Duplicating the Email Template "[[template_name]]"', $details);
+				$box['title'] = adminPhrase('Duplicating the email template "[[template_name]]"', $details);
+				unset($box['title_for_existing_records']);
+				unset($box['identifier']);
 			} else {
-				$box['title'] = adminPhrase('Viewing/Editing the Email Template "[[template_name]]"', $details);
+				$box['identifier']['value'] = $details['id'];
 			}
-			
 			$box['key']['numeric_id'] = $details['id'];
 			
-			$box['tabs']['meta_data']['fields']['template_name']['value'] = $details['template_name'];
-			$box['tabs']['meta_data']['fields']['subject']['value'] = $details['subject'];
-			$box['tabs']['meta_data']['fields']['email_address_from']['value'] = $details['email_address_from'];
-			$box['tabs']['meta_data']['fields']['email_name_from']['value'] = $details['email_name_from'];
-			$box['tabs']['body']['fields']['body']['value'] = $details['body'];
+			
+			
+			$values['meta_data/template_name'] = $details['template_name'];
+			$values['meta_data/subject'] = $details['subject'];
+			$values['meta_data/email_address_from'] = $details['email_address_from'];
+			$values['meta_data/email_name_from'] = $details['email_name_from'];
+			$values['meta_data/debug_override'] = $details['debug_override'];
+			$values['meta_data/debug_email_address'] = $details['debug_email_address'];
+			$values['meta_data/send_cc'] = $details['send_cc'];
+			$values['meta_data/cc_email_address'] = $details['cc_email_address'];
+			$values['meta_data/send_bcc'] = $details['send_bcc'];
+			$values['meta_data/bcc_email_address'] = $details['bcc_email_address'];
+			$values['body/body'] = $details['body'];
 		
 		} else {
-			
-			$box['title'] = adminPhrase('Creating an Email Template');
-			$box['tabs']['meta_data']['fields']['email_address_from']['value'] = setting('email_address_from');
-			$box['tabs']['meta_data']['fields']['email_name_from']['value'] = setting('email_name_from');
+			$values['meta_data/email_address_from'] = setting('email_address_from');
+			$values['meta_data/email_name_from'] = setting('email_name_from');
 		}
 		
 		$style_formats = siteDescription('email_style_formats');

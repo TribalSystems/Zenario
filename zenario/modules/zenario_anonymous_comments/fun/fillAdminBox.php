@@ -67,5 +67,18 @@ switch ($path) {
 			}
 		}
 		
+		foreach ($fields as &$field) {
+			if (!empty($field['note_below'])
+			 && $field['note_below'] == '_insert_email_template_note_here_') {
+				$field['note_below'] =
+					adminPhrase('Please see the <a href="[[link]]" target="_blank">Module description</a> to get a full list of merge fields which can be used in the selected email template.',
+						array('link' => htmlspecialchars(
+							absCMSDirURL().
+							'zenario/admin/organizer.php#zenario__modules/panels/modules//'. $box['key']['moduleId']. '/')));
+				
+				
+			}
+		}
+		
 		break;
 }

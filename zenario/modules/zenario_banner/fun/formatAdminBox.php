@@ -61,7 +61,7 @@ switch ($path) {
 		
 			 || ($values['first_tab/image_source'] == '_PICTURE'
 			  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
-			  && ($imageId = getRow("content_item_versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
+			  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
 		 
 			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
 			  && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
@@ -284,7 +284,7 @@ switch ($path) {
 			
 			$box['tabs']['text']['fields']['title']['side_note'] =
 			$box['tabs']['text']['fields']['more_link_text']['side_note'] =
-				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
+				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		
 

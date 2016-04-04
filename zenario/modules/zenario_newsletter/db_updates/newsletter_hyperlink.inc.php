@@ -76,3 +76,12 @@ revision( 112
 		CHANGE COLUMN `link_text` `link_text` varchar(255) NOT NULL
 _sql
 );
+
+revision( 173
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_NEWSLETTER_PREFIX]]newsletters_hyperlinks`
+		CHANGE COLUMN `link_text` `link_text` text
+_sql
+
+);

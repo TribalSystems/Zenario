@@ -6,7 +6,7 @@ zenario__content:
             title: Content item categories
             view_mode: list
             disable_grid_view: Yes
-            no_items_message: No categories have been created. Click "Create" to create a category.
+            no_items_message: No categories found.
             db_items:
                 table: '[[DB_NAME_PREFIX]]categories AS cat'
                 custom_where_statement_top_level: WHERE cat.parent_id = 0
@@ -20,7 +20,7 @@ zenario__content:
             item:
                 name: Category
                 names: Categories
-                tooltip_when_link_is_active: 'View child categories of "[[name]]".'
+                tooltip_when_link_is_active: 'View sub-categories of "[[name]]".'
                 link:
                     path: zenario__content/panels/categories
                     refiner: parent_category
@@ -54,32 +54,38 @@ zenario__content:
                     db_column: cat.public
                     format: yes_or_no
                     show_by_default: Yes
-                landing_page:
-                    title: Landing Page
-                    item_link: content_item
-                    show_by_default: Yes
-                landing_page_equiv_id:
-                    db_column: cat.landing_page_equiv_id
-                landing_page_content_type:
-                    db_column: cat.landing_page_content_type
                 path:
                     title: Path
                 children:
                     title: Sub-categories
                     show_by_default: Yes
             default_sort_column: name
+            label_format_for_picked_items: |
+                [[name]]
             label_format_for_grid_view: |
                 [[name]]
-                                        ([[item_count]])
+                ([[item_count]])
             collection_buttons:
                 create:
+                    label: Create a category
                     priv: _PRIV_MANAGE_CATEGORY
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create a category
                     admin_box:
                         path: zenario_categories
                         create_another: true
+                help:
+                    label: Help
+                    priv: _PRIV_MANAGE_CATEGORY
+                    css_class: zenario_common_features
+                    hide_on_filter: true
+                    help:
+                        message: |
+                            By categorising content items, you can make lists of content items appear to visitors automatically. These lists are called "Content summary lists".
+
+                            Content summary lists are plugins; make sure the Content Summary List module is running, and then put one of its plugins on page, in order to see it.
+
+                            Categories must be enabled on a content type by content type basis. If you cannot categorise a content item, check in Site Settings whether its content type is enabled for using categories.
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_CATEGORY
@@ -126,7 +132,9 @@ zenario__content:
                             multiple_select_message: |
                                 Are you sure you wish to delete these categories?
                                 
-                                Any child categories of this category will be deleted and all associations with content will be removed, but no content items will be deleted.
+                                Any sub-categories will also be deleted and all associations with content will be removed.
+                                
+                                No content items will be deleted.
                             button_message: Delete
                             cancel_button_message: Cancel
                             message_type: warning

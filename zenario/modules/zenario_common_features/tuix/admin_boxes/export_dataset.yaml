@@ -2,18 +2,23 @@
 zenario_export_dataset:
     key:
         id: ''
+        export_ids: ''
         dataset: ''
+    download: true
     title: Export
-    hide_tab_bar: Yes
+    hide_tab_bar: true
     save_button_message: Export
     cancel_button_message: Cancel
-    max_height: 110
+    max_height: 160
     tabs:
         download:
             label: File
             edit_mode:
                 enabled: true
             fields:
+                desc:
+                    snippet:
+                        html: ''
                 type:
                     label: 'Format:'
                     type: radios

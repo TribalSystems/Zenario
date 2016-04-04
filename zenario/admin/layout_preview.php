@@ -124,7 +124,7 @@ $skinDiv .= '">';
 
 
 
-CMSWritePageBody($prefix, false, false);
+CMSWritePageBody('', false, false);
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
 require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;

@@ -9,6 +9,10 @@ zenario_layout:
         current_name: ''
         duplicate: ''
         create_layout_from_template_file: ''
+    identifier:
+        css_class: template
+        label: Layout
+        value: ''
     tabs:
         template:
             label: Details

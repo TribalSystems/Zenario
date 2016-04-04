@@ -4,8 +4,9 @@ zenario__content:
     panels:
         content:
             key:
-                cType: ""
-                language: ""
+                cType: ''
+                language: ''
+                layoutId: ''
             title: All content items, flat view
             
             #panel_type: list_with_subheadings
@@ -34,81 +35,86 @@ zenario__content:
                     LEFT JOIN [[DB_NAME_PREFIX]]files AS f
                        ON f.id = v.file_id
                 id_column: c.tag_id
-                where_statement: "WHERE c.status NOT IN ('trashed','deleted')"
-                custom_where_statement__trash: "WHERE c.status = 'trashed'"
+                custom_where_statement__not_trashed: |
+                    WHERE c.status NOT IN ('trashed','deleted')
                 
             quick_filter_buttons:
-                all:
-                    ord: 1
-                    label: "All"
+                status:
+                    label: 'Any status'
+                any_status:
+                    parent: status
+                    label: 'Any status'
                     column: status
+                    value: ''
                     remove_filter: true
-                drafts:
-                    ord: 2
+                first_draft:
+                    parent: status
                     label: "Drafts"
                     column: status
                     value: first_draft
                 published_with_draft:
-                    ord: 3
+                    parent: status
                     label: "Published with draft"
                     column: status
                     value: published_with_draft
                 published:
-                    ord: 4
+                    parent: status
                     label: "Published"
                     column: status
                     value: published
                 hidden:
-                    ord: 5
+                    parent: status
                     label: "Hidden"
                     column: status
                     value: hidden
+                language:
+                    label: 'All languages'
+                all_languages:
+                    parent: language
+                    label: 'All languages'
+                    column: language_id
+                    value: ''
+                    remove_filter: true
+                layout:
+                    label: 'All layouts'
+                all_layouts:
+                    parent: layout
+                    label: 'All layouts'
+                    column: layout_id
+                    value: ''
+                    remove_filter: true
                     
                 
             refiners:
                 following_item_link:
                     exists: true
-                template_family:
-                    table_join: |
-                        INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-                                                   ON t.layout_id = v.layout_id
-                                                  AND t.family_name = [[REFINER__TEMPLATE_FAMILY]]
+                filter_by_lang:
+                    exists: true
+                
                 content_type:
                     sql: 'c.type = [[REFINER__CONTENT_TYPE]]'
                 language:
                     sql: 'c.language_id = [[REFINER__LANGUAGE]]'
                 template:
                     sql: 'v.layout_id = [[REFINER__TEMPLATE]]'
-                content_type__template__language:
-                    sql: |
-                        c.type = [[REFINER__CONTENT_TYPE]]
-                                                AND v.layout_id = [[REFINER__TEMPLATE]]
-                                                AND c.language_id = [[REFINER__LANGUAGE]]
-                content_type__language:
-                    sql: |
-                        c.type = [[REFINER__CONTENT_TYPE]]
-                                                AND c.language_id = [[REFINER__LANGUAGE]]
-                template__language:
-                    sql: |
-                        v.layout_id = [[REFINER__TEMPLATE]]
-                                                AND c.language_id = [[REFINER__LANGUAGE]]
+                
                 category:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]category_item_link AS cal
-                                                   ON cal.category_id = [[REFINER__CATEGORY]]
-                                                  AND cal.equiv_id = c.equiv_id
-                                                  AND cal.content_type = v.type
+                           ON cal.category_id = [[REFINER__CATEGORY]]
+                          AND cal.equiv_id = c.equiv_id
+                          AND cal.content_type = v.type
                 menu_children:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]menu_hierarchy AS mh
-                                                   ON mh.ancestor_id = [[REFINER__MENU_CHILDREN]]
-                                                  AND mh.child_id = mi.id
-                                                  AND ([[REFINER__SHOW_LANGUAGE_CHOICE]] IS NULL OR c.language_id = [[REFINER__LANGUAGE]])
+                           ON mh.ancestor_id = [[REFINER__MENU_CHILDREN]]
+                          AND mh.child_id = mi.id
+                          AND ([[REFINER__SHOW_LANGUAGE_CHOICE]] IS NULL OR c.language_id = [[REFINER__LANGUAGE]])
                 special_pages:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]special_pages AS sp
-                                                   ON sp.equiv_id = c.id
-                                                  AND sp.content_type = c.type
+                           ON sp.equiv_id = c.id
+                          AND sp.content_type = c.type
                 find_duplicates:
                     sql: |
                         (select count(*) FROM [[DB_NAME_PREFIX]]content_item_versions as vfcd INNER JOIN [[DB_NAME_PREFIX]]content_items AS cfcd 
@@ -126,72 +132,68 @@ zenario__content:
                 module_usage:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-                                                   ON t.layout_id = v.layout_id
-                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-                                                   ON tsl.family_name = t.family_name
-                                                  AND tsl.file_base_name = t.file_base_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-                                                   ON piil.content_id = v.id
-                                                  AND piil.content_type = v.type
-                                                  AND piil.content_version = v.version
-                                                  AND piil.slot_name = tsl.slot_name
+                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                           ON tsl.family_name = t.family_name
+                          AND tsl.file_base_name = t.file_base_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                           ON piil.content_id = v.id
+                          AND piil.content_type = v.type
+                          AND piil.content_version = v.version
+                          AND piil.slot_name = tsl.slot_name
                     sql: 'piil.module_id = [[REFINER__MODULE_USAGE]]'
                 module_effective_usage:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-                                                   ON t.layout_id = v.layout_id
-                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-                                                   ON tsl.family_name = t.family_name
-                                                  AND tsl.file_base_name = t.file_base_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-                                                   ON piil.content_id = v.id
-                                                  AND piil.content_type = v.type
-                                                  AND piil.content_version = v.version
-                                                  AND piil.slot_name = tsl.slot_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                   ON pitl.layout_id = t.layout_id
-                                                  AND pitl.slot_name = tsl.slot_name
+                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                           ON tsl.family_name = t.family_name
+                          AND tsl.file_base_name = t.file_base_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                           ON piil.content_id = v.id
+                          AND piil.content_type = v.type
+                          AND piil.content_version = v.version
+                          AND piil.slot_name = tsl.slot_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                           ON pitl.layout_id = t.layout_id
+                          AND pitl.slot_name = tsl.slot_name
                     sql: 'IFNULL(piil.module_id, pitl.module_id) = [[REFINER__MODULE_EFFECTIVE_USAGE]]'
                 plugin_instance_usage:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-                                                   ON t.layout_id = v.layout_id
-                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-                                                   ON tsl.family_name = t.family_name
-                                                  AND tsl.file_base_name = t.file_base_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-                                                   ON piil.content_id = v.id
-                                                  AND piil.content_type = v.type
-                                                  AND piil.content_version = v.version
-                                                  AND piil.slot_name = tsl.slot_name
+                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                           ON tsl.family_name = t.family_name
+                          AND tsl.file_base_name = t.file_base_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                           ON piil.content_id = v.id
+                          AND piil.content_type = v.type
+                          AND piil.content_version = v.version
+                          AND piil.slot_name = tsl.slot_name
                     sql: 'piil.instance_id = [[REFINER__PLUGIN_INSTANCE_USAGE]]'
                 plugin_instance_effective_usage:
                     table_join: |
                         INNER JOIN [[DB_NAME_PREFIX]]layouts AS t
-                                                   ON t.layout_id = v.layout_id
-                                                INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
-                                                   ON tsl.family_name = t.family_name
-                                                  AND tsl.file_base_name = t.file_base_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
-                                                   ON piil.content_id = v.id
-                                                  AND piil.content_type = v.type
-                                                  AND piil.content_version = v.version
-                                                  AND piil.slot_name = tsl.slot_name
-                                                LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
-                                                   ON pitl.layout_id = t.layout_id
-                                                  AND pitl.slot_name = tsl.slot_name
+                           ON t.layout_id = v.layout_id
+                        INNER JOIN [[DB_NAME_PREFIX]]template_slot_link AS tsl
+                           ON tsl.family_name = t.family_name
+                          AND tsl.file_base_name = t.file_base_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_item_link AS piil
+                           ON piil.content_id = v.id
+                          AND piil.content_type = v.type
+                          AND piil.content_version = v.version
+                          AND piil.slot_name = tsl.slot_name
+                        LEFT JOIN [[DB_NAME_PREFIX]]plugin_layout_link AS pitl
+                           ON pitl.layout_id = t.layout_id
+                          AND pitl.slot_name = tsl.slot_name
                     sql: 'IFNULL(piil.instance_id, pitl.instance_id) = [[REFINER__PLUGIN_INSTANCE_EFFECTIVE_USAGE]]'
                 trash:
-                    exists: true
+                    sql: |
+                        c.status = 'trashed'
             item:
                 name: Content item
                 names: Content items
                 css_class: content_published
-            trash:
-                link:
-                    path: zenario__content/panels/content
-                    refiner: trash
-                    branch: true
             columns:
                 tag:
                     title: ID/alias
@@ -392,6 +394,13 @@ zenario__content:
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
+                layout_id:
+                    db_column: v.layout_id
+                    filter_format: enum
+                    values:
+                        - L01
+                        - L02
+                        #...
                 menu:
                     title: Menu Node
                     db_column: mt.name
@@ -440,14 +449,6 @@ zenario__content:
                     label: Create
                     admin_box:
                         path: zenario_quick_create
-                equivs:
-                    label: Show translations
-                    tooltip: >
-                        Show translations missing in this language alongside content items
-                    link:
-                        path: zenario__content/panels/language_equivs
-                        branch: true
-                        refiner: language_equivs
                 delete_trashed_items:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true
@@ -471,11 +472,12 @@ zenario__content:
     
                 content_find_duplicates:
                     parent: diagnostics_dropdown
+                    hide_in_select_mode: true
+                    hide_when_no_search_results: true
                     visible_if: |
                         zenarioO.tuix.key &&
                         zenarioO.tuix.key.cType == 'document'
                     label: Items with duplicate file attachments
-                    hide_in_select_mode: true
                     link:
                         branch: true
                         path: zenario__content/panels/content
@@ -489,11 +491,19 @@ zenario__content:
                             type: ''
                 help:
                     label: Help
+                    hide_on_refiner: true
                     help:
                         message: >
                             Every page of your website is stored as a "content item".
                             This panel shows all of the content items of your site in a
                             list view.
+                help_trash:
+                    label: Help
+                    only_show_on_refiner: trash
+                    help:
+                        message: >
+                            This panel shows all of the content items that have been trashed.
+                            To restore a content item, you need to re-draft and then publish it.
             inline_buttons:
                 public_permission:
                     css_class: public_permission_inline
@@ -530,12 +540,8 @@ zenario__content:
                 inspect:
                     css_class: inspect
                     tooltip: Quick-view in floating box
-                    custom_width: 800
-                    custom_height: 600
-                    custom_description: Preview
-                    call_js_function:
-                        encapsulated_object: zenarioA
-                        function: showPagePreview
+                    onclick: |
+                        zenarioA.showPagePreview(800, 600, 'Preview');
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
                 view_frontend:
@@ -549,7 +555,7 @@ zenario__content:
                 settings:
                     parent: property_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Edit metadata
+                    label: Edit metadata and content
                     admin_box:
                         path: zenario_content
                     without_traits:
@@ -810,13 +816,6 @@ zenario__content:
                     multiple_select: true
                     admin_box:
                         path: zenario_content_layout
-                    #combine_items:
-                    #    path: zenario__layouts/panels/layouts
-                    #    target_path: zenario__layouts/panels/layouts
-                    #    min_path: zenario__layouts/panels/layouts
-                    #    one_to_one_choose_phrase: Add selected location to this sector
-                    #    request:
-                    #        action: add_location
                     without_traits:
                         ghost: true
                     

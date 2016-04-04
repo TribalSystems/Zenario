@@ -87,24 +87,19 @@ zenario__user_forms:
                     show_by_default: true
                 
             default_sort_column: name
+            
             item:
                 css_class: form
                 name: Form
                 names: Forms
-                css_class: menu_section
-                tooltip_when_link_is_active: |
-                    Click here to see the fields in the form &quot;[[name]]&quot;.
-                link:
-                    path: zenario__user_forms/panels/zenario_user_forms__form_fields
-                    branch: true
-                    refiner: user_form_id
+                css_class: zenario_user_forms
 
             collection_buttons:
                 create:
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create
+                    label: Create a form
                     admin_box:
                         path: zenario_user_admin_box_form
                     hide_on_refiner: archived
@@ -112,9 +107,15 @@ zenario__user_forms:
                 edit:
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
-                    label: Properties
+                    label: Edit form meta data
                     admin_box:
                         path: zenario_user_admin_box_form
+                edit_form_fields_gui:
+                    label: Edit form fields (GUI)
+                    link:
+                        path: zenario__user_forms/panels/form_fields_gui
+                        branch: true
+                        refiner: user_form_id
                 duplicate:
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
@@ -199,12 +200,3 @@ zenario__user_forms:
                         request:
                             archive_form: "1"
                     hide_on_refiner: archived
-                
-                # Hidden because branched before this feature was complete
-                edit_form_fields_gui:
-                    label: Edit form fields (gui)
-                    link:
-                        path: zenario__user_forms/panels/form_fields_gui
-                        branch: true
-                        refiner: user_form_id
-                    hidden: true

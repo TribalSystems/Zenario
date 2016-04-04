@@ -45,6 +45,3 @@ while ($row = sqlFetchAssoc($result)) {
 		insertRow(ZENARIO_PLUGIN_NEST_PROBUSINESS_PREFIX. 'tabs', $condition);
 	}
 }
-
-
-?>

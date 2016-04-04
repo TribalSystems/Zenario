@@ -36,7 +36,8 @@ switch ($path) {
 		
 		$record = array(
 			'name' => $values['details/name'],
-			'body' => $values['details/body']);
+			'body' => $values['details/body'],
+			'head' => $values['advanced/head']);
 		
 		if ($box['key']['id']) {
 			$record['date_modified'] = now();
@@ -78,12 +79,14 @@ switch ($path) {
 			
 			$id = $box['key']['id'];
 			$record = array(
-					'newsletter_name' => $values['meta_data/newsletter_name'],
-					'subject' => $values['meta_data/subject'],
-					'email_name_from' => $values['meta_data/email_name_from'],
-					'email_address_from' => $values['meta_data/email_address_from'],
-					'body' =>  $values['meta_data/body'], 
-					);
+				'newsletter_name' => $values['meta_data/newsletter_name'],
+				'subject' => $values['meta_data/subject'],
+				'email_name_from' => $values['meta_data/email_name_from'],
+				'email_address_from' => $values['meta_data/email_address_from'],
+				'body' =>  $values['meta_data/body'],
+				'head' => $values['advanced/head']
+			);
+			
 			if($id) {
 				$record['date_modified'] = now();
 				$record['modified_by_id'] = adminId();

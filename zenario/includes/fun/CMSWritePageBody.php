@@ -69,6 +69,15 @@ switch ($showPreview) {
 echo '"', $attributes, '>';
 
 if (!$showPreview) {
+	
+	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
+	if (cms_core::$cID) {
+		echo "\n", setting('sitewide_body');
+	}
+	
+	//If the visitor's browser has JavaScript enabled, change the "no_js" CSS class to just "js".
+	//Note that by default replace() only affects the first match it comes to, and no_js was the
+	//very first class I wrote down, so I can get away with just this simple statement to save space!
 	echo '
 <script type="text/javascript">
 	window.zenarioGrid = {};

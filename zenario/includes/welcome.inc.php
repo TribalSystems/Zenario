@@ -412,6 +412,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		$merge['DBNAME'] = $box['tabs'][3]['fields']['name']['current_value'];
 		$merge['DBUSER'] = $box['tabs'][3]['fields']['user']['current_value'];
 		$merge['DBPASS'] = $box['tabs'][3]['fields']['password']['current_value'];
+		$merge['DBPORT'] = $box['tabs'][3]['fields']['port']['current_value'];
 		$merge['DB_NAME_PREFIX'] = $box['tabs'][3]['fields']['prefix']['current_value'];
 		
 		if (!$merge['DBHOST']) {
@@ -430,12 +431,23 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			$box['tabs'][3]['errors'][] = adminPhrase('The database username should only contain [a-z, A-Z, 0-9, _ and -].');
 		}
 		
+		if ($merge['DBPORT'] !== '' && !is_numeric($merge['DBPORT'])) {
+			$box['tabs'][3]['errors'][] = adminPhrase('The database port must be a number.');
+		}
+		
 		if (preg_match('/[^a-zA-Z0-9_]/', $merge['DB_NAME_PREFIX'])) {
 			$box['tabs'][3]['errors'][] = adminPhrase('The table prefix should only contain the characters [a-z, A-Z, 0-9 and _].');
 		}
 		
 		if (empty($box['tabs'][3]['errors'])) {
-			if (!$testConnect = @mysqli_connect($merge['DBHOST'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBNAME'])) {
+			
+			if ($merge['DBPORT']) {
+				$testConnect = @mysqli_connect($merge['DBHOST'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBNAME'], $merge['DBPORT']);
+			} else {
+				$testConnect = @mysqli_connect($merge['DBHOST'], $merge['DBUSER'], $merge['DBPASS'], $merge['DBNAME']);
+			}
+			
+			if (!$testConnect) {
 				$box['tabs'][3]['errors'][] = 
 					adminPhrase('The database name, username and/or password are invalid.');
 			
@@ -587,7 +599,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 			if (!@include_once CMS_ROOT. 'zenario_siteconfig.php') {
 				$box['tabs'][6]['errors'][] = adminPhrase('There is a syntax error in zenario_siteconfig.php');
 			} else {
-				foreach (array('DBHOST', 'DBNAME', 'DBUSER', 'DBPASS', 'DB_NAME_PREFIX') as $constant) {
+				foreach (array('DBHOST', 'DBNAME', 'DBUSER', 'DBPASS', 'DBPORT', 'DB_NAME_PREFIX') as $constant) {
 					if (!defined($constant) || constant($constant) !== $merge[$constant]) {
 						$box['tabs'][6]['errors'][] = adminPhrase('The constants in zenario_siteconfig.php are not set as below.');
 						break;
@@ -719,6 +731,16 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 	}
 	
 	if ($box['tab'] > 1) {
+		
+		//Hide the "ignore" checkbox if the requirements are both met
+		$box['tabs'][2]['fields']['ignore_apache_mysql_requirements']['hidden'] =
+			$serverRequirementsMet && $mysqlRequirementsMet;
+		
+		//Mark the Apache and MySQL requirements as met if the ignore checkbox is set
+		if (!empty($box['tabs'][2]['fields']['ignore_apache_mysql_requirements']['current_value'])) {
+			$serverRequirementsMet = $mysqlRequirementsMet = true;
+		}
+		
 		//Did the Server meets the requirements?
 		if ($serverRequirementsMet && $phpRequirementsMet
 		 && $mysqlRequirementsMet && $mbRequirementsMet && $gdRequirementsMet) {
@@ -1807,7 +1829,9 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			
 			} elseif ($fileNotWritable !== false) {
 				$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('"[[file]]" is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).', array('file' => $fileNotWritable));
+				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] =
+					adminPhrase('"[[file]]" is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
+						array('file' => str_replace('/', '<wbr>/', htmlspecialchars($fileNotWritable))));
 			
 			} else {
 				$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_valid';
@@ -1981,7 +2005,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		}
 		
 		//Check to see if this is a developer installation...
-		if (file_exists(CMS_ROOT. 'developer.txt')) {
+		if (setting('site_mode') == 'development') {
 			
 			//Check to see if any developers are not showing errors/warnings
 			if (!(ERROR_REPORTING_LEVEL & E_ALL)

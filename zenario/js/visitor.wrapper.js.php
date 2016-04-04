@@ -55,7 +55,11 @@ incJS('zenario/api/javascript');
 //Include jQuery modules
 //Note: this order is quite sensitive, as some give JavaScript errors if included in a certain order
 incJS('zenario/js/easing');
-incJS('zenario/libraries/mit/jquery/jquery.colorbox');
+incJS('zenario/libraries/mit/colorbox/jquery.colorbox');
+
+echo '
+zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.jquery.min.js";';
+
 
 
 //Run post-display actions

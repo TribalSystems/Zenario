@@ -513,7 +513,8 @@ ValidatorContext.prototype.validateArrayItems = function validateArrayItems(data
 }
 ValidatorContext.prototype.flagStaticProperties = function flagStaticProperties(data, schema) {
 	if (schema['static']
-	 && !schema.preFillOrganizerPanel) {
+	 && !schema.preFillOrganizerPanel
+	 && !devTools.orgMap) {
 		return this.createError(ErrorCodes.STATIC_PROPERTY, {});
 	}
 	return null;

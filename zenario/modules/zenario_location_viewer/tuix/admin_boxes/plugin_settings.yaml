@@ -11,8 +11,7 @@ plugin_settings:
                         name: location_source_mode
                     label: 'Location source mode:'
                     type: radios
-                    format_onchange: Yes
-                    note_below: 'If you select Get location from URL (l_id), you pass the location id in the url as parameter l_id'
+                    format_onchange: true
                     values:
                         location_from_selector:
                             label: "Auto"
@@ -31,6 +30,33 @@ plugin_settings:
                                 If the URL contains the parameter l_id, use its value to get the ID of the location.
                     value: location_from_selector
                 
+                location:
+                    label: 'Other Location:'
+                    plugin_setting:
+                        name: location
+                    pick_items:
+                        path: zenario__locations/panel
+                        target_path: zenario__locations/panel
+                        min_path: zenario__locations/panel
+                        max_path: zenario__locations/panel
+                        select_phrase: Select Location...
+                        nothing_selected_phrase: No Location selected
+                    validation:
+                        required_if_not_hidden: You must select a location
+                    indent: 1
+                location_user:
+                    plugin_setting:
+                        name: location_user
+                    label: 'You must be an externet user and have a role at the location to see details'
+                    type: checkbox
+                    indent: 1
+                
+                use_location_name_for_page_title:
+                    plugin_setting:
+                        name: use_location_name_for_page_title
+                    label: 'Use location name for page title'
+                    type: checkbox
+                    
                 show_title:
                     plugin_setting:
                         name: show_title
@@ -67,6 +93,7 @@ plugin_settings:
                     value: "120"
                     validation:
                         numeric: The maximum image width must be numeric
+                    indent: 1
                 max_location_image_height:
                     plugin_setting:
                         name: max_location_image_height
@@ -74,13 +101,13 @@ plugin_settings:
                     post_field_html: '&nbsp;pixels'
                     type: text
                     size: "5"
-                    same_row: Yes
+                    same_row: true
                     maxlength: "5"
                     style: 'width: 50px'
                     value: "120"
                     validation:
                         numeric: The maximum image width must be numeric
-                
+                    indent: 1
                 show_map:
                     plugin_setting:
                         name: show_map
@@ -89,26 +116,6 @@ plugin_settings:
                     value: 1
                     format_onchange: true
                     
-                location_user:
-                    plugin_setting:
-                        name: location_user
-                    label: 'You must be an externet user and have a role at the location to see details'
-                    type: checkbox
-                location:
-                    label: 'Other Location:'
-                    plugin_setting:
-                        name: location
-                    pick_items:
-                        path: zenario__locations/panel
-                        target_path: zenario__locations/panel
-                        min_path: zenario__locations/panel
-                        max_path: zenario__locations/panel
-                        select_phrase: Select Location...
-                        nothing_selected_phrase: No Location selected
-                    validation:
-                        required_if_not_hidden: You must select a location
-                
-                
                 map_width:
                     label: 'Map size:'
                     pre_field_html: 'width:'
@@ -119,10 +126,11 @@ plugin_settings:
                     style: width:50px;
                     validation:
                         required_if_not_hidden: Please enter the map width
+                    indent: 1
                 map_height:
                     pre_field_html: '&nbsp;height:'
                     post_field_html: '&nbsp;pixels'
-                    same_row: Yes
+                    same_row: true
                     type: text
                     plugin_setting:
                         name: map_height
@@ -130,3 +138,4 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter the map height
                     style: width:50px;
+                    indenx: 1

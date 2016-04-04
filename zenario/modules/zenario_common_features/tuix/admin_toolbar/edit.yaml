@@ -35,7 +35,7 @@ sections:
                 priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Edit metadata
+                label: Edit metadata and content
                 tooltip: ""
                 admin_box:
                     path: zenario_content
@@ -100,7 +100,6 @@ sections:
                 # Warning: the presence of this button affects how the zenarioA.draft() function
                 # works. If this button is missing then zenarioA.draft() won't attempt to make
                 # a draft!
-                parent: action_dropdown
                 priv: _PRIV_CREATE_REVISION_DRAFT
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
@@ -135,7 +134,7 @@ sections:
             duplicate_content:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_FIRST_DRAFT
-                label: Duplicate
+                label: Duplicate content item
                 admin_box:
                     path: zenario_content
                     key:
@@ -197,7 +196,7 @@ sections:
                     zenarioA.checkSpecificPermsOnThisPage()
                 appears_in_toolbars:
                     edit: true
-                label: Hide
+                label: Hide this content item
                 css_class: zenario_hide_content label_to_the_left
                 ajax:
                     confirm:
@@ -213,7 +212,6 @@ sections:
                     request:
                         hide: 1
             delete_draft:
-                parent: action_dropdown
                 appears_in_toolbars:
                     edit: true
                 priv: _PRIV_DELETE_DRAFT
@@ -241,7 +239,7 @@ sections:
                 priv: _PRIV_TRASH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Trash
+                label: Trash this content item
                 css_class: zenario_trash_content label_to_the_left
                 
                 admin_box:

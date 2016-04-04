@@ -31,31 +31,24 @@ site_settings:
                     values:
                         none:
                             ord: 1
-                            label: Visitors can browse the site using any domain
+                            label: No primary domain; allow visitors to view site on any domain pointing to it
                         new:
                             ord: 4
-                            label: ''
-                            style: |
-                                position: relative;
-                                top: 8px;
+                            label: 'Set a new domain as the primary domain; redirect all visitors to there:'
+                    redraw_onchange: true
                                 
                 new:
+                    indent: 1
                     type: text
-                    same_row: true
-                    onfocus: |
-                        zenario.get('primary_domain___new').checked = true
-                    pre_field_html: |
-                        <span onclick="zenario.get('new').focus();" style="
-                            display: inline-block;
-                            position: relative;
-                            left: 16px;
-                            bottom: 12px;"
-                        >
-                            http:// or https://
-                    post_field_html: |
-                        </span>
+                    label: 'Domain:'
+                    visible_if: |
+                        zenarioAB.value('primary_domain') == 'new'
                     style: |
                         width: 15em;
+                    note_below: |
+                        Please enter a domain name in this box, e.g. example.com.
+                        <br/>
+                        The domain you enter will be checked to see if it points to this site before this box is saved.
             disable_autofocus: true
                         
         admin_domain:
@@ -93,17 +86,18 @@ site_settings:
                     values:
                         none:
                             ord: 1
-                            label: Allow administrators to log in on any domain
+                            label: No admin domain; allow administrators to view site on any domain pointing to it
                     redraw_onchange: true
                 admin_domain_is_public:
                     site_setting:
                         name: admin_domain_is_public
                     visible_if: |
                         zenarioAB.value('admin_domain') != 'none'
+                    indent: 1
                     label: 'Is public'
                     type: checkbox
                     value: 1
-                    note_below: |
+                    side_note: |
                         Auto-redirect when user types /admin in browser address bar.
                     indent: 1
         cookie_domain:
@@ -179,7 +173,10 @@ site_settings:
                         zenarioAB.value('use_cookie_free_domain')
                     indent: 1
                     label: 'Cookie-free domain:'
-                    pre_field_html: http://
                     type: text
                     style: |
                         width: 15em;
+                    note_below: |
+                        Please enter a domain name in this box, e.g. example.com.
+                        <br/>
+                        The domain you enter will be checked to see if it points to this site before this box is saved.

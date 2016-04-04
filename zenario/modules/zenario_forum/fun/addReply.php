@@ -39,9 +39,8 @@ $sql = "
 		thread_id = ". (int) $this->threadId. ",
 		first_post = ". (int) $firstPost. ",
 		date_posted = NOW(),
-		employee_post = ". (int) !empty($_SESSION['extranetUserIsAnEmployee']). ",
 		poster_id = ". (int) $userId. ",
-		message_text = '". sqlEscape($this->adjustMessageText($messageText)). "'";
+		message_text = '". sqlEscape(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "'";
 
 sqlUpdate($sql);
 $newPostId = sqlInsertId();

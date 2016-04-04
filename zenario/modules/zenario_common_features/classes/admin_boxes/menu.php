@@ -57,8 +57,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$box['title'] = '';
 	
 			if ($menu['target_loc'] == 'int' && $menu['equiv_id'] && $menu['content_type']) {
-				$box['tabs']['text']['fields']['target_loc']['value'] = 'int';
-				$box['tabs']['text']['fields']['hyperlink_target']['value'] = $menu['content_type']. '_'. $menu['equiv_id'];
+				$values['text/target_loc'] = 'int';
+				$values['text/hyperlink_target'] = $menu['content_type']. '_'. $menu['equiv_id'];
 		
 				$warning = '';
 				$tag = $menu['content_type']. '_'. $menu['equiv_id'];
@@ -71,34 +71,39 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 					$warning = 'This is a secondary menu node. This means that it links to the same content item ([[tag]]) as the menu node "[[node_path]]"';
 					$mergeFields['node_path'] = $node_path;
 				}
-				$box['tabs']['text']['fields']['warning']['snippet']['html'] = adminPhrase($warning, $mergeFields);
+				$fields['text/warning']['snippet']['html'] = adminPhrase($warning, $mergeFields);
 		
 			} elseif ($menu['target_loc'] == 'ext') {
-				$box['tabs']['text']['fields']['target_loc']['value'] = 'ext';
+				$values['text/target_loc'] = 'ext';
 			}
-			$box['tabs']['text']['fields']['use_download_page']['value'] = $menu['use_download_page'];
-			$box['tabs']['text']['fields']['hide_private_item']['value'] = $menu['hide_private_item'];
-			$box['tabs']['text']['fields']['open_in_new_window']['value'] = $menu['open_in_new_window'];
-			$box['tabs']['text']['fields']['hyperlink_anchor']['value'] = $menu['anchor'];
+			$values['text/use_download_page'] = $menu['use_download_page'];
+			$values['text/hide_private_item'] = $menu['hide_private_item'];
+			$values['text/open_in_new_window'] = $menu['open_in_new_window'];
+			
+			if ($menu['anchor'] != ''
+			 && $menu['anchor'] != null) {
+				$values['text/link_to_anchor'] = true;
+				$values['text/hyperlink_anchor'] = $menu['anchor'];
+			}
 	
-			$box['tabs']['advanced']['fields']['accesskey']['value'] = $menu['accesskey'];
-			$box['tabs']['advanced']['fields']['rel_tag']['value'] = $menu['rel_tag'];
-			$box['tabs']['advanced']['fields']['image_id']['value'] = $menu['image_id'];
-			$box['tabs']['advanced']['fields']['use_rollover_image']['value'] = (bool) $menu['rollover_image_id'];
-			$box['tabs']['advanced']['fields']['rollover_image_id']['value'] = $menu['rollover_image_id'];
-			$box['tabs']['advanced']['fields']['css_class']['value'] = $menu['css_class'];
+			$values['advanced/accesskey'] = $menu['accesskey'];
+			$values['advanced/rel_tag'] = $menu['rel_tag'];
+			$values['advanced/image_id'] = $menu['image_id'];
+			$values['advanced/use_rollover_image'] = (bool) $menu['rollover_image_id'];
+			$values['advanced/rollover_image_id'] = $menu['rollover_image_id'];
+			$values['advanced/css_class'] = $menu['css_class'];
 	
-			$box['tabs']['advanced']['fields']['hide_by_static_method']['value'] = (bool)$menu['module_class_name'];
-			$box['tabs']['advanced']['fields']['menu__module_class_name']['value'] = $menu['module_class_name'];
-			$box['tabs']['advanced']['fields']['menu__method_name']['value'] = $menu['method_name'];
-			$box['tabs']['advanced']['fields']['menu__param_1']['value'] = $menu['param_1'];
-			$box['tabs']['advanced']['fields']['menu__param_2']['value'] = $menu['param_2'];
+			$values['advanced/hide_by_static_method'] = (bool)$menu['module_class_name'];
+			$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
+			$values['advanced/menu__method_name'] = $menu['method_name'];
+			$values['advanced/menu__param_1'] = $menu['param_1'];
+			$values['advanced/menu__param_2'] = $menu['param_2'];
 	
-			$box['tabs']['advanced']['fields']['overwrite_menu_text_by_static_method']['value'] = (bool)$menu['menu_text_module_class_name'];
-			$box['tabs']['advanced']['fields']['menu_text__module_class_name']['value'] = $menu['menu_text_module_class_name'];
-			$box['tabs']['advanced']['fields']['menu_text__method_name']['value'] = $menu['menu_text_method_name'];
-			$box['tabs']['advanced']['fields']['menu_text__param_1']['value'] = $menu['menu_text_param_1'];
-			$box['tabs']['advanced']['fields']['menu_text__param_2']['value'] = $menu['menu_text_param_2'];
+			$values['advanced/overwrite_menu_text_by_static_method'] = (bool)$menu['menu_text_module_class_name'];
+			$values['advanced/menu_text__module_class_name'] = $menu['menu_text_module_class_name'];
+			$values['advanced/menu_text__method_name'] = $menu['menu_text_method_name'];
+			$values['advanced/menu_text__param_1'] = $menu['menu_text_param_1'];
+			$values['advanced/menu_text__param_2'] = $menu['menu_text_param_2'];
 	
 			foreach ($box['tabs'] as $i => &$tab) {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
@@ -133,10 +138,8 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 				}
 			}
 	
-			$box['tabs']['text']['fields']['menu_title']['value'] = arrayKey($box['key'], 'suggestedName');
+			$values['text/menu_title'] = arrayKey($box['key'], 'suggestedName');
 		}
-
-		$box['tabs']['text']['fields']['section_id']['value'] = menuSectionName($box['key']['sectionId']);
 
 
 		//For multilingual sites, add extra fields for each enabled language
@@ -162,10 +165,10 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$parentPath = 'parent_path_of__menu_title__'. $lang['id'];
 			$url = 'ext_url__'. $lang['id'];
 	
-			$box['tabs']['text']['fields'][$title] = $box['tabs']['text']['fields']['menu_title'];
-			$box['tabs']['text']['fields'][$path] = $box['tabs']['text']['fields']['path_of__menu_title'];
-			$box['tabs']['text']['fields'][$parentPath] = $box['tabs']['text']['fields']['parent_path_of__menu_title'];
-			$box['tabs']['text']['fields'][$url] = $box['tabs']['text']['fields']['ext_url'];
+			$box['tabs']['text']['fields'][$title] = $fields['text/menu_title'];
+			$box['tabs']['text']['fields'][$path] = $fields['text/path_of__menu_title'];
+			$box['tabs']['text']['fields'][$parentPath] = $fields['text/parent_path_of__menu_title'];
+			$box['tabs']['text']['fields'][$url] = $fields['text/ext_url'];
 	
 			// Remove unnecessary validation.
 			unset($box['tabs']['text']['fields'][$url]['validation']);
@@ -178,18 +181,20 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			if ($box['key']['id']
 			 && ($text = getMenuNodeDetails($box['key']['id'], $lang['id']))
 			 && ($text['name'])) {
-		
+				
+				$text['section_name'] = menuSectionName($text['section_id']);
+				
 				$box['tabs']['text']['fields'][$title]['value'] = $text['name'];
 				$box['tabs']['text']['fields'][$url]['value'] = $text['ext_url'];
 		
-				if (empty($box['tabs']['text']['fields']['ext_url']['value']) && $text['ext_url']) {
-					$box['tabs']['text']['fields']['ext_url']['value'] = $text['ext_url'];
+				if (empty($values['text/ext_url']) && $text['ext_url']) {
+					$values['text/ext_url'] = $text['ext_url'];
 				}
 		
 				if ($text['ext_url'] !== null) {
 					if ($lastMenuURL !== false && $text['ext_url'] != $lastMenuURL) {
-						if ($box['tabs']['text']['fields']['target_loc']['value'] == 'ext') {
-							$box['tabs']['text']['fields']['target_loc']['value'] = 'exts';
+						if ($values['text/target_loc'] == 'ext') {
+							$values['text/target_loc'] = 'exts';
 						}
 					}
 			
@@ -200,7 +205,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 				//or in any language if neither of those present.
 				//(Note that I'm relying on the default language being first in this loop for this logic to work.)
 				if (!$box['title'] || $lang['id'] == $box['key']['languageId']) {
-					$box['title'] = adminPhrase('Editing the menu node "[[name]]"', $text);
+					$box['title'] = adminPhrase('Editing the menu node "[[name]]" ("[[section_name]]" section)', $text);
 				}
 			}
 	
@@ -218,13 +223,13 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		}
 
 
-		$box['tabs']['text']['fields']['menu_title']['hidden'] = true;
-		$box['tabs']['text']['fields']['path_of__menu_title']['hidden'] = true;
-		$box['tabs']['text']['fields']['parent_path_of__menu_title']['hidden'] = true;
+		$fields['text/menu_title']['hidden'] = true;
+		$fields['text/path_of__menu_title']['hidden'] = true;
+		$fields['text/parent_path_of__menu_title']['hidden'] = true;
 
 		if ($numLangs <= 1) {
-			$box['tabs']['text']['fields']['hyperlink_target']['note_below'] = '';
-			$box['tabs']['text']['fields']['target_loc']['values']['exts']['hidden'] = true;
+			$fields['text/hyperlink_target']['note_below'] = '';
+			$fields['text/target_loc']['values']['exts']['hidden'] = true;
 		}
 
 
@@ -255,43 +260,44 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if ($path != 'zenario_menu') return;
 		
-		$box['tabs']['advanced']['fields']['rollover_image_id']['hidden'] = 
+		$fields['advanced/rollover_image_id']['hidden'] = 
 			!$values['advanced/use_rollover_image'];
 
-		$box['tabs']['advanced']['fields']['menu__module_class_name']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu__method_name']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu__param_1']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu__param_2']['hidden'] = 
+		$fields['advanced/menu__module_class_name']['hidden'] = 
+		$fields['advanced/menu__method_name']['hidden'] = 
+		$fields['advanced/menu__param_1']['hidden'] = 
+		$fields['advanced/menu__param_2']['hidden'] = 
 			!$values['advanced/hide_by_static_method'];
 	
-		$box['tabs']['advanced']['fields']['menu_text__module_class_name']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu_text__method_name']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu_text__param_1']['hidden'] = 
-		$box['tabs']['advanced']['fields']['menu_text__param_2']['hidden'] = 
+		$fields['advanced/menu_text__module_class_name']['hidden'] = 
+		$fields['advanced/menu_text__method_name']['hidden'] = 
+		$fields['advanced/menu_text__param_1']['hidden'] = 
+		$fields['advanced/menu_text__param_2']['hidden'] = 
 			!$values['advanced/overwrite_menu_text_by_static_method'];
 
-		$box['tabs']['text']['fields']['hyperlink_target']['hidden'] = 
-		$box['tabs']['text']['fields']['hyperlink_anchor']['hidden'] = 
-		$box['tabs']['text']['fields']['hide_private_item']['hidden'] = 
-		$box['tabs']['text']['fields']['use_download_page']['hidden'] = 
+		$fields['text/hyperlink_target']['hidden'] = 
+		$fields['text/hyperlink_anchor']['hidden'] = 
+		$fields['text/link_to_anchor']['hidden'] = 
+		$fields['text/hide_private_item']['hidden'] = 
+		$fields['text/use_download_page']['hidden'] = 
 			$values['text/target_loc'] != 'int';
 
-		$box['tabs']['text']['fields']['open_in_new_window']['hidden'] = 
+		$fields['text/open_in_new_window']['hidden'] = 
 			$values['text/target_loc'] != 'int'
 		 && $values['text/target_loc'] != 'ext'
 		 && $values['text/target_loc'] != 'exts';
 
-		$box['tabs']['text']['fields']['ext_url']['hidden'] = 
+		$fields['text/ext_url']['hidden'] = 
 			$values['text/target_loc'] != 'ext';
 
 		$equivs = $cID = $cType = false;
 		if ($values['text/target_loc'] == 'int'
 		 && (getCIDAndCTypeFromTagId($cID, $cType, $values['text/hyperlink_target']))
 		 && ($cType == 'document')) {
-			$box['tabs']['text']['fields']['use_download_page']['hidden'] = false;
+			$fields['text/use_download_page']['hidden'] = false;
 		} else {
-			$box['tabs']['text']['fields']['use_download_page']['current_value'] = false;
-			$box['tabs']['text']['fields']['use_download_page']['hidden'] = true;
+			$fields['text/use_download_page']['current_value'] = false;
+			$fields['text/use_download_page']['hidden'] = true;
 		}
 
 
@@ -300,13 +306,13 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 
 		//For multilingal sites, add a note about using the Content Item in the default language if no translation is set.
 		//(But use the langEquivalentItem() function to work out what language will actually be used.)
-		$box['tabs']['text']['fields']['multilingual_description']['hidden'] = true;
+		$fields['text/multilingual_description']['hidden'] = true;
 		if ($cID && $cType && $numLangs > 1) {
 			langEquivalentItem($cID, $cType, $langId = true);
 			$mainLang = getContentLang($cID, $cType);
 	
-			$box['tabs']['text']['fields']['multilingual_description']['hidden'] = false;
-			$box['tabs']['text']['fields']['multilingual_description']['snippet']['html'] =
+			$fields['text/multilingual_description']['hidden'] = false;
+			$fields['text/multilingual_description']['snippet']['html'] =
 				' '.
 				adminPhrase(
 					'If text is specified for a menu node but no translation of the content item exists, the menu node will link to the item in [[english_name]].',
@@ -482,7 +488,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['use_download_page'] = $values['text/use_download_page'];
 			//$submission['ext_url'] = $values['destination/ext_url'];
 			$submission['open_in_new_window'] = $values['text/open_in_new_window'];
-			$submission['anchor'] = ($values['text/target_loc'] == 'int') ? $values['text/hyperlink_anchor'] : '';
+			$submission['anchor'] = ($values['text/target_loc'] == 'int' && $values['text/link_to_anchor']) ? $values['text/hyperlink_anchor'] : '';
 		}
 
 		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
@@ -523,7 +529,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			} else {
 				$submission['rollover_image_id'] = 0;
 			}
-			if ($rolloverImageId) {
+			if ($values['use_rollover_image'] && $rolloverImageId) {
 				setRow('inline_images', array('image_id' => $rolloverImageId, 'in_use' => 1), array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));
 			} else {
 				deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $id, 'foreign_key_char' => 'rollover_image'));

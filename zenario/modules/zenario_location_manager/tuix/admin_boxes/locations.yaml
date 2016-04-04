@@ -154,13 +154,11 @@ zenario_location_manager__location:
                 content_item:
                     label: 'Descriptive Page:'
                     pick_items:
-                        equivalence: Yes
-                        path: >
-                            zenario__content/panels/content_types/item//html//
-                        min_path: zenario__content/panels/content_types/item//html//
-                        max_path: zenario__content/panels/content_types/item//html//item//
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: Yes
+                        disallow_refiners_looping_on_min_path: true
         sectors:
             ord: "50"
             label: Sectors

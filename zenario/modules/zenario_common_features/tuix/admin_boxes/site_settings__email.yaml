@@ -226,7 +226,7 @@ site_settings:
                     snippet:
                         html: "This tab contains settings for overriding the recipient's address for all emails sent by the CMS."
                 debug_override_enable:
-                    label: 'Debug mode:'
+                    label: 'Debug mode'
                     site_setting:
                         name: debug_override_enable
                     type: checkbox

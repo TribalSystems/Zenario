@@ -46,7 +46,7 @@ if (!defined('DBHOST')
 //Echo the checksum on CSS/JavaScript files
 echo setting('css_js_version'), '___';
 echo setting('yaml_version'), '___';
-echo setting('php_version'), '___';
+echo zenarioCodeLastUpdated(), '___';
 
 //Echo the the current data revision number. (This is incremented every time data is changed in the database.)
 echo getRow('local_revision_numbers', 'revision_no', array('path' => 'data_rev'));

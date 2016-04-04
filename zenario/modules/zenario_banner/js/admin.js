@@ -31,7 +31,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	zenario_banner
 ) {
 	"use strict";
@@ -68,7 +68,7 @@ zenario_banner.open = function(containerId, editorId, delayed) {
 	}
 	
 	$editor.tinymce({
-		script_url: URLBasePath + zenarioA.tinyMCEPath,
+		script_url: URLBasePath + zenario.tinyMCEPath,
 
 		plugins: ["advlist autolink lists link charmap hr anchor",
 		"searchreplace code",
@@ -150,7 +150,7 @@ zenario_banner.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 	var slotName = zenario.getSlotnameFromEl(el);
 	
 	var saveLink = get(containerId + '_save_link').value;
-	var content = zenarioA.tinyMCEGetContent($('div#' + editorId).tinymce());
+	var content = zenario.tinyMCEGetContent($('div#' + editorId).tinymce());
 	
 	var error = zenario_banner.AJAX(
 		saveLink,

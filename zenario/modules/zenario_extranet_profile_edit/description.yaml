@@ -24,6 +24,7 @@ css_class_name: zenario_extranet_profile
 is_pluggable: true
 nestable: true
 default_framework: standard
+default_instance_name: Extranet Profile Editor
 special_pages:
     special_page:
         page_type: zenario_profile
@@ -35,4 +36,5 @@ special_pages:
 dependencies:
     zenario_extranet: true
     zenario_user_forms: true
-default_instance_name: Extranet Profile Editor
+inheritance:
+    include_javascript_from_module: zenario_user_forms

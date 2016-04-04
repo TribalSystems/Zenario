@@ -54,10 +54,6 @@
 	margin-right:10px;
 }
 
-.zenario_comments__default_style .punymce table {
-	width:100%;
-}
-
 .zenario_comments__default_style .post_area img {
 	max-width:400px;
 	height:auto;
@@ -172,14 +168,26 @@
 /* Editor
 --------------------------------------------------------------------------------------------------*/
 
-.zenario_comments__default_style table.punymce tr th,
-.zenario_comments__default_style table.punymce tr td {
-	background:transparent;
-	color:#000;
-	text-align:left;
-	text-transform:none;
-	padding:0;
-	vertical-align:top;
+.zenario_comments__default_style div.zenario_tinymce_toolbar_container > .mce-panel {
+	min-width: 100%;
+	box-sizing: border-box;
+	border-bottom: none;
+}
+
+.zenario_comments__default_style .mce-content-body {
+	padding: 10px 15px 0px 20px;
+	border: 1px solid #cacaca;
+	margin-top: 0;
+}
+
+.zenario_comments__default_style .mce-toolbar-grp {
+	height: 36px !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.zenario_comments__default_style .mce-flow-layout-item {
+	margin: 0 !important;
 }
 
 .zenario_comments__default_style div.comments_box_center textarea {

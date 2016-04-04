@@ -249,8 +249,9 @@ zenario__administration:
             
             
             disable_periodic_refresh: Yes
+            
             refiners:
-               dataset_id: {}
+                dataset_id: {}
             refiner_required: true
             
             items: {}
@@ -303,99 +304,4 @@ zenario__administration:
             
             panel_type: admin_box_builder
             
-            collection_buttons:
-                create_new_tab:
-                    priv: _PRIV_MANAGE_DATASET
-                    css_class: zenario_create_a_new
-                    hide_on_filter: true
-                    label: Create a tab
-                    admin_box:
-                        path: zenario_custom_tab
-                    hide_in_select_mode: Yes
             
-            item_buttons:
-                create_new_field:
-                    priv: _PRIV_MANAGE_DATASET
-                    visible_if_for_all_selected_items: |
-                        item.is_tab
-                    css_class: zenario_create_a_new
-                    hide_on_filter: true
-                    label: Create field on selected tab
-                    admin_box:
-                        path: zenario_custom_field
-                    hide_in_select_mode: Yes
-                
-                edit_field:
-                    priv: _PRIV_MANAGE_DATASET
-                    visible_if_for_all_selected_items: |
-                        item.is_field && !item.is_system
-                    label: Edit custom field properties
-                    admin_box:
-                        path: zenario_custom_field
-                    hide_in_select_mode: Yes
-                
-                edit_tab:
-                    priv: _PRIV_MANAGE_DATASET
-                    label: Rename tab
-                    visible_if_for_all_selected_items: |
-                        item.is_tab && !item.is_system
-                    admin_box:
-                        path: zenario_custom_tab
-                    hide_in_select_mode: Yes
-                
-                edit_system_tab:
-                    priv: _PRIV_MANAGE_DATASET
-                    label: Rename tab
-                    visible_if_for_all_selected_items: |
-                        !item.is_field && item.is_system
-                    admin_box:
-                        path: zenario_custom_system_tab
-                    hide_in_select_mode: Yes
-                
-                edit_system_field:
-                    priv: _PRIV_MANAGE_DATASET
-                    label: Edit system field properties
-                    visible_if_for_all_selected_items: |
-                        item.is_field && item.is_system
-                    admin_box:
-                        path: zenario_custom_system_field
-                    hide_in_select_mode: Yes
-                
-                delete_tab:
-                    priv: _PRIV_MANAGE_DATASET
-                    label: Delete tab
-                    visible_if_for_all_selected_items: |
-                        item.is_tab && !item.is_system && !item.has_children
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to delete the tab "[[label]]"?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete_tab: 1
-                    hide_in_select_mode: Yes
-                
-                delete_field:
-                    priv: _PRIV_MANAGE_DATASET
-                    visible_if_for_all_selected_items: |
-                        item.is_field && !item.is_system
-                    label: Delete
-                    disabled_if_for_any_selected_items: |
-                        item.protected
-                    disabled_tooltip: 'Protected fields cannot be deleted'
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to delete the field "[[label]]" (database column "[[db_column]]")?
-                                
-                                There are [[user_count]] records(s) in which this field is populated.
-                                
-                                This action cannot be undone.
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete_field: 1
-                    hide_in_select_mode: Yes

@@ -12,14 +12,20 @@ zenario_publish:
                 enabled: true
                 always_on: true
                 enable_revert: false
+            
+            notices:
+                are_you_sure:
+                    show: true
+                    type: warning
+                    message: >
+                        Are you sure you wish to publish the selected content item(s)?
+                #too_soon:
+                #    show: false
+                #    type: error
+                #    message: >
+                #        You cannot publish a content item before its release date.
+            
             fields:
-                desc:
-                    full_width: true
-                    pre_field_html: '<div class="zenario_fbWarning">'
-                    snippet:
-                        html: >
-                            Are you sure you wish to publish the selected content item(s)?
-                    post_field_html: '</div>'
                 publish_options:
                     type: radios
                     values:

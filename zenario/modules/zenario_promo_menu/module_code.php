@@ -59,9 +59,11 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		$this->showMissingMenuNodes = $this->setting('show_missing_menu_nodes');
 		$cachingRestrictions = false;
 		
+		$parentMenuId = $this->getStartNode();
+		
 		$this->menuArray['nodes'] =
 			getMenuStructure($cachingRestrictions,
-							 $this->sectionId, $this->currentMenuId, 0,
+							 $this->sectionId, $this->currentMenuId, $parentMenuId,
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
 							 $this->showAdminAddMenuItem, $this->showInvisibleMenuItems,

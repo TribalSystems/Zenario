@@ -7,6 +7,11 @@ zenario_admin:
                 priv: _PRIV_EDIT_ADMIN
                 enabled: true
                 always_on: true
+            notices:
+                is_trashed:
+                    show: false
+                    type: warning
+                    message: This administrator is trashed and cannot log in.
             label: Settings
             fields:
                 #description:

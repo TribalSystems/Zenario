@@ -33,8 +33,10 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
-		if (!checkForChangesInCssJsAndHtmlFiles()) {
-			checkForMissingTemplateFiles();
+		if (in($mode, 'full', 'quick', 'select')) {
+			if (!checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true)) {
+				checkForMissingTemplateFiles();
+			}
 		}
 		
 		if (isset($_GET['refiner__trash'])) {
@@ -196,7 +198,7 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 					deleteLayout($id, true);
 				}
 			}
-			checkForChangesInCssJsAndHtmlFiles($forceScan = true);
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 		
 		//Archive a template
 		} elseif (post('archive') && checkPriv('_PRIV_EDIT_TEMPLATE')) {

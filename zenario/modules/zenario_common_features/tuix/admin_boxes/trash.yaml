@@ -12,20 +12,29 @@ zenario_trash:
                 enabled: true
                 always_on: true
                 enable_revert: false
+            
+            notices:
+                trash_item:
+                    type: warning
+                    message: |
+                            If you trash this content item it will:
+                             - no longer be visible to visitors
+                             - be removed from the menu
+                             - lose its alias
+                            
+                            Are you sure you wish to trash this content item?
+                trash_items:
+                    type: warning
+                    message: |
+                            Trashed content items will:
+                             - be no longer visible to visitors
+                             - be removed from the menu
+                             - lose their alias
+                            
+                            Are you sure you wish to trash these content items?
+                    
+            
             fields:
-                desc:
-                    full_width: true
-                    pre_field_html: '<div class="zenario_fbWarning">'
-                    snippet:
-                        html: |
-                            <p>
-                                Trashing this content item will remove it from the site. It will no longer be visible to site visitors.
-                            </p><br/><p>
-                                You can recover a trashed item in Organizer, go to Content and then click on the trash can.
-                            </p><br/><p>
-                                Are you sure you wish to proceed?
-                            </p>
-                    post_field_html: '</div>'
                 links_warning:
                     snippet:
                         html:

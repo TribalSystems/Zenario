@@ -16,7 +16,8 @@ vlp_class_name: zenario_ctype_news
 content_types:
     content_type:
         content_type_id: news
-        content_type_name_en: News
+        content_type_name_en: News article
+        content_type_plural_en: News articles
         default_template_name: News Layout
         enable_summary_auto_update: false
         enable_categories: true

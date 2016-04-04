@@ -34,7 +34,7 @@ class zenario_common_features__organizer__categories extends module_base_class {
 		if ($path != 'zenario__content/panels/categories') return;
 		
 		if (!$refinerName && !in($mode, 'get_item_name', 'get_item_links')) {
-			$panel['title'] = adminPhrase('Top Level Categories');
+			$panel['title'] = adminPhrase('Categories (top level)');
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_top_level'];
 		}
 		
@@ -63,11 +63,6 @@ class zenario_common_features__organizer__categories extends module_base_class {
 							getRow('visitor_phrases', 'local_text',
 										array('language_id' => $lang['id'], 'code' => '_CATEGORY_'. (int) $id, 'module_class_name' => 'zenario_common_features'));
 				}
-				
-				if ($item['landing_page_equiv_id'] && $item['landing_page_content_type']) {
-					$item['landing_page'] = $item['landing_page_content_type']. '_'. $item['landing_page_equiv_id'];
-					$item['frontend_link'] = linkToItem($item['landing_page_equiv_id'], $item['landing_page_content_type'], false, 'zenario_sk_return=navigation_path');
-				}
 			}
 			
 			$item['children'] = countCategoryChildren($id);
@@ -78,7 +73,7 @@ class zenario_common_features__organizer__categories extends module_base_class {
 		if (get('refiner__parent_category')) {
 			$mrg = array(
 				'category' => getCategoryName(get('refiner__parent_category')));
-			$panel['title'] = adminPhrase('Sub-categories of category "[[category]]"', $mrg);
+			$panel['title'] = adminPhrase('Sub-categories of "[[category]]"', $mrg);
 			$panel['no_items_message'] = adminPhrase('Category "[[category]]" has no sub-categories.', $mrg);
 		}
 	}

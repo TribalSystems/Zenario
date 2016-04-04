@@ -33,7 +33,9 @@ class zenario_common_features__organizer__template_families extends module_base_
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__layouts/panels/template_families') return;
 		
-		checkForChangesInCssJsAndHtmlFiles();
+		if (in($mode, 'full', 'quick', 'select')) {
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {

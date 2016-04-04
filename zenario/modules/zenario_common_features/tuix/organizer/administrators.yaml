@@ -167,13 +167,15 @@ zenario__users:
                     admin_box:
                         path: zenario_admin
                         create_another: true
-                copy_perms_from:
+                copy_perms:
                     priv: _PRIV_EDIT_ADMIN
                     label: Copy permissions...
                     admin_box:
                         path: admin_copy_perms
                     disabled_tooltip: |
                         Requires two active, local administrators
+                    hide_on_refiner: trashed
+                    hide_in_select_mode: true
             item_buttons:
                 edit:
                     ord: "1"

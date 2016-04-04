@@ -6,11 +6,19 @@ zenario_admin:
         authtype: ""
         global_id: ""
         view_profile: ""
+    identifier:
+        css_class: admin_item
+        label: Admin ID
     tabs:
         details:
             label: Details
             edit_mode:
                 enabled: false
+            notices:
+                is_trashed:
+                    show: false
+                    type: warning
+                    message: This administrator is trashed and cannot log in.
             fields:
                 desc:
                     full_width: true
@@ -55,11 +63,12 @@ zenario_admin:
                         required: Please enter an Email Address.
                         email: Please enter a valid Email Address.
                 password:
+                    visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Password:'
                     type: password
                     style: 'width: 20em;'
-                    visible_if: '!zenarioAB.tuix.key.id'
                 suggest_button:
+                    visible_if: '!zenarioAB.tuix.key.id'
                     same_row: true
                     snippet:
                         html: >
@@ -72,13 +81,13 @@ zenario_admin:
                                 passwordConfirmField.value = suggestedPassword;
                                 passwordConfirmField.type = 'password';
                             " value="Suggest"/>
-                    visible_if: '!zenarioAB.tuix.key.id'
                 password_confirm:
+                    visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Re-confirm Password:'
                     type: password
                     style: 'width: 20em;'
-                    visible_if: '!zenarioAB.tuix.key.id'
                 inform_by_email:
+                    visible_if: '!zenarioAB.tuix.key.id'
                     label: 'Inform by email'
                     type: checkbox
                     note_below: >
@@ -103,6 +112,11 @@ zenario_admin:
             edit_mode:
                 enabled: true
                 always_on: false
+            notices:
+                is_trashed:
+                    show: false
+                    type: warning
+                    message: This administrator is trashed and cannot log in.
             fields:
                 desc:
                     full_width: true
@@ -130,6 +144,11 @@ zenario_admin:
                     label: 'Re-confirm Password:'
                     type: password
                     style: 'width: 20em;'
+                inform_by_email:
+                    label: 'Inform by email'
+                    type: checkbox
+                    note_below: >
+                        If checked, the Administrator will receive an email with the update. 
                 password_needs_changing:
                     label: 'Password needs changing:'
                     type: checkbox
@@ -142,6 +161,11 @@ zenario_admin:
                 enabled: false
                 format_on_revert: true
                 format_on_cancel_edit: true
+            notices:
+                is_trashed:
+                    show: false
+                    type: warning
+                    message: This administrator is trashed and cannot log in.
             fields:
                 desc:
                     full_width: true

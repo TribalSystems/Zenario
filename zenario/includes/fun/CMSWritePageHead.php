@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $gzf = setting('compress_web_pages')? '?gz=1' : '?gz=0';
 $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
+$v = zenarioCodeVersion();
 
 $isWelcome = $mode === true || $mode === 'welcome';
 $isWizard = $mode === 'wizard';
@@ -136,7 +136,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zena
 if ($isWelcomeOrWizard || checkPriv()) {
 	if (!cms_core::$skinId) {
 		echo '
-<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/jquery/css/colorbox/colorbox.css?v=', $v, $gz, '"/>';
+<link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/colorbox/colorbox.css?v=', $v, $gz, '"/>';
 	}
 	
 	echo '

@@ -116,17 +116,15 @@ while($reading) {
 			
 			
 			
-			//Backups created before 7.1 replaced the database prefixes, so we need to have logic to catch those cases.
-			//Check the SQL statement, looking for the table prefix it is using.
-			//DB_NAME_PREFIX_GLOBAL is for tables that would be in the global database in the old multisite system. Ignore these.
+			//Very old backups sometimes had global tables in them with special prefixes; ignore these
 			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX_GLOBAL']]") !== false) {
 				continue;
 			
-			//GLOBAL_NOT_NORMALLY_RESTORED is for tables that would be in the global database in the old multisite system. Ignore these.
 			} elseif (strpos($statements[$i], "[['GLOBAL_NOT_NORMALLY_RESTORED']]") !== false) {
 				continue;
 			
-			//DB_NAME_PREFIX is for tables in the local database; i.e. most tables. They are always restored.
+			//Handle backups created by the CMS in the previous format before "T10131, A couple of small improvements to the CMS backup system"
+			//There will be no COMMIT/CREATE DATABASE/LOCK/SET/START/UNLOCK/USE statements, and the will be a merge field for the database prefix
 			} elseif (strpos($statements[$i], "[['DB_NAME_PREFIX']]") !== false) {
 				$searchInFile = "[['DB_NAME_PREFIX']]";
 				$replaceInFile = DB_NAME_PREFIX. 'i_m_p_';
@@ -153,16 +151,33 @@ while($reading) {
 				} else
 				if ((false !== ($tick1 = strpos($statements[$i], '`')))
 				 && (false !== ($tick2 = strpos($statements[$i], '`', $tick1 + 1)))
+				 && ($tick1 < 100)
+				 && ($tick2 < 350)
 				 && ($tableName = substr($statements[$i], $tick1 + 1, $tick2 - $tick1 - 1))) {
+				
+					//If this is a CMS backup in the latest format, each table name should have a note in front if it saying what the prefix was
+					if ((false !== ($tick1 = strpos($statements[$i], '/*\\prefix:\'')))
+					 && (false !== ($tick2 = strpos($statements[$i], '\':prefix\\*/', $tick1 + 11)))
+					 && ($tick2 < 100)) {
+						$dbNamePrefixInFile = substr($statements[$i], $tick1 + 11, $tick2 - $tick1 - 11);
+							//var_dump($dbNamePrefixInFile, $tableName);
+						
+						if ($tableName = chopPrefixOffOfString($tableName, $dbNamePrefixInFile)) {
+							$searchInFile = '`'. $dbNamePrefixInFile. $tableName. '`';
+							$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
+						
+						} else {
+							$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nCould not read the table-prefix in this backup file\n\n\n";
+							break 2;
+						}
 					
 					//Check that the table's name begins with the DB_NAME_PREFIX,
 					//and then get just the table name without the prefix
-					if ($tableName = chopPrefixOffOfString($tableName, DB_NAME_PREFIX)) {
+					} elseif ($tableName = chopPrefixOffOfString($tableName, DB_NAME_PREFIX)) {
 						$searchInFile = '`'. DB_NAME_PREFIX. $tableName. '`';
 						$replaceInFile = '`'. DB_NAME_PREFIX. 'i_m_p_'. $tableName. '`';
 					
 					} else {
-						
 						$failures[] = 'Statement '. $statementNo. ":\n". $statements[$i]. "\n\nThe table-prefix in this backup file does not match the table-prefix for this site\n\n\n";
 						break 2;
 					}

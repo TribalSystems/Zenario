@@ -25,7 +25,7 @@ plugin_settings:
                         name: another_event
                         foreign_key_to: content
                     pick_items:
-                        path: zenario__content/panels/content_types/item_buttons/view_content//event//
+                        path: zenario__content/panels/content/refiners/content_type//event//
                         min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content

@@ -37,7 +37,7 @@ useGZIP(!empty($_GET['gz']));
 
 //Include all of the standard JavaScript Admin libraries for the CMS
 incJS('zenario/libraries/mit/jquery/jquery.nestable');
-incJS('zenario/libraries/mit/jpaginator/jPaginator-min');
+incJS('zenario/libraries/mit/jpaginator/jPaginator');
 incJS('zenario/js/admin_organizer');
 
 incJS('zenario/api/panel_type_base_class');
@@ -64,3 +64,5 @@ incJS('zenario/js/panel_type_list_or_grid_or_google_map');
 incJS('zenario/js/panel_type_form_builder_base_class');
 incJS('zenario/js/panel_type_form_builder');
 incJS('zenario/js/panel_type_admin_box_builder');
+
+incJS('zenario/js/panel_type_schematic_builder');

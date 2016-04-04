@@ -48,24 +48,24 @@ if ($comment['poster_id'] && inc('zenario_users')) {
 $formFields = array(
 	'cms_url' => absCMSDirURL(),
 	'link' => linkToItem($comment['content_id'], $comment['content_type'], true, '', false, false, true),
-	'message' => htmlspecialchars($comment['message_text']),
-	'page_title' => htmlspecialchars(getItemTitle($comment['content_id'], $comment['content_type'])),
+	'message' => $comment['message_text'],
+	'page_title' => getItemTitle($comment['content_id'], $comment['content_type']),
 	'poster_screen_name' => '');
 
 if (!empty($poster['id'])) {
-	$formFields['poster_screen_name'] = htmlspecialchars($this->getUserScreenName($poster['id']));
+	$formFields['poster_screen_name'] = $this->getUserScreenName($poster['id']);
 
 } elseif ($comment['poster_name'] && $comment['poster_email']) {
 	$formFields['poster_username'] =
-	$formFields['poster_screen_name'] = htmlspecialchars($comment['poster_name']. ' ('. $comment['poster_email']. ')');
+	$formFields['poster_screen_name'] = $comment['poster_name']. ' ('. $comment['poster_email']. ')';
 
 } elseif ($comment['poster_name']) {
 	$formFields['poster_username'] =
-	$formFields['poster_screen_name'] = htmlspecialchars($comment['poster_name']);
+	$formFields['poster_screen_name'] = $comment['poster_name'];
 
 } elseif ($comment['poster_email']) {
 	$formFields['poster_username'] =
-	$formFields['poster_screen_name'] = htmlspecialchars($comment['poster_email']);
+	$formFields['poster_screen_name'] = $comment['poster_email'];
 }
 
 $notification = getRow(ZENARIO_ANONYMOUS_COMMENTS_PREFIX  . 'comment_content_items', array(
@@ -88,5 +88,8 @@ if ($notification['send_notification_email'] && $notification['notification_emai
 	zenario_email_template_manager::sendEmailsUsingTemplate(
 		$notification['notification_email_address'],
 		$notification['notification_email_template'],
-		$formFields);
+		$formFields,
+		array(),
+		array(),
+		array('message' => true));
 }

@@ -51,7 +51,7 @@ if (needRevision(159)) {
 	// usable.)
 	//(Again, if you upgrade from version 7 or earlier these will have also been done manually
 	// by the migration script, but they're also safe to call again.)
-	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '')
+	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 	
 	revision(159);
 }

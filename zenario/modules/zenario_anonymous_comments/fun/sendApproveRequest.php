@@ -31,22 +31,22 @@ $mergeFields = array();
 
 if (!$userId && $name && $email) {
 	$formFields['poster_username'] =
-	$mergeFields['poster_screen_name'] = htmlspecialchars($name. ' ('. $email. ')');
+	$mergeFields['poster_screen_name'] = $name. ' ('. $email. ')';
 
 } elseif (!$userId && $name) {
 	$formFields['poster_username'] =
-	$mergeFields['poster_screen_name'] = htmlspecialchars($name);
+	$mergeFields['poster_screen_name'] = $name;
 
 } elseif (!$userId && $email) {
 	$formFields['poster_username'] =
-	$mergeFields['poster_screen_name'] = htmlspecialchars($email);
+	$mergeFields['poster_screen_name'] = $email;
 
 } else {
 	$mergeFields['poster_screen_name'] = $this->getUserScreenNameLink($userId);
 }
 
 $mergeFields['link'] = $this->linkToItem($this->cID, $this->cType, true);
-$mergeFields['message'] = htmlspecialchars($messageText);
+$mergeFields['message'] = $messageText;
 $mergeFields['page_title'] = getItemTitle($this->cID, $this->cType);
 $mergeFields['cms_url'] = absCMSDirURL();
 
@@ -59,5 +59,5 @@ if (inc('zenario_email_template_manager')) {
 		$mergeFields,
 		array(),
 		array(),
-		true);
+		array('message' => true, 'poster_screen_name' => true));
 }

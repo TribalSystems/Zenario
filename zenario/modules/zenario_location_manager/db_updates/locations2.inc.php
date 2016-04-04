@@ -171,14 +171,22 @@ if (needRevision(135)) {
 	if ($columnsToMigrate) {
 		$columnsToMigrateCommaList = implode(',', $columnsToMigrate);
 		
-		$sql = "INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
+		$sql = "
+			INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
 			(" . $columnsToMigrateCommaList . ",location_id) 
-			SELECT " . $columnsToMigrateCommaList . ",id
+			SELECT ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= "IFNULL(l." . $column . ", ''), ";
+		}
+		
+		$sql .= "
+			id
 			FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
 			ON DUPLICATE KEY UPDATE ";
 		
 		foreach ($columnsToMigrate as $column) {
-			$sql .= $column . " = l." . $column . ",";
+			$sql .= $column . " = IFNULL(l." . $column . ", ''),";
 		}
 		
 		$sql = rtrim($sql, ",");
@@ -225,9 +233,17 @@ if (needRevision(140)) {
 	if ($columnsToMigrate) {
 		$columnsToMigrateCommaList = implode(',', $columnsToMigrate);
 		
-		$sql = "INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
+		$sql = "
+			INSERT INTO " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data 
 			(" . $columnsToMigrateCommaList . ",location_id) 
-			SELECT " . $columnsToMigrateCommaList . ",id
+			SELECT ";
+		
+		foreach ($columnsToMigrate as $column) {
+			$sql .= "IFNULL(l." . $column . ", ''), ";
+		}
+		
+		$sql .= "
+			id
 			FROM " . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX. "locations as l 
 			ON DUPLICATE KEY UPDATE ";
 		

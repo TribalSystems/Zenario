@@ -1095,26 +1095,6 @@ _sql
 _sql
 
 
-//Create a table for storing smart group rules in the new format
-);	revision( 31740
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]smart_group_rules`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]]smart_group_rules` (
-		`smart_group_id` int(10) unsigned NOT NULL,
-		`ord` int(10) unsigned NOT NULL,
-		`field_id` int(10) unsigned NOT NULL,
-		`field2_id` int(10) unsigned NOT NULL default 0,
-		`field3_id` int(10) unsigned NOT NULL default 0,
-		`not` tinyint(1) NOT NULL default 0,
-		`value` text,
-		PRIMARY KEY (`smart_group_id`, `ord`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
-_sql
-
-
 //Correct a bug where TinyMCE added "zenario/admin" into the login link a second time
 );	revision( 31850
 , <<<_sql
@@ -1246,6 +1226,14 @@ _sql
 _sql
 
 
+
+
+//
+//Version 7.1
+//
+
+
+
 //T10134 Add a "URL" field to the phrases table, that shows a URL that the phrase was found on
 ); revision( 33580
 , <<<_sql
@@ -1254,17 +1242,104 @@ _sql
 _sql
 
 
+
+
+//
+//Version 7.2
+//
+
+//Add the "abstract" status for modules
+);	revision( 33920
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	MODIFY COLUMN `status` enum('module_not_initialized', 'module_running', 'module_suspended', 'module_is_abstract') NOT NULL default 'module_not_initialized'
+_sql
+
+
+); revision( 34190
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	ADD COLUMN `fill_organizer_nav` tinyint(1) NOT NULL default 0
+	AFTER `is_pluggable`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	ADD KEY (`fill_organizer_nav`)
+_sql
+
+
+); revision( 34200
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `content_type_plural_en` varchar(255) NOT NULL default ''
+	AFTER `content_type_name_en`
+_sql
+
+
+//Remove landing pages from categories
+); revision( 34260
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	DROP COLUMN `landing_page_equiv_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	DROP COLUMN `landing_page_content_type`
+_sql
+
+
 //Remove any excecutables from the document_types table if anyone has previously added them
-); revision( 33777
+); revision( 34500
 ,<<<_sql
 	DELETE FROM `[[DB_NAME_PREFIX]]document_types`
 	WHERE `type` IN ('asp', 'bin', 'cgi', 'exe', 'js', 'jsp', 'php', 'php3', 'ph3', 'php4', 'ph4', 'php5', 'ph5', 'phtm', 'phtml', 'sh')
 _sql
 
 
+//Add CC, BCC and debug options to email templates
+);	revision( 34510
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `send_cc` tinyint(1) NOT NULL default 0
+	AFTER `body`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `cc_email_address` TEXT
+	AFTER `send_cc`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `send_bcc` tinyint(1) NOT NULL default 0
+	AFTER `cc_email_address`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `bcc_email_address` TEXT
+	AFTER `send_bcc`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `debug_override` tinyint(1) NOT NULL default 0
+	AFTER `bcc_email_address`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `debug_email_address` TEXT
+	AFTER `debug_override`
+_sql
+
+
 //Make the thumbnail columns on the files table a little larger,
 //as it's actually possible to run out of room with just normal blobs
-);	revision( 33778
+);	revision( 34550
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]files`
 	MODIFY COLUMN `thumbnail_24x23_data` mediumblob
@@ -1278,6 +1353,14 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]files`
 	MODIFY COLUMN `thumbnail_180x130_data` mediumblob
+_sql
+
+//Add is_creatable to content types in case you cannot manually create an item of this type
+); revision( 34662
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `is_creatable` tinyint(1) NOT NULL DEFAULT 1 AFTER `enable_categories`
 _sql
 
 );

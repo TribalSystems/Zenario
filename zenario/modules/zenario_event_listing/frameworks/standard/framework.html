@@ -7,16 +7,15 @@
 		
 		[cms:section name="Event_Row_On_List"]
 			<div class="single_event">
-				
-				<div class = "single_event_sticky_image">
+				<div class = "[cms:merge name="Sticky_image_class_name"/]">
 					<a class="single_event_image_link" href="[cms:merge name='Link_To_Event'/]" >
 						[cms:merge name="Sticky_image_HTML_tag"/]
 					</a>
 				</div>
-				
-				
 				<div class = "single_event_description">
-					<h3>[cms:merge name="Event_Title"/]</h3>
+					<div class ="event_title">
+						<h2><a href="[cms:merge name='Link_To_Event'/]">[cms:merge name="Event_Title"/]</a></h2>
+					</div>
 					<span class="single_event_date">[cms:merge name="Event_Dates"/]</span>
 					<span class="single_event_date">[cms:merge name="Event_location"/]</span>
 					<span class="single_event_description">[cms:merge name="Event_Description"/]</span>

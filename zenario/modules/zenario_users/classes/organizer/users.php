@@ -63,6 +63,9 @@ class zenario_users__organizer__users extends zenario_users {
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		
+		$hasUserTimersRunning = inc('zenario_user_timers');
+		
 		// Add dataset ID to import and export buttons
 		$dataset = getDatasetDetails('users');
 		$panel['collection_buttons']['import']['admin_box']['key']['dataset'] = 
@@ -103,6 +106,10 @@ class zenario_users__organizer__users extends zenario_users {
 			
 			if ($item['status'] == 'contact') {
 				$item['traits']['is_contact'] = true;
+			} elseif ($item['status'] == 'active'){
+				$item['traits']['active'] = true;
+			} else {
+				$item['traits']['suspended'] = true;
 			}
 			
 			$item['cell_css_classes'] = array();
@@ -125,7 +132,7 @@ class zenario_users__organizer__users extends zenario_users {
 			} elseif ($item['status'] == 'pending') {
 				$item['row_css_class'] = 'user_pending';
 			} elseif ($item['status'] == 'active') {
-				if (inc('zenario_user_timers')) {
+				if ($hasUserTimersRunning) {
 					$timerStatus = getRow(ZENARIO_USER_TIMERS_PREFIX.'user_timer_link', 'status', $item['id']);
 					if ($timerStatus == 'active') {
 						$item['row_css_class'] = 'user_active_timer';
@@ -198,17 +205,6 @@ class zenario_users__organizer__users extends zenario_users {
 				
 				break;
 		}
-		foreach ($panel['items'] as $K=>&$item) {
-			if (count($userData = getUserDetails($K))){
-				if($userData['status']!= 'contact') {
-					if ($userData['status']=='active'){
-						$panel['items'][$K]['traits']['active']=true;
-					} else {
-						$panel['items'][$K]['traits']['suspended']=true;
-					}
-				}
-			}
-		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
@@ -232,7 +228,7 @@ class zenario_users__organizer__users extends zenario_users {
 		} elseif (post('upload_image') && checkPriv('_PRIV_EDIT_USER')) {
 			
 			//Try to add the uploaded image to the database
-			if ($imageId = addFileToDatabase('user', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true)) {
+			if ($imageId = addFileToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
 				//Add image to each user
 				foreach (explode(',', $ids) as $id) {
 					updateRow('users', array('image_id' => $imageId), $id);

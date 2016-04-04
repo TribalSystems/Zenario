@@ -123,14 +123,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 
 				//If this is a new instance, try and ensure that the name we are suggesting is unique
 				if (!$box['key']['instanceId']) {
-					$sql = "
-						SELECT COUNT(*)
-						FROM  ". DB_NAME_PREFIX. "plugin_instances
-						WHERE name LIKE '". sqlEscape($instanceName). "%'";
-					$result = sqlQuery($sql);
-					$row = sqlFetchRow($result);
-					if ($row[0]) {
-						$instanceName .= ' ('. ($row[0] + 1). ')';
+					$count = selectCount('plugin_instances', array('name' => array('LIKE' => $instanceName. '%')));
+					if ($count) {
+						$instanceName .= ' ('. ($count + 1). ')';
 					}
 				}
 		
@@ -427,30 +422,42 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 				}
 	
 			} else {
-				$usage = checkInstancesUsage($box['key']['instanceId'], false);
-				$usagePublished = checkInstancesUsage($box['key']['instanceId'], true);
+				$mrg = array(
+					'pages' => checkInstancesUsage($box['key']['instanceId'], false),
+					'published' => checkInstancesUsage($box['key']['instanceId'], true));
 		
-				if ($usagePublished || (!$box['key']['frontEnd'] && $usage > 0) || ($box['key']['frontEnd'] && $usage > 1)) {
+				if ($mrg['published'] > 0
+				 || $mrg['pages'] > ($box['key']['frontEnd']? 1 : 0)) {
 			
 					$box['confirm']['show'] = true;
 					$box['confirm']['html'] = true;
 					$box['confirm']['button_message'] = adminPhrase('Save');
 			
-					if ($box['key']['frontEnd']) {
-						$box['confirm']['message'] = 
-							'<p>'. adminPhrase('You are changing the settings of this plugin. The change will be <b>immediate</b> and cannot be undone.'). '</p>';
-			
-					} else {
-						$box['confirm']['message'] = 
-							'<p>'. adminPhrase('You are changing the settings of this plugin. The change will be <b>immediate</b> and cannot be undone.'). '</p>';
+					$box['confirm']['message'] = 
+						'<p>'. adminPhrase('You are changing the settings of this plugin. The change will be <b>immediate</b> and cannot be undone.'). '</p>';
+					
+					if ($mrg['pages'] > 1) {
+						$mrg['link'] = htmlspecialchars(getPluginInstanceUsageStorekeeperDeepLink($instance['instance_id'], $instance['module_id']));
+						if ($mrg['published'] > 1) {
+							$box['confirm']['message'] .= 
+								'<p>'. adminPhrase('This will affect [[published]] content items immediately (as they are published), [[pages]] items in total.', $mrg). '</p>';
+						} else {
+							$box['confirm']['message'] .= 
+								'<p>'. adminPhrase('This will affect 1 content item immediately (as it is published), [[pages]] items in total.', $mrg). '</p>';
+						}
+						
+						$box['confirm']['message'] .= 
+							'<p>'. adminPhrase('<a href="[[link]]" target="_blank">Click for a list of all content items affected</a> (this can be found normally in Organizer, under Modules).', $mrg). '</p>';
+					
+					} else
+					if ($mrg['published'] == 1
+					 && ($citems = checkInstancesUsage($box['key']['instanceId'], true, false, true))
+					 && (!empty($citems))
+					 && ($mrg['tag'] = formatTag($citems[0]['id'], $citems[0]['type']))) {
+						
+						$box['confirm']['message'] .= 
+							'<p>'. adminPhrase('This will affect the content item &quot;[[tag]]&quot; immediately as it is published.', $mrg). '</p>';
 					}
-			
-					$box['confirm']['message'] .= 
-							'<p>'. adminPhrase(
-						'This will affect [[published]] content items immediately (as they are published), [[pages]] items in total.</p><p><a href="[[link]]" target="_blank">Click for a list of all content items affected</a> (this can be found normally in Organizer, under Modules).</span>',
-						array('pages' => $usage,
-								'published' => $usagePublished,
-								'link' => htmlspecialchars(getPluginInstanceUsageStorekeeperDeepLink($instance['instance_id'], $instance['module_id'])))). '</p>';
 				}
 			}
 		}
@@ -693,17 +700,23 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 									$eggName = $values[$tabName. '/'. $fieldName];
 									$editMode = engToBooleanArray($tab, 'edit_mode', 'on')? '_' : '';
 									$eggNameCurrentPriority = (int) $field['plugin_setting']['use_value_for_plugin_name'];
+									
+									//T10290 - for an internal link, only record the tag id and not the alias and publishing status
+									// (which will get out of date!)
+									if (empty($field['pick_items']['target_path'])
+									 || $field['pick_items']['target_path'] != 'zenario__content/panels/content') {
+										
+										//Attempt to get a display value, rather than the actual value
+										$items = explode(',', $eggName);
+										if (!empty($field['values'][$items[0]])) {
+											$eggName = $field['values'][$items[0]];
 					
-									//Attempt to get a display value, rather than the actual value
-									$items = explode(',', $eggName);
-									if (!empty($field['values'][$items[0]])) {
-										$eggName = $field['values'][$items[0]];
+										} elseif (!empty($field['values'][$eggName])) {
+											$eggName = $field['values'][$eggName];
 					
-									} elseif (!empty($field['values'][$eggName])) {
-										$eggName = $field['values'][$eggName];
-					
-									} elseif (!empty($field['_display_value'])) {
-										$eggName = $field['_display_value'];
+										} elseif (!empty($field['_display_value'])) {
+											$eggName = $field['_display_value'];
+										}
 									}
 								}
 							}

@@ -12,20 +12,19 @@
 /**
  * Represents a trans node.
  *
- * @package    twig
  * @author     Fabien Potencier <fabien.potencier@symfony-project.com>
  */
 class Twig_Extensions_Node_Trans extends Twig_Node
 {
-    public function __construct(Twig_NodeInterface $body, Twig_NodeInterface $plural = null, Twig_Node_Expression $count = null, $lineno, $tag = null)
+    public function __construct(Twig_Node $body, Twig_Node $plural = null, Twig_Node_Expression $count = null, Twig_Node $notes = null, $lineno, $tag = null)
     {
-        parent::__construct(array('count' => $count, 'body' => $body, 'plural' => $plural), array(), $lineno, $tag);
+        parent::__construct(array('count' => $count, 'body' => $body, 'plural' => $plural, 'notes' => $notes), array(), $lineno, $tag);
     }
 
     /**
      * Compiles the node to PHP.
      *
-     * @param Twig_Compiler A Twig_Compiler instance
+     * @param Twig_Compiler $compiler A Twig_Compiler instance
      */
     public function compile(Twig_Compiler $compiler)
     {
@@ -40,6 +39,14 @@ class Twig_Extensions_Node_Trans extends Twig_Node
         }
 
         $function = null === $this->getNode('plural') ? 'phrase' : 'nphrase';
+
+        if (null !== $notes = $this->getNode('notes')) {
+            $message = trim($notes->getAttribute('data'));
+
+            // line breaks are not allowed cause we want a single line comment
+            $message = str_replace(array("\n", "\r"), ' ', $message);
+            $compiler->write("// notes: {$message}\n");
+        }
 
         if ($vars) {
             $compiler
@@ -98,7 +105,12 @@ class Twig_Extensions_Node_Trans extends Twig_Node
         }
     }
 
-    protected function compileString(Twig_NodeInterface $body)
+    /**
+     * @param Twig_Node $body A Twig_Node instance
+     *
+     * @return array
+     */
+    protected function compileString(Twig_Node $body)
     {
         if ($body instanceof Twig_Node_Expression_Name || $body instanceof Twig_Node_Expression_Constant || $body instanceof Twig_Node_Expression_TempName) {
             return array($body, array());

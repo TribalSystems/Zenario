@@ -82,7 +82,23 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 			$languages = getLanguages(false, true, true);
 			$ord = 2;
 			foreach ($languages as $language) {
-				$alias = '`'. sqlEscape('vp_'. $language['id']). '`';
+		
+				if ($panel['key']['language_id']
+				 && $panel['key']['language_id'] == $language['id']) {
+					$dbColumnText = "vp.local_text";
+					$dbColumnFlag = "vp.protect_flag";
+					$tableJoin = "";
+				} else {
+					$alias = '`'. sqlEscape('vp_'. $language['id']). '`';
+					$dbColumnText = $alias. ".local_text";
+					$dbColumnFlag = $alias. ".protect_flag";
+					$tableJoin = "
+						LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
+						   ON ". $alias. ".code = vp.code
+						  AND ". $alias. ".module_class_name = vp.module_class_name
+						  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'";
+				}
+		
 				$panel['columns'][$language['id']] =
 					array(
 						'class_name' => 'zenario_common_features',
@@ -90,14 +106,8 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 						'show_by_default' => true,
 						'searchable' => true,
 						'ord' => $ord,
-						'db_column' => "(
-								SELECT local_text
-								FROM ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
-								WHERE ". $alias. ".code = vp.code
-								  AND ". $alias. ".module_class_name = vp.module_class_name
-								  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'
-								LIMIT 1
-							)"
+						'db_column' => $dbColumnText,
+						'table_join' => $tableJoin
 					);
 				$panel['columns']['protect_'. $language['id']] =
 					array(
@@ -108,14 +118,8 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 						'ord' => $ord + 0.01,
 						'width' => 'xxsmall',
 						'align_right' => true,
-						'db_column' => "(
-								SELECT protect_flag
-								FROM ".DB_NAME_PREFIX. "visitor_phrases AS ". $alias. "
-								WHERE ". $alias. ".code = vp.code
-								  AND ". $alias. ".module_class_name = vp.module_class_name
-								  AND ". $alias. ".language_id = '". sqlEscape($language['id']). "'
-								LIMIT 1
-							)"
+						'db_column' => $dbColumnFlag,
+						'table_join' => $tableJoin
 					);
 		
 				$ord += 0.02;

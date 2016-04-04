@@ -106,7 +106,7 @@ zenario__content:
             collection_buttons:
                 upload:
                     hide_in_select_mode: true
-                    label: Upload a document
+                    label: Upload documents
                     css_class: zenario_create_a_new
                     hide_on_filter: true
                     admin_box:
@@ -123,20 +123,6 @@ zenario__content:
                     label: Re-order
                     admin_box:
                         path: zenario_reorder_documents
-                
-                document_tags:
-                    hide_in_select_mode: true
-                    label: Manage tags
-                    link:
-                        path: zenario__content/panels/document_tags
-                document_rules:
-                    hide_in_select_mode: true
-                    label: Manage rules
-                    link:
-                        path: zenario__content/panels/document_rules
-                    tooltip: >
-                        Set rules to automatically set a document's metadata
-                        based on its filename (advanced)
                 
             item_buttons:
                 upload:
@@ -198,7 +184,7 @@ zenario__content:
                         confirm:
                             download: true
                             message: 'Are you sure you wish to download the file "[[name]]"?'
-                            #message_type: warning
+                            message_type: warning
                             button_message: Download
                             cancel_button_message: Cancel
                 advanced_dropdown:

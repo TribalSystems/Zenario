@@ -34,7 +34,7 @@ zenario__users:
                     align_right: true
                     show_by_default: false
                 label:
-                    title: Group name
+                    title: Name
                     db_column: cdf.label
                     searchable: true
                     width: large
@@ -56,7 +56,30 @@ zenario__users:
                     show_by_default: false
                     sortable: true
                     align_right: true
+            collection_buttons:
+                create:
+                    label: Create a group
+                    css_class: zenario_create_a_new
+                    admin_box:
+                        path: zenario_group
+                    priv: _PRIV_MANAGE_GROUP
             item_buttons:
+                properties:
+                    label: Properties
+                    admin_box:
+                        path: zenario_group
+                    priv: _PRIV_MANAGE_GROUP
+                delete:
+                    label: Delete
+                    ajax:
+                        confirm:
+                            message: Are you sure you want to delete the group "[[label]]"?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            action: delete
+                    priv: _PRIV_MANAGE_GROUP
                 view_dropdown:
                     label: 'View'
                     hide_when_children_are_not_visible: true

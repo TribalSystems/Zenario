@@ -248,127 +248,22 @@ switch ($path) {
 		}
 		break;
 		
-	case 'zenario_migrate_old_documents':
-		
-		$datasetDetails = getDatasetDetails('documents');
-		$documentList = explode(',',$box['key']['id']);
-		$documentData = array();
-		$documentDatasetFieldDetails = getRowsArray('custom_dataset_fields', 'db_column', array('dataset_id' => $datasetDetails['id']));
-		
-		$sql = '
-			SELECT MAX(ordinal)
-			FROM '.DB_NAME_PREFIX.'documents
-			WHERE folder_id = '.(int)$values['details/folder'];
-		$result = sqlSelect($sql);
-		$maxOrdinal = sqlFetchArray($result);
-		$ordinal = $maxOrdinal[0] ? 1 : (int)$maxOrdinal[0] + 1;
-		$failed = 0;
-		$succeeded = 0;
-		
-		foreach($documentList as $tagId) {
-			// Get old document details
-			$documentData = array();
-			$sql = '
-				SELECT c.language_id, v.title, v.description, v.keywords, v.content_summary, v.file_id, v.created_datetime, v.filename
-				FROM '.DB_NAME_PREFIX.'content_items AS c
-				INNER JOIN '.DB_NAME_PREFIX.'content_item_versions AS v
-					ON (c.tag_id = v.tag_id AND c.admin_version = v.version)
-				WHERE c.tag_id = "'.sqlEscape($tagId).'"';
-			$result = sqlSelect($sql);
-			$documentData = sqlFetchAssoc($result);
-			// If alreadly migrated, go to next document
-			if (checkRowExists('documents', array('file_id' => $documentData['file_id']))) {
-				$failed++;
-				continue;
-			}
-			
-			$documentProperties = array(
-				'ordinal' => $ordinal,
-				'type' => 'file', 
-				'file_id' => $documentData['file_id'], 
-				'folder_id' => $values['details/folder'],
-				'file_datetime' => $documentData['created_datetime'],
-				'filename' => $documentData['filename']);
-			$extraProperties = self::addExtractToDocument($documentProperties['file_id']);
-			
-			$properties = array_merge($documentProperties, $extraProperties);
-			// Create new document
-			$documentId = insertRow('documents', $properties);
-			
-			// Get document custom data
-			$customData = array();
-			if ($values['details/title']) {
-				$customData[$documentDatasetFieldDetails[$values['details/title']]] = $documentData['title'];
-			}
-			if ($values['details/language_id']) {
-				$customData[$documentDatasetFieldDetails[$values['details/language_id']]] = $documentData['language_id'];
-			}
-			if ($values['details/description']) {
-				$customData[$documentDatasetFieldDetails[$values['details/description']]] = $documentData['description'];
-			}
-			if ($values['details/keywords']) {
-				$customData[$documentDatasetFieldDetails[$values['details/keywords']]] = $documentData['keywords'];
-			}
-			if ($values['details/content_summary']) {
-				$customData[$documentDatasetFieldDetails[$values['details/content_summary']]] = $documentData['content_summary'];
-			}
-			// Save document custom data
-			setRow('documents_custom_data', $customData, array('document_id' => $documentId));
-			$succeeded++;
-			
-			// Hide document
-			updateRow('content_items', array('status' => 'hidden'), array('tag_id' => $tagId));
-			$ordinal++;
-		}
-		// Code to show success messages after migrating documents
-		$box['popout_message'] = '';
-		
-		if ($failed && !$succeeded) {
-			$box['popout_message'] .= "<!--Message_Type:Error-->";
-			$box['popout_message'] .= '<p>';
-			$box['popout_message'] .= nAdminPhrase(
-				'[[failed]] file could not be migrated as a document with this file already exists',
-				'[[failed]] files could not be migrated as a document with this file already exists',
-				$failed,
-				array('failed' => $failed));
-			$box['popout_message'] .= '</p>';
-		} elseif ($failed && $succeeded) {
-			$box['popout_message'] .= "<!--Message_Type:Warning-->";
-			$box['popout_message'] .= '<p>';
-			$box['popout_message'] .= nAdminPhrase(
-				'[[failed]] file could not be migrated as a document with this file already exists',
-				'[[failed]] files could not be migrated as a document with this file already exists',
-				$failed,
-				array('failed' => $failed));
-			$box['popout_message'] .= '</p>';
-			
-			$box['popout_message'] .= '<p>';
-			$box['popout_message'] .= nAdminPhrase(
-				'[[succeeded]] file was successfully migrated',
-				'[[succeeded]] files were successfully migrated',
-				$succeeded,
-				array('succeeded' => $succeeded));
-			$box['popout_message'] .= '</p>';
-			
-		} else {
-			$box['popout_message'] .= "<!--Message_Type:Success-->";
-			$box['popout_message'] .= '<p>';
-			$box['popout_message'] .= nAdminPhrase(
-				'[[succeeded]] file was successfully migrated',
-				'[[succeeded]] files were successfully migrated',
-				$succeeded,
-				array('succeeded' => $succeeded));
-			$box['popout_message'] .= '</p>';
-		}
-		
-		break;
-		
 	case 'zenario_document_move':
-		if ($values['details/move_to_root']) {
-			$values['details/move_to'] = 0;
-		}
-		foreach (explodeAndTrim($box['key']['id']) as $id) {
-			setRow('documents', array('folder_id' => $values['details/move_to']), $id);
+		// Move documents to another folder
+		$documentIds = explodeAndTrim($box['key']['id']);
+		$folderId = !$values['details/move_to_root'] ? $values['details/move_to'] : 0;
+		
+		// Set ordinals as last in selected folder
+		$sql = '
+			SELECT MAX(ordinal) + 1
+			FROM ' . DB_NAME_PREFIX . 'documents
+			WHERE folder_id = ' . (int)$folderId;
+		$result = sqlSelect($sql);
+		$row = sqlFetchRow($result);
+		$ordinal = $row[0] ? $row[0] : 1;
+		
+		foreach ($documentIds as $documentId) {
+			setRow('documents', array('folder_id' => $folderId, 'ordinal' => $ordinal++), $documentId);
 		}
 		break;
 		

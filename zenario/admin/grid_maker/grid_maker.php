@@ -20,8 +20,8 @@ $prefix = '../../';
 CMSWritePageHead($prefix, false, false);
 
 
-checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
+checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true);
+$v = zenarioCodeVersion();
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../../styles/admin_grid_maker.min.css?v=', $v, '" media="screen"/>';

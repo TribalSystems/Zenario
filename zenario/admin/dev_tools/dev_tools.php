@@ -28,7 +28,7 @@ echo
 				echo adminPhrase('Dev Tools: Specification for Admin Toolbar');
 				break;
 			case 'zenarioO';
-				if (engToBoolean(get('skMap'))) {
+				if (engToBoolean(get('orgMap'))) {
 					echo adminPhrase('Dev Tools: Specification for Storekeeper Map');
 				} else {
 					echo adminPhrase('Dev Tools: Specification for Storekeeper Panel');
@@ -43,10 +43,7 @@ echo '
 
 $prefix = '../../';
 CMSWritePageHead($prefix, false, false);
-
-
-checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
+$v = zenarioCodeVersion();
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../../styles/dev_tools.css?v=', $v, '" media="screen"/>';
@@ -113,7 +110,7 @@ echo '
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	var schema = ', json_encode($schema), ';
-	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaName), '\', schema, ', engToBoolean(get('skMap')), ');
+	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaName), '\', schema, ', engToBoolean(get('orgMap')), ');
 	var sshPath = "', jsEscape(httpHostWithoutPort(). CMS_ROOT), '";
 </script>
 </body>

@@ -166,6 +166,7 @@ zenario__administration:
 								Are you sure you wish to suspend the method "[[job_name]]"?
 							button_message: "Suspend"
 							cancel_button_message: Cancel
+							message_type: warning
 						request:
 							suspend: "1"
 					traits:

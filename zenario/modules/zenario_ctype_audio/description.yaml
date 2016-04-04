@@ -22,7 +22,8 @@ default_framework: standard
 content_types:
     content_type:
         content_type_id: audio
-        content_type_name_en: Audio
+        content_type_name_en: Audio content item
+        content_type_plural_en: Audio content items
         default_template_name: Audio Layout
         enable_summary_auto_update: No
         description_field: optional

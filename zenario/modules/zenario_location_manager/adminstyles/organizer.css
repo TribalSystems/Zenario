@@ -9,31 +9,26 @@
 
 
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_location_manager_location,
-#organizer_rightColumn #organizer_panelTitle div.zenario_location_manager_location {
+.organizer_item_image.zenario_location_manager_location {
 	background:url('images/location-list-icon.png') no-repeat -15px center;
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_location_manager_sector,
-#organizer_rightColumn #organizer_panelTitle div.zenario_location_manager_sector {
+.organizer_item_image.zenario_location_manager_sector {
 	background: 1px 2px no-repeat;
 	background-image: url('images/location-manager-sector-list.png');
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_location_manager_supplier,
-#organizer_rightColumn #organizer_panelTitle div.zenario_location_manager_supplier {
+.organizer_item_image.zenario_location_manager_supplier {
 	background: center center no-repeat;
 	background-image: url('images/suppliers-list-icons.png');
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_location_manager_areas,
-#organizer_rightColumn #organizer_panelTitle div.zenario_location_manager_areas {
+.organizer_item_image.zenario_location_manager_areas {
 	background: center center no-repeat;
 	background-image: url('images/areas-list-icon.png');
 }
 
-#organizer_rightColumn div.organizer_row div.organizer_cell div.zenario_location_manager_ratings,
-#organizer_rightColumn #organizer_panelTitle div.zenario_location_manager_ratings {
+.organizer_item_image.zenario_location_manager_ratings {
 	background: center center no-repeat;
 	background-image: url('images/accreditors-list-icon.png');
 }

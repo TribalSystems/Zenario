@@ -84,6 +84,12 @@ function now() {
 	return $row[0];
 }
 
+function dateNow() {
+	$result = sqlSelect("SELECT DATE(NOW())");
+	$row = sqlFetchRow($result);
+	return $row[0];
+}
+
 function addSqlDateTimeByPeriodAndReturnStartEnd($sql_start_date, $by_period) {
 	if(strpos($sql_start_date, '23:59:59')) {
 		$sql_start_date = strtotime('+1 second', strtotime($sql_start_date));
@@ -104,9 +110,14 @@ function requireCookieConsent() {
 	cms_core::$cookieConsent = 'require';
 }
 
-function sendEmail($subject, $body, $addressTo, &$addressToOverriddenBy, $nameTo = false, $addressFrom = false, $nameFrom = false, 
-		$attachments = array(), $attachmentFilenameMappings = array(), $precedence = 'bulk', $isHTML = true, $exceptions = false,
-		$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false) {
+function sendEmail(
+	$subject, $body, $addressTo, &$addressToOverriddenBy,
+	$nameTo = false, $addressFrom = false, $nameFrom = false, 
+	$attachments = array(), $attachmentFilenameMappings = array(),
+	$precedence = 'bulk', $isHTML = true, $exceptions = false,
+	$addressReplyTo = false, $nameReplyTo = false, $warningEmailCode = false,
+	$ccs = '', $bccs = ''
+) {
 	
 	// If this is a warning email only send it as oftern as the site setting "warning_email_frequency" allows
 	if (setting('warning_email_frequency') && (setting('warning_email_frequency') != 'no_limit') && $warningEmailCode) {
@@ -162,6 +173,17 @@ function sendEmail($subject, $body, $addressTo, &$addressToOverriddenBy, $nameTo
 		$mail->AddReplyTo($addressReplyTo, $nameReplyTo);
 	} else {
 		$mail->AddReplyTo($mail->From, $mail->FromName);
+	}
+	
+	if ($ccs) {
+		foreach (array_unique(explodeAndTrim(str_replace(';', ',', $ccs))) as $emailAddress) {
+			$mail->AddCC($emailAddress);
+		}
+	}
+	if ($bccs) {
+		foreach (array_unique(explodeAndTrim(str_replace(';', ',', $bccs))) as $emailAddress) {
+			$mail->AddBCC($emailAddress);
+		}
 	}
 	
 	if (setting('smtp_specify_server')) {

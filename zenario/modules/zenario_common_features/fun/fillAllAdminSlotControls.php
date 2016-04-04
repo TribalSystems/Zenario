@@ -87,7 +87,7 @@ if (!$moduleId) {
 			foreach (getRowsArray(
 				'modules',
 				array('id', 'display_name'),
-				array('status' => 'module_running', 'is_pluggable' => 1, 'can_be_version_controlled' => 1),
+				array('status' => array('module_running', 'module_is_abstract'), 'is_pluggable' => 1, 'can_be_version_controlled' => 1),
 				'display_name'
 			) as $module) {
 				$controls['actions'][] = array(

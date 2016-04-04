@@ -113,6 +113,21 @@ if (!$cIDFrom
 	$cIDFrom = false;
 	$cVersionFrom = false;
 	$version = array();
+	
+	
+	//T10208, Creating content items: auto-populate release date and author where used
+	$contentTypeDetails = getContentTypeDetails($cTypeTo);
+	
+	if ($contentTypeDetails['writer_field'] != 'hidden'
+	 && ($adminDetails = getAdminDetails($adminId))) {
+		$version['writer_id'] = $adminId;
+		$version['writer_name'] = $adminDetails['first_name']. ' '. $adminDetails['last_name'];
+	}
+	
+	if ($contentTypeDetails['release_date_field'] != 'hidden') {
+		$version['publication_date'] = dateNow();
+	}
+	
 } else {
 	$cVersionFrom = $version['version'];
 }

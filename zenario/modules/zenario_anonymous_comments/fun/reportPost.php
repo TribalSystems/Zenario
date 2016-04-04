@@ -48,8 +48,8 @@ if ($this->post['updater_id'] !== null) {
 }
 
 $mergeFields['reporter_screen_name'] =  $this->getUserScreenNameLink($user['id']);
-$mergeFields['text_message'] = htmlspecialchars($this->post['message_text']);
-$mergeFields['report_message'] = htmlspecialchars(post('comm_message'));
+$mergeFields['text_message'] = $this->post['message_text'];
+$mergeFields['report_message'] = zenario_anonymous_comments::sanitiseHTML(post('comm_message'), true, true);
 $mergeFields['cms_url'] = absCMSDirURL();
 
 
@@ -59,4 +59,4 @@ zenario_email_template_manager::sendEmailsUsingTemplate(
 	$mergeFields,
 	array(),
 	array(),
-	true);
+	array('text_message' => true, 'report_message' => true, 'poster_screen_name' => true, 'last_editor_screen_name' => true, 'reporter_screen_name' => true));

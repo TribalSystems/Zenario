@@ -43,7 +43,7 @@ echo
 
 
 //checkForChangesInCssJsAndHtmlFiles();
-$v = ifNull(setting('css_js_version'), ZENARIO_VERSION. '.'. LATEST_REVISION_NO);
+$v = zenarioCodeVersion();
 CMSWritePageHead('', 'wizard', false);
 
 echo '
@@ -116,7 +116,7 @@ if ($requestedPath = ifNull(request('name'), request('path'))) {
 	$modules = array_unique(getRowsArray('tuix_file_contents', 'module_class_name', array('type' => 'wizards', 'path' => $requestedPath)));
 	
 	if (!empty($modules)) {
-		$moduleIds = getRowsArray('modules', 'id', array('status' => 'module_running', 'class_name' => $modules));
+		$moduleIds = getRowsArray('modules', 'id', array('status' => array('module_running', 'module_is_abstract'), 'class_name' => $modules));
 		
 		if (!empty($moduleIds)) {
 			echo '

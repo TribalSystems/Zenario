@@ -1109,7 +1109,7 @@ class zenario_incoming_email_manager extends module_base_class {
 		$body .= 'Database Name: '. DBNAME. "\n";
 		$body .= 'Database Host: '. DBHOST. "\n";
 		$body .= 'Incoming Email Handler: '. $jobName. "\n";
-		$body .= 'Storekeeper Link: '. httpOrHttps(). httpHost(). SUBDIRECTORY. 'admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/refiners/zenario_incoming_email_manager__incoming_emails////'. $jobId. "\n";
+		$body .= 'Organizer Link: '. httpOrHttps(). httpHost(). SUBDIRECTORY. 'admin/organizer.php#zenario__administration/panels/zenario_scheduled_task_manager__scheduled_tasks/refiners/zenario_incoming_email_manager__incoming_emails////'. $jobId. "\n";
 		$body .= 'Run on: '. $serverTime. "\n";
 		$body .= 'Status: '. $status. "\n\n";
 		$body .= 'Message:'. "\n". $logMessage;

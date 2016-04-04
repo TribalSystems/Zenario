@@ -27,8 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-class zenario_extranet_profile_edit extends zenario_extranet {
-	//protected $user_form = null;
+class zenario_extranet_profile_edit extends zenario_user_forms {
 	
 	var $data = array();
 	
@@ -51,6 +50,7 @@ class zenario_extranet_profile_edit extends zenario_extranet {
 			$this->data['Edit'] = false;
 			if (get('extranet_edit_profile')) {
 				$this->data['Edit'] = true;
+				$this->callScript('zenario_user_forms', 'initFilePickerFields', $this->containerId, $this->pluginAJAXLink('filePickerUpload=1'));
 			} else {
 				$this->data['View'] = true;
 				$this->data['Edit_Permission'] = $this->setting('enable_edit_profile');
@@ -74,10 +74,14 @@ class zenario_extranet_profile_edit extends zenario_extranet {
 					unset($_POST['extranet_update_profile']);
 				} else {
 					$this->data['Edit'] = true;
+					$this->callScript('zenario_user_forms', 'initFilePickerFields', $this->containerId, $this->pluginAJAXLink('filePickerUpload=1'));
 					$this->data['View'] = false;
 				}
 			}
 			$this->data['form_fields'] = zenario_user_forms::drawUserForm($userFormId, $data, !$this->data['Edit'], $errors, 0, $this->containerId);
+			
+			$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
+			
 			$this->data['edit_profile_link'] = $this->refreshPluginSlotAnchor('extranet_edit_profile=1');
 			$this->data['back_link'] = $this->refreshPluginSlotAnchor('');
 		} else {

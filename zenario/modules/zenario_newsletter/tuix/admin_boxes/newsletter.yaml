@@ -6,6 +6,9 @@ zenario_newsletter:
     title: Creating a newsletter
     key:
         id: ""
+    identifier:
+        css_class: zenario_newsletter_draft
+        label: Newsletter ID
     tabs:
         meta_data:
             label: Meta Data
@@ -249,3 +252,23 @@ zenario_newsletter:
                         required_if_not_hidden: >
                             Please select an archived newsletter whose recipients you
                             wish to exclude in the new newsletter.
+        
+        advanced:
+            label: Advanced
+            edit_mode:
+                priv: _PRIV_EDIT_NEWSLETTER
+                always_on: true
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            Use this tab to add CSS styles and media queries, for email-clients
+                            that support these features.
+                head:
+                    label: 'HTML in head of email:'
+                    type: code_editor
+                    language: html
+                    style: >
+                        width: 98%;
+                    rows: 30

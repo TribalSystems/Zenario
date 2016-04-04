@@ -33,15 +33,19 @@ class zenario_common_features__admin_boxes__trash extends module_base_class {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$ids = explodeAndTrim($box['key']['id']);
 		if (count($ids) > 1) {
-			$fields['trash/desc']['snippet']['html'] = '
+			/*$fields['trash/desc']['snippet']['html'] = '
 				<p>
 					Trashing these content items will remove them from the site. They will no longer be visible to site visitors.
 				</p><br/><p>
 					You can recover a trashed item in Organizer, go to Content and then click on the trash can.
 				</p><br/><p>
 					Are you sure you wish to proceed?
-				</p>';
+				</p>';*/
+			$box['tabs']['trash']['notices']['trash_items']['show'] = true;
+		} else {
+			$box['tabs']['trash']['notices']['trash_item']['show'] = true;
 		}
+		
 		$message = '';
 		foreach ($ids as $tagId) {
 			$cID = $cType = false;

@@ -39,4 +39,4 @@ zenario_admin:
                         _PRIV_MANAGE_LOCATIONS:
                             label: Manage locations
                         _PRIV_EXPORT_LOCATIONS:
-                            label: Export locations
+                            label: Export and import locations

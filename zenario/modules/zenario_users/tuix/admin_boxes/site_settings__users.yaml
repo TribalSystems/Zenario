@@ -101,7 +101,7 @@ site_settings:
 						1: Plain text
 						0: Encrypted
 					value: 1
-					note_below: |
+					side_note: |
 						Storing passwords as plain text will allow the system to send
 						out password reminders via email, but is less secure as anyone
 						with database access to the server will be able to read
@@ -211,10 +211,23 @@ site_settings:
 					label: 'Log user access to private content items'
 					type: checkbox
 					value: 1
-					note_below: |
-						<p>
-							If enabled, all user accesses to private content items will be logged in the <a href="zenario/admin/organizer.php?#zenario__users/panels/access_log">access log panel</a>.
-						</p>
+					side_note: |
+						If enabled, all user accesses to private content items will be logged in the <a href="zenario/admin/organizer.php?#zenario__users/panels/access_log">access log panel</a>.
+		groups:
+			label: Groups
+			edit_mode:
+				enabled: true
+				priv: _PRIV_EDIT_SITE_SETTING
+				on: false
+			fields:
+				default_groups_dataset_tab:
+					site_setting:
+						name: default_groups_dataset_tab
+					label: 'Default dataset tab for new groups:'
+					type: select
+					value: details
+					side_note: |
+						When a group is created from the groups panel rather than the dataset editor, the new groups will be placed at the bottom of this tab.
 		inactive_user_email:
 			label: Inactive user email
 			edit_mode:
@@ -234,7 +247,7 @@ site_settings:
 				time_user_inactive_1:
 					site_setting:
 						name: time_user_inactive_1
-					label: 'Select user inactivity period'
+					label: 'Select user inactivity period:'
 					type: select
 					values:
 						2_weeks:
@@ -266,11 +279,13 @@ site_settings:
 							ord: 9
 					empty_value: "-- Select --"
 					value: ''
+					format_onchange: true
 					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
 				inactive_user_email_template_1:
 					site_setting:
 						name: inactive_user_email_template_1
 					label: 'Email template:'
+					indent: 1
 					pick_items:
 						path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
@@ -279,11 +294,10 @@ site_settings:
 						disallow_refiners_looping_on_min_path: Yes
 						nothing_selected_phrase: No email template selected
 						select_phrase: Select an email template...
-						hide_remove_button: true
 				time_user_inactive_2:
 					site_setting:
 						name: time_user_inactive_2
-					label: 'Select user inactivity period'
+					label: 'Select user inactivity period:'
 					type: select
 					values:
 						2_weeks:
@@ -315,11 +329,13 @@ site_settings:
 							ord: 9
 					empty_value: "-- Select --"
 					value: ''
+					format_onchange: true
 					side_note: If a user hasn't logged in to the site in the period selected, an email will be sent.
 				inactive_user_email_template_2:
 					site_setting:
 						name: inactive_user_email_template_2
 					label: 'Email template:'
+					indent: 1
 					pick_items:
 						path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
@@ -328,4 +344,10 @@ site_settings:
 						disallow_refiners_looping_on_min_path: Yes
 						nothing_selected_phrase: No email template selected
 						select_phrase: Select an email template...
-						hide_remove_button: true
+				user_dataset_field_to_receive_emails: 
+					label: 'Only send if user dataset field checked:'
+					site_setting: 
+						name: user_dataset_field_to_receive_emails
+					type: select
+					empty_value: ' -- Select -- '
+					value: ""

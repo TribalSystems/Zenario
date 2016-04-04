@@ -107,14 +107,13 @@ plugin_settings:
 						foreign_key_to: content
 					label: 'Terms and conditions page:'
 					pick_items:
-						equivalence: Yes
-						path: zenario__content/panels/language_equivs
-						min_path: zenario__content/panels/language_equivs
-						max_path: zenario__content/panels/language_equivs
-						target_path: zenario__content/panels/language_equivs
-						disallow_refiners_looping_on_min_path: Yes
-						select_phrase: Select Content Item...
-						hide_remove_button: Yes
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a terms and conditions page
 					side_note: >
@@ -289,14 +288,13 @@ plugin_settings:
 						foreign_key_to: content
 					label: 'First visit welcome page:'
 					pick_items:
-						equivalence: Yes
-						path: zenario__content/panels/language_equivs
-						min_path: zenario__content/panels/language_equivs
-						max_path: zenario__content/panels/language_equivs
-						target_path: zenario__content/panels/language_equivs
-						disallow_refiners_looping_on_min_path: Yes
-						select_phrase: Select content item...
-						hide_remove_button: Yes
+						path: zenario__content/panels/content/refiners/filter_by_lang////
+						min_path: zenario__content/panels/content
+						max_path: zenario__content/panels/content
+						target_path: zenario__content/panels/content
+						disallow_refiners_looping_on_min_path: true
+						select_phrase: Select a content item...
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a content item
 				user_activation_notification_email_enable:

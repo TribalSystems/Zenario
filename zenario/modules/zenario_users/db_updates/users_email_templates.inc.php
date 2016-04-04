@@ -84,7 +84,7 @@ _sql
 );
 
 
-revision(41, 
+revision(43, 
 	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
 		`code`,
 		`template_name`,
@@ -108,7 +108,7 @@ revision(41,
 	)"
 	);
 	
-revision(42, 
+revision(44, 
 	"INSERT IGNORE [[DB_NAME_PREFIX]]email_templates (
 		`code`,
 		`template_name`,

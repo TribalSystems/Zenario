@@ -31,7 +31,7 @@ zenario.lib(function(
 	document, window, windowOpener, windowParent,
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
-	extensionOf, methodsOf,
+	extensionOf, methodsOf, has,
 	panelTypes
 ) {
 	"use strict";
@@ -58,7 +58,7 @@ methods.init = function() {
 //or do something different by returning a URL to a different PHP script
 methods.returnAJAXURL = function() {
 	return URLBasePath
-		+ 'zenario/admin/ajax.php?_json=1&path='
+		+ 'zenario/admin/organizer.ajax.php?path='
 		+ encodeURIComponent(this.path)
 		+ zenario.urlRequest(this.returnAJAXRequests())
 		+ zenario.urlRequest('panel_type=google_map');

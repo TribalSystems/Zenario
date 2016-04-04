@@ -294,6 +294,18 @@ install:
                     visible_if: |
                         !window.isHtaccessWorking && zenarioAW.togglePressed()
                 
+                ignore_apache_mysql_requirements:
+                    type: checkbox
+                    full_width: true
+                    format_onchange: true
+                    post_field_html: |
+                        <label for="ignore_apache_mysql_requirements">
+                            Ignore the Apache and MySQL requirements
+                        </label>
+                    note_below: |
+                            Check this option if you are using an Apache or MySQL-equivalent
+                            software instead of Apache or MySQL themselves.
+                
                 previous:
                     value: Back
                     type: submit
@@ -325,10 +337,17 @@ install:
                             <h1>Step 3: Database</h1>
                             <p>Please enter information about your database.</p>
                 host:
-                    label: "Host:"
+                    label: "Host, and optional port number:"
                     type: text
                     value: localhost
                     row_class: row_form
+                    return_key_presses_button: next
+                port:
+                    same_row: true
+                    #label: "Database port number:"
+                    type: text
+                    placeholder: 3306
+                    #note_below: 'You can leave this blank to use the default value'
                     return_key_presses_button: next
                 name:
                     label: "Database Name:"

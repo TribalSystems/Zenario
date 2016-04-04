@@ -30,10 +30,11 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'zenario_newsletter_template':
 		if ($id = $box['key']['id']) {
-			$templateDetails = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('name', 'body'), array('id' => $id));
+			$templateDetails = getRow(ZENARIO_NEWSLETTER_PREFIX. 'newsletter_templates', array('name', 'head', 'body'), array('id' => $id));
 			$box['title'] = adminPhrase('Editing the newsletter template "[[name]]"', array('name' => $templateDetails['name']));
 			$values['details/name'] = $templateDetails['name'];
 			$values['details/body'] = $templateDetails['body'];
+			$values['advanced/head'] = $templateDetails['head'];
 		}
 		
 		$style_formats = siteDescription('email_style_formats');
@@ -59,7 +60,7 @@ switch ($path) {
 		$box['tabs']['unsub_exclude']['fields'] = &$box['tabs']['unsub_exclude']['fields'];
 		
 		$adminDetails = getAdminDetails(adminId());
-		$box['tabs']['meta_data']['fields']['test_send_email_address']['value'] = $adminDetails['admin_email'];
+		$values['meta_data/test_send_email_address'] = $adminDetails['admin_email'];
 		$box['tabs']['meta_data']['fields']['add_user_field']['values'] =
 			listCustomFields('users', $flat = false, $filter = false, $customOnly = false, $useOptGroups = true);
 		
@@ -69,8 +70,8 @@ switch ($path) {
 			$details = $this->loadDetails($box['key']['id']);
 			$box['title'] = adminPhrase('Viewing/Editing newsletter "[[newsletter_name]]"', $details);
 			
-			$box['tabs']['meta_data']['fields']['newsletter_name']['value'] = $details['newsletter_name'];
-			$box['tabs']['unsub_exclude']['fields']['recipients']['value'] = 
+			$values['meta_data/newsletter_name'] = $details['newsletter_name'];
+			$values['unsub_exclude/recipients'] = 
 					inEscape(
 						getRowsArray(
 							ZENARIO_NEWSLETTER_PREFIX. 'newsletter_smart_group_link',
@@ -79,14 +80,15 @@ switch ($path) {
 							), 
 							true
 						);			
-			$box['tabs']['meta_data']['fields']['subject']['value'] = $details['subject'];
-			$box['tabs']['meta_data']['fields']['email_address_from']['value'] = $details['email_address_from'];
-			$box['tabs']['meta_data']['fields']['email_name_from']['value'] = $details['email_name_from'];
-			$box['tabs']['meta_data']['fields']['body']['value'] = $details['body'];
+			$values['meta_data/subject'] = $details['subject'];
+			$values['meta_data/email_address_from'] = $details['email_address_from'];
+			$values['meta_data/email_name_from'] = $details['email_name_from'];
+			$values['meta_data/body'] = $details['body'];
+			$values['advanced/head'] = $details['head'];
 
-			$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['value'] = $details['unsubscribe_text'];
-			$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] = $details['delete_account_text'];
-			$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['value'] =
+			$values['unsub_exclude/unsubscribe_text'] = $details['unsubscribe_text'];
+			$values['unsub_exclude/delete_account_text'] = $details['delete_account_text'];
+			$values['unsub_exclude/exclude_previous_newsletters_recipients'] =
 				inEscape(
 					getRowsArray(
 						ZENARIO_NEWSLETTER_PREFIX. 'newsletter_sent_newsletter_link',
@@ -94,26 +96,28 @@ switch ($path) {
 						array('newsletter_id' => $box['key']['id'], 'include' => 0)),
 					true);
 			
-			if (setting('zenario_newsletter__default_unsubscribe_text') && !$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['value']) {
-				$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['value'] = setting('zenario_newsletter__default_unsubscribe_text');
+			if (setting('zenario_newsletter__default_unsubscribe_text') && !$values['unsub_exclude/unsubscribe_text']) {
+				$values['unsub_exclude/unsubscribe_text'] = setting('zenario_newsletter__default_unsubscribe_text');
 			}
-			if (setting('zenario_newsletter__default_delete_account_text') && !$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value']) {
-				$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] = setting('zenario_newsletter__default_delete_account_text');
+			if (setting('zenario_newsletter__default_delete_account_text') && !$values['unsub_exclude/delete_account_text']) {
+				$values['unsub_exclude/delete_account_text'] = setting('zenario_newsletter__default_delete_account_text');
 			}
-			$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'none';
+			$values['unsub_exclude/unsubscribe_link'] = 'none';
 			if (setting('zenario_newsletter__all_newsletters_opt_out') && $details['unsubscribe_text']) {
-				$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'unsub';
+				$values['unsub_exclude/unsubscribe_link'] = 'unsub';
 			}
 			if ($details['delete_account_text']) {
-				$box['tabs']['unsub_exclude']['fields']['unsubscribe_link']['value'] = 'delete';
+				$values['unsub_exclude/unsubscribe_link'] = 'delete';
 			}
-			if ($box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients']['value']) {
-				$box['tabs']['unsub_exclude']['fields']['exclude_previous_newsletters_recipients_enable']['value'] = 1;
+			if ($values['unsub_exclude/exclude_previous_newsletters_recipients']) {
+				$values['unsub_exclude/exclude_previous_newsletters_recipients_enable'] = 1;
 			}
 			
 			if ($details['status'] != '_DRAFT') {
+						
 				$box['tabs']['meta_data']['edit_mode']['enabled'] =
-				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] = false;
+				$box['tabs']['unsub_exclude']['edit_mode']['enabled'] =
+				$box['tabs']['advanced']['edit_mode']['enabled'] = false;
 				$box['tabs']['meta_data']['fields']['test_send_button']['hidden'] =
 				$box['tabs']['meta_data']['fields']['test_send_button_dummy']['hidden'] = false;
 			}
@@ -130,20 +134,20 @@ switch ($path) {
 				}
 				$i++;
 			}
-			$box['tabs']['meta_data']['fields']['newsletter_name']['value'] = $nameCandidate;
+			$values['meta_data/newsletter_name'] = $nameCandidate;
 
 			if (setting('zenario_newsletter__default_from_name')) {
-				$box['tabs']['meta_data']['fields']['email_name_from']['value'] = setting('zenario_newsletter__default_from_name');
+				$values['meta_data/email_name_from'] = setting('zenario_newsletter__default_from_name');
 			}
 			if (setting('zenario_newsletter__default_from_email_address')) {
-				$box['tabs']['meta_data']['fields']['email_address_from']['value'] = setting('zenario_newsletter__default_from_email_address');
+				$values['meta_data/email_address_from'] = setting('zenario_newsletter__default_from_email_address');
 			}
 
 			if (setting('zenario_newsletter__default_unsubscribe_text')) {
-				$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['value'] = setting('zenario_newsletter__default_unsubscribe_text');
+				$values['unsub_exclude/unsubscribe_text'] = setting('zenario_newsletter__default_unsubscribe_text');
 			}
 			if (setting('zenario_newsletter__default_delete_account_text')) {
-				$box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] = setting('zenario_newsletter__default_delete_account_text');
+				$values['unsub_exclude/delete_account_text'] = setting('zenario_newsletter__default_delete_account_text');
 			}
 			
 		}
@@ -162,15 +166,15 @@ switch ($path) {
 		}
 		
 		
-		$box['tabs']['unsub_exclude']['fields']['example_unsubscribe_url_underlined_and_hidden']['value'] 
+		$values['unsub_exclude/example_unsubscribe_url_underlined_and_hidden'] 
 				= '<span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'remove_from_groups.php?t=XXXXXXXXXXXXXXX</span>';
 		$box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['post_field_html'] 
-				= '<div id="unsubscribe_info">Preview: ' . $box['tabs']['unsub_exclude']['fields']['unsubscribe_text']['value'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'remove_from_groups.php?t=XXXXXXXXXXXXXXX</span></div>';
+				= '<div id="unsubscribe_info">Preview: ' . $values['unsub_exclude/unsubscribe_text'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'remove_from_groups.php?t=XXXXXXXXXXXXXXX</span></div>';
 
-		$box['tabs']['unsub_exclude']['fields']['example_delete_account_url_underlined_and_hidden']['value'] 
+		$values['unsub_exclude/example_delete_account_url_underlined_and_hidden'] 
 				= '<span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span>';
 		$box['tabs']['unsub_exclude']['fields']['delete_account_text']['post_field_html'] 
-				= '<div id="delete_account_info">Preview: ' . $box['tabs']['unsub_exclude']['fields']['delete_account_text']['value'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span></div>';
+				= '<div id="delete_account_info">Preview: ' . $values['unsub_exclude/delete_account_text'] . ' <span style="text-decoration:underline;">' . zenario_newsletter::getTrackerURL() . 'delete_account.php?t=XXXXXXXXXXXXXXX</span></div>';
 		
 		break;
 	case 'zenario_live_send':

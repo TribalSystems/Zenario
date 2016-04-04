@@ -49,14 +49,13 @@ plugin_settings:
                         zenarioAB.value('breadcrumb_trail') == 'other_menu_node'
                     label: 'Menu node:'
                     pick_items:
-                        by_language: Yes
                         path: zenario__menu/panels/sections
                         min_path: zenario__menu/panels/sections
                         max_path: zenario__menu/panels/menu_nodes
                         target_path: zenario__menu/panels/menu_nodes
                         select_phrase: Select menu node...
-                        disallow_refiners_looping_on_min_path: Yes
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a menu node
                         

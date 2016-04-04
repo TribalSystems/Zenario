@@ -342,26 +342,10 @@ function useCache($ETag = false, $maxAge = false) {
 	}
 }
 
-//Attempt to enable compression, if it's not already enabled
 function useGZIP($useGZIP = true) {
 	
-	if ($useGZIP
-	 	//Note: IE 6 frequently crashes if we try to use compression
-	 && strpos(httpUserAgent(), 'MSIE 6') === false
-	 	//If there has already been some output (e.g. an error) then that will also cause a problem
-	 && !ob_get_length()) {
-	
-		//In PHP versions 5.3 or earlier, use ob_gzhandler.
-		//(We can't use this in later versions of PHP due to a bug introduced in version 5.4)
-		if (version_compare(PHP_VERSION, '5.4.0', '<')) {
-			ob_start('ob_gzhandler');
-			return;
-	
-		//Otherwise try to use zlib
-		} elseif (extension_loaded('zlib') && checkFunctionEnabled('ini_set')) {
-			ini_set('zlib.output_compression', 4096);
-		}
-	}
+	//As of Zenario 7.2, we now rely on people enabling compression in their php.ini or .htaccess files
+	//The only purpose of this function is now to trigger ob_start() when page caching is enabled.
 	
 	//If caching is enabled, call ob_start() to start output buffering if it was not already done above.
 	if (empty(cms_core::$siteConfig) || setting('caching_enabled')) {
@@ -660,6 +644,13 @@ if (!defined('SESSION_TIMEOUT')) {
 }
 if (!defined('DIRECTORY_INDEX_FILENAME')) {
 	define('DIRECTORY_INDEX_FILENAME', 'index.php');
+}
+
+if (defined('DBHOST') && !defined('DBPORT')) {
+	define('DBPORT', '');
+}
+if (defined('DBHOST_GLOBAL') && !defined('DBPORT_GLOBAL')) {
+	define('DBPORT_GLOBAL', '');
 }
 
 //Set the timezone to UTC if it's not defined, to avoid a PHP error

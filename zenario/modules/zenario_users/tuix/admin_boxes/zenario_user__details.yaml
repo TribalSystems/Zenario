@@ -5,6 +5,9 @@ zenario_user__details:
     key:
         id: ""
         parent_id: ''
+    identifier:
+        css_class: user
+        label: User ID
     tabs:
         details:
             label: Details
@@ -15,7 +18,7 @@ zenario_user__details:
                 email: 
                     label: "Email"
                     type: text
-                    format_onchange: Yes
+                    redraw_onchange: true
                 email_verified: 
                     label: "Email verified"
                     type: checkbox
@@ -59,13 +62,6 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details') != 'contact'
                         && zenarioA.siteSettings.user_use_screen_name
                     maxlength: 50
-                    reformat_onchange: true
-                    
-                    # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
-                    # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
-                    pre_field_html: |
-                        <input style="display:none" type="text" name="dummy_username"/>
-                        <input style="display:none" type="password" name="dummy_password"/>
                     
                 suggest_screen_name:
                     same_row: true
@@ -93,7 +89,14 @@ zenario_user__details:
                         && zenarioA.siteSettings.user_use_screen_name
                     read_only: true 
                     side_note: "If unchecked the screen name has been automatically generated with no user input."
+                
+                
+                password_grouping:
+                    type: grouping
+                    name: password_grouping
+                
                 change_password:
+                    grouping: password_grouping
                     priv: _PRIV_CHANGE_USER_PASSWORD
                     type: toggle
                     redraw_onchange: true
@@ -103,13 +106,32 @@ zenario_user__details:
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
                 password:
+                    grouping: password_grouping
                     label: "Password"
                     type: password
                     visible_if: |
                         (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
                         && zenarioAB.value('status', 'details')
                         && zenarioAB.value('status', 'details') != 'contact'
+                    
+                    # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
+                    # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
+                    pre_field_html: |
+                        <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
+                        <input type="password" name="dummy_password" autocomplete="off" tabindex="-1" style="
+                            position: fixed;
+                            top: -1000px;
+                            width: 1px;
+                            height: 1px;
+                        "/>
+                
                 reveal_password:
+                    grouping: password_grouping
                     same_row: true
                     visible_if: |
                         (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
@@ -135,8 +157,8 @@ zenario_user__details:
                             revealField.current_value =
                                 previouslyPressed? 'Reveal' : 'Hide';
                         }
-                
                 suggest_password:
+                    grouping: password_grouping
                     same_row: true
                     visible_if: |
                         (!zenarioAB.tuix.key.id || zenarioAB.value('change_password', 'details') == 1)
@@ -153,6 +175,8 @@ zenario_user__details:
                                     passwordEl.value = password;
                                 }
                             "/>
+                
+                
                 password_needs_changing:
                     priv: _PRIV_CHANGE_USER_PASSWORD
                     visible_if: |

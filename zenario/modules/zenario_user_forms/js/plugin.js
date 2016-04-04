@@ -1,6 +1,6 @@
 zenario_user_forms.recaptcha = function() {
 	onloadCallback()
-}
+};
 
 zenario_user_forms.updateRestatementFields = function(id, mode) {
 	var selector;
@@ -70,30 +70,26 @@ zenario_user_forms.calculate = function(containerId, field, soruceField1, source
 };
 
 zenario_user_forms.setJSCalculatedField = function(containerId, field, value) {
-	$('input#'+containerId+'_field_value_'+field).val(value);
+	$('#'+containerId+'_field_value_'+field).val(value);
 };
 
 
 
-zenario_user_forms.toggleFieldVisibility = function(
-	containerId, fieldId, visibleConditionFieldId, visibleConditionFieldValue, visibleConditionFieldType) {
-	
-	$('div#'+containerId+'_field_'+visibleConditionFieldId+' :input').on('change', function() {
+zenario_user_forms.toggleFieldVisibility = function(containerId, fieldId, visibleConditionFieldId, visibleConditionFieldValue, visibleConditionFieldType) {
+	$('#'+containerId+'_field_'+visibleConditionFieldId+' :input').on('change', function() {
 		var value;
 		if (visibleConditionFieldType == 'checkbox') {
 			value = $(this).is(':checked');
 		} else {
 			value = $(this).val();
 		}
-		if (value == visibleConditionFieldValue) {
-			$('div#'+containerId+'_field_'+fieldId).show();
+		if ((visibleConditionFieldValue === null && value !== '') || value == visibleConditionFieldValue) {
+			$('#'+containerId+'_field_'+fieldId).show();
 		} else {
-			$('div#'+containerId+'_field_'+fieldId).hide();
+			$('#'+containerId+'_field_'+fieldId).hide();
 		}
 	});
 };
-
-zenario_user_forms.submitMultiPageForm = false;
 
 zenario_user_forms.initJQueryElements = function(containerId) {
 	//jQuery datepickers
@@ -114,6 +110,8 @@ zenario_user_forms.initJQueryElements = function(containerId) {
 		}
 	});
 };
+
+zenario_user_forms.submitMultiPageForm = false;
 
 zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox, pageCount) {
 	// Enter key advances to next stage instead of submitting form
@@ -221,4 +219,121 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 		$('html, body').animate({scrollTop:$('#'+containerId).offset().top - 20});
 		
 	});
+};
+
+
+zenario_user_forms.initFilePickerFields = function(containerId, AJAXURL) {
+	
+	$('#' + containerId + ' .form_field.field_file_picker').each(function() {
+		var that = this,
+			$fileupload = $(this).find('.file_picker_field'),
+			$progressBar = $(this).find('.progress_bar'),
+			$fileUploadButton = $(this).find('.file_upload_button'),
+			maxNumberOfFiles = $fileupload.data('limit'),
+			extensions = $fileupload.data('extensions'),
+			count = 0,
+			fileNumber = 0,
+			that = this,
+			field_id = $(this).data('id'),
+			acceptFileTypes = undefined;
+		
+		// Build regex from extensions for file type validation
+		if (extensions) {
+			acceptFileTypes = '\\.(';
+			var temp = extensions.split(','),
+				cleanExtensions = [];
+			for (var i = 0; i < temp.length; i++) {
+				var extension = temp[i].replace(/\./i, '').trim();
+				if (extension) {
+					cleanExtensions.push(extension);
+				}
+			}
+			acceptFileTypes += cleanExtensions.join('|');
+			acceptFileTypes += ')$';
+			
+			acceptFileTypes = new RegExp(acceptFileTypes, 'i');
+		}
+		
+		// Init progress bar
+		$progressBar.progressbar();
+		
+		// Init file uploader
+		$fileupload.fileupload({
+			url: AJAXURL,
+			dataType: 'json',
+			maxFileSize: 10000000, //10MB
+			acceptFileTypes: acceptFileTypes,
+			maxNumberOfFiles: maxNumberOfFiles,
+			getNumberOfFiles: function() {
+				return count;
+			},
+			submit: function(e, data) {
+				count++;
+			},
+			start: function(e) {
+				$progressBar.show();
+			},
+			done: function(e, data) {
+				
+				// Add new files
+				$.each(data.result.files, function(i, file) {
+					
+					var html = '';
+					html += '<div class="file_row">';
+					if (file.download_link) {
+						html += 	'<p><a href="' + file.download_link + '" target="_blank">' + file.name + '</a></p>';
+					} else {
+						html += 	'<p>' + file.name + '</p>';
+					}
+					html += 	'<input name="file_picker_' + field_id + '_' + (++fileNumber) + '" type="hidden" value="' + file.id + '" />';
+					html += 	'<span class="delete_file_button">' + zenario.phrase('zenario_user_forms', 'Delete') + '</span>';
+					html += '</div>';
+					$(that).find('.files').append($(html));
+					
+					if (count >= maxNumberOfFiles) {
+						$fileUploadButton.hide();
+					}
+				});
+				
+				// Init file buttons
+				$(that).find('.delete_file_button').off().on('click', function() {
+					$(this).parent().remove();
+					count--; 
+					if (count < maxNumberOfFiles) {
+						$fileUploadButton.show();
+					}
+				});
+				
+				
+			},
+			always: function(e, data) {
+				$progressBar.hide();
+			},
+			processfail: function(e, data) {
+				alert(data.files[data.index].error);
+			},
+			progressall: function(e, data) {
+				var progress = parseInt(data.loaded / data.total * 100, 10);
+				$progressBar.progressbar('option', 'value', progress);
+				
+			},
+			messages: {
+				acceptFileTypes: zenario.phrase('zenario_user_forms', 'Allowed file types: [[types]]', {types: extensions}),
+				maxFileSize: zenario.phrase('zenario_user_forms', 'File exceeds maximum allowed size of 10MB'),
+				maxNumberOfFiles: zenario.phrase('zenario_user_forms', 'Maximum number of files exceeded')
+			}
+		});
+		
+		// Get existing files
+		var data = {};
+		var filesJSON = $(this).find('.loaded_files').text();
+		data.files = JSON.parse(filesJSON);
+		
+		// Add existing files
+		if (data.files.length > 0) {
+			count = data.files.length;
+			$fileupload.fileupload('option', 'done').call($fileupload, $.Event('done'), {result: data});
+		}
+	});
+	
 };

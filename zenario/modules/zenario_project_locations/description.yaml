@@ -13,17 +13,18 @@ keywords: 'project'
 content_types: 
     content_type: 
         content_type_id: project
-        content_type_name_en: Project descriptions
+        content_type_name_en: Project description
+        content_type_plural_en: Project descriptions
         default_template_name: Project Layout
-        enable_summary_auto_update: No
+        enable_summary_auto_update: false
         description_field: optional
         keywords_field: hidden
         summary_field: optional
         release_date_field: optional
         writer_field: hidden
 dependencies:
-    zenario_country_manager: 'Yes'
-    zenario_location_manager: 'Yes'
+    zenario_country_manager: true
+    zenario_location_manager: true
 is_pluggable: true
 can_be_version_controlled: false
 nestable: true

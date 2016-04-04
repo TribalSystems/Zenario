@@ -62,6 +62,8 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 			$box['tabs']['css']['fields']['bg_position']['value'] = $details['bg_position'];
 			$box['tabs']['css']['fields']['bg_repeat']['value'] = $details['bg_repeat'];
 			
+			$box['identifier']['value'] = 'L'. str_pad($details['layout_id'], 2, '0', STR_PAD_LEFT);
+			
 			if ($box['key']['duplicate']) {
 				$box['title'] = adminPhrase('Duplicating the layout "[[id_and_name]]".', $details);
 				$box['tabs']['template']['fields']['name']['value'] .= ' '. adminPhrase('(copy)');
@@ -183,7 +185,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 					//If successful, note down the new name
 					$layout['file_base_name'] = $newName;
 					
-					checkForChangesInCssJsAndHtmlFiles($forceScan = true);
+					checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 				
 				} else {
 					//If duplicating, don't allow the duplication when the files could not be copied

@@ -62,14 +62,6 @@ switch ($path) {
 		}
 		
 		break;
-		
-	case 'zenario_migrate_old_documents':
-		if (!checkRowExists('documents', array('type' => 'folder', 'id' => $values['details/folder']))) {
-			$box['tabs']['details']['errors'][] = adminPhrase('You must select a folder for the documents.');
-		}
-		break;
-	
-
 	
 	case 'zenario_document_move':
 		

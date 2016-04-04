@@ -102,7 +102,7 @@ class zenario_event_listing extends module_base_class {
 				$this->pages[$i] = '&page='. $i;
 			}
 				
-			$result = sqlSelect($sql . paginationLimit($this->page, $this->setting('page_size')));
+			$result = sqlSelect($sql . paginationLimit($this->page, $this->setting('page_size'), $this->setting('offset')));
 			while($row = sqlFetchAssoc($result)){
 				$eventRow['Link_To_Event'] = $this->linkToItem($row['id'], 'event');
 				
@@ -112,9 +112,11 @@ class zenario_event_listing extends module_base_class {
 				
 				imageLink($width, $height, $url, $row['sticky_image_id'],$this->setting("width"), $this->setting("height"), $this->setting('canvas'));
 				if ($url) {
+					$eventRow['Sticky_image_class_name'] = "single_event_sticky_image";
 					$eventRow['Sticky_image_HTML_tag'] =  '<img src="' . $url . '"/>';
 					$eventRow['Sticky_or_default_image_HTML_tag'] =  '<img src="' . $url .  '"/>';
 				} else {
+					$eventRow['Sticky_image_class_name'] = "sticky_image_placeholder";
 					$eventRow['Sticky_image_HTML_tag'] = ""; //without this image for last event is repeated.
 					$eventRow['Sticky_or_default_image_HTML_tag'] =  '<img src="' . absCMSDirURL() . moduleDir('zenario_event_listing', 'images/event_generic_image.jpg') .'"/>';
 				}
@@ -152,13 +154,13 @@ class zenario_event_listing extends module_base_class {
 						$datetime['end_date'] = '';
 						break;
 					case 'show_start_time_only':
-						$datetime['start_date'] = formatDateNicely($row['start_date'],"vis_date_format_long");
+						$datetime['start_date'] = formatDateNicely($row['start_date'],$this->setting('date_format'));
 						$datetime['end_date'] = '';
 						break;
 					case 'show_start_and_end_date':
-						$datetime['start_date'] = formatDateNicely($row['start_date'],"vis_date_format_long");
+						$datetime['start_date'] = formatDateNicely($row['start_date'],$this->setting('date_format'));
 						if ($row['start_date']!=$row['end_date']) {
-							$datetime['end_date'] = formatDateNicely($row['end_date'],"vis_date_format_long");
+							$datetime['end_date'] = formatDateNicely($row['end_date'],$this->setting('date_format'));
 						} 
 						break;
 				}
@@ -230,7 +232,7 @@ class zenario_event_listing extends module_base_class {
 				case 'dont_show':
 				default:
 					$title = '';
-					$showTitle = true;
+					$showTitle = false;
 					break;
 			}
 

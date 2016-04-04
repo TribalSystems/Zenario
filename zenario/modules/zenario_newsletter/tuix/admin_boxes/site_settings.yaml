@@ -43,18 +43,18 @@ site_settings:
                         required: Please enter default "Delete account" text.
                     value: 'To have your details deleted from the website that sent you this email, please click the following link or copy and paste it into your browser:'
                 zenario_newsletter__all_newsletters_opt_out:
-                    label: 'Opt-out characteristic:'
-                    side_note: 'When a recipient clicks the Unsubscribe link, set this characteristic.'
+                    label: 'User opt-out flag:'
+                    side_note: 'When a recipient clicks an Unsubscribe link, set this flag.'
                     site_setting:
                         name: zenario_newsletter__all_newsletters_opt_out
                     type: select
-                    empty_value: ' -- Select -- '
+                    empty_value: '-- Select --'
                     validation:
-                        required: Please select the opt-out (unsubscribe) characteristic.
+                        required: Please select the flag on the user/contact record that should be set when a recipient clicks an Unsubscribe link.
             
                 zenario_newsletter__enable_opened_emails:
-                    label: 'Enable opened email tracking'
-                    side_note: 'Check this option to enable tracking of opened emails. In the "Archive" panel of newsletters you can view the tracking statistics.'
+                    label: 'Enable opened-email tracking'
+                    side_note: 'Check this option to enable tracking of opened emails.'
                     site_setting:
                         name: zenario_newsletter__enable_opened_emails
                     type: checkbox

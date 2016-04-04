@@ -5,6 +5,8 @@ copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
+is_abstract: true
+fill_organizer_nav: true
 display_name: Common Features
 description: |
     <p>This Module provides all the standard features for Zenario.</p>
@@ -20,7 +22,8 @@ vlp_class_name: zenario_common_features
 content_types:
     content_type:
         content_type_id: html
-        content_type_name_en: HTML Page
+        content_type_name_en: HTML page
+        content_type_plural_en: HTML pages
         enable_summary_auto_update: No
         description_field: optional
         keywords_field: hidden

@@ -34,9 +34,11 @@ class zenario_image_container extends zenario_banner {
 	static protected $all_page_plugin_images = array();
 	protected $my_page_plugin_index = 0;
 	
+	protected $images = array();
+	
 	public function init(){
 		$result = parent::init();
-		if(!$result) return $result;
+		if (!$result) return $result;
 		
 		//We need to index all of the zenario_image_containers current on the page
 		if (request('method_call') == 'refreshPlugin') {
@@ -49,31 +51,29 @@ class zenario_image_container extends zenario_banner {
 		}
 		
 		
-		$my_images = null;
-		if (count($this->mergeFields) && isset($this->mergeFields['Image_Src'])) {
-			$my_images = array();
-			$my_images['image_main'] = array(
+		if (isset($this->mergeFields['Image_Src'])) {
+			$this->images['image_main'] = array(
 				'src_url' => $this->mergeFields['Image_Src'],
 				'img_height' => $this->mergeFields['Image_Height'],
 				'img_width' => $this->mergeFields['Image_Width'],
 				'custom_css_code' => $this->setting('custom_css_code')
 				);
-			if(isset($this->mergeFields['Image_Rollover'])) {
+			if (isset($this->mergeFields['Image_Rollover'])) {
 				$rollover_image = $this->mergeFields['Image_Rollover'];
-				$my_images['image_hover'] = array(
+				$this->images['image_hover'] = array(
 						'src_url' => $rollover_image['Image_Src'],
 						'img_height' => $rollover_image['Image_Height'],
 						'img_width' => $rollover_image['Image_Width'],
 				);
 			}
 			
-			if($this->setting('mobile_behavior') == 'change_image') {
+			if ($this->setting('mobile_behavior') == 'change_image') {
 				$imageId = $this->setting('mobile_image');
 				$width = $this->setting('mobile_width');
 				$height = $this->setting('mobile_height');
 				$url = null;
 				if (imageLink($width, $height, $url, $imageId, $width, $height, $this->setting('mobile_canvas'), $this->setting('mobile_offset'))) {
-					$my_images['image_mobile'] = array(
+					$this->images['image_mobile'] = array(
 							'src_url' => htmlspecialchars($url),
 							'img_height' => $height,
 							'img_width' => $width,
@@ -82,7 +82,6 @@ class zenario_image_container extends zenario_banner {
 				}
 			}
 		} 
-		self::$all_page_plugin_images['img' . $this->my_page_plugin_index] = $my_images;
 		
 		//If we're reloading via AJAX, we need to call a JavaScript function to add the style to the head.
 		//Otherwise we can use addToPageHead() below.
@@ -96,12 +95,13 @@ class zenario_image_container extends zenario_banner {
 	public function addToPageHead() {
 		//Note: Old versions of IE need media-queries in stylesheets, they won't work inline on the page.
 		echo '
-			<!--[if lte IE 8]>
-				<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>
-			<![endif]-->
-			<!--[if gt IE 8]><!-->
-				<style type="text/css">', $this->generateStyles(), '</style>
-			<!--<![endif]-->';
+<!--[if gt IE 8]><!-->
+	<style type="text/css">', $this->generateStyles(), '
+	</style>
+<!--<![endif]-->
+<!--[if lte IE 8]>
+	<link rel="stylesheet" type="text/css" media="screen" href="', htmlspecialchars($this->pluginAJAXLink('generateStyles=1')), '"/>
+<![endif]-->';
 	}
 	
 	public function handlePluginAJAX() {
@@ -114,91 +114,85 @@ class zenario_image_container extends zenario_banner {
 	public function generateStyles($fullPath = false) {
 		$html = '';
 		
-		//Only the first one will write for all of us
-		if ($this->my_page_plugin_index == self::$page_plugin_index_start) {
+		if (!empty($this->images)) {
 			$min_width_px = setting('image_mobile_resize_point');
 			$min_width_px_plus_one = $min_width_px+1;
-			
-			for ($i = self::$page_plugin_index_start; $i <= self::$page_plugin_index_end; $i++) {
-				$plugin_images = self::$all_page_plugin_images['img' . $i];
-				if($plugin_images) {
 
-					$mobile_behavior = $this->setting('mobile_behavior');
-					//we will not load the main image on media queries less than $min_width_px+1
-					$hide_image = ($mobile_behavior == 'hide_image' || isset($plugin_images['image_mobile'])) ? 
-						"@media (min-width: {$min_width_px_plus_one}px) {" : false;
+			$mobile_behavior = $this->setting('mobile_behavior');
+			//we will not load the main image on media queries less than $min_width_px+1
+			$hide_image = ($mobile_behavior == 'hide_image' || isset($this->images['image_mobile'])) ? 
+				"@media (min-width: {$min_width_px_plus_one}px) {" : false;
 
-					if(isset($plugin_images['image_main'])) {
-						$image = $plugin_images['image_main'];
-						
-						if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
-							$image['src_url'] = absCMSDirURL(). $image['src_url'];
-						}
-						
-						//Bugfix - URLs should not be html escaped in CSS code.
-						$image['src_url'] = html_entity_decode($image['src_url']);
-						
-						if($hide_image) {
-							$html .= $hide_image . "\n";
-						}
-						$html .= "
-#zenario_image_container_{$i} {
- display:block;
- height: {$image['img_height']}px;
- width: {$image['img_width']}px;
- background-image: url('{$image['src_url']}');
- background-repeat: no-repeat;
- {$image['custom_css_code']}
-}";
-					
- 						if(isset($plugin_images['image_hover'])) {
-						
-							if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
-								$image['src_url'] = absCMSDirURL(). $image['src_url'];
-							}
-							
-							//Bugfix - URLs should not be html escaped in CSS code.
-							$image['src_url'] = html_entity_decode($image['src_url']);
-						
-							$image = $plugin_images['image_hover'];
-							$html .= "
-#zenario_image_container_{$i}:hover {
- display:block;
- height: {$image['img_height']}px;
- width: {$image['img_width']}px;
- background-image: url('{$image['src_url']}');
- background-repeat: no-repeat;
-}";
- 						}
- 						
-						if($hide_image) {
-							$html .= "\n}\n";
-						}
-					}
-					
-					if(isset($plugin_images['image_mobile'])) {
-						$image = $plugin_images['image_mobile'];
-						
-						if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
-							$image['src_url'] = absCMSDirURL(). $image['src_url'];
-						}
-						
-						//Bugfix - URLs should not be html escaped in CSS code.
-						$image['src_url'] = html_entity_decode($image['src_url']);
-						
-						$html .= "
-@media (max-width: {$min_width_px}px) {
- #zenario_image_container_{$i} {
-  display:block;
-  height: {$image['img_height']}px;
-  width: {$image['img_width']}px;
-  background-image: url('{$image['src_url']}');
-  background-repeat: no-repeat;
-  {$image['custom_css_code']}
- }
-}";
-					}
+			if (isset($this->images['image_main'])) {
+				$image = $this->images['image_main'];
+				$imageId = 'zic_'. $this->containerId;
+				
+				if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+					$image['src_url'] = absCMSDirURL(). $image['src_url'];
 				}
+				
+				//Bugfix - URLs should not be html escaped in CSS code.
+				$image['src_url'] = html_entity_decode($image['src_url']);
+				
+				if ($hide_image) {
+					$html .= "\n\t\t". $hide_image;
+				}
+				$html .= "
+		#{$imageId} {
+			display:block;
+			height: {$image['img_height']}px;
+			width: {$image['img_width']}px;
+			background-image: url('{$image['src_url']}');
+			background-repeat: no-repeat;
+			{$image['custom_css_code']}
+		}";
+			
+				if (isset($this->images['image_hover'])) {
+				
+					if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+						$image['src_url'] = absCMSDirURL(). $image['src_url'];
+					}
+					
+					//Bugfix - URLs should not be html escaped in CSS code.
+					$image['src_url'] = html_entity_decode($image['src_url']);
+				
+					$image = $this->images['image_hover'];
+					$html .= "
+		#{$imageId}:hover {
+			display:block;
+			height: {$image['img_height']}px;
+			width: {$image['img_width']}px;
+			background-image: url('{$image['src_url']}');
+			background-repeat: no-repeat;
+		}";
+				}
+				
+				if ($hide_image) {
+					$html .= "\n\t\t}\n";
+				}
+			}
+			
+			if (isset($this->images['image_mobile'])) {
+				$image = $this->images['image_mobile'];
+				
+				if ($fullPath && !chopPrefixOffOfString($image['src_url'], 'http')) {
+					$image['src_url'] = absCMSDirURL(). $image['src_url'];
+				}
+				
+				//Bugfix - URLs should not be html escaped in CSS code.
+				$image['src_url'] = html_entity_decode($image['src_url']);
+				
+				$html .= "
+		@media (max-width: {$min_width_px}px) {
+		#{$imageId} {
+			display:block;
+			height: {$image['img_height']}px;
+			width: {$image['img_width']}px;
+			background-image: url('{$image['src_url']}');
+			background-repeat: no-repeat;
+			{$image['custom_css_code']}
+		}
+		}";
 			}
 		}
 		
@@ -299,7 +293,7 @@ class zenario_image_container extends zenario_banner {
 	function showSlot() {
 		if (count($this->mergeFields)) {
 			$this->subSections['Image_Container'] = true;
-			$this->mergeFields['Image_css_id'] = 'zenario_image_container_' . $this->my_page_plugin_index;
+			$this->mergeFields['Image_css_id'] = 'zic_'. $this->containerId;
 			//Display the Plugin
 			$this->framework('Outer', $this->mergeFields, $this->subSections);
 		}

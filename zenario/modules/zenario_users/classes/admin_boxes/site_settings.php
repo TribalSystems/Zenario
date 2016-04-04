@@ -31,17 +31,32 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
-		$scheduledTaskManagerRunning = checkRowExists('modules', array('class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running'));
 		
+		
+		$groups = listCustomFields('users', $flat = false, 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true);
+		$box['tabs']['inactive_user_email']['fields']['user_dataset_field_to_receive_emails']['values'] = $groups;
+		
+		// Disable setting for deleting unconfirmed user accounts if scheduled task manager is not enabled
+		$scheduledTaskManagerRunning = checkRowExists('modules', array('class_name' => 'zenario_scheduled_task_manager', 'status' => 'module_running'));
 		if (!$scheduledTaskManagerRunning 
 			|| !setting('jobs_enabled') 
 			|| !inc('zenario_scheduled_task_manager')
-			|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobRemoveInactivePendingUsers')) 
-		{
+			|| !zenario_scheduled_task_manager::checkScheduledTaskRunning('jobRemoveInactivePendingUsers')
+		) {
 			$values['unconfirmed_users/remove_inactive_users'] = false;
 			$fields['unconfirmed_users/remove_inactive_users']['disabled'] = true;
 			$fields['unconfirmed_users/remove_inactive_users']['side_note'] = 
 				'The scheduled task manager module must be running and the task "jobRemoveInactivePendingUsers" must be enabled to remove inactive users.';
+		}
+		
+		// Show list of users dataset tabs
+		$dataset = getDatasetDetails('users');
+		$result = getRows('custom_dataset_tabs', array('label', 'ord', 'name'), array('dataset_id' => $dataset['id']), 'label');
+		while ($row = sqlFetchAssoc($result)) {
+			$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = array(
+				'label' => $row['label'],
+				'ord' => $row['ord']
+			);
 		}
 	}
 	
@@ -70,6 +85,33 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 			$box['tabs']['names']['notices']['turning_on_screen_names']['show'] =
 				$screenNamesOn && !$screenNamesWereOn
 				&& checkRowExists('users', array('screen_name' => array('!' => '')));
+		}
+		
+		
+		if ($values['inactive_user_email/time_user_inactive_1']){
+			$fields['inactive_user_email/inactive_user_email_template_1']['hidden'] = false;
+		}else{
+			$fields['inactive_user_email/inactive_user_email_template_1']['hidden'] = true;
+		}
+	
+		if ($values['inactive_user_email/time_user_inactive_2']){
+			$fields['inactive_user_email/inactive_user_email_template_2']['hidden'] = false;
+		}else{
+			$fields['inactive_user_email/inactive_user_email_template_2']['hidden'] = true;
+		}
+		
+		
+		
+	}
+	
+	
+	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if ($values['inactive_user_email/time_user_inactive_1'] && !$values['inactive_user_email/inactive_user_email_template_1']){
+			$fields['inactive_user_email/inactive_user_email_template_1']['error'] = adminPhrase('Please select an email template for the first period.');
+		}
+		
+		if ($values['inactive_user_email/time_user_inactive_2'] && !$values['inactive_user_email/inactive_user_email_template_2']){
+			$fields['inactive_user_email/inactive_user_email_template_1']['error'] = adminPhrase('Please select an email template for the second period.');
 		}
 	}
 	

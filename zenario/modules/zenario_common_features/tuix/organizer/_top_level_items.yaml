@@ -1,69 +1,68 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
-loading_message:
-    hidden: true
-    panel:
-        no_items_message: Loading...
-
 dummy_item:
     ord: 0
     hidden: true
+    nav: {}
     youtube_video_id: 8VzBBQ2la7w
     youtube_thumbnail_title: 'Overview of Zenario'
+    panels:
+        loading_message:
+            title: Loading...
+            no_items_message: Loading...
 
 zenario__content:
-    youtube_video_id: jR8CDnaoMSo
-    youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
     ord: 1
     visible_if: >
         zenarioA.siteSettings.default_language
     css_class: zenario_cms_core_content
     label: Content items
-    tooltip: "Create and manage your version-controlled content: HTML pages, news, documents and other types"
+    tooltip: "Create and manage your version-controlled content: HTML pages, news, blogs and other types"
+    panel:
+        loading_message:
+            no_items_message: Loading...
     nav:
-        content_types:
-            label: Content types
-            tooltip: View content items by type
-            link:
-                path: zenario__content/panels/content_types
-        content:
-            label: All content items
-            tooltip: All content items of all types in a flat view
-            link:
-                path: zenario__content/panels/content
-        categories:
-            label: Categories
-            tooltip: Hierarchical categorization of content items
-            link:
-                path: zenario__content/panels/categories
-        languages:
-            label: Content by language
-            tooltip: View content items by visitor language
-            link:
-                path: zenario__content/panels/languages
         special:
             label: Special pages
             tooltip: Non-trashable HTML pages including the home page, not-found and other essentials
             link:
                 path: zenario__content/panels/content
                 refiner: special_pages
-        image_library:
-            label: Image library
-            tooltip: |
-                View the images in your site's image library
-            link:
-                path: zenario__content/panels/image_library
         your_work_in_progress:
             label: Work in progress
             tooltip: Content items that you are currently working on
             link:
                 path: zenario__content/panels/content
                 refiner: your_work_in_progress
-        documents:
-            priv: _PRIV_MANAGE_DOCUMENTS
-            label: Documents
+        by_language:
+            hidden: true
+            label: Content by language
+            tooltip: View content items by language
             link:
-                path: zenario__content/panels/documents
+                path: zenario__content/panels/content
+                refiner: filter_by_lang
+        content:
+            label: All content items
+            tooltip: All content items of all types in a flat view
+            link:
+                path: zenario__content/panels/content
+        trash:
+            css_class: zenario_separator_after_this
+            label: Trashed content
+            tooltip: Trashed content items
+            link:
+                path: zenario__content/panels/content/refiners/trash////
+        categories:
+            label: Categories
+            tooltip: Hierarchical categorization of content items
+            link:
+                path: zenario__content/panels/categories
+        image_library:
+            label: Image library
+            tooltip: |
+                View the images in your site's image library
+            link:
+                path: zenario__content/panels/image_library
     data-step: 11
     data-position: right
     data-intro: >
@@ -95,6 +94,36 @@ zenario__menu:
     data-intro: >
         <p><strong>Menu</strong></p>
         <p>Manage the menu navigation for your website, you can arrange and edit the menu items as required.</p>       
+zenario__documents:
+    ord: 2.01
+    priv: _PRIV_MANAGE_DOCUMENTS
+    css_class: zenario_cms_core_documents
+    label: Documents
+    tooltip: 'Create and manage documents'
+    youtube_video_id: jR8CDnaoMSo
+    youtube_thumbnail_title: 'Zenario CMS: Document management quick-start guide'
+    nav:
+        documents:
+            priv: _PRIV_MANAGE_DOCUMENTS
+            label: Documents
+            link:
+                path: zenario__content/panels/documents
+        document_tags:
+            priv: _PRIV_MANAGE_DOCUMENTS
+            label: Tags
+            tooltip: >
+                Manage tags for documents
+            link:
+                path: zenario__content/panels/document_tags
+        document_rules:
+            priv: _PRIV_MANAGE_DOCUMENTS
+            label: Auto-set rules
+            tooltip: >
+                Rules for auto-setting document metadata
+                based on document filename (advanced)
+            link:
+                path: zenario__content/panels/document_rules
+
 zenario__users:
     ord: 4
     priv: _PRIV_VIEW_ADMIN
@@ -219,7 +248,7 @@ zenario__administration:
         backups:
             priv: _PRIV_BACKUP_SITE
             #css_class: backups
-            name: Backups
+            label: Backups
             tooltip: Create and restore backups
             link:
                 path: zenario__administration/panels/backups
@@ -230,20 +259,20 @@ zenario__administration:
                 path: 'zenario__administration/panels/custom_datasets'
         file_types:
             #css_class: dropbox_files
-            name: File types
+            label: File types
             tooltip: >
                 Create and manage file extensions and MIME types for uploadable files
             link:
                 path: zenario__administration/panels/file_types
         spare_domains:
             #css_class: alias_urls_collection
-            name: Spare domain names
+            label: Spare domain names
             tooltip: >
                 Configure spare domain names that redirect to HTML pages
             link:
                 path: zenario__administration/panels/spare_domains
         page_preview_sizes:
-            name: Page Preview
+            label: Page Preview
             tooltip: Configure page preview sizes
             link:
                 path: zenario__administration/panels/page_preview_sizes

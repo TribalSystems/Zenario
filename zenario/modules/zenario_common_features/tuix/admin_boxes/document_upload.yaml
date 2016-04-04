@@ -1,18 +1,18 @@
 zenario_document_upload: 
-	title: Upload a new document
+	title: Upload documents
 	key: 
 		id: id
-	max_height: "200"
+	hide_tab_bar: true
 	tabs:
 		upload_document:
 			label: Document source
 			edit_mode:
-				on: Yes
-				always_on: Yes
-				enabled: Yes
+				on: true
+				always_on: true
+				enabled: true
 			fields:
 				document__upload:
-					label: 'Upload Document'
+					#label: 'Upload Document'
 					upload:
 						drag_and_drop: true
 						multi: true

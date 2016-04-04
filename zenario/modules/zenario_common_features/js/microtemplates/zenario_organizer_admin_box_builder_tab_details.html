@@ -1,42 +1,41 @@
 <div id="organizer_tab_details_inner" class="tab_details_inner">
 	<div class="tab_details_header">
-		<h5>{{m.label|e}}</h5>
-		<input class="add_new_field" type="button" value="Add new field"/>
+		<div id="zenario_tab_details_header_content" class="tab_details_header_content">
+			<div class="field_name">
+				<h5>{{m.label|e}}</h5>
+			</div>
+			<div class="field_buttons">
+				<span class="add_new_field">Add new field</span>
+			</div>
+		</div>
 	</div>
 	<div id="organizer_tab_details" class="tab_details">
+		
+		<form id="organizer_tab_details_form">
+		
 		<div class="field">
 			<div class="title">Label:</div>
 			<div class="value">
-				<input id="tab__label" type="text" value="{{m.label}}"/>
+				<input id="tab__label" name="label" type="text" value="{{m.label}}"/>
 			</div>
 		</div>
-		<% if (m.is_system_field == false) { %>
+		<% if (!m.is_system_field) { %>
 			<div class="field">
 				<div class="title">Conditional display on field:</div>
 				<div class="value">
-					<select id="tab__parent_field_id" name="parent_id">
-						<option value=""
-							<% if (m.parent_field_id == false) { %>
-								selected="selected"
-							<% } %>
-						> -- No conditional display -- </option
-						<% _.each(m.parent_id_select_list, function(tab) { %>
-							<optgroup label="{{tab.label}}">
-								<% _.each(tab.fields, function(field) { if (field.type == 'checkbox' || field.type == 'group') { %>
-									<option value="{{field.id}}"
-										<% if (m.parent_field_id == field.id) { %>
-											selected="selected"
-										<% } %>
-									>
-										{{field.label}}
-									</option>
-								<% }}); %>
-							</optgroup>
-						<% }); %>
+					<select name="parent_field_id">
+						{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_optgroups', m.parent_field_id_options)}}
 					</select>
 				</div>
 			</div>
 		<% } %>
+		
+		</form>
+		
 	</div>
-	<input id="organizer_remove_form_tab" type="button" value="Delete tab"/>
+	<% if (!m.is_system_field) { %>
+		<div class="bottom_buttons">
+			<input id="organizer_remove_form_tab" type="button" value="Delete tab"/>
+		</div>
+	<% } %>
 </div>

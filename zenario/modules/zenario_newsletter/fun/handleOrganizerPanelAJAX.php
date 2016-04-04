@@ -43,9 +43,20 @@ switch ($path) {
 			foreach(explode(',', $ids) as $id) {
 				zenario_newsletter::deleteNewsletter($id);
 			}
-			
 		
-		//Send the newsletter
+		
+		//Attempt to resume sending the newsletter
+		} elseif (post('resume') && checkPriv('_PRIV_SEND_NEWSLETTER') && $this->checkIfNewsletterIsInProgress($ids)) {
+			//Note: same code as above
+			set_time_limit(60 * 10);
+			self::sendNewsletter($ids);
+			
+			echo '<!--Message_Type:Success-->
+				<p>', adminPhrase('Newsletter Sent.'), '</p>
+				<p><a href="#zenario__email_template_manager/panels/newsletters/collection_buttons/archive//', (int) $ids, '//" onclick="zenarioA.closeFloatingBox();">', adminPhrase('View Sent Newsletter in Archive.'), '</a></p>';
+		
+		
+		//Duplicate the newsletter
 		} elseif (post('duplicate') && checkPriv('_PRIV_EDIT_NEWSLETTER')) {
 
 			$admin_id = adminId();

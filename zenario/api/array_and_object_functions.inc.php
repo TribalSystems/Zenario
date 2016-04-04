@@ -39,8 +39,13 @@ function arrayValuesToKeys($a) {
 	return $o;
 }
 
+function checkCURLEnabled() {
+	return function_exists('curl_version');
+}
+
 function curl($URL, $post = false, $options = array(), $saveToFile = false) {
-	if (!$curl = @curl_init()) {
+	if (!function_exists('curl_version')
+	 || !($curl = @curl_init())) {
 		return false;
 	}
 

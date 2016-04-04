@@ -3,14 +3,14 @@
 		<span id="organizer_applyCancelToolbarButtons" class="toolbarButtons">
 			<ul>
 				<li class="label_without_icon">
-					<a id="organizer_applyButton">
-						<span>{{zenarioA.phrase.applyChanges}}</span>
+					<a id="organizer_applyButton" class="{{m.confirm_css}}">
+						<span><% if (m.confirm_text) { %>{{m.confirm_text}}<% } else { %>{{zenarioA.phrase.applyChanges}}<% } %></span>
 					</a>
 				</li>
 			</ul><ul>
 				<li class="label_without_icon">
 					<a id="organizer_cancelButton">
-						<span>{{zenarioA.phrase.cancel}}</span>
+						<span><% if (m.cancel_text) { %>{{m.cancel_text}}<% } else { %>{{zenarioA.phrase.cancel}}<% } %></span>
 					</a>
 				</li>
 			</ul>

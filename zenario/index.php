@@ -60,7 +60,7 @@ if (file_exists('visitorheader.inc.php') && file_exists('../index.php')) {
 	//Sitemaps are handled by Storekeeper
 	} elseif ($_GET['method_call'] == 'showSitemap') {
 		chdir('zenario/admin');
-		require 'ajax.php';
+		require 'organizer.ajax.php';
 		exit;
 	}
 }
@@ -208,7 +208,7 @@ useGZIP(setting('compress_web_pages'));
 require editionInclude('index.post_get_contents');
 
 
-$canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, true, '', cms_core::$alias, true, true, true);
+$canonicalURL = linkToItem(cms_core::$cID, cms_core::$cType, true, '', false, true, true);
 
 
 $specialPage = isSpecialPage(cms_core::$cID, cms_core::$cType);
@@ -248,7 +248,7 @@ if (getNumLanguages() > 1) {
 	}
 	if (!$getRequests) {
 		$sql = "
-			SELECT c.id, c.type, c.language_id
+			SELECT c.id, c.type, c.alias, c.equiv_id, c.language_id
 			FROM ". DB_NAME_PREFIX. "content_items AS c
 			INNER JOIN ". DB_NAME_PREFIX. "translation_chains AS tc
 			   ON c.equiv_id = tc.equiv_id
@@ -260,7 +260,7 @@ if (getNumLanguages() > 1) {
 		$result = sqlSelect($sql);
 		if (sqlNumRows($result) > 1) {
 			while($row = sqlFetchAssoc($result)) {
-				$pageLink = linkToItem($row['id'], $row['type'], true, '', false, true, true, true);
+				$pageLink = linkToItem($row['id'], $row['type'], true, '', $row['alias'], true, true, $row['equiv_id'], $row['language_id']);
 				echo '
 <link rel="alternate" href="'. htmlspecialchars($pageLink). '" hreflang="'. htmlspecialchars($row['language_id']). '">';
 			}

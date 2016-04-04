@@ -32,16 +32,40 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
-			'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['id']. '//';
-		
-		foreach (getContentTypeDetails($box['key']['id']) as $col => $value) {
-			if ($col == 'enable_categories') {
-				$box['tabs']['details']['fields'][$col]['value'] = $value ? 'enabled' : 'disabled';
-			} else {
-				$box['tabs']['details']['fields'][$col]['value'] = $value;
-			}
+		if ($actualId = chopPrefixOffOfString($box['key']['id'], 'content_type_')) {
+			$box['key']['id'] = $actualId;
+			$box['key']['opened_from_site_settings_panel'] = true;
 		}
+		
+		
+		if (!$details = getContentTypeDetails($box['key']['id'])) {
+			exit;
+		}
+		
+		$box['identifier']['css_class'] = 'content_type_'. $details['content_type_id'];
+		$box['title'] = adminPhrase('Settings for the content type "[[content_type_name_en]]"', $details);
+		
+		$values['details/content_type_name_en'] = $details['content_type_name_en'];
+		$values['details/content_type_plural_en'] = $details['content_type_plural_en'];
+		$values['details/description_field'] = $details['description_field'];
+		$values['details/keywords_field'] = $details['keywords_field'];
+		$values['details/writer_field'] = $details['writer_field'];
+		$values['details/summary_field'] = $details['summary_field'];
+		$values['details/release_date_field'] = $details['release_date_field'];
+		$values['details/enable_summary_auto_update'] = $details['enable_summary_auto_update'];
+		$values['details/enable_categories'] = $details['enable_categories'] ? 'enabled' : 'disabled';
+		$values['details/default_layout_id'] = $details['default_layout_id'];
+		
+		if (!$details['module_id']
+		 || !($status = getModuleStatus($details['module_id']))
+		 || ($status == 'module_is_abstract')) {
+			$fields['details/module_id']['hidden'] = true;
+		} else {
+			$values['details/module_id'] = $details['module_id'];
+		}
+		
+		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
+			'zenario__layouts/panels/layouts/refiners/content_type//'. $box['key']['id']. '//';
 		
 		switch ($box['key']['id']) {
 			case 'html':
@@ -85,6 +109,7 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 			
 			$vals = array(
 				'content_type_name_en' => $values['details/content_type_name_en'],
+				'content_type_plural_en' => $values['details/content_type_plural_en'],
 				'description_field' => $values['details/description_field'],
 				'keywords_field' => $values['details/keywords_field'],
 				'writer_field' => $values['details/writer_field'],
@@ -118,6 +143,13 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 			}
 			
 			updateRow('content_types', $vals, $box['key']['id']);
+		}
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		if ($box['key']['opened_from_site_settings_panel']) {
+			$box['key']['id'] = 'content_type_'. $box['key']['id'];
 		}
 	}
 }

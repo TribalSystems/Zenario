@@ -4,10 +4,10 @@ copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 start_running_on_install: false
 license_info: 'Modified BSD License'
-display_name: CRM form integration
+display_name: CRM Form Integration
 description: |
 	<p>
-				This Module allow you integrate a CRM in the user form module.
+		This Module allow you integrate the User Forms module with a third party CRM (customer relationship management) system.
 	</p>
 category: management
 keywords: crm, integration, form, forms
@@ -19,4 +19,13 @@ dependencies:
 signals:
 	signal1:
 		name: eventUserFormSubmitted
+		static: Yes
+	signal2:
+		name: eventFormDeleted
+		static: Yes
+	signal3:
+		name: eventFormFieldDeleted
+		static: Yes
+	signal4:
+		name: eventFormFieldValueDeleted
 		static: Yes

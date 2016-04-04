@@ -95,6 +95,14 @@ body.webkit input {
 	margin-bottom: 20px;
 }
 
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__code {
+	margin-bottom: 20px;
+}
+
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__ignore_apache_mysql_requirements {
+	margin-bottom: 35px;
+}
+
 .welcome .zenario_ab_row__skip {
 	margin-top:20px;
 }
@@ -308,6 +316,15 @@ body.webkit input {
 	line-height:30px;
 }
 
+.welcome .zenario_ab_row__host input#host {
+	width: 300px;
+}
+
+.welcome .zenario_ab_row__host input#port {
+	width: 80px;
+	margin-left: 12px;
+}
+
 /*.welcome div.thickbox_table input.input_text:focus,
 .welcome div.thickbox_table input.input_password:focus
 {
@@ -507,6 +524,23 @@ body.webkit input {
 	font-size:13px;
 	background:url('../admin/images/welcome/arrow-return-front-end.png') no-repeat 0 center;
 	padding-left:12px;
+}
+
+.welcome div.thickbox_table .zenario_ab_row__submit {
+	overflow:hidden;
+}
+
+.welcome div.thickbox_table input#resend {
+	position:absolute;
+	right:20px;
+	bottom:30px;
+	float:none !important;
+	padding:0;
+	border:0;
+	background:transparent;
+	color:#333;
+	font-weight:normal;
+	text-decoration:underline;
 }
 
 /* Message */

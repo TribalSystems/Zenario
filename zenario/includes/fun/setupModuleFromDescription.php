@@ -43,6 +43,7 @@ $sql = "
 		default_framework = '". sqlEscape($desc['default_framework']). "',
 		css_class_name = '". sqlEscape($desc['css_class_name']). "',
 		is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
+		fill_organizer_nav = ". engToBoolean($desc['fill_organizer_nav']). ",
 		can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
 		nestable = ". engToBoolean($desc['nestable']). ",
 		category = ". $category . "

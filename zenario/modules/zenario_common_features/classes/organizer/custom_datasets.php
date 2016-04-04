@@ -51,6 +51,12 @@ class zenario_common_features__organizer__custom_datasets extends module_base_cl
 			if ($item['system_table']) {
 				$item['system_table'] = DB_NAME_PREFIX. $item['system_table'];
 			}
+			
+			// Temporarily disable the GUI button for assets dataset
+			$item['gui_blacklist'] = false;
+			if (inc('assetwolf_asset_manager') && ($item['system_table'] == (DB_NAME_PREFIX . ASSETWOLF_ASSET_MANAGER_PREFIX . 'assets'))) {
+				$item['gui_blacklist'] = true;
+			}
 		}
 	}
 	

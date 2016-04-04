@@ -1,0 +1,29 @@
+zenario_group:
+    key:
+        id: ''
+    title: Creating a group
+    max_height: 200
+    hide_tab_bar: true
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+                priv: _PRIV_MANAGE_GROUP
+            fields:
+                name:
+                    label: 'Name:'
+                    type: text
+                    onkeyup: |
+                        if (!zenarioAB.tuix.key.id) {
+                            zenario.get('db_column').value =
+                                this.value.toLowerCase().replace(/[\s-]+/g, '_').replace(/[^a-z_0-9]/g, '');
+                        }
+                    validation:
+                        required: Please enter a name
+                db_column:
+                    label: 'Code name:'
+                    type: text
+                    side_note: This will be used for the name of the column in the database.
+                    validation:
+                        required: Please enter a code name

@@ -99,10 +99,10 @@ function runNewModuleDependency($moduleName, $dependencyName) {
 		$moduleStatus = getRow('modules', 'status', $moduleId);
 		$dependencyStatus = getRow('modules', 'status', $dependencyId);
 		
-		if ($moduleStatus == 'module_running' && !in($dependencyStatus, 'module_running')) {
+		if ($moduleStatus == 'module_running' && !in($dependencyStatus, 'module_running', 'module_is_abstract')) {
 			setRow('modules', array('status' => 'module_running'), $dependencyId);
 		
-		} elseif ($moduleStatus == 'module_suspended' && !in($dependencyStatus, 'module_running', 'module_suspended')) {
+		} elseif ($moduleStatus == 'module_suspended' && !in($dependencyStatus, 'module_running', 'module_suspended', 'module_is_abstract')) {
 			setRow('modules', array('status' => 'module_suspended'), $dependencyId);
 		}
 		
@@ -125,7 +125,7 @@ if (needRevision(27220)) {
 }
 
 //If the Location Viewer Module is running, the Google Map Module now also needs to be running.
-if (needRevision(33771)) {
+if (needRevision(33940)) {
 	runNewModuleDependency('zenario_location_viewer', 'zenario_google_map');
-	revision(33771);
+	revision(33940);
 }

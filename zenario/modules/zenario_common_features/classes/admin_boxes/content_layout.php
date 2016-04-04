@@ -85,7 +85,8 @@ class zenario_common_features__admin_boxes__content_layout extends module_base_c
 			$box['tabs']['layout']['hidden'] = false;
 			$box['tabs']['layout']['edit_mode']['enabled'] = true;
 			
-			$box['tabs']['layout']['fields']['layout_id']['pick_items']['path'] = 'zenario__content/panels/content_types/hidden_nav/layouts//'. $box['key']['cType']. '//';
+			$box['tabs']['layout']['fields']['layout_id']['pick_items']['path'] =
+				'zenario__layouts/panels/layouts/refiners/content_type//'. $box['key']['cType']. '//';
 			
 			//Run a SQL query to check how many distinct values this column has for each Content Item.
 			//If there is only one unique value then populate it, otherwise show the field as blank.

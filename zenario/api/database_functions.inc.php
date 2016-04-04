@@ -79,6 +79,20 @@ function getNextAutoIncrementId($table) {
 	return false;
 }
 
+//Look up the name of the primary/foreign key column
+function getIdColumnOfTable($table, $guess = false) {
+	checkTableDefinition(DB_NAME_PREFIX. $table);		
+	if (cms_core::$pkCols[DB_NAME_PREFIX. $table]) {
+		return cms_core::$pkCols[DB_NAME_PREFIX. $table];
+	
+	} elseif ($guess) {
+		return 'id';
+	
+	} else {
+		return false;
+	}
+}
+
 
 function inEscape($csv, $escaping = 'sql', $prefix = false) {
 	if (!is_array($csv)) {
@@ -138,9 +152,9 @@ function likeEscape($text, $allowStarsAsWildcards = false, $asciiCharactersOnly 
 
 //	function my_mysql_query($sql, $updateDataRevisionNumber = -1, $checkCache = true, $return = 'sqlSelect') {}
 
-function paginationLimit($page, $pageSize) {
+function paginationLimit($page, $pageSize, $offset = 0) {
 	return "
-		LIMIT ". (max(((int) $page - 1) * (int) $pageSize, 0)). ", ". (int) $pageSize;
+		LIMIT ". (max((( (int) $page - 1) * (int) $pageSize) + $offset, 0)). ", ". (int) $pageSize;
 }
 
 //	function setRow($table, $values, $ids) {}

@@ -28,13 +28,12 @@
 		<div class="content_list_listing">
 			[cms:section name="Row"]
 				<div class="content_list_data_row data_row_[cms:merge name='ODD_OR_EVEN'/]">
-					[cms:section name="Show_Sticky_Image"]
-						<div class="sticky_image">
+						<div class = "[cms:merge name="Sticky_image_class_name"/]">
 							<a [cms:merge name='Link'/]>
 								[cms:merge name="Sticky_Image"/]
 							</a>
 						</div>
-					[/cms:section]
+					
 					<div class="content_list_text">
 						[cms:section name="Show_Item_Title"]
 							<h2 class="content_list_title [cms:merge name='Content_Type'/]"><a [cms:merge name='Link'/]>[cms:merge name="Title"/]</a></h2>

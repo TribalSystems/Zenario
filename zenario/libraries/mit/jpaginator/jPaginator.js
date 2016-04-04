@@ -160,6 +160,7 @@
                 $this.find(".paginator_p_bloc .paginator_p").each(function(i) {
                     n += 1;
                     $(this).html(n);
+                    $(this).attr('data-length', ('' + n).length);
                     if (s.selectedPage == n) {
                         $(this).addClass("selected");
                     }

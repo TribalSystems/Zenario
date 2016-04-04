@@ -37,7 +37,7 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_title a,
 #zenario_at .zenario_at_tabs .zenario_toolbar.zenario_toolbar_warning span.zenario_icon {
-	background-image:url('../admin/images/sprites/org-icons-v2.png');
+	background-image:url('../admin/images/sprites/org-icons-v5.png');
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_no_access a,
@@ -631,8 +631,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	margin:0 5px;
 }
 
-#zenario_at ul li ul li:first-child,
- {
+#zenario_at ul li ul li:first-child {
 	border-top:0;
 }
 
@@ -725,7 +724,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 .zenario_at_status_icons .zenario_at_button_with_children ul li {
 	background: none!important;
-	padding: 4px 0;
+	/*padding: 4px 0;*/
 }
 
 .zenario_at_status_icons .zenario_at_button_with_children ul li a {
@@ -742,12 +741,12 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 .zenario_at_button_with_children ul li a:hover {
-	color: #43d4f4!important;
+	color: #027dc9!important;
 }
 
 .zenario_at_button_with_children ul li span:hover {
 	/*color: #0581A4;*/
-	color: #43d4f4;
+	color: #027dc9;
 }
 
 #zenario_at ul ul {

@@ -147,13 +147,13 @@ properties:
                                     - admin_box
                             -
                                 required:
-                                    - call_js_function
-                            -
-                                required:
                                     - help
                             -
                                 required:
                                     - navigation_path
+                            -
+                                required:
+                                    - onclick
                             -
                                 required:
                                     - organizer_quick
@@ -301,38 +301,12 @@ properties:
                                             <p>These values will override the default values for the fields, but won't
                                             overwritten any values set in PHP in your <code>fillAdminBox()</code> method.</p>
                             
-                            call_js_function: &call_js_function
-                                type: object
+                            onclick:
+                                type: string
                                 description: >
-                                    You can set this property to call your own JavaScript function when an admin clicks on the button.
+                                    Some JavaScript code to run when your button is clicked.
                                     
-                                    Note that the CMS will check to see if the function you've specified actually exists, and
-                                    will not draw the button if it cannot find it.
-                                    
-                                    Your function will be passed two parameters: the first will be the TUIX definition of the button;
-                                    the second will be the tagId of the page, e.g. html_42
-                                commented_out_html_description: |
-                                    <p>This is advanced functionality, mainly aimed at buttons and toolbars on the Admin Toolbar but will also work with Organizer buttons, that can be used to call a specific function from the CMS' library of JavaScript functions.</p>
-                                    <p>If your Plugin is on the current page you could also create a button that called a JavaScript function from its library.</p>
-                                    <p>The function being called should accept the following two parameters:</p>
-                                    <ul>
-                                    <li>The button that was just pressed, as a JSON object</li>
-                                    <li>The currently selected id or ids (this will be a comma-separated list if multiple items are selected).</li>
-                                    </ul>
-                                    <h2>Buttons are Hidden when Functions do not exist</h2>
-                                    <p>If the function you specify does not actually exist, this will cause the button (or the whole toolbar, if you placed this property on a toolbar) to be hidden.</p>
-                                required:
-                                    - function
-                                properties:
-                                    encapsulated_object:
-                                        type: string
-                                        description: >
-                                            If the function you are calling is part of an encapsulated object, you should
-                                            name that object in this property.
-                                    function:
-                                        type: string
-                                        description: >
-                                            The name of the function you wish to call.
+                                    This works from version 7.1 onwards.
                             
                             
                             help: &help

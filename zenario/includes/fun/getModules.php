@@ -40,14 +40,14 @@ if ($dbUpdateSafemode) {
 	//Add in certain conditions, depending on where this is being called
 	if ($onlyGetRunningPlugins) {
 		$sql .= "
-			WHERE status IN ('_ENUM_RUNNING', 'module_running')";
+			WHERE status IN ('_ENUM_RUNNING', 'module_running', 'module_is_abstract')";
 	} elseif ($ignoreUninstalledPlugins) {
 		$sql .= "
 			WHERE status NOT IN ('_ENUM_INSTALLED', 'module_not_initialized')";
 	}
 
 	$sql .= "
-			ORDER BY status = 'module_running' DESC, status, class_name, id";
+			ORDER BY status IN ('module_running', 'module_is_abstract') DESC, status, class_name, id";
 	
 	$result = @sqlSelect($sql);
 
@@ -70,7 +70,7 @@ if ($dbUpdateSafemode) {
 	//Add in certain conditions, depending on where this is being called
 	if ($onlyGetRunningPlugins) {
 		$sql .= "
-			WHERE status = 'module_running'";
+			WHERE status IN ('module_running', 'module_is_abstract')";
 	} elseif ($ignoreUninstalledPlugins) {
 		$sql .= "
 			WHERE status != 'module_not_initialized'";
@@ -82,7 +82,7 @@ if ($dbUpdateSafemode) {
 	
 	} else {
 		$sql .= "
-				ORDER BY status = 'module_running' DESC, status, class_name, id";
+				ORDER BY status IN ('module_running', 'module_is_abstract') DESC, status, class_name, id";
 	}
 	
 	$result = sqlQuery($sql);

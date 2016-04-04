@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_item_versions`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]content_types`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_field_values`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_fields`;
+DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_files_link`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_tabs`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_dataset_values_link`;
 DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]custom_datasets`;

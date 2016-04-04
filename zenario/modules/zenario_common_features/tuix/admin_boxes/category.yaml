@@ -4,12 +4,16 @@ zenario_categories:
     key:
         id: ''
         parent_id: ''
+    title: 'Creating a category'
+    title_for_existing_records: 'Editing the category "[[details/name]]"'
+    max_height: 250
+    hide_tab_bar: true
     tabs:
         details:
             label: Details
             edit_mode:
-                enabled: Yes
-                always_on: Yes
+                enabled: true
+                always_on: true
             fields:
                 name:
                     label: 'Name:'
@@ -17,9 +21,9 @@ zenario_categories:
                     note_below: >
                         Internal name.
                 public:
-                    label: 'Public:'
+                    label: 'Public'
                     type: checkbox
-                    value: ""
-                    format_onchange: Yes
                     note_below: >
-                        When a category is public, its name may be visible to visitors. The CMS will create a phrase with this name in all enabled languages; you can then edit that phrase in the visitor phrases system.
+                        When a category is public, its name may be visible to visitors.
+                        The system will create a phrase with this name in all enabled languages;
+                        you can then edit that phrase in the visitor phrases system.

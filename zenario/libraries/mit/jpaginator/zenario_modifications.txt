@@ -1,0 +1,6 @@
+Added something to show the length of a number:
+	Replaced:
+                    $(this).html(n);
+	With:
+                    $(this).html(n);
+                    $(this).attr('data-length', ('' + n).length);

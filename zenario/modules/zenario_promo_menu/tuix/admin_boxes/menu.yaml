@@ -12,6 +12,7 @@ zenario_menu:
                     type: checkbox
                     format_onchange: true
                 zenario_promo_menu__feature_image:
+                    indent: 1
                     foreign_key_to: file
                     label: 'Image'
                     pick_items:
@@ -35,6 +36,7 @@ zenario_menu:
                     validation:
                         required_if_not_hidden: Please select an image.
                 zenario_promo_menu__canvas:
+                    indent: 1
                     label: 'Image canvas'
                     type: select
                     value: unlimited
@@ -56,6 +58,7 @@ zenario_menu:
                             label: Resize and crop
                     format_onchange: Yes
                 zenario_promo_menu__width:
+                    indent: 1
                     label: 'Width'
                     type: text
                     validation:
@@ -66,6 +69,7 @@ zenario_menu:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 zenario_promo_menu__height:
+                    indent: 1
                     label: 'Height'
                     type: text
                     validation:
@@ -77,6 +81,7 @@ zenario_menu:
                     post_field_html: '&nbsp;pixels'
                 
                 zenario_promo_menu__offset:
+                    indent: 1
                     plugin_setting:
                         name: offset
                     label: 'Offset'
@@ -93,11 +98,13 @@ zenario_menu:
                                                     moving the slider to the right will move the image right or up.
                 
                 zenario_promo_menu__use_rollover:
+                    indent: 1
                     label: 'Use a rollover image'
                     type: checkbox
                     value: ""
                     format_onchange: Yes
                 zenario_promo_menu__rollover_image:
+                    indent: 2
                     foreign_key_to: file
                     label: 'Change image on rollover'
                     pick_items:
@@ -121,6 +128,7 @@ zenario_menu:
                 
                 
                 zenario_promo_menu__overwrite_alt_tag:
+                    indent: 1
                     multiple_edit:
                         original_value: ""
                     label: 'Overwrite image alt-tag'
@@ -130,17 +138,14 @@ zenario_menu:
                 
                 
                 zenario_promo_menu__title:
-                        is_searchable_content: "1"
-                        use_value_for_plugin_name: "1"
-                        translate: Yes
+                    indent: 1
                     label: 'Title'
                     type: text
                     width: "150"
                     maxlength: "255"
                     value: ""
                 zenario_promo_menu__text:
-                        is_searchable_content: "1"
-                        translate: Yes
+                    indent: 1
                     label: 'HTML'
                     type: editor
                     insert_link_button:
@@ -152,6 +157,7 @@ zenario_menu:
                 
                 
                 zenario_promo_menu__link_type:
+                    indent: 1
                     label: 'Destination'
                     type: radios
                     values:
@@ -167,22 +173,21 @@ zenario_menu:
                     value: no_link
                     format_onchange: Yes
                 zenario_promo_menu__hyperlink_target:
-                        foreign_key_to: content
-                        dangling_cross_references: delete_instance
-                        use_value_for_plugin_name: "4"
+                    indent: 2
                     label: 'Content Item'
                     pick_items:
-                        by_language: Yes
-                        min_path: zenario__content/panels/languages
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
-                        disallow_refiners_looping_on_min_path: Yes
-                        select_phrase: Select Content Item...
-                        hide_remove_button: Yes
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                        hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a content item
                     format_onchange: Yes
                 zenario_promo_menu__hide_private_item:
+                    indent: 2
                     label: 'Privacy'
                     type: select
                     value: always_show
@@ -200,11 +205,13 @@ zenario_menu:
                             ord: "4"
                             label: Always show to visitors who are logged in
                 zenario_promo_menu__url:
+                    indent: 2
                     label: 'External URL'
                     type: url
                     maxlength: "255"
                     value: ""
                 zenario_promo_menu__target_blank:
+                    indent: 2
                     label: 'Open in a new window'
                     type: checkbox
                     value: ""

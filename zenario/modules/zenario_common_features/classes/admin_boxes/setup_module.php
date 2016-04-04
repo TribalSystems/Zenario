@@ -32,7 +32,8 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		if (!$module = getModuleDetails($box['key']['id'])) {
+		if ((!$module = getModuleDetails($box['key']['id']))
+		 || ($module['status'] == 'module_is_abstract')) {
 			exit;
 		}
 

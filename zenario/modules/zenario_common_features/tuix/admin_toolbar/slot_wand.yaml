@@ -9,33 +9,29 @@ sections:
                 tooltip: |
                     In the current view, only slots containing a plugin at this layer are shown. Click to show empty slots.
                 visible_if: '!zenarioA.slotWandOn'
-                call_js_function:
-                    encapsulated_object: zenarioA
-                    function: toggleSlotWand
+                onclick: |
+                    zenarioA.toggleSlotWand();
             slot_wand_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
                 label: Hide empty slots
                 tooltip: |
                     All slots populated at this layer are shown. Click on a &ldquo;+&rdquo; button in an empty slot to insert a plugin.
                 visible_if: zenarioA.slotWandOn
-                call_js_function:
-                    encapsulated_object: zenarioA
-                    function: toggleSlotWand
+                onclick: |
+                    zenarioA.toggleSlotWand();
             show_grid_off:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_off
                 label: Show grid
                 tooltip: |
                     Show the layout's gridlines
                 visible_if: '!zenarioA.showGridOn'
-                call_js_function:
-                    encapsulated_object: zenarioA
-                    function: toggleShowGrid
+                onclick: |
+                    zenarioA.toggleShowGrid();
             show_grid_on:
                 css_class: zenario_toolbar_toggle zenario_toolbar_toggle_on
                 label: Hide grid
                 tooltip: |
                     Hide the layout's gridlines
                 visible_if: zenarioA.showGridOn
-                call_js_function:
-                    encapsulated_object: zenarioA
-                    function: toggleShowGrid
+                onclick: |
+                    zenarioA.toggleShowGrid();

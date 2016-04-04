@@ -37,11 +37,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 
 		if ($box['key']['id']) {
-			if (!$details = getRow('admins', array(
-				'permissions', 'specific_languages', 'specific_content_items', 'specific_menu_areas',
-				'username', 'email', 'first_name', 'last_name',
-				'authtype', 'global_id', 'image_id', 'is_client_account'
-			), $box['key']['id'])) {
+			if (!$details = getRow('admins', true, $box['key']['id'])) {
 				exit;
 
 			} elseif ($details['authtype'] != 'local') {
@@ -54,6 +50,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 				$box['tabs']['permissions']['edit_mode']['enabled'] = true;
 			}
 			
+			if ($details['status'] == 'deleted') {
+				$box['tabs']['password']['hidden'] = true;
+			}
+
+			
 			//Load this admin's settings
 			if (is_array(arrayKey($box,'tabs'))) {
 				foreach ($box['tabs'] as $tabName => &$tab) {
@@ -65,6 +66,13 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 							 && (false !== ($settingValue = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']))))) {
 								$field['value'] = getRow('admin_settings', 'value', array('name' => $settingName, 'admin_id' => $box['key']['id']));
 							}
+						}
+						
+						if ($details['status'] == 'deleted'
+						 && isset($tab['notices']['is_trashed'])) {
+							
+							$tab['notices']['is_trashed']['show'] = true;
+							unset($tab['edit_mode']);
 						}
 					}
 				}
@@ -330,7 +338,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		|| engToBooleanArray($box['tabs']['permissions'], 'edit_mode', 'on');
 
 		if ($box['key']['id']) {
-			if (!$details = getRow('admins', array('username', 'email', 'first_name', 'last_name', 'authtype', 'global_id'), $box['key']['id'])) {
+			if (!$details = getRow('admins', true, $box['key']['id'])) {
+				exit;
+			}
+
+			if ($details['status'] == 'trashed') {
 				exit;
 			}
 
@@ -365,21 +377,29 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			}
 		}
 		
+		
+		//The password fields are on different tabs in create/edit modes
+		$pTab = false;
+		if ($newAdmin = !$box['key']['id']) {
+			$pTab = 'details';
+		} elseif (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on')) {
+			$pTab = 'password';
+			exitIfNotCheckPriv('_PRIV_CHANGE_ADMIN_PASSWORD');
+		}
+		
 		//Check the password fields
-		if ((!$box['key']['id'] && $tab = 'details')
-		|| (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on') && exitIfNotCheckPriv('_PRIV_CHANGE_ADMIN_PASSWORD') && $tab = 'password')) {
+		if ($pTab) {
+			if (!$values[$pTab. '/'. 'password']) {
+				$box['tabs'][$pTab]['errors'][] = adminPhrase('Please enter a Password.');
 
-			if (!$values[$tab. '/'. 'password']) {
-				$box['tabs'][$tab]['errors'][] = adminPhrase('Please enter a Password.');
+			} elseif (!checkPasswordStrength($values[$pTab. '/'. 'password'])) {
+				$box['tabs'][$pTab]['errors'][] = adminPhrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
 
-			} elseif (!checkPasswordStrength($values[$tab. '/'. 'password'])) {
-				$box['tabs'][$tab]['errors'][] = adminPhrase('The password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters.');
+			} elseif (!$values[$pTab. '/'. 'password_confirm']) {
+				$box['tabs'][$pTab]['errors'][] = adminPhrase('Please enter a password in both password fields.');
 
-			} elseif (!$values[$tab. '/'. 'password_confirm']) {
-				$box['tabs'][$tab]['errors'][] = adminPhrase('Please enter a password in both password fields.');
-
-			} elseif ($values[$tab. '/'. 'password'] != $values[$tab. '/'. 'password_confirm']) {
-				$box['tabs'][$tab]['errors'][] = adminPhrase('Please ensure that the passwords you submit are identical.');
+			} elseif ($values[$pTab. '/'. 'password'] != $values[$pTab. '/'. 'password_confirm']) {
+				$box['tabs'][$pTab]['errors'][] = adminPhrase('Please ensure that the passwords you submit are identical.');
 			}
 		}
 		
@@ -409,9 +429,15 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			return false;
 		}
 		
-		//Work out if we will be changing the Admin's password
-		$tab = false;
-		((!$box['key']['id'] && $tab = 'details') || (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on') && $tab = 'password'));
+		
+		//The password fields are on different tabs in create/edit modes
+		$pTab = false;
+		if ($newAdmin = !$box['key']['id']) {
+			$pTab = 'details';
+		} elseif (engToBooleanArray($box['tabs']['password'], 'edit_mode', 'on')) {
+			$pTab = 'password';
+			exitIfNotCheckPriv('_PRIV_CHANGE_ADMIN_PASSWORD');
+		}
 
 		if (engToBooleanArray($box['tabs']['details'], 'edit_mode', 'on')) {
 			
@@ -434,11 +460,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 				$details['image_id'] = $values['details/image'];
 			}
 			
-			if ($box['key']['id']) {
-				$details['modified_date'] = now();
-			} else {
-				$details['created_date'] = now();
+			if ($newAdmin) {
 				$details['status'] = 'active';
+				$details['created_date'] = now();
+			} else {
+				$details['modified_date'] = now();
 			}
 
 			$box['key']['id'] = setRow('admins', $details, (int) $box['key']['id']);
@@ -446,24 +472,24 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 		}
 		
 		//send email if inform by email checked
-		if ($values['details/inform_by_email']) {
+		if ($pTab
+		 && $values[$pTab. '/inform_by_email']
+		 && inc('zenario_email_template_manager')) {
+			
 			$email_details = array(
 				'username' => $values['details/username'],
 				'first_name' => $values['details/first_name'],
 				'last_name' => $values['details/last_name'],
 				'email' => $values['details/email'],
-				'password' => $values['details/password'],
+				'password' => $values[$pTab. '/password'],
 				'cms_url' => absCMSDirURL());
 			
-			if (inc('zenario_email_template_manager')) {
-				zenario_email_template_manager::sendEmailsUsingTemplate(arraykey($email_details, 'email'),setting('notification_to_new_admin'),$email_details,array());
-			}
-			
+			zenario_email_template_manager::sendEmailsUsingTemplate($email_details['email'], setting('notification_to_new_admin'), $email_details, array());
 		}
 		
 		//Set a password
-		if ($tab) {
-			setPasswordAdmin($box['key']['id'], $values[$tab. '/'. 'password'], engToBoolean($values[$tab. '/'. 'password_needs_changing']), $isPasswordReset = false);
+		if ($pTab) {
+			setPasswordAdmin($box['key']['id'], $values[$pTab. '/'. 'password'], engToBoolean($values[$pTab. '/'. 'password_needs_changing']), $isPasswordReset = false);
 		}
 
 

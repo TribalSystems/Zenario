@@ -334,11 +334,12 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site looks like a developer installation
-                            (the tell-tale file <code>developer.txt</code> exists),
+                            Your site is in development mode
                             but you do not have your <code>ERROR_REPORTING_LEVEL</code>
                             set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
                             in your <code>zenario_siteconfig.php</code> file.
+                            <br/>(Or click the hammer icon at the bottom right of Organizer
+                            to turn development mode off.)
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 email_addresses_overridden:
@@ -356,8 +357,7 @@ diagnostics:
                 #    row_class: sub_level
                 #    snippet:
                 #        html: |
-                #            Your site looks like a developer installation
-                #            (the tell-tale file <code>developer.txt</code> exists),
+                #            Your site is in development mode
                 #            but you do not have &ldquo;Email debug mode&rdquo; enabled under
                 #            <em>Configuration -&gt; Site Settings-&gt; Email -&gt; Debug</em> in Organizer.
                 #    hide_on_install: true

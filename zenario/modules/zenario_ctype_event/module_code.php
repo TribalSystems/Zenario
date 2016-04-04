@@ -258,7 +258,6 @@ class zenario_ctype_event extends module_base_class {
 		switch ($path) {
 			case 'zenario__content/panels/content':
 			case 'zenario__content/panels/chained':
-			case 'zenario__content/panels/language_equivs':
 				//...
 				
 				break;

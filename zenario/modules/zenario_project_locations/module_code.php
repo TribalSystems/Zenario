@@ -464,7 +464,7 @@ class zenario_project_locations extends module_base_class {
 				}
 				
 				$fields['content_item']['pick_items']['path'] =
-					'zenario__content/panels/content_types/item//project//item//'. setting('default_language'). '//';
+					'zenario__content/panels/content/refiners/content_type//project//';
 
 				$locationCountriesFinal = zenario_country_manager::getCountryAdminNamesIndexedByISOCode("active");
 				foreach ($locationCountriesFinal as $key => $value) {
@@ -813,7 +813,7 @@ class zenario_project_locations extends module_base_class {
 						
 				//Upload a new image
 				if (post('upload') && checkPriv('_PRIV_MANAGE_PROJECT_LOCATIONS')) {
-					$image_id = addFileToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], $_FILES['Filedata']['name'], true);
+					$image_id = addFileToDatabase('project_locations', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
 					return $image_id;
 				
 				//Delete an image

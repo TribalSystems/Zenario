@@ -94,7 +94,7 @@ foreach(array(
 	'core' => 'Core Features',
 	'couldNotOpenBox' => 'Sorry, this admin box does not exist, or you do not have the permissions needed to access it.',
 	'createAnother' => 'Save & create another',
-	'createSearch' => 'Create a search',
+	'createdAnother' => 'Created &quot;[[name]]&quot;',
 	'csv' => 'CSV',
 	'deleteSearch' => 'Delete',
 	'deleteSearchConfirm' => 'Are you sure you wish to delete the &quot;[[name]]&quot; advanced search?',
@@ -159,6 +159,7 @@ foreach(array(
 	'revert' => 'Revert',
 	'revertConfirm' => '<p>Are you sure you wish to abandon any changes made to this plugin since the previous version?</p><p>Only settings/content in this slot will be affected.</p>',
 	'save' => 'Save',
+	'savedButNotShown' => 'Item saved, but your filter prevents it from appearing',
 	'saveDontSyncSummary' => 'No, just save here',
 	'saveDontUpdateSummary' => 'No, just save here',
 	'saveSyncSummary' => 'Yes, save and update Summary',
@@ -334,7 +335,6 @@ echo '
 
 
 //Include all of the standard JavaScript Admin libraries for the CMS
-incJS('zenario/api/javascript_admin');
 incJS('zenario/js/admin');
 incJS('zenario/js/admin_form');
 incJS('zenario/js/admin_box');
@@ -344,7 +344,7 @@ incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)
-incJS('zenario/libraries/lgpl/tinymce_4_2_3/jquery.tinymce');
+incJS(TINYMCE_DIR. 'jquery.tinymce');
 //Include the autocomplete library for the FAB library
 incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
 //Include the selectboxes library for moving items between select lists
@@ -361,7 +361,6 @@ incJS('zenario/libraries/public_domain/mousehold/mousehold');
 incJS('zenario/libraries/mit/jssor/jssor.slider.mini');
 
 echo '
-zenarioA.tinyMCEPath = "zenario/libraries/lgpl/tinymce_4_2_3/tinymce.jquery.min.js";
 ace.config.set("basePath", URLBasePath + "zenario/libraries/bsd/ace/src-min-noconflict/");';
 
 

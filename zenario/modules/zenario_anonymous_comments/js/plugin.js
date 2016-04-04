@@ -24,161 +24,125 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-(function(
-	zenario, zenario_anonymous_comments,
-	get,
-	undefined) {
+
+zenario.lib(function(
+	undefined,
+	URLBasePath,
+	document, window, windowOpener, windowParent,
+	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
+	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
+	extensionOf, methodsOf, has,
+	zenario_anonymous_comments
+) {
+	"use strict";
 
 
-zenario_anonymous_comments.loadWithDelay = function(containerId, enableColours, enableImages, enableEmoticons, enableLinks) {
+zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) {
+	
+	//how to handle mobile..?
 	if (zenario.browserIsiPad() || zenario.browserIsiPhone()) {
 		return;
 	}
 	
-	if (zenario.get('editor__' + containerId)) {
-		zenario.get('editor__' + containerId).style.visibility = 'hidden';
-	}
 	
-	setTimeout(
-		function() {
-			zenario_anonymous_comments.load(containerId, enableColours, enableImages, enableLinks);
-		}, 350);
-}
-
-zenario_anonymous_comments.load = function(containerId, enableColours, enableImages, enableEmoticons, enableLinks, selfCalling) {
-	if (zenario.browserIsiPad() || zenario.browserIsiPhone()) {
-		return;
-	}
 	
-	if (zenario.get('editor__' + containerId)) {
-		zenario.get('editor__' + containerId).style.visibility = 'hidden';
-	}
-
-	if (typeof punymce != 'object') {
-		if (!selfCalling) {
-			jQuery.getScript(
-				URLBasePath + 'zenario/js/punymce.wrapper.js.php?v=' + window.zenarioCSSJSVersionNumber + '&gz=' + zenario.useGZ,
-				function() {
-					punymce.Event._pageInit();
-					zenario_anonymous_comments.load(containerId, enableColours, enableImages, enableEmoticons, enableLinks, true)
-				}
-			);
+	var toolbar = 'bold italic underline strikethrough style-code | removeformat',
+		plugins = 'lists paste autoresize stylebuttons',
+		editorPhrases, options;
+	
+	if (enableImages || enableLinks) {
+		toolbar += ' |';
+		
+		if (enableImages) {
+			toolbar += ' image';
+			plugins += ' image';
 		}
-		return;
+		if (enableImages) {
+			plugins += ' autolink link';
+			toolbar += ' link unlink';
+		}
 	}
 	
-	if (!zenario_anonymous_comments.editorPhrases) {
-		zenario_anonymous_comments.editorPhrases = zenario_anonymous_comments.loadPhrases([
+	toolbar += ' | style-p style-pre blockquote | numlist bullist | outdent indent';
+	
+	
+	if (!(editorPhrases = zenario_anonymous_comments.editorPhrases)) {
+		editorPhrases = zenario_anonymous_comments.editorPhrases = zenario_anonymous_comments.loadPhrases([
 			'_EDITOR_BOLD',
-			'_EDITOR_ITALIC',
-			'_EDITOR_UNDERLINE',
-			'_EDITOR_STRIKE',
-			'_EDITOR_UNORDERED_LIST',
-			'_EDITOR_ORDERED_LIST',
-			'_EDITOR_STYLE',
 			'_EDITOR_CODE',
-			'_EDITOR_REMOVE_CODE',
-			'_EDITOR_REMOVE_FORMAT',
-			'_EDITOR_EDIT_SOURCE',
-			'_EDITOR_EMOTICONS',
-			'_EDITOR_INSERT_IMAGE',
+			'_EDITOR_DECREASE_INDENT',
 			'_EDITOR_IMAGE_SRC',
+			'_EDITOR_INDENT',
+			'_EDITOR_INSERT_IMAGE',
+			'_EDITOR_ITALIC',
 			'_EDITOR_LINK',
-			'_EDITOR_UNLINK',
 			'_EDITOR_LINK_HREF',
-			'_EDITOR_TEXT_COLOR'
+			'_EDITOR_LINK_TEXT',
+			'_EDITOR_ORDERED_LIST',
+			'_EDITOR_PARAGRAPH',
+			'_EDITOR_PREFORMATTED',
+			'_EDITOR_QUOTE',
+			'_EDITOR_REMOVE_FORMAT',
+			'_EDITOR_STRIKE',
+			'_EDITOR_UNDERLINE',
+			'_EDITOR_UNLINK',
+			'_EDITOR_UNORDERED_LIST'
 		]);
-		
-		punymce.extend(punymce.I18n, {
-			// Core
-			bold: zenario_anonymous_comments.editorPhrases._EDITOR_BOLD,
-			italic: zenario_anonymous_comments.editorPhrases._EDITOR_ITALIC,
-			underline: zenario_anonymous_comments.editorPhrases._EDITOR_UNDERLINE,
-			ul: zenario_anonymous_comments.editorPhrases._EDITOR_UNORDERED_LIST,
-			ol: zenario_anonymous_comments.editorPhrases._EDITOR_ORDERED_LIST,
-			style: zenario_anonymous_comments.editorPhrases._EDITOR_STYLE,
-			removeformat: zenario_anonymous_comments.editorPhrases._EDITOR_REMOVE_FORMAT,
-
-			//modules
-			editsource: zenario_anonymous_comments.editorPhrases._EDITOR_EDIT_SOURCE,
-			emoticons: zenario_anonymous_comments.editorPhrases._EDITOR_EMOTICONS,
-		
-			// Image plugin
-			insertimage: zenario_anonymous_comments.editorPhrases._EDITOR_INSERT_IMAGE,
-			entersrc: zenario_anonymous_comments.editorPhrases._EDITOR_IMAGE_SRC,
-		
-			// Link plugin
-			link: zenario_anonymous_comments.editorPhrases._EDITOR_LINK,
-			unlink: zenario_anonymous_comments.editorPhrases._EDITOR_UNLINK,
-			enterhref: zenario_anonymous_comments.editorPhrases._EDITOR_LINK_HREF,
-		
-			// Textcolor plugin
-			textcolor: zenario_anonymous_comments.editorPhrases._EDITOR_TEXT_COLOR
-		});
 	}
 	
-	//Attempt to fix a bug with escaping in punymce
-	zenario.get('editor__' + containerId).value = zenario.htmlspecialchars(zenario.get('editor__' + containerId).value);
-	
-	zenario_anonymous_comments['editor__' + containerId] = new punymce.Editor({
-		id: 'editor__' + containerId,
-		toolbar:
-			'bold,italic,underline,' +
-			(enableColours? 'textcolor,' : '') +
-			'removeformat,style,ul,ol,' +
-			(enableLinks? 'link,unlink,' : '') +
-			(enableImages? 'image,' : '') +
-			(enableEmoticons? 'emoticons,' : '') +
-			'editsource',
-		plugins:
-			(enableColours? 'TextColor,' : '') +
-			(enableLinks? 'Link,' : '') +
-			(enableImages? 'Image,' : '') +
-			(enableEmoticons? 'Emoticons,' : '') +
-			'BBCode,Paste,EditSource,ForceNL,Protect,TabFocus',
-		min_height : 200,
-		min_width : 400,
-		styles : [
-			{ title : zenario_anonymous_comments.editorPhrases._EDITOR_CODE, cls : 'pre', cmd : 'FormatBlock', val : '<pre>' },
-			{ title : zenario_anonymous_comments.editorPhrases._EDITOR_REMOVE_CODE, cls : 'p', cmd : 'FormatBlock', val : '<p>' }
-		],
-		emoticons : {
-			auto_convert : 1,
-			emoticons : {
-				happy : [':)', '=)'],
-				unhappy : [':|', '=|'],
-				sad : [':(','=('],
-				grin : [':D', '=D'],
-				surprised : [':o',':O','=o', '=O'],
-				wink : [';)'],
-				halfhappy : ['=/', '=\\', ':\\'],
-				tounge : [':P', ':p', '=P', '=p'],
-				lol : [':lol:'],
-				mad : [':x', ':X', ':@'],
-				rolleyes : [':roll:'],
-				cool : ['8)', '8-)']
-			}
+	options = {
+		script_url: URLBasePath + zenario.tinyMCEPath,
+		browser_spellcheck: true,
+		height: 250,
+		menubar: false,
+		
+		plugins: [plugins],
+		toolbar: toolbar,
+		
+		link_title: false,
+		link_class: false,
+		target_list: false,
+		image_description: false,
+		image_dimensions: false,
+		image_class: false,
+		image_alignment: false,
+
+		inline: true,
+		fixed_toolbar_container: '#toolbar_container_for_' + editorId,
+		setup: function(editor) {
+			tinyMCE.i18n.add('en', {
+				'Bold': editorPhrases._EDITOR_BOLD,
+				'Italic': editorPhrases._EDITOR_ITALIC,
+				'Underline': editorPhrases._EDITOR_UNDERLINE,
+				'Strikethrough': editorPhrases._EDITOR_STRIKE,
+				'Toggle code': editorPhrases._EDITOR_CODE,
+				'Clear formatting': editorPhrases._EDITOR_REMOVE_FORMAT,
+				'Insert/edit image': editorPhrases._EDITOR_INSERT_IMAGE,
+				'Source': editorPhrases._EDITOR_IMAGE_SRC,
+				'Insert/edit link': editorPhrases._EDITOR_LINK,
+				'Url': editorPhrases._EDITOR_LINK_HREF,
+				'Text to display': editorPhrases._EDITOR_LINK_TEXT,
+				'Remove link': editorPhrases._EDITOR_UNLINK,
+				'Toggle p': editorPhrases._EDITOR_PARAGRAPH,
+				'Toggle pre': editorPhrases._EDITOR_PREFORMATTED,
+				'Blockquote': editorPhrases._EDITOR_QUOTE,
+				'Numbered list': editorPhrases._EDITOR_ORDERED_LIST,
+				'Bullet list': editorPhrases._EDITOR_UNORDERED_LIST,
+				'Decrease indent': editorPhrases._EDITOR_INDENT,
+				'Increase indent': editorPhrases._EDITOR_DECREASE_INDENT
+			
+			});
 		},
-		content_css: 'zenario/styles/skin.cache_wrapper.css.php?v=' + encodeURIComponent(window.zenarioCSSJSVersionNumber) + '&id=' + zenario.skinId + '&editor=1' + (zenario.useGZ? '' : '&gz=1')
-	});
+		init_instance_callback: function(editor) {
+			window.ed = editor;
+			editor.focus();
+		}
+	};
 	
-	if (zenario.get('editor__' + containerId + '_f')) {
-		zenario.get('editor__' + containerId + '_f').style.width = '100%';
-	}
 	
-	//Set the value of the text field when saving
-	$('#' + containerId + ' :submit').click(function() {
-		var containerId = zenario.getContainerIdFromEl(this);
-		var message = {format: 'bbcode', content: zenario_anonymous_comments['editor__' + containerId].getContent()};
-		
-		zenario_anonymous_comments.toBBCode(undefined, message);
-		
-		zenario.get('editor__' + containerId).value = message.content;
-	});
-}
+	$('#' + editorId).tinymce(options);
+};
 
 
 
-})(
-	zenario, zenario_anonymous_comments,
-	zenario.get);
+}, zenario_anonymous_comments);
