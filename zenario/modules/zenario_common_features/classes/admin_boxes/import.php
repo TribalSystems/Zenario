@@ -895,9 +895,9 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					}
 				}
 			}
-			
 			// Import data
 			$unexpectedErrors = self::setImportData($box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
+			
 		}
 		
 		
@@ -1286,6 +1286,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 	
 	private static function setImportData($datasetId, $importData, $mode, $insertMode, $keyFieldID) {
 		
+		
 		$datasetDetails = getDatasetDetails($datasetId);
 		$systemDataIDColumn = !empty($datasetDetails['system_table']) ? getIdColumnOfTable($datasetDetails['system_table']) : false;
 		$customDataIDColumn = !empty($datasetDetails['table']) ? getIdColumnOfTable($datasetDetails['table']) : false;
@@ -1421,19 +1422,19 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			} elseif ($mode == 'update') {
 				
 				// List of IDs to update (just for saftey, should normaly only be 1)
-				$idsToUpdate = false;
+				$idsToUpdate = array();
 				
 				if ($keyFieldID == 'id') {
 					$idsToUpdate[] = $record['id'];
 				} else {
 					if (!empty($fieldIdDetails[$keyFieldID]['is_system_field'])) {
-						$idsToUpdate = getRows(
+						$idsToUpdate = getRowsArray(
 							$datasetDetails['system_table'], 
 							$systemDataIDColumn, 
 							array($fieldIdDetails[$keyFieldID]['db_column'] => $data[$fieldIdDetails[$keyFieldID]['db_column']])
 						);
 					} else {
-						$idsToUpdate = getRows(
+						$idsToUpdate = getRowsArray(
 							$datasetDetails['table'], 
 							$customDataIDColumn, 
 							array($fieldIdDetails[$keyFieldID]['db_column'] => $customData[$fieldIdDetails[$keyFieldID]['db_column']])
@@ -1453,10 +1454,8 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				}
 				
 				// Update records
-				if ($idsToUpdate !== false) {
-					while ($row = sqlFetchRow($idsToUpdate)) {
-						
-						$recordId = $row[0];
+				if (!empty($idsToUpdate)) {
+					foreach ($idsToUpdate as $recordId) {
 						
 						if ($datasetDetails['system_table'] && !empty($data)) {
 							if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
@@ -1470,6 +1469,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						}
 					}
 				}
+				
 			}
 			if ($error) {
 				$errorMessage .= $message;

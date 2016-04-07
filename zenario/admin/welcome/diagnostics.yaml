@@ -334,12 +334,13 @@ diagnostics:
                     row_class: sub_level
                     snippet:
                         html: |
-                            Your site is in development mode
-                            but you do not have your <code>ERROR_REPORTING_LEVEL</code>
-                            set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
-                            in your <code>zenario_siteconfig.php</code> file.
-                            <br/>(Or click the hammer icon at the bottom right of Organizer
-                            to turn development mode off.)
+                            Your site is in development mode,
+                            but if you're developing modules you would not be able to see PHP errors and notices.
+                            (The <code>ERROR_REPORTING_LEVEL</code>
+                            should be set to <code>(E_ALL | E_NOTICE | E_STRICT)</code>
+                            in your <code>zenario_siteconfig.php</code> file - or
+                            click the hammer icon at the bottom left of Organizer
+                            to fully enable the site.)
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 email_addresses_overridden:

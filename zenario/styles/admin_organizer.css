@@ -4275,11 +4275,15 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 }
 
 .dd3-item > button {
-    margin-left: 21px;
+    margin-left: 0;
 }
 
 .dd3-item.organizer_menu_handle > button {
     margin-left: 30px;
+}
+
+.zenario_organizer_under_admin_box.zenario_panel_type__hierarchy_documents .dd3-item > button {
+    margin-left: 21px;
 }
 
 /* Debug icon */

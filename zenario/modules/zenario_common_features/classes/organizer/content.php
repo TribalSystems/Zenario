@@ -241,10 +241,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 					layout_id, name,
 					CONCAT('L', IF (layout_id < 10, LPAD(CAST(layout_id AS CHAR), 2, '0'), CAST(layout_id AS CHAR)), ' ', name) AS id_and_name
 				FROM ". DB_NAME_PREFIX. "layouts
-				WHERE (status = 'active' OR layout_id IN (
-					SELECT DISTINCT layout_id
-					FROM ". DB_NAME_PREFIX. "content_item_versions
-				))";
+				WHERE status = 'active'";
 			
 			if ($panel['key']['cType']) {
 				$sql .= "

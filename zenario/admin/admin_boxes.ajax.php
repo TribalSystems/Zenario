@@ -811,6 +811,4 @@ if (!empty($originalTags)) {
 if (!$commentMade) {
 	header('Content-Type: text/javascript; charset=UTF-8');
 }
-
-header('Content-Type: text/javascript; charset=UTF-8');
 jsonEncodeForceObject($tags);

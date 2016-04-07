@@ -271,4 +271,5 @@ zenario_newsletter:
                     language: html
                     style: >
                         width: 98%;
+                        height: 30em;
                     rows: 30
