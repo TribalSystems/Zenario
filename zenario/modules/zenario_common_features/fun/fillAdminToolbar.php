@@ -691,7 +691,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			//Start numbering Menu Nodes from 1, not from 0
 			++$i;
 			
-			if ($i > 1) {
+			if ($i > 1 && isset($adminToolbar['toolbars']['menu_secondary'])) {
 				//Add extra tabs for each secondary Menu Node
 				$adminToolbar['toolbars']['menu'. $i] = $adminToolbar['toolbars']['menu_secondary'];
 				$adminToolbar['toolbars']['menu'. $i]['ord'] = '30.'. str_pad($i, 3, '0', STR_PAD_LEFT);
@@ -722,16 +722,17 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['primary_menu_node'];
 			}
 			
-			
-			foreach ($adminToolbar['sections']['menu'. $i]['buttons'] as $tagName => &$button) {
-				if (is_array($button)) {
-					foreach (array('request', 'key') as $request) {
-						foreach (array('admin_box', 'ajax', 'pick_items') as $action) {
-							if (isset($button[$action][$request]['mID'])) {
-								$button[$action][$request]['mID'] = $menuItem['id'];
-							}
-							if (isset($button[$action][$request]['languageId'])) {
-								$button[$action][$request]['languageId'] = cms_core::$langId;
+			if (!empty($adminToolbar['sections']['menu'. $i]['buttons'])) {
+				foreach ($adminToolbar['sections']['menu'. $i]['buttons'] as $tagName => &$button) {
+					if (is_array($button)) {
+						foreach (array('request', 'key') as $request) {
+							foreach (array('admin_box', 'ajax', 'pick_items') as $action) {
+								if (isset($button[$action][$request]['mID'])) {
+									$button[$action][$request]['mID'] = $menuItem['id'];
+								}
+								if (isset($button[$action][$request]['languageId'])) {
+									$button[$action][$request]['languageId'] = cms_core::$langId;
+								}
 							}
 						}
 					}

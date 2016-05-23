@@ -381,9 +381,9 @@
 					style="display:none;"
 				<% } %>
 			>
-				<% if (m.type != 'checkboxes') { %>
+				<% if (m.type != 'checkboxes' && m.type != "section_description") { %>
 					<div class="field" id="field_container__default_value_options">
-						<div class="title">Default value options:</div>
+						<div class="title">Pre-populate field:</div>
 						<div class="value">
 							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values', m.default_value_mode_options)}}
 						</div>

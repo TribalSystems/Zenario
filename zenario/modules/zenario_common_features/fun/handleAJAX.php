@@ -102,32 +102,14 @@ if (checkPriv()) {
 		$section['fields'][] = array('label' => adminPhrase('License:'), 'value' => siteDescription('license_info'));
 		$section['fields'][] = array('label' => adminPhrase('Version:'), 'value' => getCMSVersionNumber());
 		
-		if (!windowsServer() && execEnabled() && is_file('zenario/visitorheader.inc.php')) {
+		require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+		if ($svninfo = getSVNInfo()) {
+			$section['fields'][] = array('label' => adminPhrase('SVN revision no:'), 'value' => $svninfo['Revision']);
+		
+			if (!empty($svninfo['Last Changed Date'])) {
 			
-			$output = array();
-			$svninfo = array();
-			if (is_dir($realDir. '/.svn')) {
-				@exec('svn info '. escapeshellcmd($realDir. '/'), $output);
-			} elseif (is_dir('.svn')) {
-				@exec('svn info .', $output);
-			}
-			
-			foreach ($output as $line) {
-				$line = explode(': ', $line, 2);
-				
-				if (!empty($line[1])) {
-					$svninfo[$line[0]] = $line[1];
-				}
-			}
-			
-			if (!empty($svninfo['Revision'])) {
-				$section['fields'][] = array('label' => adminPhrase('SVN revision no:'), 'value' => $svninfo['Revision']);
-				
-				if (!empty($svninfo['Last Changed Date'])) {
-					
-					if ($date = formatDateTimeNicely($svninfo['Last Changed Date'], false, languageIdForDatesInAdminMode())) {
-						$section['fields'][] = array('label' => adminPhrase('Last SVN commit applied to this site:'), 'value' => $date);
-					}
+				if ($date = formatDateTimeNicely($svninfo['Last Changed Date'], false, languageIdForDatesInAdminMode())) {
+					$section['fields'][] = array('label' => adminPhrase('Last SVN commit applied to this site:'), 'value' => $date);
 				}
 			}
 		}

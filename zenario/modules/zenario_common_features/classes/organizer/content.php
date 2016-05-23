@@ -822,7 +822,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 			foreach (explodeAndTrim($ids) as $id) {
 				$cID = $cType = false;
 				if ((getCIDAndCTypeFromTagId($cID, $cType, $id))
-				 && (checkPriv('_PRIV_TRASH_CONTENT_ITEM', $content['id'], $content['type']))) {
+				 && (checkPriv('_PRIV_TRASH_CONTENT_ITEM', $cID, $cType))) {
 					deleteArchive($cID, $cType);
 				}
 			}

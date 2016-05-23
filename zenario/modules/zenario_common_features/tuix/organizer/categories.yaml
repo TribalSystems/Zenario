@@ -110,7 +110,7 @@ zenario__content:
                     parent: action_dropdown
                     priv: _PRIV_VIEW_LANGUAGE
                     hide_in_select_mode: Yes
-                    label: Change public pame(s)
+                    label: Change public name(s)
                     link:
                         path: zenario__languages/panels/phrases
                         branch: Yes

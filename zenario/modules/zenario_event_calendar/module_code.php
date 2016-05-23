@@ -64,16 +64,14 @@ class zenario_event_calendar extends module_base_class {
 
 	function showMonthView(){
 	
-
-	
 		if (get('month')){
-			$month=get('month');
+			$month=(int)get('month');
 		} else {
 			$month=date('n',time());
 		}
 		
 		if ((get('year')) && (get('year')>1969) && (get('year')<2038)){
-			$year=get('year');
+			$year=(int)get('year');
 		} else {
 			$year=date('Y',time());
 		}
@@ -93,7 +91,6 @@ class zenario_event_calendar extends module_base_class {
 			$nextMonth=$month+1;
 			$nextYear=$year;
 		}
-		
 
 		//calendarStartDayOfWeek - Monday - 1,..., Sunday -7     <---determines first column of calendar 
 		switch ($this->setting('first_day_of_week'))
@@ -224,7 +221,7 @@ class zenario_event_calendar extends module_base_class {
 	
 		$langIDs = array();
 		if ((get('year')) && (get('year')>1969) && (get('year')<2038)){
-			$year=get('year');
+			$year=(int)get('year');
 		} else {
 			$year=date('Y',time());
 		}
@@ -333,6 +330,8 @@ class zenario_event_calendar extends module_base_class {
 		
 
 	function isEventMonth($year,$month,$langs){
+		$year = (int)$year;
+		$month = (int)$month;
 		$sql = "SELECT DISTINCT 
 					c.id
 				";
@@ -354,8 +353,8 @@ class zenario_event_calendar extends module_base_class {
 			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') .'")';
-		$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') .'"';
+		$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') . '")';
+		$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') . '"';
 	
 		if (count($langs)>0){
 				$sql .=" AND (FALSE ";
@@ -375,7 +374,8 @@ class zenario_event_calendar extends module_base_class {
 
 	//num of events for the month
 	function getMonthEvent($year,$month,$langs){
-	
+		$year = (int)$year;
+		$month = (int)$month;
 		$sql = "SELECT DISTINCT 
 					c.id
 				";
@@ -397,8 +397,8 @@ class zenario_event_calendar extends module_base_class {
 			$sql .= " AND  cil.category_id=" .(int) $this->setting('category') ;
 		}
 		
-		$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') .'")';
-		$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') .'"';
+		$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') . '")';
+		$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') . '"';
 	
 		if (count($langs)>0){
 				$sql .=" AND (FALSE ";
@@ -497,6 +497,11 @@ class zenario_event_calendar extends module_base_class {
 	
 	//num of events for the day
 	function getEventDay($year,$month,$day,$langs){
+		// Sanitize input
+		$year = (int)$year;
+		$month = (int)$month;
+		$day = (int)$day;
+		
 		$sql = "SELECT DISTINCT 
 					c.id
 				";
@@ -517,7 +522,6 @@ class zenario_event_calendar extends module_base_class {
 		if ($this->setting('category')){
 			$sql .= " AND  cil.category_id=" . (int)$this->setting('category') ;
 		}
-		
 		$sql .=  ' AND start_date <= "'. sqlEscape($year . '-' . $month . '-' . $day) .'"';
 		$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-' . $day) .'"';
 	
@@ -556,9 +560,6 @@ class zenario_event_calendar extends module_base_class {
 		 	}
 		//$sql .= " LIMIT 1";
 		
-		
-		
-		
 		$result = sqlQuery($sql);
 		$events = array();
 		while($row = sqlFetchAssoc($result)) {
@@ -575,6 +576,11 @@ class zenario_event_calendar extends module_base_class {
 
 
 	function getEventsDesc($year,$month,$day,$langs){
+		// Sanitize input
+		$year = (int)$year;
+		$month = (int)$month;
+		$day = (int)$day;
+		
 		$sql = "SELECT DISTINCT 
 					ce.id,
 					ce.version,
@@ -641,8 +647,8 @@ class zenario_event_calendar extends module_base_class {
 			}
 		} else {
 			//year view
-			$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') .'")';
-			$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') .'"';
+			$sql .=  ' AND start_date <= LAST_DAY("'. sqlEscape($year . '-' . $month . '-01') . '")';
+			$sql .=  ' AND end_date >= "'. sqlEscape($year . '-' . $month . '-01') . '"';
 		}
 	
 		if (count($langs)>0){

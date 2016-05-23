@@ -49,14 +49,20 @@ class zenario_users__organizer__access_log extends zenario_users {
 			unset($panel['columns']['Last_Name']);
 			unset($panel['columns']['Email']);
 			unset($panel['columns']['Company_Name']);
-			$panel['title'] = adminPhrase('Access Log for the User "[[user]]"', array('user' => getUsername($refinerId)));
-	
+			$panel['title'] = adminPhrase('Access Log for the User "[[user]]"', array('user' => getUserIdentifier($refinerId)));
+			// Set user Id to export button
+			$panel['collection_buttons']['export']['admin_box']['key']['user_id'] = $refinerId;
+		
 		} elseif ($refinerName == 'content' && getCIDAndCTypeFromTagId($cID, $cType, $refinerId)) {
 			unset($panel['columns']['Content_Item']);
 			unset($panel['columns']['Content_Item_Id']);
 			unset($panel['columns']['Content_Item_Type']);
 			unset($panel['columns']['Content_Item_Version']);
 			$panel['title'] = adminPhrase('Access Log for the Content Item "[[tag]]"', array('tag' => formatTag($cID, $cType)));
+			// Set tag Id to export button
+			$panel['collection_buttons']['export']['admin_box']['key']['tag_id'] = $refinerId;
 		}
+		
+		$panel['collection_buttons']['export']['admin_box']['key']['filename'] = $panel['title'];
 	}
 }

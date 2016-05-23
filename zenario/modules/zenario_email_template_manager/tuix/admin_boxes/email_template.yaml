@@ -58,7 +58,6 @@ zenario_email_template:
                         zenarioAB.value('debug_override')
                     validation:
                         required_if_not_hidden: Please enter a debug email address.
-                        email: Please enter a valid debug email address.
                 
                 send_cc:
                     label: 'Send a CC email'

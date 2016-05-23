@@ -119,6 +119,7 @@ zenario__content:
                         path: zenario_document_folder
                         
                 reorder_root:
+                    hide_on_filter: true
                     hide_in_select_mode: true
                     label: Re-order
                     admin_box:
@@ -158,6 +159,7 @@ zenario__content:
                     multiple_select: true
                     hide_when_children_are_not_visible: true
                 reorder:
+                    hide_on_filter: true
                     hide_in_select_mode: true
                     label: Re-order
                     admin_box:

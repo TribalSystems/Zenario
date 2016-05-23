@@ -12,7 +12,7 @@
 		<div class="span span12 span1_1 alpha omega responsive_only slot small_slot Top_Mobile_Menu">
 			<?php slot('Top_Mobile_Menu', 'grid'); ?>
 		</div>
-		<div class="clear"></div>
+		<div class="grid_clear"></div>
 		<div class="span span12 span1_1 Top_Area alpha omega">
 			<div class="span span3 span1_4 alpha slot small_slot Top_1">
 				<?php slot('Top_1', 'grid'); ?>
@@ -31,7 +31,7 @@
 		<div class="span span12 span1_1 alpha omega slot small_slot Full_Width">
 			<?php slot('Full_Width', 'grid'); ?>
 		</div>
-		<div class="clear"></div>
+		<div class="grid_clear"></div>
 		<div class="span span12 span1_1 Main_Area alpha omega">
 			<div class="span span8 span2_3 alpha slot small_slot Main">
 				<?php slot('Main', 'grid'); ?>
@@ -39,7 +39,7 @@
 			<div class="span span4 span1_3 omega slot small_slot Box_1">
 				<?php slot('Box_1', 'grid'); ?>
 			</div>
-			<div class="clear"></div>
+			<div class="grid_clear"></div>
 			<div class="span span4 span1_3 alpha slot small_slot Box_2">
 				<?php slot('Box_2', 'grid'); ?>
 			</div>
@@ -55,7 +55,7 @@
 <div class="Grid_Footer">
 	<div class="container container_12">
 		<div class="span span12 span1_1 Footer_Area alpha omega">
-			<div class="span span2 span1_6 Space_In_Footer alpha responsive space">
+			<div class="span span2 span1_6 Space_In_Footer alpha responsive grid_space">
 				<span class="pad_slot">&nbsp;</span>
 			</div>
 			<div class="span span8 span2_3 slot small_slot Footer">
@@ -74,4 +74,4 @@
 
 
 <?php //data:eJy9VMtOwzAQ_BefI0TaiEduFNGCRIUESD0gFLmxm1g4duQHtKr679h51W0TJeXAKdnJzux6duMtiDGlEoQfW_BDkEpB6I88kAiCoqXA8AuESmhcIbGUUUyhNPlgZoFHDBEWwANqk2MDOrydd6AoKVe1FoOZTX7neTTnS0JxNMdM71WKXA-kmCSpsnEGKTVA-QwBZ3RzrO-2ZoXvTBOGcnK6cWcrfl8DTsXrTpXR8GOkBGFXtNulcW9rn84IuM4JS44NGjrSCUebPw50qimNFkXKcCuPhzeHhHVO76a1rqWcUTFoFZnw9Vkr0K3SuwKDVPpnPkQl-MfNmXKuhl0GLrVkdU7cbloOY1yXdqlv9kP0xE4ql4zuP619jU5U-mxv_wsmmlAVvfRvZJvzBou5dcDalBG2qO6bq1sTwnUV-n5w6YEV1QTVxTMiBBcgXEEqTSiwzDmT5LsxLrlvdO1rpWRkkplW9txhcDFqome8Ug8owW7Gq21_DxbYlOqaeMAr8CarYZbw7hfTlR72//v2// ?>
-<?php //checksum:XRsslYJvSDMnrIpuTM6tpHKchQw,// ?>
+<?php //checksum:V0Xm_1HlLcbGLh-KfbJLxfjz5hg,// ?>

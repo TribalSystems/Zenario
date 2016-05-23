@@ -167,6 +167,41 @@ function compareVersionNumber($actual, $required) {
 	return version_compare(preg_replace('@[^\d\.]@', '', $actual), $required, '>=');
 }
 
+function getSVNInfo() {
+	if (!windowsServer() && execEnabled()) {
+		$output = array();
+		$svninfo = array();
+		$realDir = realpath($logicalDir = CMS_ROOT. 'zenario');
+		
+		if (is_dir($realDir. '/.svn')) {
+			@exec('svn info '. escapeshellcmd($realDir. '/'), $output);
+	
+		} elseif (is_dir(dirname($realDir). '/.svn')) {
+			@exec('svn info '. escapeshellcmd(dirname($realDir). '/'), $output);
+	
+		} elseif (is_dir('.svn')) {
+			@exec('svn info .', $output);
+		}
+		
+		if (!empty($output)) {
+			foreach ($output as $line) {
+				$line = explode(': ', $line, 2);
+		
+				if (!empty($line[1])) {
+					$svninfo[$line[0]] = $line[1];
+				}
+			}
+			
+			if (!empty($svninfo)
+			 && !empty($svninfo['Revision'])) {
+				return $svninfo;
+			}
+		}
+	}
+	
+	return false;
+}
+
 
 function installerReportError() {
 	return "\n". adminPhrase('(Error [[errno]]: [[error]])', array('errno' => sqlErrno(), 'error' => sqlError()));

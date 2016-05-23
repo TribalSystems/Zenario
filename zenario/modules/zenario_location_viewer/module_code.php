@@ -37,29 +37,18 @@ class zenario_location_viewer extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = true);
 		
-		$locationId = false;
-		$mode = $this->setting('location_source_mode');
 		// Get location ID
-		switch ($mode) {
-			case 'location_from_selector':
-				if (($this->cType=="event")  
-					&& (inc('zenario_ctype_event')) 
-					&& ($contentItem = zenario_ctype_event::getEventDetails($this->cID,$this->cVersion))
-				) {
-					$locationId = $contentItem['location_id'];
-				} else {
-					$locationId = zenario_location_manager::getLocationIdFromContentItem($this->cID,$this->cType);
-				}
-				break;
+		$locationId = $this->getLocationId();
+		switch ($this->setting('location_source_mode')) {
 			case 'location_from_organizer':
-				if (!($locationId = $this->setting('location')) && adminId()) {
+				if (!$locationId && adminId()) {
 					$this->data['no_location_selected'] = true;
 					return true;
 				}
 				break;
 			case 'location_from_url':
 				$this->registerGetRequest('l_id');
-				if (!$locationId = get('l_id')) {
+				if (!$locationId) {
 					$this->data['url_not_complete'] = true;
 					return true;
 				}
@@ -73,6 +62,14 @@ class zenario_location_viewer extends module_base_class {
 		}
 		if (!$locationId || !($locationDetails = zenario_location_manager::getLocationDetails($locationId))) {
 			return false;
+		}
+		
+		// These mergefields are used on IMI custom framework for zenario_extranet_user_role_loc_view
+		if (!empty($locationDetails['equiv_id']) && !empty($locationDetails['content_type'])) {
+			langEquivalentItem($locationDetails['equiv_id'], $locationDetails['content_type']);
+			$locationUrl = linkToItem($locationDetails['equiv_id'], $locationDetails['content_type']);
+			$this->data['Link_Start'] = "<a href='" . $locationUrl . "'>";
+			$this->data['Link_End'] = "</a>";
 		}
 		
 		if ($this->setting('use_location_name_for_page_title') && $locationDetails['description']) {
@@ -147,6 +144,27 @@ class zenario_location_viewer extends module_base_class {
 		}
 		$this->data['location'] = $locationDetails;
 		return true;
+	}
+	
+	// Note: This is a seperate function because zenario_extranet_user_role_loc_view needs to overwrite this method
+	public function getLocationId() {
+		switch ($this->setting('location_source_mode')) {
+			case 'location_from_selector':
+				if (($this->cType=="event")  
+					&& (inc('zenario_ctype_event')) 
+					&& ($contentItem = zenario_ctype_event::getEventDetails($this->cID,$this->cVersion))
+				) {
+					return $contentItem['location_id'];
+				} else {
+					return zenario_location_manager::getLocationIdFromContentItem($this->cID,$this->cType);
+				}
+				break;
+			case 'location_from_organizer':
+				return $this->setting('location');
+			case 'location_from_url':
+				return get('l_id');
+		}
+		return false;
 	}
 	
 	function addToPageHead() {

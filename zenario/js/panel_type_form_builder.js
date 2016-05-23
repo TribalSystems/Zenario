@@ -724,7 +724,6 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 		mergeFields.formattedType += ', dataset field';
 	}
 	
-	
 	// Check if CRM is enabled for this form, if so show tab
 	mergeFields.crm_enabled = this.tuix.crm_enabled;
 	
@@ -1009,15 +1008,15 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 	var default_value_mode_options = {
 		none: {
 			ord: 1,
-			label: 'No default value'
+			label: 'Don\'t pre-populate'
 		},
 		value: {
 			ord: 2,
-			label: 'Enter a default value'
+			label: 'Pre-populate with value'
 		},
 		method: {
 			ord: 3,
-			label: 'Call a modules static method to get the default value'
+			label: 'Call a module\'s static method to get the value'
 		}
 	};
 	mergeFields.default_value_mode_options = this.createRadioList(default_value_mode_options, mergeFields.default_value_mode, 'default_value_mode');
@@ -1072,11 +1071,10 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 	
 	// find what detail tabs to show for this field
 	mergeFields.showDetailsTab = true;
-	mergeFields.showAdvancedTab = (mergeFields.type != 'page_break' && mergeFields.type != 'section_description');
+	mergeFields.showAdvancedTab = (mergeFields.type != 'page_break');
 	mergeFields.showValuesTab = (['select', 'radios', 'checkboxes'].indexOf(mergeFields.type) != -1);
 	mergeFields.showTranslationsTab = this.tuix.show_translation_tab && mergeFields.type != 'page_break';
 	mergeFields.showCRMTab = (mergeFields.crm_enabled && mergeFields.type != 'page_break' && mergeFields.type != 'section_description');
-	
 	
 	return mergeFields;
 };
@@ -1173,8 +1171,6 @@ methods.initCurrentFieldDetails = function() {
 			that.centralisedListUpdated(that.current.id, method, filter);
 		}, 1000);
 	});
-	
-	
 	
 	// formatFieldDetails onchange
 	var formatOnChangeSelector = '';

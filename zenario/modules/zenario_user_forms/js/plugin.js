@@ -1,5 +1,5 @@
 zenario_user_forms.recaptcha = function() {
-	onloadCallback()
+	onloadCallback();
 };
 
 zenario_user_forms.updateRestatementFields = function(id, mode) {
@@ -12,7 +12,6 @@ zenario_user_forms.updateRestatementFields = function(id, mode) {
 	};
 	
 	$(selector).each(function(i, el) {
-		
 		var $mirror = $(el),
 			$source = $('#' + $mirror.data('mirror-of'));
 		if (mode == 'checkbox' || mode == 'radio') {
@@ -167,7 +166,7 @@ zenario_user_forms.initMultiPageForm = function(AJAXURL, containerId, identifier
 			errors = JSON.parse(errors);
 			
 			// Remove any old errors from current page
-			$('#'+currentPageId+'div.form_error').remove();
+			$('#'+currentPageId+' div.form_error').remove();
 			if (!_.isEmpty(errors)) {
 				// Show any errors
 				var html = '',

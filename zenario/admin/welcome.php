@@ -315,6 +315,11 @@ if (strpos(httpUserAgent(), 'MSIE 6') !== false) {
 		</style>';
 }
 
+$revision = false;
+if ($svninfo = getSVNInfo()) {
+	$revision = $svninfo['Revision'];
+}
+
 echo '
 <div id="zenario_now_installing" class="zenario_now" style="display: none;">
 	<h1 style="text-align: center;">', adminPhrase('Now Installing'), '
@@ -326,7 +331,7 @@ echo '
 <div id="welcome_outer">
 	<div id="welcome" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', adminPhrase('Zenario [[version]]', array('version' => getCMSVersionNumber())), '
+			', adminPhrase('Zenario [[version]]', array('version' => getCMSVersionNumber($revision))), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">
@@ -345,7 +350,7 @@ echo '
 	</div>
 	<div id="no_something" class="welcome">
 		<div class="zenario_version"><p class="version">
-			', adminPhrase('Zenario [[version]]', array('version' => getCMSVersionNumber())), '
+			', adminPhrase('Zenario [[version]]', array('version' => getCMSVersionNumber($revision))), '
 		</p></div>
 		<div class="welcome_wrap">
 			<div class="welcome_inner">

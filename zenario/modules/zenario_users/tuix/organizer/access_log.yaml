@@ -4,7 +4,7 @@ zenario__users:
     nav:
         access_log:
             ord: "98"
-            label: Content accesses
+            label: Content item accesses
             tooltip: Log of when users accessed password-protected content items
             link:
                 path: zenario__users/panels/access_log
@@ -22,10 +22,9 @@ zenario__users:
                         refiner: user
 
         access_log:
-            title: Access Log
+            title: Access log
             db_items:
                 table: '[[DB_NAME_PREFIX]]user_content_accesslog AS uca'
-                #id_column: "CONCAT(uca.hit_datetime, '_', uca.user_id, '_', uca.content_id, '_', uca.content_type)"
                 id_column: uca.id
                 encode_id_column: No
                 group_by: >
@@ -42,12 +41,12 @@ zenario__users:
                                                           AND c.type = uca.content_type
             columns:
                 Time:
-                    title: Time Accessed
+                    title: Time accessed
                     db_column: uca.hit_datetime
                     format: datetime
                     show_by_default: Yes
                 User_Id:
-                    title: User Id
+                    title: User ID
                     db_column: uca.user_id
                     show_by_default: Yes
                 Screen_name:
@@ -56,63 +55,61 @@ zenario__users:
                     table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 First_Name:
-                    title: First Name
+                    title: First name
                     db_column: u.first_name
                     show_by_default: Yes
                     table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Last_Name:
-                    title: Last Name
+                    title: Last name
                     db_column: u.last_name
                     show_by_default: Yes
                     table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Email:
-                    title: Email Address
+                    title: Email
                     db_column: u.email
                     show_by_default: Yes
                     table_join: '[[DB_NAME_PREFIX]]users AS u ON u.id = uca.user_id'
                     searchable: Yes
                 Content_Item:
-                    title: Content Item
+                    title: Content item
                     db_column: "CONCAT(uca.content_type, '_', uca.content_id)"
                     item_link: content_item
                     show_by_default: Yes
                 Content_Item_Id:
-                    title: Content Item Id
+                    title: Content item id
                     db_column: uca.content_id
                     item_link: content_item
                     show_by_default: Yes
                     server_side_only: Yes
                 Content_Item_Type:
-                    title: Content Item Type
+                    title: Content item type
                     db_column: uca.content_type
                     show_by_default: Yes
                     server_side_only: Yes
                 Content_Item_Version:
-                    title: Content Item Version
+                    title: Content item version
                     db_column: uca.content_version
                     show_by_default: Yes
                     server_side_only: Yes
                 IP_Address:
-                    title: IP Address
+                    title: IP address
                     db_column: uca.ip
-            default_sort_column: Time
-            label_format_for_grid_view: |
-                [[Time]] [[Screen_name]]
             default_sort_column: Time
             default_sort_desc: Yes
             item:
                 name: Log
                 names: Logs
                 css_class: log
-            #collection_buttons:
-            #    export:
-            #        css_class: export
-            #        label: Export Access Log in CSV format
-            #        do_csv_export: Yes
-            no_items_message: |
-                No accesses have been logged.
-                                        You can turn on User Access logging by going to a private Content Item's settings,
-                                        navigating to the "Permissions" Tab, ensuring that the Item is private, and then
-                                        checking the "Log User Access" checkbox.
+            no_items_message: No accesses have been logged.
+            
+            collection_buttons:
+                export:
+                    label: Export
+                    admin_box:
+                        path: zenario_export_access_log
+                        key:
+                            tag_id: ''
+                    hide_in_select_mode: true
+            

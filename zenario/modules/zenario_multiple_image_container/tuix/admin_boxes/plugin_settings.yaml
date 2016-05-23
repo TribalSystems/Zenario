@@ -38,6 +38,7 @@ plugin_settings:
                         required_if_not_hidden: false
 
         destination:
+            hidden: true
             label: Actions
             fields:
                 link_type:

@@ -4764,45 +4764,48 @@ zenarioO.setNavigation = function() {
 		}
 		
 		//Sort the second level nav under this top level
-		sortedSecondLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map[i].nav);
+		if ((nav = zenarioO.map[i].nav)
+		 && (_.isObject(nav))) {
+			sortedSecondLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map[i].nav);
 		
-		//Loop through each second level nav
-		foreach (sortedSecondLevelItems as jtemNo => j) {
+			//Loop through each second level nav
+			foreach (sortedSecondLevelItems as jtemNo => j) {
 			
-			if (zenarioO.map[i].nav[j].link
-			 && zenarioO.map[i].nav[j].link.path) {
-				path = zenarioO.map[i].nav[j].link.path;
-			} else {
-				path = i + '/nav/' + j + '/panel';
-			}
-			
-			if (i === selected1st && j === selected2nd) {
-				zenarioO.currentTopLevelPath = path;
-				
-				if (path.match(/\/\//)) {
-					zenarioO.currentTopLevelPathHasRefiner = true;
+				if (zenarioO.map[i].nav[j].link
+				 && zenarioO.map[i].nav[j].link.path) {
+					path = zenarioO.map[i].nav[j].link.path;
+				} else {
+					path = i + '/nav/' + j + '/panel';
 				}
-			}
 			
-			if (zenarioA.hidden(zenarioO.map[i].nav[j])) {
-				continue;
-			}
+				if (i === selected1st && j === selected2nd) {
+					zenarioO.currentTopLevelPath = path;
+				
+					if (path.match(/\/\//)) {
+						zenarioO.currentTopLevelPathHasRefiner = true;
+					}
+				}
 			
-			data.items[ti].items[++si] = {
-				id: j,
-				selected: i === selected1st && j === selected2nd,
-				href: '#' + path,
-				onclick: "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;",
-				css_class: zenarioO.map[i].nav[j].css_class,
-				label: ifNull(zenarioO.map[i].nav[j].label, zenarioO.map[i].nav[j].name),
-				tooltip: zenarioO.map[i].nav[j].tooltip
-			};
+				if (zenarioA.hidden(zenarioO.map[i].nav[j])) {
+					continue;
+				}
 			
-			//The user should be taken to the first second level item if they click on the top level item
-			if (first2nd) {
-				first2nd = false;
-				data.items[ti].href = data.items[ti].items[si].href;
-				data.items[ti].onclick = data.items[ti].items[si].onclick;
+				data.items[ti].items[++si] = {
+					id: j,
+					selected: i === selected1st && j === selected2nd,
+					href: '#' + path,
+					onclick: "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;",
+					css_class: zenarioO.map[i].nav[j].css_class,
+					label: ifNull(zenarioO.map[i].nav[j].label, zenarioO.map[i].nav[j].name),
+					tooltip: zenarioO.map[i].nav[j].tooltip
+				};
+			
+				//The user should be taken to the first second level item if they click on the top level item
+				if (first2nd) {
+					first2nd = false;
+					data.items[ti].href = data.items[ti].items[si].href;
+					data.items[ti].onclick = data.items[ti].items[si].onclick;
+				}
 			}
 		}
 	}	

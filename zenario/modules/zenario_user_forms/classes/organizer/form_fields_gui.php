@@ -198,7 +198,7 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 				
 				// Get default value status
 				$formField['default_value_mode'] = 'none';
-				if ($formField['default_value'] !== null) {
+				if ($formField['default_value'] !== null && $formField['default_value'] !== '') {
 					$formField['default_value_mode'] = 'value';
 				} elseif ($formField['default_value_class_name'] && $formField['default_value_method_name']) {
 					$formField['default_value_mode'] = 'method';
@@ -706,7 +706,7 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 						$values['visible_condition_field_value'] = ($field['visibility'] == 'visible_on_condition') && !empty($field['visible_condition_field_id']) && $field['visible_condition_field_value'] !== '' ? $tempValueIdLink[$field['visible_condition_field_value']] : null;
 						
 						$values['mandatory_condition_field_id'] = !empty($field['mandatory_condition_field_id']) ? $tempFieldIdLink[$field['mandatory_condition_field_id']]['id'] : 0;
-						$values['mandatory_condition_field_value'] = !empty($field['mandatory_condition_field_value']) ? $tempValueIdLink[$field['mandatory_condition_field_value']] : null;
+						$values['mandatory_condition_field_value'] = !empty($field['mandatory_condition_field_id']) ? $field['mandatory_condition_field_value'] : null;
 						
 						setRow('user_form_fields', $values, $id);
 						

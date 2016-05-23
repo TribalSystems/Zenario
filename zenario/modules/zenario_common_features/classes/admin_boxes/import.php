@@ -502,11 +502,10 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						}
 						*/
 						// Make CSV of line for preview
-						if ($lineNumber <= $previewLinesLimit) {
-							$line[] = $value;
-						}
+						$line[] = $value;
 					}
 				}
+				
 				if ($started) {
 					if ($thisIsKeyLine) {
 						$keyLine = $lineNumber;
@@ -578,6 +577,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$fields['preview/error_options']['hidden'] = $fields['preview/desc2']['hidden'] = (count($warningLines) == 0);
 		
 		$effectedRecords = $totalLines - $totalErrors - $totalBlanks - 1 - $updateCount;
+		
 		if ($values['preview/error_options'] == 'skip_warning_lines') {
 			$effectedRecords -= $totalWarnings;
 		}
@@ -1285,8 +1285,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 	}
 	
 	private static function setImportData($datasetId, $importData, $mode, $insertMode, $keyFieldID) {
-		
-		
 		$datasetDetails = getDatasetDetails($datasetId);
 		$systemDataIDColumn = !empty($datasetDetails['system_table']) ? getIdColumnOfTable($datasetDetails['system_table']) : false;
 		$customDataIDColumn = !empty($datasetDetails['table']) ? getIdColumnOfTable($datasetDetails['table']) : false;
@@ -1328,11 +1326,11 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				// Custom logic to save users
 				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
 					
+					$userId = getRow($datasetDetails['system_table'], $systemDataIDColumn, array('email' => $data['email']));
+					
 					// Attempt to update fields on email
 					if ($insertMode != 'no_update') {
-						$userId = getRow($datasetDetails['system_table'], $systemDataIDColumn, array('email' => $data['email']));
 						if ($userId) {
-							
 							// Overwrite data
 							if ($insertMode == 'overwrite') {
 								saveUser($data, $userId);
@@ -1341,22 +1339,26 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 							// Merge data (only update blank fields)
 							} elseif ($insertMode == 'merge') {
 								$systemKeys = array_keys($data);
-								$foundData = getRow($datasetDetails['system_table'], $systemKeys, $userId);
-								foreach ($foundData as $col => $val) {
-									if ($val) {
-										unset($data[$col]);
+								if ($systemKeys) {
+									$foundData = getRow($datasetDetails['system_table'], $systemKeys, $userId);
+									foreach ($foundData as $col => $val) {
+										if ($val) {
+											unset($data[$col]);
+										}
 									}
+									saveUser($data, $userId);
 								}
-								saveUser($data, $userId);
 								
 								$customkeys = array_keys($customData);
-								$foundData = getRow($datasetDetails['table'], $customkeys, $userId);
-								foreach ($foundData as $col => $val) {
-									if ($val) {
-										unset($customData[$col]);
+								if ($customkeys) {
+									$foundData = getRow($datasetDetails['table'], $customkeys, $userId);
+									foreach ($foundData as $col => $val) {
+										if ($val) {
+											unset($customData[$col]);
+										}
 									}
+									setRow($datasetDetails['table'], $customData, $userId);
 								}
-								setRow($datasetDetails['table'], $customData, $userId);
 							}
 							continue;
 						}
@@ -1370,6 +1372,9 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					}
 					if (!isset($data['last_name'])) {
 						$data['last_name'] = '';
+					}
+					if (!$userId) {
+						$data['password'] = createPassword();
 					}
 					
 					// Do not allow screen names to be imported to sites that don't use screen names
@@ -1469,7 +1474,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 						}
 					}
 				}
-				
 			}
 			if ($error) {
 				$errorMessage .= $message;

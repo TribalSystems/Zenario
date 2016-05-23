@@ -107,10 +107,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			foreach ($box['tabs'] as $i => &$tab) {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
-					$tab['edit_mode']['enabled'] =
-						$box['key']['parentMenuID']?
-							checkPriv('_PRIV_EDIT_MENU_ITEM')
-						:	checkPriv('_PRIV_EDIT_MENU_ITEM');
+					$tab['edit_mode']['enabled'] = checkPriv('_PRIV_EDIT_MENU_ITEM');
 				}
 			}
 

@@ -84,6 +84,8 @@ public static function checkForRenamedSlots(&$data, &$newNames, &$oldToNewNames)
 //size-permutations of groupings that have been used
 protected static function checkGroupings(&$data, &$groupings, $parentWidth, $maxDepth = 0) {
 	
+	$nextDepth = $maxDepth + 1;
+	
 	//Loop through the current grouping, looking for more cells and possibly more groupings
 	foreach ($data['cells'] as &$cell) {
 		
@@ -106,7 +108,7 @@ protected static function checkGroupings(&$data, &$groupings, $parentWidth, $max
 				//...then keep checking recursively
 				$maxDepth = max(
 					$maxDepth,
-					zenario_grid_maker::checkGroupings($cell, $groupings[$cell['width']], $cell['width'], $maxDepth + 1)
+					zenario_grid_maker::checkGroupings($cell, $groupings[$cell['width']], $cell['width'], $nextDepth)
 				);
 			}
 		} else {
@@ -114,7 +116,7 @@ protected static function checkGroupings(&$data, &$groupings, $parentWidth, $max
 			if (!empty($cell['cells'])) {
 				$maxDepth = max(
 					$maxDepth,
-					zenario_grid_maker::checkGroupings($cell, $groupings, $cell['width'], $maxDepth + 1)
+					zenario_grid_maker::checkGroupings($cell, $groupings, $cell['width'], $nextDepth)
 				);
 			}
 		}
@@ -213,8 +215,8 @@ public static function generateCSS(&$css, $data) {
 
 /*	Hide grid-specific elements and responsive slots when not displaying the grid  */
 
-.clear,
-.space,
+.grid_clear,
+.grid_space,
 .pad_slot,
 .responsive {
 	display: none;
@@ -377,6 +379,7 @@ body {
 		
 		$css .= ' {
 	margin-right: 0;
+	margin-left: -50px;
 }';
 	}
 	
@@ -403,8 +406,8 @@ body {
 
 .container:before,
 .container:after,
-.pad_slot,
-.clear {
+.grid_clear,
+.pad_slot {
 	width: 0;
 	height: 0;
 	font-size: 0;
@@ -419,7 +422,7 @@ body {
 }
 
 .container:after,
-.clear {
+.grid_clear {
 	clear: both;
 }
 
@@ -439,7 +442,7 @@ body.ie7 .container {
 /*	Make sure the <div>s clear properly  */
 
 .container_'. $data['gCols']. ':after,
-.clear {
+.grid_clear {
 	clear: both;
 }';
 	}
@@ -662,7 +665,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, $gCols
 			
 				} elseif (!$firstLine) {
 					//Add a line-break for each new line in this container (note the ends of containers don't need line breaks)
-					$html .= $nl. '<div class="clear"></div>';
+					$html .= $nl. '<div class="grid_clear"></div>';
 				}
 				$gridOpen = true;
 				$firstLine = false;
@@ -746,7 +749,7 @@ public static function generateHTMLR(&$html, &$lines, &$data, &$grouping, $gCols
 					
 					//Draw a space
 					} else {
-						$html .= ' space">';
+						$html .= ' grid_space">';
 				
 						//Add any custom html
 						if (!empty($line['line'][$i]['html'])) {

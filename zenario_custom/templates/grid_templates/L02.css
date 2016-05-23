@@ -5,8 +5,8 @@
 
 /*	Hide grid-specific elements and responsive slots when not displaying the grid  */
 
-.clear,
-.space,
+.grid_clear,
+.grid_space,
 .pad_slot,
 .responsive {
 	display: none;
@@ -100,9 +100,7 @@ body {
 	width: 100%;
 }
 
-.span .span1_1,
-.span .span .span1_1,
-.span .span .span .span1_1 {
+.span .span1_1 {
 	width: 100%;
 }
 
@@ -120,16 +118,13 @@ body {
 
 /*	Remove the outermost gutters from nested cells  */
 
-.container .span .alpha,
-.container .span .span .alpha,
-.container .span .span .span .alpha {
+.container .span .alpha {
 	margin-left: 0;
 }
 
-.container .span .omega,
-.container .span .span .omega,
-.container .span .span .span .omega {
+.container .span .omega {
 	margin-right: 0;
+	margin-left: -50px;
 }
 
 
@@ -152,8 +147,8 @@ body {
 
 .container:before,
 .container:after,
-.pad_slot,
-.clear {
+.grid_clear,
+.pad_slot {
 	width: 0;
 	height: 0;
 	font-size: 0;
@@ -168,7 +163,7 @@ body {
 }
 
 .container:after,
-.clear {
+.grid_clear {
 	clear: both;
 }
 

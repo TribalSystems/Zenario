@@ -66,9 +66,6 @@ class zenario_common_features__admin_boxes__view_source_code extends module_base
 				$skinId = decodeItemIdForOrganizer(request('refiner__skin'));
 				$filename =
 				$subpath = decodeItemIdForOrganizer(request('id'));
-				if (request('refiner__subpath')) {
-					$subpath .= decodeItemIdForOrganizer(request('refiner__subpath'));
-				}
 				
 				if (strpos($subpath, './') === false
 				 && strpos($subpath, '.\\') === false

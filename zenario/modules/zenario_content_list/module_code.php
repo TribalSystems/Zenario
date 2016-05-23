@@ -198,6 +198,8 @@ class zenario_content_list extends module_base_class {
 					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'));
 					$item['Author_Image_Src'] = $url;
 					$item['Author_Image_Alt'] = $row['alt_tag'];
+					$item['Author_Image_Width'] = $width;
+					$item['Author_Image_Height'] = $height;
 				}
 				
 				$item['language_id'] = $row['language_id'];

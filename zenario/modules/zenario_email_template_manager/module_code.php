@@ -119,23 +119,49 @@ class zenario_email_template_manager extends module_base_class {
 	$ccs = '', $bccs = ''
 )
 			*/
-			$thisResult = sendEmail(
-				$subject, $body, $debugOverride? $debugOverride : $addressTo, $addressToOverriddenBy,
-				false, $addressFrom, $nameFrom,
-				$attachments, $attachmentFilenameMappings,
-				'bulk', true, false,
-				$addressReplyTo, $nameReplyTo, false,
-				$ccs, $bccs
-			);
 			
-			self::logEmail(
-				$subject, $body, $addressTo, $addressToOverriddenBy? $addressToOverriddenBy : $debugOverride,
-				$addressFrom, $nameFrom,
-				$attachments, $attachmentFilenameMappings,
-				$templateNo, $thisResult,
-				$_POST, 
-				$addressReplyTo, $nameReplyTo
-			);
+			if($debugOverride){
+				$debugEmails = array_unique(explodeAndTrim(str_replace(';', ',', $debugOverride)));
+				foreach($debugEmails as $debugEmail){
+					$thisResult = sendEmail(
+						$subject, $body, $debugEmail, $addressToOverriddenBy,
+						false, $addressFrom, $nameFrom,
+						$attachments, $attachmentFilenameMappings,
+						'bulk', true, false,
+						$addressReplyTo, $nameReplyTo, false,
+						$ccs, $bccs
+					);
+			
+					self::logEmail(
+						$subject, $body, $addressTo, $debugEmail,
+						$addressFrom, $nameFrom,
+						$attachments, $attachmentFilenameMappings,
+						$templateNo, $thisResult,
+						$_POST, 
+						$addressReplyTo, $nameReplyTo
+					);
+				
+				}
+			}else{
+				//$debugOverride? $debugOverride : $addressTo, $addressToOverriddenBy
+				$thisResult = sendEmail(
+					$subject, $body,$addressTo, $addressToOverriddenBy,
+					false, $addressFrom, $nameFrom,
+					$attachments, $attachmentFilenameMappings,
+					'bulk', true, false,
+					$addressReplyTo, $nameReplyTo, false,
+					$ccs, $bccs
+				);
+			
+				self::logEmail(
+					$subject, $body, $addressTo, $addressToOverriddenBy? $addressToOverriddenBy : $debugOverride,
+					$addressFrom, $nameFrom,
+					$attachments, $attachmentFilenameMappings,
+					$templateNo, $thisResult,
+					$_POST, 
+					$addressReplyTo, $nameReplyTo
+				);
+			}
 			
 			$result &= $thisResult;
 		}

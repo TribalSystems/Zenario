@@ -60,7 +60,7 @@ zenario__layouts:
                         key:
                             type: skin_file
                     visible_if_for_all_selected_items: >
-                        item.name.match(/\.(css|htm|html|txt|text|xml|yml|yaml)$/i)
+                        item.name.match(/\.(css|htm|html|md|txt|text|xml|yml|yaml)$/i)
                 view_image:
                     parent: view_dropdown
                     label: View image

@@ -101,6 +101,8 @@ foreach ($formFields as $fieldId => $field) {
 	
 	// Get ID of inputs for mirror fields and label elements
 	$id = $containerId . '_field_value_' . $fieldId;
+	$mirrorId = false;
+	$mirrorFieldId = false;
 	
 	// Use form field label over dataset label
 	if ($field['field_label'] !== null) {
@@ -131,6 +133,8 @@ foreach ($formFields as $fieldId => $field) {
 	// Restatement (mirror) fields should be readonly fields the same type as their target field
 	} elseif ($type == 'restatement') {
 		if (isset($formFields[$field['restatement_field']])) {
+			$mirrorId = $containerId . '_field_value_' . $field['restatement_field'];
+			$mirrorFieldId = $fieldId;
 			// Set to text type if mirroring a calculated field, otherwise attempt to mimic restated field type
 			$field['is_readonly'] = true;
 			$restatementFieldType = self::getFieldType($formFields[$field['restatement_field']]);
@@ -249,7 +253,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 			} else {
 				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
 			}
@@ -334,7 +338,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 				$html .= '/>';
 			} else {
 				$html .= ' id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
@@ -376,7 +380,7 @@ foreach ($formFields as $fieldId => $field) {
 				} else {
 					$html .= ' name="'. htmlspecialchars($fieldName). '" id="' . htmlspecialchars($multiFieldId) . '" onclick="zenario_user_forms.updateRestatementFields(this.id, \'radio\');" ';
 				}
-				$html .= '/><label for="'.$multiFieldId.'"/>' . self::formPhrase($label, array(), $translate) . '</label></div>'; 
+				$html .= '/><label for="'.$multiFieldId.'">' . self::formPhrase($label, array(), $translate) . '</label></div>'; 
 			}
 			
 			if ($fieldIsReadonly && !empty($fieldValue) && $field['field_type'] != 'restatement') {
@@ -452,7 +456,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 			} else {
 				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}
@@ -499,7 +503,8 @@ foreach ($formFields as $fieldId => $field) {
 				if ($userFieldId) {
 					$values = getDatasetFieldLOV($userFieldId);
 				} else {
-					$values = self::getUnlinkedFieldLOV($fieldId);
+					$unlinkedFieldId = $mirrorFieldId ? $mirrorFieldId : $fieldId;
+					$values = self::getUnlinkedFieldLOV($unlinkedFieldId);
 				}
 			}
 			
@@ -508,7 +513,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' disabled ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 			} else {
 				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onchange="zenario_user_forms.updateRestatementFields(this.id);';
 				
@@ -571,7 +576,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' readonly ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 			} else {
 				$html .= ' name="' . htmlspecialchars($fieldName) . '" id="' . htmlspecialchars($id) . '" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}
@@ -611,7 +616,7 @@ foreach ($formFields as $fieldId => $field) {
 				$html .= ' readonly ';
 			}
 			if ($field['field_type'] == 'restatement') {
-				$html .= ' data-mirror-of="' . htmlspecialchars($id) . '" ';
+				$html .= ' data-mirror-of="' . htmlspecialchars($mirrorId) . '" ';
 			} else {
 				$html .= ' name="'. htmlspecialchars($fieldName).'" id="' . htmlspecialchars($id) . '" onkeyup="zenario_user_forms.updateRestatementFields(this.id);" ';
 			}

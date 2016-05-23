@@ -85,7 +85,7 @@ zenario__user_forms:
                 plugin_content_items:
                     title: Content items
                     show_by_default: true
-                
+            
             default_sort_column: name
             
             item:
@@ -93,9 +93,10 @@ zenario__user_forms:
                 name: Form
                 names: Forms
                 css_class: zenario_user_forms
-
+            
             collection_buttons:
                 create:
+                    priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
                     hide_on_filter: true
@@ -111,6 +112,7 @@ zenario__user_forms:
                     admin_box:
                         path: zenario_user_admin_box_form
                 edit_form_fields_gui:
+                    priv: _PRIV_MANAGE_FORMS
                     label: Edit form fields (GUI)
                     link:
                         path: zenario__user_forms/panels/form_fields_gui

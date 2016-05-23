@@ -6401,23 +6401,20 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 		if ($type == 'organizer') {
 			if ($parentKey === false || $parentKey == 'panel' || $parentParentKey = 'panels') {
 				if (!adminSetting('show_dev_tools')) {
-					if (isset($tags['db_items'])) {
-						$db_items = array();
-						foreach (array('client_side', 'encode_id_column') as $tag) {
-							if (isset($tags['db_items'][$tag])) {
-								$db_items[$tag] = $tags['db_items'][$tag];
-							}
-						}
+					
+					if (isset($tags['db_items']) && is_array($tags['db_items'])) {
+						unset($tags['db_items']['table']);
+						unset($tags['db_items']['id_column']);
+						unset($tags['db_items']['group_by']);
+						unset($tags['db_items']['where_statement']);
 						
 						if (!empty($tags['db_items']['hierarchy']['db_column'])) {
-							$db_items['hierarchy']['db_column'] = true;
+							$tags['db_items']['hierarchy']['db_column'] = true;
 						}
 						
-						if (empty($db_items)) {
-							$db_items['exists'] = true;
+						if (empty($tags['db_items'])) {
+							$tags['db_items']['exists'] = true;
 						}
-						
-						$tags['db_items'] = $db_items;
 					}
 					
 					if (isset($tags['columns']) && is_array($tags['columns'])) {
@@ -6432,7 +6429,9 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 								if (!empty($col['sort_column'])) {
 									$col['sort_column'] = true;
 								}
-								
+								if (isset($col['sort_column_desc'])) {
+									unset($col['sort_column_desc']);
+								}
 								if (isset($col['table_join'])) {
 									unset($col['table_join']);
 								}
@@ -6450,8 +6449,17 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 								if (isset($refiner['sql'])) {
 									unset($refiner['sql']);
 								}
+								if (isset($refiner['sql_when_searching'])) {
+									unset($refiner['sql_when_searching']);
+								}
 								if (isset($refiner['table_join'])) {
 									unset($refiner['table_join']);
+								}
+								if (isset($refiner['table_join_when_searching'])) {
+									unset($refiner['table_join_when_searching']);
+								}
+								if (isset($refiner['allow_unauthenticated_xml_access'])) {
+									unset($refiner['allow_unauthenticated_xml_access']);
 								}
 								
 								if (empty($refiner)) {
@@ -6696,4 +6704,42 @@ function getCentralisedLists() {
 		$centralisedLists[$method] = $row['label'];
 	}
 	return $centralisedLists;
+}
+
+function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export') {
+	$filename = str_replace('"', '\'', str_replace('/', ' ', $filename));
+	// Export as CSV file
+	if ($format == 'csv') {
+		// Create temp file to write CSV to
+		$filepath = tempnam(sys_get_temp_dir(), 'tmpexportfile');
+		$f = fopen($filepath, 'wb');
+		
+		// Write column headers and data
+		fputcsv($f, $headers);
+		foreach ($rows as $row) {
+			fputcsv($f, $row);
+		}
+		
+		// Output file
+		header('Content-Type: text/x-csv');
+		header('Content-Disposition: attachment; filename="'. $filename .'.csv"');
+		header('Content-Length: '. filesize($filepath));
+		readfile($filepath);
+		
+		// Remove file from temp directory
+		@unlink($filepath);
+	// Export as excel file
+	} elseif ($format == 'excel') {
+		require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+		// Create excel object
+		$objPHPExcel = new PHPExcel();
+		// Write headers and data
+		$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, 'A1');
+		$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, 'A2');
+		// Output file
+		header('Content-Type: application/vnd.ms-excel');
+		header('Content-Disposition: attachment; filename="' . $filename . '.xls"');
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+		$objWriter->save('php://output');
+	}
 }

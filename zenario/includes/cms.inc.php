@@ -88,14 +88,11 @@ function getLatestRevisionNumber() {
 
 //Get the CMS version number from latest_revision_no.inc.php
 //Also attempt to guess whether this is a build or an on-demand site
-function getCMSVersionNumber() {
-	
-	if (is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')) {
-		return ZENARIO_VERSION. ' (svn)';
-	
-	} else {
-		return ZENARIO_VERSION;
-	}
+function getCMSVersionNumber($revision = false) {
+	return
+		ZENARIO_VERSION.
+		($revision? '.'. $revision : '').
+		(is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')? (ZENARIO_IS_HEAD? ' (HEAD, svn)' : ' (svn)') : '');
 }
 
 

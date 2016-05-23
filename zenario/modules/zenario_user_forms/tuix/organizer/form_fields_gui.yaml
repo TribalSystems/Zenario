@@ -7,3 +7,4 @@ zenario__user_forms:
 			title: Form fields
 			panel_type: form_builder
 			no_items_message: No form fields found, click "Add" to add one.
+			priv: _PRIV_MANAGE_FORMS

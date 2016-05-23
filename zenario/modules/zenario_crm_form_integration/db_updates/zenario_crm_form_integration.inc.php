@@ -191,3 +191,9 @@ revision(19
 _sql
 
 );
+
+// Delete any bad data
+if (needRevision(23)) {
+	deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', array('field_crm_name' => ''));
+	revision(23);
+}

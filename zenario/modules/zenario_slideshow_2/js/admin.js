@@ -63,7 +63,7 @@ zenario_slideshow_2.openImageManager = function(el, slotName, AJAXLink) {
 		that.tempSaveOrder();
 		
 		// Load data
-		that.selectSlide(that.current);
+		that.selectSlide(that.current, true);
 		
 		// Set html 5 drag/drop upload going
 		if (zenarioA.canDoHTML5Upload()) {
@@ -89,11 +89,13 @@ zenario_slideshow_2.openImageManager = function(el, slotName, AJAXLink) {
 };
 
 // Select a slide
-zenario_slideshow_2.selectSlide = function(slideId) {
+zenario_slideshow_2.selectSlide = function(slideId, noSave) {
 	var that = this;
 	if (slideId && this.data.slides[slideId]) {
 		// Save old slide
-		this.tempSaveData(this.current);
+		if (!noSave) {
+			this.tempSaveData(this.current);
+		}
 		
 		this.highlightSlide(slideId);
 		

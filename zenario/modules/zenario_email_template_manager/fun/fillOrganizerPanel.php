@@ -40,9 +40,15 @@ switch ($path) {
 			$panel['collection_buttons']['test']['hidden'] = true;
 		}
 		
-		$body_extract_length = 250;
+		
 		foreach ($panel['items'] as $K=>$item){
 			$body_extract = strip_tags($panel['items'][$K]['body_extract']);
+			
+			$body_extract_length = 250;
+			if ($length = @strpos($body_extract, ' ', $body_extract_length)) {
+				$body_extract_length = $length;
+			}
+			
 			$body_extract_snippet = substr($body_extract, 0, $body_extract_length);
 			if (strlen($body_extract) > $body_extract_length) {
 				$body_extract_snippet .= '...';

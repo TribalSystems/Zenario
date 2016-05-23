@@ -60,8 +60,7 @@ zenario__administration:
                 dirs:
                     name: Directories
                     desc: >
-                        Set the location of the Backup and Dropbox
-                        directories.
+                        Set the location of the backup and docstore directories.
                     keywords: backup directory dropbox directory
                 documents:
                     name: Documents

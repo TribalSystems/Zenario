@@ -117,4 +117,12 @@ revision(100
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log
 	ADD COLUMN email_name_replyto varchar(255)
 _sql
+
+
+//Fixed a bug where emails larger than 64K caused a db error when being logged in the email template manager
+);	revision( 121
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX]]email_template_sending_log`
+	MODIFY COLUMN `email_body` MEDIUMTEXT
+_sql
 );

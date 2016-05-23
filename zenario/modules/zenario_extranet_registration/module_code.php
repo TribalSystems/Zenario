@@ -286,18 +286,20 @@ class zenario_extranet_registration extends zenario_extranet {
 
 	protected function validateFormFields($section) {
 		$fields = parent::validateFormFields($section);
-		if ($this->setting('user_passwords') && ($section=='Registration_Form')){
-			$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),false,get_class($this));
-			if (count($errors)) {
-				$this->errors = array_merge ($this->errors, $errors);
-				return false;
+		if ($section=='Registration_Form') {
+			if ($this->setting('user_passwords')){
+				$errors = $this->validatePassword(post('extranet_new_password'),post('extranet_new_password_confirm'),false,get_class($this));
+				if (count($errors)) {
+					$this->errors = array_merge ($this->errors, $errors);
+					return false;
+				}
 			}
-		}
-		if ($this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId])) {
-			if ($this->checkCaptcha()) {
-				$_SESSION['captcha_passed__'. $this->instanceId] = true;
-			} else {
-				$this->errors[] = array('Error' => $this->phrase('_CAPTCHA_INVALID'));
+			if ($this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId])) {
+				if ($this->checkCaptcha()) {
+					$_SESSION['captcha_passed__'. $this->instanceId] = true;
+				} else {
+					$this->errors[] = array('Error' => $this->phrase('_CAPTCHA_INVALID'));
+				}
 			}
 		}
 		return $fields;

@@ -101,36 +101,44 @@ function browserBodyClass() {
 	$c = '';
 	$a = httpUserAgent();
 	
-	if (strpos($a, 'MSIE') !== false) {
-		$c .= 'ie ';
-		for ($i = 11; $i > 5; --$i) {
+	if (strpos($a, 'Edge/')) {
+		$c = 'edge';
+	
+	} elseif (strpos($a, 'WebKit/')) {
+		$c = 'webkit';
+		
+		if (strpos($a, 'OPR/')) {
+			$c .= ' opera';
+		} elseif (strpos($a, 'Chrome/')) {
+			$c .= ' chrome';
+		} elseif (strpos($a, 'iPhone')) {
+			$c .= ' ios iphone';
+		} elseif (strpos($a, 'iPad')) {
+			$c .= ' ios ipad';
+		} elseif (strpos($a, 'Safari/')) {
+			$c .= ' safari';
+		}
+	
+	} elseif (strpos($a, 'Firefox/')) {
+		$c = 'ff';
+	
+	} elseif (strpos($a, 'Opera/')) {
+		$c = 'opera';
+	
+	} elseif (strpos($a, 'MSIE ')) {
+		$c = 'ie';
+		for ($i = 10; $i > 5; --$i) {
 			if (strpos($a, 'MSIE '. $i) !== false) {
-				$c .= 'ie'. $i. ' ';
+				$c .= ' ie'. $i;
 				break;
 			}
 		}
 	
-	} elseif (strpos($a, 'WebKit') !== false) {
-		$c .= 'webkit ';
-		
-		if (strpos($a, 'Chrome') !== false) {
-			$c .= 'chrome ';
-		} elseif (strpos($a, 'iPhone') !== false) {
-			$c .= 'ios iphone ';
-		} elseif (strpos($a, 'iPad') !== false) {
-			$c .= 'ios ipad ';
-		} elseif (strpos($a, 'Safari') !== false) {
-			$c .= 'safari ';
-		}
-	
-	} elseif (strpos($a, 'Firefox') !== false) {
-		$c .= 'ff ';
-	
-	} elseif (strpos($a, 'Opera') !== false) {
-		$c .= 'opera ';
+	} elseif (strpos($a, 'Trident/')) {
+		$c = 'ie ie11';
 	}
 	
-	return substr($c, 0, -1);
+	return $c;
 }
 
 function engToBoolean($text) {
