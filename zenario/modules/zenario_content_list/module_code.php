@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -230,7 +230,7 @@ class zenario_content_list extends module_base_class {
 				if ($this->setting('show_sticky_images')) {
 					if ($row['type'] == 'picture') {
 						//Legacy code for Pictures
-						if ($imageId = getRow("versions", "file_id", array("id" => $row['id'], 'type' => $row['type'], "version" => $row['version']))) {
+						if ($imageId = getRow("content_item_versions", "file_id", array("id" => $row['id'], 'type' => $row['type'], "version" => $row['version']))) {
 							imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 						}
 					} else {

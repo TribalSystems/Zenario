@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -501,16 +501,22 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 	$type = explode('.', $path);
 	$type = $type[count($type) - 1];
 	
+	if (!file_exists($path)) {
+		echo 'Could not find file '. $path;
+		exit;
+	}
+	
 	//Attempt to use a cached copy of this TUIX file
 		//JSON is a lot faster to read than the other formats, so for speed purposes we create cached JSON copies of files
+	$filemtime = false;
 	$cachePath = false;
 	if ($useCache || $updateCache) {
 		$cachePath = tuixCacheDir($path);
 	}
 	if ($useCache && $cachePath
-	 && file_exists($path)
-	 && file_exists($cachePath)
-	 && filemtime($cachePath) > filemtime($path)
+	 && ($filemtime = filemtime($path))
+	 && (file_exists($cachePath))
+	 && (filemtime($cachePath) == $filemtime)
 	 && ($tags = json_decode(file_get_contents($cachePath), true))) {
 		return $tags;
 	}
@@ -595,6 +601,10 @@ function zenarioReadTUIXFile($path, $useCache = true, $updateCache = true) {
 	if ($updateCache && $cachePath) {
 		@file_put_contents($cachePath, json_encode($tags));
 		@chmod($cachePath, 0666);
+		
+		if ($filemtime) {
+			@touch($cachePath, $filemtime);
+		}
 	}
 	
 	return $tags;

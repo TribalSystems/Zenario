@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -81,10 +81,13 @@ foreach ($formFields as $fieldId => $field) {
 	$fieldName = self::getFieldName($field);
 	$type = self::getFieldType($field);
 	$ordinal = $field['ordinal'];
-	// Ignore field if readonly
-	if ($field['is_readonly']){
+	
+	
+	// Ignore field if readonly 
+	if ($field['is_readonly'] && $type != 'text') {
 		continue;
 	}
+	
 	
 	if ($field['is_system_field']){
 		$valueType = 'system';
@@ -187,7 +190,7 @@ foreach ($formFields as $fieldId => $field) {
 				default:
 					$value = substr($value, 0, 255);
 			}
-			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal);
+			$values[$fieldId] = array('value' => $value, 'db_column' => $fieldName, 'ordinal' => $ordinal, 'readonly' => $field['is_readonly']);
 			$fieldIdValueLink[$fieldId] = $data[$fieldName];
 			break;
 		case 'editor':
@@ -222,7 +225,9 @@ $zenario_extranet = inc('zenario_extranet');
 if ($formProperties['save_data'] && $zenario_extranet) {
 	$fields = array();
 	foreach ($user_fields as $fieldData) {
-		$fields[$fieldData['db_column']] = $fieldData['value'];
+		if (empty($fieldData['readonly'])) {
+			$fields[$fieldData['db_column']] = $fieldData['value'];
+		}
 	}
 	
 	// Try to save data if email field is on form

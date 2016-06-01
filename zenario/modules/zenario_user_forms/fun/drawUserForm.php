@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -268,8 +268,9 @@ foreach ($formFields as $fieldId => $field) {
 	switch ($type) {
 		case 'group':
 		case 'checkbox':
+			$html .= $errorHTML;
 			$html .= '<input type="checkbox" ';
-			if ($fieldValue && (($fieldValue == 1) || $fieldValue == 'on')) {
+			if ($fieldValue) {
 				$html .= 'checked ';
 			}
 			if ($readOnly || $field['is_readonly']) {
@@ -278,14 +279,16 @@ foreach ($formFields as $fieldId => $field) {
 			if ($field['field_type'] == 'restatement') {
 				$html .= ' data-mirror-of="'.$id.'" ';
 			} else {
-				$html .= ' name="'. htmlspecialchars($fieldName).'" id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
+				$html .= ' id="'.$id.'" onchange="zenario_user_forms.updateRestatementFields(this.id, \'checkbox\');" ';
 			}
-			$html .= '/>';
-			if (($readOnly || $field['is_readonly']) && isset($data[$fieldName]) && $field['field_type'] != 'restatement') {
+			
+			if (($readOnly || $field['is_readonly']) && $fieldValue && $field['field_type'] != 'restatement') { 
+				$html .= '/>';
 				$html .= '<input type="hidden" name="'.htmlspecialchars($fieldName).'" value="'.htmlspecialchars($data[$fieldName]).'" />';
+			} else {
+				$html .= ' name="'. htmlspecialchars($fieldName).'"/>';
 			}
-			$html .= $labelHTML;
-			$html .= $errorHTML;
+			$html .= '<label class="field_title" for="' . htmlspecialchars($id) . '">'. self::formPhrase($field['label'], array(), $translate) .'</label>';
 			break;
 		case 'checkboxes':
 			if ($userFieldId) {

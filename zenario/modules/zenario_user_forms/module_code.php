@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -113,7 +113,7 @@ class zenario_user_forms extends module_base_class {
 			$this->data['formFields'] = self::drawUserForm($this->setting('user_form'), $_POST, false, $this->data['errors'], $this->setting('checkbox_columns'), $this->containerId);
 		
 		// Handle any centralised lists that are being filtered
-		} elseif (post('filter_list') && post('filter_list_value') && ($this->instanceId == post('instanceId'))) {
+		} elseif ((post('filter_list') && post('filter_list_value') && ($this->instanceId == post('instanceId'))) || post('preload_from_post')) {
 			$this->data['formFields'] = self::drawUserForm($this->setting('user_form'), $_POST, false, array(), $this->setting('checkbox_columns'), $this->containerId);
 		
 		// Otherwise just draw form
@@ -423,7 +423,7 @@ class zenario_user_forms extends module_base_class {
 		$userDetails = getUserDetails($userId);
 		$mergeFields = array();
 		foreach($fields as $fieldId => $fieldData) {
-			if (isset($userDetails[$fieldData['db_column']]) && empty($userDetails[$fieldData['db_column']])) {
+			if (isset($userDetails[$fieldData['db_column']]) && empty($userDetails[$fieldData['db_column']]) && empty($fieldData['readonly'])) {
 				$mergeFields[$fieldData['db_column']] = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
 			}
 		}
@@ -472,11 +472,13 @@ class zenario_user_forms extends module_base_class {
 		
 		$sql = "";
 		foreach ($user_custom_fields as $fieldId => $fieldData) {
-			if ($sql) {
-				$sql .= ',';
+			if (empty($fieldData['readonly'])) {
+				if ($sql) {
+					$sql .= ',';
+				}
+				$fieldValue = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
+				$sql .= '`' . sqlEscape($fieldData['db_column']) . "`='" . sqlEscape($fieldValue) . "'";
 			}
-			$fieldValue = ((isset($fieldData['internal_value'])) ? $fieldData['internal_value'] : $fieldData['value']);
-			$sql .= '`' . sqlEscape($fieldData['db_column']) . "`='" . sqlEscape($fieldValue) . "'";
 		}
 		if ($sql) {
 			if (!checkRowExists('users_custom_data', array('user_id' => $userId))) {
@@ -2568,15 +2570,16 @@ class zenario_user_forms extends module_base_class {
 				}
 				
 				$sql .= '
-					ORDER BY ur.response_datetime DESC';
+					ORDER BY ur.response_datetime DESC, uff.ordinal';
 				$result = sqlSelect($sql);
+				
 				
 				while ($row = sqlFetchAssoc($result)) {
 					if (!isset($responsesData[$row['id']])) {
 						$responsesData[$row['id']] = array();
 					}
 					if (isset($formFields[$row['form_field_id']])) {
-						$responsesData[$row['id']][$row['ordinal']] = $row['value'];
+						$responsesData[$row['id']][$row['form_field_id']] = $row['value'];
 					}
 				}
 				
@@ -2589,19 +2592,20 @@ class zenario_user_forms extends module_base_class {
 				// Write data
 				$rowPointer = 1;
 				foreach ($responsesData as $responseId => $responseData) {
+					
 					$rowPointer++;
 					$response = array();
 					$response[0] = $responseId;
 					$response[1] = formatDateTimeNicely($responseDates[$responseId], '_MEDIUM');
-					for ($j = 1; $j <= count($formFields); $j++) {
-						$k = $j + 1;
-						if (!isset($responseData[$j])) {
-							$response[$k] = '';
-						} else {
-							$response[$k] = $responseData[$j];
+					
+					$j = 1;
+					foreach ($formFields as $formFieldId => $name) {
+						$response[++$j] = '';
+						if (isset($responseData[$formFieldId])) {
+							$response[$j] = $responseData[$formFieldId];
 						}
-						ksort($response);
 					}
+					
 					foreach ($response as $columnPointer => $value) {
 						$sheet->setCellValueExplicitByColumnAndRow($columnPointer, $rowPointer, $value);
 					}
@@ -2612,6 +2616,8 @@ class zenario_user_forms extends module_base_class {
 				header('Content-Type: application/vnd.ms-excel');
 				header('Content-Disposition: attachment;filename="'.$formName.' user responses.xls"');
 				$objWriter->save('php://output');
+				
+				$box['key']['form_id'] = '';
 				exit;
 		}
 	}

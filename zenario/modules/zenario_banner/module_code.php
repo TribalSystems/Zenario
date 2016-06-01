@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -184,7 +184,7 @@ class zenario_banner extends module_base_class {
 		
 		 || ($this->setting('image_source') == '_PICTURE'
 		  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $this->setting("picture")))
-		  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
+		  && ($imageId = getRow("content_item_versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
 		 
 		 || ($this->setting('image_source') == '_STICKY_IMAGE'
 		  && $cID

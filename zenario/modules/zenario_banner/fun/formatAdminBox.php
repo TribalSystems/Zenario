@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2015, Tribal Limited
+ * Copyright (c) 2016, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -61,7 +61,7 @@ switch ($path) {
 		
 			 || ($values['first_tab/image_source'] == '_PICTURE'
 			  && (getCIDAndCTypeFromTagId($pictureCID, $pictureCType, $values['first_tab/picture']))
-			  && ($imageId = getRow("versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
+			  && ($imageId = getRow("content_item_versions", "file_id", array("id" => $pictureCID, 'type' => $pictureCType, "version" => contentVersion($pictureCID, $pictureCType)))))
 		 
 			 || ($values['first_tab/image_source'] == '_STICKY_IMAGE'
 			  && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
