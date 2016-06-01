@@ -463,9 +463,12 @@ function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = fals
 //Sync updates from the server to the array stored on the client
 function syncAdminBoxFromServerToClient($serverTags, $clientTags, &$output) {
 	
-	$keys = array_merge(arrayValuesToKeys(array_keys($serverTags)), arrayValuesToKeys(array_keys($clientTags)));
+	$keys = arrayValuesToKeys(array_keys($serverTags));
+	foreach ($clientTags as $key0 => &$dummy) {
+		$keys[$key0] = true;
+	}
 	
-	foreach ($keys as $key0 => $dummy) {
+	foreach ($keys as $key0 => &$dummy) {
 		if (!isset($serverTags[$key0])) {
 			$output[$key0] = array('[[__unset__]]' => true);
 		

@@ -197,9 +197,9 @@ switch ($path) {
 			SELECT id
 			FROM ".DB_NAME_PREFIX."documents
 			WHERE type = 'file' 
-			AND folder_id =".$parentfolderId."
-			AND filename = '".$newDocumentName."' 
-			AND id != ". $documentId;
+			AND folder_id = ". (int) $parentfolderId. "
+			AND filename = '". sqlEscape($newDocumentName). "' 
+			AND id != ". (int) $documentId;
 		
 		$documentIdList = array();
 		$result = sqlSelect($sql);

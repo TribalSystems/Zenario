@@ -26,7 +26,7 @@ sections:
                     visible_if_for_all_selected_items: >
                         zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                     request:
-                        mass_add_to_menu: "1"
+                        mass_add_to_menu: 1
     primary_menu_node:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:
@@ -81,19 +81,19 @@ sections:
                         message: |
                             Are you sure you wish to detach this content item from the menu?
                             
-                                                            Its menu node will become unlinked. If there is a secondary menu node, it will be promoted to be the primary node.
+                            Its menu node will become unlinked. If there is a secondary menu node, it will be promoted to be the primary node.
                         message__orphaned: |
                             Are you sure you wish to detach this content item from the menu?
-                                                            
-                                                            The content item will become "orphaned", and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
+                            
+                            The content item will become "orphaned", and site visitors may have difficulty navigating to it. Its menu node will not be deleted but will become an unlinked menu node.
                         button_message: Detach
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
                         mID: ""
                         languageId: ""
-                        menu_item: "1"
-                        detach: "1"
+                        menu_item: 1
+                        detach: 1
             quick_add_to_menu:
                 priv: _PRIV_ADD_MENU_ITEM
                 label: Create secondary node
@@ -107,7 +107,7 @@ sections:
                     visible_if_for_all_selected_items: >
                         zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                     request:
-                        mass_add_to_menu: "1"
+                        mass_add_to_menu: 1
     secondary_menu_node:
         priv: _PRIV_VIEW_MENU_ITEM
         buttons:
@@ -151,29 +151,6 @@ sections:
             advanced_dropdown:
                 label: Advanced
                 hide_when_children_are_not_visible: true
-            detach:
-                priv: _PRIV_EDIT_MENU_ITEM
-                label: Detach content item
-                parent: advanced_dropdown
-                tooltip: Detach this content item from this secondary menu node
-                ajax:
-                    confirm:
-                        message: |
-                            Are you sure you wish to detach this content item from the menu?
-                            
-                                                            This secondary menu node will become unlinked, but its primary node will not be affected.
-                        message__orphaned: |
-                            Are you sure you wish to detach this content item from the menu?
-                                                            
-                                                            The content item will become orphaned, and its menu node will become unlinked.
-                        button_message: Detach
-                        cancel_button_message: Cancel
-                        message_type: warning
-                    request:
-                        mID: ""
-                        languageId: ""
-                        menu_item: "1"
-                        detach: "1"
             make_primary:
                 priv: _PRIV_EDIT_MENU_ITEM
                 label: Make primary
@@ -186,11 +163,50 @@ sections:
                         message: |
                             Are you sure you wish to make this node the primary node for this content item?
                             
-                                                            Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
+                            Any breadcrumb trail or site map that shows a path to this content item will now reflect the path to this node in its menu section.
                         button_message: Make primary
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
                         mID: ""
-                        menu_item: "1"
-                        make_primary: "1"
+                        menu_item: 1
+                        make_primary: 1
+            detach:
+                priv: _PRIV_EDIT_MENU_ITEM
+                label: Detach content item
+                parent: advanced_dropdown
+                tooltip: Detach this content item from this secondary menu node
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            This secondary menu node will become unlinked, but its primary node will not be affected.
+                        message__orphaned: |
+                            Are you sure you wish to detach this content item from the menu?
+                            
+                            The content item will become orphaned, and its menu node will become unlinked.
+                        button_message: Detach
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        languageId: ""
+                        menu_item: 1
+                        detach: 1
+            delete:
+                priv: _PRIV_DELETE_MENU_ITEM
+                parent: advanced_dropdown
+                label: Delete menu node
+                ajax:
+                    confirm:
+                        message: |
+                            Are you sure that you wish to delete this secondary menu node?
+                        button_message: Delete
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        mID: ""
+                        languageId: ""
+                        menu_item: 1
+                        delete: 1

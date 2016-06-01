@@ -682,22 +682,55 @@ class zenario_crm_form_integration extends module_base_class {
 					$crmValue = '';
 					foreach($value as $fieldValueId => $rawValue) {
 						//Dataset values
-						if ($isDataset= getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId,'form_field_value_dataset_id'=>$fieldValueId, 'form_field_value_centralised_key' => null))) {
+						$isDataset = getRow(
+							ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
+							'value', 
+							array(
+								'form_field_id' => $fieldId,
+								'form_field_value_dataset_id' => $fieldValueId, 
+								'form_field_value_unlinked_id' => 0,
+								'form_field_value_centralised_key' => null
+							)
+						);
+						if ($isDataset) {
 							$crmValue = $isDataset;
-						//Dataset centralised values
-						} elseif ($isDatasetCentralised = getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId,'form_field_value_dataset_id'=>0, 'form_field_value_unlinked_id'=>0, 'form_field_value_centralised_key' => $fieldValueId))) {
-							$crmValue = $isDatasetCentralised;
-						//Unlinked values
-						} elseif ($isUnlinked= getRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 'value', array('form_field_id' => $fieldId,'form_field_value_unlinked_id'=>$fieldValueId))) {
-							$crmValue = $isUnlinked;
+						} else {
+							//Dataset centralised values
+							$isDatasetCentralised = getRow(
+								ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
+								'value', 
+								array(
+									'form_field_id' => $fieldId,
+									'form_field_value_dataset_id' => 0, 
+									'form_field_value_unlinked_id' => 0, 
+									'form_field_value_centralised_key' => $fieldValueId
+								)
+							);
+							if ($isDatasetCentralised) {
+								$crmValue = $isDatasetCentralised;
+							} else {
+								//Unlinked values
+								$isUnlinked= getRow(
+									ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', 
+									'value', 
+									array(
+										'form_field_id' => $fieldId,
+										'form_field_value_dataset_id' => 0,
+										'form_field_value_unlinked_id' => $fieldValueId,
+										'form_field_value_centralised_key' => null
+									)
+								);
+								if ($isUnlinked) {
+									$crmValue = $isUnlinked;
+								}
+							}
 						}
-						/*
-						this code avoid send empty data
+						
+						//this code avoid send empty data
 						if(!$crmValue) {
 							//if not crm value has been use for the field use raw value
 							$crmValue = $rawValue;
 						}
-						*/
 					}
 					$value = $crmValue;
 				// If this field is a checkbox
@@ -888,7 +921,7 @@ class zenario_crm_form_integration extends module_base_class {
 		
 		// Save a linked fields options
 		if ($formFieldValueDatasetId){
-			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_value_dataset_id'=>$formFieldValueDatasetId));
+			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_value_dataset_id'=>$formFieldValueDatasetId, 'form_field_id' => $formFieldId));
 		// Save a unlinked fields options
 		}elseif ($formFieldValueUnlinkedId){
 			$rowId = setRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX. 'form_crm_field_values', $values, array('form_field_value_unlinked_id'=>$formFieldValueUnlinkedId));

@@ -109,7 +109,9 @@ unset($dirName);
 
 
 //Check for a url redirect, and link to that item if one is found
+//Note that this should only work if a primary domain is set!
 if (!empty($_SERVER['HTTP_HOST'])
+ && setting('primary_domain')
  && $_SERVER['HTTP_HOST'] != setting('admin_domain')
  && $_SERVER['HTTP_HOST'] != setting('primary_domain')
  && $redirect = getRow('spare_domain_names', array('content_id', 'content_type'), array('requested_url' => array(httpHost(), httpHostWithoutPort())))) {

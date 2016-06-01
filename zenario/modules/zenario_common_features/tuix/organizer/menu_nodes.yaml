@@ -357,6 +357,8 @@ zenario__menu:
                         target_path: zenario__menu/panels/menu_position
                         disallow_refiners_looping_on_min_path: No
                         one_to_one_choose_phrase: Create secondary menu node
+                        visible_if_for_all_selected_items: >
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
                         request:
                             mass_add_to_menu: 1
                             

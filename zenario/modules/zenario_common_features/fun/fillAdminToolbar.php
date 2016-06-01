@@ -680,6 +680,15 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 					$adminToolbar['toolbars']['menu'. $i]['tooltip'] .= '<br/>'. adminPhrase('Warning: text of menu node is missing in this language.');
 				}
 				
+				if (isset($adminToolbar['sections']['menu'. $i]['buttons']['delete'])) {
+					if ($childCount = selectCount('menu_nodes', array('parent_id' => $menuItem['id']))) {
+						$adminToolbar['sections']['menu'. $i]['buttons']['delete']['ajax']['confirm']['message'] .=
+							"\n\n".
+							adminPhrase('Note, it has [[children]] child node(s)! These, and any further child nodes below them, will be deleted.',
+								array('children' => $childCount));
+					}
+				}
+				
 				$adminToolbar['sections']['menu'. $i] = $adminToolbar['sections']['secondary_menu_node'];
 			
 			} else {

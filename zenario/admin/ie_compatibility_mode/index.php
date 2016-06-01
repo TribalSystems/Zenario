@@ -21,7 +21,7 @@ if (get('isWizard')) {
 			p, h1 {
 				text-align: center;
 			}
-		</style>';
+		</style>
 	</head>
 	<body>
 		<p><img src="images/compatibility_mode.png" width="283" height="395" alt="compatibility mode"/></p>

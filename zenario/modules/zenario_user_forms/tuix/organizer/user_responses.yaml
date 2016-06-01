@@ -7,13 +7,14 @@ zenario__user_forms:
             title: User Responses
             no_items_message: No user responses have been recorded.
             hidden: true
-            view_mode: list
             default_sort_column: response_datetime
             default_sort_desc: true
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response AS ur
                 id_column: ur.id
+                client_side: true
+                max_limit: 99999999
             refiners:
                 form_id:
                     sql: 'ur.form_id = [[REFINER_ID]]'

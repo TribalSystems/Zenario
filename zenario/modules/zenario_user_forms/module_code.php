@@ -619,6 +619,23 @@ class zenario_user_forms extends module_base_class {
 				$record = getRow('user_forms', array('name'), array('id' => $refinerId));
 				$panel['title'] = 'Form fields for "' . $record['name'] . '"';
 				break;
+			case 'zenario__user_forms/panels/zenario_user_forms__user_responses':
+				$sql = '
+					SELECT id, name
+					FROM '.DB_NAME_PREFIX.'user_form_fields
+					WHERE user_form_id = '.(int)$refinerId.'
+					AND (field_type NOT IN (\'page_break\', \'section_description\', \'restatement\') OR field_type IS NULL)
+					ORDER BY ord';
+				
+				$result = sqlSelect($sql);
+				while ($formField = sqlFetchAssoc($result)) {
+					$panel['columns']['form_field_'.$formField['id']] = array(
+						'title' => $formField['name'],
+						'show_by_default' => true,
+						'searchable' => true
+					);
+				}
+				break;
 		}
 	}
 	
@@ -776,32 +793,16 @@ class zenario_user_forms extends module_base_class {
 						$refinerId;
 					
 					$sql = '
-						SELECT id, name
-						FROM '.DB_NAME_PREFIX.'user_form_fields
-						WHERE user_form_id = '.(int)$refinerId.'
-						AND (field_type NOT IN (\'page_break\', \'section_description\', \'restatement\') OR field_type IS NULL)
-						ORDER BY ord';
-					
-					$result = sqlSelect($sql);
-					while ($formField = sqlFetchAssoc($result)) {
-						$panel['columns']['form_field_'.$formField['id']] = array(
-							'title' => $formField['name'],
-							'show_by_default' => true,
-							'searchable' => true,
-							'sortable' => true);
-					}
-					
-					$responses = array();
-					$sql = '
 						SELECT urd.value, urd.form_field_id, ur.id
 						FROM '. DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response_data AS urd
 						INNER JOIN '. DB_NAME_PREFIX. ZENARIO_USER_FORMS_PREFIX .'user_response AS ur
 							ON urd.user_response_id = ur.id
 						WHERE ur.form_id = '. (int)$refinerId;
-					$result = sqlQuery($sql);
+					$result = sqlSelect($sql);
 					while ($row = sqlFetchAssoc($result)) {
-						$responses[] = $row;
-						$panel['items'][$row['id']]['form_field_'.$row['form_field_id']] = $row['value'];
+						if (isset($panel['items'][$row['id']])) {
+							$panel['items'][$row['id']]['form_field_'.$row['form_field_id']] = $row['value'];
+						}
 					}
 					
 					break;
