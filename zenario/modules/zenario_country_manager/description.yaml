@@ -33,7 +33,8 @@ description: |
 category: management
 keywords: country, county, location, place, region, state, world
 vlp_class_name: zenario_country_manager
-is_pluggable: No
+is_pluggable: false
+for_use_in_twig: true
 centralised_lists:
     -
         method_name: getActiveCountries
@@ -41,3 +42,9 @@ centralised_lists:
     -
         method_name: getRegionsByCountry
         label: Regions
+    - 
+        method_name: getCountryDialingCodes
+        label: Dialing codes
+    -
+        method_name: getCountryShortDialingCodes
+        label: Dialing codes (short)

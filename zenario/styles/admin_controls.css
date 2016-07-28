@@ -457,11 +457,22 @@ div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_sc:first-ch
 	margin-top:0;
 }
 
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_slotName span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span {
 	font-family: "Lucida Console", Monaco, monospace;
-	font-size: 9px;
 	color: #c0c0c0;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_width span,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_cssClass span {
+	font-size: 9px;
+}
+
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_info .zenario_slotControl_inThisSlot,
+div.zenario_slotControlsWrap .zenario_slotControlsWrap_overridden_info .zenario_slotControl_inThisSlot {
+	padding: 0;
+	color: #eee;
 }
 
 div.zenario_slotControlsWrap .zenario_slotControlsWrap_actions,

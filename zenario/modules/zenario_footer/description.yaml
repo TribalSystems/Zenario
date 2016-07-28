@@ -24,4 +24,4 @@ nestable: Yes
 default_framework: standard
 default_instance_name: Footer Menu
 dependencies:
-    zenario_menu: Yes
+    zenario_menu: true

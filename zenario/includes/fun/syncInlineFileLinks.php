@@ -101,7 +101,9 @@ if ($usage == 'image'
 			//and try to copy it over.
 			} else {
 				if (!isset($foundChecksumsWithTheWrongUsage[$checksum])) {
-					if (($existingFile = getRow('files', array('id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'), array($checksumCol => $checksum)))
+					if ($checksum
+					 && $checksumCol
+					 && ($existingFile = getRow('files', array('id', 'usage', 'privacy', 'width', 'height', 'usage', 'filename'), array($checksumCol => $checksum)))
 					 && ($newId = copyFileInDatabase($usage, $existingFile['id'], ifNull($filename, $existingFile['filename'])))) {
 					
 						$existingFile['id'] = $newId;
@@ -353,8 +355,9 @@ if (strpos($html, 'zenario/file.php') !== false) {
 				cms_core::$mustUseFullPath = false;
 				if (imageLink(
 					$dummyWidth, $dummyHeight, $url, $file['id'], $width, $height,
-					$mode = 'stretch', $offset = 0, $useCacheDir = true, $internalFilePath = false,
-					$returnImageStringIfCacheDirNotWorking = false, $privacy = 'public'
+					$mode = 'stretch', $offset = 0,
+					$retina = false, $privacy = 'public',
+					$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 				)) {
 					if (chopPrefixOffOfString($url, 'public/images/')) {
 						$html .= htmlspecialchars($url);

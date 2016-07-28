@@ -292,13 +292,14 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 			//Only works in admin mode.
 			//Can be a function to call, or true to recall this function
 		//timeout: If set, the request will be automatically retried or cancelled after this amount of time.
-	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings) {
+	zenario.ajax = function(url, post, json, useCache, retry, timeout, settings, AJAXErrorHandler, onRetry) {
 		url = zenario.addBasePath(url);
 		
 		var qMark, name, setting, options,
 			type = post? 'POST' : 'GET',
 			result = false,
 			aborted = false,
+			retryFun,
 			hadErrorAndHandledIt = false,
 			cb = new zenario.callback,
 			oldDataRevisionNumber = zenario.dataRev(),
@@ -313,14 +314,14 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 			error = function(resp, statusType, statusText) {
 				if (aborted) return;
 				
-				if (zenarioA.AJAXErrorHandler) {
-					zenarioA.AJAXErrorHandler(resp, statusType, statusText);
+				if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
+					AJAXErrorHandler(resp, statusType, statusText);
 					hadErrorAndHandledIt = true;
 				}
 			},
 			
 			//Call this function when we have the data and need to return it
-			complete = function() {
+			complete = function(resp, statusType, statusText) {
 				if (aborted || hadErrorAndHandledIt) return;
 				
 				var parsedResult = false;
@@ -328,7 +329,7 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 				//Either return the response as-is, of if JSON was set, do JSON.parse on it first.
 				if (json) {
 					//If this is admin mode, try to use zenarioA.readData() as that has some error-handling built in
-					if (zenarioA.readData) {
+					if (zenarioA.phrase && zenarioA.readData) {
 						if (!(parsedResult = zenarioA.readData(result, undefined, undefined, retry))) {
 							return;
 						}
@@ -339,7 +340,12 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 							parsedResult = JSON.parse(result);
 						} catch (e) {
 							if (result) {
-								alert(result);
+								if (AJAXErrorHandler = AJAXErrorHandler || zenarioA.AJAXErrorHandler) {
+									//(resp, statusType, statusText)
+									AJAXErrorHandler(resp, statusType, statusText);
+								} else {
+									alert(result);
+								}
 							}
 							return;
 						}
@@ -418,6 +424,13 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 		
 		if (retry === true) {
 			retry = doRequest;
+		}
+		if (onRetry) {
+			retryFun = retry;
+			retry = function() {
+				onRetry();
+				retryFun();
+			};
 		}
 		
 		//For GET requests, should we try using the cache in the session storage?
@@ -532,9 +545,14 @@ zenario.checkForHashChanges = function(timed) {
 		
 		//Otherwise is this is the front-end, see if we can find which Plugin it mentions and then change that Plugin to use that request
 		} else {
+			var addImportantGetRequests = false;
 			if (zenarioAT.init) {
-				if (hash.split('__zenario_reload_at__=')[1]) {
+				if (hash.match(/\b__zenario_reload_at__\b/)) {
 					zenarioAT.init();
+					addImportantGetRequests = true;
+				
+				} else if (hash.match(/\b_refresh\b/)) {
+					addImportantGetRequests = true;
 				}
 			}
 			
@@ -545,6 +563,10 @@ zenario.checkForHashChanges = function(timed) {
 				
 				//Use an empty string as a shortcut to the first Main Slot
 				key = ifNull(key, zenario.mainSlot);
+				
+				if (addImportantGetRequests) {
+					key += zenario.urlRequest(zenarioA.importantGetRequests);
+				}
 				
 				//Check if this is a request to reload a Plugin via (numeric) instance id(s)
 				if (key == key.replace(/[^0-9,]/g, '')) {
@@ -565,7 +587,7 @@ zenario.checkForHashChanges = function(timed) {
 			
 			} else {
 				//If there was an empty hash or no hash, and we just changed a Plugin, reset it.
-				zenario.refreshPluginSlot(zenario.currentHashSlot, '', '', undefined, false, false);
+				zenario.refreshPluginSlot(zenario.currentHashSlot, '', addImportantGetRequests && zenarioA.importantGetRequests || '', undefined, false, false);
 				//zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache) {
 			}
 		}
@@ -723,6 +745,12 @@ zenario.uneschyp = function(string) {
 
 //Set up a new encapsulated object for Plugins
 zenario.enc = function(id, className, moduleClassNameForPhrases) {
+	
+	//Little shortcut to save space in definitions
+	if (moduleClassNameForPhrases === 1) {
+		moduleClassNameForPhrases = className;
+	}
+	
 	if (typeof window[className] != 'object') {
 		window[className] = new zenario.moduleBaseClass(
 			id, className, moduleClassNameForPhrases,
@@ -821,13 +849,15 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 	var forceReloadHref = false,
 		level = false,
 		tabId = 0,
-		cutoff = contents.indexOf('<!--/INFO-->'),
-		info = false,
+		cutoff,
+		info = [],
 		beingEdited = false,
 		isVersionControlled = false,
 		scriptsToRun = new Array(),
 		scriptsToRunBefore = new Array(),
-		showInFloatingBox = false;
+		showInFloatingBox = false,
+		floatingBoxExtraParams = {},
+		domSlot = get('plgslt_' + slotName);
 	
 	//Don't try and do an AJAX reload if text has <script> or <styles> tags in
 		//However, if this was a POST submission, ignore this check as we don't want to re-submit the post data
@@ -836,52 +866,68 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 		forceReloadHref = zenario.linkToItem(zenario.cID, zenario.cType, additionalRequests);
 	}
 	
+	//Look for info tags before the plugin's output
+	cutoff = contents.indexOf('<!--/INFO-->');
 	if (cutoff != -1) {
 		//Get each tag from the info, then chop the tags off of the start of the content
-		info = contents.substr(0, cutoff+4).split('--><!--');
-		contents = contents.substr(cutoff+12);
+		info = contents.substr(0, cutoff + 4).split('--><!--');
+		contents = contents.substr(cutoff + 12);
+	}
 		
-		//Look through the info at the top of the AJAX return
-		foreach (info as var i) {
-			var details = info[i].split('--');
-			
-			//Allow modules to reject the AJAX reload and request an entire page reload
-			if (details[0] == 'FORCE_PAGE_RELOAD') {
-				forceReloadHref = zenario.uneschyp(details[1]);
-			
-			//Watch out for the "In Edit Mode" tag from modules in their edit modes
-			} else if (details[0] == 'IN_EDIT_MODE') {
-				beingEdited = true;
-			
-			} else if (details[0] == 'WIREFRAME') {
-				isVersionControlled = true;
-			
-			//Watch out for the instance id
-			} else if (details[0] == 'INSTANCE_ID') {
-				instanceId = zenario.uneschyp(details[1]);
-			
-			//Watch out for the slot's level
-			} else if (details[0] == 'LEVEL') {
-				level = 1*details[1];
-			
-			//Watch out for Tab Ids from nested modules
-			} else if (details[0] == 'TAB_ID') {
-				tabId = zenario.uneschyp(details[1]);
-			
-			//Allow modules to name JavaScript function(s) they wish to be run
-			} else if (details[0] == 'SCRIPT') {
-				scriptsToRun[scriptsToRun.length] = zenario.uneschyp(details[1]);
-			
-			} else if (details[0] == 'SCRIPT_BEFORE') {
-				scriptsToRunBefore[scriptsToRunBefore.length] = zenario.uneschyp(details[1]);
-			
-			} else if (details[0] == 'SCROLL_TO_TOP' && scrollToTopOfSlot === undefined) {
-				scrollToTopOfSlot = true;
-			
-			//Allow modules to open themselves in a floating box
-			} else if (details[0] == 'SHOW_IN_FLOATING_BOX') {
-				showInFloatingBox = true;
-			}
+	//Look for info tags before the plugin's output
+	cutoff = contents.lastIndexOf('<!--INFO-->');
+	if (cutoff != -1) {
+		//Get each tag from the info, then chop the tags off of the start of the content
+		info = info.concat(contents.substr(cutoff + 8).split('--><!--'));
+		contents = contents.substr(0, cutoff);
+	}
+		
+	//Look through the info at the top of the AJAX return
+	foreach (info as var i) {
+		var details = info[i].split('--');
+		
+		//Allow modules to reject the AJAX reload and request an entire page reload
+		if (details[0] == 'FORCE_PAGE_RELOAD') {
+			forceReloadHref = zenario.uneschyp(details[1]);
+		
+		//Watch out for the "In Edit Mode" tag from modules in their edit modes
+		} else if (details[0] == 'IN_EDIT_MODE') {
+			beingEdited = true;
+		
+		} else if (details[0] == 'WIREFRAME') {
+			isVersionControlled = true;
+		
+		//Watch out for the instance id
+		} else if (details[0] == 'INSTANCE_ID') {
+			instanceId = zenario.uneschyp(details[1]);
+		
+		//Watch out for the slot's level
+		} else if (details[0] == 'LEVEL') {
+			level = 1*details[1];
+		
+		//Change the Class name of the slot
+		} else if (details[0] == 'CSS_CLASS') {
+			domSlot.className = 'zenario_slot ' + zenario.uneschyp(details[1])
+		
+		//Watch out for Tab Ids from nested modules
+		} else if (details[0] == 'TAB_ID') {
+			tabId = zenario.uneschyp(details[1]);
+		
+		//Allow modules to name JavaScript function(s) they wish to be run
+		} else if (details[0] == 'SCRIPT') {
+			scriptsToRun[scriptsToRun.length] = zenario.uneschyp(details[1]);
+		
+		} else if (details[0] == 'SCRIPT_BEFORE') {
+			scriptsToRunBefore[scriptsToRunBefore.length] = zenario.uneschyp(details[1]);
+		
+		} else if (details[0] == 'SCROLL_TO_TOP' && scrollToTopOfSlot === undefined) {
+			scrollToTopOfSlot = true;
+		
+		//Allow modules to open themselves in a floating box
+		} else if (details[0] == 'SHOW_IN_FLOATING_BOX') {
+			showInFloatingBox = true;
+		} else if (details[0] == 'FLOATING_BOX_PARAMS' && details[1]) {
+			floatingBoxExtraParams = JSON.parse(details[1]);
 		}
 	}
 	
@@ -904,7 +950,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 	}
 	
 	//Stop any animations currently on the slot
-	$('#plgslt_' + slotName).stop(true, true).animate({opacity: 1}, 200, function() {
+	$(domSlot).stop(true, true).animate({opacity: 1}, 200, function() {
 		if (zenario.browserIsIE()) {
 			this.style.removeAttribute('filter');
 		}
@@ -916,13 +962,12 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 	
 	if (showInFloatingBox) {
 		zenario.colorboxOpen = slotName;
-		
-		$.colorbox({
+		var params = {
 			transition: 'none',
 			html: contents,
 			onOpen: function() {
 				var cb = get('colorbox');
-				cb.className = get('plgslt_' + slotName).className;
+				cb.className = domSlot.className;
 				$(cb).hide().fadeIn();
 			},
 			onComplete: function() {
@@ -939,8 +984,15 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 				get('colorbox').className = '';
 				zenario.colorboxOpen = false;
 			}
-		});
-		zenario.resizeFancyBox();
+		};
+		// Add any extra parsed parameters
+		for (var i in floatingBoxExtraParams) {
+			if (params[i] === undefined) {
+				params[i] = floatingBoxExtraParams[i];
+			}
+		}
+		$.colorbox(params);
+		zenario.resizeColorbox();
 	
 	} else {
 		if (zenario.colorboxOpen) {
@@ -960,7 +1012,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 			
 			//If we're not in admin mode, just refresh the slot's innerHTML
 			zenario.slot([[slotName, instanceId, zenario.slots[slotName].moduleId, level, tabId, undefined, beingEdited, isVersionControlled]]);
-			get('plgslt_' + slotName).innerHTML = contents;
+			domSlot.innerHTML = contents;
 		}
 		
 		//Allow modules to call JavaScript function(s) after they have been refreshed
@@ -981,42 +1033,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 		
 		//Attempt to record the current AJAX reload in the URL bar
 		if (recordInURL) {
-			
-			//If the browser support HTML 5, we can use URL rewriting
-			if (window.history && history.pushState) {
-				
-				//If this is the first AJAX request we've had, be sure to save the initial load-state of the page
-				if (!zenario.previouslyPushedState) {
-					zenario.previouslyPushedState = true;
-					
-					//Get variables from the URL
-					var url = document.location.href,
-						qMark = url.indexOf('?'),
-						request = '';
-					
-					if (qMark != -1) {
-						request = url.substr(qMark+1);
-					}
-					
-					//Replace the current state - don't change the URL or the title,
-					//but save the slot name that is being changed, and the initial request
-					history.replaceState({slotName: slotName, request: request}, document.title, document.location.href);
-				}
-				
-				//Work out the new URL to the page, then place this along with the slot name and requests into the history
-				history.pushState({slotName: slotName, request: additionalRequests}, document.title, zenario.linkToItem(zenario.cID, zenario.cType, additionalRequests));
-			
-			//Old functionality using hashes in the URL, for browsers that don't support HTML 5.
-			//And by that I mean Internet Explorer.
-			} else {
-				if (slotName == zenario.mainSlot) {
-					document.location.hash = '!' + additionalRequests.substr(1);
-				} else {
-					document.location.hash = slotName + '!' + additionalRequests.substr(1);
-				}
-			}
-			
-			zenario.currentHash = document.location.hash;
+			zenario.recordRequestsInURL(slotName, additionalRequests);
 		}
 	}
 	
@@ -1025,9 +1042,51 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 	}
 };
 
+zenario.recordRequestsInURL = function(slotName, requests) {
+	
+	requests = zenario.urlRequest(requests);
+			
+	//If the browser support HTML 5, we can use URL rewriting
+	if (window.history && history.pushState) {
+		
+		//If this is the first AJAX request we've had, be sure to save the initial load-state of the page
+		if (!zenario.previouslyPushedState) {
+			zenario.previouslyPushedState = true;
+			
+			//Get variables from the URL
+			var url = document.location.href,
+				qMark = url.indexOf('?'),
+				initialRequests = '';
+			
+			if (qMark != -1) {
+				initialRequests = url.substr(qMark+1);
+			}
+			
+			//Replace the current state - don't change the URL or the title,
+			//but save the slot name that is being changed, and the initial request
+			history.replaceState({slotName: slotName, request: initialRequests}, document.title, document.location.href);
+		}
+		
+		//Work out the new URL to the page, then place this along with the slot name and requests into the history
+		history.pushState({slotName: slotName, request: requests}, document.title, zenario.linkToItem(zenario.cID, zenario.cType, requests));
+	
+	//Old functionality using hashes in the URL, for browsers that don't support HTML 5.
+	//And by that I mean Internet Explorer.
+	} else {
+		if (slotName == zenario.mainSlot) {
+			document.location.hash = '!' + requests.substr(1);
+		} else {
+			document.location.hash = slotName + '!' + requests.substr(1);
+		}
+	}
+	
+	zenario.currentHash = document.location.hash;
+};
+
 
 zenario.callScript = function(script, className) {
-	var functionName;
+	var functionName,
+		encapObject;
 	
 	if (typeof script == 'string') {
 		script = JSON.parse(script);
@@ -1045,11 +1104,158 @@ zenario.callScript = function(script, className) {
 			return;
 		}
 		
-		window[className][functionName].apply(null, script);
+		encapObject = window[className];
+		
+		encapObject[functionName].apply(encapObject, script);
 	}
 };
 
-zenario.resizeFancyBox = function() {
+
+
+
+
+//Apply compilation macros in a microtemplate
+//(Note that this is the same logic from zenario/js/js_minify.shell.php)
+zenario.applyCompilationMacros = code => {
+	
+	return code.replace(
+		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
+		'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue; $4 $5 = $1[$3];'
+	).replace(
+		/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/gi,
+		'for ($2$3 in $1) { if (!zenario.has($1, $3)) continue;'
+	).replace(
+		/\(([\w\s,]*)\)\s*\=\>\s*\{/g,
+		'function ($1) {'
+	).replace(
+		/(\b\w+\b)\s*\=\>\s*\{/g,
+		'function ($1) {'
+	);
+};
+
+//Define a standard pool of micro-templates
+zenario.microTemplates = {};
+
+//A wrapper function to the underscore.js function's template library
+window.microTemplate =
+zenario.microTemplate = (template, data, filter, microTemplates, i) => {
+	
+	var j, l, html;
+	
+	//Have the option to use a different pool of micro-templates than usual
+	microTemplates = microTemplates || zenario.microTemplates;
+	
+	
+	if (template === undefined || !data) {
+		return '';
+	
+	} else if (_.isArray(data)) {
+		l = data.length,
+		html = '';
+		for (j = 0; j < l; ++j) {
+			if (filter === undefined || filter(data[j])) {
+				html += zenario.microTemplate(template, data[j], undefined, microTemplates, j);
+			}
+		}
+		return html;
+	}
+	
+	if (data.i === undefined && i !== undefined) {
+		data.i = 1*i;
+	}
+	
+	if (template.length < 255 && microTemplates[template]) {
+		//Named templates from one of the js/microtemplate directories
+		//The template name is taken from the filename
+		if (typeof microTemplates[template] == 'string') {
+			//Parse and compile the microtemplate if this hasn't already happened
+			microTemplates[template] = zenario.generateMicroTemplate(microTemplates[template], template);
+		}
+	
+		return microTemplates[template](data);
+
+	} else {
+		//Custom/one-off templates
+		var checksum = 'microtemplate_' + hex_md5(template);
+		
+		if (microTemplates[checksum] === undefined) {
+			microTemplates[checksum] = template;
+		}
+		
+		return zenario.microTemplate(checksum, data, filter, microTemplates, i);
+	}
+};
+
+zenario.drawMicroTemplate = function(htmlId, template, data, filter, microTemplates) {
+	var dom;
+	if (dom = get(htmlId)) {
+		dom.innerHTML = zenario.microTemplate(template, data, filter, microTemplates);
+		zenario.addJQueryElements('#' + htmlId + ' ');
+	}
+};
+
+zenario.generateMicroTemplate = function(source, name) {
+	
+	var microTemplate,
+		tmp = $.extend({}, _.templateSettings, true);
+	
+	_.templateSettings = zenario.mtSettings;
+	
+	try {
+		microTemplate = _.template(zenario.applyCompilationMacros(source));
+		_.templateSettings = tmp;
+		
+		return microTemplate;
+	
+	} catch (e) {
+		_.templateSettings = tmp;
+		
+		console.log('Error in microtemplate' + (name? ' ' + name : '') + ': \n\n' + microTemplate);
+		throw e;
+	}
+};
+
+zenario.unfun = function(text) {
+	if (typeof text == 'function') {
+		return text();
+	} else {
+		return text;
+	}
+};
+
+zenario.num = function(text) {
+	if (typeof text == 'function') {
+		return 1*text();
+	} else {
+		return 1*text;
+	}
+};
+
+
+
+(contexts => {
+	contexts = {};
+	
+	zenario.disableScrolling = function(context) {
+		$('body').css({
+			overflow: 'hidden'
+		}); 
+	
+		contexts[context || 'default'] = true;
+	};
+
+	zenario.enableScrolling = function(context) {
+		delete contexts[context || 'default'];
+	
+		if (_.isEmpty(contexts)) {
+			$('body').css({
+				overflow: 'auto'
+			});
+		}
+	};
+})();
+
+zenario.resizeColorbox = function() {
 	setTimeout($.colorbox.resize, 5);
 };
 
@@ -1079,10 +1285,17 @@ zenario.addJQueryElements = function(path, adminFacing) {
 	}
 	
 	//Fancybox/Lightbox replacement
-	$(path + "a[rel^='colorbox'], a[rel^='fancybox'], a[rel^='lightbox']").colorbox({
+	$(path + "a[rel^='colorbox'], a[rel^='lightbox']").colorbox({
 		title: function() { return $(this).attr('data-box-title'); },
 		maxWidth: '100%',
 		maxHeight: '100%'
+	});
+	
+	$(path + "a[rel^='colorbox_no_arrows']").colorbox({
+		title: function() { return $(this).attr('data-box-title'); },
+		maxWidth: '100%',
+		maxHeight: '100%',
+		rel: false
 	});
 	
 	if (zenario.browserIsIE(9)) {
@@ -1157,7 +1370,16 @@ zenario.addJQueryElements = function(path, adminFacing) {
 	$(path + ':submit').click(function() {zenario.buttonClick(this)});
 	$(path + ' submit').click(function() {zenario.buttonClick(this)});
 };
-$(document).ready(function() { zenario.addJQueryElements(); });
+
+$(document)
+	//Disable/enable scrolling the page when a colorbox opens/closes
+	.bind('cbox_open', () => { zenario.disableScrolling('colorbox'); })
+	.bind('cbox_closed', () => { zenario.enableScrolling('colorbox'); })
+	
+	//Add tooltips and other jQuery elements to the page after it has loaded
+	.ready(function() {
+		zenario.addJQueryElements();
+	});
 
 
 //Lazy-load the datepicker library when needed
@@ -1540,6 +1762,27 @@ zenario.stop = function(e) {
 	return false;
 };
 
+var $copy = false;
+zenario.canCopy = function(text) {
+	if (!document.execCommand
+	 || !document.queryCommandSupported('copy')) {
+		return false;
+	}
+	if (!$copy) {
+		$("body").append($copy = $('<textarea style="position:absolute;left:-999px;top:-999px;">'));
+	}
+	return !!$copy[0].select;
+};
+zenario.copy = function(text) {
+	var textarea = zenario.canCopy() && $copy[0];
+	
+	if (textarea) {
+		textarea.value = text;
+		textarea.select();
+		document.execCommand('copy');
+	}  
+};
+
 
 //Local Storage
 zenario.rev = '';
@@ -1748,6 +1991,50 @@ zenario.tinyMCEGetContent = function(editor) {
 	}
 	
 	return html;
+};
+
+//Functions for browser fullscreen
+
+zenario.fullScreenChangeEvent = 'fullscreenchange msfullscreenchange mozfullscreenchange webkitfullscreenchange';
+
+zenario.isFullScreenAvailable = function(element) {
+	return !!(element.requestFullscreen 
+		|| element.mozRequestFullScreen 
+		|| element.webkitRequestFullScreen
+		|| element.msRequestFullscreen
+	);
+};
+
+zenario.isFullScreen = function() {
+	return !!(document.fullscreenElement 
+		|| document.mozFullScreenElement 
+		|| document.webkitFullscreenElement 
+		|| document.msFullscreenElement
+	);
+};
+
+zenario.enableFullScreen = function(element) {
+	if (element.requestFullscreen) {
+		element.requestFullscreen();
+	} else if (element.msRequestFullscreen) {
+		element.msRequestFullscreen();
+	} else if (element.mozRequestFullScreen) {
+		element.mozRequestFullScreen();
+	} else if (element.webkitRequestFullscreen) {
+		element.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+	}
+};
+
+zenario.exitFullScreen = function() {
+	if (document.exitFullscreen) {
+		document.exitFullscreen();
+	} else if (document.msExitFullscreen) {
+		document.msExitFullscreen();
+	} else if (document.mozCancelFullScreen) {
+		document.mozCancelFullScreen();
+	} else if (document.webkitExitFullscreen) {
+		document.webkitExitFullscreen();
+	}
 };
 
 

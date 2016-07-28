@@ -74,6 +74,7 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
+<script type="text/javascript" src="', $prefix, 'js/admin.microtemplates_and_phrases.js.php?v=', $v, $gz, '"></script>
 <script type="text/javascript" src="', $prefix, 'js/admin.wrapper.js.php?v=', $v, $gz, '"></script>';
 	
 	if (setting('dropbox_api_key')) {
@@ -108,8 +109,11 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 		}
 		
 		if (isset($panelTypes['google_map']) || isset($panelTypes['list_or_grid_or_google_map'])) {
-			echo '
-<script type="text/javascript" src="https://maps.google.com/maps/api/js"></script>';
+			if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
+				define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
+				echo '
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=geometry&key=' , urlencode(setting('google_maps_api_key')) , '"></script>';
+			}
 		}
 		
 		if (isset($panelTypes['schematic_builder'])) {
@@ -119,6 +123,8 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 		
 		echo '
 <script type="text/javascript" src="', $prefix, 'js/organizer.wrapper.js.php?v=', $v, $gz, '"></script>';
+		echo '
+<script type="text/javascript" src="', $prefix, 'admin/organizer.ajax.php?_script=1?v=', $moduleCodeHash, $gz, '"></script>';
 		
 		echo '
 <script type="text/javascript">';
@@ -137,10 +143,6 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 </script>
 <script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, $gz, '&amp;ids=', $jsModuleIds, '&amp;organizer=1"></script>';
 	}
-}
-if (cms_core::$cID && $includeAdminToolbar && $inAdminMode) {
-	echo '
-<script type="text/javascript" src="', $prefix, 'js/admin_toolbar.min.js?v=', $v, '"></script>';
 }
 
 
@@ -169,7 +171,7 @@ if (cms_core::$cType) {
 	zenario.cType = "', jsEscape(cms_core::$cType), '";';
 }
 
-if (!$isWelcomeOrWizard && $inAdminMode) {
+if ($inAdminMode && !$isWelcomeOrWizard) {
 	if (cms_core::$cVersion) {
 		echo '
 		zenario.cVersion = ', (int) cms_core::$cVersion, ';';
@@ -205,6 +207,12 @@ if (!$isWelcomeOrWizard && $inAdminMode) {
 	}
 	
 	$importantGetRequests = importantGetRequests();
+	if (empty($importantGetRequests)) {
+		$importantGetRequests = '{}';
+	} else {
+		$importantGetRequests = json_encode($importantGetRequests);
+	}
+	
 	echo '
 	zenarioA.toolbar = \'', jsEscape(ifNull(session('page_toolbar'), 'preview')), '\';
 	zenarioA.pageMode = \'', jsEscape(ifNull(session('page_mode'), 'preview')), '\';
@@ -212,7 +220,7 @@ if (!$isWelcomeOrWizard && $inAdminMode) {
 	zenarioA.showGridOn = ', engToBoolean(session('admin_show_grid')), ';
 	zenarioA.siteSettings = ', json_encode($settings), ';
 	zenarioA.adminSettings = ', json_encode($adminSettings), ';
-	zenarioA.importantGetRequests = ', empty($importantGetRequests)? '{}' : json_encode(importantGetRequests()), ';';
+	zenarioA.importantGetRequests = ', $importantGetRequests, ';';
 	
 	if (adminHasSpecificPerms()) {
 		echo '
@@ -275,8 +283,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 <script type="text/javascript">';
 	//Add encapculated objects for slots
 	$i = 0;
-	echo '
-	zenario.slot([';
+	echo "\n", 'zenario.slot([';
 	foreach (cms_core::$slotContents as $slotName => &$instance) {
 		if (isset($instance['class']) || $inAdminMode) {
 			echo
@@ -296,7 +303,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				
 				echo ',', (int) arrayKey($instance, 'level');
 				
-				$tabId = $instance['class']->tApiGetTabId();
+				$tabId = $instance['class']->zAPIGetTabId();
 				$isMainSlot = isset($instance['class']) && arrayKey($instance, 'level') == 1 && substr($slotName, 0, 1) == 'M';
 				$beingEdited = $instance['class']->beingEdited();
 				
@@ -316,16 +323,50 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 			echo ']';
 		}
 	}
-	echo ']);
-</script>';
+	echo ']);';
 
 	//Include the JS for any plugin instances on the page, if they have any
-	$JavaScriptOnPage = array();
+	$scriptTypes = array(array(), array(), array());
 	foreach(cms_core::$slotContents as $slotName => &$instance) {
 		if (!empty($instance['class'])) {
-			$instance['class']->tApiAddRequestedScripts();
+			$scriptTypesHere = array();
+			$instance['class']->zAPICheckRequestedScripts($scriptTypesHere);
+			
+			if (!empty($scriptTypesHere[0])) {
+				$scriptTypes[0][] = &$scriptTypesHere[0];
+			}
+			if (!empty($scriptTypesHere[1])) {
+				$scriptTypes[1][] = &$scriptTypesHere[1];
+			}
+			if (!empty($scriptTypesHere[2])) {
+				$scriptTypes[2][] = &$scriptTypesHere[2];
+			}
 		}
 	}
+	
+	if (!empty($scriptTypes[0])
+	 || !empty($scriptTypes[1])) {
+		echo "\n". '(function(c) {';
+		
+		if (!empty($scriptTypes[0])) {
+			foreach ($scriptTypes[0] as &$scriptsForPlugin) {
+				foreach ($scriptsForPlugin as &$script) {
+					echo "\n", 'c(', json_encode($script), ');';
+				}
+			}
+		}
+		if (!empty($scriptTypes[1])) {
+			foreach ($scriptTypes[1] as &$scriptsForPlugin) {
+				foreach ($scriptsForPlugin as &$script) {
+					echo "\n", 'c(', json_encode($script), ');';
+				}
+			}
+		}
+				
+		echo "\n", '})(zenario.callScript);';
+	}
+	
+	echo "\n</script>";
 }
 
 
@@ -367,6 +408,18 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 				$instance['class']->addToPageFoot();
 			$edition::postSlot($slotName, 'addToPageFoot');
 		}
+	}
+	
+	if (!empty($scriptTypes[2])) {
+		echo "\n". '<script type="text/javascript">(function(c) {';
+		
+		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
+			foreach ($scriptsForPlugin as &$script) {
+				echo "\n", 'c(', json_encode($script), ');';
+			}
+		}
+				
+		echo "\n", '})(zenario.callScript);</script>';
 	}
 }
 
@@ -419,4 +472,21 @@ if (cms_core::$cID) {
 	if (!empty($itemHTML[0]) && (empty($itemHTML[2]) || !$inAdminMode)) {
 		echo "\n\n". $itemHTML[0], "\n\n";
 	}
+}
+
+if (cms_core::$cID && $includeAdminToolbar && $inAdminMode && !$isWelcomeOrWizard) {
+	$data_rev = (int) getRow('local_revision_numbers', 'revision_no', array('path' => 'data_rev'));
+	
+	$params = htmlspecialchars(http_build_query(array(
+		'id' => cms_core::$cType. '_'. cms_core::$cID,
+		'cID' => cms_core::$cID,
+		'cType' => cms_core::$cType,
+		'cVersion' => cms_core::$cVersion,
+		'get' => $importantGetRequests,
+		'_script' => 1,
+		'data_rev' => (int) getRow('local_revision_numbers', 'revision_no', array('path' => 'data_rev'))
+	)));
+	
+	echo '
+<script type="text/javascript" src="', $prefix, 'admin/admin_toolbar.ajax.php?v=', $v, '&amp;', $params, '"></script>';
 }

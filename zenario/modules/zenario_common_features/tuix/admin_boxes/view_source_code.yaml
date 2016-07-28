@@ -12,6 +12,7 @@ zenario_view_source_code:
             fields:
                 code:
                     type: code_editor
+                    dont_trim: true
                     language: ''
                     style: >
                         height: 35em;

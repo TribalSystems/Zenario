@@ -3,7 +3,7 @@
 */
 
 
-//	zenarioA.microTemplate = function(template, data, i) {};
+//	zenarioA.microTemplate = function(template, data, filter) {};
 
 
 //	zenarioA.showAJAXLoader = function() {};

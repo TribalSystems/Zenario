@@ -71,6 +71,19 @@ properties:
             but it cannot be suspended and it will not appear in Organizer.
             
             You can use this from version 7.2 onwards.
+    for_use_in_twig:
+        type: boolean
+        description: >
+            If you set this property, your module will be loaded every time a Twig framework is generated,
+            and designers will be able to call your public methods from their twig frameworks.
+            
+            Note that this will make all of your public methods available.
+            If you want to make an exception, e.g. your saveAdminBox() or handleOrganizerPanelAJAX() methods,
+            then you may add
+                if (cms_core::$isTwig) return;
+            at the top of the function body to prevent it from being called.
+            
+            You can use this from version 7.3 onwards.
     fill_organizer_nav:
         type: boolean
         default: "(Intelligent default)"
@@ -233,18 +246,6 @@ properties:
                     inheritance can be chained; i.e. if you inherit Settings from a module that
                     itself inherits Settings from a third module, you are effectively inheriting
                     Settings from all three modules.
-                
-            allow_upgrades_from_module:
-                type: object
-                additionalProperties:
-                    type: boolean
-                description: >
-                    If you enter the class name(s) of a module here, Admins will be able to
-                    upgrade plugins handled by that module to be
-                    handled by your module instead.
-                    The process is also reversible; Admins will also have the option of
-                    downgrading plugins handled by your module to be
-                    handled by that module again.
     
     signals:
         type: object

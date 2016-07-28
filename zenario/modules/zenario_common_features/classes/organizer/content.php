@@ -32,14 +32,15 @@ class zenario_common_features__organizer__content extends module_base_class {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 
-		if (in($mode, 'full', 'quick', 'select', 'get_matched_ids')
+		if (in($mode, 'full', 'quick', 'select', 'typeahead_search', 'get_matched_ids')
 		 && !isset($_GET['refiner__trash'])
 		 && isset($panel['db_items']['custom_where_statement__not_trashed'])) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__not_trashed'];
 		}
 		
 		//Have a refiner that enforces the language filter be set.
-		if (isset($_GET['refiner__filter_by_lang'])
+		if ($mode != 'typeahead_search'
+		 && isset($_GET['refiner__filter_by_lang'])
 		 && !isset($_GET['refiner__zenario_trans__chained_in_link'])) {
 			
 			//If it's not set, set it to one language initially
@@ -140,8 +141,13 @@ class zenario_common_features__organizer__content extends module_base_class {
 		}
 		
 		
-		// Create page preview buttons
 		if (in($mode, 'full', 'quick', 'select')) {
+			
+			//Note down which content types have categories
+			$panel['custom__content_types_with_categories'] =
+				arrayValuesToKeys(getRowsArray('content_types', 'content_type_id', array('enable_categories' => 1)));
+			
+			//Create page preview buttons
 			$pagePreviews = getRowsArray('page_preview_sizes', array('width', 'height', 'description', 'ordinal', 'is_default'), array(), 'ordinal');
 			foreach ($pagePreviews as $pagePreview) {
 				$width = $pagePreview['width'];
@@ -285,6 +291,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 		if (isset($_GET['refiner__trash']) && !$panel['key']['layoutId']) {
 			$panel['title'] = adminPhrase('Trashed content items');
 			$panel['no_items_message'] = adminPhrase('There are no trashed content items.');
+			$panel['item']['css_class'] = 'content_trashed';
 			unset($panel['columns']['status']);
 			unset($panel['collection_buttons']['create']);
 
@@ -437,8 +444,6 @@ class zenario_common_features__organizer__content extends module_base_class {
 			unset($panel['item_buttons']['hidden']['ajax']);
 		}
 
-		$contentTypes = getRowsArray('content_types', array('enable_categories'));
-
 		//If this is full, quick or select mode, and the admin looking at this only has permissions
 		//to edit specific content items, we'll need to check if the current admin can edit each
 		//content item.
@@ -465,8 +470,6 @@ class zenario_common_features__organizer__content extends module_base_class {
 		
 		
 				$item['css_class'] = getItemIconClass($item['id'], $item['type'], true, $item['status']);
-		
-				$item['enable_categories'] = $contentTypes[$item['type']]['enable_categories'];
 		
 				switch (arrayKey($item,'privacy')){
 					case 'all_extranet_users':

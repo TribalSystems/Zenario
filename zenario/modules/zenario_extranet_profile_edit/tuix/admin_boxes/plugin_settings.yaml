@@ -39,5 +39,7 @@ plugin_settings:
                         one_to_one_choose_phrase: Choose this form
                         select_phrase: Select a form...
                         hide_remove_button: Yes
+                    validation:
+                        required_if_not_hidden: Please select a form
                     format_onchange: true
 

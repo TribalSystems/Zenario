@@ -11,8 +11,9 @@ Order of inclusion
 
 The files are combined in the following order:
 
- * The `reset.css` file is always included first
- * The other CSS files in this directory are included in alphabetical order
+ * `reset.css` is always included first
+ * Non-editable CSS files are included alphabetically by filepath
+ * Editable CSS files are included alphabetically by name
  * Browser-specific files such as `style_ie.css` are always included last
 
 
@@ -24,12 +25,15 @@ The following browser-specific files are only included when a page is viewed by
 the named browser or device:
 
  * `style_chrome.css`
+ * `style_edge.css`
  * `style_ff.css`
  * `style_ie.css`
  * `style_ie6.css`
  * `style_ie7.css`
  * `style_ie8.css`
  * `style_ie9.css`
+ * `style_ie10.css`
+ * `style_ie11.css`
  * `style_ios.css`
  * `style_ipad.css`
  * `style_iphone.css`
@@ -55,19 +59,9 @@ Printing
 -----------
 
 When a visitor prints a page, the only CSS file that will be included is the
-`stylesheet_print.css` file.
+`print.css` file.
 
-The `stylesheet_print.css` file is not included when viewing the page normally.
-
-
-
-Styles for editors in Floating Admin Boxes
----------------------------------------------
-
-HTML editors in Floating Admin Boxes are unstyled by default. You can add styles by
-adding them into the `tinymce.css` file.
-
-The `tinymce.css` file is not included when viewing the page normally.
+The `print.css` file is not included when viewing the page normally.
 
 
 

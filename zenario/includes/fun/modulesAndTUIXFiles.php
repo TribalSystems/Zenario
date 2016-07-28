@@ -62,11 +62,16 @@ if (($type == 'admin_boxes' || $type == 'slot_controls') && !empty($compatibilit
 
 //For Site Settings, only show settings from the current settings group
 //For Advanced Searches, only show fields for the current Storekeepr Path
-} elseif ($type == 'admin_boxes' && ($requestedPath == 'site_settings')) {
+} elseif ($type == 'admin_boxes' && $requestedPath == 'site_settings') {
+	$settingGroups[] = $settingGroup;
+
+//Visitor TUIX has the option to be customised.
+//(However this is optional; you can also show the base logic without any customisation.)
+} elseif ($type == 'visitor' && $settingGroup) {
 	$settingGroups[] = $settingGroup;
 }
 
-if (!empty($settingGroups)) {
+if ($type == 'visitor' || !empty($settingGroups)) {
 	if ($includeBaseFunctionalityWithSettingGroups) {
 		$settingGroups[] = '';
 	}

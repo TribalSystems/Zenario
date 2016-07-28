@@ -75,17 +75,18 @@ class zenario_content_list extends module_base_class {
 		//Filter by a category if requested
 		if ($this->setting('category') && checkRowExists('categories', array('id' => $this->setting('category')))) {
 			$sql .= "
-			INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil
-			   ON cil.equiv_id = c.equiv_id
-			  AND cil.content_type = c.type
-			  AND cil.category_id = ". (int) $this->setting('category');
+				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil
+				   ON cil.equiv_id = c.equiv_id
+				  AND cil.content_type = c.type
+				  AND cil.category_id = ". (int) $this->setting('category');
 		}
+		
 		if ($this->setting('show_author_image')) {
 			$sql .= '
-			LEFT JOIN '.DB_NAME_PREFIX.'admins AS ad
-				ON v.writer_id = ad.id
-			LEFT JOIN '.DB_NAME_PREFIX.'files AS fi
-				ON ad.image_id = fi.id';
+				LEFT JOIN '.DB_NAME_PREFIX.'admins AS ad
+					ON v.writer_id = ad.id
+				LEFT JOIN '.DB_NAME_PREFIX.'files AS fi
+					ON ad.image_id = fi.id';
 		}
 		
 		return $sql;
@@ -95,14 +96,21 @@ class zenario_content_list extends module_base_class {
 	//Adds to the WHERE clause of the SQL query
 	//Intended to be easily overwritten
 	protected function lookForContentWhere() {
-		$sql = "";
+		$sql = "
+			AND v.type = '". sqlEscape($this->setting('content_type')). "'
+			AND c.language_id = '". sqlEscape(session('user_lang')). "'";
 		
-		$sql .= "
-		  AND v.type = '". sqlEscape($this->setting('content_type')). "'";
-		
-		//Only return content in the current language
-		$sql .= "
-		  AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+		if ($this->setting('omit_category')) {
+			$sql .= ' 
+				AND c.tag_id NOT IN (
+					SELECT c2.tag_id
+					FROM ' . DB_NAME_PREFIX . 'content_items c2
+					INNER JOIN ' . DB_NAME_PREFIX . 'category_item_link AS cil2
+						ON cil2.equiv_id = c2.equiv_id
+						AND cil2.content_type = c2.type
+						AND cil2.category_id = '. (int)$this->setting('omit_category') . '
+				)';
+		}
 		
 		return $sql;
 	}
@@ -130,9 +138,11 @@ class zenario_content_list extends module_base_class {
 	//Intended to be easily overwritten
 	protected function lookForContentSQL() {
 		$sql =
-			sqlToSearchContentTable($this->setting('hide_private_items'), $this->setting('only_show'), $this->lookForContentTableJoins()).
+			sqlToSearchContentTable(
+				$this->setting('hide_private_items'), $this->setting('only_show'), 
+				$this->lookForContentTableJoins()
+			).
 			$this->lookForContentWhere();
-		
 		return $sql;
 	}
 	
@@ -195,7 +205,7 @@ class zenario_content_list extends module_base_class {
 				if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
 					
 					$width = $height = $url = false;
-					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'));
+					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
 					$item['Author_Image_Src'] = $url;
 					$item['Author_Image_Alt'] = $row['alt_tag'];
 					$item['Author_Image_Width'] = $width;
@@ -233,10 +243,10 @@ class zenario_content_list extends module_base_class {
 					if ($row['type'] == 'picture') {
 						//Legacy code for Pictures
 						if ($imageId = getRow("content_item_versions", "file_id", array("id" => $row['id'], 'type' => $row['type'], "version" => $row['version']))) {
-							imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+							imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 						}
 					} else {
-						itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
+						itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 					} 
 				}
 				
@@ -254,7 +264,6 @@ class zenario_content_list extends module_base_class {
 				}else{
 					$item['Sticky_image_class_name']="sticky_image_placeholder";
 				}
-
 				
 				$this->getStyledExtensionIcon(pathinfo($row['filename'], PATHINFO_EXTENSION), $item);
 					
@@ -316,7 +325,6 @@ class zenario_content_list extends module_base_class {
 			$sql.
 			$this->orderContentBy().
 			paginationLimit($this->page, $this->setting('page_size'), $this->setting('offset'));
-		
 		return sqlQuery($sql);
 	}
 	
@@ -503,43 +511,26 @@ class zenario_content_list extends module_base_class {
 			'css_class' => 'zenario_slotControl_filterSettings',
 			'page_modes' => array('edit' => true, 'layout' => true));
 		
-		$this->fillAdminSlotControlsShowFilterSettings($controls, $key);
-		
-		//if (checkPriv('_PRIV_CREATE_FIRST_DRAFT')) {
-		//	$controls['actions']['create_a_content_item'] = array(
-		//		'ord' => 50,
-		//		'label' => adminPhrase('Create a Content Item'),
-		//		'page_modes' => array('edit' => true),
-		//		'onclick' => "
-		//			zenarioAB.open('zenario_content', ". json_encode($key). ");
-		//			return false;");
-		//}
-		
+		$this->fillAdminSlotControlsShowFilterSettings($controls);
 	}
 	
-	protected function fillAdminSlotControlsShowFilterSettings(&$controls, &$key) {
-		$key = array();
+	protected function fillAdminSlotControlsShowFilterSettings(&$controls) {
 		
 		if ($this->setting('content_type') == 'all') {
 			$controls['notes']['filter_settings']['label'] .=
 				adminPhrase('Source Content Type: All Content Types');
 		
 		} else {
-			$key['cType'] = $this->setting('content_type');
 			$controls['notes']['filter_settings']['label'] .=
 				adminPhrase('Source Content Type: [[ctype]]',
 					array('ctype' => htmlspecialchars(getContentTypeName($this->setting('content_type')))));
 		}
 		
-		$this->fillAdminSlotControlsShowFilterSettingsCategories($key,$controls);
-		
-		$key['target_language_id'] = cms_core::$langId;
+		$this->fillAdminSlotControlsShowFilterSettingsCategories($controls);
 	}
 	
-	public function fillAdminSlotControlsShowFilterSettingsCategories(&$key,&$controls) {
+	public function fillAdminSlotControlsShowFilterSettingsCategories(&$controls) {
 		if ($this->setting('category')) {
-			$key['target_categories'] = $this->setting('category');
-			
 			$first = true;
 			foreach(explode(',', $this->setting('category')) as $catId) {
 				if ($name = getCategoryName($catId)) {

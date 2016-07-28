@@ -59,11 +59,15 @@ common_definitions:
         type: string
         description: A CSS class name to add to this element, which should be used to define an icon.
     ord: &ord
-        type: number
+        type: *stringy
         description: >
             This controls the order in which elements are drawn on the screen.
             
             If not set, it defaults to the order the CMS finds them in.
+            
+            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
+            you can use syntax of the form "name_of_other_element.001"
+            to place an element after the named element in the order.
     hidden: &hidden
         type: boolean
         description: >
@@ -74,6 +78,14 @@ common_definitions:
             A snippet of JavaScript code to be evaluated.
             
             The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+            
+            See http://zenar.io/visibility-in-tuix for examples.
+    disabled_if: &disabled_if
+        type: string
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            If the code provided evaluates to <code>true</code> the button will be disabled.
             
             See http://zenar.io/visibility-in-tuix for examples.
     table_join: &table_join
@@ -406,10 +418,10 @@ additionalProperties:
                                 static: true
                                 preFillOrganizerPanel: true
                                 description: >
-                                    This places an upper limit on the number of rows that Organizer will load
+                                    This places an upper limit on the number of rows per page that Organizer will load
                                     from the database.
-                                    This is intended as a safe-guard to stop any "out of memory" errors in
-                                    PHP if pagination is not used and a panel contains thousands of rows.
+                                    This is intended as a safe-guard to stop any "out of memory" errors
+                                    if pagination is not used and a panel contains thousands of rows.
                                     
                                     This works from version 7.0.7 onwards.
             
@@ -425,6 +437,31 @@ additionalProperties:
                                     The CMS will set this flag to true if more rows than the max_limit were found.
                                     
                                     This works from version 7.0.7 onwards.
+                            
+                            item_count_max_limit:
+                                type: number
+                                static: true
+                                preFillOrganizerPanel: true
+                                description: >
+                                    This places an upper limit on the total number of items that Organizer will count
+                                    from the database. (And hence the total number of pages.)
+                                    This is intended as a safe-guard to stop any "out of memory" errors
+                                    when there are millions of rows.
+                                    
+                                    This works from version 7.3 onwards.
+            
+            
+                                    This property must be written in your .yaml file,
+                                    or set in your preFillOrganizerPanel() method.
+                                    It can't be changed in your fillOrganizerPanel() method.
+                                default: 100000
+                            
+                            item_count_max_limit_hit:
+                                type: boolean
+                                description: >
+                                    The CMS will set this flag to true if more items than the item_count_max_limit were found.
+                                    
+                                    This works from version 7.3 onwards.
                     
                     columns:
                         type: object
@@ -565,12 +602,16 @@ additionalProperties:
                                         It can't be changed in your fillOrganizerPanel() method.
                                 
                                 item_link:
-                                    enum:
-                                        - content_item
-                                        - content_item_or_url
-                                        - menu_item
+                                    type: string
                                     description: >
-                                        This lets you define a link to a content item or menu node in Organizer.
+                                        This lets you define a link to another item in Organizer.
+                                        
+                                        You can enter:
+                                        "menu_item" to link to a menu node,
+                                        "content_item" to link to a content item, or
+                                        "content_item_or_url" for a content item or an external URL.
+                                        
+                                        From version 7.3 onwards you can also enter a tag path to link to an Organizer panel of your choice.
                                 
                                 format:
                                     type: string
@@ -797,14 +838,7 @@ additionalProperties:
                                     description: >
                                         If you set this property, the button will be disabled.
                                 
-                                disabled_if:
-                                    type: string
-                                    description: >
-                                        A snippet of JavaScript code to be evaluated.
-                                        
-                                        If the code provided evaluates to <code>true</code> the button will be disabled.
-                                        
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                disabled_if: *disabled_if
                                 
                                 disabled_tooltip:
                                     type: string
@@ -1253,14 +1287,7 @@ additionalProperties:
                                     description: >
                                         If you set this property, the button will be disabled.
                                 
-                                disabled_if:
-                                    type: string
-                                    description: >
-                                        A snippet of JavaScript code to be evaluated.
-                                        
-                                        If the code provided evaluates to <code>true</code> the button will be disabled.
-                                        
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                disabled_if: *disabled_if
                                 
                                 disabled_tooltip:
                                     type: string
@@ -1480,7 +1507,6 @@ additionalProperties:
                                         This will display Organizer in quick mode when clicked.
                                     required:
                                         - path
-                                        - min_path
                                     properties:
                                         path:
                                             type: string
@@ -1507,7 +1533,7 @@ additionalProperties:
                                                 Refiners that "loop", going from and to the same panel over and over again,
                                                 will still show the back button.
                                         
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         max_path:
                                             type:
                                                 - string
@@ -1519,7 +1545,7 @@ additionalProperties:
                                                 This works like a limit; the Admin will not be able to navigate away from this
                                                 panel except by pressing the back button.
                                         
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         
                                                 If you don't want to use a limit you can also set this property to false to disable it.
                                         disallow_refiners_looping_on_min_path:
@@ -1535,8 +1561,6 @@ additionalProperties:
                                         and will let an Admin pick items from a panel.
                                     required:
                                         - path
-                                        - target_path
-                                        - min_path
                                     oneOf:
                                         -
                                             required:
@@ -1558,7 +1582,7 @@ additionalProperties:
                                             description: >
                                                 The tag path of the panel in Organizer where the "Choose" button should be shown.
                                         
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         min_path:
                                             type: string
                                             default: (defaults to the path property)
@@ -1574,7 +1598,7 @@ additionalProperties:
                                                 Refiners that "loop", going from and to the same panel over and over again,
                                                 will still show the back button.
                                         
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         max_path:
                                             type:
                                                 - string
@@ -1586,7 +1610,7 @@ additionalProperties:
                                                 This works like a limit; the Admin will not be able to navigate away from this
                                                 panel except by pressing the back button.
                                         
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         
                                                 If you don't want to use a limit you can also set this property to false to disable it.
                                         disallow_refiners_looping_on_min_path:
@@ -1797,14 +1821,7 @@ additionalProperties:
                                     description: >
                                         If you set this property, the button will be disabled.
                                 
-                                disabled_if:
-                                    type: string
-                                    description: >
-                                        A snippet of JavaScript code to be evaluated.
-                                        
-                                        If the code provided evaluates to <code>true</code> the button will be disabled.
-                                        
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                disabled_if: *disabled_if
                                 
                                 disabled_if_for_all_selected_items:
                                     type: string
@@ -1979,14 +1996,7 @@ additionalProperties:
                                     description: >
                                         If you set this property, the button will be disabled.
                                 
-                                disabled_if:
-                                    type: string
-                                    description: >
-                                        A snippet of JavaScript code to be evaluated.
-                                        
-                                        If the code provided evaluates to <code>true</code> the button will be disabled.
-                                        
-                                        See http://zenar.io/visibility-in-tuix for examples.
+                                disabled_if: *disabled_if
                                 
                                 disabled_tooltip:
                                     type: string
@@ -2609,14 +2619,7 @@ properties:
                     description: >
                         If you set this property, the button will be disabled.
                 
-                disabled_if:
-                    type: string
-                    description: >
-                        A snippet of JavaScript code to be evaluated.
-                        
-                        If the code provided evaluates to <code>true</code> the button will be disabled.
-                        
-                        See http://zenar.io/visibility-in-tuix for examples.
+                disabled_if: *disabled_if
                 
                 disabled_tooltip:
                     type: string

@@ -22,6 +22,7 @@ zenario__layouts:
                 where_statement: "WHERE (l.status IS NULL OR l.status = 'active')"
                 custom_where_statement__without_unregistered: WHERE l.status IS NOT NULL
                 custom_where_statement__trash: "WHERE l.status = 'suspended'"
+                custom_where_statement__typeahead_search: "WHERE l.status = 'active'"
             disable_summary_view: true
             columns:
                 code:

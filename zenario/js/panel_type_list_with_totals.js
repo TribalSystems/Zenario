@@ -119,7 +119,7 @@ methods.generateTotals = function(data, itemsToCount, grandTotal) {
 		}
 	}
 	
-	return zenarioA.microTemplate('zenario_organizer_list_total', data);
+	return this.microTemplate('zenario_organizer_list_total', data);
 };
 
 

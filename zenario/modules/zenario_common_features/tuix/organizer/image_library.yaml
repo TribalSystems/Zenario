@@ -361,15 +361,14 @@ zenario__content:
                     hide_when_children_are_not_visible: true
                 view:
                     parent: actions_dropdown
-                    label: View
+                    label: View original
                     popout:
                         href: zenario/file.php
-                        options:
-                            type: image
+                        type: image
                 download:
                     parent: actions_dropdown
                     hide_in_select_mode: true
-                    label: Download
+                    label: Download original
                     ajax:
                         confirm:
                             download: true

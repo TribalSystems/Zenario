@@ -88,33 +88,75 @@ $moduleDetails = array_reverse($moduleDetails, true);
 
 
 //Add JavaScript support elements for each Plugin on the page
-foreach ($moduleDetails as $module) {
+
+$includeMicrotemplates = array();
+if (!empty($moduleDetails)) {
+	
 	//Create a namespace for each Plugin used on this page
-	echo '
-		zenario.enc(', $module['module_id'], ', "', $module['class_name'], '", "', $module['vlp_class'], '");';
+	echo '(function(c){';
 	
-	$jsDir = moduleDir($module['class_name'], 'js/');
+	foreach ($moduleDetails as $module) {
+		echo "\n", 'c(', (int) $module['module_id'], ', ', json_encode($module['class_name']), ', ';
 	
-	if (!empty($_GET['admin_frontend'])) {
-		//Add the Plugins's Admin Frontend library
-		incJS($jsDir. 'admin_frontend', true);
-	
-	} elseif (!empty($_GET['organizer'])) {
-		//Add the any JavaScript needed for Organizer
-		incJS($jsDir. 'organizer', true);
-		incJS($jsDir. 'storekeeper', true);
-	
-	} elseif (!empty($_GET['wizard'])) {
-		incJS($jsDir. 'wizard', true);
-	
-	} else {
-		//Add the Plugin's library include if it exists
-		incJS($jsDir. 'plugin', true);
-		
-		//For Admins, add the Plugin's admin js if it exists
-		if (!empty($_GET['admin'])) {
-			incJS($jsDir. 'admin', true);
+		if ($module['class_name'] == $module['vlp_class']) {
+			echo '1';
+		} else {
+			echo json_encode($module['vlp_class']);
 		}
+		echo ');';
+	}
+	echo "\n", '})(zenario.enc);';
+
+	foreach ($moduleDetails as $module) {
+		if ($jsDir = moduleDir($module['class_name'], 'js/')) {
+			if (!empty($_GET['admin_frontend'])) {
+				//Add the Plugins's Admin Frontend library
+				incJS($jsDir. 'admin_frontend', true);
+	
+			} elseif (!empty($_GET['organizer'])) {
+				//Add the any JavaScript needed for Organizer
+				incJS($jsDir. 'organizer', true);
+				incJS($jsDir. 'storekeeper', true);
+	
+			} elseif (!empty($_GET['wizard'])) {
+				incJS($jsDir. 'wizard', true);
+	
+			} else {
+				//Add the Plugin's library include if it exists
+				incJS($jsDir. 'plugin', true);
+		
+				//For Admins, add the Plugin's admin js if it exists
+				if (!empty($_GET['admin'])) {
+					incJS($jsDir. 'admin', true);
+				}
+				
+				if ($jsDir = moduleDir($module['class_name'], 'microtemplates/', true)) {
+					$includeMicrotemplates[] = $jsDir;
+				}
+			}
+		}
+	}
+	
+	if (!empty($includeMicrotemplates)) {
+		echo "\n", '(function(t) {';
+		foreach ($includeMicrotemplates as $jsDir) {
+			foreach (scandir($dir = CMS_ROOT. $jsDir) as $file) {
+				if (substr($file, 0, 1) != '.' && substr($file, -5) == '.html' && is_file($dir. $file)) {
+					$name = substr($file, 0, -5);
+					
+					echo "\n";
+					
+					if ('' === preg_replace('@\w@', '', $name)) {
+						echo 't.'. $name;
+					} else {
+						echo 't[', json_encode($name), ']';
+					}
+					
+					echo '=', json_encode(file_get_contents($dir. $file)), ';';
+				}
+			}
+		}
+		echo "\n", '})(zenario.microTemplates);';
 	}
 }
 

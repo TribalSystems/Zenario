@@ -20,6 +20,12 @@ empty_slot:
                 edit: true
                 layout: true
             label: 'CSS classes: <span></span>'
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'In this slot:'
+            page_modes:
+                edit: true
+                layout: true
         empty:
             ord: "11"
             label: '[Empty slot]'
@@ -68,9 +74,15 @@ empty_slot:
     
     
     overridden_info:
-        desc:
-            css_class: zenario_slotControl_slotName
-            label: 'Layout layer (overridden):'
+        #desc:
+        #    css_class: zenario_slotControl_slotName
+        #    label: 'Layout layer (overridden):'
+        #    page_modes:
+        #        edit: true
+        #        layout: true
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'In this slot on this layout (overridden):'
             page_modes:
                 edit: true
                 layout: true

@@ -19,6 +19,7 @@ site_settings:
                         name: sitewide_head
                     full_width: true
                     type: code_editor
+                    dont_trim: true
                     language: html
                     value: ''
                     style: >
@@ -39,6 +40,7 @@ site_settings:
                         name: sitewide_body
                     full_width: true
                     type: code_editor
+                    dont_trim: true
                     language: html
                     value: ''
                     style: >
@@ -59,8 +61,18 @@ site_settings:
                         name: sitewide_foot
                     full_width: true
                     type: code_editor
+                    dont_trim: true
                     language: html
                     value: ''
                     style: >
                         height: 25em;
+                    note_below: |
+                        <p>The following JavaScript libraries are available for you to use:</p>
+                        <ul class="zenario_js_libs_available">
+                            <li><a href="http://www.jacklmoore.com/colorbox/" target="_blank">Colorbox</a></li>
+                            <li><a href="https://jquery.com/" target="_blank">jQuery</a></li>
+                            <li><a href="http://jqueryui.com/" target="_blank">jQuery UI core, effects and tooltips</a></li>
+                            <li><a href="https://modernizr.com/" target="_blank">Modernizr</a></li>
+                            <li><a href="http://underscorejs.org/" target="_blank">Underscore.js</a></li>
+                        </ul>
     setting_group: head_and_foot

@@ -24,8 +24,8 @@ plugin_settings:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
+                        select_phrase: select a content item...
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select a Content Item
+                        required_if_not_hidden: Please select a content item
     module_class_name: zenario_search_entry_box

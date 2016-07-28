@@ -79,8 +79,8 @@ switch ($path) {
 				$onlyShowLinkToContent = true;
 			}
 			
-			$box['tabs']['first_tab']['fields']['link_type']['values']['_NO_LINK']['hidden'] =
-			$box['tabs']['first_tab']['fields']['link_type']['values']['_EXTERNAL_URL']['hidden'] = $onlyShowLinkToContent;
+			$box['tabs']['first_tab']['fields']['link_type']['values']['_NO_LINK']['disabled'] =
+			$box['tabs']['first_tab']['fields']['link_type']['values']['_EXTERNAL_URL']['disabled'] = $onlyShowLinkToContent;
 			
 		}
 		
@@ -116,9 +116,7 @@ switch ($path) {
 		
 			if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
 				|| $values['first_tab/image_source']  == '_PICTURE' ) {
-					$box['tabs']['first_tab']['fields']['link_type']['values']['_ENLARGE_IMAGE'] = array('ord'=>4,'label'=>'Enlarge image in fancy box');
 			} else {
-				unset($box['tabs']['first_tab']['fields']['link_type']['values']['_ENLARGE_IMAGE']);
 				if ($values['first_tab/link_type']=='_ENLARGE_IMAGE') {
 					$box['tabs']['first_tab']['fields']['link_type']['current_value'] = '_NO_LINK';
 					$box['tabs']['first_tab']['fields']['link_type']['value'] = '_NO_LINK';
@@ -148,6 +146,9 @@ switch ($path) {
 		$box['tabs']['first_tab']['fields']['rollover_image']['hidden'] = 
 			$box['tabs']['first_tab']['fields']['use_rollover']['hidden']
 		 || !$values['first_tab/use_rollover'];
+		
+		$box['tabs']['first_tab']['fields']['retina']['hidden'] = 
+			$box['tabs']['first_tab']['fields']['canvas']['hidden'];
 		
 		
 		//if (isset($box['tabs']['text']['fields']['use_phrases'])) {

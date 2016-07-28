@@ -67,7 +67,7 @@
 }
 
 #zenario_server_time.jobs_not_running {
-	background: url('images/clock-icon-red.png') no-repeat 2px 8px;
+	background: url('images/server-time-jobs-not-running.png') no-repeat 2px 8px;
 }
 
 #zenario_page_caching {

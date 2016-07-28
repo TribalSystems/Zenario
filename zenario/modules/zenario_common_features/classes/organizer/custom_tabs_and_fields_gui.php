@@ -195,18 +195,22 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 							'note_below' => $field['note_below'],
 							'side_note' => $field['side_note'],
 							'db_column' => $field['db_column'],
-							'show_in_organizer' => (int)$field['show_in_organizer'],
+							'show_in_organizer' => (int)($field['organizer_visibility'] != 'none'),
 							'create_index' => (int)$field['create_index'],
 							'searchable' => (int)$field['searchable'],
 							'sortable' => (int)$field['sortable'],
 							'include_in_export' => (int)$field['include_in_export'],
+							'autocomplete' => (int)$field['autocomplete'],
 							'indent' => (int)$field['indent'],
 							'multiple_select' => (int)$field['multiple_select'],
 							'store_file' => $field['store_file'],
 							'extensions' => $field['extensions'],
 							
 							'admin_box_visibility' => $field['admin_box_visibility'],
-							'organizer_visibility' => $field['show_by_default'] ? 1 : ($field['always_show'] ? 2 : ''),
+							'organizer_visibility' => $field['organizer_visibility'],
+							'allow_admin_to_change_visibility' => (int)$field['allow_admin_to_change_visibility'],
+							// Hiding system fields
+							'hide_in_organizer' => ($field['organizer_visibility'] == 'hide'),
 							
 							'remove' => false,
 						);
@@ -301,7 +305,11 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 						}
 						
 						// Get current dataset fields
-						$datasetFields = getRowsArray('custom_dataset_fields', array('db_column', 'type', 'is_system_field'), array('dataset_id' => $dataset['id']));
+						$datasetFields = getRowsArray(
+							'custom_dataset_fields', 
+							array('db_column', 'type', 'is_system_field', 'allow_admin_to_change_visibility'), 
+							array('dataset_id' => $dataset['id'])
+						);
 						
 						foreach ($data as $tabName => $tab) {
 							if (is_array($tab)) {
@@ -352,7 +360,8 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 														'protected' => !empty($field['is_protected']),
 														'note_below' => empty($field['note_below']) ? '' : substr($field['note_below'], 0, 255),
 														'side_note' => empty($field['side_note']) ? '' : substr($field['side_note'], 0, 255),
-														'include_in_export' => !empty($field['include_in_export'])
+														'include_in_export' => !empty($field['include_in_export']),
+														'autocomplete' => !empty($field['autocomplete'])
 													);
 													
 													$ids = array();
@@ -374,13 +383,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 														$values['validation'] = $field['validation'];
 														$values['validation_message'] = ($field['validation'] == 'none') ? null : substr($field['validation_message'], 0, 255);
 														
-														$values['show_in_organizer'] = !empty($field['show_in_organizer']);
+														if (!empty($field['show_in_organizer'])) {
+															$values['organizer_visibility'] = $field['organizer_visibility'];
+														} else {
+															$values['organizer_visibility'] = 'none';
+														}
+														
 														$values['create_index'] = !empty($field['create_index']) && !empty($field['show_in_organizer']);
 														$values['searchable'] = !empty($field['searchable']) && !empty($field['show_in_organizer']);
 														$values['sortable'] = !empty($field['sortable']) && $values['show_in_organizer'] && $values['create_index'];
-														$values['show_by_default'] = !empty($field['organizer_visibility']) && ($field['organizer_visibility'] == 1) && $values['show_in_organizer'];
-														$values['always_show'] = !empty($field['organizer_visibility']) && ($field['organizer_visibility'] == 2) && $values['show_in_organizer'];
-														
 														$values['values_source'] = empty($field['values_source']) ? '' : $field['values_source'];
 														$values['values_source_filter'] = !empty($field['values_source']) && isset($field['values_source_filter']) ? substr($field['values_source_filter'], 0, 255) : '';
 														
@@ -399,7 +410,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 															$values['store_file'] = !empty($field['store_file']) ? $field['store_file'] : null;
 															$values['extensions'] = !empty($field['extensions']) ? substr($field['extensions'], 0, 255) : '';
 														}
-														
+													// Save a system fields admin box visibility if flag is set
+													} elseif (!empty($datasetFields[$fieldId]['allow_admin_to_change_visibility'])) {
+														$values['admin_box_visibility'] = $field['admin_box_visibility'];
+														$values['parent_id'] = (($field['admin_box_visibility'] != 'show_on_condition') || empty($field['parent_id'])) ? 0 : $field['parent_id'];
+														if (!empty($field['hide_in_organizer'])) {
+															$values['organizer_visibility'] = 'hide';
+														} else {
+															$values['organizer_visibility'] = 'none';
+														}
 													}
 													
 													// Get old name for createDatasetFieldInDB so it can be renamed if db_column is different

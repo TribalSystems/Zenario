@@ -30,7 +30,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 switch ($path) {
 	case 'plugin_settings':
-		$fields['each_item/author_canvas']['hidden'] = !$values['each_item/show_author_image'];
+		$fields['each_item/author_retina']['hidden'] = 
+		$fields['each_item/author_canvas']['hidden'] =
+			!$values['each_item/show_author_image'];
+		
 		$fields['each_item/author_width']['hidden'] =
 			$fields['each_item/author_canvas']['hidden'] ||
 				!in($values['each_item/author_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
@@ -53,6 +56,7 @@ switch ($path) {
 		$box['tabs']['overall_list']['fields']['more_hyperlink_target']['hidden'] =
 			!$values['overall_list/show_more_link'];
 		
+		$box['tabs']['each_item']['fields']['retina']['hidden'] = 
 		$box['tabs']['each_item']['fields']['canvas']['hidden'] = 
 			!$values['each_item/show_sticky_images'];		
 

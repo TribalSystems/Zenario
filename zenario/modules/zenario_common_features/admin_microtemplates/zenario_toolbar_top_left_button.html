@@ -1,0 +1,10 @@
+<div class="zenario_admin_toolbar_divider"></div>
+
+<ul>
+	<li class="{{m.css_class|escape}}">
+		<a href="{{zenario.ifNull(m.href, '#')|escape}}" title="{{m.tooltip|escape}}" onclick="{{m.onclick|escape}}">
+			<span>{{m.label|escape}}</span>
+		</a>
+		{{m.children? '<ul>' + zenarioA.microTemplate('zenario_organizer_button_children', m.children) + '</ul>'  : ''}}
+	</li>
+</ul>

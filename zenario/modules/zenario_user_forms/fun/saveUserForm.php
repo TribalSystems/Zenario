@@ -30,13 +30,14 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $dataset = getDatasetDetails('users');
 
 // Get fields on form
-$formFields = self::getUserFormFields($userFormId);
+$formFields = static::getUserFormFields($userFormId);
 
 // Get form properties
 $formProperties = getRow(
 	'user_forms',
 	array(
 		'name',
+		'type',
 		'send_email_to_user',
 		'user_email_template',
 		'send_email_to_admin',
@@ -80,8 +81,8 @@ $attachments = array();
 
 foreach ($formFields as $fieldId => $field) {
 	$userFieldId = $field['user_field_id'];
-	$fieldName = self::getFieldName($field);
-	$type = self::getFieldType($field);
+	$fieldName = static::getFieldName($field);
+	$type = static::getFieldType($field);
 	$ord = $field['ord'];
 	
 	if ($field['is_system_field']){
@@ -105,7 +106,7 @@ foreach ($formFields as $fieldId => $field) {
 		$loadedFieldValue = isset($data[$fieldName]) ? $data[$fieldName] : null;
 	}
 	
-	$fieldValue = self::getFormFieldValue($field, $type, true, $loadedFieldValue, false, false, $filePickerValueLink);
+	$fieldValue = static::getFormFieldValue($field, $type, true, $loadedFieldValue, false, false, $filePickerValueLink);
 	
 	switch ($type){
 		case 'group':
@@ -150,12 +151,14 @@ foreach ($formFields as $fieldId => $field) {
 			if ($userFieldId) {
 				$valuesList = getDatasetFieldLOV($userFieldId);
 			} else {
-				$valuesList = self::getUnlinkedFieldLOV($fieldId);
+				$valuesList = static::getUnlinkedFieldLOV($fieldId);
 			}
-			$value = isset($valuesList[$fieldValue]) ? $valuesList[$fieldValue] : '';
 			$fieldIdValueLink[$fieldId] = array();
-			$fieldIdValueLink[$fieldId][$fieldValue] = $value;
-			$values[$fieldId] = array('value' => $value,  'internal_value' => $fieldValue);
+			if (!empty($fieldValue)) {
+				
+				$fieldIdValueLink[$fieldId][$fieldValue] = $valuesList[$fieldValue];
+				$values[$fieldId] = array('value' => $valuesList[$fieldValue],  'internal_value' => $fieldValue);
+			}
 			break;
 		
 		case 'text':
@@ -180,6 +183,10 @@ foreach ($formFields as $fieldId => $field) {
 					break;
 			}
 			$values[$fieldId] = array('value' => $value);
+			if (isset($data[$fieldName . '_auto']) && $data[$fieldName . '_auto'] != '_UNKNOWN') {
+				$values[$fieldId]['internal_value'] = $data[$fieldName . '_auto'];
+			}
+			
 			$fieldIdValueLink[$fieldId] = $fieldValue;
 			break;
 		case 'editor':
@@ -209,6 +216,8 @@ foreach ($formFields as $fieldId => $field) {
 			if ($fieldValue) {
 				$fileIds = str_getcsv((string)$fieldValue, ',', '"', '//');
 				foreach ($fileIds as $fileId) {
+					
+					//TODO check $userId here works!
 					
 					// If numeric file ID do nothing as this is already saved
 					if (is_numeric($fileId) && checkRowExists('custom_dataset_files_link', array('dataset_id' => $dataset['id'], 'field_id' => $userFieldId, 'linking_id' => $userId, 'file_id' => $fileId))) {
@@ -301,23 +310,25 @@ if ($formProperties['save_data'] && inc('zenario_extranet')) {
 	// Try to save data if email field is on form
 	if (isset($fields['email']) || $userId) { 
 		// Duplicate email found
-		if ($userId || $userId = getRow('users', 'id', array('email' => $fields['email']))) {
+		if (($userId || ($userId = getRow('users', 'id', array('email' => $fields['email'])))) 
+			&& ($formProperties['type'] != 'registration')
+		) {
 			switch ($formProperties['user_duplicate_email_action']) {
 				// Don’t change previously populated fields
 				case 'merge': 
 					$fields['modified_date'] = now();
-					self::mergeUserData($fields, $userId, $formProperties['log_user_in']);
-					self::saveUserCustomData($userCustomFields, $userId, true);
-					self::saveUserMultiCheckboxData($checkBoxValues, $userId, true);
-					self::saveUserFilePickerData($filePickerValues, $userId, true);
+					static::mergeUserData($fields, $userId, $formProperties['log_user_in']);
+					static::saveUserCustomData($userCustomFields, $userId, true);
+					static::saveUserMultiCheckboxData($checkBoxValues, $userId, true);
+					static::saveUserFilePickerData($filePickerValues, $userId, true);
 					break;
 				// Change previously populated fields
 				case 'overwrite': 
 					$fields['modified_date'] = now();
-					$userId = self::saveUser($fields, $userId);
-					self::saveUserCustomData($userCustomFields, $userId);
-					self::saveUserMultiCheckboxData($checkBoxValues, $userId);
-					self::saveUserFilePickerData($filePickerValues, $userId);
+					$userId = static::saveUser($fields, $userId);
+					static::saveUserCustomData($userCustomFields, $userId);
+					static::saveUserMultiCheckboxData($checkBoxValues, $userId);
+					static::saveUserFilePickerData($filePickerValues, $userId);
 					break;
 				// Don’t update any fields
 				case 'ignore': 
@@ -332,14 +343,38 @@ if ($formProperties['save_data'] && inc('zenario_extranet')) {
 			if (!empty($fields['screen_name'])) {
 				$fields['screen_name_confirmed'] = true;
 			}
+			
+			// Custom logic for creating users from a registration form
+			if ($formProperties['type'] == 'registration') {
+				$fields['status'] = 'active';
+				// Email verification
+				if (!empty($registrationOptions['initial_email_address_status'])) {
+					if ($registrationOptions['initial_email_address_status'] == 'not_verified' 
+						&& isset($registrationOptions['initial_account_status'])
+					) {
+						if ($registrationOptions['initial_account_status'] == 'pending') {
+							$fields['status'] = 'pending';
+						} else {
+							$fields['status'] = 'contact';
+						}
+						$fields['email_verified'] = 0;
+					} else {
+						$fields['email_verified'] = 1;
+					}
+				}
+			}
+			
 			// Create new user
-			$userId = self::saveUser($fields);
+			$userId = static::saveUser($fields);
 			
 			// Save new user custom data
-			self::saveUserCustomData($userCustomFields, $userId);
-			self::saveUserMultiCheckboxData($checkBoxValues, $userId);
+			static::saveUserCustomData($userCustomFields, $userId);
+			static::saveUserMultiCheckboxData($checkBoxValues, $userId);
+			static::saveUserFilePickerData($filePickerValues, $userId);
+			//TODO Check if file picker save is needed here!
 		}
-		if ($userId) {
+		if ($userId && ($formProperties['type'] != 'registration')) {
+			
 			addUserToGroup($userId, $formProperties['add_user_to_group']);
 			// Log user in
 			if ($formProperties['log_user_in']) {
@@ -361,16 +396,18 @@ if ($formProperties['save_record']) {
 	// Save record only if there is no duplicate response by the identified user
 	// Or if there is a response but the appropriate options have been checked,
 	// Or no user could be found from the data
-	if (!$userId ||
-		!$formProperties['save_data'] || 
-		!checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) || 
-		(checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) 
-			&& $formProperties['create_another_form_submission_record'])) 
-		{
+	if (!$userId 
+		|| !$formProperties['save_data']
+		|| !checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) 
+		|| (checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) 
+			&& $formProperties['create_another_form_submission_record']
+		)
+	) {
 		// Create new response with values
-		$user_response_id = 
-			insertRow(ZENARIO_USER_FORMS_PREFIX. 'user_response', 
-				array('user_id' => $userId, 'form_id' => $userFormId, 'response_datetime' => now()));
+		$user_response_id = insertRow(
+			ZENARIO_USER_FORMS_PREFIX. 'user_response', 
+			array('user_id' => $userId, 'form_id' => $userFormId, 'response_datetime' => now())
+		);
 		
 		$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues;
 		
@@ -384,12 +421,15 @@ if ($formProperties['save_record']) {
 		}
 		// Multi value form fields (checkboxes)
 		foreach ($checkBoxValues as $fieldId => $checkedBoxesList) {
-			insertRow(ZENARIO_USER_FORMS_PREFIX. 'user_response_data', 
+			insertRow(
+				ZENARIO_USER_FORMS_PREFIX. 'user_response_data', 
 				array(
 					'user_response_id' => $user_response_id, 
 					'form_field_id' => $fieldId, 
 					'internal_value' => $checkedBoxesList['internal_value'], 
-					'value' => $checkedBoxesList['value']));
+					'value' => $checkedBoxesList['value']
+				)
+			);
 		}
 	}
 }
@@ -436,7 +476,7 @@ if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityT
 	if ($sendEmailToUser) {
 		
 		// Get merge fields
-		$userEmailMergeFields = self::getTemplateEmailMergeFields($values, $userId);
+		$userEmailMergeFields = static::getTemplateEmailMergeFields($values, $userId);
 		
 		// Send email
 		zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $formProperties['user_email_template'], $userEmailMergeFields, array());
@@ -446,7 +486,7 @@ if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityT
 	if ($sendEmailToAdmin) {
 		
 		// Get merge fields
-		$adminEmailMergeFields = self::getTemplateEmailMergeFields($values, $userId, true);
+		$adminEmailMergeFields = static::getTemplateEmailMergeFields($values, $userId, true);
 		
 		// Set reply to address and name
 		$replyToEmail = false;
@@ -491,18 +531,37 @@ if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityT
 				$emailValues[$fieldData['ord']] = array($formFields[$fieldId]['name'], $fieldData['value']);
 			}
 			ksort($emailValues);
-	
+			
 			$formName = trim($formProperties['name']);
 			$formName = empty($formName) ? phrase('[blank name]', array(), 'zenario_user_forms') : $formProperties['name'];
 			$body =
 				'<p>Dear admin,</p>
 				<p>The form "'.$formName.'" was submitted with the following data:</p>';
-			if ($breadCrumbs) {
-				$body .= '<p>Page submitted from: '. $breadCrumbs .'</p>';
+			
+			
+			// Get menu path of current page
+			$menuNodeString = '';
+			if ($formProperties['send_email_to_admin'] && !$formProperties['admin_email_use_template']) {
+				$currentMenuNode = getMenuItemFromContent(cms_core::$cID, cms_core::$cType);
+				if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
+					$nodes = static::drawMenu($currentMenuNode['mID'], cms_core::$cID, cms_core::$cType);
+					for ($i = count($nodes) - 1; $i >= 0; $i--) {
+						$menuNodeString .= $nodes[$i].' ';
+						if ($i > 0) {
+							$menuNodeString .= '&#187; ';
+						}
+					}
+				}
 			}
+			if ($menuNodeString) {
+				$body .= '<p>Page submitted from: '. $menuNodeString .'</p>';
+			}
+			
 			foreach ($emailValues as $ordinal => $value) {
 				$body .= '<p>'.trim($value[0], " \t\n\r\0\x0B:").': '.$value[1].'</p>';
 			}
+			
+			$url = linkToItem(cms_core::$cID, cms_core::$cType, true, '', false, false, true);
 			if (!$url) {
 				$url = absCMSDirURL();
 			}
@@ -551,7 +610,7 @@ if ($formProperties['profanity_filter_text']) {
 if ($formProperties['send_signal']) {
 	$formProperties['user_form_id'] = $userFormId;
 	$values = $userSystemFields + $userCustomFields + $checkBoxValues + $unlinkedFields;
-	$formattedData = self::getTemplateEmailMergeFields($values, $userId);
+	$formattedData = static::getTemplateEmailMergeFields($values, $userId);
 	$params = array(
 		'data' => $formattedData, 
 		'rawData' => $data, 
@@ -564,9 +623,9 @@ if ($formProperties['send_signal']) {
 } 
 // Redirect to page if speficied
 if ($formProperties['redirect_after_submission'] && $formProperties['redirect_location']) {
-	$cId = $cType = false;
-	getCIDAndCTypeFromTagId($cId, $cType, $formProperties['redirect_location']);
-	langEquivalentItem($cId, $cType);
-	return linkToItem($cId, $cType);
+	$cID = $cType = false;
+	getCIDAndCTypeFromTagId($cID, $cType, $formProperties['redirect_location']);
+	langEquivalentItem($cID, $cType);
+	$redirectURL = linkToItem($cID, $cType);
 }
-return false;
+return $userId;

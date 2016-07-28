@@ -437,3 +437,15 @@ if (needRevision(34630)) {
 	
 	revision(34630);
 }
+
+//Attempt to clear the cache/frameworks directory
+if (needRevision(36380)) {
+	if (is_dir(CMS_ROOT. 'cache/frameworks')
+	 && !windowsServer()
+	 && execEnabled()) {
+		exec('rm -r '. escapeshellarg(CMS_ROOT. 'cache/frameworks'));
+		cleanDownloads();
+	}
+	
+	revision(36380);
+}

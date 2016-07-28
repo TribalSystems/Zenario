@@ -70,28 +70,8 @@ if (!post('_fill') && !$debugMode) {
 	$tags = array();
 	$clientTags = json_decode($_POST['_box'], true);
 	
-	//Attempt to pick the right box and load from the Storage
-		//(This may be in the cache directory or the session, depending on whether the cache was writable)
-	if (($adminBoxSyncStoragePath = adminBoxSyncStoragePath($clientTags))
-	 && (file_exists($adminBoxSyncStoragePath))
-	 && (adminBoxDecodeTUIX($tags, $clientTags, file_get_contents($adminBoxSyncStoragePath)))) {
-		$loadDefinition = false;
-	
-	} else
-	if (!empty($clientTags['_sync']['session'])
-	 && !empty($_SESSION['admin_box_sync'][$clientTags['_sync']['session']])
-	 && (adminBoxDecodeTUIX($tags, $clientTags, $_SESSION['admin_box_sync'][$clientTags['_sync']['session']]))) {
-		$loadDefinition = false;
-	
-	} else {
-		if (!empty($clientTags['_sync']['session']) || !setting('fab_use_cache_dir')) {
-			echo adminPhrase('An error occurred when syncing this form with the server. There is a problem with the server\'s $_SESSION variable.');
-		
-		} else {
-			echo adminPhrase('An error occurred when syncing this form with the server. A file placed in the cache/ directory could not be found.');
-		}
-		exit;
-	}
+	loadCopyOfTUIXFromServer($tags, $clientTags);
+	$loadDefinition = false;
 	
 	syncAdminBoxFromClientToServer($tags, $clientTags);
 	$originalTags = $tags;
@@ -138,9 +118,9 @@ if ($requestedPath == 'plugin_settings') {
 
 if ($loadDefinition) {
 	//Scan the Module directory for Modules with the relevant TUIX files, read them, and get a php array
-	$moduleFilesLoaded = array();
 	$tags = array();
 	$originalTags = array();
+	$moduleFilesLoaded = array();
 	loadTUIX($moduleFilesLoaded, $tags, $type, $requestedPath, $settingGroup, $compatibilityClassNames);
 	
 	
@@ -193,7 +173,7 @@ if (!zenarioAJAXIncludeModule($modules, $tags, $type, $requestedPath, $settingGr
 
 
 
-if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
+if (TUIXLooksLikeFAB($tags)) {
 	foreach ($tags['tabs'] as &$tab) {
 		if (!empty($tab['class_name'])) {
 			zenarioAJAXIncludeModule($modules, $tab, $type, $requestedPath, $settingGroup);
@@ -231,11 +211,11 @@ if ($debugMode) {
 		$fields = array();
 		$values = array();
 		$changes = array();
-		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false, $preDisplay = false);
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false);
 		
 		//Values need to be in a 2d array format here
 		$values2d = array();
-		if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
+		if (TUIXLooksLikeFAB($tags)) {
 			foreach ($tags['tabs'] as $tabName => &$tab) {
 				if (is_array($tab) && !empty($tab['fields']) && is_array($tab['fields'])) {
 					$values2d[$tabName] = array();
@@ -258,12 +238,15 @@ if ($debugMode) {
 		$fields = array();
 		$values = array();
 		$changes = array();
-		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true, $preDisplay = false);
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = true);
 		
 		//Apply standard validation formats
-		if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
+		if (TUIXLooksLikeFAB($tags)) {
 			foreach ($tags['tabs'] as $tabName => &$tab) {
-				applyValidationFromTUIXOnTab($tab);
+				//Check if the tab is in edit mode
+				if (engToBooleanArray($tab, 'edit_mode', 'on')) {
+					applyValidationFromTUIXOnTab($tab);
+				}
 			}
 		}
 		
@@ -276,7 +259,7 @@ if ($debugMode) {
 		if (post('_save') || post('_download')) {
 			
 			//Check if there are any errors
-			if (!empty($tags['tabs']) && is_array($tags['tabs'])) {
+			if (TUIXLooksLikeFAB($tags)) {
 				$doSave = true;
 				foreach ($tags['tabs'] as &$tab) {
 					if (!empty($tab['errors']) && is_array($tab['errors'])) {
@@ -324,7 +307,7 @@ if ($debugMode) {
 					$fields = array();
 					$values = array();
 					$changes = array();
-					readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false, $preDisplay = false);
+					readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false);
 					
 					foreach ($modules as $className => &$module) {
 						$module->saveAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes);
@@ -423,7 +406,7 @@ if ($debugMode) {
 		$fields = array();
 		$values = array();
 		$changes = array();
-		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false, $preDisplay = true);
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling = false, $resetErrors = false);
 		
 		foreach ($modules as $className => &$module) {
 			$module->formatAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes);
@@ -466,7 +449,7 @@ if ($debugMode) {
 	$fields = array();
 	$values = array();
 	$changes = array();
-	readAdminBoxValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false, $preDisplay = true);
+	readAdminBoxValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false);
 	
 	//Run the fill admin box method
 	foreach ($modules as $className => &$module) {
@@ -609,6 +592,19 @@ if ($debugMode) {
 				//If this field uses a LOV, load the values
 				} elseif (in($cfield['type'], 'checkboxes', 'radios', 'centralised_radios', 'select', 'centralised_select', 'dataset_select')) {
 					$cfield['values'] = getDatasetFieldLOV($cfield, false);
+					
+				//If this field uses autocomplete load values
+				} elseif ($cfield['type'] == 'text') {
+					if ($cfield['autocomplete']) {
+						$cfield['values'] = getDatasetFieldLOV($cfield);
+					}
+					
+					//Set maxlengths for text fields and text areas
+					$cfield['maxlength'] = 0xff;
+				
+				} elseif ($cfield['type'] == 'textarea') {
+					$cfield['maxlength'] = 0xffff;
+					
 				}
 			
 				if ($cfield['width']) {
@@ -641,7 +637,7 @@ if ($debugMode) {
 				if (!empty($tags['key']['id'])) {
 					//Checkboxes and file pickers are not stored in the usual table
 					if ($cfield['type'] == 'checkboxes' || $cfield['type'] == 'file_picker') {
-						$cfield['value'] = getDatasetFieldValue($tags['key']['id'], $cfield, $dataset);
+						$cfield['value'] = datasetFieldValue($dataset, $cfield, $tags['key']['id']);
 					
 					} elseif ($record && isset($record[$cfield['db_column']])) {
 						//Otherwise use the value from the record
@@ -651,45 +647,7 @@ if ($debugMode) {
 			
 			
 				//Make child fields only visible if their parents are visible and checked
-				$parents = array();
-				getCustomFieldsParents($cfield, $parents);
-			
-				if (!empty($parents)) {
-					$firstParent = true;
-					$cfield['visible_if'] = '';
-					
-					foreach ($parents as $parent) {
-						$cfield['visible_if'] .=
-							($cfield['visible_if']? ' && ' : '').
-							"zenarioAB.value('". jsEscape($parent['field_name']). "', '". jsEscape($parent['tab_name']). "') == 1";
-					
-						//Attempt to set the redraw_onchange property for that field if it is on the same tab as this one
-						//(This may miss custom fields, so we'll need to set any we've missed below)
-						if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
-						 && ($parentField = $tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
-						 && (is_array($parentField))
-						 && $parent['tab_name'] == $cfield['tab_name']) {
-							
-							$parentField['redraw_onchange'] = true;
-							
-							//Look for the immediate parent. If it's on this tab, and above the field,
-							//try to give this field a higher indent.
-							if ($firstParent
-							 && !empty($parentField['ord'])
-							 && (float) $parentField['ord'] < (float) $cfield['ord']
-							 && empty($cField['indent'])) {
-								
-								if (empty($parentField['indent'])) {
-									$cfield['indent'] = 1;
-								} else {
-									$cfield['indent'] = 1 + (int) $parentField['indent'];
-								}
-								
-							}
-						}
-						$firstParent = false;
-					}
-				}
+				setChildFieldVisibility($cfield, $tags);
 			
 				//If a field has children, be sure to redraw the form on change to display them
 				$children = array();
@@ -746,6 +704,22 @@ if ($debugMode) {
 			if ($cfield['side_note']) {
 				$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['side_note'] = htmlspecialchars($cfield['side_note']);
 			}
+			if ($cfield['allow_admin_to_change_visibility']) {
+				if ($cfield['admin_box_visibility'] == 'hide') {
+					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['hidden'] = true;
+				} elseif (($cfield['admin_box_visibility'] == 'show_on_condition') && $cfield['parent_id']) {
+					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['parent_id'] = $cfield['parent_id'];
+					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['dataset_id'] = $dataset['id'];
+					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['tab_name'] = $cfield['tab_name'];
+					setChildFieldVisibility($tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']], $tags);
+				}
+			}
+			
+			if ($cfield['type'] == 'text') {
+				if ($cfield['autocomplete']) {
+					$tags['tabs'][$cfield['tab_name']]['fields'][$cfield['field_name']]['values'] = getDatasetFieldLOV($cfield);
+				}
+			}
 		}
 		unset($cfield);
 	}
@@ -764,7 +738,7 @@ if ($debugMode) {
 	$fields = array();
 	$values = array();
 	$changes = array();
-	readAdminBoxValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false, $preDisplay = true);
+	readAdminBoxValues($tags, $fields, $values, $changes, $filling = true, $resetErrors = false);
 	
 	foreach ($modules as $className => &$module) {
 		$module->formatAdminBox($requestedPath, $settingGroup, $tags, $fields, $values, $changes);
@@ -775,25 +749,7 @@ if ($debugMode) {
 
 
 //Try to save a copy of the admin box in the cache directory
-if (($adminBoxSyncStoragePath = adminBoxSyncStoragePath($tags))
- && (@file_put_contents($adminBoxSyncStoragePath, adminBoxEncodeTUIX($tags)))) {
-	@chmod($adminBoxSyncStoragePath, 0666);
-	$tags['_sync']['session'] = false;
-
-//Fallback code to store in the session
-} else {
-	if (empty($_SESSION['admin_box_sync'])) {
-		$_SESSION['admin_box_sync'] = array(0 => 0); //I want to start counting from 1 so the key is not empty
-	}
-	
-	if (empty($tags['_sync']['session']) || empty($_SESSION['admin_box_sync'][$tags['_sync']['session']])) {
-		$tags['_sync']['session'] = count($_SESSION['admin_box_sync']);
-	}
-	
-	$_SESSION['admin_box_sync'][$tags['_sync']['session']] = adminBoxEncodeTUIX($tags);
-	$tags['_sync']['cache_dir'] = false;
-}
-
+saveCopyOfTUIXOnServer($tags);
 
 if (!empty($originalTags)) {
 	$output = array();

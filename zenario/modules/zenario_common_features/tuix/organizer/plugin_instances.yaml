@@ -13,6 +13,13 @@ zenario__modules:
                 plugin:
                     sql: 'pi.module_id = [[REFINER_ID]]'
             columns:
+                id:
+                    title: ID
+                    format: id
+                    always_show: true
+                    db_column: pi.id
+                    searchable: true
+                    width: xxsmall
                 name:
                     title: Name
                     db_column: pi.name
@@ -145,7 +152,7 @@ zenario__modules:
                         path: plugin_settings
                 framework_and_css:
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: 'Framework & CSS'
+                    label: 'CSS & framework'
                     admin_box:
                         path: plugin_css_and_framework
                 view_dropdown:

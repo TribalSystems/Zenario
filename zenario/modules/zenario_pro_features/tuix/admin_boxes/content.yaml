@@ -6,5 +6,5 @@ zenario_content:
             fields:
                 menu_invisible:
                     ord: 45
-                    label: 'Invisible in the Menu Tree:'
+                    label: 'Invisible in the Menu Tree'
                     type: checkbox

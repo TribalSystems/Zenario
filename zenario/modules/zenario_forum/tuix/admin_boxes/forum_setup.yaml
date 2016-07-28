@@ -23,9 +23,9 @@ zenario_forum_setup:
                     format_onchange: Yes
                     post_field_html: |
                         <label for="view_thread">
-                                                        Use this page as the &quot;View Thread&quot; page for an existing Forum
-                                                        that does not already have a &quot;View Thread&quot; page:
-                                                    </label>
+                            Use this page as the &quot;View Thread&quot; page for an existing Forum
+                            that does not already have a &quot;View Thread&quot; page:
+                        </label>
                 view_thread_forum:
                     label: 'Forum:'
                     pick_items:
@@ -44,9 +44,9 @@ zenario_forum_setup:
                     format_onchange: Yes
                     post_field_html: |
                         <label for="new_thread">
-                                                        Use this page as the &quot;New Thread&quot; page for an existing Forum
-                                                        that does not already have a &quot;New Thread&quot; page:
-                                                    </label>
+                            Use this page as the &quot;New Thread&quot; page for an existing Forum
+                            that does not already have a &quot;New Thread&quot; page:
+                        </label>
                 new_thread_forum:
                     label: 'Forum:'
                     pick_items:

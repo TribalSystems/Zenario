@@ -1,6 +1,14 @@
 <?php
 
 revision( 10
+
+, <<<_sql
+	TRUNCATE `[[DB_NAME_PREFIX]]user_forms`;
+_sql
+, <<<_sql
+	TRUNCATE `[[DB_NAME_PREFIX]]user_form_fields`;
+_sql
+
 , <<<_sql
 	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 _sql
@@ -64,6 +72,7 @@ _sql
 
 );
 
+// Make an initial sample form
 if (needRevision(19)) {
 	if (!checkRowExists('user_forms', array('name' => 'Simple contact form'))) {
 		// Create form
@@ -152,6 +161,88 @@ _sql
 	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_response`
 	ADD COLUMN profanity_filter_score INT NOT NULL DEFAULT 0,
 	ADD COLUMN profanity_tolerance_limit INT NOT NULL DEFAULT 0
+_sql
+
+);
+
+// Create a registration user form on install
+if (needRevision(29)) {
+	if (!checkRowExists('user_forms', array('name' => 'Extranet registration form'))) {
+		
+		// Create form
+		$formId = insertRow('user_forms', array(
+			'name' => 'Extranet registration form',
+			'title' => 'Create an account',
+			'type' => 'registration',
+			'submit_button_text' => 'Register'
+		));
+		
+		$dataset = getDatasetDetails('users');
+		
+		// Create form fields
+		$emailField = getDatasetFieldDetails('email', $dataset);
+		insertRow(
+			'user_form_fields', 
+			array(
+				'user_form_id' => $formId,
+				'user_field_id' => $emailField['id'],
+				'ord' => 1,
+				'is_required' => 1,
+				'label' => 'Email:',
+				'name' => 'Email',
+				'required_error_message' => 'Please enter your email address',
+				'validation' => 'email',
+				'validation_error_message' => 'Please enter a valid email address'
+			)
+		);
+		
+		$salutationField = getDatasetFieldDetails('salutation', $dataset);
+		insertRow(
+			'user_form_fields', 
+			array(
+				'user_form_id' => $formId,
+				'user_field_id' => $salutationField['id'],
+				'ord' => 2,
+				'label' => 'Salutation:',
+				'name' => 'Salutation'
+			)
+		);
+		
+		$firstNameField = getDatasetFieldDetails('first_name', $dataset);
+		insertRow(
+			'user_form_fields', 
+			array(
+				'user_form_id' => $formId,
+				'user_field_id' => $firstNameField['id'],
+				'ord' => 3,
+				'is_required' => 1,
+				'label' => 'First name:',
+				'name' => 'First name',
+				'required_error_message' => 'Please enter your first name'
+			)
+		);
+		
+		$lastNameField = getDatasetFieldDetails('last_name', $dataset);
+		insertRow(
+			'user_form_fields', 
+			array(
+				'user_form_id' => $formId,
+				'user_field_id' => $lastNameField['id'],
+				'ord' => 3,
+				'is_required' => 1,
+				'label' => 'Last name:',
+				'name' => 'Last name',
+				'required_error_message' => 'Please enter your last name'
+			)
+		);
+	}
+	revision(29);
+}
+
+revision(30
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN description text
 _sql
 
 );

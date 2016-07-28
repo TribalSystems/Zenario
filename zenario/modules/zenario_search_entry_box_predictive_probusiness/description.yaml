@@ -27,5 +27,3 @@ dependencies:
 inheritance:
     inherit_frameworks_from_module: zenario_search_entry_box
     inherit_settings_from_module: zenario_search_results_pro
-    allow_upgrades_from_module:
-        zenario_search_entry_box: true

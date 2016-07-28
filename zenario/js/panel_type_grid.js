@@ -95,7 +95,7 @@ methods.showPanel = function($header, $panel, $footer) {
 
 methods.drawItems = function($panel) {
 	this.items = this.getMergeFieldsForItemsAndColumns(true);
-	$panel.html(zenarioA.microTemplate('zenario_organizer_grid', this.items));
+	$panel.html(this.microTemplate('zenario_organizer_grid', this.items));
 	$panel.show();
 };
 
@@ -120,7 +120,7 @@ methods.showButtons = function($buttons) {
 		m.collectionButtons = zenarioO.getCollectionButtons();
 	}
 	
-	html = zenarioA.microTemplate('zenario_organizer_panel_buttons', m);
+	html = this.microTemplate('zenario_organizer_panel_buttons', m);
 	
 	//if (html.replace(/\s+/g, '') != $buttons.html().replace(/\s+/g, '')) {
 		$buttons.html(html).show();
@@ -271,7 +271,7 @@ methods.setHeader = function($header) {
 	var m = {
 		quickFilters: zenarioO.getQuickFilters()
 	};
-	$header.html(zenarioA.microTemplate('zenario_organizer_panel_header', m));
+	$header.html(this.microTemplate('zenario_organizer_panel_header', m));
 	$header.show();
 };
 
@@ -285,7 +285,7 @@ methods.sizePanel = function($header, $panel, $footer, $buttons) {
 //Draw some pagination
 methods.drawPagination = function($footer) {
 	
-	$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', this.items)).show();
+	$footer.html(this.microTemplate('zenario_organizer_pagination', this.items)).show();
 	
 	var pageCount = zenarioO.getPageCount(),
 		$pagination = $footer.find('#organizer_pagination');

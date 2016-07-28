@@ -45,21 +45,14 @@ foreach($this->frameworkFields($section, $this->subSections) as $name => $field)
 		
 		} elseif ($field['pattern'] == 'new_email') {
 			if (checkRowExists('users', array('email' => post($name)))
-			 || checkRowExists('users', array('screen_name' => post($name)))) {
-				if ($this->setting('initial_email_address_status')=='not_verified') {
-					if (getRow('users', 'status', array('email' => post($name))) == 'contact') {
-						$errorMessage = $this->setting('contact_not_extranet_message');
-						$this->errors[] = array('Error' => $this->phrase($errorMessage));
-					} else {
-						$this->errors[] = array('Error' => $this->phrase('This email address is already in use and cannot be registered again.'));
-					}
+				|| checkRowExists('users', array('screen_name' => post($name)))
+			) {
+				if (getRow('users', 'status', array('email' => post($name))) == 'contact') {
+					$errorMessage = $this->setting('contact_not_extranet_message');
+					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				} else {
-					if (getRow('users', 'status', array('email' => post($name))) == 'contact') {
-						$errorMessage = $this->setting('contact_not_extranet_message');
-						$this->errors[] = array('Error' => $this->phrase($errorMessage));
-					} else {
-						$this->errors[] = array('Error' => $this->phrase('This email address is already in use and cannot be registered again.'));
-					}
+					$errorMessage = $this->setting('email_already_registered');
+					$this->errors[] = array('Error' => $this->phrase($errorMessage));
 				}
 			}
 		
@@ -90,8 +83,8 @@ foreach($this->frameworkFields($section, $this->subSections) as $name => $field)
 		
 		} elseif ($field['pattern'] == 'new_screen_name') {
 			if (checkRowExists('users', array('screen_name' => post($name)))) {
-				//screen name already in use
-				$this->errors[] = array('Error' => $this->phrase('This Screen Name is already in use on this site. Please choose another one.'));
+				$errorMessage = $this->setting('screen_name_in_use');
+				$this->errors[] = array('Error' => $this->phrase($errorMessage));
 			}
 		}
 	}

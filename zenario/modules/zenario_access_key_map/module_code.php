@@ -84,7 +84,6 @@ class zenario_access_key_map extends module_base_class {
 					$language = false,
 					$onlyFollowOnLinks = false,
 					$onlyIncludeOnLinks = false,
-					$showAdminAddMenuItem = false,
 					$showInvisibleMenuItems = false);
 			
 			foreach ($menuArray as &$menu) {

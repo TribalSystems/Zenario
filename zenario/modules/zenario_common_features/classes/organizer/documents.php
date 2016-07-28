@@ -134,6 +134,7 @@ class zenario_common_features__organizer__documents extends module_base_class {
 	
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		$externalProgramError = false;
 		if (post('reorder') || post('hierarchy')) {
 			$idsArray = explode(',', $ids);
 			$filenamesInFolder = array();
@@ -287,7 +288,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				
 				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
-					echo '<p>', adminPhrase('antiword or pdftotext do not appear to be working.'), '</p>';
+					echo '<p>', adminPhrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
+					$externalProgramError = true;
 				}
 			} else {
 				echo '<p>', adminPhrase('Successfully updated document text extract.'), '</p>';
@@ -297,7 +299,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				echo '<p>', adminPhrase('Unable to update document image.'), '</p>';
 				
 				if (!createPpdfFirstPageScreenshotPng(moduleDir('zenario_common_features', 'fun/test_files/test.pdf'))) {
-					echo '<p>', adminPhrase('ghostscript does not appear to be working.'), '</p>';
+					echo '<p>', adminPhrase('<code>ghostscript</code> does not appear to be working.'), '</p>';
+					$externalProgramError = true;
 				}
 			} else {
 				echo '<p>', adminPhrase('Successfully updated document image.'), '</p>';
@@ -318,7 +321,8 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				
 				if (!((plainTextExtract(moduleDir('zenario_common_features', 'fun/test_files/test.doc'), $extract))
 					 && ($extract == 'Test'))) {
-					echo '<p>', adminPhrase('antiword or pdftotext do not appear to be working.'), '</p>';
+					echo '<p>', adminPhrase('<code>antiword</code> or <code>pdftotext</code> do not appear to be working.'), '</p>';
+					$externalProgramError = true;
 				}
 			} else {
 				echo "<p>Successfully updated document text extract.</p>";
@@ -387,6 +391,13 @@ class zenario_common_features__organizer__documents extends module_base_class {
 				}
 				
 			}
+		}
+		
+		if ($externalProgramError) {
+			echo
+				'<p>', adminPhrase('Please go to <a href="[[href]]">Configuration->Site Settings->External</a> programs for help to remedy this.',
+					array('href' => '#zenario__administration/panels/site_settings//external_programs')
+				), '</p>';
 		}
 	}
 	

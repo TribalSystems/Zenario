@@ -485,7 +485,7 @@ class zenario_forum extends zenario_comments {
 	protected function deleteOneUploadFile($file_id){
 		if($this->allow_uploads){
 			
-			if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+			require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			
 			if(!getRow(ZENARIO_FORUM_PREFIX . 'user_posts_uploads', 'file_id', array('file_id' => (int)$file_id))){
 				deleteFile($file_id);

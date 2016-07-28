@@ -1,0 +1,566 @@
+---
+
+
+
+common_definitions:
+    stringy: &stringy
+        - number
+        - string
+    variable: &variable
+        - boolean
+        - number
+        - string
+        - "null"
+    css_class: &css_class
+        type: string
+        description: A CSS class name to add to this element.
+    ord: &ord
+        type: *stringy
+        description: >
+            This controls the order in which elements are drawn on the screen.
+            
+            If not set, it defaults to the order the CMS finds them in.
+            
+            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
+            you can use syntax of the form "name_of_other_element.001"
+            to place an element after the named element in the order.
+    needs_edit_perms: &needs_edit_perms
+        type: boolean
+        description: >
+            This will be hidden from view if the current visitor does not have
+            edit permissions (as defined in your module code, plugin settings, etc...)
+    hidden: &hidden
+        type: boolean
+        description: >
+            The hidden property hides elements from view when <code>true</code>.
+    visible_if: &visible_if
+        type: string
+        description: >
+            A snippet of JavaScript code to be evaluated.
+            
+            The visible_if property hides elements from view if the code provided does not evaluate to <code>true</code>.
+            
+            See http://zenar.io/visibility-in-tuix for examples.
+
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: Front-end Administration Schema
+
+type: object
+additionalProperties:
+    title: Front-end Administration
+    type: object
+    oneOf:
+        -
+            required:
+                - columns
+        -
+            required:
+                - key
+                - tabs
+    properties:
+        customisation_name:
+            type: string
+            description: >
+                Normally if you define elements for the FEA toolkit, you define them under a path and they always appear
+                when using that path.
+                
+                However you can declare a customisation using this property.
+                
+                When you declare a customisation, the elements you define in this file will only
+                appear when using that customisation.
+        
+        
+        title:
+            type: string
+            description: >
+                The title for the plugin, to be placed in a h1 tag.
+                If you do not specify this property the h1 will be hidden from view.
+        
+        title_for_existing_records:
+            type: string
+            description: >
+                When showing a form, this property will be used instead of the title when editing an existing record.
+                
+                (The toolkit will consider that you are editing an existing record if the $tags['key']['id']
+                 variable is set.)
+                
+                You can also use merge fields, e.g.: Editing the animal "[[name]]".
+        no_items_message:
+            type: string
+            description: >
+                When viewing a list, this mesage will be shown when there are no items.
+        no_items_in_search_message:
+            type: string
+            description: >
+                A message to display when there are no items in a search.
+        
+        key:
+            type: object
+            properties:
+                id:
+                    type: *variable
+                    modified_by_cms: true
+                    description: >
+                        The id key for this form.
+                        
+                        If you are saving a newly created item, you should populate the id
+                        yourself as soon as you know what it is.
+            additionalProperties:
+                type: *variable
+                description: >
+                    A variable or meta-information that you define about this form.
+            description: >
+                The key of an form lets you receive and/or store meta-information and variables.
+        
+        css_class: *css_class
+        
+        tab:
+            type: *stringy
+            modified_by_cms: true
+            description: >
+                This would be the code-name of the current tab.
+                
+                However note that different tabs are not supported at the moment!
+            default: (the first tab of the form)
+        
+        tabs:
+            type: object
+            description: >
+                Forms are divided up into sections called "Tabs".
+                
+                Your form must have at least one tab, and only one tab, because multiple tabs are not yet supported!
+                
+                To place fields on your form, you must create at least one tab to put them on.
+            
+            additionalProperties:
+                type: object
+                required:
+                    - label
+                    - fields
+                properties:
+                    ord: *ord
+                    
+                    errors:
+                        type: object
+                        html_description: |
+                            <p>You can set errors&nbsp;using your <code>validateAdminBox()</code> method to show that there are errors on a tab.</p>
+                            <p>If edit mode is enabled for a tab, an Admin will not be able to leave that tab or save the form whilst there are errors on that tab.</p>
+                            <p>The CMS will automatically initialise the <code>errors</code> property to an empty array each time the tab is validated. This means that any errors from a previous validation will be cleared and must be re-added if the error is still present.</p>
+                        additionalProperties:
+                            type: string
+                            description: >
+                                An error message to show.
+                    notices:
+                        type: object
+                        html_description: |
+                            <p>Notices display like errors, but do not have any special functionality.&nbsp;If visible, they are displayed one after the other just below the error messages on a tab.</p>
+                            <p>The CMS never automatically sets or removes them, and a notice will not stop an Admin from leaving a tab or saving.</p>
+                        additionalProperties:
+                            type: object
+                            required:
+                                - type
+                            dependencies_if_true:
+                                show:
+                                    - message
+                            properties:
+                                show:
+                                    type: boolean
+                                    description: >
+                                        The notice will only be shown if this is set.
+                                message:
+                                    type: string
+                                    description: >
+                                        A message to show.
+                                type:
+                                    enum:
+                                        - error
+                                        - warning
+                                        - question
+                                        - success
+                                    description: >
+                                        The type of notice. A different styling will be applied for each different type.
+                    
+                    show_errors_after_field:
+                        type: string
+                        description: >
+                            If you don't want the error messages displaying at the top of the tab,
+                            you can set the name of a field here to display them below that field.
+                            Note that the field after must start on a new line.
+                    #disable_autofocus:
+                    #    type: boolean
+                    #    description: >
+                    #        When a tab is displayed/redrawn/formatted, the CMS will try to focus on the
+                    #        first field on that tab.
+                    #        This is usually convenient, but can cause problems for tabs with scrollbars
+                    #        as the browser will scroll to show the focused field.
+                    #        You can disable this automatic focusing by setting this property.
+                    
+                    edit_mode:
+                        type: object
+                        description: >
+                            The edit mode property controls whether the fields on a tab can be edited by an administrator.
+                        properties:
+                            enabled:
+                                type: boolean
+                                description: >
+                                    Whether this tab can be edited.
+                            on:
+                                type: boolean
+                                modified_by_cms: true
+                                description: >
+                                    The CMS will automatically set this property when this tab is in edit mode.
+                            always_on:
+                                type: boolean
+                                description: >
+                                    Include this property to lock a tab in edit mode, and not show the cancel
+                                    button. 
+                                    Note that if this property is not defined then it will default to true.
+                                default: true
+                    
+                    # The fields property will be auto-copied from admin_boxes.ajax.php
+                    # by the dev tools when this file is loaded
+                    #fields:
+        
+        
+        # The fields lovs will be auto-copied from admin_boxes.ajax.php
+        # by the dev tools when this file is loaded
+        #lovs:
+        
+        
+        
+        search_bar_placeholder:
+            type: string
+            description: >
+                Use this to set some placeholder text on the search box
+        subtitle:
+            type: string
+            description: >
+                Use this to set a subtitle just above the list and after the search box.
+        hide_search_bar:
+            type: boolean
+            description: >
+                Use this to hide the search box
+        hide_column_headings:
+            type: boolean
+            description: >
+                Use this to hide the column titles
+        
+        
+        columns:
+            type: object
+            description: >
+                If you are showing a list, you should define the columns you are using
+                
+            additionalProperties:
+                type: object
+                properties:
+                    title:
+                        type: string
+                        description: >
+                            A title for your column
+                    #tooltip:
+                    #    type: string
+                    #    description: >
+                    #        Lets you specify a tooltip for the column's header.
+                    ord: *ord
+                    #css_class: *css_class
+                    needs_edit_perms: *needs_edit_perms
+                    hidden: *hidden
+                    visible_if: *visible_if
+                    values:
+                        type: object
+                        description: >
+                            If you use the enum format for a column, you should provide a list of values
+                            (with real values as keys and display values as values).
+                        additionalProperties:
+                            type: *variable
+                    empty_value:
+                        type: string
+                        description: >
+                            If a column is empty, show this text instead of a blank cell.
+                    align_right: true
+                        type: boolean
+                        description: >
+                            Set this to align the values in a column to the right
+                    
+                    parent:
+                        type: string
+                        description: >
+                            Enter the code-name of another column button here to make your column's value appear
+                            inside the column you specify.
+                            
+                            If you also specify a title, then your title will appear in each row as a label.
+                            
+                            There's a limit of 2 levels; you can't have a column inside a column inside another column.
+        
+        
+        items:
+            type: object
+            description: >
+                An array of data for the items in the list
+        
+        sort_by:
+            type: string
+            description: >
+                The code name of a column to sort by. Defaults to "name".
+        sort_desc:
+            type: boolean
+            description: >
+                Whether to sort asending or descending
+        
+        
+        
+        collection_buttons:
+            type: object
+            description: >
+                Collection buttons are intended to be for actions that apply to the form as a whole.
+            
+            additionalProperties:
+                type: object
+                oneOf:
+                    -
+                        required:
+                            - ajax
+                    -
+                        required:
+                            - go
+                properties:
+                    ord: *ord
+                    css_class: *css_class
+                    label:
+                        type: string
+                        description: >
+                            A label for this button
+                    
+                    needs_edit_perms: *needs_edit_perms
+                    hidden: *hidden
+                    visible_if: *visible_if
+                    
+                    location:
+                        enum:
+                            - top
+                            - back
+                            - search
+                        description: >
+                            Setting this properly lets you override the default location and put the button in a different position.
+                    
+                    confirm:
+                        type: object
+                        description: >
+                            Use this to display a confirmation prompt before performing the button's action.
+                        properties:
+                            title:
+                                type: string
+                                description: >
+                                    A title for the confirmation prompt.
+                            message:
+                                type: string
+                                description: >
+                                    A message for the confirmation prompt.
+                            
+                                    If this is an item or inline button, your message may contain [[merge_field]]s
+                                    which match up to the column names, and will be populated according to the item
+                                    which is selected.
+                                    (Note that this won't work if multiple items are selected.)
+                            
+                                    If you don't want a hard-coded warning message, then you can omit the message
+                                    property completely. This will cause the CMS will launch an AJAX call to your
+                                    handleOrganizerPanelAJAX() method (using $_GET rather than $_POST) to look up the text needed.
+                            button_message:
+                                type: string
+                                description: >
+                                    A message for the confirm button
+                            cancel_button_message:
+                                type: string
+                                description: >
+                                    A message for the cancel button
+                    
+                    onclick: &onclick
+                        type: string
+                        description: >
+                            Some JavaScript code to run when your button is clicked.
+                    
+                    
+                    ajax: &ajax
+                        type: object
+                        description: >
+                            Send an AJAX request to your <code>handlePluginAJAX()</code> method.
+
+                        properties:
+                            request: &request
+                                type: object
+                                additionalProperties:
+                                    type: *variable
+                                    description: >
+                                        A variable to put in the $_POST of the AJAX request.
+                                description: >
+                                    You can use the request property to add requests to the AJAX request.
+                    
+                    go:
+                        type: object
+                        required:
+                            - mode
+                        properties:
+                            mode:
+                                type: string
+                                description: >
+                                    A mode to go to when your button is pressed
+                        additionalProperties:
+                            type: *variable
+                            description: >
+                                A variable to add to the request/URL
+                        description: >
+                            You can use a "go" button to create navigation to another mode.
+                    
+                    transition_out: &button_transition_out
+                        type: object
+                        properties:
+                            animate: &transition_animate
+                                type: object
+                                description: >
+                                    CSS properties to animate
+                                additionalProperties:
+                                    type: *variable
+                            options: &transition_options
+                                type: object
+                                description: >
+                                    Options to pass to jQuery's animate() function
+                                additionalProperties:
+                                    type: *variable
+                        description: >
+                            For "go" buttons, you can set a transition out to play when the
+                            button is pressed, using jQuery's animate() function.
+                    transition_in_on_next_screen: &button_transition_in_on_next_screen
+                        type: object
+                        properties:
+                            initial: *transition_animate
+                            animate: *transition_animate
+                            options: *transition_options
+                        description: >
+                            For "go" buttons, you can set a transition in to play when the
+                            next screen is loaded, using jQuery's animate() function.
+                            
+                            This will overwrite the normal transition_in set on that screen 
+    
+        transition_in:
+            type: object
+            properties:
+                initial: *transition_animate
+                animate: *transition_animate
+                options: *transition_options
+            description: >
+                A transistion in to animate when showing this mode for the first time.
+                
+                It won't play if the mode is reloaded, or if the button leading here had
+                a transition_in set.
+        
+        transition_out:
+            type: object
+            properties:
+                animate: *transition_animate
+                options: *transition_options
+            description: >
+                For forms, you can set a transition out to play when the
+                form is submitted.
+                
+                Note that if your form has a "back" or "go" button, this won't apply.
+                You will need to add this property to the button as well if you want it on that too.
+        
+        transition_in_on_next_screen:
+            type: object
+            properties:
+                initial: *transition_animate
+                animate: *transition_animate
+                options: *transition_options
+            description: >
+                For forms, you can set a transition in to play on the next screen, when the
+                form is submitted.
+                
+                Note that if your form has a "back" or "go" button, this won't apply.
+                You will need to add this property to the button as well if you want it on that too.
+            
+                          
+        item_buttons:
+            type: object
+            description: >
+                Item buttons appear next to each item, and are for actions on that item
+            additionalProperties:
+                type: object
+                oneOf:
+                    -
+                        required:
+                            - ajax
+                    -
+                        required:
+                            - go
+                properties:
+                    ord: *ord
+                    css_class: *css_class
+                    label:
+                        type: string
+                        description: >
+                            A label for this button
+                    
+                    needs_edit_perms: *needs_edit_perms
+                    hidden: *hidden
+                    visible_if: *visible_if
+                    
+                    
+                    #In addition, a Collection Button should have one (and only one) of the following properties as an action:
+                    ajax: *ajax
+                    
+                    onclick: *onclick
+                    
+                    go:
+                        type: object
+                        required:
+                            - mode
+                        properties:
+                            mode:
+                                type: string
+                                description: >
+                                    A mode to go to when your button is pressed
+                        additionalProperties:
+                            type: *variable
+                            description: >
+                                A variable to add to the request/URL
+                        description: >
+                            You can use a "go" button to create navigation to another mode.
+                            For an item button, the item's id will be automatically added to the requests.
+                    
+                    transition_out: *button_transition_out
+                    transition_in_on_next_screen: *button_transition_in_on_next_screen
+        
+        __page__:
+            type: number
+            description: >
+                If pagination is being applied on the server, the CMS will put the current page number
+                into this variable.
+                
+                This might be different than the page you asked for, e.g. if you ask for page three but
+                there are only two pages.
+                
+        __page_size__:
+            type: number
+            description: >
+                If pagination is being applied on the server, the CMS will put the page size
+                into this variable.
+                
+        __item_count__:
+            type: number
+            description: >
+                The CMS will put the count of the total number of items into this variable.
+                
+                This includes searches, filters and refiners, but does not include pagination.
+                I.e. it's a count of all of the *matched* rows.
+                
+        __item_sort_order__:
+            type:
+                - array
+                - object
+            additionalProperties:
+                type: *stringy
+            description: >
+                If sorting is being done on the server, the CMS will put an array of ids
+                (sorted into the correct order) into this variable.

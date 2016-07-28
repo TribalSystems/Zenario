@@ -171,4 +171,30 @@ plugin_settings:
                         new_window:
                             label: New window
                     value: same_window
+        filtering:
+            label: Filtering
+            fields:
+                regexp_field:
+                    label: 'Apply regular expression filter to this feed field:'
+                    plugin_setting:
+                        name: regexp_field
+                    type: select
+                    values:
+                        title:
+                            label: Title
+                        description:
+                            label: Description
+                        date:
+                            label: Date
+                        title_or_description:
+                            label: Title or Description
+                        do_no_filter:
+                            label: Do not filter
+                    value: do_no_filter
+                    format_onchange: Yes
+                regexp:
+                    label: 'Use this regular expression:'
+                    plugin_setting:
+                        name: regexp
+                    type: text
     module_class_name: zenario_feed_reader

@@ -58,10 +58,10 @@ zenario__administration:
                     desc: Set the formats used when displaying dates and times.
                     keywords: date format date-picker time format
                 dirs:
-                    name: Directories
+                    name: Backups and document storage
                     desc: >
-                        Set the location of the backup and docstore directories.
-                    keywords: backup directory dropbox directory
+                        Manage backups and change the location of the document storage directory.
+                    keywords: backup log directory
                 documents:
                     name: Documents
                     desc: >
@@ -168,12 +168,6 @@ zenario__administration:
                         path: site_settings
                     visible_if_for_all_selected_items: |
                         !item.is_not_site_setting
-                edit_ctype:
-                    label: Properties
-                    admin_box:
-                        path: zenario_content_type_details
-                    visible_if_for_all_selected_items: |
-                        item.is_ctype
                 site_reset:
                     priv: _PRIV_RESET_SITE
                     label: Site Reset

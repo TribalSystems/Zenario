@@ -44,7 +44,7 @@ if (needRevision(131)) {
 			'ord' => 999,
 			'label' => 'Opt out of newsletters',
 			'type' => 'checkbox',
-			'show_in_organizer' => 1,
+			'organizer_visibility' => 'hide',
 			'sortable' => 1);
 	
 	if (!checkRowExists('custom_dataset_fields', $key)) {

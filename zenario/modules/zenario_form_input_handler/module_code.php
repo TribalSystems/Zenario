@@ -567,7 +567,7 @@ class zenario_form_input_handler extends module_base_class {
 
 				//because we create the admin_box dynamically we need to reread it
 				$changes = array();
-				readAdminBoxValues($box, $fields, $values, $changes, $filling = true, $resetErrors = true, $preDisplay = true);
+				readAdminBoxValues($box, $fields, $values, $changes, $filling = true, $resetErrors = true);
 				break;
 		}		
 	}

@@ -85,7 +85,7 @@ zenario__content:
                 #        wireframe: true
                 #edit_reusable_css_and_framework:
                 #    priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                #    label: 'Framework & CSS'
+                #    label: 'CSS & framework'
                 #    onclick: |
                 #        zenarioO.setupSlotAdminBox();
                 #    custom_admin_box:
@@ -95,7 +95,7 @@ zenario__content:
                 #        reusable: true
                 #edit_wireframe_css_and_framework:
                 #    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                #    label: 'Framework & CSS'
+                #    label: 'CSS & framework'
                 #    onclick: |
                 #        zenarioO.setupSlotAdminBox();
                 #    custom_admin_box:

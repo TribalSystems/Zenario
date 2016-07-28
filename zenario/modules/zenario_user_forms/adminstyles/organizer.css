@@ -16,7 +16,3 @@
 .organizer_item_image.zenario_user_forms {
 	background: center 1px no-repeat url('images/icon-forms-dark.png');
 }
-
-.zenario_fab_plugin .organizer_item_image.zenario_user_forms {
-	background: center 4px no-repeat url('images/icon-forms-white.png');
-}

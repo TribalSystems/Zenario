@@ -11,6 +11,7 @@ plugin_settings:
                         is_searchable_content: Yes
                     label: 'Raw HTML:'
                     type: code_editor
+                    dont_trim: true
                     language: html
                     value: ""
                 cookie_consent:

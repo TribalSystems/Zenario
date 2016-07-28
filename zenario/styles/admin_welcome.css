@@ -207,13 +207,15 @@ body.webkit input {
 /* Diagnostics */
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_valid > div,
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_section_warning > div
 {
 	border-left:20px solid #FFF;
 }
 
 .welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_valid > div,
-.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_invalid > div,
+.welcome div.thickbox_table fieldset.zenario_grouping__sub_table .sub_warning > div
 {
 	border-left:40px solid #FFF;
 }
@@ -768,13 +770,15 @@ body.webkit input {
 	left:20px;
 }
 
-.horizontal_scroll {
-	width: 710px;
-}
-
 .horizontal_scroll > div {
 	padding: 10px 0;
 	overflow-x: scroll;
+	white-space:nowrap;
+}
+
+.horizontal_scroll > div div.zenario_group_col_1 {
+	float:none;
+	display:inline-block;
 }
 
 .horizontal_scroll img {

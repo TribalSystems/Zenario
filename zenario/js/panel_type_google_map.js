@@ -89,8 +89,8 @@ methods.returnPanelTitle = function() {
 };
 
 methods.showPanel = function($header, $panel, $footer) {
-	$header.html(zenarioA.microTemplate('zenario_organizer_panel_header', {})).show();
-	var html = zenarioA.microTemplate('zenario_organizer_google_map', {});
+	$header.html(this.microTemplate('zenario_organizer_panel_header', {})).show();
+	var html = this.microTemplate('zenario_organizer_google_map', {});
 	$panel.html(html).show();
 	
 	var 
@@ -148,7 +148,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		google.maps.event.trigger(map, "resize");
 		map.setCenter(center); 
 	});
-	html = zenarioA.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
+	html = this.microTemplate('zenario_organizer_google_map_footer', {items: itemsWithLatLng, total: itemsCount});
 	$footer.html(html).show();
 };
 
@@ -166,7 +166,7 @@ methods.showButtons = function($buttons) {
 	} else {
 		m.collectionButtons = zenarioO.getCollectionButtons();
 	}
-	html = zenarioA.microTemplate('zenario_organizer_panel_buttons', m);
+	html = this.microTemplate('zenario_organizer_panel_buttons', m);
 	$buttons.html(html).show();
 };
 

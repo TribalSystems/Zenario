@@ -274,6 +274,15 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 	$merge = array();
 	$merge['SUBDIRECTORY'] = SUBDIRECTORY;
 	
+	//If the database prefix is already set in the config file, look it up and default the field to it.
+	if (!isset($box['tabs'][3]['fields']['prefix']['value'])) {
+		if (defined('DB_NAME_PREFIX') && DB_NAME_PREFIX && strpos(DB_NAME_PREFIX, '[') === false) {
+			$box['tabs'][3]['fields']['prefix']['value'] = DB_NAME_PREFIX;
+		} else {
+			$box['tabs'][3]['fields']['prefix']['value'] = 'zenario_';
+		}
+	}
+	
 	//Validation for Step 1: Check if the Admin has accepted the license
 	$licenseAccepted = !empty($box['tabs'][1]['fields']['i_agree']['current_value']);
 	
@@ -891,14 +900,7 @@ function installerAJAX(&$tags, &$box, &$task, $installStatus, &$freshInstall, &$
 		
 		
 		case 3:
-			//If the database prefix is already set in the config file, look it up and default the field to it.
-			if (!isset($box['tabs'][3]['fields']['prefix']['value'])) {
-				if (defined('DB_NAME_PREFIX') && DB_NAME_PREFIX && strpos(DB_NAME_PREFIX, '[') === false) {
-					$box['tabs'][3]['fields']['prefix']['value'] = DB_NAME_PREFIX;
-				} else {
-					$box['tabs'][3]['fields']['prefix']['value'] = 'zenario_';
-				}
-			}
+			//Nothing doing for step 3
 			
 			break;
 		
@@ -1749,6 +1751,9 @@ function changePasswordAJAX(&$tags, &$box, &$task) {
 
 function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	
+	$showCheckAgainButton = false;
+	$showCheckAgainButtonIfDirsAreEditable = false;
+	
 	//If the directories aren't set at all, set them now so at least they're set to something
 	if (!setting('backup_dir')) {
 		setSetting('backup_dir', suggestDir('backup'));
@@ -1778,163 +1783,262 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	
 	$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_valid';
 	
-	if (!$box['tabs'][0]['fields']['backup_dir']['current_value']) {
+	
+	$mrg = array(
+		'dir' => $dir = $box['tabs'][0]['fields']['backup_dir']['current_value'],
+		'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+	
+	if (!$dir) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('Please enter a directory.');
 	
-	} elseif (!@is_dir($box['tabs'][0]['fields']['backup_dir']['current_value'])) {
+	} elseif (!@is_dir($dir)) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('This directory does not exist.');
+		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
 	
-	} elseif (realpath($box['tabs'][0]['fields']['backup_dir']['current_value']) == realpath(CMS_ROOT)) {
+	} elseif (false !== chopPrefixOffOfString(realpath($dir), realpath(CMS_ROOT))) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
+		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
-	} elseif (!directoryIsWritable($box['tabs'][0]['fields']['backup_dir']['current_value'])) {
+	} elseif (!directoryIsWritable($dir)) {
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
+		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; is not writable.', $mrg);
 	
 	} else {
 		$box['tabs'][0]['fields']['dir_1']['row_class'] = 'sub_section_valid';
 		$box['tabs'][0]['fields']['backup_dir_status']['row_class'] = 'sub_valid';
-		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('This directory exists and is writable.');
+		$box['tabs'][0]['fields']['backup_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; exists and is writable.', $mrg);
 	}
 	
 	
-	if (!$box['tabs'][0]['fields']['docstore_dir']['current_value']) {
+	$mrg = array(
+		'dir' => $dir = $box['tabs'][0]['fields']['docstore_dir']['current_value'],
+		'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+	
+	if (!$dir) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('Please enter a directory.');
 	
-	} elseif (!@is_dir($box['tabs'][0]['fields']['docstore_dir']['current_value'])) {
+	} elseif (!@is_dir($dir)) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('This directory does not exist.');
+		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
 	
-	} elseif (realpath($box['tabs'][0]['fields']['docstore_dir']['current_value']) == realpath(CMS_ROOT)) {
+	} elseif (false !== chopPrefixOffOfString(realpath($dir), realpath(CMS_ROOT))) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
+		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('Zenario is installed this directory. Please choose a different directory.', $mrg);
 	
-	} elseif (!directoryIsWritable($box['tabs'][0]['fields']['docstore_dir']['current_value'])) {
+	} elseif (!directoryIsWritable($dir)) {
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
+		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; is not writable.', $mrg);
 	
 	} else {
 		$box['tabs'][0]['fields']['dir_2']['row_class'] = 'sub_section_valid';
 		$box['tabs'][0]['fields']['docstore_dir_status']['row_class'] = 'sub_valid';
-		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('This directory exists and is writable.');
+		$box['tabs'][0]['fields']['docstore_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; exists and is writable.', $mrg);
 	}
+	
 	
 	//Check to see if the templates & grid templates directories exist,
 	//and that the grid templates directory and all of the files inside are writable.
 	//(A site setting can be set to stop this check.)
+	$mrg = array(
+		'dir' => $dir = $tdir,
+		'basename' => $dir? htmlspecialchars(basename($dir)) : '');
+	
 	if (!is_dir($tdir)) {
 		$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-		$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('This directory does not exist.');
+		$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
 	
-	} elseif (!setting('template_dir_can_be_readonly')) {
-	
-		if (!directoryIsWritable($tdir)) {
+	} elseif (!directoryIsWritable($tdir)) {
+		$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
+		$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; is not writable.', $mrg);
+
+	} else {
+		$fileWritable = false;
+		$fileNotWritable = false;
+		foreach (scandir($tdir) as $sdir) {
+			if (is_file($tdir. '/'. $sdir)) {
+				if (is_writable($tdir. '/'. $sdir)) {
+					$fileWritable = true;
+				} else {
+					if ($fileNotWritable === false) {
+						$fileNotWritable = $tdir. '/'. $sdir;
+					} else {
+						$fileNotWritable = true;
+					}
+				}
+			}
+		}
+		
+		if ($fileNotWritable === true) {
+			if ($fileWritable) {
+				$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
+				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('Some of the files in the &quot;[[basename]]&quot; directory are not writable by the web server (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).', $mrg);
+			} else {
+				$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
+				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The files in the &quot;[[basename]]&quot; directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).', $mrg);
+			}
+		
+		} elseif ($fileNotWritable !== false) {
 			$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-			$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('This directory is not writable.');
+			$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] =
+				adminPhrase('"[[file]]" is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
+					array('file' => str_replace('/', '<wbr>/', htmlspecialchars($fileNotWritable))));
+		
+		} else {
+			$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_valid';
+			$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; exists and is writable.', $mrg);
+		}
+	}
 	
+	//Loop through all of the skins in the system (max 9) and check their editable_css directories
+	$i = 0;
+	$maxI = 9;
+	$skinDirsValid = true;
+	foreach (getRowsArray(
+		'skins',
+		array('family_name', 'name', 'display_name'),
+		array('type' => 'usable', 'missing' => 0, 'family_name' => 'grid_templates', 'enable_editable_css' => 1)
+	) as $skin) {
+		if ($i == $maxI) {
+			break;
+		} else {
+			++$i;
+		}
+		
+		$skinWritableDir = CMS_ROOT. getSkinPath($skin['family_name'], $skin['name']). 'editable_css/';
+		
+		$box['tabs'][0]['fields']['skin_dir_'. $i]['value'] =
+		$box['tabs'][0]['fields']['skin_dir_'. $i]['current_value'] = $skinWritableDir;
+		
+		$mrg = array(
+			'dir' => $dir = $tdir,
+			'basename' => $dir? htmlspecialchars(basename($skinWritableDir)) : '');
+		
+		if (!is_dir($skinWritableDir)) {
+			$skinDirsValid = false;
+			$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
+			$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; does not exist.', $mrg);
+	
+		} elseif (!directoryIsWritable($skinWritableDir)) {
+			$skinDirsValid = false;
+			$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
+			$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; is not writable.', $mrg);
+
 		} else {
 			$fileWritable = false;
 			$fileNotWritable = false;
-			foreach (scandir($tdir) as $sdir) {
-				if (is_file($tdir. '/'. $sdir)) {
-				 	if (is_writable($tdir. '/'. $sdir)) {
+			foreach (scandir($skinWritableDir) as $sdir) {
+				if (is_file($skinWritableDir. '/'. $sdir)) {
+					if (is_writable($skinWritableDir. '/'. $sdir)) {
 						$fileWritable = true;
-				 	} else {
+					} else {
 						if ($fileNotWritable === false) {
-							$fileNotWritable = $tdir. '/'. $sdir;
+							$fileNotWritable = $skinWritableDir. '/'. $sdir;
 						} else {
 							$fileNotWritable = true;
 						}
 					}
 				}
 			}
-			
+		
 			if ($fileNotWritable === true) {
 				if ($fileWritable) {
-					$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('Some of the files in this directory are not writable by the web server (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).');
+					$skinDirsValid = false;
+					$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
+					$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = adminPhrase('Some of the files in the &quot;[[basename]]&quot; directory are not writable by the web server (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
 				} else {
-					$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-					$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('The files in this directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.tpl.php *.css&quot;).');
+					$skinDirsValid = false;
+					$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
+					$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = adminPhrase('The files in the &quot;[[basename]]&quot; directory are not writable by the web server, please make them writable (e.g. use &quot;chmod 666 *.css&quot;).', $mrg);
 				}
-			
+		
 			} elseif ($fileNotWritable !== false) {
-				$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_invalid';
-				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] =
+				$skinDirsValid = false;
+				$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_warning';
+				$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] =
 					adminPhrase('"[[file]]" is not writable, please make it writable (e.g. use &quot;chmod 666 [[file]]&quot;).',
 						array('file' => str_replace('/', '<wbr>/', htmlspecialchars($fileNotWritable))));
-			
+		
 			} else {
-				$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_valid';
-				$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_valid';
-				$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('Good news, the directory exists and is writable.');
+				$box['tabs'][0]['fields']['skin_dir_status_'. $i]['row_class'] = 'sub_valid';
+				$box['tabs'][0]['fields']['skin_dir_status_'. $i]['snippet']['html'] = adminPhrase('The directory &quot;[[basename]]&quot; exists and is writable.', $mrg);
 			}
 		}
+	}
 	
-	} else {
-		$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_valid';
-		$box['tabs'][0]['fields']['template_dir_status']['row_class'] = 'sub_valid';
-		$box['tabs'][0]['fields']['template_dir_status']['snippet']['html'] = adminPhrase('This directory exists.');
+	$box['tabs'][0]['fields']['dir_4']['hidden'] =
+	$box['tabs'][0]['fields']['show_dir_4']['hidden'] =
+	$box['tabs'][0]['fields']['dir_4_blurb']['hidden'] = $i == 0;
+	
+	for ($j = 0; $j <= $maxI; ++$j) {
+		$box['tabs'][0]['fields']['skin_dir_'. $j]['hidden'] =
+		$box['tabs'][0]['fields']['skin_dir_status_'. $j]['hidden'] = $j > $i;
+	}
+	
+	if ($i == 1) {
+		$box['tabs'][0]['fields']['dir_4_blurb']['snippet']['html'] =
+			adminPhrase('CSS for plugins may be edited by an administrator, and Zenario writes CSS files to the following directory. Please ensure it exists and is writable by the web server:');
+	} elseif ($i > 1) {
+		$box['tabs'][0]['fields']['dir_4_blurb']['snippet']['html'] =
+			adminPhrase('CSS for plugins may be edited by an administrator, and Zenario writes CSS files to the following directories. Please ensure they exist and are writable by the web server:');
 	}
 	
 	
 	if (!is_dir(CMS_ROOT. 'cache')) {
 		$box['tabs'][0]['fields']['cache_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['cache_dir_status']['snippet']['html'] =
-			adminPhrase('This directory does not exist.');
+			adminPhrase('The &quot;cache&quot; directory does not exist.');
 	
 	} elseif (!directoryIsWritable(CMS_ROOT. 'cache')) {
 		$box['tabs'][0]['fields']['cache_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['cache_dir_status']['snippet']['html'] =
-			adminPhrase('This directory is not writable.');
+			adminPhrase('The &quot;cache&quot; directory is not writable.');
 	
 	} else {
 		$box['tabs'][0]['fields']['dir_5']['row_class'] = 'sub_section_valid';
 		$box['tabs'][0]['fields']['cache_dir_status']['row_class'] = 'sub_valid';
 		$box['tabs'][0]['fields']['cache_dir_status']['snippet']['html'] =
-			adminPhrase('This directory exists and is writable.');
+			adminPhrase('The &quot;cache&quot; directory exists and is writable.');
 	}
 	
 	if (!is_dir(CMS_ROOT. 'private')) {
 		$box['tabs'][0]['fields']['private_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['private_dir_status']['snippet']['html'] =
-			adminPhrase('This directory does not exist.');
+			adminPhrase('The &quot;private&quot; directory does not exist.');
 	
 	} elseif (!directoryIsWritable(CMS_ROOT. 'private')) {
 		$box['tabs'][0]['fields']['private_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['private_dir_status']['snippet']['html'] =
-			adminPhrase('This directory is not writable.');
+			adminPhrase('The &quot;private&quot; directory is not writable.');
 	
 	} else {
 		$box['tabs'][0]['fields']['dir_6']['row_class'] = 'sub_section_valid';
 		$box['tabs'][0]['fields']['private_dir_status']['row_class'] = 'sub_valid';
 		$box['tabs'][0]['fields']['private_dir_status']['snippet']['html'] =
-			adminPhrase('This directory exists and is writable.');
+			adminPhrase('The &quot;private&quot; directory exists and is writable.');
 	}
 	
 	if (!is_dir(CMS_ROOT. 'public')) {
 		$box['tabs'][0]['fields']['public_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['public_dir_status']['snippet']['html'] =
-			adminPhrase('This directory does not exist.');
+			adminPhrase('The &quot;public&quot; directory does not exist.');
 	
 	} elseif (!directoryIsWritable(CMS_ROOT. 'public')) {
 		$box['tabs'][0]['fields']['public_dir_status']['row_class'] = 'sub_invalid';
 		$box['tabs'][0]['fields']['public_dir_status']['snippet']['html'] =
-			adminPhrase('This directory is not writable.');
+			adminPhrase('The &quot;public&quot; directory is not writable.');
 	
 	} else {
 		$box['tabs'][0]['fields']['dir_7']['row_class'] = 'sub_section_valid';
 		$box['tabs'][0]['fields']['public_dir_status']['row_class'] = 'sub_valid';
 		$box['tabs'][0]['fields']['public_dir_status']['snippet']['html'] =
-			adminPhrase('This directory exists and is writable.');
+			adminPhrase('The &quot;public&quot; directory exists and is writable.');
 	}
 	
 	
 	if ($box['tabs'][0]['fields']['backup_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButtonIfDirsAreEditable =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
 		$box['tabs'][0]['fields']['show_dir_1']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
@@ -1942,6 +2046,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	}
 	
 	if ($box['tabs'][0]['fields']['docstore_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButtonIfDirsAreEditable =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
 		$box['tabs'][0]['fields']['show_dir_2']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
@@ -1949,13 +2054,17 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	}
 	
 	if ($box['tabs'][0]['fields']['template_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButton =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
-		$box['tabs'][0]['fields']['show_dir_4']['pressed'] = true;
+		$box['tabs'][0]['fields']['show_dir_3']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
-		$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_invalid';
+		$box['tabs'][0]['fields']['dir_3']['row_class'] = 'sub_section_invalid';
+	} else {
+		$box['tabs'][0]['fields']['dir_3']['row_class'] = 'sub_section_valid';
 	}
 	
 	if ($box['tabs'][0]['fields']['cache_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButton =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
 		$box['tabs'][0]['fields']['show_dir_5']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
@@ -1963,6 +2072,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	}
 	
 	if ($box['tabs'][0]['fields']['private_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButton =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
 		$box['tabs'][0]['fields']['show_dir_6']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
@@ -1970,10 +2080,23 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	}
 	
 	if ($box['tabs'][0]['fields']['public_dir_status']['row_class'] == 'sub_invalid') {
+		$showCheckAgainButton =
 		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
 		$box['tabs'][0]['fields']['show_dir_7']['pressed'] = true;
 		$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_invalid';
 		$box['tabs'][0]['fields']['dir_7']['row_class'] = 'sub_section_invalid';
+	}
+	
+	if (!$skinDirsValid) {
+		$showCheckAgainButton =
+		$box['tabs'][0]['fields']['show_dirs']['pressed'] =
+		$box['tabs'][0]['fields']['show_dir_4']['pressed'] = true;
+		if ($box['tabs'][0]['fields']['dirs']['row_class'] != 'section_invalid') {
+			$box['tabs'][0]['fields']['dirs']['row_class'] = 'section_warning';
+		}
+		$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_warning';
+	} else {
+		$box['tabs'][0]['fields']['dir_4']['row_class'] = 'sub_section_valid';
 	}
 	
 	$box['tabs'][0]['fields']['site']['row_class'] = 'section_valid';
@@ -2020,6 +2143,74 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['row_class'] = 'valid';
 			$box['tabs'][0]['fields']['site_special_pages_unpublished']['snippet']['html'] = adminPhrase("All of your site's Special Pages are published.");
 		}
+		
+		
+		if (!setting('check_automated_backups')) {
+			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'valid';
+			$box['tabs'][0]['fields']['site_automated_backups']['hidden'] = true;
+		
+		} elseif (!setting('automated_backup_log_path')) {
+			$show_warning = true;
+			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
+			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+				adminPhrase('Automated backups have not been set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.',
+					array('link' => 'organizer.php#zenario__administration/panels/site_settings//dirs'));
+		
+		} elseif (!is_file(setting('automated_backup_log_path'))) {
+			$show_warning = true;
+			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
+			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+				adminPhrase("Automated backups appear to be set up but the log file ([[path]]) could not be found.",
+					array('path' => setting('automated_backup_log_path')));
+		
+		} elseif (!is_readable(setting('automated_backup_log_path'))) {
+			$show_warning = true;
+			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
+			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+				adminPhrase("Automated backups appear to be set up but the log file ([[path]]) could not be read.",
+					array('path' => setting('automated_backup_log_path')));
+		
+		} else {
+			//Attempt to get the date of the last backup from
+			$timestamp = 0;
+			ini_set('auto_detect_line_endings', true);
+			if ($f = fopen(setting('automated_backup_log_path'), 'r')) {
+				while ($line = fgets($f)) {
+					if (trim($line) != ''
+					 && ($lineValues = str_getcsv($line))
+					 && ($lineValues[0])
+					 && ($lineValues[2]? DBNAME == $lineValues[2] : DBNAME == $lineValues[1])
+					 && ($time = new DateTime($lineValues[0]))) {
+						$timestamp = max($timestamp, $time->getTimestamp());
+					}
+				}
+			}
+			
+			if (!$timestamp) {
+				$show_warning = true;
+				$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
+				$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+					adminPhrase("Automated backups are not running for this site.");
+			
+			} else {
+				$days = (int) floor((time() - (int) $timestamp) / 86400);
+				
+				if ($days >= (int) setting('automated_backup_days')) {
+					$show_warning = true;
+					$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
+					$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+						nAdminPhrase("Automated backups have not been run in 1 day.",
+							"Automated backups have not been run in [[days]] days.",
+							$days, array('days' => $days));
+		
+				} else {
+					$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'valid';
+					$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
+						adminPhrase("Automated backups are running.");
+				}
+			}
+		}
+		
 		
 		//Check for a missing site description file.
 		if (!is_file(CMS_ROOT. 'zenario_custom/site_description.yaml')) {
@@ -2181,13 +2372,9 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	
 	//If all of the directory info valid (or uneditable due to not being a super-admin),
 	//only show one button as there is nothing to save or recheck
-	if ($box['disallow_changes_to_dirs']
-	 && $box['tabs'][0]['fields']['template_dir_status']['row_class'] == 'sub_valid'
-	 && $box['tabs'][0]['fields']['cache_dir_status']['row_class'] == 'sub_valid'
-	 && $box['tabs'][0]['fields']['private_dir_status']['row_class'] == 'sub_valid'
-	 && $box['tabs'][0]['fields']['public_dir_status']['row_class'] == 'sub_valid') {
-		 $box['tabs'][0]['fields']['check_again']['hidden'] = true;
-	}
+	$box['tabs'][0]['fields']['check_again']['hidden'] =
+		!$showCheckAgainButton
+	 && (!$showCheckAgainButtonIfDirsAreEditable || $box['disallow_changes_to_dirs']);
 	
 	
 	//If everything is valid, do not show this screen unless it was shown previously
@@ -2285,4 +2472,32 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 	} else {
 		return ifNull(DIRECTORY_INDEX_FILENAME, SUBDIRECTORY);
 	}
+}
+
+
+
+function deleteNamedPluginSetting($moduleClassName, $settingName) {
+	
+	$sql = "
+		DELETE ps.*
+		FROM `". DB_NAME_PREFIX. "modules` AS m
+		INNER JOIN `". DB_NAME_PREFIX. "plugin_instances` AS pi
+		   ON m.id = pi.module_id
+		INNER JOIN `". DB_NAME_PREFIX. "plugin_settings` AS ps
+		   ON pi.id = ps.instance_id
+		  AND ps.nest = 0
+		  AND ps.name = '". sqlEscape($settingName). "'
+		WHERE m.class_name = '". sqlEscape($moduleClassName). "'";
+	sqlUpdate($sql);
+
+	$sql = "
+		DELETE ps.*
+		FROM `". DB_NAME_PREFIX. "modules` AS m
+		INNER JOIN `". DB_NAME_PREFIX. "nested_plugins` AS np
+		   ON m.id = np.module_id
+		INNER JOIN `". DB_NAME_PREFIX. "plugin_settings` AS ps
+		   ON ps.nest = np.id
+		  AND ps.name = '". sqlEscape($settingName). "'
+		WHERE m.class_name = '". sqlEscape($moduleClassName). "'";
+	sqlUpdate($sql);
 }

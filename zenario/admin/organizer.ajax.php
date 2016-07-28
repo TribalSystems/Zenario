@@ -66,6 +66,8 @@ if (get('_xml') || get('method_call') == 'showSitemap') {
 	define('ORGANIZER_MODE', $mode = 'select');
 } elseif (get('_quick_mode')) {
 	define('ORGANIZER_MODE', $mode = 'quick');
+} elseif (get('_typeahead_search')) {
+	define('ORGANIZER_MODE', $mode = 'typeahead_search');
 } elseif (get('_get_item_name')) {
 	define('ORGANIZER_MODE', $mode = 'get_item_name');
 } elseif (!empty($_REQUEST['_get_item_links'])) {
@@ -117,13 +119,13 @@ function columnFilterValue($columnName, $value = null, $not = false) {
 	if ($value !== null) {
 		if (!$value) {
 			$filters[$columnName] = array(
-				'shown' => false
+				's' => 0
 			);
 		} else {
 			$filters[$columnName] = array(
-				'shown' => true,
-				'value_' => $value,
-				'not' => $not
+				's' => 1,
+				'v' => $value,
+				'not' => $not? 1 : 0
 			);
 		}
 	
@@ -132,12 +134,12 @@ function columnFilterValue($columnName, $value = null, $not = false) {
 		return null;
 	
 	//Return false if the filter was set before, but isn't now
-	} elseif (empty($filters[$columnName]['shown']) || empty($filters[$columnName]['value_'])) {
+	} elseif (empty($filters[$columnName]['s']) || empty($filters[$columnName]['v'])) {
 		return false;
 	
 	//Otherwise return the value of the filter
 	} else {
-		return $filters[$columnName]['value_'];
+		return $filters[$columnName]['v'];
 	}
 }
 
@@ -360,12 +362,37 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			noteTableJoin($extraTables, $customJoin);
 			
 			if (!$dataset['view_priv'] || checkPriv($dataset['view_priv'])) {
+				
+				//Customise system fields
+				foreach (getRowsArray(
+					'custom_dataset_fields',
+					array('field_name', 'label', 'organizer_visibility'),
+					array('dataset_id' => $dataset['id'], 'is_system_field' => 1)
+				) as $cfield) {
+					if ($cfield['field_name'] && isset($tags['columns'][$cfield['field_name']])) {
+						$sField = &$tags['columns'][$cfield['field_name']];
+						
+						if ($cfield['organizer_visibility'] == 'hide') {
+							$sField['hidden'] = true;
+						} elseif ($cfield['organizer_visibility'] == 'show_by_default') {
+							$sField['show_by_default'] = true;
+						} elseif ($cfield['organizer_visibility'] == 'always_show') {
+							$sField['always_show'] = true;
+						}
+						
+						if ($cfield['label']) {
+							$sField['title'] = trim(trim($cfield['label']), ':');
+						}
+					}
+				}
+				unset($sField);
+				
 				//Add custom fields
 				$ord = 1000;
 				foreach (getRowsArray(
 					'custom_dataset_fields',
 					true,
-					array('dataset_id' => $dataset['id'], 'show_in_organizer' => 1, 'is_system_field' => 0),
+					array('dataset_id' => $dataset['id'], 'organizer_visibility' => array('!' => 'none'), 'is_system_field' => 0),
 					array('tab_name', 'ord')
 				) as $cfield) {
 					$cCol = array();
@@ -373,8 +400,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$cCol['db_column'] = "custom.`". $cfield['db_column']. "`";
 					$cCol['searchable'] = $cfield['searchable'];
 					$cCol['disallow_sorting'] = !$cfield['sortable'];
-					$cCol['show_by_default'] = $cfield['show_by_default'];
-					$cCol['always_show'] = $cfield['always_show'];
+					$cCol['show_by_default'] = ($cfield['organizer_visibility'] == 'show_by_default');
+					$cCol['always_show'] = ($cfield['organizer_visibility'] == 'always_show');
 					
 					
 					switch ($cfield['type']) {
@@ -491,8 +518,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				$whereStatement .= "
 					AND ". $refinerWhere;
 				
-				if (false !== $customJoin
-				 && false !== strpos($refinerWhere, 'custom.')) {
+				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
+				if ($customJoin
+				 && (false !== strpos($refinerWhere, 'custom.') || false !== strpos($refinerWhere, '`custom`.'))) {
 					noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}
@@ -509,8 +537,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			if ($refinerJoin !== false) {
 				noteTableJoin($sortExtraTables, $refinerJoin);
 				
-				if (false !== $customJoin
-				 && false !== strpos($refinerJoin, 'custom.')) {
+				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
+				if ($customJoin
+				 && (false !== strpos($refinerJoin, 'custom.') || false !== strpos($refinerJoin, '`custom`.'))) {
 					noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}
@@ -557,7 +586,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					//Check whether this column is being filtered, and what
 					//the filter format is
 					$filterFormat = false;
-					if ($isFiltered = !empty($filters[$colName]['value_'])) {
+					if ($isFiltered = !empty($filters[$colName]['v'])) {
 						if (!empty($col['format'])) {
 							$filterFormat = $col['format'];
 						} elseif (!empty($col['filter_format'])) {
@@ -630,10 +659,10 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		foreach ($tags['columns'] as $colName => &$col) {
 			if (is_array($col)
 			 && !empty($col['db_column'])
-			 && !empty($filters[$colName]['value_'])
+			 && !empty($filters[$colName]['v'])
 			 && !engToBooleanArray($col, 'disallow_filtering')) {
 				
-				$value_ = $filters[$colName]['value_'];
+				$value_ = $filters[$colName]['v'];
 				$columnName = ifNull(arrayKey($col, 'search_column'), $col['db_column']);
 				
 				$filterFormat = false;
@@ -690,7 +719,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 						//A value of "*" should match all values (or all empty values if not is set)
 						if ($filterFormat != 'id'
-						 && $filters[$colName]['value_'] == '*') {
+						 && $filters[$colName]['v'] == '*') {
 							if (empty($filters[$colName]['not'])) {
 								$whereStatement .= "
 								  AND ". $columnName. " != 0
@@ -707,11 +736,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 						} else {
 							if (empty($filters[$colName]['not'])) {
 								$whereStatement .= "
-								  AND ". $columnName. " = '". sqlEscape($filters[$colName]['value_']). "'";
+								  AND ". $columnName. " = '". sqlEscape($filters[$colName]['v']). "'";
 					
 							} else {
 								$whereStatement .= "
-								  AND (". $columnName. " != '". sqlEscape($filters[$colName]['value_']). "'
+								  AND (". $columnName. " != '". sqlEscape($filters[$colName]['v']). "'
 									OR ". $columnName. " IS NULL)";
 							}
 						}
@@ -727,11 +756,11 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					
 							if (empty($filters[$colName]['not'])) {
 								$whereStatement .= "
-									AND ". $columnName. " LIKE '%". likeEscape($filters[$colName]['value_'], true, $asciiCharactersOnly). "%'";
+									AND ". $columnName. " LIKE '%". likeEscape($filters[$colName]['v'], true, $asciiCharactersOnly). "%'";
 					
 							} else {
 								$whereStatement .= "
-									AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape($filters[$colName]['value_'], true, $asciiCharactersOnly). "%')";
+									AND (". $columnName. " IS NULL OR ". $columnName. " NOT LIKE '%". likeEscape($filters[$colName]['v'], true, $asciiCharactersOnly). "%')";
 							}
 						}
 				}
@@ -788,6 +817,7 @@ if (!$requestedPath || empty($tags['class_name'])) {
 		}
 		
 		$in = "";
+		$limitForAJAXLookups = "";
 		$noResults = false;
 		
 		
@@ -885,7 +915,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$in .= $in? ", " : "IN (";
 					$in .= is_numeric($id)? (int) $id : "'". sqlEscape($id). "'";
 				}
+			
+			} else {
+				$limitForAJAXLookups = paginationLimit(1, 30);
 			}
+		
+		} elseif ($mode == 'typeahead_search') {
+			$limitForAJAXLookups = paginationLimit(1, 30);
 		
 		} elseif ($hierarchyColumn && (isset($_REQUEST['_openItemsInHierarchy']) || isset($_REQUEST['_openToItemInHierarchy']))) {
 			
@@ -948,6 +984,13 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			
 		
 		} else {
+			
+			if (empty($tags['db_items']['item_count_max_limit'])
+			 || !($itemCountMaxLimit = (int) $tags['db_items']['item_count_max_limit'])) {
+				$itemCountMaxLimit = $tags['db_items']['item_count_max_limit'] = 100000;
+			}
+			$tags['db_items']['item_count_max_limit_hit'] = false;
+			
 			//Get a count of all the rows, and get each id in the correct order
 			$sql = "
 				SELECT ". $idColumn;
@@ -967,7 +1010,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			$sql .= "
 				". $whereStatement. "
 				GROUP BY ". $groupBy. "
-				ORDER BY ". $orderBy;
+				ORDER BY ". $orderBy. "
+				LIMIT ". ($itemCountMaxLimit + 1);
 			
 			$organizerQueryIds = addConstantsToString($sql);
 			$result = sqlSelect($organizerQueryIds);
@@ -986,13 +1030,19 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				$tags['__item_sort_order__'] = array();
 				
 				while ($row = sqlFetchRow($result)) {
-					++$count;
 					
-					if ($encodeItemIdForOrganizer) {
-						$row[0] = encodeItemIdForOrganizer($row[0]);
+					if (++$count > $itemCountMaxLimit) {
+						$count = $itemCountMaxLimit;
+						$tags['db_items']['item_count_max_limit_hit'] = true;
+						break;
+					
+					} else {
+						if ($encodeItemIdForOrganizer) {
+							$row[0] = encodeItemIdForOrganizer($row[0]);
+						}
+					
+						$tags['__item_sort_order__'][] = $row[0];
 					}
-					
-					$tags['__item_sort_order__'][] = $row[0];
 				}
 				
 				//If "_limit" is in the request, this means that server side sorting/pagination is being used
@@ -1159,6 +1209,8 @@ if (!$requestedPath || empty($tags['class_name'])) {
 					$sql .= "
 					ORDER BY ". $orderBy;
 				}
+				
+				$sql .= $limitForAJAXLookups;
 			
 				//Loop through the results adding them into the items array (or alternately into the CSV file for CSV exports)
 				$organizerQueryDetails = addConstantsToString($sql);
@@ -1304,33 +1356,13 @@ if ($mode == 'get_item_data') {
 		'title' => $tags['title'],
 		'__item_count__' => $tags['__item_count__'],
 		'__item_sort_order__' => $tags['__item_sort_order__']);
-	
-//Item links don't need most things in the panel
-//I also need to set the path for Menu Nodes
-} else if ($mode == 'get_item_links') {
-	$tags = array('items' => $tags['items'], 'item' => arrayKey($tags, 'item'));
-	foreach ($tags['items'] as $id => &$item) {
-		switch ($requestedPath) {
-			case 'zenario__menu/panels/menu_nodes':
-				$item = array(
-					'name' => getMenuPath($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> '),
-					'css_class' => arrayKey($item, 'css_class'),
-					'navigation_path' => arrayKey($item, 'navigation_path'));
-				break;
-				
-			default:
-				$item = array(
-					'name' => arrayKey($item, 'name'),
-					'css_class' => arrayKey($item, 'css_class'),
-					'navigation_path' => arrayKey($item, 'navigation_path'));
-		}
-	}
 
 
 //When just fetching an item's name, strip away everything that we don't need to calculate the item name
-} elseif ($mode == 'get_item_name') {
+//I also need to set the path for Menu Nodes
+} elseif ($mode == 'get_item_name' || $mode == 'get_item_links' || $mode == 'typeahead_search') {
 	//Add information on the item
-	$output = array('items' => $tags['items'], 'columns' => array());
+	$output = array('items' => $tags['items'], 'item' => arrayKey($tags, 'item'), 'columns' => array());
 	
 	if (!empty($tags['item'])) {
 		$output['item'] = $tags['item'];
@@ -1338,6 +1370,14 @@ if ($mode == 'get_item_data') {
 	
 	$tagString = '[[name]]';
 	$usedcolumns = array('css_class' => true, 'list_image' => true);
+	
+	if ($mode == 'get_item_links') {
+		$usedcolumns['name'] = true;
+		$usedcolumns['navigation_path'] = true;
+		$needToSetMenuName = $requestedPath == 'zenario__menu/panels/menu_nodes';
+	} else {
+		$needToSetMenuName = false;
+	}
 	
 	if (!empty($tags['default_sort_column'])) {
 		$tagString = '[['. ($output['default_sort_column'] = $tags['default_sort_column']). ']]';
@@ -1356,7 +1396,7 @@ if ($mode == 'get_item_data') {
 	}
 	
 	//Strip out any column that is not used in the label
-	foreach ($output['items'] as &$item) {
+	foreach ($output['items'] as $id => &$item) {
 		if (is_array($item)) {
 			foreach ($item as $colName => $column) {
 				if (empty($usedcolumns[$colName])) {
@@ -1364,6 +1404,10 @@ if ($mode == 'get_item_data') {
 				}
 			}
 			unset($item['cell_css_classes']);
+			
+			if ($needToSetMenuName) {
+				$item['name'] = getMenuPath($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> ');
+			}
 		}
 	}
 	
@@ -1463,5 +1507,14 @@ if ($mode == 'xml') {
 	
 } else {
 	header('Content-Type: text/javascript; charset=UTF-8');
+	
+	if (request('_script')) {
+		echo 'zenarioO.lookForBranches(zenarioO.map = ';
+	}
+	
 	jsonEncodeForceObject($tags);
+	
+	if (request('_script')) {
+		echo ');';
+	}
 }

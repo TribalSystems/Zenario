@@ -79,11 +79,11 @@ class zenario_email_template_manager extends module_base_class {
 	){
 
 		mb_regex_encoding('UTF-8');
-		foreach ($mergeFields as $K=>$V) {
+		foreach ($mergeFields as $K=>&$V) {
 			$search = '\[\[' . $K . '\]\]';
 			
 			if (is_array($disableHTMLEscaping)? !empty($disableHTMLEscaping[$K]) : $disableHTMLEscaping) {
-				$replace = $V;
+				$replace = &$V;
 			} else {
 				$replace = nl2br(htmlspecialchars($V));
 			}
@@ -92,6 +92,7 @@ class zenario_email_template_manager extends module_base_class {
 			$subject = mb_ereg_replace($search, $replace, $subject);
 			$nameFrom = mb_ereg_replace($search, $replace, $nameFrom);
 			$addressFrom = mb_ereg_replace($search, $replace, $addressFrom);
+			unset($replace);
 		}
 		
 		$regex_filter = '\[\[[^\]]*\]\]';
@@ -121,8 +122,10 @@ class zenario_email_template_manager extends module_base_class {
 			*/
 			
 			if($debugOverride){
+				//template in debug mode
 				$debugEmails = array_unique(explodeAndTrim(str_replace(';', ',', $debugOverride)));
 				foreach($debugEmails as $debugEmail){
+					$addressToOverriddenBy = false;
 					$thisResult = sendEmail(
 						$subject, $body, $debugEmail, $addressToOverriddenBy,
 						false, $addressFrom, $nameFrom,
@@ -131,16 +134,16 @@ class zenario_email_template_manager extends module_base_class {
 						$addressReplyTo, $nameReplyTo, false,
 						$ccs, $bccs
 					);
-			
+					
 					self::logEmail(
-						$subject, $body, $addressTo, $debugEmail,
+						$subject, $body, $addressTo, $addressToOverriddenBy? $addressToOverriddenBy : $debugOverride,
 						$addressFrom, $nameFrom,
 						$attachments, $attachmentFilenameMappings,
 						$templateNo, $thisResult,
 						$_POST, 
 						$addressReplyTo, $nameReplyTo
 					);
-				
+					
 				}
 			}else{
 				//$debugOverride? $debugOverride : $addressTo, $addressToOverriddenBy
@@ -169,7 +172,7 @@ class zenario_email_template_manager extends module_base_class {
 	}
 	
 	public static function logEmail(
-		$subject, $body, $addressTo, $addressToOverriddenBy,
+		$subject, &$body, $addressTo, $addressToOverriddenBy,
 		$addressFrom, $nameFrom,
 		$attachments, $attachmentFilenameMappings,
 		$templateNo, $status,
@@ -177,33 +180,42 @@ class zenario_email_template_manager extends module_base_class {
 		$addressReplyTo = false, $nameReplyTo = false
 	) {
 		
-		$row = array(
-			'module_id' => getRow('plugin_instances', 'module_id', array('id' => arrayKey($senderCmsObjectArray, 'instanceId'))),
-			'instance_id' => arrayKey($senderCmsObjectArray, 'instanceId'),
-			'content_id' => arrayKey($senderCmsObjectArray, 'cID'),
-			'content_type' => arrayKey($senderCmsObjectArray, 'cType'),
-			'content_version' => arrayKey($senderCmsObjectArray, 'cVersion'),
-			'email_template_id' => $templateNo,
-			'email_template_name' => getRow('email_templates', 'template_name', array('id' => $templateNo)),
-			'email_subject' => $subject,
-			'email_address_to' => $addressTo,
-			'email_address_to_overridden_by' => $addressToOverriddenBy,
-			'email_address_from' => $addressFrom,
-			'email_name_from' => $nameFrom,
-			'email_body' => $body,
-			'attachment_present' => !empty($attachments),
-			'sent_datetime' => now(),
-			'status' => ($status? 'success' : 'failure')
-		);
+		$sql = "
+			INSERT INTO ". DB_NAME_PREFIX. ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. "email_template_sending_log SET
+				module_id = ". (int) getRow('plugin_instances', 'module_id', array('id' => arrayKey($senderCmsObjectArray, 'instanceId'))). ",
+				instance_id = ". (int) arrayKey($senderCmsObjectArray, 'instanceId'). ",
+				content_id = ". (int) arrayKey($senderCmsObjectArray, 'cID'). ",
+				content_type = '". sqlEscape(arrayKey($senderCmsObjectArray, 'cType')). "',
+				content_version = ". (int) arrayKey($senderCmsObjectArray, 'cVersion'). ",
+				email_template_id = ". (int) $templateNo. ",
+				email_template_name = '". sqlEscape(getRow('email_templates', 'template_name', array('id' => $templateNo))). "',
+				email_subject = '". sqlEscape($subject). "',
+				email_address_to = '". sqlEscape($addressTo). "',
+				email_address_to_overridden_by = '". sqlEscape($addressToOverriddenBy). "',
+				email_address_from = '". sqlEscape($addressFrom). "',
+				email_name_from = '". sqlEscape($nameFrom). "',
+				attachment_present = ". (int) !empty($attachments). ",
+				sent_datetime = '". sqlEscape(now()). "',
+				`status` = '". sqlEscape($status? 'success' : 'failure'). "'";
 		
 		if ($addressReplyTo) {
-			$row['email_address_replyto'] = $addressReplyTo;
+			$sql .= ",
+				email_address_replyto = '". sqlEscape($addressReplyTo). "'";
 		}
 		if ($nameReplyTo) {
-			$row['email_name_replyto'] = $nameReplyTo;
+			$sql .= ",
+				email_name_replyto = '". sqlEscape($nameReplyTo). "'";
 		}
 		
-		insertRow(ZENARIO_EMAIL_TEMPLATE_MANAGER_PREFIX. 'email_template_sending_log', $row);
+		if (strlen($body) < 100000) {
+			$sql .= ",
+				email_body = '". sqlEscape($body). "'";
+		} else {
+			$sql .= ",
+				email_body = '". sqlEscape(adminPhrase('Body too large to save')). "'";
+		}
+		
+		sqlUpdate($sql, false);
 	}
 	
 	

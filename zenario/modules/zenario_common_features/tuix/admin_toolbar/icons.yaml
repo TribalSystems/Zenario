@@ -7,10 +7,16 @@ sections:
                 ord: 10
                 css_class: zenario_at_icon_categories_some
                 tooltip: Content Item Categories|
+                admin_box:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    path: zenario_content_categories
             item_categories_none:
                 ord: 11
                 css_class: zenario_at_icon_categories_none
                 tooltip: Content Item Categories|None
+                admin_box:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
+                    path: zenario_content_categories
             layout_id: 
                 ord: 18
                 css_class: zenario_at_icon_layout
@@ -23,12 +29,17 @@ sections:
                 ord: 20
                 css_class: zenario_at_icon_alias
                 #css_class: zenario_at_icon_alias zenario_at_icon_no_alias
-            go_to_alias:
+            copy_url:
                 ord: 21
+                visible_if: zenario.canCopy()
+                parent: alias_dropdown
+                label: Copy URL
+            go_to_alias:
+                ord: 22
                 parent: alias_dropdown
                 label: Go to content item via its alias
             no_alias:
-                ord: 22
+                ord: 23
                 parent: alias_dropdown
                 tooltip: This content item does not have an alias
             alias:
@@ -36,7 +47,7 @@ sections:
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
                     && (zenario.cID == zenario.equivId || zenarioA.siteSettings.translations_different_aliases)
-                ord: 23
+                ord: 24
                 parent: alias_dropdown
                 label: Edit alias
                 admin_box:

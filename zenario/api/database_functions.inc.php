@@ -28,8 +28,8 @@
 
 require CMS_ROOT. 'zenario/includes/database_connection.inc.php';
 
-
-//	function checkRowExists($table, $ids) {}
+cms_core::$whitelist[] = 'checkRowExists';
+//	function checkRowExists($table, $ids, $ignoreMissingColumns = false) {}
 
 //	function connectGlobalDB() {}
 
@@ -39,37 +39,45 @@ function deleteRow($table, $ids, $multiple = true) {
 	return checkRowExists($table, $ids, false, false, $multiple, 'delete');
 }
 
-function getRow($table, $cols, $ids, $notZero = false) {
-	return checkRowExists($table, $ids, $cols, $notZero);
+cms_core::$whitelist[] = 'getRow';
+function getRow($table, $cols, $ids, $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols);
 }
 
-function getRows($table, $cols, $ids, $orderBy = array(), $notZero = false) {
-	return checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy);
+cms_core::$whitelist[] = 'getRows';
+function getRows($table, $cols, $ids, $orderBy = array(), $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy);
 }
 
-function getDistinctRows($table, $cols, $ids, $orderBy = array(), $notZero = false) {
-	return checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy, true);
+cms_core::$whitelist[] = 'getDistinctRows';
+function getDistinctRows($table, $cols, $ids, $orderBy = array(), $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true);
 }
 
-function getRowsArray($table, $cols, $ids = array(), $orderBy = array(), $notZero = false) {
-	return checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy, false, true);
+cms_core::$whitelist[] = 'getRowsArray';
+function getRowsArray($table, $cols, $ids = array(), $orderBy = array(), $indexBy = false, $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, false, $indexBy? $indexBy : true);
 }
 
-function getDistinctRowsArray($table, $cols, $ids = array(), $orderBy = array(), $notZero = false) {
-	return checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy, true, true);
+cms_core::$whitelist[] = 'getDistinctRowsArray';
+function getDistinctRowsArray($table, $cols, $ids = array(), $orderBy = array(), $indexBy = false, $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, true, $indexBy? $indexBy : true);
 }
 
 //New in 7.1
+cms_core::$whitelist[] = 'selectCount';
 function selectCount($table, $ids = array()) {
 	return checkRowExists($table, $ids, false, false, false, 'count');
 }
 
-function selectMax($table, $cols, $ids = array()) {
-	return checkRowExists($table, $ids, $cols, false, false, 'max');
+cms_core::$whitelist[] = 'selectMax';
+function selectMax($table, $cols, $ids = array(), $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, false, 'max');
 }
 
-function selectMin($table, $cols, $ids = array()) {
-	return checkRowExists($table, $ids, $cols, false, false, 'min');
+cms_core::$whitelist[] = 'selectMin';
+function selectMin($table, $cols, $ids = array(), $ignoreMissingColumns = false) {
+	return checkRowExists($table, $ids, $ignoreMissingColumns, $cols, false, 'min');
 }
 
 function getNextAutoIncrementId($table) {
@@ -92,6 +100,26 @@ function getIdColumnOfTable($table, $guess = false) {
 		return false;
 	}
 }
+
+//New in 7.3, this automatically fixes a bug where data from MySQL is loaded as a string,
+//and not an int or a float
+function correctMySQLDatatypes($table, &$data) {
+	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
+		checkTableDefinition(cms_core::$lastDBPrefix. $table);
+	}
+	$numericCols = &cms_core::$numericCols[cms_core::$lastDBPrefix. $table];
+	
+	foreach ($data as $key => &$value) {
+		if (isset($numericCols[$key])) {
+			if ($numericCols[$key] === ZENARIO_INT_COL) {
+				$value = (int) $value;
+			} elseif ($numericCols[$key] === ZENARIO_FLOAT_COL) {
+				$value = (float) $value;
+			}
+		}
+	}
+}
+
 
 
 function inEscape($csv, $escaping = 'sql', $prefix = false) {
@@ -128,25 +156,29 @@ function inEscape($csv, $escaping = 'sql', $prefix = false) {
 //	function inEscape($csv, $escaping = 'sql') {}
 
 
-function insertRow($table, $values, $ignore = false) {
-	return setRow($table, $values, array(), true, $ignore);
+function insertRow($table, $values, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {
+	return setRow($table, $values, array(), $ignore, $ignoreMissingColumns, $markNewThingsInSession, true);
 }
 
-function likeEscape($text, $allowStarsAsWildcards = false, $asciiCharactersOnly = false) {
+function likeEscape($text, $allowStarsAsWildcards = false, $asciiCharactersOnly = false, $sqlEscape = true) {
 	
 	if ($asciiCharactersOnly) {
 		//http://stackoverflow.com/questions/8781911/remove-non-ascii-characters-from-string-in-php
 		$text = preg_replace('/[^\x20-\x7E]/', '', $text);
 	}
 	
+	if ($sqlEscape) {
+		$text = sqlEscape($text);
+	}
+	
 	if (!$allowStarsAsWildcards) {
-		return str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text)));
+		return str_replace('%', '\\%', str_replace('_', '\\_', $text));
 	
 	} elseif ($text == '*') {
 		return '_';
 	
 	} else {
-		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', sqlEscape($text))));
+		return str_replace('*', '%', str_replace('%', '\\%', str_replace('_', '\\_', $text)));
 	}
 }
 
@@ -157,10 +189,10 @@ function paginationLimit($page, $pageSize, $offset = 0) {
 		LIMIT ". (max((( (int) $page - 1) * (int) $pageSize) + $offset, 0)). ", ". (int) $pageSize;
 }
 
-//	function setRow($table, $values, $ids) {}
+//	function setRow($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false, $markNewThingsInSession = false) {}
 
-function updateRow($table, $values, $ids, $ignore = false) {
-	return setRow($table, $values, $ids, false, $ignore);
+function updateRow($table, $values, $ids, $ignore = false, $ignoreMissingColumns = false) {
+	return setRow($table, $values, $ids, $ignore, $ignoreMissingColumns, false, false);
 }
 
 
@@ -186,16 +218,25 @@ function sqlErrno() {
 
 //Replacement for mysql_fetch_array()
 function sqlFetchArray($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
 	return $result->fetch_array();
 }
 
 //Replacement for mysql_fetch_assoc()
 function sqlFetchAssoc($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
 	return $result->fetch_assoc();
 }
 
 //Replacement for mysql_fetch_row()
 function sqlFetchRow($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
 	return $result->fetch_row();
 }
 
@@ -206,7 +247,28 @@ function sqlInsertId() {
 
 //Replacement for mysql_num_rows()
 function sqlNumRows($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
 	return $result->num_rows;
+}
+
+//New in 7.3, this quickly gets an array from a sql query
+function sqlSelectArray($result, $oneCol = false) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
+	$out = array();
+	if ($oneCol) {
+		while ($row = sqlFetchRow($result)) {
+			$out[] = $row[0];
+		}
+	} else {
+		while ($row = sqlFetchAssoc($result)) {
+			$out[] = $row;
+		}
+	}
+	return $out;
 }
 
 //Replacement for mysql_query()
@@ -261,4 +323,18 @@ function sqlQuery($sql, $checkCache = true) {
 function sqlEscape($text) {
 	return cms_core::$lastDB->escape_string($text);
 }
+
+//New in 7.3
+function getNewThingFromSession($table, $clear = true) {
+	$return = false;
+	if (isset($_SESSION['new_id_in_'. $table])) {
+		$return = $_SESSION['new_id_in_'. $table];
+		
+		if ($clear) {
+			unset($_SESSION['new_id_in_'. $table]);
+		}
+	}
+	return $return;
+}
+
 

@@ -1,0 +1,58 @@
+plugin_settings:
+    module_class_name: zenario_extranet_user_profile_view_2
+    tabs:
+        first_tab:
+            label: Settings
+            fields:
+                plugin_mode:
+                    plugin_setting:
+                        name: plugin_mode
+                    label: 'Plugin mode:'
+                    type: radios
+                    values:
+                        single_user:
+                            ord: 1
+                            label: Single user
+                        logged_in:
+                            ord: 2
+                            label: Logged in user
+                        descriptive_page:
+                            ord: 3
+                            label: Descriptive page
+                    value: single_user
+                    redraw_onchange: true
+                user:
+                    plugin_setting:
+                        name: user
+                    label: 'User:'
+                    pick_items:
+                        path: zenario__users/panels/users
+                        target_path: zenario__users/panels/users
+                        min_path: zenario__users/panels/users
+                        max_path: zenario__users/panels/users
+                        select_phrase: Select User...
+                        nothing_selected_phrase: No User selected
+                    indent: 1
+                    visible_if: zenarioAB.value('plugin_mode') == 'single_user'
+                    
+                max_user_image_width:
+                    plugin_setting:
+                        name: max_user_image_width
+                    post_field_html: '&nbsp;pixels'
+                    label: 'Max. Image Width:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+                max_user_image_height:
+                    plugin_setting:
+                        name: max_user_image_height
+                    post_field_html: '&nbsp;pixels'
+                    label: 'Max. Image Height:'
+                    type: text
+                    size: "5"
+                    maxlength: "5"
+                    style: 'width: 50px'
+                    value: "120"
+    

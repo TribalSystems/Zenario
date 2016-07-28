@@ -77,7 +77,7 @@ methods.sortItems = function() {
 	
 	var sortedItems = [],
 		subheadingColumn = this.tuix.subheading_column,
-		sortColSortedItems = zenarioO.getSortedIdsOfTUIXElements('items', zenarioO.sortBy, zenarioO.sortDesc),
+		sortColSortedItems = zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc),
 		subheadingSortedItems,
 		sortedItemsBySubheading = {},
 		sortedSubheadings = [],
@@ -92,7 +92,7 @@ methods.sortItems = function() {
 		return sortColSortedItems;
 	}
 	
-	subheadingSortedItems = zenarioO.getSortedIdsOfTUIXElements('items', subheadingColumn);
+	subheadingSortedItems = zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', subheadingColumn);
 	
 	foreach (subheadingSortedItems as i => id) {
 		subheading = this.tuix.items[id][subheadingColumn];

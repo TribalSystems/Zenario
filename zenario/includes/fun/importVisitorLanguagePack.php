@@ -81,7 +81,7 @@ if (in($mimeType, 'text/csv', 'text/comma-separated-values')) {
 } else {
 	$csv = false;
 
-	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 	
 	switch ($mimeType) {
 		case 'application/vnd.ms-excel':

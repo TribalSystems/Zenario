@@ -116,6 +116,9 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 				exit;
 			}
 		}
+		
+		//The new module may add new features to several places so we need to completely clear the cache
+		zenarioClearCache();
 
 		//Update the special pages, creating new ones if needed
 		addNeededSpecialPages();
@@ -184,9 +187,9 @@ class zenario_common_features__admin_boxes__setup_module extends module_base_cla
 			}
 		}
 
-		//Modules that change Storekeeper will require a Storekeeper reload.
+		//Modules that change Organizer will require a Organizer reload.
 		if (moduleDir($module['class_name'], 'tuix/organizer', true)) {
-			$box['popout_message'] = '<!--Reload_Storekeeper-->';
+			$box['popout_message'] = '<!--Reload_Organizer-->';
 		}
 
 	}

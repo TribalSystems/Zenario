@@ -80,10 +80,10 @@ class zenario_current_time extends module_base_class {
 		if (inc('zenario_timezones')) {
 			if (userId()) {
 				//User timezone
-				return zenario_timezones::convertToUserTimezone($timestamp,$format);
+				return zenario_timezones::convertToUserTimezone($timestamp)->format($format);
 			} elseif ($timezone) {
 				//site timezone
-				return zenario_timezones::convertToUserTimezone($timestamp,$format, $timezone);
+				return zenario_timezones::convertToUserTimezone($timestamp, $timezone)->format($format);
 			} 
 		} 
 		

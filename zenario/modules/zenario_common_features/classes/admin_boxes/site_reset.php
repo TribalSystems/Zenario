@@ -62,7 +62,7 @@ class zenario_common_features__admin_boxes__site_reset extends module_base_class
 		exitIfNotCheckPriv('_PRIV_RESET_SITE');
 		
 		resetSite();
-		echo '<!--Reload_Storekeeper-->';
+		echo '<!--Reload_Organizer-->';
 		exit;
 	}
 }

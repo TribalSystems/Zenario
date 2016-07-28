@@ -47,7 +47,7 @@ class zenario_google_map extends module_base_class {
 		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
 			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
 			echo '
-				<script src="' . httpOrhttps() .'maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
+				<script src="' . httpOrhttps() .'maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key')) . '" type="text/javascript"></script>';
 		}
 	}
 	

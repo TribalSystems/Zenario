@@ -229,7 +229,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	mergeFields.use_groups_field = this.tuix.use_groups_field;
 	
 	// Set HTML
-	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder', mergeFields);
+	var html = this.microTemplate('zenario_organizer_admin_box_builder', mergeFields);
 	$panel.html(html).show();
 	
 	// Add JS events
@@ -350,8 +350,7 @@ methods.initDeleteButtons = function() {
 			plural = '',
 			deleteButtonText = true;
 		
-		if (!field.is_protected) {
-			
+		if (!field.is_protected) {			
 			var actionRequests = {
 				mode: 'get_field_record_count',
 				field_id: fieldID
@@ -381,7 +380,6 @@ methods.initDeleteButtons = function() {
 			that.listenForDelete(fieldID);
 			e.stopPropagation();
 		}
-		
 		
 	});
 };
@@ -494,7 +492,7 @@ methods.addNewTab = function() {
 			name: tabName,
 			label: label
 		},
-		html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_tab', mergeFields);
+		html = this.microTemplate('zenario_organizer_admin_box_builder_tab', mergeFields);
 	$('#organizer_add_new_tab').before(html);
 	this.tuix.items[tabName] = {
 		label: label,
@@ -503,7 +501,7 @@ methods.addNewTab = function() {
 		fields: {}
 	};
 	// Create new section for fields
-	html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_section', mergeFields);
+	html = this.microTemplate('zenario_organizer_admin_box_builder_section', mergeFields);
 	$('#organizer_form_sections').append(html);
 	var $newSection = $('#organizer_section_' + tabName);
 	this.initSection($newSection);
@@ -662,7 +660,7 @@ methods.addNewField = function($field) {
 	}
 	
 	// Set HTML
-	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field', mergeFields);
+	var html = this.microTemplate('zenario_organizer_admin_box_builder_field', mergeFields);
 	$field.replaceWith(html);
 	
 	// Add other properties to field
@@ -677,7 +675,7 @@ methods.addNewField = function($field) {
 		required: 0,
 		show_in_organizer: 0,
 		create_index: 0,
-		organizer_visibility: '',
+		organizer_visibility: 'hide',
 		values_source: values_source,
 		values_source_filter: '',
 		remove: false
@@ -752,7 +750,7 @@ methods.setCurrentTabDetails = function() {
 	var that = this,
 		tab = (this.tuix.items[this.currentTab] || {}),
 		mergeFields = this.getCurrentTabDetailsMergeFields(),
-		html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_tab_details', mergeFields);
+		html = this.microTemplate('zenario_organizer_admin_box_builder_tab_details', mergeFields);
 	
 	// Set HTML
 	$('#organizer_tab_details_outer').html(html);
@@ -872,7 +870,7 @@ methods.fieldClick = function($field) {
 methods.setCurrentFieldDetails = function() {
 	var that = this,
 		mergeFields = this.getCurrentFieldDetailsMergeFields(),
-		html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_details', mergeFields);
+		html = this.microTemplate('zenario_organizer_admin_box_builder_field_details', mergeFields);
 	
 	// Set HTML
 	$('#organizer_field_details_outer').html(html);
@@ -1128,17 +1126,21 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 	mergeFields.show_searchable_field = mergeFields.is_text_field ? mergeFields.show_in_organizer : mergeFields.show_in_organizer && mergeFields.create_index;
 	
 	var organizer_visibility_options = {
-		1: {
+		'hide': {
 			ord: 1,
+			label: 'Hide by default'
+		},
+		'show_by_default': {
+			ord: 2,
 			label: 'Show by default'
 		},
-		2: {
-			ord: 1,
+		'always_show': {
+			ord: 3,
 			label: 'Always show'
 		}
-	}
-	mergeFields.organizer_visibility_options = this.createSelectList(organizer_visibility_options, mergeFields.organizer_visibility, 'Hide by default');
+	};
 	
+	mergeFields.organizer_visibility_options = this.createSelectList(organizer_visibility_options, mergeFields.organizer_visibility);
 	
 	// find what detail tabs to show for this field
 	mergeFields.showDetailsTab = true;
@@ -1274,7 +1276,7 @@ methods.initCurrentFieldDetails = function() {
 	var lov = this.getOrderedItems(field.lov);
 	
 	// Place LOV on page
-	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', lov);
+	var html = this.microTemplate('zenario_organizer_admin_box_builder_field_value', lov);
 	$('#field_values_list')
 		.html(html)
 		.sortable({
@@ -1311,7 +1313,7 @@ methods.updateCentralisedRadioValues = function(fieldID, method, filter) {
 	this.sendAJAXRequest(actionRequests).after(function(data) {
 		
 		var lov = JSON.parse(data),
-			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', lov);
+			html = this.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', lov);
 		
 		$('#organizer_form_field_values_' + fieldID).html(html);
 	});

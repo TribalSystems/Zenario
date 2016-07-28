@@ -162,3 +162,44 @@ if (needRevision(31762)) {
 	updateRow('custom_dataset_fields', array('create_index' => 1), array('sortable' => 1));
 	revision(31762);
 }
+
+if (needRevision(35944)) {
+		$users = getRowsArray('users', array('id','identifier'));
+		if ($users){
+			foreach ($users as $user){
+				if(!$user['identifier']){
+					$identifier = generateUserIdentifier($user['id']);
+					updateRow('users', array('identifier' => $identifier), array('id'=>$user['id']));
+				}
+			}
+		}
+	revision(35944);
+}
+
+// Migrate dataset fields organizer visibility columns to enum
+if (needRevision(36076)) {
+	$result = getRows('custom_dataset_fields', array('id', 'show_in_organizer', 'show_by_default', 'always_show'), array());
+	while ($field = sqlFetchAssoc($result)) {
+		$orgVisibility = false;
+		if ($field['show_by_default']) {
+			$orgVisibility = 'show_by_default';
+		} elseif ($field['always_show']) {
+			$orgVisibility = 'always_show';
+		} elseif ($field['show_in_organizer']) {
+			$orgVisibility = 'hide';
+		}
+		if ($orgVisibility) {
+			updateRow('custom_dataset_fields', array('organizer_visibility' => $orgVisibility), $field['id']);
+		}
+	}
+	revision(36076);
+}
+
+revision( 36077
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	DROP COLUMN `show_in_organizer`,
+	DROP COLUMN `show_by_default`,
+	DROP COLUMN `always_show`
+_sql
+);

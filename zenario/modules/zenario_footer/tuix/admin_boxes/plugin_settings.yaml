@@ -20,7 +20,7 @@ plugin_settings:
                         hide_remove_button: Yes
                     value: "2"
                     validation:
-                        required: Please select a Menu Section
+                        required: Please select a menu section
                 show_missing_menu_nodes:
                     plugin_setting:
                         name: show_missing_menu_nodes

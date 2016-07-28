@@ -39,13 +39,12 @@ if (!checkPriv()) {
 
 
 $prefix = '../';
-CMSWritePageHead($prefix, 'organizer');
+CMSWritePageHead($prefix, 'organizer', true);
 $v = zenarioCodeVersion();
 
 
 echo '</head>';
-CMSWritePageBody('', false);
-//CMSWritePageBody(' onkeydown="return zenarioO.onKeyDown(event);"');
+CMSWritePageBody();
 
 
                         	

@@ -64,6 +64,8 @@ class zenario_location_viewer extends module_base_class {
 			return false;
 		}
 		
+		self::setOgTags($locationId);
+		
 		// These mergefields are used on IMI custom framework for zenario_extranet_user_role_loc_view
 		if (!empty($locationDetails['equiv_id']) && !empty($locationDetails['content_type'])) {
 			langEquivalentItem($locationDetails['equiv_id'], $locationDetails['content_type']);
@@ -146,6 +148,65 @@ class zenario_location_viewer extends module_base_class {
 		return true;
 	}
 	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
+		switch ($path){
+			case 'plugin_settings':
+				$box['tabs']['first_tab']['fields']['og_description_data_set_field']['values'] =
+					listCustomFields('locations', $flat = false, false, $customOnly = true, $useOptGroups = true);
+				break;
+		}
+	}
+	
+	
+	public function setOgTags($locationId){
+		if(!is_numeric($locationId)){
+			return false;
+		}
+		
+		if($this->setting('og_tags')){	
+			if($this->setting('og_title')){
+				$locationDetails = getRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('description','city','country_id'),array('id'=>$locationId));
+				$country = false;
+				if (!empty($locationDetails['country_id']) && inc('zenario_country_manager')) {
+					if ($country = zenario_country_manager::getCountryNamesInCurrentVisitorLanguage("active", $locationDetails['country_id'])) {
+						$country = arrayKey($country,"COUNTRY_" . $locationDetails['country_id']);
+					}
+				}
+				$title = $locationDetails['description'];
+				if($country){
+					$title .=' '.$country;
+				}
+				if($locationDetails['city']){
+					$title .=' '.$locationDetails['city'];
+				}
+				$this->setPageTitle($title);
+			}
+			if($this->setting('og_image')){
+				$imageId =  getRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'location_images', 'image_id', array('location_id' => $locationId, 'sticky_flag' => 1));
+				if($imageId){
+					$this->setPageImage($imageId);
+				}
+			}
+		
+			if($this->setting('og_description') && $datasetId = $this->setting('og_description_data_set_field')){
+				$dataSetFieldColumnName = getRow('custom_dataset_fields','db_column', array("id"=>$datasetId));
+				if($dataSetFieldColumnName){
+					//Custom data:
+					$sql.= 'SELECT cd.'.$dataSetFieldColumnName.'  
+							FROM ' . DB_NAME_PREFIX . ZENARIO_LOCATION_MANAGER_PREFIX . 'locations AS loc
+							LEFT JOIN '. DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. 'locations_custom_data AS cd
+							ON cd.location_id = loc.id
+							WHERE loc.id = ' . (int) sqlEscape($locationId);
+					$result = sqlQuery($sql);
+					$row = sqlFetchAssoc($result);
+					if(is_array($row) && $row){
+						$this->setPageDesc($row["introduction"]);
+					}
+				}
+			}
+		}
+	}
+	
 	// Note: This is a seperate function because zenario_extranet_user_role_loc_view needs to overwrite this method
 	public function getLocationId() {
 		switch ($this->setting('location_source_mode')) {
@@ -165,13 +226,6 @@ class zenario_location_viewer extends module_base_class {
 				return get('l_id');
 		}
 		return false;
-	}
-	
-	function addToPageHead() {
-		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
-			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
-			echo '<script src="https://maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>';
-		}
 	}
 	
 	function showSlot() {

@@ -38,12 +38,52 @@ class zenario_common_features__organizer__content_types extends module_base_clas
 		if ($path != 'zenario__content/panels/content_types') return;
 		
 		foreach ($panel['items'] as $id => &$item) {
+			
+			//Apply some formatting from getContentTypeDetails()
+			$item = getContentTypeDetails($item);
+			
 			$item['css_class'] = 'content_type_'. $item['content_type_id'];
 			
 			if ($item['not_enabled']) {
 				$item['not_enabled'] = ' '. adminPhrase('(not enabled)');
 			} else {
 				$item['not_enabled'] = '';
+			}
+			
+			//Hide the folders that click through to content items
+			if ($mode != 'select') {
+				$item['link'] = false;
+			}
+			
+			//Show a description of the settings
+			if (in($mode, 'full', 'quick')) {
+				$item['defaults'] = adminPhrase('Version-controlled content items');
+				
+				if ($item['default_parent_menu_node']) {
+					$mrg = array('menu_path' => getMenuPathWithMenuSection($item['default_parent_menu_node']));
+					$item['defaults'] .= adminPhrase(', new items attached to menu under [[menu_path]]', $mrg);
+				}
+				
+				$with = array();
+				if ($item['description_field'] != 'hidden') {
+					$with[] = adminPhrase('meta description');
+				}
+				if ($item['keywords_field'] != 'hidden') {
+					$with[] = adminPhrase('keywords');
+				}
+				if ($item['release_date_field'] != 'hidden') {
+					$with[] = adminPhrase('release date');
+				}
+				if ($item['writer_field'] != 'hidden') {
+					$with[] = adminPhrase('writer field');
+				}
+				if ($item['summary_field'] != 'hidden') {
+					$with[] = adminPhrase('content summary field');
+				}
+				
+				if (!empty($with)) {
+					$item['defaults'] .= adminPhrase(', with [[with]]', array('with' => implode(', ', $with)));
+				}
 			}
 		}
 	}

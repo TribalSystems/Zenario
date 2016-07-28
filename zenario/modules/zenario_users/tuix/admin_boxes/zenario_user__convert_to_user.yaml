@@ -117,7 +117,7 @@ zenario_user__convert_to_user:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required_if_not_hidden: Please select an Email Template
+                        required_if_not_hidden: Please select an email template
                     visible_if: |
                         zenarioAB.value('send_activation_email_to_user', 'details')
                         && zenarioAB.value('email', 'details')

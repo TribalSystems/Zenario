@@ -93,6 +93,12 @@ methods.cmsSetsRequestedItem = function(requestedItem) {
 	this.requestedItem = requestedItem;
 };
 
+//Called by Organizer to set the sort column and direction
+methods.cmsSetsSortColumn = function(sortBy, sortDesc) {
+	this.sortBy = sortBy;
+	this.sortDesc = sortDesc;
+};
+
 
 //If searching is enabled (i.e. your returnSearchingEnabled() method returns true)
 //then the CMS will call this method to tell you what the search term was
@@ -130,7 +136,10 @@ methods.returnAJAXRequests = function() {
 
 //You should return the page size you wish to use, or false to disable pagination
 methods.returnPageSize = function() {
-	return Math.max(20, Math.min(500, 1*zenarioA.adminSettings.organizer_page_size || 50));
+	
+	var pageSize = (zenarioO.prefs[this.path] && zenarioO.prefs[this.path].pageSize);
+	
+	return Math.max(20, Math.min(500, 1*pageSize || zenarioO.defaultPageSize));
 };
 
 //Sets the title shown above the panel.
@@ -192,7 +201,7 @@ methods.sortAndSearchItems = function() {
 
 //Part one of sortAndSearchItems(), this is broken up into two halves for easier overriding
 methods.sortItems = function() {
-	return zenarioO.getSortedIdsOfTUIXElements('items', zenarioO.sortBy, zenarioO.sortDesc);
+	return zenarioA.getSortedIdsOfTUIXElements(this.tuix, 'items', this.sortBy, this.sortDesc);
 };
 
 //Part two of sortAndSearchItems(), this is broken up into two halves for easier overriding
@@ -208,7 +217,12 @@ methods.searchItems = function(items, searchTerm) {
 			matches = false;
 			foreach (this.tuix.columns as c => column) {
 				if (column && engToBoolean(column.searchable)) {
-					value = zenarioO.columnValue(id, c, true);
+					
+					if (zenarioO.columnValue) {
+						value = zenarioO.columnValue(id, c, true);
+					} else {
+						value = this.tuix.items && this.tuix.items[id] && this.tuix.items[id][c];
+					}
 					
 					if (value == (numeric = 1*value)) {
 						matches = numeric == searchTerm;
@@ -419,6 +433,11 @@ methods.closeInspectionView = function(id) {
 	//...
 };
 
+
+//Function to use for microtemplates
+methods.microTemplate = function(template, data, filter) {
+	return zenarioA.microTemplate(template, data, filter);
+};
 
 
 

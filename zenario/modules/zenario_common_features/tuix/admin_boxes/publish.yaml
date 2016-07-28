@@ -19,12 +19,15 @@ zenario_publish:
                     type: warning
                     message: >
                         Are you sure you wish to publish the selected content item(s)?
-                #too_soon:
-                #    show: false
-                #    type: error
-                #    message: >
-                #        You cannot publish a content item before its release date.
-            
+                document_warning:
+                    show: false
+                    type: warning
+                    message: ''
+                document_changes:
+                    show: false
+                    type: warning
+                    message: ''
+                
             fields:
                 publish_options:
                     type: radios

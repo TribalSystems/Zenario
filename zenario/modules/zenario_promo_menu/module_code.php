@@ -54,7 +54,6 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 		$this->language = false;
 		$this->onlyFollowOnLinks = !$this->setting('menu_show_all_branches');
 		$this->onlyIncludeOnLinks = false;
-		$this->showAdminAddMenuItem = $this->setting('menu_show_admin_add_button');
 		$this->showInvisibleMenuItems = false;
 		$this->showMissingMenuNodes = $this->setting('show_missing_menu_nodes');
 		$cachingRestrictions = false;
@@ -66,7 +65,7 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 							 $this->sectionId, $this->currentMenuId, $parentMenuId,
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-							 $this->showAdminAddMenuItem, $this->showInvisibleMenuItems,
+							 $this->showInvisibleMenuItems,
 							 $this->showMissingMenuNodes);
 							 
 		switch ($cachingRestrictions) {

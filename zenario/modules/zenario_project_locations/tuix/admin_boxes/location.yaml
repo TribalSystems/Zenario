@@ -22,7 +22,8 @@ zenario_project_locations__project:
                         required_if_not_hidden: 'Please enter a project name'
                 summary:
                     label: 'Summary:'
-                    type: editor                
+                    type: editor
+                    dont_trim: true
                 content_item:
                     label: 'Descriptive HTML page:'
                     pick_items:

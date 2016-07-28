@@ -197,7 +197,7 @@ class zenario_users__admin_boxes__smart_group extends zenario_users {
 		
 		
 		//We may have created and/or destroyed fields, so update the linking fields
-		readAdminBoxValues($box, $fields, $values, $changes, $filling, $resetErrors = false, $preDisplay = true);
+		readAdminBoxValues($box, $fields, $values, $changes, $filling, $resetErrors = false);
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {

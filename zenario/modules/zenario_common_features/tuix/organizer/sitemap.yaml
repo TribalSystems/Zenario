@@ -30,7 +30,8 @@ zenario__content:
                         WHERE c.status IN ('published_with_draft','published')
                           AND tc.privacy = 'public'
                           AND sp.equiv_id IS NULL
-                    max_limit: 99999999
+                    max_limit: 500000
+                    item_count_max_limit: 500000
                 columns:
                     loc: ""
                     lastmod:

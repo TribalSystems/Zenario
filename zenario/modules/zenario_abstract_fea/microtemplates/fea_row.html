@@ -1,0 +1,49 @@
+<% if (zenario.engToBoolean(m.errors)) { %>
+	<div id="errorDisplayRow"><div><div class="messageDisplay" id="errorDisplay">
+		<% for (var e in m.errors) { %>
+			<div id="errorDisplay_inner">
+				{{zenario.htmlspecialchars(m.errors[e].message, true)}}
+			</div>
+		<% } %>
+	</div></div></div>
+<% } %>	
+<% for (var n in m.notices) { %>
+	<div class="{{m.notices[n].type|escape}}DisplayRow"><div><div class="messageDisplay"><div>
+		{{zenario.htmlspecialchars(m.notices[n].message, true)}}
+	</div></div></div></div>
+<% } %>
+
+<% if (m.fields) { %>
+	<% var firstField = m.fields[0]; %>
+	
+	<% if (firstField._lastGrouping !== firstField.grouping) { %>
+		<% if (firstField._lastGrouping) { %>
+			</fieldset>
+		<% } %>
+		<% if (firstField.grouping) { %>
+			<fieldset class="zfea_form_grouping zfea_form_grouping__{{firstField.grouping|escape}}">
+		<% } %>
+	<% } %>
+	<% if (firstField.legend) { %>
+		<legend class="zfea_form_legend zfea_form_legend_for__{{firstField._id|escape}}"><span>{{firstField.legend}}</span></legend>
+	<% } %>
+	
+	<div id="row__{{m.fields[0]._id|escape}}" class="zfea_form_row zfea_form_row__{{m.fields[0]._id|escape}} {{m.fields[0].row_class|escape}} {{m.fields[0]._hideOnOpen? 'zfea_form_hide_row_on_open' : ''}}">
+		<div class="{{m.fields[0]._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zfea_form_show_on_open' : ''}}">
+			<% if (m.fields[0].label !== undefined) { %>
+				<div class="title">
+					<label for="{{m.fields[0]._id|escape}}">{{m.fields[0].label}}</label>
+				</div>
+			<% } %>
+			<div class="{{m.fields[0]._hideOnOpen? 'zfea_form_hide_on_open' : ''}} {{m.fields[0]._showOnOpen? 'zfea_form_show_on_open' : ''}}">
+				{{m.that.microTemplate(m.that.mtPrefix + '_field', m.fields)}}
+			</div>
+		</div>
+	</div>
+	
+	<% if (firstField._isLastRow) { %>
+		<% if (firstField.grouping) { %>
+			</fieldset>
+		<% } %>
+	<% } %>
+<% } %>

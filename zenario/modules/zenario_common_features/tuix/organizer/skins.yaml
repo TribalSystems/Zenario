@@ -112,6 +112,13 @@ zenario__layouts:
                     path: zenario__layouts/panels/skin_files
                     branch: Yes
                     refiner: skin
+            inline_buttons:
+                missing_skin:
+                    css_class: zenario_ib_warning
+                   # tooltip: |
+                    #    The Skin is missing!
+                    visible_if: >
+                        item.missing
             item_buttons:
                 make_default:
                     priv: _PRIV_EDIT_TEMPLATE_FAMILY

@@ -1,0 +1,142 @@
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { 
+	margin:0px;
+	padding:0px;
+}
+table {
+	border-collapse:collapse;
+	border-spacing:0;
+}
+fieldset,img { 
+	border:0;
+}
+address,caption,cite,code,dfn,th,var {
+	font-style:normal;
+	font-weight:normal;
+}
+ul {
+	list-style:none;
+}
+caption,th {
+	text-align:left;
+}
+h1,h2,h3,h4,h5,h6 {
+	font-size:100%;
+	font-weight:normal;
+}
+q:before,q:after {
+	content:'';
+}
+abbr,acronym { border:0;
+}
+
+/* Portrait and Landscape for iPad 3 and 4 */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPad 1 and 2 */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 1) {
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPad mini */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 1) {
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 6+ */
+@media only screen and (min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3) { 
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 6 */
+@media only screen and (min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) { 
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 5 and 5s */
+@media only screen and (min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}
+
+/* Portrait and Landscape for iPhone 4 and 4s */
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
+	
+	.zenario_skin input[type="submit"],
+	.zenario_skin input[type="button"],
+	.zenario_skin button,
+	.zenario_skin select {
+		-webkit-appearance: none; /*Safari/Chrome*/
+		-moz-appearance: none; /*Firefox*/
+		-ms-appearance: none; /*IE*/
+		-o-appearance: none; /*Opera*/
+		appearance: none;
+	}
+	
+}

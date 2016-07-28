@@ -63,15 +63,6 @@ _sql
 	WHERE action_name = '_PRIV_VIEW_DEV_TOOLS'
 _sql
 
-//Migrate the old organizer_page_size setting
-, <<<_sql
-	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]admin_settings`
-	SELECT a.id, 'organizer_page_size', IFNULL(s.value, s.default_value)
-	FROM `[[DB_NAME_PREFIX]]admins` AS a
-	INNER JOIN `[[DB_NAME_PREFIX]]site_settings` AS s
-	WHERE name IN ('organizer_page_size', 'storekeeper_page_size')
-_sql
-
 
 
 		//					 //
@@ -191,6 +182,26 @@ _sql
 	SELECT DISTINCT '_PRIV_MANAGE_COUNTRY', admin_id
 	FROM `[[DB_NAME_PREFIX]]action_admin_link`
 	WHERE action_name = '_PRIV_PUBLISH_CONTENT_ITEM'
+_sql
+
+//Add a new permission for managing ecommerce
+//copying _PRIV_PUBLISH_CONTENT_ITEM for the initial values.
+);	revision( 33770
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]action_admin_link`
+	SELECT DISTINCT '_PRIV_MANAGE_ECOMMERCE', admin_id
+	FROM `[[DB_NAME_PREFIX]]action_admin_link`
+	WHERE action_name = '_PRIV_PUBLISH_CONTENT_ITEM'
+_sql
+
+
+
+
+//Remove the old organizer_page_size setting
+);	revision( 35700
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]admin_settings`
+	WHERE name IN ('organizer_page_size', 'storekeeper_page_size')
 _sql
 
 );

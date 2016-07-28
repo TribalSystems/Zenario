@@ -1353,6 +1353,11 @@
     var testRegexp = RegExp(source);
     var replaceRegexp = RegExp(source, 'g');
     return function(string) {
+      
+      if (typeof string == 'function') {
+      	string = string();
+      }
+      
       string = string == null ? '' : '' + string;
       return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
     };

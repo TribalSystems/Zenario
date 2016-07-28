@@ -57,7 +57,7 @@ var methods = methodsOf(
 
 
 methods.getHierarchyMicroTemplateHTML = function(m) {
-	return zenarioA.microTemplate('zenario_organizer_hierarchy_documents', m)
+	return this.microTemplate('zenario_organizer_hierarchy_documents', m)
 }
 
 methods.getItems = function() {

@@ -66,6 +66,8 @@ zenario_layout:
                         select_phrase: Change skin...
                         nothing_selected_phrase: No skin selected
                         hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a skin
                     format_onchange: true
                     note_below: |
                         Changing the skin of this layout will immediately effect

@@ -77,7 +77,11 @@ methods.init = function() {
 		'visible_condition_field_id',
 		'validation',
 		'default_value_options',
-		'send_to_crm'
+		'send_to_crm',
+		'restatement_field',
+		'autocomplete',
+		'autocomplete_options',
+		'filter_on_field'
 	];
 	
 	// Top level div for this editor
@@ -307,8 +311,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	}
 	
 	mergeFields.items = this.getOrderedItems(mergeItems);
-	
-	var html = zenarioA.microTemplate('zenario_organizer_form_builder', mergeFields);
+	var html = this.microTemplate('zenario_organizer_form_builder', mergeFields);
 	$panel.html(html).show();
 	
 	// Add JS events
@@ -328,6 +331,7 @@ methods.showPanel = function($header, $panel, $footer) {
 	// Make unlinked fields palette draggable
 	$('#organizer_field_type_list div.field_type, #organizer_centralised_field_type_list div.field_type').draggable({
 		connectToSortable: '#organizer_form_fields',
+		appendTo: '#organizer_form_builder',
 		helper: 'clone'
 	});
 	
@@ -352,12 +356,13 @@ methods.initLinkedFieldsAdder = function() {
 	var dataset_fields = this.getOrderedDatasetFields(this.tuix.dataset_fields);
 	
 	// Set linked fields HTML
-	var html = zenarioA.microTemplate('zenario_organizer_form_builder_dataset_tab', dataset_fields);
+	var html = this.microTemplate('zenario_organizer_form_builder_dataset_tab', dataset_fields);
 	$('#organizer_linked_field_type_list').html(html);
 	
 	// Make linked fields palette draggable
 	$('#organizer_linked_field_type_list div.dataset_field').draggable({
 		connectToSortable: '#organizer_form_fields',
+		appendTo: '#organizer_form_builder',
 		helper: 'clone'
 	});
 };
@@ -366,46 +371,58 @@ methods.initDeleteButtons = function() {
 	var that = this;
 	$('#organizer_form_fields .delete_icon').off().on('click', function(e) {
 		
-		var that2 = this;
-		
 		// Get user responses saved by this field
-		var actionRequests = {
-			mode: 'get_field_response_count',
-			id: $(this).data('id')
+		var id = $(this).data('id');
+		
+		if (that.tuix.form_type == 'registration' && that.tuix.items[id].db_column == 'email') {
+			zenarioA.showMessage('You cannot delete the email field from a registration form.', true, 'warning');
+			return false;
+		}
+		
+		var responses_transfer_fields = {};
+		var currentType = that.tuix.items[id].type;
+		var fieldId, field;
+		
+		// Get fields with same type
+		foreach (that.tuix.items as fieldId => field ) {
+			if (field.type == currentType && fieldId != id) {
+				responses_transfer_fields[fieldId] = field.name;
+			}
+		}
+		
+		var keys = {
+			id: id,
+			field_name: that.tuix.items[id].name,
+			field_type: currentType,
+			field_english_type: that.getFieldReadableType(currentType),
+			responses_transfer_fields: JSON.stringify(responses_transfer_fields)
 		};
-		that.sendAJAXRequest(actionRequests).after(function(data) {
-			
-			var data = JSON.parse(data),
-				message = '',
-				plural = '';
-			
-			if (!data.count) {
-				message += '<p>There are no user responses for this field.</p>';
-			} else {
-				plural = data.count == 1 ? '' : 's';
-				message += '<p>This field has ' + data.count + ' user response' + plural + ' recorded against it.</p>';
-				message += '<p>When you save changes to this form, that data will be deleted.</p>';
+		
+		zenarioAB.open(
+			'zenario_delete_form_field',
+			keys,
+			undefined, undefined,
+			function(key, values) {
+				
+				// Migrate data to another field
+				var migrateResponsesTo = undefined;
+				if (values.details.delete_field_options == 'delete_field_but_migrate_data' 
+					&& values.details.migration_field
+					&& that.tuix.items[values.details.migration_field]
+				) {
+					that.tuix.items[values.details.migration_field]._migrate_responses_from = id;
+				}
+				
+				// Delete field
+				var deleting = true;
+				setTimeout(function() {
+					if (deleting == true) {
+						that.deleteField(id);
+					}
+					deleting = false;
+				});
 			}
-			message += '<p>Delete this form field?</p>';
-			
-			that.deleting = true;
-			zenarioA.showMessage(message, 'Delete', 'warning', true);
-			that.listenForDelete($(that2).data('id'));
-		});
-		e.stopPropagation();
-	});
-};
-
-methods.listenForDelete = function(id) {
-	// Listen for field delete
-	var that = this;
-	$('#zenario_fbMessageButtons input.submit_selected').on('click', function() { 
-		setTimeout(function() {
-			if (that.deleting == true) {
-				that.deleteField(id);
-			}
-			that.deleting = false;
-		});
+		);
 	});
 };
 
@@ -498,6 +515,9 @@ methods.initSection = function() {
 	$('#organizer_form_fields').sortable({
 		items: 'div.form_field',
 		placeholder: 'preview',
+		containment: '#organizer_form_fields',
+		scroll: true,
+		scrollSensitivity: 150,	
 		// Add new field to the form
 		receive: function(event, ui) {
 			$(this).find('div.field_type, div.dataset_field').each(function() {
@@ -521,13 +541,6 @@ methods.initSection = function() {
 			
 		}
 	});
-	/*
-	$("#organizer_form_fields :input").on('mousedown', function (e) {
-		var mdown = document.createEvent("MouseEvents");
-		mdown.initMouseEvent("mousedown", true, true, window, 0, e.screenX, e.screenY, e.clientX, e.clientY, true, false, false, true, 0, null);
-		$(this).closest('div.form_field')[0].dispatchEvent(mdown);
-	});
-	*/
 };
 
 // Remove no items message if exists
@@ -601,6 +614,7 @@ methods.addNewField = function($field) {
 	}
 	
 	mergeFields = _.clone(newField);
+	mergeFields.form_type = this.tuix.form_type;
 	if (newField.lov) {
 		mergeFields.lov = this.getOrderedItemCRMLOV(newField.lov);
 	}
@@ -625,7 +639,7 @@ methods.addNewField = function($field) {
 	
 	
 	// Set HTML
-	var html = zenarioA.microTemplate('zenario_organizer_form_builder_field', mergeFields);
+	var html = this.microTemplate('zenario_organizer_form_builder_field', mergeFields);
 	$field.replaceWith(html);
 	
 	// Add other properties to field
@@ -702,7 +716,7 @@ methods.fieldClick = function($field, tab) {
 methods.setCurrentFieldDetails = function() {
 	var that = this,
 		mergeFields = this.getCurrentFieldDetailsMergeFields(),
-		html = zenarioA.microTemplate('zenario_organizer_form_builder_field_details', mergeFields);
+		html = this.microTemplate('zenario_organizer_form_builder_field_details', mergeFields);
 	
 	// Set HTML
 	$('#organizer_field_details_inner').html(html);
@@ -758,8 +772,11 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 		) {
 			mirroredFields[fieldId] = _.clone(fieldDetails);
 		}
+		
 		// Get fields that can be used to filter centralised lists
-		if (fieldDetails.type == 'centralised_select' && (fieldId != this.current.id)) {
+		if ((fieldDetails.type == 'centralised_select' || (fieldDetails.type == 'text' && fieldDetails.autocomplete == 1 && fieldDetails.values_source != false)) 
+			&& (fieldId != this.current.id)
+		) {
 			filterOnFieldFields[fieldId] = _.clone(fieldDetails);
 		}
 		
@@ -813,7 +830,6 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 		};
 	}
 	mergeFields.filter_on_field_options = this.createSelectList(filter_on_field_options, mergeFields.filter_on_field, true);
-	
 	
 	var readonly_or_mandatory_options = {
 		none: {
@@ -1000,7 +1016,14 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 			label: fieldDetails.name
 		};
 	}
-	mergeFields.restatement_field_options = this.createSelectList(restatement_field_options, mergeFields.restatement_field);
+	mergeFields.restatement_field_options = this.createSelectList(restatement_field_options, mergeFields.restatement_field, true);
+	
+	if (mergeFields.type == 'restatement' 
+		&& mergeFields.restatement_field 
+		&& this.tuix.items[mergeFields.restatement_field]
+	) {
+		mergeFields.mirrorFieldType = this.tuix.items[mergeFields.restatement_field].type;
+	}
 	
 	// Advanced tab
 	
@@ -1039,11 +1062,29 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 	}
 	mergeFields.default_value_lov_options = this.createSelectList(default_value_lov_options, mergeFields.default_value);
 	
+	// Autocomplete source options
+	var autocomplete_options = {
+		centralised_list: {
+			ord: 1,
+			label: 'Centralised list'
+		},
+		method: {
+			ord: 2,
+			label: 'Call a modue\'s static method to get a list'
+		}
+	};
+	// Default value
+	if (!mergeFields.autocomplete_options && !mergeFields.autocomplete_class_name) {
+		mergeFields.autocomplete_options = 'centralised_list';
+	}
+	mergeFields.autocomplete_options_lov = this.createRadioList(autocomplete_options, mergeFields.autocomplete_options, 'autocomplete_options');
 	
 	// Translations tab
+	
 	mergeFields.translatable_fields = this.getOrderedTranslations(mergeFields._translations);
 	
 	// CRM tab
+	
 	mergeFields.hasCRMValues = this.fieldCanHaveCRMValues(mergeFields.type);
 	if (mergeFields.hasCRMValues) {
 		if (mergeFields.type == 'checkbox') {
@@ -1195,7 +1236,7 @@ methods.initCurrentFieldDetails = function() {
 	}
 	
 	// Place LOV on page
-	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', lov),
+	var html = this.microTemplate('zenario_organizer_admin_box_builder_field_value', lov),
 		$field_values_list = $('#field_values_list');
 	
 	$field_values_list.html(html);
@@ -1304,7 +1345,6 @@ methods.getFieldReadableType = function(type) {
 
 // Called when a centralised list is updated for a field
 methods.centralisedListUpdated = function(fieldId, method, filter) {
-	
 	// Get the new values of the centralised list
 	var that = this;
 	var actionRequests = {
@@ -1314,18 +1354,13 @@ methods.centralisedListUpdated = function(fieldId, method, filter) {
 		type: 'object'
 	};
 	this.sendAJAXRequest(actionRequests).after(function(data) {
-		
-		
 		var lov = JSON.parse(data)
 		that.tuix.items[fieldId].lov = lov;
 		that.valuesChanged = true;
-		
 		// Update the field preview
 		lov = that.getOrderedItemCRMLOV(lov);
-		var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', lov);
+		var html = that.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', lov);
 		$('#organizer_form_field_values_' + fieldId).html(html);
-		
-		
 	});
 };
 

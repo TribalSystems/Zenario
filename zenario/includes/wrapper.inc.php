@@ -29,29 +29,34 @@
 
 
 //Define a function to include a CSS file
-if (!function_exists('includeCSSFile')) {
-	function includeCSSFile($path, $file, $pathURL = false, $media = 'screen') {
-		if (!$pathURL) {
-			$pathURL = $path;
-		}
+function includeCSSFile(&$linkV, &$overrideCSS, $path, $file, $pathURL = false, $media = 'screen') {
+	if (!$pathURL) {
+		$pathURL = $path;
+	}
+	
+	//Check if there's a stylesheet there
+	if (is_file(CMS_ROOT. $path. $file)) {
 		
-		//Check if there's a stylesheet there
-		if (is_file(CMS_ROOT. $path. $file)) {
+		if ($linkV !== false) {
+			echo '
+<link rel="stylesheet" type="text/css" media="', $media, '" href="', htmlspecialchars($pathURL. $file), '?v='. $linkV. '"/>';
+		
+		} else { 
 			//Include the contents of the file, being careful to correct for the fact that the relative path for images will be wrong
 			if (substr($path, 0, 8) == 'zenario/') {
 				echo preg_replace('/url\(([\'\"]?)([^:]+?)\)/i', 'url($1../'. substr($pathURL, 7). '$2)', file_get_contents(CMS_ROOT. $path. $file));
-			
+		
 			} else {
 				echo preg_replace('/url\(([\'\"]?)([^:]+?)\)/i', 'url($1../../'. $pathURL. '$2)', file_get_contents(CMS_ROOT. $path. $file));
 			}
-			
+		
 			echo "\n/**/\n";
-			
-			return true;
 		}
 		
-		return false;
+		return true;
 	}
+	
+	return false;
 }
 
 
@@ -76,7 +81,9 @@ function outputRulesForSlotMinHeights() {
 
 
 
-function includeSkinFiles(&$req) {
+function includeSkinFiles(&$req, $linkV = false, $overrideCSS = false) {
+	
+	$media = empty($req['print'])? 'screen' : 'print';
 	
 	//If a layout has been specified, and it has a grid CSS, output that grid CSS
 	if (empty($req['print'])
@@ -84,7 +91,7 @@ function includeSkinFiles(&$req) {
 	 && ($layout = getTemplateDetails($req['layoutId']))
 	 && ($path = zenarioTemplatePath($layout['family_name']))
 	 && (file_exists($file = (CMS_ROOT. zenarioTemplatePath($layout['family_name'], $layout['file_base_name'], true))))) {
-		includeCSSFile($path, basename($file));
+		includeCSSFile($linkV, $overrideCSS, $path, basename($file));
 	}
 	
 	
@@ -120,7 +127,7 @@ function includeSkinFiles(&$req) {
 		}
 		
 		
-		$files = array(array(), array(), array());
+		$files = array(array(), array(), array(), array());
 		$browsers = explode(' ', browserBodyClass());
 		foreach ($browsers as &$browser) {
 			$browser = 'style_'. $browser. '.css';
@@ -129,67 +136,155 @@ function includeSkinFiles(&$req) {
 		
 		includeSkinFilesR($req, $browsers, $files, $skinPath, $skinPathURL);
 		
-		foreach ($files as &$fa) {
-			foreach ($fa as &$fb) {
-				includeCSSFile($fb[0], $fb[1], $fb[2], empty($req['print'])? 'screen' : 'print');
+		foreach ($files as $fi => &$fa) {
+			$max = count($fa) - 1;
+			for ($i = 0; $i <= $max; ++$i) {
+				$fb = &$fa[$i];
+				
+				$file = $fb[1];
+				$isEditableFile = $fb[3];
+				
+				//Look for overridden CSS files
+				if ($linkV !== false
+				 && $overrideCSS !== false
+				 && $isEditableFile) {
+					
+					//Catch the case where an overwritten file already exists in the filesystem.
+					//Output the overwritten version of the file, and don't output the file from the filesystem.
+					if (isset($overrideCSS[0]) && $overrideCSS[0][0] == $file) {
+						overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+						array_shift($overrideCSS);
+						continue;
+					
+					//Catch the case where the file didn't exist.
+					//As soon as we see we've gone past it, output it and keep going.
+					} else {
+						while (isset($overrideCSS[0]) && $overrideCSS[0][0] < $file) {
+							overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+							array_shift($overrideCSS);
+						}
+					}
+				}
+				
+				
+				includeCSSFile($linkV, $overrideCSS, $fb[0], $fb[1], $fb[2], $media);
+				
+				
+				//Catch the case where there are files that didn't exist,
+				//and they're at the end of the list so wouldn't have been caught above
+				if ($linkV !== false
+				 && $overrideCSS !== false
+				 && $isEditableFile
+				 && $i == $max) {
+					
+					//Fiddly bit of logic here:
+						//reset.css will be included in the first pass (0)
+						//all of the other editable css files will be in the third pass (2)
+						//This xor ensures that 
+					while (isset($overrideCSS[0]) && ($fi !== 0 xor $overrideCSS[0][0] === '0.reset.css')) {
+						overwriteCSSFile($overrideCSS[0], $skinPath. 'editable_css/', $skinPathURL. 'editable_css/', $media);
+						array_shift($overrideCSS);
+					}
+				}
 			}
 		}
 	}
 }
 
-function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, $limit = 10) {
+function overwriteCSSFile(&$override, $path, $pathURL, $media) {
+	echo
+		"\n", '<style type="text/css" media="', $media, '">',
+		"\n",
+			preg_replace('/url\(([\'\"]?)([^:]+?)\)/i', 'url($1'. $pathURL. '$2)',
+				str_ireplace('</style', '<', $override[1])
+			),
+		"\n", '</style>';
+
+}
+
+//Note there's an order to which the CSS files are included:
+	//0 = reset.css
+	//1 = non-editable CSS files, included alphabetically by filepath
+	//2 = editable CSS files, included alphabetically by filename
+	//3 = browser-specific CSS files
+
+function includeSkinFilesR(&$req, &$browsers, &$files, $skinPath, $skinPathURL, $limit = 10, $inEditableDir = false, $topLevel = true) {
 	if (!--$limit) {
 		return;
 	}
 	
 	foreach(scandir(CMS_ROOT. $skinPath) as $file) {
-		if (substr($file, 0, 1) != '.') {
+		
+		
+		if ($file[0] != '.') {
 			if (is_dir($skinPath. $file)) {
-				includeSkinFilesR($req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/', $limit);
+				includeSkinFilesR(
+					$req, $specialFiles, $files, $skinPath. $file. '/', $skinPathURL. rawurlencode($file). '/',
+					$limit, $topLevel && $file === 'editable_css', false);
 			
-			} else if (substr($file, -4) == '.css') {
+			} elseif (substr($file, -4) == '.css') {
+				
+				//Allow for files such as 0.reset.css or 7.style_ie.css to use the same logic as files with the regular names
+				if ($file[1] === '.'
+				 && strlen($file) > 6) {
+					$name = substr($file, 2);
+				} else {
+					$name = $file;
+				}
+				
+				//Check for files for specific uses
 				if (!empty($req['editor'])) {
-					switch ($file) {
+					switch ($name) {
 						case 'tinymce.css':
-							$files[0][] = array($skinPath, $file, $skinPathURL);
+							$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
 					}
 				
 				} elseif (!empty($req['print'])) {
-					switch ($file) {
+					switch ($name) {
+						case 'print.css':
 						case 'stylesheet_print.css':
-							$files[0][] = array($skinPath, $file, $skinPathURL);
+							$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
 					}
 				
 				} else {
-					switch ($file) {
+					switch ($name) {
 						case 'tinymce.css':
+						case 'print.css':
 						case 'stylesheet_print.css':
 							break;
 						
+						//reset.css should always be first (0)
 						case 'reset.css':
-							$files[0][] = array($skinPath, $file, $skinPathURL);
+							$files[0][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
 							break;
 						
+						//browser-specific stylesheets are alwats last (3),
+						//and should only be included if they match the browser requesting them
 						case 'style_chrome.css':
+						case 'style_edge.css':
 						case 'style_ff.css':
 						case 'style_ie.css':
 						case 'style_ie6.css':
 						case 'style_ie7.css':
 						case 'style_ie8.css':
 						case 'style_ie9.css':
+						case 'style_ie10.css':
+						case 'style_ie11.css':
 						case 'style_ios.css':
 						case 'style_ipad.css':
 						case 'style_iphone.css':
 						case 'style_opera.css':
 						case 'style_safari.css':
 						case 'style_webkit.css':
-							if (isset($browsers[$file])) {
-								$files[2][] = array($skinPath, $file, $skinPathURL);
+							if (isset($browsers[$name])) {
+								$files[3][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
 							}
 							break;
 						
+						//Non-editable CSS files should be second (1),
+						//then editable CSS files should be third (2)
 						default:
-							$files[1][] = array($skinPath, $file, $skinPathURL);
+							$files[$inEditableDir? 2 : 1][] = array($skinPath, $file, $skinPathURL, $inEditableDir);
 					}
 				}
 			}

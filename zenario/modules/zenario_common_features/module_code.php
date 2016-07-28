@@ -208,8 +208,8 @@ class zenario_common_features extends module_base_class {
 		$this->pageNumbers($currentPage, $pages, $html, 'All', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false);
 	}
 	
-	public function pagCloseWithNPIfNeeded($currentPage, &$pages, &$html, &$links = array()) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false, $links);
+	public function pagCloseWithNPIfNeeded($currentPage, &$pages, &$html, &$links = array(), $extraAttributes = array()) {
+		$this->pageNumbers($currentPage, $pages, $html, 'Close', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false, $links, $extraAttributes);
 	}
 	
 	public function pagCloseWithNP($currentPage, &$pages, &$html) {
@@ -226,7 +226,7 @@ class zenario_common_features extends module_base_class {
 	
 	
 	
-	protected function drawPageLink($pageName, $request, $page, $currentPage, $prevPage, $nextPage, $css = 'pag_page', &$links = array()) {
+	protected function drawPageLink($pageName, $request, $page, $currentPage, $prevPage, $nextPage, $css = 'pag_page', &$links = array(), $extraAttributes = array()) {
 		$link = array();
 		
 		$link['active'] = ($page === $currentPage) ? true : false;
@@ -236,8 +236,10 @@ class zenario_common_features extends module_base_class {
 		
 		$links[] = $link;
 		
+		$extraAttributes = isset($extraAttributes[$page]) ? $extraAttributes[$page] : '';
+		
 		return '
-			<span class="'. $css. ($page === $currentPage? '_on' : ''). '"><span>
+			<span class="'. $css. ($page === $currentPage? '_on' : ''). '" ' . $extraAttributes . '><span>
 				<a '.
 					($request? $this->refreshPluginSlotAnchor($request) : '').
 					($page === $prevPage? ' rel="prev"' : ($page === $nextPage? ' rel="next"' : '')).
@@ -245,10 +247,9 @@ class zenario_common_features extends module_base_class {
 					$pageName.
 				'</a>
 			</span></span>';
-	
 	}
 		
-	protected function pageNumbers($currentPage, &$pages, &$html, $pageNumbers = 'Close', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = false, &$links = array()) {
+	protected function pageNumbers($currentPage, &$pages, &$html, $pageNumbers = 'Close', $showNextPrev = true, $showFirstLast = true, $alwaysShowNextPrev = false, &$links = array(), $extraAttributes = array()) {
 		$html = '
 			<div class="pag_pagination">';
 		
@@ -272,23 +273,23 @@ class zenario_common_features extends module_base_class {
 			}
 			
 			if ($showFirstLast && $currentPos > ($showNextPrev? 1 : 0)) {
-				$html .= $this->drawPageLink($this->phrase('First'), $pages[$pagesPos[0]], $pagesPos[0], $currentPage, $prevPage, $nextPage, 'pag_first', $links);
+				$html .= $this->drawPageLink($this->phrase('First'), $pages[$pagesPos[0]], $pagesPos[0], $currentPage, $prevPage, $nextPage, 'pag_first', $links, $extraAttributes);
 			}
 			
 			if ($showNextPrev && $prevPage !== false) {
-				$html .= $this->drawPageLink($this->phrase('Prev'), $pages[$prevPage], $prevPage, $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
+				$html .= $this->drawPageLink($this->phrase('Prev'), $pages[$prevPage], $prevPage, $currentPage, $prevPage, $nextPage, 'pag_prev', $links, $extraAttributes);
 			} elseif ($showNextPrev && $alwaysShowNextPrev) {
-				$html .= $this->drawPageLink($this->phrase('Prev'), '', '', $currentPage, $prevPage, $nextPage, 'pag_prev', $links);
+				$html .= $this->drawPageLink($this->phrase('Prev'), '', '', $currentPage, $prevPage, $nextPage, 'pag_prev', $links, $extraAttributes);
 			}
 			
 			
 			if ($pageNumbers == 'Current') {
 				$page = $pagesPos[$currentPos];
-				$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links);
+				$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
 				
 			} elseif ($pageNumbers == 'All') {
 				foreach($pages as $page => &$request) {
-					$html .= $this->drawPageLink($page, $request, $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links);
+					$html .= $this->drawPageLink($page, $request, $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
 				}
 				
 			} elseif ($pageNumbers == 'Close') {
@@ -296,23 +297,23 @@ class zenario_common_features extends module_base_class {
 				for ($pos = $currentPos - 4; $pos <= $currentPos + 4; ++$pos) {
 					if (isset($pagesPos[$pos])) {
 						$page = $pagesPos[$pos];
-						$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links);
+						$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, 'pag_page', $links, $extraAttributes);
 					}
 				}
 				
 			} elseif ($pageNumbers == 'Smart') {
-				$this->smartPageNumbers($currentPos, $count, $showFirstLast, $pagesPos, $pages, $html, $currentPage, $prevPage, $nextPage);
+				$this->smartPageNumbers($currentPos, $count, $showFirstLast, $pagesPos, $pages, $html, $currentPage, $prevPage, $nextPage, $links, $extraAttributes);
 			}
 			
 			
 			if ($showNextPrev && $nextPage !== false) {
-				$html .= $this->drawPageLink($this->phrase('Next'), $pages[$nextPage], $nextPage, $currentPage, $prevPage, $nextPage, 'pag_next', $links);
+				$html .= $this->drawPageLink($this->phrase('Next'), $pages[$nextPage], $nextPage, $currentPage, $prevPage, $nextPage, 'pag_next', $links, $extraAttributes);
 			} elseif ($showNextPrev && $alwaysShowNextPrev) {
-				$html .= $this->drawPageLink($this->phrase('Next'), '', '', $currentPage, $prevPage, $nextPage, 'pag_next', $links);
+				$html .= $this->drawPageLink($this->phrase('Next'), '', '', $currentPage, $prevPage, $nextPage, 'pag_next', $links, $extraAttributes);
 			}
 			
 			if ($showFirstLast && $currentPos < $count - ($showNextPrev? 2 : 1)) {
-				$html .= $this->drawPageLink($this->phrase('Last'), $pages[$pagesPos[$count-1]], $pagesPos[$count-1], $currentPage, $prevPage, $nextPage, 'pag_last', $links);
+				$html .= $this->drawPageLink($this->phrase('Last'), $pages[$pagesPos[$count-1]], $pagesPos[$count-1], $currentPage, $prevPage, $nextPage, 'pag_last', $links, $extraAttributes);
 			}
 		}
 		
@@ -326,41 +327,93 @@ class zenario_common_features extends module_base_class {
 		$cID, $cType, $cVersion,
 		$layoutId, $templateFamily, $templateFileBaseName,
 		$specificInstanceId, $specificSlotName, $ajaxReload,
-		$runPlugins, $overrideSettings = false
+		$runPlugins, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 		$missingPlugin = false;
-		if (includeModuleAndDependencies($slotContents[$slotName]['class_name'], $missingPlugin)
-		 && method_exists($slotContents[$slotName]['class_name'], 'showSlot')) {
+		$slot = &$slotContents[$slotName];
+		
+		if (includeModuleAndDependencies($slot['class_name'], $missingPlugin)
+		 && method_exists($slot['class_name'], 'showSlot')) {
 			
 			//Fetch the name of the instance, and the name of the swatch being used
 			$sql = "
 				SELECT name, framework, css_class
 				FROM ". DB_NAME_PREFIX. "plugin_instances
-				WHERE id = ". (int) $slotContents[$slotName]['instance_id'];
+				WHERE id = ". (int) $slot['instance_id'];
 			$result = sqlQuery($sql);
 			if ($row = sqlFetchAssoc($result)) {
-				//If we found a plugin to display, activate it and set it up
-				$slotContents[$slotName]['instance_name'] = $row['name'];
-				$slotContents[$slotName]['framework'] = ifNull($row['framework'], $slotContents[$slotName]['default_framework']);
 				
-				if ($row['css_class']) {
-					$slotContents[$slotName]['css_class'] .= ' '. $row['css_class'];
+				//If we found a plugin to display, activate it and set it up
+				$slot['instance_name'] = $row['name'];
+				
+				
+				//Set the framework for this plugin
+				if ($overrideFrameworkAndCSS !== false
+				 && !empty($overrideFrameworkAndCSS['framework_tab/framework'])) {
+					$slot['framework'] = $overrideFrameworkAndCSS['framework_tab/framework'];
+				
+				} elseif (!empty($row['framework'])) {
+					$slot['framework'] = $row['framework'];
+				
 				} else {
-					$slotContents[$slotName]['css_class'] .= ' '. $slotContents[$slotName]['css_class_name']. '__default_style';
+					$slot['framework'] = $slot['default_framework'];
 				}
 				
+				
+				//Set the CSS class for this plugin
+				$baseCSSName = $slot['css_class_name'];
+				
+				if ($overrideFrameworkAndCSS !== false
+				 && isset($overrideFrameworkAndCSS['this_css_tab/css_class'])) {
+					
+					switch ($overrideFrameworkAndCSS['this_css_tab/css_class']) {
+						case '#default#':
+							$slot['css_class'] .= ' '. $baseCSSName. '__default_style';
+							break;
+						
+						case '#custom#':
+							$slot['css_class'] .= ' '. $overrideFrameworkAndCSS['this_css_tab/css_class_custom'];
+							break;
+						
+						default:
+							$slot['css_class'] .= ' '. $overrideFrameworkAndCSS['this_css_tab/css_class'];
+							break;
+					}
+				} else {
+					if ($row['css_class']) {
+						$slot['css_class'] .= ' '. $row['css_class'];
+					} else {
+						$slot['css_class'] .= ' '. $baseCSSName. '__default_style';
+					}
+				}
+				
+				
+				//Add a CSS class for this version controller plugin, or this library plugin
+				if (!empty($slot['content_id'])) {
+					if ($cID !== -1) {
+						$slot['css_class'] .=
+							' '. $cType. '_'. $cID. '_'. $slotName.
+							'_'. $baseCSSName;
+					}
+				} else {
+					$slot['css_class'] .=
+						' '. $baseCSSName.
+						'_'. $slot['instance_id'];
+				}
+					
+				
 				if ($runPlugins) {
-					setInstance($slotContents[$slotName], $cID, $cType, $cVersion, $slotName, $checkForErrorPages = true);
+					setInstance($slot, $cID, $cType, $cVersion, $slotName, $checkForErrorPages = true);
 					
 					if (!empty($overrideSettings)
 					 && is_array($overrideSettings)) {
 						foreach ($overrideSettings as $name => $value) {
-							$slotContents[$slotName]['class']->tApiSettings[$name] = $value;
+							$slot['class']->zAPISettings[$name] = $value;
 						}
 					}
 					
-					if (initPluginInstance($slotContents[$slotName])) {
-						if (!$ajaxReload && ($location = $slotContents[$slotName]['class']->checkHeaderRedirectLocation())) {
+					if (initPluginInstance($slot)) {
+						if (!$ajaxReload && ($location = $slot['class']->checkHeaderRedirectLocation())) {
 							header("Location: ". $location);
 							exit;
 						}
@@ -368,7 +421,7 @@ class zenario_common_features extends module_base_class {
 				}
 				
 			} else {
-				$module = getModuleDetails($slotContents[$slotName]['module_id']);
+				$module = getModuleDetails($slot['module_id']);
 				
 				if ($runPlugins) {
 					
@@ -389,16 +442,16 @@ class zenario_common_features extends module_base_class {
 					//Otherwise if this is a layout preview, then no instance id is an error!
 					} else {
 						setupNewBaseClassPlugin($slotName);
-						$slotContents[$slotName]['error'] = adminPhrase('[Plugin Instance not found for the Module &quot;[[module]]&quot;]', array('module' => htmlspecialchars($module['display_name'])));
+						$slot['error'] = adminPhrase('[Plugin Instance not found for the Module &quot;[[module]]&quot;]', array('module' => htmlspecialchars($module['display_name'])));
 					}
 				}
 			}
 		} else {
-			$module = getModuleDetails($slotContents[$slotName]['module_id']);
+			$module = getModuleDetails($slot['module_id']);
 			
 			if ($runPlugins) {
 				setupNewBaseClassPlugin($slotName);
-				$slotContents[$slotName]['error'] = adminPhrase('[Selected Module &quot;[[module]]&quot; not found, not running, or has missing dependencies]', array('module' => htmlspecialchars($module['display_name'])));
+				$slot['error'] = adminPhrase('[Selected Module &quot;[[module]]&quot; not found, not running, or has missing dependencies]', array('module' => htmlspecialchars($module['display_name'])));
 			}
 		}
 	}
@@ -471,7 +524,9 @@ class zenario_common_features extends module_base_class {
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->adminBoxDownload($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function adminBoxDownload($path, $settingGroup, &$box, &$fields, &$values, $changes) {

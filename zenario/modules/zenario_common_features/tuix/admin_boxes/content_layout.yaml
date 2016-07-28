@@ -7,7 +7,7 @@ zenario_content_layout:
         cID: ""
         cType: ""
     hide_tab_bar: true
-    max_height: 200
+    max_height: 250
     tabs:
         cant_edit:
             hidden: true

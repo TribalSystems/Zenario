@@ -1,5 +1,9 @@
 Options -Indexes
 
+<ifModule mod_headers.c>
+	Header always append X-Frame-Options SAMEORIGIN
+</ifModule>
+
 <IfModule pagespeed_module>
 	ModPagespeed off
 </IfModule>

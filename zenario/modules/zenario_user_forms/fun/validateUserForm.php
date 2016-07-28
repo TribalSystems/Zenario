@@ -27,18 +27,22 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-$formFields = self::getUserFormFields($userFormId);
-$formProperties = getRow('user_forms', 
-					array(
-						'save_data',
-						'user_duplicate_email_action', 
-						'duplicate_email_address_error_message'), 
-					array('id' => $userFormId));
+$formFields = static::getUserFormFields($userFormId);
+$formProperties = getRow(
+	'user_forms', 
+	array(
+		'type',
+		'save_data',
+		'user_duplicate_email_action', 
+		'duplicate_email_address_error_message'
+	), 
+	array('id' => $userFormId)
+);
 
 
 // Unset all fields except on the current page if form is multi-page
 if ($pageNo) {
-	self::filterFormFieldsByPage($formFields, $pageNo);
+	static::filterFormFieldsByPage($formFields, $pageNo);
 }
 
 $translate = getRow('user_forms', 'translate_text', array('id' => $userFormId));
@@ -46,11 +50,32 @@ $requiredFields = array();
 $fileFields = array();
 foreach ($formFields as $fieldId => $field) {
 	$userFieldId = $field['user_field_id'];
-	$fieldName = self::getFieldName($field);
-	$type = self::getFieldType($field);
+	$fieldName = static::getFieldName($field);
+	$type = static::getFieldType($field);
 	if ($field['field_label'] != null) {
 		$field['label'] = $field['field_label'];
 	}
+	
+	// Validation for registration forms
+	if ($formProperties['type'] == 'registration') {
+		if ($field['db_column'] == 'email' && $data[$fieldName]) {
+			$existingUser = getRow('users', array('id', 'status'), array('email' => $data[$fieldName]));
+			if ($existingUser) {
+				if ($existingUser['status'] == 'contact') {
+					$registrationMessage = 'contact_not_extranet_message';
+				} else {
+					$registrationMessage = 'email_already_registered';
+				}
+				$requiredFields[$fieldId] = array('name' => $fieldName, 'message' => $registrationMessage, 'type' => $type);
+			}
+		} elseif ($field['db_column'] == 'screen_name' && $data[$fieldName]) {
+			if (checkRowExists('users', array('screen_name' => $data[$fieldName]))) {
+				$registrationMessage = 'screen_name_in_use';
+				$requiredFields[$fieldId] = array('name' => $fieldName, 'message' => $registrationMessage, 'type' => $type);
+			}
+		}
+	}
+	
 	if ($type == 'text') {
 		$validationMessage = '';
 		$valid = true;
@@ -93,36 +118,36 @@ foreach ($formFields as $fieldId => $field) {
 			switch ($field['validation']) {
 				case 'email':
 					if (!validateEmailAddress($data[$fieldName])) {
-						$validationMessage = self::formPhrase('Please enter a valid email address', array(), $translate);
+						$validationMessage = static::formPhrase('Please enter a valid email address', array(), $translate);
 					}
 					break;
 				case 'emails':
 					if (!validateEmailAddress($data[$fieldName], true)) {
-						$validationMessage = self::formPhrase('Please enter a valid list of email addresses', array(), $translate);
+						$validationMessage = static::formPhrase('Please enter a valid list of email addresses', array(), $translate);
 					}
 					break;
 				case 'no_spaces':
 					if (preg_replace('/\S/', '', $data[$fieldName])) {
-						$validationMessage = self::formPhrase('This field cannot contain spaces', array(), $translate);
+						$validationMessage = static::formPhrase('This field cannot contain spaces', array(), $translate);
 					}
 					break;
 				case 'numeric':
 					if (!is_numeric($data[$fieldName])) {
-						$validationMessage = self::formPhrase('This field must be numeric', array(), $translate);
+						$validationMessage = static::formPhrase('This field must be numeric', array(), $translate);
 					}
 					break;
 				case 'screen_name':
 					if (empty($data[$fieldName])) {
-						$validationMessage = self::formPhrase('Please enter a screen name', array(), $translate);
+						$validationMessage = static::formPhrase('Please enter a screen name', array(), $translate);
 					} elseif (!validateScreenName($data[$fieldName])) {
-						$validationMessage = self::formPhrase('Please enter a valid screen name', array(), $translate);
+						$validationMessage = static::formPhrase('Please enter a valid screen name', array(), $translate);
 					} elseif ((userId() && checkRowExists('users', array('screen_name' => $data[$fieldName], 'id' => array('!' => userId())))) || (!userId() && checkRowExists('users', array('screen_name' => $data[$fieldName])))) {
-						$validationMessage = self::formPhrase('The screen name you entered is in use', array(), $translate);
+						$validationMessage = static::formPhrase('The screen name you entered is in use', array(), $translate);
 					}
 					break;
 			}
 			if ($validationMessage && $field['validation_message'] && ($field['validation'] != 'screen_name')) {
-				$validationMessage = self::formPhrase($field['validation_message'], array(), $translate);
+				$validationMessage = static::formPhrase($field['validation_message'], array(), $translate);
 			}
 		}
 		if ($validationMessage) {
@@ -137,8 +162,8 @@ foreach ($formFields as $fieldId => $field) {
 	if ($field['mandatory_condition_field_id'] && isset($formFields[$field['mandatory_condition_field_id']])) {
 		$requiredFieldId = $field['mandatory_condition_field_id'];
 		$requiredField = $formFields[$requiredFieldId];
-		$requiredFieldName = self::getFieldName($requiredField);
-		$requiredFieldType = self::getFieldType($requiredField);
+		$requiredFieldName = static::getFieldName($requiredField);
+		$requiredFieldType = static::getFieldType($requiredField);
 		switch($requiredFieldType) {
 			case 'checkbox':
 				if ($field['mandatory_condition_field_value'] == 1) {
@@ -174,18 +199,18 @@ foreach ($formFields as $fieldId => $field) {
 			$loadedFieldValue = isset($data[$fieldName]) ? $data[$fieldName] : null;
 		}
 		
-		$fieldValue = self::getFormFieldValue($field, $type, $submitted = true, $loadedFieldValue, false, false);
+		$fieldValue = static::getFormFieldValue($field, $type, $submitted = true, $loadedFieldValue, false, false);
 		
 		switch ($type){
 			case 'group':
 			case 'checkbox':
 				if (!$fieldValue) {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'checkboxes':
 				if (empty($fieldValue['ids'])) {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'text':
@@ -194,7 +219,7 @@ foreach ($formFields as $fieldId => $field) {
 			case 'textarea':
 			case 'url':
 				if ($fieldValue === null || $fieldValue === '') {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'radios':
@@ -202,17 +227,17 @@ foreach ($formFields as $fieldId => $field) {
 			case 'centralised_select':
 			case 'select':
 				if (!$fieldValue) {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'attachment':
 				if (empty($_FILES[$fieldName]['tmp_name']) && empty($data[$fieldName])) {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 			case 'file_picker':
 				if (!$fieldValue) {
-					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
+					$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($field['required_error_message'], array(), $translate), 'type' => $type);
 				}
 				break;
 		}
@@ -222,7 +247,7 @@ foreach ($formFields as $fieldId => $field) {
 	if (($field['db_column'] == 'email') && $formProperties['save_data'] && ($formProperties['user_duplicate_email_action'] == 'stop') && $formProperties['duplicate_email_address_error_message']) {
 		$userId = getRow('users', 'id', array('email' => $data[$fieldName]));
 		if (checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId, 'form_id' => $userFormId))) {
-			$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => self::formPhrase($formProperties['duplicate_email_address_error_message'], array(), $translate), 'type' => $type);
+			$requiredFields[$fieldId] = array('label' => $field['label'], 'message' => static::formPhrase($formProperties['duplicate_email_address_error_message'], array(), $translate), 'type' => $type);
 		}
 	}
 }

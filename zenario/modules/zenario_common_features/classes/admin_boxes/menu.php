@@ -93,17 +93,12 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$values['advanced/rollover_image_id'] = $menu['rollover_image_id'];
 			$values['advanced/css_class'] = $menu['css_class'];
 	
-			$values['advanced/hide_by_static_method'] = (bool)$menu['module_class_name'];
-			$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
-			$values['advanced/menu__method_name'] = $menu['method_name'];
-			$values['advanced/menu__param_1'] = $menu['param_1'];
-			$values['advanced/menu__param_2'] = $menu['param_2'];
-	
-			$values['advanced/overwrite_menu_text_by_static_method'] = (bool)$menu['menu_text_module_class_name'];
-			$values['advanced/menu_text__module_class_name'] = $menu['menu_text_module_class_name'];
-			$values['advanced/menu_text__method_name'] = $menu['menu_text_method_name'];
-			$values['advanced/menu_text__param_1'] = $menu['menu_text_param_1'];
-			$values['advanced/menu_text__param_2'] = $menu['menu_text_param_2'];
+			if ($values['advanced/call_static_method'] = (bool) $menu['module_class_name']) {
+				$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
+				$values['advanced/menu__method_name'] = $menu['method_name'];
+				$values['advanced/menu__param_1'] = $menu['param_1'];
+				$values['advanced/menu__param_2'] = $menu['param_2'];
+			}
 	
 			foreach ($box['tabs'] as $i => &$tab) {
 				if (is_array($tab) && isset($tab['edit_mode'])) {
@@ -264,13 +259,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		$fields['advanced/menu__method_name']['hidden'] = 
 		$fields['advanced/menu__param_1']['hidden'] = 
 		$fields['advanced/menu__param_2']['hidden'] = 
-			!$values['advanced/hide_by_static_method'];
-	
-		$fields['advanced/menu_text__module_class_name']['hidden'] = 
-		$fields['advanced/menu_text__method_name']['hidden'] = 
-		$fields['advanced/menu_text__param_1']['hidden'] = 
-		$fields['advanced/menu_text__param_2']['hidden'] = 
-			!$values['advanced/overwrite_menu_text_by_static_method'];
+			!$values['advanced/call_static_method'];
 
 		$fields['text/hyperlink_target']['hidden'] = 
 		$fields['text/hyperlink_anchor']['hidden'] = 
@@ -400,42 +389,23 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 					}
 				}
 			}
-			if (!empty($values['advanced/hide_by_static_method'])) {
+			if (!empty($values['advanced/call_static_method'])) {
 				if (!$values['advanced/menu__module_class_name']) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin.');
+					$box['tabs']['advanced']['errors'][] = adminPhrase("Please enter a module's class name");
 		
 				} elseif (!inc($values['advanced/menu__module_class_name'])) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin that you have running on this site.');
+					$box['tabs']['advanced']['errors'][] = adminPhrase('No module with the class name of [[advanced/menu__module_class_name]] is running on this site', $values);
 		
 				} elseif ($values['advanced/menu__method_name']
 					&& !method_exists(
 							$values['advanced/menu__module_class_name'],
 							$values['advanced/menu__method_name'])
 				) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of an existing Static Method.');
+					$box['tabs']['advanced']['errors'][] = adminPhrase('The [[advanced/menu__module_class_name]] module does not have a static method called [[advanced/menu__method_name]]', $values);
 				}
 		
 				if (!$values['advanced/menu__method_name']) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a Static Method.');
-				}
-			}
-			if (!empty($values['advanced/overwrite_menu_text_by_static_method'])) {
-				if (!$values['advanced/menu_text__module_class_name']) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin.');
-		
-				} elseif (!inc($values['advanced/menu_text__module_class_name'])) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the Class Name of a Plugin that you have running on this site.');
-		
-				} elseif ($values['advanced/menu_text__method_name']
-					&& !method_exists(
-							$values['advanced/menu_text__module_class_name'],
-							$values['advanced/menu_text__method_name'])
-				) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of an existing Static Method.');
-				}
-		
-				if (!$values['advanced/menu_text__method_name']) {
-					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a Static Method.');
+					$box['tabs']['advanced']['errors'][] = adminPhrase('Please enter the name of a static method.');
 				}
 			}
 		}
@@ -493,17 +463,11 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['rel_tag'] = $values['advanced/rel_tag'];
 			$submission['css_class'] = $values['advanced/css_class'];
 	
-			$hide_by_static_method = $values['advanced/hide_by_static_method'];
-			$submission['module_class_name'] = $hide_by_static_method ? $values['advanced/menu__module_class_name'] : '';
-			$submission['method_name'] = $hide_by_static_method ? $values['advanced/menu__method_name'] : '';
-			$submission['param_1'] = $hide_by_static_method ? $values['advanced/menu__param_1'] : '';
-			$submission['param_2'] = $hide_by_static_method ? $values['advanced/menu__param_2'] : '';
-	
-			$overwrite_menu_text_by_static_method = $values['advanced/overwrite_menu_text_by_static_method'];
-			$submission['menu_text_module_class_name'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__module_class_name'] : '';
-			$submission['menu_text_method_name'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__method_name'] : '';
-			$submission['menu_text_param_1'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__param_1'] : '';
-			$submission['menu_text_param_2'] = $overwrite_menu_text_by_static_method ? $values['advanced/menu_text__param_2'] : '';
+			$call_static_method = $values['advanced/call_static_method'];
+			$submission['module_class_name'] = $call_static_method ? $values['advanced/menu__module_class_name'] : '';
+			$submission['method_name'] = $call_static_method ? $values['advanced/menu__method_name'] : '';
+			$submission['param_1'] = $call_static_method ? $values['advanced/menu__param_1'] : '';
+			$submission['param_2'] = $call_static_method ? $values['advanced/menu__param_2'] : '';
 	
 			if ($imageId = $values['advanced/image_id']) {
 				if ($path = getPathOfUploadedFileInCacheDir($imageId)) {

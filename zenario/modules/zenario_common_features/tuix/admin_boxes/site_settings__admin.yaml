@@ -110,7 +110,7 @@ site_settings:
                 notification_to_new_admin:
                     site_setting:
                         name: notification_to_new_admin
-                    label: 'Email template:'
+                    label: 'Email template for admin account creation:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         target_path: zenario__email_template_manager/panels/email_templates
@@ -120,6 +120,8 @@ site_settings:
                         nothing_selected_phrase: No email template selected
                         select_phrase: Select an email template...
                         hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template
                     
                     value: zenario_common_features__notification_to_new_admin
                     

@@ -84,33 +84,41 @@ zenario.moduleBaseClass = function(
 
 	
 	this.AJAXLink = function(requests) {
-		zenario.AJAXLink(this.moduleClassName, requests);
+		return zenario.AJAXLink(this.moduleClassName, requests);
 	};
 	
 	this.pluginAJAXLink = function(slotNameOrContainedElement, requests) {
-		zenario.pluginAJAXLink(this.moduleClassName, slotNameOrContainedElement, requests);
+		return zenario.pluginAJAXLink(this.moduleClassName, slotNameOrContainedElement, requests);
 	};
 	
 	this.showFileLink = function(requests) {
-		zenario.showFileLink(this.moduleClassName, requests);
+		return zenario.showFileLink(this.moduleClassName, requests);
 	};
 	
 	this.showFloatingBoxLink = function(slotNameOrContainedElement, requests) {
-		zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
+		return zenario.showFloatingBoxLink(this.moduleClassName, slotNameOrContainedElement, requests);
 	};
 	
-	this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout) {
-		zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout);
+	this.showSingleSlotLink = function(slotNameOrContainedElement, requests, hideLayout, cID, cType) {
+		return zenario.showSingleSlotLink(this.moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType);
 	};
 	
 	this.showImageLink = function(requests) {
-		zenario.showImageLink(this.moduleClassName, requests);
+		return zenario.showImageLink(this.moduleClassName, requests);
 	};
 	
 	this.showStandalonePageLink = function(requests) {
-		zenario.showStandalonePageLink(this.moduleClassName, requests);
+		return zenario.showStandalonePageLink(this.moduleClassName, requests);
 	};
 	
+	this.visitorTUIXLink = function(path, customisationName, requests, mode) {
+		return zenario.visitorTUIXLink(this.moduleClassName, path, customisationName, requests, mode);
+	};
+	
+	this.pluginVisitorTUIXLink = function(slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
+		return zenario.pluginVisitorTUIXLink(this.moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync);
+	};
+
 	
 	
 	
@@ -151,6 +159,10 @@ zenario.moduleBaseClass = function(
 	//Fetch one of your visitor phrases via AJAX.
 	this.phrase = function(text, mrg) {
 		return zenario.phrase(this.moduleClassNameForPhrases, text, mrg);
+	};
+	
+	this.registerPhrases = function(phrases) {
+		zenario.registerPhrases(this.moduleClassNameForPhrases, phrases);
 	};
 	
 	this.nphrase = function(text, pluralText, n, mrg) {

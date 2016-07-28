@@ -35,14 +35,15 @@ echo
 				}
 				break;
 			default:
-				exit;
+				echo adminPhrase('Dev Tools: Specification for Front-End Administration');
+				break;
 		}
 
 echo '
 	</title>';
 
 $prefix = '../../';
-CMSWritePageHead($prefix, false, false);
+CMSWritePageHead($prefix);
 $v = zenarioCodeVersion();
 
 echo '
@@ -50,7 +51,7 @@ echo '
 
 
 echo '</head>';
-CMSWritePageBody('', false);
+CMSWritePageBody();
 CMSWritePageFoot($prefix, false, false, false);
 
 echo '
@@ -85,23 +86,39 @@ echo '
 
 switch (get('mode')) {
 	case 'zenarioAB':
-		$schemaName = 'admin_box_schema';
+		$schemaName = 
+		$schemaNameForURL = 'admin_box_schema';
 		break;
 	
 	case 'zenarioAT':
-		$schemaName = 'admin_toolbar_schema';
+		$schemaName = 
+		$schemaNameForURL = 'admin_toolbar_schema';
 		break;
 	
 	case 'zenarioO':
-		$schemaName = 'organizer_schema';
+		$schemaName = 
+		$schemaNameForURL = 'organizer_schema';
 		break;
 	
 	default:
-		exit;
+		$schemaName = 'fea_schema';
+		$schemaNameForURL = '';
+		break;
 }
 
 
 $schema = zenarioReadTUIXFile(CMS_ROOT. 'zenario/api/'. $schemaName. '.yaml');
+
+//Copy the some definitions from the FAB toolkit to the FEA toolkit
+//(This is a hack to save me from writing all of that out twice!)
+if ($schemaName == 'fea_schema') {
+	$fabSchema = zenarioReadTUIXFile(CMS_ROOT. 'zenario/api/admin_box_schema.yaml');
+	$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'] = 
+		$fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'];
+	$schema['additionalProperties']['properties']['lovs'] = 
+		$fabSchema['additionalProperties']['properties']['lovs'];
+}
+
 unset($schema['common_definitions']);
 
 
@@ -110,7 +127,7 @@ echo '
 <script type="text/javascript" src="../../js/dev_tools.min.js?v=', $v, '"></script>
 <script type="text/javascript">
 	var schema = ', json_encode($schema), ';
-	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaName), '\', schema, ', engToBoolean(get('orgMap')), ');
+	devTools.init(\'', jsEscape(get('mode')), '\', \'', jsEscape($schemaNameForURL), '\', schema, ', engToBoolean(get('orgMap')), ');
 	var sshPath = "', jsEscape(httpHostWithoutPort(). CMS_ROOT), '";
 </script>
 </body>

@@ -41,7 +41,7 @@ class zenario_common_features__organizer__skins extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__layouts/panels/skins') return;
 		
-		if (!class_exists('zenario_grid_maker')) require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
+		require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 		
 		if (($refinerName == 'template_family' || $refinerName == 'template_family__panel_above')
 		 && $templateFamily = decodeItemIdForOrganizer(get('refiner__template_family'))) {
@@ -79,6 +79,7 @@ class zenario_common_features__organizer__skins extends module_base_class {
 		
 		if (post('make_default') && checkPriv('_PRIV_EDIT_TEMPLATE_FAMILY')) {
 			updateRow('template_families', array('skin_id' => $ids), decodeItemIdForOrganizer(request('refiner__template_family')));
+			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
 		}
 	}
 	

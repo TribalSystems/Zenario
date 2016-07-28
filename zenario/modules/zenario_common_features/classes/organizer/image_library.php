@@ -73,10 +73,9 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 				}
 		
 				//Don't do anything fancy if we're just looking up a name
-				if (in($mode, 'get_item_name', 'get_item_links')) {
+				if (in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 					$panel['db_items']['table'] = '[[DB_NAME_PREFIX]]files AS f';
 					unset($panel['refiner_required']);
-					unset($panel['db_items']['where_statement']);
 					unset($panel['columns']['usage_file_link']);
 					unset($panel['columns']['usage_plugins']);
 					unset($panel['columns']['usage_menu']);
@@ -86,6 +85,10 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 					unset($panel['columns']['in_use_anywhere']);
 					unset($panel['columns']['in_use_elsewhere']);
 					unset($panel['columns']['sticky_flag']);
+					
+					if (in($mode, 'get_item_name', 'get_item_links')) {
+						unset($panel['db_items']['where_statement']);
+					}
 		
 				} elseif (!$refinerName && $path == 'zenario__content/panels/image_library') {
 					$ord = 1000;
@@ -143,90 +146,113 @@ class zenario_common_features__organizer__image_library extends module_base_clas
 					$panel['columns']['filename']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
 			
 					foreach ($panel['items'] as $id => &$item) {
+						
 						$text = '';
-						$comma = false;
+						$otherPlugins = false;
+						$otherContentItems = false;
+						$usage_content = (int)$item['usage_content'];
+						$usage_plugins = (int)$item['usage_plugins'];
+						$usage_menu_nodes = (int)$item['usage_menu_nodes'];
 				
 						if ($item['in_use_anywhere']) {
 							$mrg = array('used_on' => 'Used on');
 						} else {
-							$mrg = array('used_on' => 'Attached to');
+							$mrg = array('used_on' => 'Attached to (not used)');
 						}
-				
-						$usage_content = (int)$item['usage_content'];
-						$usage_plugins = (int)$item['usage_plugins'];
-						$usage_menu_nodes = (int)$item['usage_menu_nodes'];
-						$contentUsage = $usage_content + $usage_plugins + $usage_menu_nodes;
-						if ($contentUsage === 1) {
-							if ($usage_content === 1) {
-								$sql = '
-									SELECT 
-										foreign_key_id AS id, 
-										foreign_key_char AS type
-									FROM ' . DB_NAME_PREFIX . 'inline_images
-									WHERE image_id = ' . (int)$item['id'] . '
-									AND foreign_key_to = "content"
-									AND archived = 0';
-								$result = sqlSelect($sql);
-								$row = sqlFetchAssoc($result);
 						
-								$mrg['tag'] = formatTag($row['id'], $row['type']);
-								$text .= adminPhrase('[[used_on]] "[[tag]]"', $mrg);
-					
-							} elseif ($usage_plugins === 1) {
-								$sql = '
-									SELECT p.name, m.display_name
-									FROM ' . DB_NAME_PREFIX . 'inline_images pii
-									INNER JOIN ' . DB_NAME_PREFIX . 'plugin_instances p
-										ON pii.foreign_key_id = p.id
-										AND pii.image_id = ' . (int)$item['id'] . '
-										AND pii.foreign_key_to = "library_plugin"
-										AND pii.foreign_key_id != 0
-									INNER JOIN ' . DB_NAME_PREFIX . 'modules m
-										ON p.module_id = m.id';
-								$result = sqlSelect($sql);
-								$row = sqlFetchAssoc($result);
-								if ($row['name'] && $row['display_name']) {
-									$text = adminPhrase('Used on plugin "[[name]]" of the module "[[display_name]]"', $row);
-								} else {
-									$text = adminPhrase('Used on 1 plugin');
-								}
+						if ($usage_content
+						 && ($row = sqlFetchAssoc('
+								SELECT 
+									foreign_key_id AS id, 
+									foreign_key_char AS type
+								FROM ' . DB_NAME_PREFIX . 'inline_images
+								WHERE image_id = '. (int) $id. '
+								AND foreign_key_to = "content"
+								AND archived = 0
+								LIMIT 1
+						'))) {
+							--$usage_content;
+							$otherContentItems = true;
+							$mrg['tag'] = formatTag($row['id'], $row['type']);
+							$text .= adminPhrase('[[used_on]] "[[tag]]"', $mrg);
+						
+						} else
+						if ($usage_plugins
+						 && ($row = sqlFetchAssoc('
+								SELECT p.name, m.display_name
+								FROM ' . DB_NAME_PREFIX . 'inline_images pii
+								INNER JOIN ' . DB_NAME_PREFIX . 'plugin_instances p
+								   ON pii.foreign_key_id = p.id
+								  AND pii.image_id = '. (int) $id. '
+								  AND pii.foreign_key_to = "library_plugin"
+								  AND pii.foreign_key_id != 0
+								INNER JOIN ' . DB_NAME_PREFIX . 'modules m
+								   ON p.module_id = m.id
+								WHERE p.name != ""
+								  AND p.name IS NOT NULL
+								LIMIT 1
+						'))) {
+							--$usage_plugins;
+							$otherPlugins = true;
+							$text = adminPhrase('Used on plugin "[[name]]" of the module "[[display_name]]"', $row);
+						}
+						
+						if ($usage_content) {
+							if ($text) {
+								$text .= ', ';
 							} else {
-								$text = adminPhrase('Used on 1 menu node');
+								$text = adminPhrase('Used on');
 							}
-						} elseif ($contentUsage > 1) {
-							$text .= $mrg['used_on']. ' ';
-							if ($usage_content > 0) {
+							
+							if ($otherContentItems) {
+								$text .= nAdminPhrase(
+									'[[count]] other content item',
+									'[[count]] other content items',
+									$usage_content
+								);
+							} else {
 								$text .= nAdminPhrase(
 									'[[count]] content item',
 									'[[count]] content items',
-									$usage_content,
-									array('count' => $usage_content)
+									$usage_content
 								);
-								$comma = true;
 							}
-							if ($usage_plugins > 0) {
-								if ($comma) {
-									$text .= ', ';
-								}
+						}
+						
+						if ($usage_plugins) {
+							if ($text) {
+								$text .= ', ';
+							} else {
+								$text = adminPhrase('Used on');
+							}
+							
+							if ($otherPlugins) {
+								$text .= nAdminPhrase(
+									'[[count]] other plugin',
+									'[[count]] other plugins',
+									$usage_content
+								);
+							} else {
 								$text .= nAdminPhrase(
 									'[[count]] plugin',
 									'[[count]] plugins',
-									$usage_plugins,
-									array('count' => $usage_plugins)
-								);
-								$comma = true;
-							}
-							if ($usage_menu_nodes > 0) {
-								if ($comma) {
-									$text .= ', ';
-								}
-								$text .= nAdminPhrase(
-									'[[count]] menu node',
-									'[[count]] menu nodes',
-									$usage_menu_nodes,
-									array('count' => $usage_menu_nodes)
+									$usage_plugins
 								);
 							}
+						}
+						
+						if ($usage_menu_nodes) {
+							if ($text) {
+								$text .= ', ';
+							} else {
+								$text = adminPhrase('Used on');
+							}
+							
+							$text .= nAdminPhrase(
+								'[[count]] menu node',
+								'[[count]] menu nodes',
+								$usage_menu_nodes
+							);
 						}
 						$item['all_usage_content'] = $text;
 				

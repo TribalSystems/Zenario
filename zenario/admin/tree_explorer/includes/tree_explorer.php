@@ -11,7 +11,7 @@ if (get("type")=="section") {
 	$parameters = "?section_id=" . get("id") . "&language=" . get("language");
 	$top = "Showing menu tree in menu section \"" . menuSectionName(get("id")) . "\"";
 
-	if ($menuArray = getMenuStructure($cachingRestrictions,get("id"),false,0,0,100,false,false,false,false,true)) {
+	if ($menuArray = getMenuStructure($cachingRestrictions,get("id"),false,0,0,100,false,false,false,true)) {
 		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
 	}
 
@@ -28,7 +28,7 @@ if (get("type")=="section") {
 	
 	$top = "Showing menu tree beneath menu node \"" . $menuNode['name'] . "\"";
 
-	if ($menuArray = getMenuStructure($cachingRestrictions,$sectionId,false,get("id"),0,100,false,false,false,false,true)) {
+	if ($menuArray = getMenuStructure($cachingRestrictions,$sectionId,false,get("id"),0,100,false,false,false,true)) {
 		generateMenuForJSON($menuArray, $levelNodesCount, get('og'), get('language'));
 	}
 

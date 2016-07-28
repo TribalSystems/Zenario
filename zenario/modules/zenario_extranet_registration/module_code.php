@@ -28,13 +28,15 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 class zenario_extranet_registration extends zenario_extranet {
-
+	
+	protected $customFormErrors = array();
+	protected $customFormExtraErrors = array();
+	
 	public function init() {
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = false, $ifCookieSet = false);
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
-		
 		
 		if (post('extranet_register')){
 			if ($this->setting("enable_registration_code") && !$this->checkCodeValid(post("registration_code"))) {
@@ -111,30 +113,82 @@ class zenario_extranet_registration extends zenario_extranet {
 				$this->mode = 'modeResend';
 			} elseif (post('extranet_register')){
 				$this->scrollToTopOfSlot();
-				if (post('screen_name')) {
-					$_POST['screen_name'] = trim($_POST['screen_name']);
-				}
-				if ($userId = $this->addUserRecord()){
-					unset($_SESSION['captcha_passed__'. $this->instanceId]);
-					if (setting('cookie_consent_for_extranet') == 'granted') {
-						setCookieConsent();
-					}
-					$this->applyEmailVerificationPolicy($userId);
-					if ($this->isEmailAddressVerified($userId)){
-						$this->applyAccountActivationPolicy($userId);
-						if ($this->isActive($userId)){
-							$this->logUserIn($userId);
-							$this->mode = 'modeLoggedIn';
-							$this->redirectToPage();
-						} else {
-							$this->mode = 'modeRegisteredVerifiedNotActivated';
+				
+				// If using a custom form
+				if ($this->setting('use_custom_form') && $this->setting('custom_form')) {
+					$formId = $this->setting('custom_form');
+					$data = $_POST;
+					
+					// Validate custom registration form
+					$this->customFormErrors = zenario_user_forms::validateUserForm($formId, $data, 0);
+					
+					$dataset = getDatasetDetails('users');
+					$emailField = getDatasetFieldDetails('email', $dataset);
+					$emailFormFieldId = zenario_user_forms::isDatasetFieldOnForm($formId, $emailField['id']);
+					
+					$screenNameField = getDatasetFieldDetails('screen_name', $dataset);
+					$screenNameFormFieldId = zenario_user_forms::isDatasetFieldOnForm($formId, $screenNameField['id']);
+					
+					// Use plugin setting phrases for registration specific errors
+					foreach ($this->customFormErrors as $fieldId => &$error) {
+						if ($fieldId == $emailFormFieldId) {
+							if ($error['message'] == 'contact_not_extranet_message') {
+								$error['message'] = $this->phrase($this->setting('contact_not_extranet_message'));
+							} elseif ($error['message'] == 'email_already_registered') {
+								$error['message'] = $this->phrase($this->setting('email_already_registered'));
+							}
+						} elseif ($fieldId == $screenNameFormFieldId) {
+							if ($error['message'] == 'screen_name_in_use') {
+								$error['message'] = $this->phrase($this->setting('screen_name_in_use'));
+							}
 						}
+					}
+					unset($error);
+					
+					// Validate terms and conditions field
+					if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')) {
+						if (!request('extranet_terms_and_conditions')) {
+							$this->customFormExtraErrors['extranet_terms_and_conditions'] = true;
+						} else {
+							$data['terms_and_conditions_accepted'] = 1;
+						}
+					}
+					
+					// Validate captcha
+					if ($this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId])) {
+						if ($this->checkCaptcha()) {
+							$_SESSION['captcha_passed__'. $this->instanceId] = true;
+						} else {
+							$this->customFormExtraErrors['captcha'] = true;
+						}
+					}
+					
+					$registrationSaveOptions = array(
+						'initial_email_address_status' => $this->setting('initial_email_address_status'),
+						'initial_account_status' => $this->setting('initial_account_status')
+					);
+					
+					// Save custom registration form
+					if (empty($this->customFormErrors) 
+						&& empty($this->customFormExtraErrors) 
+						&& ($userId = zenario_user_forms::saveUserForm($formId, $data, $redirectURL, false, $registrationSaveOptions))
+					) {
+						$this->handleUserRegistration($userId);
 					} else {
-						$this->mode = 'modeRegisteredNotVerified';
+						$this->mode = 'modeRegistration';
 					}
 				} else {
-					$this->mode = 'modeRegistration';
+					if (post('screen_name')) {
+						$_POST['screen_name'] = trim($_POST['screen_name']);
+					}
+					
+					if ($userId = $this->addUserRecord()){
+						$this->handleUserRegistration($userId);
+					} else {
+						$this->mode = 'modeRegistration';
+					}
 				}
+				
 			} elseif (get('confirm_email') && ($this->setting('initial_email_address_status')=='not_verified')) { 
 				if ($userId = $this->getUserIdFromHashCode(get('hash'))){
 					if (!$this->isEmailAddressVerified($userId)){
@@ -225,8 +279,48 @@ class zenario_extranet_registration extends zenario_extranet {
 		return parent::fillAdminBox($path, $settingGroup, $box, $fields, $values);
 	}
 	
-	public function getCode ($id) {
-		return getRow(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes", array("id","code","description"), array("id" => $id));
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				$fields['first_tab/custom_form']['hidden'] = !$values['first_tab/use_custom_form'];
+				$fields['first_tab/select_group_for_new_users']['hidden'] = !$values['first_tab/add_user_to_group'];
+				$fields['first_tab/verification_email_template']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
+				$fields['first_tab/user_signup_notification_email_template']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
+				$fields['first_tab/user_signup_notification_email_address']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
+				$fields['first_tab/select_characteristics_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
+				$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users']
+					|| !$values['first_tab/select_characteristics_for_new_users'];
+				$fields['first_tab/timer_for_new_users']['hidden'] = !$values['first_tab/set_timer_on_new_users'];
+				$fields['first_tab/terms_and_conditions_page']['hidden'] = !$values['first_tab/requires_terms_and_conditions'];
+				if ($values['first_tab/select_characteristics_for_new_users']) {
+					$fieldType = getRow('custom_dataset_fields', 'type', $values['first_tab/select_characteristics_for_new_users']);
+					if ($fieldType == 'checkboxes') {
+						$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = !$values['first_tab/set_characteristics_on_new_users'];
+						$fields['first_tab/select_characteristic_values_for_new_users']['values'] = getDatasetFieldLOV($values['first_tab/select_characteristics_for_new_users']);
+					} else {
+						$fields['first_tab/select_characteristic_values_for_new_users']['hidden'] = true;
+					}
+				}
+				
+				$fields['user_activation/welcome_email_template']['hidden'] = !($values['user_activation/verified_account_status'] == 'active' 
+					|| $values['user_activation/verified_account_status'] == 'contact');
+				$fields['user_activation/trusted_email_domains']['hidden'] = $values['user_activation/verified_account_status'] != 'check_trusted';
+	
+				$fields['user_activation/user_activation_notification_email_template']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
+				$fields['user_activation/user_activation_notification_email_address']['hidden'] = !$values['user_activation/user_activation_notification_email_enable'];
+				
+				$fields['user_activation/welcome_page']['hidden'] = $values['user_activation/show_welcome_page'] != '_ALWAYS' 
+					&& $values['user_activation/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
+				$fields['registration_codes/require_valid_code']['hidden'] = !$values['registration_codes/enable_registration_code'];
+				
+				$fields['text/registration_title']['hidden'] = 
+				$fields['text/register_button_text']['hidden'] = $values['first_tab/use_custom_form'];
+				
+				// Screen name error hidden if screen names not enabled and no user forms or user forms and screen name on form
+				$fields['error_messages/screen_name_in_use']['hidden'] = (!setting('user_use_screen_name') && !$values['first_tab/use_custom_form'])
+					|| (inc('zenario_user_forms') && $values['first_tab/use_custom_form'] && $values['first_tab/custom_form'] && !zenario_user_forms::isDatasetFieldOnForm($values['first_tab/custom_form'], 'screen_name'));
+				break;
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -250,16 +344,6 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	public static function checkCodeUnique($code, $currentId = false) {
-		$existingId =
-			getRow(
-				ZENARIO_EXTRANET_REGISTRATION_PREFIX . 'codes',
-				'id',
-				array('code' => $code));
-				
-		return !$existingId || ($currentId && $currentId == $existingId);
-	}
-	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "zenario_extranet_registration__codes":
@@ -273,7 +357,21 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 	}
 	
-	public function saveCode ($code,$description,$id) {
+	public function getCode($id) {
+		return getRow(ZENARIO_EXTRANET_REGISTRATION_PREFIX . "codes", array("id","code","description"), array("id" => $id));
+	}
+	
+	public static function checkCodeUnique($code, $currentId = false) {
+		$existingId =
+			getRow(
+				ZENARIO_EXTRANET_REGISTRATION_PREFIX . 'codes',
+				'id',
+				array('code' => $code));
+				
+		return !$existingId || ($currentId && $currentId == $existingId);
+	}
+	
+	public function saveCode($code,$description,$id) {
 		return
 			setRow(
 				ZENARIO_EXTRANET_REGISTRATION_PREFIX. 'codes',
@@ -369,57 +467,16 @@ class zenario_extranet_registration extends zenario_extranet {
 		}
 		$userId = saveUser($fields2);
 		
-		// Save custom fields from frameworks
-		$customFields = array();
-		$sql = 'SHOW COLUMNS FROM '. DB_NAME_PREFIX. 'users_custom_data';
-		$result = sqlQuery($sql);
-		while ($column = sqlFetchAssoc($result)) {
-			if (isset($fields[$column['Field']]) && ($column['Key'] != 'PRI')) {
-				$customFields[$column['Field']] = $fields[$column['Field']];
-			}
-		}
-		if ($customFields) {
-			setRow('users_custom_data', $customFields, $userId);
-		}
-		
-		// Set a group or checkbox value for a user
-		if ($this->setting('set_characteristics_on_new_users') && $this->setting('select_characteristics_for_new_users')) {
-			$field_dbcolumn = datasetFieldDBColumn($this->setting('select_characteristics_for_new_users'));
-			$fields[$field_dbcolumn] = 1;
-		}
-		
 		if (isError($userId)) {
 			return false;
 		} else {
-			$fields['user_id'] = $userId;
+			
+			// Save custom fields from frameworks
 			foreach(getFields(DB_NAME_PREFIX, 'users_custom_data') as $field => $details) {
 				if (isset($fields[$field])) {
-					setRow('users_custom_data', array($field => $fields[$field]), array('user_id' => $userId));
+					setRow('users_custom_data', array($field => $fields[$field]), $userId);
 				}
 			}
-			
-			if ($this->setting('select_characteristic_values_for_new_users')) {
-				$field = getDatasetFieldDetails($this->setting('set_characteristics_on_new_users'));
-				foreach (explode(',', $this->setting('select_characteristic_values_for_new_users')) as $value) {
-					setRow('custom_dataset_values_link', array('linking_id'=> $userId, 'value_id'=> $value, 'dataset_id' => $field['dataset_id']),  array('linking_id'=> $userId, 'value_id'=> $value, 'dataset_id' => $field['dataset_id']));
-				}
-			}
-			
-			if (inc("zenario_user_timers") && $this->setting('timer_for_new_users')) {
-				zenario_user_timers::addTimerToUser($userId, $this->setting('timer_for_new_users'));
-			}
-			
-			if ($this->setting("enable_registration_code") && $this->checkCodeValid(post("registration_code"))) {
-				$codeId = $this->getCodeIdFromCode(post("registration_code"));
-				
-				$groupIds = $this->getCodeGroups($codeId);
-	
-				foreach ($groupIds as $groupId) {
-					addUserToGroup($userId,$groupId);
-				}
-			}
-			
-			$this->sendSignalFromForm('eventUserRegistered', $userId);
 			
 			return $userId;
 		}
@@ -446,10 +503,6 @@ class zenario_extranet_registration extends zenario_extranet {
 			
 			$sql .= " WHERE id = " . (int) $userId;
 			sqlQuery($sql);
-
-			if ($this->setting('add_user_to_group') && (int) $this->setting('select_group_for_new_users')) {
-				addUserToGroup($userId, (int) $this->setting('select_group_for_new_users'));
-			}
 		}
 	}
 	
@@ -612,7 +665,71 @@ class zenario_extranet_registration extends zenario_extranet {
 			zenario_email_template_manager::sendEmailsUsingTemplate($this->setting('user_activation_notification_email_address'),$this->setting('user_activation_notification_email_template'),$emailMergeFields,array());
 		}
 	}
+	
+	protected function handleUserRegistration($userId) {
 		
+		// Set a flag for a user
+		if ($this->setting('set_characteristics_on_new_users') && $this->setting('select_characteristics_for_new_users')) {
+			$datasetFlagField = getDatasetFieldDetails($this->setting('select_characteristics_for_new_users'));
+			if ($datasetFlagField['type'] == 'checkbox') {
+				setRow('users_custom_data', array($field['db_column'] => 1), $userId);
+			} elseif ($datasetFlagField['type'] == 'checkboxes') {
+				if ($this->setting('select_characteristic_values_for_new_users')) {
+					$field = getDatasetFieldDetails($this->setting('select_characteristics_for_new_users'));
+					foreach (explode(',', $this->setting('select_characteristic_values_for_new_users')) as $value) {
+						setRow(
+							'custom_dataset_values_link', 
+							array(),  
+							array('linking_id'=> $userId, 'value_id'=> $value, 'dataset_id' => $field['dataset_id'])
+						);
+					}
+				}
+			}
+		}
+		
+		// Add user to group
+		if ($this->setting('add_user_to_group') && (int)$this->setting('select_group_for_new_users')) {
+			addUserToGroup($userId, (int)$this->setting('select_group_for_new_users'));
+		}
+		
+		// Add user to group from registration code
+		if ($this->setting("enable_registration_code") && $this->checkCodeValid(post("registration_code"))) {
+			$codeId = $this->getCodeIdFromCode(post("registration_code"));
+			
+			$groupIds = $this->getCodeGroups($codeId);
+
+			foreach ($groupIds as $groupId) {
+				addUserToGroup($userId,$groupId);
+			}
+		}
+		
+		// Create user timer
+		if (inc("zenario_user_timers") && $this->setting('timer_for_new_users')) {
+			zenario_user_timers::addTimerToUser($userId, $this->setting('timer_for_new_users'));
+		}
+		
+		// Send signal
+		$this->sendSignalFromForm('eventUserRegistered', $userId);
+		
+		unset($_SESSION['captcha_passed__'. $this->instanceId]);
+		if (setting('cookie_consent_for_extranet') == 'granted') {
+			setCookieConsent();
+		}
+		$this->applyEmailVerificationPolicy($userId);
+		if ($this->isEmailAddressVerified($userId)){
+			$this->applyAccountActivationPolicy($userId);
+			if ($this->isActive($userId)){
+				$this->logUserIn($userId);
+				$this->mode = 'modeLoggedIn';
+				$this->redirectToPage();
+			} else {
+				$this->mode = 'modeRegisteredVerifiedNotActivated';
+			}
+		} else {
+			$this->mode = 'modeRegisteredNotVerified';
+		}
+	}
+	
 	protected function isEmailAddressVerified($userId){
 		return (boolean) ((int) getRow('users','email_verified',array('id'=>$userId)));
 	}
@@ -623,6 +740,7 @@ class zenario_extranet_registration extends zenario_extranet {
 
 
 	protected function modeRegistration() {
+		
 		if ($this->setting("enable_registration_code")) {
 			$this->subSections['Registration_Code_Section'] = true;
 		}
@@ -637,14 +755,75 @@ class zenario_extranet_registration extends zenario_extranet {
 			$this->subSections['Resend_Link_Section'] = false;
 			unset($this->objects['Resend_Link']);
 		}
-
+		
 		
 		$this->subSections['User_passwords'] = $this->setting('user_passwords');
 		
+		
 		$this->frameworkHead('Outer', 'Registration_Form', $this->objects, $this->subSections);
-			echo $this->openForm('',' class="form-horizontal"');
-					$this->framework('Registration_Form', $this->objects, $this->subSections);
-			echo $this->closeForm();
+		echo $this->openForm('',' class="form-horizontal"');
+		
+		// Use a custom form
+		if ($this->setting('use_custom_form') && $this->setting('custom_form')) {
+			
+			$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
+			
+			$formId = $this->setting('custom_form');
+			
+			// Get user form settings
+			$form = zenario_user_forms::getFormDetails($formId);
+			$translate = $form['translate_text'];
+			
+			// Set text
+			if (!empty($form['title'])) {
+				$this->subSections['Title'] = true;
+				$this->objects['Title'] = zenario_user_forms::formPhrase($form['title'], array(), $translate);
+				$this->objects['Title_Tag'] = $form['title_tag'];
+			}
+			$this->objects['Submit_Button_Text'] = zenario_user_forms::formPhrase($form['submit_button_text'], array(), $translate);
+			
+			// Set form fields
+			$this->objects['Form_Fields'] = zenario_user_forms::drawUserForm(
+				$formId, 
+				$formData = $_POST, 
+				$readOnly = false, 
+				$errors = $this->customFormErrors, 
+				$checkboxColumns = 1, 
+				$containerId = $this->containerId
+			);
+			
+			// Set registration plugin specific content
+			$this->subSections['Custom_Form__Resend_Link_Section'] = isset($this->subSections['Resend_Link_Section']) ? $this->subSections['Resend_Link_Section'] : false;
+			$this->objects['Custom_Form__Resend_Link'] = isset($this->objects['Resend_Link']) ? $this->objects['Resend_Link'] : false;
+			$this->objects['Custom_Form__Resend_Verification_Email_Link_Text'] = isset($this->objects['Resend_Verification_Email_Link_Text']) ? $this->objects['Resend_Verification_Email_Link_Text'] : false;
+			$this->objects['Custom_Form__Resend_Verification_Email_Link_Description'] = isset($this->objects['Resend_Verification_Email_Link_Description']) ? $this->objects['Resend_Verification_Email_Link_Description'] : false;
+			
+			$this->subSections['Custom_Form__Login_Link_Section'] = isset($this->subSections['Login_Link_Section']) ? $this->subSections['Login_Link_Section'] : false;
+			$this->objects['Custom_Form__Login_Link'] = isset($this->objects['Login_Link']) ? $this->objects['Login_Link'] : false;
+			$this->objects['Custom_Form__Go_Back_To_Login_Text'] = isset($this->objects['Go_Back_To_Login_Text']) ? $this->objects['Go_Back_To_Login_Text'] : false;
+			
+			$this->subSections['Custom_Form__Ts_And_Cs_Section'] = isset($this->subSections['Ts_And_Cs_Section']) ? $this->subSections['Ts_And_Cs_Section'] : false;
+			$this->objects['Custom_Form__Ts_And_Cs_Link'] = isset($this->objects['Ts_And_Cs_Link']) ? $this->objects['Ts_And_Cs_Link'] : false;
+			
+			$this->subSections['Custom_Form__Captcha'] = isset($this->subSections['Captcha']) ? $this->subSections['Captcha'] : false;
+			$this->objects['Custom_Form__Captcha'] = isset($this->objects['Captcha']) ? $this->objects['Captcha'] : false;
+			
+			// Show extra field errors
+			if (!empty($this->customFormExtraErrors['extranet_terms_and_conditions'])) {
+				$this->subSections['Ts_And_Cs_Error'] = true;
+			}
+			if (!empty($this->customFormExtraErrors['captcha'])) {
+				$this->subSections['Captcha_Error'] = true;
+			}
+			
+			$this->framework('Custom_Form', $this->objects, $this->subSections);
+			
+		// Else use framework form
+		} else {
+			$this->framework('Registration_Form', $this->objects, $this->subSections);
+		}
+		
+		echo $this->closeForm();
 		$this->frameworkFoot('Outer', 'Registration_Form', $this->objects, $this->subSections);
 	}
 
@@ -691,49 +870,6 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->framework('Outer', $this->objects, $this->subSections);
 	}
 	
-
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				if(isset($values['initial_email_address_status'])) {
-					$fields['select_group_for_new_users']['hidden'] = !$values['add_user_to_group'];
-					
-					$fields['verification_email_template']['hidden'] = $values['initial_email_address_status']=='verified';
-	
-					$fields['user_signup_notification_email_template']['hidden'] = !$values['enable_notifications_on_user_signup'];
-					$fields['user_signup_notification_email_address']['hidden'] = !$values['enable_notifications_on_user_signup'];
-					
-					$fields['welcome_email_template']['hidden'] = !($values['verified_account_status'] == 'active' || $values['verified_account_status'] == 'contact');
-					$fields['trusted_email_domains']['hidden'] = $values['verified_account_status'] != 'check_trusted';
-		
-					$fields['user_activation_notification_email_template']['hidden'] = !$values['user_activation_notification_email_enable'];
-					$fields['user_activation_notification_email_address']['hidden'] = !$values['user_activation_notification_email_enable'];
-	
-					$fields['select_characteristics_for_new_users']['hidden'] = !$values['set_characteristics_on_new_users'];
-					$fields['timer_for_new_users']['hidden'] = !$values['set_timer_on_new_users'];
-				}
-				if ($values['select_characteristics_for_new_users']) {
-					$fieldType = getRow('custom_dataset_fields', 'type', $values['select_characteristics_for_new_users']);
-					if ($fieldType == 'checkboxes') {
-						$fields['select_characteristic_values_for_new_users']['hidden'] = false;
-						$fields['select_characteristic_values_for_new_users']['values'] = getDatasetFieldLOV($values['select_characteristics_for_new_users']);
-					} else {
-						$fields['select_characteristic_values_for_new_users']['hidden'] = true;
-					}
-				} else {
-					$fields['select_characteristic_values_for_new_users']['hidden'] = true;
-				}
-				$fields['welcome_page']['hidden'] = $values['show_welcome_page'] != '_ALWAYS' && $values['show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
-				$fields['registration_codes/require_valid_code']['hidden'] = !$values['registration_codes/enable_registration_code'];
-				
-				if (isset($box['tabs']['first_tab']['fields']['terms_and_conditions_page'])
-				 && isset($box['tabs']['first_tab']['fields']['requires_terms_and_conditions'])) {
-					$box['tabs']['first_tab']['fields']['terms_and_conditions_page']['hidden'] = 
-						!$values['first_tab/requires_terms_and_conditions'];
-				}
-				break;
-		}
-	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
 		switch ($path) {

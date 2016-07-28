@@ -28,21 +28,52 @@
 
 
 
-(function(window, createLibrary, undefined) {
+((window, createLibrary, undefined) => {
 	"use strict";
 	
-	//Create encapsulated objects in advance for all of Zenario's libraries
-	var zenario = window.zenario = createLibrary(''),
-		zenarioA = window.zenarioA = createLibrary('A'),
-		zenarioAF = window.zenarioAF = createLibrary('AF'),
-		zenarioAB = window.zenarioAB = new zenarioAF(),
-		zenarioAT = window.zenarioAT = createLibrary('AT'),
-		zenarioO = window.zenarioO = createLibrary('O');
+	//This is a shortcut function for initialising a new class.
+	//It just uses normal JavaScript class inheritance, but it makes the syntax
+	//a little more readable and friendly when creating a new class
+	var extensionOf =(parent, initFun, encapName) => {
+			if (parent) {
+				initFun = initFun || (function() {
+						parent.apply(this, arguments);
+					});
+				
+				initFun.prototype = new parent;
+				initFun.prototype.constructor = parent;
+			
+			} else {
+				initFun = initFun || (function() {});
+			}
+			
+			if (encapName) {
+				initFun.encapName = encapName;
+				window[encapName] = initFun;
+			}
+
+			return initFun;
+		},
+		
+		//Shortcut function to the above
+		createZenarioLibrary =(zenarioEncapName, parent)=> {
+			return extensionOf(parent, undefined, 'zenario' + zenarioEncapName);
+		},
 	
-	//Create a wrapper funciton with variables for all of these objects
+		//Create encapsulated objects/classes for all of Zenario's libraries
+		zenario = window.zenario = createZenarioLibrary(''),
+		zenarioA = window.zenarioA = createZenarioLibrary('A'),
+		zenarioF = window.zenarioF = createZenarioLibrary('F'),
+		zenarioAF = window.zenarioAF = createZenarioLibrary('AF', zenarioF),
+		zenarioABToolkit = window.zenarioABToolkit = createZenarioLibrary('ABToolkit', zenarioAF),
+		zenarioAB = window.zenarioAB = new zenarioABToolkit(),
+		zenarioAT = window.zenarioAT = createZenarioLibrary('AT'),
+		zenarioO = window.zenarioO = createZenarioLibrary('O');
+	
+	//Create a wrapper function with variables for all of these objects
 	//(This helps keep file sizes down when minifying as the listed common global variables and functions
 	// can be minified.)
-	zenario.lib = function(fun, extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6) {
+	zenario.lib =(fun, extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6)=> {
 		fun(
 			undefined,
 			URLBasePath,
@@ -53,8 +84,11 @@
 			extraVar1, extraVar2, extraVar3, extraVar4, extraVar5, extraVar6
 		);
 	};
-})(window, function(encapName) {
-	var library = function() {};
-	library.encapName = 'zenario' + encapName;
-	return library;
-});
+	
+	//Allow the extensionOf() and createZenarioLibrary() functions to be called elsewhere as well
+	zenario.extensionOf = window.extensionOf = extensionOf;
+	zenario.createZenarioLibrary = window.createZenarioLibrary = createZenarioLibrary;
+	
+	zenarioO.panelTypes = {};
+
+})(window);

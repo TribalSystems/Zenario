@@ -160,7 +160,7 @@ class zenario_common_features__admin_boxes__export_content_items extends module_
 			// Remove file from temp directory
 			@unlink($filename);
 		} else {
-			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 			$objPHPExcel = new PHPExcel();
 			$objPHPExcel->getActiveSheet()->fromArray($headers, NULL, 'A1');
 			$objPHPExcel->getActiveSheet()->fromArray($rows, NULL, 'A2');

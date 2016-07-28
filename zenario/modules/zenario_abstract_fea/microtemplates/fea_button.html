@@ -1,0 +1,10 @@
+<a
+	<% if (m.href) { %>
+		href="{{m.href|escape}}"
+	<% } %>
+	<% if (m.onclick) { %>
+		onclick="{{m.onclick|escape}}"
+	<% } %>
+	class="zfea_button {{m.css_class|escape}}"
+	title="{{m.tooltip|escape}}"
+>{{m.label|escape}}</a>

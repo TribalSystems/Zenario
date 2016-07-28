@@ -211,7 +211,7 @@ echo
 	<title>', adminPhrase('Welcome to Zenario'), '</title>';
 
 $v = zenarioCodeVersion();
-CMSWritePageHead('../', 'welcome', false);
+CMSWritePageHead('../', 'welcome');
 
 echo '
 	<link rel="stylesheet" type="text/css" href="../styles/admin_welcome.min.css?v=', $v, '" media="screen" />
@@ -235,7 +235,7 @@ echo '
 </head>';
 
 
-CMSWritePageBody('', false);
+CMSWritePageBody();
 CMSWritePageFoot('../', 'welcome', false, false);
 
 $logoURL = $logoWidth = $logoHeight = false;
@@ -316,7 +316,9 @@ if (strpos(httpUserAgent(), 'MSIE 6') !== false) {
 }
 
 $revision = false;
-if ($svninfo = getSVNInfo()) {
+if (is_numeric(ZENARIO_REVISION)) {
+	$revision = ZENARIO_REVISION;
+} elseif ($svninfo = getSVNInfo()) {
 	$revision = $svninfo['Revision'];
 }
 

@@ -36,7 +36,7 @@
 						{% if item.Title_Folder_Exists %}
 							{{item.title}}
 						{% else %}
-							{% if item.Title_Exists %} {{item.title}} {% else %} {{item.Document_Link_Text}} {% endif %}
+							{% if item.Title_Folder_Exists %} {{item.title}} {% else %} {{item.Document_Link_Text}} {% endif %}
 						{% endif %}
 					</a>
 					
@@ -61,7 +61,7 @@
 			<div class="no_thumbnail_{{Document_Mime}}"></div>
 		{% endif %}
 		<div id="{{Document_css_id}}">
-			<a href="{{Document_Link}}" target="_blank" onclick="{{Google_Analytics_Link}}">{% if Title_Exists %} {{Title_Exists}} {% else %} {{Document_Link_Text}} {% endif %}</a>
+			<a href="{{Document_Link}}" target="_blank" onclick="{{Google_Analytics_Link}}">{% if Title_Folder_Exists %} {{Title_Exists}} {% else %} {{Document_Link_Text}} {% endif %}</a>
 			{% if File_Size %}
 				<span class="file_size">{{File_Size|e}}</span>
 			{% endif %}

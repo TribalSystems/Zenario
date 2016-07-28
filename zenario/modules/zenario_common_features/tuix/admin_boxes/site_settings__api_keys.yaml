@@ -2,6 +2,7 @@
 ---
 site_settings:
     title: Editing API keys
+    setting_group: api_keys
     tabs:
         dropbox:
             label: Dropbox
@@ -16,7 +17,7 @@ site_settings:
                 dropbox_api_key:
                     site_setting:
                         name: dropbox_api_key
-                    label: 'Dropbox API Key:'
+                    label: 'Dropbox API key:'
                     type: text
                     note_below: |
                         An application key that can use the Dropbox API.
@@ -24,4 +25,14 @@ site_settings:
                                                         <a href="https://www.dropbox.com/developers/apps" target="_blank">
                                                             https://www.dropbox.com/developers/apps
                                                         </a>.
-    setting_group: api_keys
+        google_maps:
+            label: Google Maps
+            edit_mode:
+                enabled: true
+                priv: _PRIV_EDIT_SITE_SETTING
+            fields:
+                google_maps_api_key:
+                    site_setting:
+                        name: google_maps_api_key
+                    label: 'Google Maps API key:'
+                    type: text

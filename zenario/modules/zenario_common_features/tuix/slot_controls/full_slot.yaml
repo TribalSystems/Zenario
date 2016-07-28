@@ -20,6 +20,12 @@ full_slot:
                 edit: true
                 layout: true
             label: 'CSS classes: <span></span>'
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'In this slot:'
+            page_modes:
+                edit: true
+                layout: true
         module_name:
             css_class: '' #zenario_slotControl_wireframe or zenario_slotControl_reusable
             page_modes:
@@ -110,7 +116,7 @@ full_slot:
                 return false;
         
         framework_and_css:
-            label: 'Framework & CSS'
+            label: 'CSS & framework'
             onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
         
         move_on_item_layer:
@@ -197,9 +203,15 @@ full_slot:
     
     
     overridden_info:
-        desc:
-            css_class: zenario_slotControl_Overridden
-            label: 'On layout (overridden):'
+        #desc:
+        #    css_class: zenario_slotControl_Overridden
+        #    label: 'On layout (overridden):'
+        #    page_modes:
+        #        edit: true
+        #        layout: true
+        in_this_slot:
+            css_class: zenario_slotControl_inThisSlot
+            label: 'In this slot on this layout (overridden):'
             page_modes:
                 edit: true
                 layout: true

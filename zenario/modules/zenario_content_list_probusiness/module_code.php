@@ -77,9 +77,6 @@ class zenario_content_list_probusiness extends zenario_content_list {
 			$item['Target_Blank'] = ' target="_blank"';
 		}
 	}
-	//public function showSlot() {
-	//	print_r($this->items); exit;
-	//}
 	
 	
 	
@@ -313,7 +310,7 @@ class zenario_content_list_probusiness extends zenario_content_list {
 		switch ($path) {
 			case 'plugin_settings':
 				setupCategoryCheckboxes($box['tabs']['first_tab']['fields']['category'], true);
-				
+				$fields['first_tab/omit_category']['hidden'] = true;
 				break;
 		}
 	}
@@ -399,8 +396,8 @@ class zenario_content_list_probusiness extends zenario_content_list {
 		}
 	}
 	
-	protected function fillAdminSlotControlsShowFilterSettings(&$controls, &$key) {
-		zenario_content_list::fillAdminSlotControlsShowFilterSettings($controls, $key);
+	protected function fillAdminSlotControlsShowFilterSettings(&$controls) {
+		zenario_content_list::fillAdminSlotControlsShowFilterSettings($controls);
 		
 		switch ($this->setting('only_show')) {
 			case 'public':
@@ -413,7 +410,6 @@ class zenario_content_list_probusiness extends zenario_content_list {
 			
 			case 'private':
 				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Show: Private Content Items only');
-				$key['target_privacy'] = 'all_extranet_users';
 				break;
 		}
 		
@@ -432,11 +428,6 @@ class zenario_content_list_probusiness extends zenario_content_list {
 		}
 		
 		if ($this->setting('only_show_child_items')) {
-			if ($menuItem = getMenuItemFromContent($this->cID, $this->cType)) {
-				$key['target_menu_parent'] = $menuItem['id'];
-				$key['target_menu_section'] = $menuItem['section_id'];
-			}
-			
 			if ((int) $this->setting('child_item_levels') == 1) {
 				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Menu Levels: Content in the menu one level below current Item');
 			
@@ -454,10 +445,8 @@ class zenario_content_list_probusiness extends zenario_content_list {
 		}
 	}
 
-	public function fillAdminSlotControlsShowFilterSettingsCategories(&$key,&$controls) {
+	public function fillAdminSlotControlsShowFilterSettingsCategories(&$controls) {
 		if ($this->setting('category')) {
-			$key['target_categories'] = $this->setting('category');
-			
 			$first = true;
 			foreach(explode(',', $this->setting('category')) as $catId) {
 				if ($name = getCategoryName($catId)) {

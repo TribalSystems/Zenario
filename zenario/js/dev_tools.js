@@ -465,7 +465,9 @@ devTools.updateEditor = function() {
 	
 	//Show the current TUIX
 	if (view == 'current') {
-		editor.setValue(devTools.toFormat(windowOpener[devTools.mode].tuix, format) + padding);
+		var tuix = windowOpener[devTools.mode].tuix;
+		//tuix = {testing: 3432, test: {cfewfw: 32, greger: 'dwqdwqdq'}};
+		editor.setValue(devTools.toFormat(tuix, format) + padding);
 		//editor.setReadOnly(false);
 		devTools.rootPath = devTools.tagPath;
 	
@@ -731,7 +733,8 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 				parent: {
 					schema: {},
 					path: ''},
-				url: 'http://zenar.io/ref-' + devTools.schemaName + '-' + devTools.schema.top_level_page},
+				url: devTools.schemaName? 'http://zenar.io/ref-' + devTools.schemaName + '-' + devTools.schema.top_level_page : false
+			},
 			path: ''
 		};
 	
@@ -782,11 +785,13 @@ devTools.drillDownIntoSchema = function(localPath, data) {
 					sche.object.parent.schema = sche.parent.schema;
 					sche.object.parent.path = sche.parent.path;
 					
-					if (devTools.pages[tag]) {
-						sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + tag;
-					} else
-					if (lastTag && devTools.pages[lastTag]) {
-						sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + lastTag;
+					if (devTools.schemaName) {
+						if (devTools.pages[tag]) {
+							sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + tag;
+						} else
+						if (lastTag && devTools.pages[lastTag]) {
+							sche.object.url = 'http://zenar.io/ref-' + devTools.schemaName + '-' + lastTag;
+						}
 					}
 				}
 			}
@@ -902,8 +907,13 @@ devTools.validate = function() {
 				//Logic for unrecognised properties
 				} else if (code == 303) {
 					
+					//Don't show warnings about unrecognised properties for FEA/visitor TUIX because
+					//there's a high likelyhood that there will be a lot of custom bespoke properties
+					if (!devTools.mode.match('zenario')) {
+						continue;
+					
 					//Ignore properties called "custom"
-					if (('' + tag).substr(0, 7) == 'custom_') {
+					} else if (('' + tag).substr(0, 7) == 'custom_') {
 						continue;
 					
 					//Ignore errors for some system generated tags
@@ -1043,24 +1053,22 @@ devTools.locatePositionR = function(data, path) {
 		actualKey;
 	
 	foreach (data as key) {
-		if (data.hasOwnProperty(key)) {
-			//If this is the key, correct it and return the path
-			if (key.substr(0, 12) === '____here____') {
-				actualKey = key.substr(12);
-				
-				//Correct the data
-				data[actualKey] = data[key];
-				delete data[key];
-				
-				//Return the path
-				return path + (path? '/' : '') + actualKey;
-			}
+		//If this is the key, correct it and return the path
+		if (key.substr(0, 12) === '____here____') {
+			actualKey = key.substr(12);
 			
-			//Otherwise keep looking
-			if (typeof data[key] == 'object') {
-				if (out = devTools.locatePositionR(data[key], path + (path? '/' : '') + key)) {
-					return out;
-				}
+			//Correct the data
+			data[actualKey] = data[key];
+			delete data[key];
+			
+			//Return the path
+			return path + (path? '/' : '') + actualKey;
+		}
+		
+		//Otherwise keep looking
+		if (typeof data[key] == 'object') {
+			if (out = devTools.locatePositionR(data[key], path + (path? '/' : '') + key)) {
+				return out;
 			}
 		}
 	}

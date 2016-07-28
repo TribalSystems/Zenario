@@ -36,9 +36,13 @@ switch ($path) {
 		
 		} elseif (post('enable_all') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			setSetting('jobs_enabled', 1);
+			echo '<!--Reload_Organizer-->';
+			return;
 		
 		} elseif (post('suspend_all') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			setSetting('jobs_enabled', 0);
+			echo '<!--Reload_Organizer-->';
+			return;
 			
 		} elseif (post('enable') && checkPriv('_PRIV_MANAGE_SCHEDULED_TASK')) {
 			foreach (explode(',', $ids) as $id) {
@@ -61,6 +65,7 @@ switch ($path) {
 					<input type="text" readonly="readonly" style="width: 100%;"
 					 value="* * * * *  php ', htmlspecialchars(CMS_ROOT. moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php')), ' 1"/>
 				</form>';
+			return;
 		}
 		
 		break;

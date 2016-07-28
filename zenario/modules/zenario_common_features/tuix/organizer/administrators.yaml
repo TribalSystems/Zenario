@@ -4,7 +4,7 @@ zenario__users:
     panels:
         administrators:
             title: Administrators
-            no_items_message: This site has no Administrators. Click "Create" to create one.
+            no_items_message: This site has no administrators. Click "Create" to create one.
             view_mode: list
             db_items:
                 table: '[[DB_NAME_PREFIX]]admins AS a'
@@ -15,28 +15,19 @@ zenario__users:
                     sql: "status != 'deleted'"
                 trashed:
                     sql: "status = 'deleted'"
-            label_format_for_grid_view: '[[first_name]] [[last_name]] ([[username]][[csuper]])'
             columns:
+                full_name:
+                    title: Name
+                    db_column: CONCAT(a.first_name, ' ', a.last_name)
+                    show_by_default: true
+                    always_show: true
+                    searchable: true
+                    width: large
                 username:
                     title: Username
                     db_column: a.username
                     show_by_default: true
-                    searchable: true
-                first_name:
-                    title: First Name
-                    db_column: a.first_name
-                    show_by_default: true
-                    searchable: true
-                    width: small
-                last_name:
-                    title: Last Name
-                    db_column: a.last_name
-                    show_by_default: true
-                    searchable: true
-                    width: small
-                email:
-                    title: Email
-                    db_column: a.email
+                    always_show: true
                     searchable: true
                 authtype:
                     title: Auth type
@@ -46,6 +37,7 @@ zenario__users:
                         local: Local
                         super: Multi-site
                     show_by_default: true
+                    disallow_sorting: true
                     width: small
                 permissions:
                     title: Permissions
@@ -82,43 +74,36 @@ zenario__users:
                         specific_languages: Specific languages
                         specific_menu_areas: Specific areas in the menu
                     show_by_default: true
+                    always_show: true
+                    disallow_sorting: true
                     width: large
                 is_client_account:
                     title: Is client account
                     format: yes_or_no
                     db_column: a.is_client_account
+                    disallow_sorting: true
                 csuper:
                     db_column: "IF (a.authtype = 'multi-site', ', multi-site', \'\')"
                 status:
                     db_column: a.status
                     server_side_only: true
                 created_date:
-                    title: Creation Date
+                    title: Created
                     db_column: a.created_date
                     format: date
                 last_login:
-                    title: Last Login
-                    db_column: a.last_login
+                    title: Last login
+                    db_column: |
+                        a.last_login
                     format: date
                     show_by_default: true
                     width: small
-                last_login_ip:
-                    title: Last Login IP Address
-                    db_column: a.last_login_ip
                 last_platform:
-                    title: Last platform
-                    db_column: a.last_platform
-                last_browser:
-                    title: Last browser
-                    db_column: a.last_browser
-                last_browser_version:
-                    title: Last browser version
-                    db_column: a.last_browser_version
-                has_permissions:
-                    title: Has Permissions
-                    db_column: "1"
-                    format: yes_or_no
-                    
+                    title: Last login browser & IP address
+                    db_column: |
+                        IF(a.last_login_ip<>'',CONCAT(a.last_platform, ' ', a.last_browser, ' v. ', a.last_browser_version, ' from ', a.last_login_ip), '')
+                    width: xlarge
+                    disallow_sorting: true
                 filename:
                     db_column: f.filename
                     table_join: >
@@ -161,7 +146,7 @@ zenario__users:
                     priv: _PRIV_CREATE_ADMIN
                     css_class: zenario_create_a_new
                     hide_on_filter: true
-                    label: Create a local admininstrator
+                    label: Create an admininstrator
                     hide_on_refiner: trashed
                     hide_in_select_mode: true
                     admin_box:
@@ -173,14 +158,14 @@ zenario__users:
                     admin_box:
                         path: admin_copy_perms
                     disabled_tooltip: |
-                        Requires two active, local administrators
+                        You can only copy permissions when you have at least two local administrators
                     hide_on_refiner: trashed
                     hide_in_select_mode: true
             item_buttons:
                 edit:
                     ord: "1"
                     priv: _PRIV_VIEW_ADMIN
-                    label: Properties
+                    label: Edit acccount
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_admin
@@ -188,49 +173,18 @@ zenario__users:
                     label: Actions
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                #copy_perms_from:
-                #    parent: action_dropdown
-                #    priv: _PRIV_EDIT_ADMIN
-                #    label: Copy permissions from...
-                #    admin_box:
-                #        path: admin_copy_perms
-                #        key:
-                #            id_is_from: true
-                #    disabled_tooltip: |
-                #        Requires two active, local administrators
-                #    traits:
-                #        local: true
-                #        active: true
-                #copy_perms_to:
-                #    parent: action_dropdown
-                #    priv: _PRIV_EDIT_ADMIN
-                #    label: Copy permissions to...
-                #    multiple_select: true
-                #    admin_box:
-                #        path: admin_copy_perms
-                #        key:
-                #            id_is_to: true
-                #    disabled_tooltip: |
-                #        Requires two active, local administrators
-                #    traits:
-                #        local: true
-                #        active: true
-                #    without_traits:
-                #        current_admin: true
                 restore_admin:
                     parent: action_dropdown
                     priv: _PRIV_DELETE_ADMIN
                     label: Restore
                     multiple_select: true
-                    multiple_select_tooltip: Restore the selected local administrators
                     hide_in_select_mode: true
                     only_show_on_refiner: trashed
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to restore the local administrator "[[username]]"?'
+                            message: 'Are you sure you wish to restore the administrator account "[[username]]"?'
                             multiple_select_message: >
-                                Are you sure you wish to restore the selected local
-                                administrators?
+                                Are you sure you wish to restore the selected administrator accounts?
                             button_message: Restore
                             cancel_button_message: Cancel
                             message_type: warning
@@ -248,10 +202,14 @@ zenario__users:
                     multiple_select_tooltip: Trash the selected local administrators
                     ajax:
                         confirm:
-                            message: 'Are you sure you wish to trash the Local Administrator "[[username]]"?'
-                            multiple_select_message: >
-                                Are you sure you wish to trash the selected local
-                                administrators?
+                            message: |
+                                Are you sure you wish to trash the administrator account "[[username]]"?
+
+                                The account will be disabled but preserved for audit trail purposes. (You can view trashed accounts via the trash can icon.)
+                            multiple_select_message: |
+                                Are you sure you wish to trash the selected administrator accounts?
+
+                                The account will be disabled but preserved for audit trail purposes. (You can view trashed accounts via the trash can icon.)
                             button_message: Trash
                             cancel_button_message: Cancel
                             message_type: warning
@@ -262,7 +220,7 @@ zenario__users:
                         active: true
                     without_traits:
                         current_admin: true
-            default_sort_column: username
+            default_sort_column: full_name
             trash:
                 link:
                     path: zenario__users/panels/administrators

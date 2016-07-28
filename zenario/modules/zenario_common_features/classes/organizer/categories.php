@@ -33,7 +33,7 @@ class zenario_common_features__organizer__categories extends module_base_class {
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__content/panels/categories') return;
 		
-		if (!$refinerName && !in($mode, 'get_item_name', 'get_item_links')) {
+		if (!$refinerName && !in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['title'] = adminPhrase('Categories (top level)');
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_top_level'];
 		}

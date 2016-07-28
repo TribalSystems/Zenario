@@ -4,6 +4,9 @@ zenario_location_manager__location:
     title: Creating a location
     key:
         id: ""
+    identifier:
+        css_class: zenario_location_manager_location
+        label: Location ID
     tabs:
         details:
             label: Details

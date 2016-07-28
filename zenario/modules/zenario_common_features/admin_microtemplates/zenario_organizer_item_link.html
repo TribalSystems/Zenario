@@ -1,0 +1,22 @@
+<table class="organizer_no_border item_link"><tr>
+	
+	<% if (m.item.list_image) { %>
+		<td>
+			<div
+				class="listicon organizer_item_image organiser_item_with_image {{m.item.css_class|escape}}"
+				style="background-image: url('{{m.item.list_image|escape}}'); background-position: left center;"
+			><a{{m.href}}></a></div>
+		</td>
+	
+	<% } else if (m.item.css_class) { %>
+		<td><div class="listicon organizer_item_image {{m.item.css_class|escape}}"><a{{m.href}}></a></div></td>
+	<% } %>
+	
+	<td class="organizer_item_link_text" width="95%">
+		
+		<a{{m.href}}>
+			{{m.itemName}}
+		</a>
+	
+	</td>
+</tr></table>

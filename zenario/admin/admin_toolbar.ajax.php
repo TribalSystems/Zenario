@@ -108,4 +108,13 @@ foreach ($modules as $className => &$module) {
 
 //Display the output as JSON
 header('Content-Type: text/javascript; charset=UTF-8');
+	
+if (request('_script')) {
+	echo 'zenarioAT.init2(';
+}
+
 jsonEncodeForceObject($tags);
+
+if (request('_script')) {
+	echo ');';
+}

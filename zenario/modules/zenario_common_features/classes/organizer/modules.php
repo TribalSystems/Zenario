@@ -95,21 +95,6 @@ class zenario_common_features__organizer__modules extends module_base_class {
 				break;
 		}
 
-		//Check which modules can upgrade others
-		$sql = "
-			SELECT d.module_class_name,  d.dependency_class_name
-			FROM " . DB_NAME_PREFIX . "modules AS p
-			INNER JOIN " . DB_NAME_PREFIX . "module_dependencies AS d
-			   ON d.dependency_class_name = p.class_name
-			  AND d.`type` = 'allow_upgrades'";
-
-		$upgrades = array();
-		$result = sqlQuery($sql);
-		while ($row = sqlFetchAssoc($result)) {
-			$upgrades[$row['module_class_name']] = true;
-			$upgrades[$row['dependency_class_name']] = true;
-		}
-
 		$languagesExist = false;
 		$emptyListView = array();
 		$inheritedListView = array();
@@ -260,10 +245,6 @@ class zenario_common_features__organizer__modules extends module_base_class {
 							$module['traits']['has_phrase_packs'] = true;
 						}
 					}
-			
-					if ($module['status'] == 'module_running') {
-						$module['traits']['can_upgrade'] = !empty($upgrades[$module['name']]);
-					}
 				}
 		
 		
@@ -340,41 +321,12 @@ class zenario_common_features__organizer__modules extends module_base_class {
 							$dep = $desc['inheritance']['inherit_settings_from_module'];
 							$dependencies[$dep] = $dep;
 						}
-				
-						$compatibilities = array();
-				
-						if (!empty($desc['inheritance']['allow_upgrades_from_module'])) {
-							if (is_array($desc['inheritance']['allow_upgrades_from_module'])) {
-								foreach ($desc['inheritance']['allow_upgrades_from_module'] as $dep => $bool) {
-									if (engToBoolean($bool)) {
-										$compatibilities[$dep] = $dep;
-									}
-								}
-							} else {
-								//Old 6.0 format
-								$dep = $desc['inheritance']['allow_upgrades_from_module'];
-								$compatibilities[$dep] = $dep;
-							}
-						}
-				
-				
-						if (!empty($compatibilities) || !empty($dependencies) || !empty($pluginDependencies[$module['name']])) {
+						
+						
+						if (!empty($dependencies) || !empty($pluginDependencies[$module['name']])) {
 					
 							$module['dependencies'] .= '';
 							$module['dependents'] .= '';
-					
-							if (!empty($compatibilities)) {
-								$module['close_up_view_bottom'] .= '<tr><th>'. adminPhrase('Compatible with&nbsp;&nbsp;<br/>/can upgrade:'). '&nbsp;</th><td valign="bottom">';
-						
-								$i = 0;
-								foreach ($compatibilities as $compatibility) {
-									if ($i++) {
-										$module['close_up_view_bottom'] .= '<br/>';
-									}
-									$module['close_up_view_bottom'] .= htmlspecialchars(getModuleDisplayNameByClassName($compatibility));
-								}
-								$module['close_up_view_bottom'] .= '</td></tr>';
-							}
 					
 							if (!empty($dependencies)) {
 								$i = 0;
@@ -462,36 +414,10 @@ class zenario_common_features__organizer__modules extends module_base_class {
 		}
 
 		$reload = false;
-		if (get('upgrade') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN') && $module['status'] == 'module_running') {
-			if (!count($instances = succeedModule($ids, $preview = true))) {
-				echo
-					'<!--Message_Type:Error-->',
-					'<!--Button_HTML:<input type="button" class="submit" value="', adminPhrase('OK'), '"/>-->',
-					'<p>', adminPhrase(
-						'There are no plugins from other Modules that the Module &quot;[[moduleName]]&quot; can handle.',
-						array('moduleName' => htmlspecialchars($module['display_name']))
-					), '</p>';
-	
-			} else {
-				echo
-					'<p>', adminPhrase(
-						'The following plugins will now be handled by the &quot;[[moduleName]]&quot; Module:',
-						array('moduleName' => htmlspecialchars($module['display_name']))
-					), '</p>';
-		
-				echo '<ul>';
-				foreach($instances as $instance) {
-					echo '<li>', htmlspecialchars($instance), '</li>';
-				}
-				echo '</ul>';
-			}
-
-		} elseif (post('upgrade') && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN') && $module['status'] == 'module_running') {
-			succeedModule($ids);
-
-		} elseif (post('suspend') && checkPriv('_PRIV_SUSPEND_MODULE') && $module['status'] == 'module_running') {
+		if (post('suspend') && checkPriv('_PRIV_SUSPEND_MODULE') && $module['status'] == 'module_running') {
 			$reload = true;
 			suspendModule($ids);
+			zenarioClearCache();
 
 		} elseif (get('remove') || get('uninstall')) {
 			$module = getModuleDetails($ids);
@@ -536,14 +462,25 @@ class zenario_common_features__organizer__modules extends module_base_class {
 
 		} elseif (post('remove') && checkPriv("_PRIV_RESET_MODULE") && (!file_exists(CMS_ROOT . 'modules/'. $module['class_name']. '/module_code.php'))) {
 			uninstallModule($ids, true);
+			zenarioClearCache();
 
 		} elseif (post('uninstall') && checkPriv("_PRIV_RESET_MODULE") && $module['status'] == 'module_suspended') {
+			
+			//Remember the module's class name
+			$moduleClassName = getModuleClassName($ids);
+			
+			//Uninstall the module. This will also remove it's old id.
 			uninstallModule($ids);
+			zenarioClearCache();
+			
+			//Try and look for the new id of the module
+			addNewModules();
+			return getModuleId($moduleClassName);
 		}
 
 		//Send a command to reload Storekeeper, if the XML map may have changed.
 		if ($reload && moduleDir($module['class_name'], 'tuix/organizer', true)) {
-			echo '<!--Reload_Storekeeper-->';
+			echo '<!--Reload_Organizer-->';
 		}
 	}
 	

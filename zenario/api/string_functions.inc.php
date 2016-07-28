@@ -27,6 +27,10 @@
  */
 
 function addAmp($request) {
+	if (is_array($request)) {
+		$request = http_build_query($request);
+	}
+	
 	if ($request != '' && substr($request, 0, 1) != '&') {
 		return '&'. $request;
 	} else {
@@ -35,6 +39,10 @@ function addAmp($request) {
 }
 
 function addQu($request) {
+	if (is_array($request)) {
+		$request = http_build_query($request);
+	}
+	
 	if ($request != '') {
 		switch (substr($request, 0, 1)) {
 			case '?':
@@ -58,6 +66,10 @@ function base16To64($hex) {
 }
 
 function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
+	if ($string === $prefix) {
+		return '';
+	}
+	
 	$len = strlen($prefix);
 	
 	if (substr($string, 0, $len) == $prefix) {
@@ -125,6 +137,7 @@ function encodeItemIdForStorekeeper($id, $prefix = '~') {
 	return encodeItemIdForOrganizer($id, $prefix);
 }
 
+cms_core::$whitelist[] = 'engToBoolean';
 //	function engToBoolean($text) {}
 
 //Format a date for display
@@ -136,6 +149,7 @@ function encodeItemIdForStorekeeper($id, $prefix = '~') {
 //Format a filesize for display
 //	function formatFilesizeNicely($size, $precision = 0) {}
 
+cms_core::$whitelist[] = 'hash64';
 //	function hash64($text, $len = 28) {}
 
 //Encode a random name to something suitable for a HTML ID by replacing anything
@@ -211,9 +225,10 @@ function validateEmailAddress($email, $multiple = false) {
 }
 
 //Validate a screen name
-function validateScreenName($screenName) {
+function validateScreenName($screenName, $allowMultilingualChars = true) {
+	
 	//Attempt to validate allowing UTF-8 characters through
-	$invalid = @preg_match('/[^\p{L}\p{M} \d\-\_]/u', $screenName);
+	$invalid = $allowMultilingualChars? @preg_match('/[^\p{L}\p{M} \d\-\_]/u', $screenName) : 0;
 	
 	//Fall back to traditional pattern matching if that fails
 	if ($invalid !== 0 && $invalid !== 1) {

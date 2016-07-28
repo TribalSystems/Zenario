@@ -1,0 +1,128 @@
+<% m.display_label = m.label ? m.label : ((m.type == 'other_system_field') ? 'Untitled other system field' : 'Untitled') %>
+<% m.display_type = (m.type == 'other_system_field') ? m.tuix_type : m.type %>
+
+<div 
+	id="organizer_form_field_{{m.id}}" 
+	class="
+		form_field 
+		{{m.display_type}} 
+		{{m.css_classes}} 
+		<% if (m.selected) { %> selected <% } %> 
+		<% if (m.required) { %> required <% } %>
+		<% if (m.indent) { %> zenario_indent_level zenario_indent_level_{{m.indent}} <% } %>
+	" 
+	data-id="{{m.id}}"
+>
+	
+	<div id="organizer_form_field_side_note_{{m.id|e}}" class="zenario_side_note_wrap" <% if (!m.side_note) { %> style="display:none;" <% } %>>
+		<div class="zenario_side_note">
+			<div class="zenario_note_icon"></div>
+			<div class="zenario_note_content">{{zenario.unfun(m.side_note)}}</div>
+		</div>
+	</div>
+	
+	<div id="organizer_form_field_details_{{m.id}}" class="form_field_details_wrapper">
+		
+		
+		<% if (m.display_type == 'group') { %>
+			<input type="checkbox" disabled/>
+			<label class="label">{{m.display_label}}</label>
+		
+		<% } else if (m.display_type == 'checkbox') { %>
+			<input type="checkbox" disabled/>
+			<label class="label">{{m.display_label}}</label>
+		
+		<% } else if (m.display_type == 'checkboxes') { %>
+			<span class="label">{{m.display_label}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.display_type == 'date') { %>
+			<span class="label">{{m.display_label}}</span>
+			<input type="text" value="{{m.value}}" readonly class="datepicker"/>
+		
+		<% } else if (m.display_type == 'editor') { %>
+			<span class="label">{{m.display_label}}</span>
+			<img src="{{m.field_placeholder}}"/>
+			
+		<% } else if (m.display_type == 'radios') { %>
+			<span class="label">{{m.display_label}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.display_type == 'centralised_radios') { %>
+			<span class="label">{{m.display_label}}</span>
+			<div id="organizer_form_field_values_{{m.id}}">
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', m.lov)}}
+			</div>
+		
+		<% } else if (m.display_type == 'select' || m.display_type == 'dataset_select') { %>
+			<span class="label">{{m.display_label}}</span>
+			<select readonly disabled>
+				<option>-- Select --</option>
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
+			</select>
+		
+		<% } else if (m.display_type == 'centralised_select') { %>
+			<span class="label">{{m.display_label}}</span>
+			<select readonly disabled>
+				<option>-- Select --</option>
+				{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.lov)}}
+			</select>
+		
+		<% } else if (m.display_type == 'dataset_picker') { %>
+			<span class="label">{{m.display_label}}</span>
+			<div>
+				<span>
+					<div class="zenario_row_input_button zenario_group zenario_group__cols zenario_group_col_">
+						<input type="text" readonly class="form_picked_item" value="Nothing selected"/>
+					</div>
+				</span>
+				<input type="button" value="Select..." class="lauch_keeper"/>
+			</div>
+		<% } else if (m.display_type == 'file_picker') { %>
+			<span class="label">{{m.display_label}}</span>
+			<div>
+				<span>
+					<div class="zenario_row_input_button zenario_group zenario_group__cols zenario_group_col_">
+						<input type="text" readonly class="form_picked_item" value="Nothing selected"/>
+					</div>
+				</span>
+				<input type="button" value="Upload..." class="lauch_keeper"/>
+				<input type="button" value="Select..." class="lauch_keeper"/>
+			</div>
+			
+		<% } else if (m.display_type == 'text') { %>
+			<span class="label">{{m.display_label}}</span>
+			<input type="text" value="" readonly/>
+		
+		<% } else if (m.display_type == 'textarea') { %>
+			<span class="label">{{m.display_label}}</span>
+			<textarea disabled></textarea>
+		
+		<% } else if (m.display_type == 'url') { %>
+			<span class="label">{{m.display_label}}</span>
+			<input type="text" value="http://" readonly class="url"/>
+		
+		<% } else { %>
+			<span class="label">{{m.display_label}}</span>
+			<div class="other"></div>
+		<% } %>
+	</div>
+	
+	
+	<div id="organizer_form_field_note_below_{{m.id|e}}" class="zenario_note_below" <% if (!m.note_below) { %> style="display:none;" <% } %>>
+		<div class="zenario_note_icon"></div>
+		<div class="zenario_note_content">{{zenario.unfun(m.note_below)}}</div>
+	</div>
+	
+	
+	<div id="organizer_form_field_inline_buttons_{{m.id|e}}" class="form_field_inline_buttons" <% if (!m.selected) { %> style="display:none;" <% } %>>
+		<span class="drag_icon"></span>
+		<% if (!m.is_system_field) { %>
+			<span class="delete_icon" data-id="{{m.id|e}}">Delete</span>
+		<% } %>
+	</div>
+</div>

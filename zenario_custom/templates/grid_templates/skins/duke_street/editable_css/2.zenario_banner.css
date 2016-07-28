@@ -1,0 +1,48 @@
+.zenario_banner__default_style > div {
+	width:100%;
+	overflow:hidden;
+	background:#273040;
+}
+
+.zenario_banner__default_style .banner_content {
+	padding:10px 10px 10px 25px;
+}
+
+.zenario_banner__default_style .banner_title h2 {
+	padding:0;
+	margin:0;
+	line-height:26px;
+	font-size:1.333em;
+}
+
+.zenario_banner__default_style .banner_title h2 a {
+	color:#FFF;
+	display:inline-block;
+	min-height:23px;
+	padding-right:35px;
+	background:url('../images/bullet-circle-arrow.png') no-repeat right center;
+}
+
+.zenario_banner__default_style .banner_image img {
+	margin:auto;
+}
+
+.zenario_banner__default_style h2,
+.zenario_banner__default_style h2 a,
+.zenario_banner__default_style p,
+.zenario_banner__default_style a {
+	color:#FFF;
+}
+
+.zenario_banner__default_style .banner_more {
+	font-size:0.867em;
+	padding-bottom:10px;
+}
+
+.zenario_banner__default_style .banner_more a {
+	text-decoration:underline;
+}
+
+.banner_masthead img {
+	border:5px solid #D7D7CF;
+}

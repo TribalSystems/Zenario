@@ -146,6 +146,18 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				// --- Validate actions tab --- 
 				if ($saving) {
 					$datasetId = $box['key']['dataset'];
+					$datasetDetails = getDatasetDetails($datasetId);
+					
+					if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
+						// If importing users then force admin to choose a status
+						$statusField = getDatasetFieldDetails('status', $datasetId);
+						if (isset($values['actions/value__' . $statusField['id']]) 
+							&& !$values['actions/value__' . $statusField['id']] 
+							&& $box['key']['new_records']
+						) {
+							$errors[] = adminPhrase('You must select a status when creating new user records.');
+						}
+					}
 					$datasetFieldDetails = self::getAllDatasetFieldDetails($datasetId);
 					$childFields = array();
 					foreach ($datasetFieldDetails as $fieldId => $details) {
@@ -417,7 +429,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				}
 			}
 		} else {
-			require_once CMS_ROOT . 'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+			require_once CMS_ROOT . 'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 			
 			// Get file type
 			$inputFileType = PHPExcel_IOFactory::identify($path);
@@ -592,6 +604,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		$plural = ($effectedRecords == 1) ? '' : 's';
 		if ($values['file/type'] == 'insert_data') {
 			$recordStatement = '<b>'.$effectedRecords. '</b> new record'.$plural.' will be created.';
+			$box['key']['new_records'] = $effectedRecords;
 		} else {
 			$recordStatement = '<b>'.$effectedRecords. '</b> record'.$plural.' will be updated.';
 		}
@@ -826,7 +839,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				}
 				
 			} else {
-				require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+				require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 				$inputFileType = PHPExcel_IOFactory::identify($path);
 				$objReader = PHPExcel_IOFactory::createReader($inputFileType);
 				$objReader->setReadDataOnly(true);
@@ -1373,7 +1386,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					if (!isset($data['last_name'])) {
 						$data['last_name'] = '';
 					}
-					if (!$userId) {
+					if (!$userId && !empty($data['status']) && $data['status'] != 'contact') {
 						$data['password'] = createPassword();
 					}
 					

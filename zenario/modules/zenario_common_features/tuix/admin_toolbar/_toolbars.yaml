@@ -7,6 +7,12 @@ toolbars:
         tooltip: To navigate your site, use this mode
         page_mode: preview
         toolbar_microtemplate: zenario_toolbar_preview_tab
+    create:
+        ord: 11
+        label: Create
+        tooltip: Create new content items
+        page_mode: preview
+        toolbar_microtemplate: zenario_toolbar_create_tab
     menu1:
         ord: 20
         priv: _PRIV_EDIT_MENU_TEXT
@@ -56,17 +62,17 @@ toolbars:
 sections:
     template:
         appears_in_toolbars:
-            template: Yes
+            template: true
         buttons:
             id_and_name:
-                hidden: Yes
+                hidden: true
                 label: 
             usage:
-                hidden: Yes
+                hidden: true
                 label: 
             edit_grid:
                 priv: _PRIV_EDIT_TEMPLATE_FAMILY
-                hide_in_select_mode: Yes
+                hide_in_select_mode: true
                 label: Edit layout with Gridmaker
                 tooltip: Manage slots on this layout, their size and CSS classes, and on which devices they should appear
                 popout:
@@ -82,9 +88,18 @@ sections:
                     transition: none
                     css_class: zenario_grid_maker
                 traits:
-                    grid: Yes
+                    grid: true
                 without_columns_set:
-                    missing: Yes
+                    missing: true
+            edit_skin:
+                priv: _PRIV_EDIT_CSS
+                label: Edit skin
+                #admin_box: 
+                #    key:
+                #        skinId: 0
+                #    path: zenario_skin_editor
+                onclick: |
+                    zenarioSE.open();
             skq:
                 label: Organize layouts...
                 tooltip: Define which skin this layout should use, and view other layouts
@@ -92,9 +107,9 @@ sections:
                     path: 
                     target_path: zenario__layouts/panels/layouts
                     min_path: zenario__layouts/panels/layouts
-                    max_path: No
-                    disallow_refiners_looping_on_min_path: No
-                    reload_admin_toolbar: Yes
+                    max_path: false
+                    disallow_refiners_looping_on_min_path: false
+                    reload_admin_toolbar: true
     status_button:
         buttons:
             status_button:

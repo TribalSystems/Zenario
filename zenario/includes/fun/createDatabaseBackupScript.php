@@ -83,9 +83,23 @@ foreach(lookupExistingCMSTables() as $table) {
 	}
 	
 	//Generate a list of the columns
+	$pkCols = array();
+	$pkColList = '';
 	$columnList = '';
-	foreach($columns as $column => $details) {
-		$columnList .= ($columnList? ', ' :null). '`'. $column. '`';
+	$orderBy = '';
+	foreach($columns as $column => &$details) {
+		$columnList .= ($columnList? ', ' :null). '`'. sqlEscape($column). '`';
+		
+		if ($details['Key'] == 'PRI') {
+			$pkCols[] = $column;
+			$pkColList .= ($pkColList? ', ' :null). '`'. sqlEscape($column). '`';
+			
+			if ($orderBy) {
+				$orderBy .= ", ". count($pkCols);
+			} else {
+				$orderBy = "ORDER BY 1";
+			}
+		}
 	}
 	
 	//Prepare the start of an insert statement for that table
@@ -108,76 +122,112 @@ foreach(lookupExistingCMSTables() as $table) {
 	
 	gzwrite($gzFile, $inserts);
 	
-	//Run a SQL statement to get all of the information out of the table
-	$sql = "
-		SELECT ". $columnList. "
-		FROM `". $table['actual_name']. "`
-		ORDER BY 1";
-	$result = sqlQuery($sql);
+	//Attempt to get a list of the existing primary keys in each table.
+	checkTableDefinition($table['actual_name']);
+	if ($pkCol = arrayKey(cms_core::$pkCols, $table['actual_name'])) {
+		$pkColIsInt = cms_core::$numericCols[$table['actual_name']][$pkCol] === ZENARIO_INT_COL;
+		
+		$sql = "
+			SELECT `". sqlEscape($pkCol). "`
+			FROM `". $table['actual_name']. "`
+			ORDER BY 1";
+		$ids = sqlSelectArray($sql, true);
+	
+	} elseif ($pkColList) {
+		$sql = "
+			SELECT ". $pkColList. "
+			FROM `". $table['actual_name']. "`
+			". $orderBy;
+		$ids = sqlSelectArray($sql);
+	
+	} else {
+		$ids = array(false);
+	}
 	
 	//Start building insert statements
 	$inserts = '';
-	//Loop through each row
-	while($row = sqlFetchAssoc($result)) {
+	foreach ($ids as &$id) {
 		
-		//Group the insert statement for this row together with the previous statements if possible.
-		//Otherwise start a new insert statement
-		if ($inserts == '') {
-			$inserts = "\n". $insertInto. "\n(";
-		} else {
-			$inserts .= ",\n(";
-		}
+		//Run a SQL statement to get information out of the table
+		//If we successfully got a list of ids above, to avoid large memory useage in MySQL it should be just one row.
+		//Otherwise we'll have to load the entire table.
+		$sql = "
+			SELECT ". $columnList. "
+			FROM `". $table['actual_name']. "`";
 		
-		//List the values for this row
-		$comma = false;
-		foreach($columns as $column => $details) {
-			
-			$value = $row[$column];
-			$isBinary = strrpos($details['Type'], 'blob') !== false;
-		
-			$inserts .= $comma? ',' :null;
-			
-			//Attempt to fix some MySQL strict problems
-			if (($value === NULL && $details['Null'] == 'NO')
-			 || ($value === '' && substr($details['Type'], 0, 4) == 'enum' && strpos($details['Type'], "''") === false)) {
-				$value = $details['Default'];
+		$first = true;
+		if (is_array($id)) {
+			foreach($id as $col => &$val) {
+				checkRowExistsCol($table['actual_name'], $sql, $col, $val, $first, true);
 			}
-			
-			//Write the value carfully.
-			//If it is null, just write NULL
-			if ($value === NULL) {
-				$inserts .= 'NULL';
-			
-			//Otherwise if it is an empty string, write an empty string.
-			} elseif ($value === '') {
-				$inserts .= "''";
-			
-			//If the two if statements above didn't trigger, we know our value is not empty
-			//If this is a binary column, convert it to hexadecimal to write it down
-			//} elseif ($isBinary) {
-				//$inserts .= '0x' . bin2hex($value);
-			
-			//If this is a number, we can write it as it is without quotes or escaping
-			} elseif (is_numeric($value) && $value != '' && (stripos($value, 'e') === false)) {
-				$inserts .= $value;
-			
-			//Otherwise, write the value quoted and escaped
+		
+		} elseif ($id !== false) {
+			checkRowExistsCol($table['actual_name'], $sql, $pkCol, $id, $first, true);
+		}
+		$result = sqlQuery($sql);
+	
+		//Loop through each row
+		while($row = sqlFetchAssoc($result)) {
+		
+			//Group the insert statement for this row together with the previous statements if possible.
+			//Otherwise start a new insert statement
+			if ($inserts == '') {
+				$inserts = "\n". $insertInto. "\n(";
 			} else {
-				$inserts .= "'". sqlEscape($value). "'";
+				$inserts .= ",\n(";
 			}
-			
-			$comma = true;
-		}
 		
-		//If the length of the insert statement looks like it's getting even remotely close to  our maximum read size,
-		//don't add any more and write the insert statement
-		//Otherwise allow the next statement to be added onto this one
-		if (strlen($inserts) < MYSQL_CHUNK_SIZE) {
-			$inserts .= ')';
-		} else {
-			$inserts .= ');';
-			gzwrite($gzFile, $inserts);
-			$inserts = '';
+			//List the values for this row
+			$comma = false;
+			foreach($columns as $column => &$details) {
+			
+				$value = $row[$column];
+				$isBinary = strrpos($details['Type'], 'blob') !== false;
+		
+				$inserts .= $comma? ',' :null;
+			
+				//Attempt to fix some MySQL strict problems
+				if (($value === NULL && $details['Null'] == 'NO')
+				 || ($value === '' && substr($details['Type'], 0, 4) == 'enum' && strpos($details['Type'], "''") === false)) {
+					$value = $details['Default'];
+				}
+			
+				//Write the value carfully.
+				//If it is null, just write NULL
+				if ($value === NULL) {
+					$inserts .= 'NULL';
+			
+				//Otherwise if it is an empty string, write an empty string.
+				} elseif ($value === '') {
+					$inserts .= "''";
+			
+				//If the two if statements above didn't trigger, we know our value is not empty
+				//If this is a binary column, convert it to hexadecimal to write it down
+				//} elseif ($isBinary) {
+					//$inserts .= '0x' . bin2hex($value);
+			
+				//If this is a number, we can write it as it is without quotes or escaping
+				} elseif (is_numeric($value) && $value != '' && false === strpbrk($value, 'exEX')) {
+					$inserts .= $value;
+			
+				//Otherwise, write the value quoted and escaped
+				} else {
+					$inserts .= "'". sqlEscape($value). "'";
+				}
+			
+				$comma = true;
+			}
+		
+			//If the length of the insert statement looks like it's getting even remotely close to  our maximum read size,
+			//don't add any more and write the insert statement
+			//Otherwise allow the next statement to be added onto this one
+			if (strlen($inserts) < MYSQL_CHUNK_SIZE) {
+				$inserts .= ')';
+			} else {
+				$inserts .= ');';
+				gzwrite($gzFile, $inserts);
+				$inserts = '';
+			}
 		}
 	}
 	

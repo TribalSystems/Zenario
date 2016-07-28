@@ -5,21 +5,21 @@ site_settings:
     title: Editing error handling settings
     tabs:
         errors:
-            label: PHP Errors
+            label: Showing errors
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: This tab contains settings for handling errors in PHP.
+                #description:
+                #    full_width: true
+                #    snippet:
+                #        html: This tab contains settings for handling errors in PHP.
                 
                 
                 show_sql_errors_to_visitors:
                     site_setting:
                         name: show_sql_errors_to_visitors
-                    label: 'Show SQL errors to visitors'
+                    label: 'Show SQL and Twig errors to visitors'
                     type: checkbox
                     value: ""
                     note_below: |
@@ -35,7 +35,7 @@ site_settings:
                     grouping: zenario_siteconfig
                     legend: Set in the <code>zenario_siteconfig.php</code> file
                     
-                    label: 'Show run-time notices'
+                    label: 'Show PHP run-time notices'
                     type: checkbox
                     read_only: true
                     note_below: |
@@ -46,7 +46,7 @@ site_settings:
 
                 show_strict:
                     grouping: zenario_siteconfig
-                    label: 'Show strict errors'
+                    label: 'Show PHP strict errors'
                     type: checkbox
                     read_only: true
                     note_below: |
@@ -56,7 +56,7 @@ site_settings:
                         These messages can be useful for websites in development, but should never be enabled for a live site.
                 show_all:
                     grouping: zenario_siteconfig
-                    label: 'Show all other errors'
+                    label: 'Show all other PHP errors'
                     type: checkbox
                     read_only: true
                     note_below: |
@@ -64,15 +64,15 @@ site_settings:
 
 
         mysql:
-            label: MySQL Errors
+            label: Handling errors
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_SITE_SETTING
             fields:
-                description:
-                    full_width: true
-                    snippet:
-                        html: This tab contains settings for handling errors in MySQL.
+                #description:
+                #    full_width: true
+                #    snippet:
+                #        html: This tab contains settings for handling errors in MySQL.
                 
                 
                 zenario_siteconfig:
@@ -94,7 +94,7 @@ site_settings:
 
                 debug_send_email:
                     grouping: zenario_siteconfig
-                    label: 'Send an email if there is a database error'
+                    label: 'Send an email if there is a SQL or Twig error, or if a layout is missing'
                     type: checkbox
                     read_only: true
                 email_address_global_support:

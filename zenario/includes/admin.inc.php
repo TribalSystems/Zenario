@@ -267,7 +267,13 @@ function getStatusPhrase($status) {
 }
 
 function getContentTypeDetails($cType) {
-	$details = getRow('content_types', true, $cType);
+	
+	if (is_array($cType)) {
+		//Allow people to just use this function for formatting, if they already have the row from the db
+		$details = $cType;
+	} else {
+		$details = getRow('content_types', true, $cType);
+	}
 	
 	if (!$details['content_type_plural_en']) {
 		$details['content_type_plural_en'] == $details['content_type_name_en'];
@@ -2038,6 +2044,37 @@ function checkTemplateFamilyInFS($template_family) {
 	return $template_family && is_dir(CMS_ROOT. zenarioTemplatePath($template_family));
 }
 
+//This function clears as many cached/stored things as possible!
+function zenarioClearCache() {
+	
+	//Update the data-revision number in the database to clear anything stored in Organizer's local storage
+	updateDataRevisionNumber();
+	
+	//If the Pro Features module is installed and page/plugin caching is enabled,
+	//empty the page cache. (We do this by telling it that the site settings have changed.)
+	$sql = '';
+	$ids = $values = array();
+	$table = 'site_settings';
+	reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
+	
+	//Loop through TUIX's cache directory, trying to delete everything there
+	if (is_dir($tuixCacheDir = CMS_ROOT. 'cache/tuix/')) {
+		if ($dh = opendir($tuixCacheDir)) {
+			while (($file = readdir($dh)) !== false) {
+				if (substr($file, 0, 1) != '.') {
+					$dir = $tuixCacheDir. $file. '/';
+					deleteCacheDir($dir);
+				}
+			}
+			closedir($dh);
+		}
+	}
+	
+	//Check for changes in TUIX, Layout and Skin files
+	checkForChangesInYamlFiles($forceScan = true);
+	checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
+}
+
 //Include a checksum calculated from the modificaiton dates of any css/js/html files
 //Note that this is only calculated for admins, and cached for visitors
 function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $forceScan = false) {
@@ -2182,21 +2219,21 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 						foreach (scandir($dir3) as $skin) {
 							if (substr($skin, 0, 1) != '.' && is_dir($dir4 = $dir3. $skin)) {
 								$row = array('family_name' => $family, 'name' => $skin);
-								setRow('skins', array('missing' => 0), $row);
+								$exists = checkRowExists('skins', $row);
+								
+								$details = array('missing' => 0);
 								
 								//Also update the Skin's description
 								$desc = false;
-								if (loadSkinDescription($row, $desc)) {					
-									updateRow('skins',
-										array(
-											'display_name' => ifNull(arrayKey($desc, 'display_name'), $row['name']),
-											'type' => ifNull(arrayKey($desc, 'type'), 'usable'),
-											'extension_of_skin' => arrayKey($desc, 'extension_of_skin'),
-											'css_class' => arrayKey($desc, 'css_class'),
-											'background_selector' => ifNull(arrayKey($desc, 'background_selector'), 'body')
-										),
-										$row);
+								if (loadSkinDescription($row, $desc)) {
+									$details['display_name'] = ifNull(arrayKey($desc, 'display_name'), $row['name']);
+									$details['type'] = ifNull(arrayKey($desc, 'type'), 'usable');
+									$details['extension_of_skin'] = arrayKey($desc, 'extension_of_skin');
+									$details['css_class'] = arrayKey($desc, 'css_class');
+									$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
+									$details['enable_editable_css'] = !engToBoolean(arrayKey($desc, 'disable_editable_css'));
 								}
+								setRow('skins', $details, $row);
 							}
 						}
 					}
@@ -2464,6 +2501,10 @@ function getMenuItemStorekeeperDeepLink($menuId, $langId = false, $sectionId = f
 	return $path;
 }
 
+function getMenuPathWithMenuSection($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
+	return menuSectionName(getRow('menu_nodes', 'section_id', $menuId)). $separator. getMenuPath($menuId, $langId, $separator, $useOrdinal);
+}
+
 function getMenuPath($menuId, $langId = false, $separator = ' -> ', $useOrdinal = false) {
 	if ($langId === false) {
 		$langId = ifNull(session('user_lang'), setting('default_language'));
@@ -2592,7 +2633,7 @@ function removeMenuText($menuId, $languageId) {
 	deleteRow('menu_text', array('language_id' => $languageId, 'menu_id' => $menuId));
 }
 
-function addContentItemsToMenu($tagIds, $menuTarget) {
+function addContentItemsToMenu($tagIds, $menuTarget, $hideMenuNodes = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -3117,71 +3158,6 @@ function suspendModule($id) {
 	updateRow('modules', array('status' => 'module_suspended'), array('id' => $id, 'status' => 'module_running'));
 }
 
-function succeedModule($id, $preview = false) {
-	
-	$instances = array();
-	
-	//Check to see if this module is compatible with any other modules
-	$sql = "
-		SELECT module_id
-		FROM ". DB_NAME_PREFIX. "module_dependencies
-		WHERE `type` = 'allow_upgrades'
-		  AND dependency_class_name = '". sqlEscape(getModuleClassName($id)). "'
-	  UNION
-		SELECT p.id AS module_id
-		FROM ". DB_NAME_PREFIX. "module_dependencies AS d
-		INNER JOIN ". DB_NAME_PREFIX. "modules AS p
-		   ON d.dependency_class_name = p.class_name
-		WHERE d.`type` = 'allow_upgrades'
-		  AND d.module_id = ". (int) $id;
-	$result = sqlQuery($sql);
-	
-	//Update all of those module's instances to be instances for this module
-	while($row = sqlFetchAssoc($result)) {
-		if ($preview) {
-			$wireframes = 0;
-			$sql = "
-				SELECT content_id, name
-				FROM ". DB_NAME_PREFIX. "plugin_instances
-				WHERE module_id = ". (int) $row['module_id'];
-			$result2 = sqlQuery($sql);
-			
-			while($instance = sqlFetchAssoc($result2)) {
-				if ($instance['content_id']) {
-					++$wireframes;
-				} else {
-					$instances[$instance['name']] = $instance['name'];
-				}
-			}
-			
-			if ($wireframes) {
-				$instances[] = adminPhrase('[[n]] plugin(s)', array('n' => $wireframes));
-			}
-		
-		} else {
-			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "plugin_instances SET
-					module_id = ". (int) $id. "
-				WHERE module_id = ". (int) $row['module_id'];
-			sqlQuery($sql);
-			
-			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "plugin_item_link SET
-					module_id = ". (int) $id. "
-				WHERE module_id = ". (int) $row['module_id'];
-			sqlQuery($sql);
-			
-			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "plugin_layout_link SET
-					module_id = ". (int) $id. "
-				WHERE module_id = ". (int) $row['module_id'];
-			sqlQuery($sql);
-		}
-	}
-	
-	return $instances;
-}
-
 
 function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInstall = false, $dbUpdateSafeMode = false) {
 	$module_description_hash = false;
@@ -3404,10 +3380,7 @@ function listModuleFrameworks($className, $limit = 10, $recursive = false) {
 	
 	if (!$recursive) {
 		ksort($frameworks);
-		$ord = 0;
-		foreach ($frameworks as &$framework) {
-			$framework['ord'] = ++$ord;
-		}
+		addOrdinalsToTUIX($frameworks);
 	}
 	
 	return $frameworks;
@@ -3681,7 +3654,77 @@ function replacePluginInstance($oldmoduleId = false, $oldInstanceId, $newmoduleI
 	}
 }
 
+
+function managePluginCSSFile($action, $oldInstanceId, $oldEggId = false, $newInstanceId = false, $newEggId = false) {
+	
+	$instance = getRow('plugin_instances', array('module_id', 'content_id'), $oldInstanceId);
+	
+	//Don't do anything for version controlled plugins
+	if (!$instance || $instance['content_id']) {
+		return;
+	}
+	
+	//Work out the module's CSS class name - note that if this an egg, we need the egg's class name not the nest's
+	if ($oldEggId) {
+		$moduleId = getRow('nested_plugins', 'module_id', $oldEggId);
+	} else {
+		$moduleId = $instance['module_id'];
+	}
+	$baseCSSName = getRow('modules', 'css_class_name', $moduleId);
+	
+	//Work out file names to delete/add
+	$oldFilename = $s1 = $baseCSSName. '_'. $oldInstanceId;
+	$newFilename = $r1 = $baseCSSName. '_'. $newInstanceId;
+	
+	if ($oldEggId) {
+		$oldFilename = $s2 = $oldFilename. '_'. $oldEggId;
+		$newFilename = $r2 = $newFilename. '_'. $newEggId;
+	}
+	$oldFilename = '2.'. $oldFilename. '.css';
+	$newFilename = '2.'. $newFilename. '.css';
+	
+	$skins = getRowsArray('skins', array('id', 'family_name', 'name'), array('type' => 'usable', 'missing' => 0));
+	
+	foreach ($skins as $skin) {
+		$skinWritableDir = CMS_ROOT. getSkinPath($skin['family_name'], $skin['name']). 'editable_css/';
+		
+		if (file_exists($skinWritableDir. $oldFilename)) {
+			switch ($action) {
+				case 'delete':
+					if (is_writable($skinWritableDir. $oldFilename)) {
+						unlink($skinWritableDir. $oldFilename);
+					}
+					break;
+				
+				case 'copy':
+					if (is_writable($skinWritableDir)
+					 && is_readable($skinWritableDir. $oldFilename)
+					 && !file_exists($skinWritableDir. $newFilename)) {
+						
+						$css = file_get_contents($skinWritableDir. $oldFilename);
+						$css = preg_replace('/\b'. preg_quote($s1). '\b/', $r1, $css);
+						
+						if ($oldEggId) {
+							$css = preg_replace('/\b'. preg_quote($s2). '\b/', $r2, $css);
+						}
+						
+						file_put_contents($skinWritableDir. $newFilename, $css);
+					}
+					break;
+			}
+		}
+	}
+}
+
+
+
 function deletePluginInstance($instanceId) {
+	
+	foreach (getRowsArray('nested_plugins', 'id', array('is_tab' => 0, 'instance_id' => $instanceId)) as $eggId) {
+		managePluginCSSFile('delete', $instanceId, $eggId);
+	}
+	managePluginCSSFile('delete', $instanceId);
+	
 	deleteRow('plugin_instances', $instanceId);
 	
 	foreach (array(
@@ -4249,7 +4292,7 @@ function revision($revisionNumber) {
 			if ($errNo == 1060 && !preg_match('/\s*CREATE\s*TABLE\s*/i', $sql)) {
 				continue;
 			
-			//Ignore errors if we try to drop columns or unique keys that do not exist
+			//Ignore errors if we try to drop columns or keys that do not exist
 			} elseif ($errNo == 1091) {
 				continue;
 			}
@@ -4986,7 +5029,7 @@ function resetSite() {
 	}
 	
 	//Rerun some of the scripts from the installer to give us a blank site
-	if (!function_exists('runSQL')) require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+	require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
 	$error = false;
 	(runSQL(false, 'local-DROP.sql', $error)) &&
 	(runSQL(false, 'local-CREATE.sql', $error)) &&
@@ -5709,6 +5752,49 @@ function getCustomFieldsParents($field, &$fields) {
 	}
 }
 
+//Make child fields only visible if their parents are visible and checked
+function setChildFieldVisibility(&$field, $tags) {
+	$parents = array();
+	getCustomFieldsParents($field, $parents);
+
+	if (!empty($parents)) {
+		$firstParent = true;
+		$field['visible_if'] = '';
+		
+		foreach ($parents as $parent) {
+			$field['visible_if'] .=
+				($field['visible_if']? ' && ' : '').
+				"zenarioAB.value('". jsEscape($parent['field_name']). "', '". jsEscape($parent['tab_name']). "') == 1";
+		
+			//Attempt to set the redraw_onchange property for that field if it is on the same tab as this one
+			//(This may miss custom fields, so we'll need to set any we've missed below)
+			if (!empty($tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+			 && ($parentField = $tags['tabs'][$parent['tab_name']]['fields'][$parent['field_name']])
+			 && (is_array($parentField))
+			 && $parent['tab_name'] == $field['tab_name']) {
+				
+				$parentField['redraw_onchange'] = true;
+				
+				//Look for the immediate parent. If it's on this tab, and above the field,
+				//try to give this field a higher indent.
+				if ($firstParent
+				 && !empty($parentField['ord'])
+				 && (float) $parentField['ord'] < (float) $field['ord']
+				 && empty($field['indent'])) {
+					
+					if (empty($parentField['indent'])) {
+						$field['indent'] = 1;
+					} else {
+						$field['indent'] = 1 + (int) $parentField['indent'];
+					}
+					
+				}
+			}
+			$firstParent = false;
+		}
+	}
+}
+
 function checkColumnExistsInDB($table, $column) {
 	
 	if (!$table || !$column) {
@@ -6171,6 +6257,25 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 		$includeThisSubTree = true;
 		
 	
+	//Visitor TUIX has the option to be customised.
+	//(However this is optional; you can also show the base logic without any customisation.)
+	} elseif ($type == 'visitor') {
+		
+		//Not sure if this bit is needed..?
+		//if ($level == 1 && $url != $requestedPath) {
+		//	$goFurther = false;
+		//
+		//} else
+		
+		if ($settingGroup
+		 && !empty($par['setting_group'])
+		 && $par['setting_group'] != $settingGroup) {
+			$goFurther = false;
+		}
+		
+		$includeThisSubTree = true;
+		
+	
 	} elseif ($type == 'module_description') {
 		//Only the basic descriptive tags, <dependencies> and <inheritance> are copied using Module inheritance.
 		if ($settingGroup == 'inherited') {
@@ -6327,7 +6432,6 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 	//in some places to keep things in the right order.
 	//However we need to be careful not to add "ord" properties to everything, as if they are inserted into
 	//a list of objects that would accidentally add a new dummy object into the list!
-	$count = 0;
 	$noPrivs = array();
 	$orderItems = false;
 	
@@ -6381,14 +6485,6 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 			
 			} elseif (!zenarioParseTUIX2($value, $removedColumns, $type, $mode, $requestedPath, $path, (string) $key, $parentKey, $parentParentKey)) {
 				$noPrivs[] = $key;
-			
-			} elseif (is_array($value) && ($orderItems)) {
-				++$count;
-				
-				if ($orderItems
-				 && !isset($value['ord'])) {
-					$value['ord'] = $count;
-				}
 			}
 		}
 		
@@ -6396,6 +6492,10 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 			unset($tags[$key]);
 		}
 		unset($tags['priv']);
+		
+		if ($orderItems) {
+			addOrdinalsToTUIX($tags);
+		}
 		
 		//Don't send any SQL to the client
 		if ($type == 'organizer') {
@@ -6407,14 +6507,6 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 						unset($tags['db_items']['id_column']);
 						unset($tags['db_items']['group_by']);
 						unset($tags['db_items']['where_statement']);
-						
-						if (!empty($tags['db_items']['hierarchy']['db_column'])) {
-							$tags['db_items']['hierarchy']['db_column'] = true;
-						}
-						
-						if (empty($tags['db_items'])) {
-							$tags['db_items']['exists'] = true;
-						}
 					}
 					
 					if (isset($tags['columns']) && is_array($tags['columns'])) {
@@ -6423,22 +6515,10 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 								if (!empty($col['db_column'])) {
 									$col['db_column'] = true;
 								}
-								if (!empty($col['search_column'])) {
-									$col['search_column'] = true;
-								}
-								if (!empty($col['sort_column'])) {
-									$col['sort_column'] = true;
-								}
-								if (isset($col['sort_column_desc'])) {
-									unset($col['sort_column_desc']);
-								}
-								if (isset($col['table_join'])) {
-									unset($col['table_join']);
-								}
-								
-								if (empty($col)) {
-									$col = true;
-								}
+								unset($col['search_column']);
+								unset($col['sort_column']);
+								unset($col['sort_column_desc']);
+								unset($col['table_join']);
 							}
 						}
 					}
@@ -6446,25 +6526,11 @@ function zenarioParseTUIX2(&$tags, &$removedColumns, $type, $requestedPath = '',
 					if (isset($tags['refiners']) && is_array($tags['refiners'])) {
 						foreach ($tags['refiners'] as &$refiner) {
 							if (is_array($refiner)) {
-								if (isset($refiner['sql'])) {
-									unset($refiner['sql']);
-								}
-								if (isset($refiner['sql_when_searching'])) {
-									unset($refiner['sql_when_searching']);
-								}
-								if (isset($refiner['table_join'])) {
-									unset($refiner['table_join']);
-								}
-								if (isset($refiner['table_join_when_searching'])) {
-									unset($refiner['table_join_when_searching']);
-								}
-								if (isset($refiner['allow_unauthenticated_xml_access'])) {
-									unset($refiner['allow_unauthenticated_xml_access']);
-								}
-								
-								if (empty($refiner)) {
-									$refiner = true;
-								}
+								unset($refiner['sql']);
+								unset($refiner['sql_when_searching']);
+								unset($refiner['table_join']);
+								unset($refiner['table_join_when_searching']);
+								unset($refiner['allow_unauthenticated_xml_access']);
 							}
 						}
 					}
@@ -6730,7 +6796,7 @@ function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export'
 		@unlink($filepath);
 	// Export as excel file
 	} elseif ($format == 'excel') {
-		require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+		require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 		// Create excel object
 		$objPHPExcel = new PHPExcel();
 		// Write headers and data
@@ -6743,3 +6809,5 @@ function exportPanelItems($headers, $rows, $format = 'csv', $filename = 'export'
 		$objWriter->save('php://output');
 	}
 }
+
+

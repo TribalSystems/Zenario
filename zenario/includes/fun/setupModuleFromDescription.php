@@ -45,6 +45,7 @@ $sql = "
 		is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
 		fill_organizer_nav = ". engToBoolean($desc['fill_organizer_nav']). ",
 		can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
+		for_use_in_twig = ". engToBoolean($desc['for_use_in_twig']). ",
 		nestable = ". engToBoolean($desc['nestable']). ",
 		category = ". $category . "
 	WHERE id = '". (int) $moduleId. "'";
@@ -62,8 +63,8 @@ $dependencies = array(
 	'dependency' => array(),
 	'inherit_frameworks' => array(),
 	'include_javascript' => array(),
-	'inherit_settings' => array(),
-	'allow_upgrades' => array());
+	'inherit_settings' => array()
+);
 
 foreach (readModuleDependencies($moduleClassName, $desc) as $module) {
 	$dependencies['dependency'][$module] = $module;
@@ -82,19 +83,6 @@ if (!empty($desc['inheritance']['include_javascript_from_module'])) {
 if (!empty($desc['inheritance']['inherit_settings_from_module'])) {
 	$dep = $desc['inheritance']['inherit_settings_from_module'];
 	$dependencies['inherit_settings'] = array($dep);
-}
-if (!empty($desc['inheritance']['allow_upgrades_from_module'])) {
-	if (is_array($desc['inheritance']['allow_upgrades_from_module'])) {
-		foreach ($desc['inheritance']['allow_upgrades_from_module'] as $dep => $bool) {
-			if (engToBoolean($bool)) {
-				$dependencies['allow_upgrades'][$dep] = $dep;
-			}
-		}
-	} else {
-		//Old 6.0 format
-		$dep = $desc['inheritance']['allow_upgrades_from_module'];
-		$dependencies['allow_upgrades'][$dep] = $dep;
-	}
 }
 
 //Record any dependencies found

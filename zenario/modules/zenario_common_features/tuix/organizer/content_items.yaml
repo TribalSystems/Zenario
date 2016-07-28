@@ -230,6 +230,17 @@ zenario__content:
                     searchable: true
                     width: large
                     show_by_default: true
+                number_of_categories:
+                    title: Number of categories
+                    db_column: |
+                        (
+                            SELECT COUNT(cil.category_id)
+                            FROM [[DB_NAME_PREFIX]]category_item_link AS cil
+                            WHERE cil.equiv_id = c.equiv_id
+                              AND cil.content_type = c.type
+                        )
+                   # show_by_default: false
+                    #hidden: true
                 description:
                     title: Description
                     db_column: v.description
@@ -394,6 +405,7 @@ zenario__content:
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
+                    hidden: true
                 layout_id:
                     db_column: v.layout_id
                     filter_format: enum
@@ -449,6 +461,7 @@ zenario__content:
                     label: Create
                     admin_box:
                         path: zenario_quick_create
+                
                 delete_trashed_items:
                     priv: _PRIV_DELETE_TRASHED_CONTENT_ITEMS
                     hide_in_select_mode: true
@@ -505,6 +518,31 @@ zenario__content:
                             This panel shows all of the content items that have been trashed.
                             To restore a content item, you need to re-draft and then publish it.
             inline_buttons:
+                no_categories:
+                    css_class: no_categories
+                    tooltip: "No categories"
+                    visible_if: >
+                        (item.number_of_categories == 0)
+                one_or_more_categories:
+                    css_class: one_or_more_categories
+                    tooltip: "Content item in one or more categories"
+                    visible_if: >
+                        (item.number_of_categories > 0)
+                layout:
+                    css_class: zenario_layout_inline_button
+                    label: |
+                        [[layout]]
+                    admin_box:
+                        priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                        path: zenario_content_layout
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                cant_change_layout:
+                    css_class: zenario_layout_inline_button
+                    label: |
+                        [[layout]]
+                    visible_if: |
+                        !zenarioA.checkSpecificPerms(id)
                 public_permission:
                     css_class: public_permission_inline
                     tooltip: "Visible to: Publicly visible"
@@ -551,7 +589,13 @@ zenario__content:
                         exists: true
                     visible_if: >
                         zenario.engToBoolean(item.frontend_link)
+            
             item_buttons:
+                property_dropdown:
+                    label: Properties
+                    multiple_select: true
+                    hide_when_children_are_not_visible: true
+                
                 settings:
                     parent: property_dropdown
                     priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
@@ -560,57 +604,49 @@ zenario__content:
                         path: zenario_content
                     without_traits:
                         ghost: true
-                download:
-                    parent: view_dropdown
-                    label: Download
-                    ajax:
-                        confirm:
-                            message: 'Download the file "[[filename]]"?'
-                            button_message: Download
-                            cancel_button_message: Cancel
-                            message_type: question
-                            download: true
-                        request:
-                            download: "1"
-                    traits:
-                        has_file: true
+                alias:
+                    parent: property_dropdown
+                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
+                    label: Edit alias
+                    admin_box:
+                        path: zenario_alias
                     without_traits:
                         ghost: true
-                zenario_trans__view:
-                    parent: view_dropdown
-                    hide_in_select_mode: true
-                    label: Translations
-                    link:
-                        path: zenario__content/panels/chained
-                        branch: true
-                        refiner: zenario_trans__chained_in_link
-                images:
-                    parent: view_dropdown
-                    label: Images attached to this content item
-                    link:
-                        path: zenario__content/panels/inline_images_for_content
-                        branch: true
-                        refiner: content
-                    without_traits:
-                        no_images: true
-                        ghost: true
-                view_image:
-                    parent: view_dropdown
-                    label: View picture
-                    tooltip: View picture
-                    popout:
-                        href: 'zenario/file.php?usage=content&popout=1'
-                        options:
-                            type: image
-                    traits:
-                        has_picture: true
-                    without_traits:
-                        ghost: true
-
-                property_dropdown:
-                    label: Properties
+                        
+                head:
+                    parent: property_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    appears_in_toolbars:
+                        edit: true
+                    label: HTML in head of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            mode: head
+                            level: item
+                foot:
+                    parent: property_dropdown
+                    priv: _PRIV_MANAGE_ITEM_SLOT
+                    appears_in_toolbars:
+                        edit: true
+                    label: HTML at foot of page
+                    admin_box:
+                        path: zenario_head_foot_slot
+                        key:
+                            mode: foot
+                            level: item
+                                    
+                layout:
+                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    parent: property_dropdown
+                    label: Change layout
                     multiple_select: true
-                    hide_when_children_are_not_visible: true
+                    admin_box:
+                        path: zenario_content_layout
+                    without_traits:
+                        ghost: true
                     
                 publish:
                     priv: _PRIV_PUBLISH_CONTENT_ITEM
@@ -634,18 +670,72 @@ zenario__content:
                     label: Categories
                     multiple_select: true
                     hide_when_children_are_not_visible: true
-                    visible_if_for_all_selected_items: >
-                        item.enable_categories == 1
+                
+                
                 view_dropdown:
                     label: View
                     multiple_select: true
-                    hide_when_children_are_not_visible: true
+                    hide_when_children_are_not_visible: true                
+                
+                download:
+                    parent: view_dropdown
+                    label: Download
+                    ajax:
+                        confirm:
+                            message: 'Download the file "[[filename]]"?'
+                            button_message: Download
+                            cancel_button_message: Cancel
+                            message_type: question
+                            download: true
+                        request:
+                            download: "1"
+                    traits:
+                        has_file: true
+                    without_traits:
+                        ghost: true
+                view_image:
+                    parent: view_dropdown
+                    label: View picture
+                    tooltip: View picture
+                    popout:
+                        href: 'zenario/file.php?usage=content&popout=1'
+                        options:
+                            type: image
+                    traits:
+                        has_picture: true
+                    without_traits:
+                        ghost: true
+                images:
+                    parent: view_dropdown
+                    label: Attached images
+                    link:
+                        path: zenario__content/panels/inline_images_for_content
+                        branch: true
+                        refiner: content
+                    without_traits:
+                        no_images: true
+                        ghost: true
+                zenario_trans__view:
+                    parent: view_dropdown
+                    hide_in_select_mode: true
+                    label: Translations of this content item
+                    link:
+                        path: zenario__content/panels/chained
+                        branch: true
+                        refiner: zenario_trans__chained_in_link
+                view_slots:
+                    parent: view_dropdown
+                    label: Slots and plugins on this content item
+                    link:
+                        path: zenario__content/panels/slots
+                        branch: true
+                        refiner: content_item
+                
+                
                 lock_dropdown:
                     label: Locking
                     hide_when_children_are_not_visible: true
 
-                # Lock dropdown
-                
                 lock:
                     priv: _PRIV_EDIT_DRAFT
                     parent: lock_dropdown
@@ -746,6 +836,7 @@ zenario__content:
                             message_type: warning
                         request:
                             unlock: "1"
+                
                 categories_add:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     parent: category_dropdown
@@ -756,6 +847,9 @@ zenario__content:
                         path: zenario_content_categories_add
                     without_traits:
                         ghost: true
+                    disabled_if_for_any_selected_items: |
+                        !zenarioO.tuix.custom__content_types_with_categories[item.type]
+                    disabled_tooltip: Categories are not enabled for this content type
                 categories:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     parent: category_dropdown
@@ -765,6 +859,9 @@ zenario__content:
                         path: zenario_content_categories
                     without_traits:
                         ghost: true
+                    disabled_if_for_any_selected_items: |
+                        !zenarioO.tuix.custom__content_types_with_categories[item.type]
+                    disabled_tooltip: Categories are not enabled for this content type
                 categories_remove:
                     priv: _PRIV_EDIT_CONTENT_ITEM_CATEGORIES
                     parent: category_dropdown
@@ -775,57 +872,9 @@ zenario__content:
                         path: zenario_content_categories_remove
                     without_traits:
                         ghost: true
-                alias:
-                    parent: property_dropdown
-                    priv: _PRIV_VIEW_CONTENT_ITEM_SETTINGS
-                    label: Edit alias
-                    admin_box:
-                        path: zenario_alias
-                    without_traits:
-                        ghost: true
-                        
-                head:
-                    parent: property_dropdown
-                    priv: _PRIV_MANAGE_ITEM_SLOT
-                    appears_in_toolbars:
-                        edit: true
-                    label: HTML in head of page
-                    admin_box:
-                        path: zenario_head_foot_slot
-                        key:
-                            mode: head
-                            level: item
-                foot:
-                    parent: property_dropdown
-                    priv: _PRIV_MANAGE_ITEM_SLOT
-                    appears_in_toolbars:
-                        edit: true
-                    label: HTML at foot of page
-                    admin_box:
-                        path: zenario_head_foot_slot
-                        key:
-                            mode: foot
-                            level: item
-                                    
-                layout:
-                    priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
-                    parent: property_dropdown
-                    label: Change layout
-                    multiple_select: true
-                    admin_box:
-                        path: zenario_content_layout
-                    without_traits:
-                        ghost: true
-                    
-                view_slots:
-                    parent: property_dropdown
-                    label: View item's slots
-                    link:
-                        path: zenario__content/panels/slots
-                        branch: true
-                        refiner: content_item
+                    disabled_if_for_any_selected_items: |
+                        !zenarioO.tuix.custom__content_types_with_categories[item.type]
+                    disabled_tooltip: Categories are not enabled for this content type
                 
                 quick_add_to_menu:
                     parent: action_dropdown
@@ -879,6 +928,121 @@ zenario__content:
                             duplicate: "1"
                     without_traits:
                         ghost: true
+                
+                
+                create_draft_by_copying:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    traits:
+                        not_locked: true
+                    without_traits:
+                        draft: true
+                    label: Copy from other content item
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        one_to_one_choose_phrase: Copy from selected
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to copy the contents of the selected content item?
+                                
+                                    This will create a draft of the current content item with the contents of the one you selected.
+                                button_message: Create draft and copy
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                create_draft_by_copying: 1
+                create_draft_by_overwriting:
+                    parent: action_dropdown
+                    priv: _PRIV_CREATE_REVISION_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    traits:
+                        draft: true
+                        not_locked: true
+                    label: Copy from other content item
+                    combine_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/languages
+                        max_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        one_to_one_choose_phrase: Copy from selected
+                        ajax:
+                            confirm:
+                                message: |
+                                    Are you sure you wish to copy the contents of the selected content item over the current draft?
+                                
+                                    This cannot be undone.
+                                button_message: Copy and overwrite
+                                cancel_button_message: Cancel
+                                message_type: warning
+                            request:
+                                create_draft_by_copying: 1
+                
+                delete_archives:
+                    priv: _PRIV_TRASH_CONTENT_ITEM
+                    visible_if_for_all_selected_items: |
+                        zenarioA.checkSpecificPerms(id)
+                    visible_if_for_any_selected_items: |
+                        item.archives_exist
+                    parent: action_dropdown
+                    hide_in_select_mode: true
+                    label: Delete archived versions
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you wish to delete any archived versions of "[[tag]]"?
+                                
+                                This cannot be undone.
+                            multiple_select_message: |
+                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
+                                
+                                This cannot be undone.
+                            button_message: Delete archived versions
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_archives: 1
+                delete:
+                    parent: action_dropdown
+                    priv: _PRIV_DELETE_DRAFT
+                    visible_if: |
+                        zenarioA.checkSpecificPerms(id)
+                    hide_in_select_mode: true
+                    label: Delete draft
+                    multiple_select: true
+                    multiple_select_label: Delete drafts
+                    traits:
+                        draft: true
+                        deletable: true
+                        not_locked: true
+                    without_traits:
+                        ghost: true
+                    ajax:
+                        confirm:
+                            message: |
+                                You are about to delete the draft version of "[[tag]]".
+                                
+                                Deleting this draft will not affect the published version of this item, if it exists.
+                                
+                                This cannot be undone. Are you sure you wish to proceed?
+                            multiple_select_message: |
+                                You are about to delete the draft versions of the selected content items.
+                                
+                                Deleting a draft will not affect any published versions of these items, if they exist.
+                                
+                                This cannot be undone. Are you sure you wish to proceed?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete: "1"
                 hide:
                     parent: action_dropdown
                     priv: _PRIV_HIDE_CONTENT_ITEM
@@ -936,40 +1100,6 @@ zenario__content:
                             message_type: question
                         request:
                             unhide: "1"
-                delete:
-                    parent: action_dropdown
-                    priv: _PRIV_DELETE_DRAFT
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
-                    hide_in_select_mode: true
-                    label: Delete draft
-                    multiple_select: true
-                    multiple_select_label: Delete drafts
-                    traits:
-                        draft: true
-                        deletable: true
-                        not_locked: true
-                    without_traits:
-                        ghost: true
-                    ajax:
-                        confirm:
-                            message: |
-                                You are about to delete the draft version of "[[tag]]".
-                                
-                                Deleting this draft will not affect the published version of this item, if it exists.
-                                
-                                This cannot be undone. Are you sure you wish to proceed?
-                            multiple_select_message: |
-                                You are about to delete the draft versions of the selected content items.
-                                
-                                Deleting a draft will not affect any published versions of these items, if they exist.
-                                
-                                This cannot be undone. Are you sure you wish to proceed?
-                            button_message: Delete
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete: "1"
                 trash:
                     parent: action_dropdown
                     priv: _PRIV_TRASH_CONTENT_ITEM
@@ -984,31 +1114,6 @@ zenario__content:
                         ghost: true
                     admin_box:
                         path: zenario_trash
-                delete_archives:
-                    priv: _PRIV_TRASH_CONTENT_ITEM
-                    visible_if: |
-                        zenarioA.checkSpecificPerms(id)
-                    visible_if_for_any_selected_items: |
-                        item.archives_exist
-                    parent: action_dropdown
-                    hide_in_select_mode: true
-                    label: Delete archived versions
-                    multiple_select: true
-                    ajax:
-                        confirm:
-                            message: |
-                                Are you sure you wish to delete any archived versions of "[[tag]]"?
-                                
-                                This cannot be undone.
-                            multiple_select_message: |
-                                Are you sure you wish to delete any archived versions of [[item_count]] content items?
-                                
-                                This cannot be undone.
-                            button_message: Delete archived versions
-                            cancel_button_message: Cancel
-                            message_type: warning
-                        request:
-                            delete_archives: 1
                 redraft:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_REVISION_DRAFT

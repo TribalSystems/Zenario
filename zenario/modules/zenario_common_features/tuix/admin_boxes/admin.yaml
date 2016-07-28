@@ -178,10 +178,23 @@ zenario_admin:
                             label: "This administrator has every possible permission"
                         specific_actions:
                             label: "This administrator has the following specific permissions:"
+                            side_note: |
+                                This person will be able to make changes on this entire site,
+                                subject to the permissions specified in the checkboxes.
                         specific_languages:
                             label: "This administrator can edit content items in the following languages:"
+                            side_note: |
+                                This person will be allowed to edit content items in the languages specified below,
+                                or to create content items in those languages where equivalents exist in the default language ([[default_language]]).
+                                They will not be allowed to access other parts of the system (e.g. users, emails, ...)
                         specific_menu_areas:
                             label: "This administrator can edit content items under the following parts of the menu:"
+                            side_note: |
+                                This person will be allowed to perform actions on all content items in an area or areas of the site
+                                (as defined defined below with the menu hierarchy).
+                                Edit, hide and trash actions will be available on content items in those parts of the site, in all languages.
+                                They will not be allowed to make changes in other parts of the site,
+                                nor to access other parts of the system (e.g. users, emails, ...)
                     value: specific_actions
                     format_onchange: true
                 
@@ -229,6 +242,7 @@ zenario_admin:
                         select_phrase: Select an area
                         #nothing_selected_phrase:
                         disallow_refiners_looping_on_min_path: true
+                        hide_info_button: true
                     
                     
                     

@@ -48,47 +48,19 @@ class zenario_banner extends module_base_class {
 		$this->callScript('zenario_banner', 'open', $this->containerId, $this->editorId);
 	}
 	
-	//The init method is called by the CMS lets Plugin Developers run code before the Plugin and the page it is on are displayed.
-	//In visitor mode, the Plugin is only displayed if this method returns true.
-	function init() {
-		if ($this->isVersionControlled) {
-			if (post('_zenario_save_content_')) {
-				setRow('plugin_settings',
-					array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__content')),
-					array('name' => 'text', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
-				setRow('plugin_settings',
-					array('is_content' => 'version_controlled_content', 'format' => 'translatable_html', 'value' => post('content__title')),
-					array('name' => 'title', 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
-				exit;
-			}
-		
-			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
-				
-				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
-			
-				//Open the editor immediately if it is in the URL
-				if (request('content__edit_container') == $this->containerId) {
-					$this->editing = true;
-					$this->markSlotAsBeingEdited();
-					$this->openEditor();
-				}
-			}
-		}
-		
-		
-		$imageId = false;
-		$fancyboxLink = false;
+
+	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = 'url') {
 		
 		//Check to see if an item is set in the hyperlink_target setting 
 		$cID = $cType = false;
-		if ($this->setting('link_type') == '_CONTENT_ITEM'
+		if ($this->setting($link_type) == '_CONTENT_ITEM'
 		 && ($linkExists = $this->getCIDAndCTypeFromSetting(
 			$cID, $cType,
-			'hyperlink_target',
+			$hyperlink_target,
 			!$this->isVersionControlled && $this->setting('use_translation'))
 		)) {
 			
-			$this->mergeFields['Target_Blank'] = '';
+			$mergeFields['Target_Blank'] = '';
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
@@ -99,16 +71,16 @@ class zenario_banner extends module_base_class {
 			$link = $this->linkToItem($cID, $cType, $fullPath = false, $this->request);
 			
 			//Use the Theme Section for a Masthead with a link and set the link
-			$this->mergeFields['Link_Href'] =
-			$this->mergeFields['Image_Link_Href'] =
+			$mergeFields['Link_Href'] =
+			$mergeFields['Image_Link_Href'] =
 				'href="'. htmlspecialchars($link). '"';
 			
 			if ($downloadFile) {
-				$this->mergeFields['Target_Blank'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
+				$mergeFields['Target_Blank'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
 			}
 			
-			if ($this->setting('target_blank')) {
-				$this->mergeFields['Target_Blank'] .= " target=\"_blank\"";
+			if ($this->setting($target_blank)) {
+				$mergeFields['Target_Blank'] .= " target=\"_blank\"";
 			}
 			
 			
@@ -121,13 +93,13 @@ class zenario_banner extends module_base_class {
 			if (!checkPriv()) {
 				switch ($this->setting('hide_private_item')) {
 					case '_LOGGED_IN':
-						if (!session('extranetUserID')) {
+						if (empty($_SESSION['extranetUserID'])) {
 							return false;
 						}
 						break;
 					
 					case '_LOGGED_OUT':
-						if (session('extranetUserID')) {
+						if (!empty($_SESSION['extranetUserID'])) {
 							return false;
 						}
 						break;
@@ -152,26 +124,57 @@ class zenario_banner extends module_base_class {
 				$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 			
 			// If the content item this banner was linking to has been removed, update setting to no-link
-			if ($this->setting('link_type') == '_CONTENT_ITEM' && !$linkExists) {
+			if ($this->setting($link_type) == '_CONTENT_ITEM' && !$linkExists) {
 				
-				if (!getCIDAndCTypeFromTagId($cID, $cType, $this->setting('hyperlink_target'))
+				if (!getCIDAndCTypeFromTagId($cID, $cType, $this->setting($hyperlink_target))
 				 || !(($equivId = equivId($cID, $cType))
 				   && checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType, 'status' => array('!1' => 'trashed', '!2' => 'deleted'))))) {
 					
-					updateRow('plugin_settings', array('value' => ''), array('instance_id' => $this->instanceId, 'name' => 'hyperlink_target'));
-					updateRow('plugin_settings', array('value' => '_NO_LINK'), array('instance_id' => $this->instanceId, 'name' => 'link_type'));
+					$this->setSetting($link_type, '_NO_LINK');
+					$this->setSetting($hyperlink_target, '');
+					$this->setSetting($target_blank, '');
 				}
 			
-			} elseif ($this->setting('link_type') == '_EXTERNAL_URL' && $this->setting('url')) {
-				$this->mergeFields['Link_Href'] =
-				$this->mergeFields['Image_Link_Href'] =
-					'href="'. htmlspecialchars($this->setting('url')). '"';
+			} elseif ($this->setting($link_type) == '_EXTERNAL_URL' && $this->setting($url)) {
+				$mergeFields['Link_Href'] =
+				$mergeFields['Image_Link_Href'] =
+					'href="'. htmlspecialchars($this->setting($url)). '"';
 				
-				if ($this->setting('target_blank')) {
-					$this->mergeFields['Target_Blank'] = " target=\"_blank\"";
+				if ($this->setting($target_blank)) {
+					$mergeFields['Target_Blank'] = " target=\"_blank\"";
 				}
 			}
 		}
+	}
+	
+	//The init method is called by the CMS lets Plugin Developers run code before the Plugin and the page it is on are displayed.
+	//In visitor mode, the Plugin is only displayed if this method returns true.
+	function init() {
+		if ($this->isVersionControlled) {
+			if (post('_zenario_save_content_')) {
+				$this->setSetting('text', post('content__content'), true, 'translatable_html');
+				$this->setSetting('title', post('content__title'), true, 'translatable_text');
+				exit;
+			}
+		
+			if (cms_core::$isDraft && checkPriv('_PRIV_EDIT_DRAFT', cms_core::$cID, cms_core::$cType)) {
+				
+				$this->editorId = $this->containerId. '_tinymce_content_'. str_replace('.', '', microtime(true));
+			
+				//Open the editor immediately if it is in the URL
+				if (request('content__edit_container') == $this->containerId) {
+					$this->editing = true;
+					$this->markSlotAsBeingEdited();
+					$this->openEditor();
+				}
+			}
+		}
+		
+		
+		$imageId = false;
+		$fancyboxLink = false;
+		$cID = $cType = false;
+		$this->setupLink($this->mergeFields, $cID, $cType, $this->setting('use_translation'));
 		
 		
 		$pictureCID = $pictureCType = $width = $height = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;
@@ -220,15 +223,15 @@ class zenario_banner extends module_base_class {
 				}
 			}
 			
-			if (imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'))) {
+			if (imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))) {
 				
 				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
 					$this->clearCacheBy(
-						$clearByContent, $clearByMenu, $clearByUser, $clearByFile = true, $clearByModuleData);
+						false, false, false, $clearByFile = true, false);
 				
 				} else {
 					$this->clearCacheBy(
-						$clearByContent = true, $clearByMenu, $clearByUser, $clearByFile = true, $clearByModuleData);
+						$clearByContent = true, false, false, $clearByFile = true, false);
 				}
 				
 				
@@ -240,7 +243,7 @@ class zenario_banner extends module_base_class {
 				
 				if ($this->setting('use_rollover')
 				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
-				 && imageLink($width, $height, $url2, $this->setting('rollover_image'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'))) {
+				 && imageLink($width, $height, $url2, $this->setting('rollover_image'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))) {
 					$this->mergeFields['Image_Rollover'] = array(
 							'Image_Src' => htmlspecialchars($url2),
 							'Image_Height' => $height,
@@ -261,9 +264,17 @@ class zenario_banner extends module_base_class {
 				
 				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (!arrayKey($this->mergeFields,'Link_Href'))){
 					if (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
-
-						$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
-						$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+						if ($this->setting('disable_rel')) {
+							$this->mergeFields['Link_Href'] =
+							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+						} else {
+							$this->mergeFields['Link_Href'] = 'rel="lightbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';
+						}
+						
+						
+						
+						
 						
 						//HTML 5 friendly version of the above code
 							//Would need support from colorbox, and ", a[data-colorbox-group]" added to the jQuery pattern that sets colorboxes up

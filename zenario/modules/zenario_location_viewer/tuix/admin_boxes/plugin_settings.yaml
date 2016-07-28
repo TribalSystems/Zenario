@@ -138,4 +138,42 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter the map height
                     style: width:50px;
-                    indenx: 1
+                    indent: 1
+                og_tags:
+                    plugin_setting:
+                        name: og_tags
+                    label: 'Set OG tags'
+                    type: checkbox
+                    side_note: "If checked, you will be able to select the information which will be visible to external pages by using OG tags"
+                    format_onchange: true
+                og_title:
+                    visible_if: "zenarioAB.value('og_tags')"
+                    plugin_setting:
+                        name: og_title
+                    label: 'Set OG title tag'
+                    type: checkbox
+                    indent: 1
+                og_image:
+                    visible_if: "zenarioAB.value('og_tags')"
+                    plugin_setting:
+                        name: og_image
+                    label: 'Set OG image tag'
+                    type: checkbox
+                    indent: 1
+                og_description:
+                    visible_if: "zenarioAB.value('og_tags')"
+                    plugin_setting:
+                        name: og_description
+                    label: 'Set OG description tag'
+                    type: checkbox
+                    indent: 1
+                    format_onchange: true
+                og_description_data_set_field:
+                    visible_if: "zenarioAB.value('og_description') && zenarioAB.value('og_tags')"
+                    plugin_setting:
+                        name: og_description_data_set_field
+                    label: "Select the data set field to set text in the OG description tag:"
+                    type: select
+                    empty_value: ' -- Select -- '
+                    value: ""
+                    indent: 2

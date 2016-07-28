@@ -23,12 +23,13 @@ diagnostics:
                     snippet:
                         html: Directories
                     visible_if: zenarioAW.togglePressed(1)
-                show_dirs:
+                show_dirs: &show_section
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
                     same_row: true
                     visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                
                 dir_1:
                     grouping: sub_table
                     full_width: true
@@ -36,7 +37,7 @@ diagnostics:
                     snippet:
                         html: Backup Storage Area
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_1:
+                show_dir_1: &show_dir
                     grouping: sub_table
                     type: toggle
                     redraw_onchange: true
@@ -52,7 +53,7 @@ diagnostics:
                             on your server in which to keep them.
                             It should start with a slash, but do not add a trailing slash.
                     visible_if: zenarioAW.togglePressed()
-                backup_dir:
+                backup_dir: &changeable_dir
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -64,6 +65,7 @@ diagnostics:
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
+                
                 dir_2:
                     grouping: sub_table
                     full_width: true
@@ -71,12 +73,7 @@ diagnostics:
                     snippet:
                         html: Document Secure Store (Docstore)
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_2:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                show_dir_2: *show_dir
                 dir_2_blurb:
                     grouping: sub_table
                     full_width: true
@@ -87,33 +84,24 @@ diagnostics:
                             Please enter the absolute path to the directory.
                             It should start with a slash, but do not add a trailing slash.
                     visible_if: zenarioAW.togglePressed()
-                docstore_dir:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    type: text
-                    visible_if: zenarioAW.togglePressed()
-                docstore_dir_status:
+                docstore_dir: *changeable_dir
+                docstore_dir_status: &dir_status
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
                         html: "&nbsp;"
                     visible_if: zenarioAW.togglePressed()
-                dir_4:
+                
+                dir_3:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level
                     snippet:
                         html: Templates Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_4:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
-                dir_4_blurb:
+                show_dir_3: *show_dir
+                dir_3_blurb:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
@@ -123,20 +111,49 @@ diagnostics:
                             These may be edited by an administrator, and Zenario writes them to the following directory.
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
-                template_dir:
+                template_dir: &readonly_dir
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     type: text
                     readonly: readonly
                     visible_if: zenarioAW.togglePressed()
-                template_dir_status:
+                template_dir_status: *dir_status
+                
+                dir_4:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: CSS Directories
+                    visible_if: zenarioAW.togglePressed(2)
+                show_dir_4: *show_dir
+                dir_4_blurb:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_field
                     snippet:
-                        html: "&nbsp;"
+                        html: ''
                     visible_if: zenarioAW.togglePressed()
+                skin_dir_1: *readonly_dir
+                skin_dir_status_1: *dir_status
+                skin_dir_2: *readonly_dir
+                skin_dir_status_2: *dir_status
+                skin_dir_3: *readonly_dir
+                skin_dir_status_3: *dir_status
+                skin_dir_4: *readonly_dir
+                skin_dir_status_4: *dir_status
+                skin_dir_5: *readonly_dir
+                skin_dir_status_5: *dir_status
+                skin_dir_6: *readonly_dir
+                skin_dir_status_6: *dir_status
+                skin_dir_7: *readonly_dir
+                skin_dir_status_7: *dir_status
+                skin_dir_8: *readonly_dir
+                skin_dir_status_8: *dir_status
+                skin_dir_9: *readonly_dir
+                skin_dir_status_9: *dir_status
+                
                 dir_5:
                     grouping: sub_table
                     full_width: true
@@ -144,12 +161,7 @@ diagnostics:
                     snippet:
                         html: Cache Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_5:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                show_dir_5: *show_dir
                 dir_5_blurb:
                     grouping: sub_table
                     full_width: true
@@ -159,20 +171,9 @@ diagnostics:
                             Zenario can store generated files in a cache directory to speed up performance and reduce load on the database.
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
-                cache_dir:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    type: text
-                    readonly: readonly
-                    visible_if: zenarioAW.togglePressed()
-                cache_dir_status:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: "&nbsp;"
-                    visible_if: zenarioAW.togglePressed()
+                cache_dir: *readonly_dir
+                cache_dir_status: *dir_status
+                
                 dir_6:
                     grouping: sub_table
                     full_width: true
@@ -180,12 +181,7 @@ diagnostics:
                     snippet:
                         html: Private Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_6:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                show_dir_6: *show_dir
                 dir_6_blurb:
                     grouping: sub_table
                     full_width: true
@@ -196,20 +192,9 @@ diagnostics:
                             while they are downloaded by users.
                             Please ensure it exists and is writable by the web server:
                     visible_if: zenarioAW.togglePressed()
-                private_dir:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    type: text
-                    readonly: readonly
-                    visible_if: zenarioAW.togglePressed()
-                private_dir_status:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: "&nbsp;"
-                    visible_if: zenarioAW.togglePressed()
+                private_dir: *readonly_dir
+                private_dir_status: *dir_status
+                
                 dir_7:
                     grouping: sub_table
                     full_width: true
@@ -217,12 +202,7 @@ diagnostics:
                     snippet:
                         html: Public Directory
                     visible_if: zenarioAW.togglePressed(2)
-                show_dir_7:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(2, tuixObject)"
+                show_dir_7: *show_dir
                 dir_7_blurb:
                     grouping: sub_table
                     full_width: true
@@ -232,20 +212,8 @@ diagnostics:
                             Zenario uses a directory to store documents that are publicly available.
                             This directory MUST be writable by the web server.
                     visible_if: zenarioAW.togglePressed()
-                public_dir:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    type: text
-                    readonly: readonly
-                    visible_if: zenarioAW.togglePressed()
-                public_dir_status:
-                    grouping: sub_table
-                    full_width: true
-                    row_class: sub_field
-                    snippet:
-                        html: "&nbsp;"
-                    visible_if: zenarioAW.togglePressed()
+                public_dir: *readonly_dir
+                public_dir_status: *dir_status
                 
                 
                 server:
@@ -254,12 +222,7 @@ diagnostics:
                     snippet:
                         html: Web Server
                     visible_if: zenarioAW.togglePressed(1)
-                show_server:
-                    grouping: sub_table
-                    type: toggle
-                    redraw_onchange: true
-                    same_row: true
-                    visible_if: "zenarioAW.togglePressed(1, tuixObject)"
+                show_server: *show_section
                 opcache_misconfigured:
                     grouping: sub_table
                     full_width: true
@@ -299,6 +262,14 @@ diagnostics:
                     hide_on_install: true
                     visible_if: zenarioAW.togglePressed()
                 site_special_pages_unpublished:
+                    grouping: sub_table
+                    full_width: true
+                    row_class: sub_level
+                    snippet:
+                        html: "&nbsp;"
+                    hide_on_install: true
+                    visible_if: zenarioAW.togglePressed()
+                site_automated_backups:
                     grouping: sub_table
                     full_width: true
                     row_class: sub_level

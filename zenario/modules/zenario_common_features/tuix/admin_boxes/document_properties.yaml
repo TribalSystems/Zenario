@@ -12,6 +12,11 @@ zenario_document_properties:
 				always_on: Yes
 				enabled: Yes
 			fields:
+				document_extension:
+					label: 'Title:'
+					type: text
+					maxlength: "255"
+					hidden: true
 				document_title:
 					label: 'Title:'
 					type: text

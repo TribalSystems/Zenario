@@ -17,7 +17,7 @@ zenario_upload_replacement_document:
                     pre_field_html: '<div class=\"zenario_fbWarning\">'
                     snippet:
                         html: |
-                            This will delete the old file and document containers will show the replacement file. Any hardcoded public links to the file will no longer work.
+                            All unmanaged links (e.g. within WYSIWYG editors, or the HTML area of Banners or Raw HTML Snippets) will no longer work and will need to be re-made.
                     post_field_html: '</div>'
                 
                 upload:
@@ -29,7 +29,7 @@ zenario_upload_replacement_document:
                         dropbox_phrase: 'Upload from dropbox'
                 
                 keep_meta_data:
-                    label: 'Keep current meta data'
+                    label: 'Keep current title and any dataset fields'
                     type: checkbox
                     value: 1
                     

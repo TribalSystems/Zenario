@@ -40,19 +40,36 @@ class zenario_common_features__organizer__menu_position extends module_base_clas
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__menu/panels/menu_position') return;
 		
-	
+		$seperator = ' -> ';
+		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			
 			if ($item['is_dummy_child']) {
+				$parentTagParts = explode('_', $item['parent_id']);
+				$parentId = $parentTagParts[1];
+				
 				$item['css_class'] = 'zenario_menunode_unlinked ghost';
 				$item['name'] = adminPhrase('[ Put menu node here ]');
 				$item['target'] =
 				$item['target_loc'] =
 				$item['internal_target'] =
 				$item['redundancy'] = '';
-			
+				
+				
+				if ($parentId) {
+					$item['menu_path'] =
+						getMenuPath($parentId, false, $seperator) . $seperator.
+						adminPhrase('[ new child node ]');
+				} else {
+					$item['menu_path'] =
+						adminPhrase('[ new top-level node ]');
+				}
+				//$item['menu_path'] .= $item['name'];
+				
 			} elseif ($item['menu_id']) {
+				$parentTagParts = explode('_', $item['parent_id']);
+				$parentId = $parentTagParts[1];
+				
 				if ($item['target_loc'] == 'int' && $item['internal_target']) {
 					
 					if (isMenuNodeUnique($item['redundancy'], $item['equiv_id'], $item['content_type'])) {
@@ -77,7 +94,17 @@ class zenario_common_features__organizer__menu_position extends module_base_clas
 				if (empty($item['parent_id'])) {
 					$item['css_class'] .= ' zenario_menunode_toplevel';
 				}
-			
+				
+				//$item['menu_path'] = getMenuPath($item['menu_id'], false, $seperator);
+				if ($parentId) {
+					$item['menu_path'] =
+						getMenuPath($parentId, false, $seperator) . $seperator.
+						adminPhrase('[ new node before "[[name]]" ]', $item);
+				} else {
+					$item['menu_path'] =
+						adminPhrase('[ new top-level node before "[[name]]" ]', $item);
+				}
+				
 			} else {
 				$item['css_class'] = 'menu_section';
 			}

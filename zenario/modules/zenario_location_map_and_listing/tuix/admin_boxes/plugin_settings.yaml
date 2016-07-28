@@ -21,9 +21,29 @@ plugin_settings:
                         Shows a drop-down list of countries. When a visitor selects a country,
                         only that country's locations will be shown.
                     redraw_onchange: true
-                default_country:
+                default_country_options:
                     visible_if: |
                         zenarioAB.value('filter_by_country')
+                    indent: 1
+                    plugin_setting:
+                        name: default_country_options
+                    label: Default country
+                    type: select
+                    format_onchange: true
+                    values:
+                        select_country:
+                            ord: 1
+                            label: Select a country
+                        geo_ip: 
+                            ord: 2
+                            label: Use GeoIP
+                    value: geo_ip
+                    side_note: |
+                        If GeoIP is selected, the visitor IP address will be taken into account to define the default country in the select list.
+                default_country:
+                    indent: 2
+                    visible_if: |
+                        zenarioAB.value('filter_by_country') && zenarioAB.value('default_country_options') == 'select_country'
                     plugin_setting:
                         name: default_country
                     label: 'Default country:'
@@ -34,10 +54,6 @@ plugin_settings:
                         target_path: zenario__languages/panels/countries
                     validation:
                         required_if_not_hidden: 'Please select a default country'
-                    side_note: |
-                        If the GeoIP Lookup Module is running and the visitor is in one of the
-                        countries in the list, the country they are in will be used instead
-                        of this default value.
                 list_by_field:
                     plugin_setting:
                         name: list_by_field
@@ -52,6 +68,7 @@ plugin_settings:
                         with one of the fields set will be shown.
                     redraw_onchange: true
                 field1:
+                    indent: 1
                     visible_if: |
                         zenarioAB.value('list_by_field')
                     plugin_setting:
@@ -63,6 +80,7 @@ plugin_settings:
                         required_if_not_hidden: 'Please select a field for the first list'
                     redraw_onchange: true
                 field1_title:
+                    indent: 1
                     visible_if: |
                         zenarioAB.value('list_by_field')
                     plugin_setting:
@@ -127,6 +145,7 @@ plugin_settings:
                         Show a search box which a user can use to filter locations to those closest to a postcode.
                     redraw_onchange: true
                 hide_locations_list_before_search:
+                    indent: 1
                     plugin_setting:
                         name: hide_locations_list_before_search
                     label: Hide locations list before search
@@ -135,6 +154,7 @@ plugin_settings:
                         You can hide the list of locations before a search is made in case the unfiltered list of locations is too long.
                     visible_if: zenarioAB.value('enable_postcode_search')
                 search_result_count:
+                    indent: 1
                     plugin_setting:
                         name: search_result_count
                     label: 'Number of search results:'
@@ -170,3 +190,163 @@ plugin_settings:
                     side_note: |
                         After searching for a postcode, display a distance next to each result.
                     visible_if: zenarioAB.value('enable_postcode_search')
+                show_view_button:
+                    plugin_setting:
+                        name: show_view_button
+                    label: Show button to go to the descriptive page
+                    type: checkbox
+                    format_onchange: true
+                button_label:
+                    visible_if: |
+                        zenarioAB.value('show_view_button')
+                    plugin_setting:
+                        name: button_label
+                    type: text
+                    label: 'Button label:'
+                    value: "View"
+                    show_phrase_icon: true
+                    side_note: "Enter text in the default language. <a href=\"zenario/admin/organizer.php#zenario__languages/panels/phrases\" target=\"_blank\">Click here to manage translations in Organizer.</a>."
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: Please enter a button label.
+        image:
+            label: "Images"
+            fields:
+                show_images:
+                    plugin_setting:
+                        name: show_images
+                    type: checkbox
+                    label: 'Show images'
+                    format_onchange: true
+                map_view_thumbnail_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: map_view_thumbnail_canvas
+                    label: 'Image size on the map info window:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: true
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: true
+                map_view_thumbnail_width:
+                    indent: 3
+                    plugin_setting:
+                        name: map_view_thumbnail_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                map_view_thumbnail_height:
+                    indent: 3
+                    plugin_setting:
+                        name: map_view_thumbnail_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                map_view_thumbnail_offset:
+                    indent: 3
+                    plugin_setting:
+                        name: map_view_thumbnail_offset
+                    label: 'Offset:'
+                    type: text
+                    style: 'width: 50px;'
+                    value: "0"
+                    slider:
+                        min: "-10"
+                        max: "10"
+                        before_field: true
+                        style: 'width: 200px;'
+                    note_below: |
+                        Moving the slider to the left will move the image left or down;
+                        moving the slider to the right will move the image right or up.
+                list_view_thumbnail_canvas:
+                    indent: 1
+                    plugin_setting:
+                        name: list_view_thumbnail_canvas
+                    label: 'Image size on the list:'
+                    type: select
+                    value: unlimited
+                    values:
+                        unlimited:
+                            ord: true
+                            label: Unlimited size
+                        fixed_width:
+                            ord: "2"
+                            label: Constrain by width
+                        fixed_height:
+                            ord: "3"
+                            label: Constrain by height
+                        fixed_width_and_height:
+                            ord: "4"
+                            label: Constrain by width and height
+                        resize_and_crop:
+                            ord: "5"
+                            label: Resize and crop
+                    format_onchange: true
+                list_view_thumbnail_width:
+                    indent: 3
+                    plugin_setting:
+                        name: list_view_thumbnail_width
+                    label: 'Width:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width in pixels.
+                        numeric: The width must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                list_view_thumbnail_height:
+                    indent: 3
+                    plugin_setting:
+                        name: list_view_thumbnail_height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height in pixels.
+                        numeric: The height must be a number.
+                    value: ""
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                list_view_thumbnail_offset:
+                    indent: 3
+                    plugin_setting:
+                        name: list_view_thumbnail_offset
+                    label: 'Offset:'
+                    type: text
+                    style: 'width: 50px;'
+                    value: "0"
+                    slider:
+                        min: "-10"
+                        max: "10"
+                        before_field: true
+                        style: 'width: 200px;'
+                    note_below: |
+                        Moving the slider to the left will move the image left or down;
+                        moving the slider to the right will move the image right or up.

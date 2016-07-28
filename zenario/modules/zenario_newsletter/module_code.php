@@ -316,6 +316,7 @@ class zenario_newsletter extends module_base_class {
 			SELECT
 				id,
 				"" AS title,
+				"" AS salutation,
 				first_name,
 				last_name,
 				email,
@@ -374,8 +375,7 @@ class zenario_newsletter extends module_base_class {
 				. DB_NAME_PREFIX. ZENARIO_NEWSLETTER_PREFIX. "newsletters
 			WHERE 
 				id = ". (int) $id;
-		$result = sqlSelect($sql);
-		$newsletter = sqlFetchAssoc($result);
+		$newsletter = sqlFetchAssoc($sql);
 		
 		return $newsletter;
 	}
@@ -573,8 +573,8 @@ class zenario_newsletter extends module_base_class {
 		$search = array();
 		$replace = array();
 		if (isset($user['admin_account'])) {
-			$search[] = '[[TITLE]]';
-			$replace[] = htmlspecialchars($user['title']);
+			$search[] = '[[SALUTATION]]';
+			$replace[] = htmlspecialchars($user['salutation']);
 			
 			$search[] = '[[FIRST_NAME]]';
 			$replace[] = htmlspecialchars($user['first_name']);

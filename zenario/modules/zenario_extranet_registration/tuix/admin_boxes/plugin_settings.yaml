@@ -9,9 +9,35 @@ plugin_settings:
 			fields:
 				desc:
 					ord: "0"
-					full_width: Yes
+					full_width: true
 					snippet:
 						html: Configure the initial registration form that is used to create the user account.
+				
+				use_custom_form:
+					plugin_setting:
+						name: use_custom_form
+					label: Use a custom form
+					type: checkbox
+					format_onchange: true
+				
+				custom_form:
+					visible_if: "zenarioAB.value('use_custom_form')"
+					plugin_setting:
+						name: custom_form
+					label: 'Form:'
+					pick_items:
+						path: zenario__user_forms/panels/zenario_user_forms__forms/refiners/type//registration//
+						target_path: zenario__user_forms/panels/zenario_user_forms__forms
+						min_path: zenario__user_forms/panels/zenario_user_forms__forms
+						max_path: zenario__user_forms/panels/zenario_user_forms__forms
+						disallow_refiners_looping_on_min_path: true
+						one_to_one_choose_phrase: Choose this form
+						select_phrase: Select a form...
+					format_onchange: true
+					validation:
+						required_if_not_hidden: Please choose a form
+					indent: 1
+				
 				initial_email_address_status:
 					label: 'Verify email address:'
 					type: radios
@@ -23,7 +49,7 @@ plugin_settings:
 						verified:
 							label: Don't verify
 					value: not_verified
-					format_onchange: Yes
+					format_onchange: true
 					side_note: >
 						Send a verification email to the user with an embedded link; use this to be sure that the email address entered can be accessed.
 				verification_email_template:
@@ -38,18 +64,19 @@ plugin_settings:
 						max_path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
 						select_phrase: Select Email Template...
-						hide_remove_button: Yes
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select an email template
 					value: zenario_extranet_registration__to_user_email_verification_en
 					side_note: >
 						Please see the module description to get a full list of merge fields which can be used in the selected email template.
+					indent: 1
 				enable_notifications_on_user_signup:
-					label: 'Notify an administrator when a user signs up:'
+					label: 'Notify an administrator when a user signs up'
 					type: checkbox
 					plugin_setting:
 						name: enable_notifications_on_user_signup
-					format_onchange: Yes
+					format_onchange: true
 					value: ""
 				user_signup_notification_email_address:
 					label: 'Email address for notifications:'
@@ -59,6 +86,7 @@ plugin_settings:
 						is_email_address: true
 					side_note: >
 						Notify these administrators of new sign-ups. Separate multiple email addresses with commas.
+					indent: 1
 				user_signup_notification_email_template:
 					label: 'Email template for notifications:'
 					plugin_setting:
@@ -71,11 +99,12 @@ plugin_settings:
 						max_path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
 						select_phrase: Select Email Template...
-						hide_remove_button: Yes
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select an email template
 					value: >
 						zenario_extranet_registration__to_admin_user_signup_notification_en
+					indent: 1
 				user_passwords:
 					label: 'User to choose password'
 					plugin_setting:
@@ -98,7 +127,7 @@ plugin_settings:
 					label: 'Registration requires terms and conditions to be accepted'
 					type: checkbox
 					value: ""
-					format_onchange: Yes
+					format_onchange: true
 					side_note: >
 						If the terms and condictions checkbox is not checked the user wll not be able to register.
 				terms_and_conditions_page:
@@ -112,18 +141,18 @@ plugin_settings:
 						max_path: zenario__content/panels/content
 						target_path: zenario__content/panels/content
 						disallow_refiners_looping_on_min_path: true
-						select_phrase: Select a content item...
+						select_phrase: select a content item...
 						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a terms and conditions page
 					side_note: >
 						A link to this page will be placed in the "Accept our terms and conditions" checkbox text.
+					indent: 1
 				use_captcha:
 					plugin_setting:
 						name: use_captcha
 					label: 'Show captcha'
 					type: checkbox
-					format_onchange: Yes
 					side_note: >
 						Require completion of a captcha to ensure we're dealing with a human.
 				
@@ -133,7 +162,7 @@ plugin_settings:
 						name: set_characteristics_on_new_users
 					label: Set a flag when creating the user/contact
 					type: checkbox
-					format_onchange: Yes
+					format_onchange: true
 					side_note: >
 						When users or contacts are created with this form, you can specify a characteristic that is set for those users.
 
@@ -145,7 +174,8 @@ plugin_settings:
 					empty_value: ' -- Select -- '
 					validation:
 						required_if_not_hidden: Please select a dataset flag.
-					format_onchange: Yes
+					format_onchange: true
+					indent: 1
 				
 				select_characteristic_values_for_new_users:
 					plugin_setting:
@@ -154,13 +184,14 @@ plugin_settings:
 					type: checkboxes
 					validation:
 						required_if_not_hidden: Please select a value for the dataset flag.
+					indent: 1
 					
 				set_timer_on_new_users:
 					plugin_setting:
 						name: set_timer_on_new_users
-					label: 'Set a timer:'
+					label: 'Set a timer'
 					type: checkbox
-					format_onchange: Yes
+					format_onchange: true
 					side_note: >
 						When users or contacts are created with this form, you can specify a timer that is set for those users.
 					
@@ -174,12 +205,13 @@ plugin_settings:
 						max_path: zenario__users/hidden_nav/timer_templates/panel
 						target_path: zenario__users/hidden_nav/timer_templates/panel
 						select_phrase: Select user timer...
-						hide_remove_button: Yes
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a user timer.
 					side_note: >
 						When users or contacts are created with this form, only timers that are open will be applied for those users.
-						
+					indent: 1
+					
 				add_user_to_group:
 					plugin_setting:
 						name: add_user_to_group
@@ -196,12 +228,13 @@ plugin_settings:
 					empty_value: ' -- Select -- '
 					validation:
 						required_if_not_hidden: Please select a group.
+					indent: 1
 				
 		user_activation:
 			label: User activation
 			fields:
 				desc:
-					full_width: Yes
+					full_width: true
 					snippet:
 						html: Using this tab, you can set up the User/Contact activation policy.
 				initial_account_status:
@@ -214,7 +247,7 @@ plugin_settings:
 							label: Contact
 						pending:
 							label: Pending
-					format_onchange: Yes
+					format_onchange: true
 					value: pending
 					side_note: >
 						Upon initial sign-up, class people as either "Contacts" or make them "Pending" as extranet users.
@@ -232,7 +265,7 @@ plugin_settings:
 							label: Leave as-is
 						check_trusted:
 							label: Set to User (Active) if from a trusted domain, otherwise leave as-is
-					format_onchange: Yes
+					format_onchange: true
 					value: active
 					side_note: >
 						When the user verifies his email address, set his status to Active (allowing him to log in), otherwise leave as Contact/Pending.
@@ -250,7 +283,8 @@ plugin_settings:
 						select_phrase: Select email template...
 					side_note: "Pick the email template to send the welcome emails to newly activated users. This setting applies only when the User's initial status is Active. Please see the module description to get a full list of merge fields which can be used."
 					value: zenario_extranet_registration__to_user_account_activation_en
-				
+					indent: 1
+					
 				trusted_email_domains:
 					plugin_setting:
 						name: trusted_email_domains
@@ -260,6 +294,7 @@ plugin_settings:
 						Enter a comma separated list of email domains, e.g., @tribiq.com,@zenario.com,@bigcompany.co.uk. Users registering
 						using an email from one of these domains will be set to active after email verification, otherwise they're left
 						as-is.
+					indent: 1
 					
 				show_welcome_page:
 					plugin_setting:
@@ -281,7 +316,7 @@ plugin_settings:
 							label: >
 								Never (redirect to requested private content item, or else to the
 								previous page viewed)
-					format_onchange: Yes
+					format_onchange: true
 				welcome_page:
 					plugin_setting:
 						name: welcome_page
@@ -293,16 +328,17 @@ plugin_settings:
 						max_path: zenario__content/panels/content
 						target_path: zenario__content/panels/content
 						disallow_refiners_looping_on_min_path: true
-						select_phrase: Select a content item...
+						select_phrase: select a content item...
 						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select a content item
+					indent: 1
 				user_activation_notification_email_enable:
 					label: Notify an administrator by email when a user is activated
 					type: checkbox
 					plugin_setting:
 						name: user_activation_notification_email_enable
-					format_onchange: Yes
+					format_onchange: true
 					side_note: >
 						You can enable email notifications here when the User
 						account status is set to active or account awaits for the
@@ -323,13 +359,14 @@ plugin_settings:
 						max_path: zenario__email_template_manager/panels/email_templates
 						target_path: zenario__email_template_manager/panels/email_templates
 						select_phrase: Select email template...
-						hide_remove_button: Yes
+						hide_remove_button: true
 					validation:
 						required_if_not_hidden: Please select an email template
 					side_note: >
 						Please see the module description to get a full list of
 						merge fields.
 					value: zenario_extranet_registration__to_admin_user_activation_notification_en
+					indent: 1
 				user_activation_notification_email_address:
 					label: "Send to:"
 					type: text
@@ -337,34 +374,36 @@ plugin_settings:
 						name: user_activation_notification_email_address
 					side_note: >
 						Enter the recipient(s) who should be notified. Multiple email addresses can be separated by commas.
+					indent: 1
 		
 		registration_codes:
 			label: Registration Codes
 			fields:
 				desc:
-					full_width: Yes
+					full_width: true
 					snippet:
 						html: >
 							Using this tab, you can set up the User registration code
 							policy.
 				enable_registration_code:
-					label: 'Enable Registration Code:'
+					label: 'Enable Registration Code'
 					type: checkbox
 					plugin_setting:
 						name: enable_registration_code
 					side_note: >
 						Check this box to enable Users to enter code on Registration
 						that may add them to a Group.
-					format_onchange: Yes
+					format_onchange: true
 				require_valid_code:
-					label: 'Require Code to be valid:'
+					label: 'Require Code to be valid'
 					type: checkbox
 					plugin_setting:
 						name: require_valid_code
 					side_note: >
 						Check this box to force the User to enter a valid code
 						before registering.
-					hidden: Yes
+					hidden: true
+					indent: 1
 		
 		text:
 			label: Text
@@ -439,7 +478,7 @@ plugin_settings:
 			label: Error messages
 			fields:
 				description:
-					full_width: Yes
+					full_width: true
 					snippet:
 						html: >
 							These settings control what the user sees if the registration or resend verification email process fails.
@@ -464,6 +503,13 @@ plugin_settings:
 					type: text
 					value: "The email address entered is associated with a contact, not an extranet user. Please contact the administrator for more assistance."
 					show_phrase_icon: true
+				email_already_registered:
+					plugin_setting:
+						name: email_already_registered
+					label: 'If email entered is used by another extranet user:'
+					type: text
+					value: 'This email address is already in use and cannot be registered again.'
+					show_phrase_icon: true
 				account_suspended_message:
 					plugin_setting:
 						name: account_suspended_message
@@ -478,4 +524,48 @@ plugin_settings:
 					type: text
 					value: "It looks like you have not yet verified your email address. If you have not received a verification email, please <a [[resend_verification_email]]>click here to have this site send you a new verification email</a>."
 					show_phrase_icon: true
-				
+				screen_name_in_use:
+					plugin_setting:
+						name: screen_name_in_use
+					label: 'If the screen name is already used:'
+					type: text
+					value: 'This Screen Name is already in use on this site. Please choose another one.'
+					show_phrase_icon: true
+				no_new_password_error_text:
+					label: 'If no new password is entered:'
+					type: text
+					value: "Please enter new password."
+					show_phrase_icon: true
+				no_new_repeat_password_error_text:
+					label: 'If no new repeat password is entered:'
+					type: text
+					value: "Please repeat your new Password."
+					show_phrase_icon: true
+				new_passwords_do_not_match:
+					plugin_setting:
+						name: new_passwords_do_not_match
+					label: 'If the new password and repeat new password fields do not match:'
+					type: text
+					value: "Your repeated Password does not match."
+					show_phrase_icon: true
+				new_password_length_message:
+					plugin_setting:
+						name: new_password_length_message
+					label: 'If new password is not over min length:'
+					type: text
+					value: "Please ensure that your new Password is at least [[min_password_length]] characters long."
+					show_phrase_icon: true
+				new_password_not_strong_enough_message:
+					plugin_setting:
+						name: new_password_not_strong_enough_message
+					label: 'If new password is not stong enough:'
+					type: text
+					value: "The new Password provided is not strong enough. Please make the password longer, or try mixing in upper and lower case letters, numbers or non-alphanumeric characters."
+					show_phrase_icon: true
+				new_password_same_as_old_message:
+					plugin_setting:
+						name: new_password_same_as_old_message
+					label: 'If new password is the same as the old password:'
+					type: text
+					value: "Your new Password is the same as your old Password."
+					show_phrase_icon: true

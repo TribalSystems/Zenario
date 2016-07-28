@@ -77,7 +77,7 @@ class zenario_location_map_and_listing extends module_base_class {
 			
 			//Load a list of countries that have locations
 			$this->data['countries'] = $this->getCountryList();
-			
+
 			$this->data['openForm'] = $this->openForm();
 			$this->data['closeForm'] = $this->closeForm();
 			
@@ -92,12 +92,13 @@ class zenario_location_map_and_listing extends module_base_class {
 			
 			//...or try a geo-ip lookup...
 			} elseif (inc('zenario_geoip_lookup')
-			 && ($countryId = zenario_geoip_lookup::getCountryISOCodeForIp(visitorIP()))
-			 && (!empty($this->data['countries'][$countryId]))) {
+				&& $this->setting('default_country_options') == 'geo_ip'
+				&& ($countryId = zenario_geoip_lookup::getCountryISOCodeForIp(visitorIP()))
+				&& (!empty($this->data['countries'][$countryId]))) {
 				$this->data['country_id'] = $countryId;
 			
 			//...or check the default option...
-			} elseif ($this->setting('default_country') && !empty($this->data['countries'][$this->setting('default_country')])) {
+			} elseif($this->setting('default_country_options') == 'select_country' && $this->setting('default_country') && !empty($this->data['countries'][$this->setting('default_country')])){
 				$this->data['country_id'] = $this->setting('default_country');
 			
 			//...otherwise pick the first in the list
@@ -204,8 +205,25 @@ class zenario_location_map_and_listing extends module_base_class {
 			$row['listingClick'] = "
 				zenario_location_map_and_listing.listingClick(this, ". (int) $row['id']. ");";
 			
+			$row['map_image'] = self::getStickyImage($row['id'],"map");
+			$row['list_image'] = self::getStickyImage($row['id'],"list");
+			
+			$row['descriptive_page'] = false;
+			if($row['equiv_id'] && $row['content_type']){
+				$cID = $row['equiv_id'];
+				$cType = $row['content_type'];
+				langEquivalentItem($cID, $cType);
+				
+				if(checkPriv() || isPublished($cID, $cType)){
+					$row['descriptive_page'] = linkToItem($cID, $cType, false);
+				}
+			}
+			
+			
 			$this->data['locations'][] = $row;
 		}
+		$this->data['button_label'] =  $this->phrase($this->setting('button_label'));
+		
 		
 		// Filter locations by distance to postcode
 		$lat = $lng = $label = $error = false;
@@ -385,7 +403,7 @@ class zenario_location_map_and_listing extends module_base_class {
 					}
 				</style>
 				
-				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>';
+				<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key')) . '"></script>';
 			
 			//Add icons so the JavaScript code can look up the background image from them
 			$cssClasses = array();
@@ -434,9 +452,105 @@ class zenario_location_map_and_listing extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
+				
+				if($values['image/show_images']){
+					$fields['image/map_view_thumbnail_canvas']['hidden'] = false;
+					$fields['image/list_view_thumbnail_canvas']['hidden'] = false;
+					
+					//Map image
+					switch($values['image/map_view_thumbnail_canvas']){
+						case 'unlimited':
+							$fields['image/map_view_thumbnail_width']['hidden'] = true;
+							$fields['image/map_view_thumbnail_height']['hidden'] = true;
+							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_width':
+							$fields['image/map_view_thumbnail_width']['hidden'] = false;
+							$fields['image/map_view_thumbnail_height']['hidden'] = true;
+							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_height':
+							$fields['image/map_view_thumbnail_width']['hidden'] = true;
+							$fields['image/map_view_thumbnail_height']['hidden'] = false;
+							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_width_and_height':
+							$fields['image/map_view_thumbnail_width']['hidden'] = false;
+							$fields['image/map_view_thumbnail_height']['hidden'] = false;
+							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'resize_and_crop':
+							$fields['image/map_view_thumbnail_width']['hidden'] = false;
+							$fields['image/map_view_thumbnail_height']['hidden'] = false;
+							$fields['image/map_view_thumbnail_offset']['hidden'] = false;
+							break;
+					}
+				
+					//List Image
+					switch($values['image/list_view_thumbnail_canvas']){
+						case 'unlimited':
+							$fields['image/list_view_thumbnail_width']['hidden'] = true;
+							$fields['image/list_view_thumbnail_height']['hidden'] = true;
+							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_width':
+							$fields['image/list_view_thumbnail_width']['hidden'] = false;
+							$fields['image/list_view_thumbnail_height']['hidden'] = true;
+							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_height':
+							$fields['image/list_view_thumbnail_width']['hidden'] = true;
+							$fields['image/list_view_thumbnail_height']['hidden'] = false;
+							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'fixed_width_and_height':
+							$fields['image/list_view_thumbnail_width']['hidden'] = false;
+							$fields['image/list_view_thumbnail_height']['hidden'] = false;
+							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+							break;
+						case 'resize_and_crop':
+							$fields['image/list_view_thumbnail_width']['hidden'] = false;
+							$fields['image/list_view_thumbnail_height']['hidden'] = false;
+							$fields['image/list_view_thumbnail_offset']['hidden'] = false;
+							break;
+					}
+				}else{
+				
+					$fields['image/map_view_thumbnail_canvas']['hidden'] = true;
+					$fields['image/map_view_thumbnail_width']['hidden'] = true;
+					$fields['image/map_view_thumbnail_height']['hidden'] = true;
+					$fields['image/map_view_thumbnail_offset']['hidden'] = true;
+				
+					$fields['image/list_view_thumbnail_canvas']['hidden'] = true;
+					$fields['image/list_view_thumbnail_width']['hidden'] = true;
+					$fields['image/list_view_thumbnail_height']['hidden'] = true;
+					$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+				}
 				break;
 		}
 	}
-
+	
+	public function getStickyImage($locationId, $mode){
+		if(is_numeric($locationId) && $mode){
+			if($this->setting('show_images')){
+				$imageId = getRow(ZENARIO_LOCATION_MANAGER_PREFIX. 'location_images','image_id',array('sticky_flag' => '1', 'location_id' => $locationId));
+				$url = $width = $height = false;
+				if($mode == "map"){
+					$widthImage = $this->setting('map_view_thumbnail_width'); 
+					$heightImage = $this->setting('map_view_thumbnail_height');
+					$canvas = $this->setting('map_view_thumbnail_canvas'); 
+					$offset = $this->setting('map_view_thumbnail_offset');
+				}else{
+					$widthImage = $this->setting('list_view_thumbnail_width'); 
+					$heightImage = $this->setting('list_view_thumbnail_height');
+					$canvas = $this->setting('list_view_thumbnail_canvas'); 
+					$offset = $this->setting('list_view_thumbnail_offset');
+				}
+				imageLink($width, $height, $url, $imageId,$widthImage,$heightImage,$canvas,$offset);
+				return $url;
+			}
+		}
+		return false;
+	}
 
 }

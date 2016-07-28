@@ -66,7 +66,7 @@ class zenario_extranet_profile_edit extends zenario_user_forms {
 				$errors = zenario_user_forms::validateUserForm($userFormId, $data);
 				
 				if (empty($errors)) {
-					$redirect = zenario_user_forms::saveUserForm($userFormId, $data, userId());
+					zenario_user_forms::saveUserForm($userFormId, $data, $redirect, userId());
 					if ($redirect) {
 						$this->headerRedirect($redirect);
 					}

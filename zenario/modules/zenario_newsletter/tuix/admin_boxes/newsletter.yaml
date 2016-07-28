@@ -105,6 +105,7 @@ zenario_newsletter:
                     style: |
                         height: 20em;
                     type: editor
+                    dont_trim: true
                     editor_options:
                         toolbar: 'undo redo | image link unlink | bold italic | removeformat | fontsizeselect | formatselect | alignleft aligncenter alignright alignjustify | numlist bullist | outdent indent | code fullscreen'
                         convert_urls: false
@@ -268,6 +269,7 @@ zenario_newsletter:
                 head:
                     label: 'HTML in head of email:'
                     type: code_editor
+                    dont_trim: true
                     language: html
                     style: >
                         width: 98%;

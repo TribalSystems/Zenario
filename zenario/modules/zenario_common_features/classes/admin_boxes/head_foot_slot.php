@@ -102,6 +102,8 @@ class zenario_common_features__admin_boxes__head_foot_slot extends module_base_c
 		}
 		
 		if ($box['key']['mode'] == 'head') {
+			unset($fields['slot/html']['note_below']);
+			
 			if ($box['key']['level'] == 'item') {
 				$box['title'] = adminPhrase('HTML in the head of page for the content item "[[tag]]", version [[version]]', array('tag' => $formatTag, 'version' => $box['key']['cVersion']));
 			} elseif ($box['key']['level'] == 'layout') {

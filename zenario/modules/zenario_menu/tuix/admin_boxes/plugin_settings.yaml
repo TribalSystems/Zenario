@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_menu
     tabs:
         first_tab:
             label: Menu display
@@ -100,7 +101,7 @@ plugin_settings:
                 menu_show_all_branches:
                     plugin_setting:
                         name: menu_show_all_branches
-                    label: 'Generate distant branches:'
+                    label: 'Generate distant branches'
                     type: checkbox
                     value: "1"
                     side_note: >
@@ -108,28 +109,20 @@ plugin_settings:
                 show_missing_menu_nodes:
                     plugin_setting:
                         name: show_missing_menu_nodes
-                    label: 'Show missing menu nodes:'
+                    label: 'Show missing menu nodes'
                     type: checkbox
                     value: ""
                 hide_if_current_item_not_in_menu:
                     plugin_setting:
                         name: hide_if_current_item_not_in_menu
-                    label: 'Hide menu on orphans:'
+                    label: 'Hide menu on orphans'
                     type: checkbox
                     side_note: >
                         Hide the entire menu when the current content item is not in the menu hierarchy.
-                menu_show_admin_add_button:
-                    plugin_setting:
-                        name: menu_show_admin_add_button
-                    label: 'Show admin button:'
-                    type: checkbox
-                    value: "1"
-                    side_note: >
-                        In admin mode on the Menu tab, show quick-create buttons on the menu to allow rapid addition of content.
                 reverse_order:
                     plugin_setting:
                         name: reverse_order
-                    label: 'Reverse order:'
+                    label: 'Reverse order'
                     type: checkbox
                     value: ""
                     side_note: >
@@ -142,19 +135,3 @@ plugin_settings:
                     value: ""
                     side_note: >
                         Menu nodes flagged as "invisible" are normally not displayed; check here to show invisible menu nodes anyway.
-        author_advice:
-            visible_if: '!zenarioAB.tuix.key.isVersionControlled && !zenarioAB.tuix.key.nest'
-            label: Author advice
-            fields:
-                author_advice:
-                    plugin_setting:
-                        name: author_advice
-                    label: 'Author advice:'
-                    type: textarea
-                    rows: "4"
-                    cols: "60"
-                    style: 'width: auto;'
-                    side_note: >
-                        Enter advice that you would like to give to Authors. This
-                        will appear while in Edit Mode.
-    module_class_name: zenario_menu

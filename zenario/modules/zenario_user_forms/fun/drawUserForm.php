@@ -266,11 +266,7 @@ foreach ($formFields as $fieldId => $field) {
 		case 'checkboxes':
 			
 			// Get list of values
-			if ($userFieldId) {
-				$valuesList = getDatasetFieldLOV($userFieldId);
-			} else {
-				$valuesList = self::getUnlinkedFieldLOV($fieldId);
-			}
+			$valuesList = self::getFormFieldLOV($field, $type);
 			
 			$html .= '<div class="checkboxes_wrap';
 			if ($checkboxColumns > 1) {
@@ -352,13 +348,8 @@ foreach ($formFields as $fieldId => $field) {
 			
 			break;
 		case 'radios':
-			
 			// Get list of values
-			if ($userFieldId) {
-				$valuesList = getDatasetFieldLOV($userFieldId);
-			} else {
-				$valuesList = self::getUnlinkedFieldLOV($fieldId);
-			}
+			$valuesList = self::getFormFieldLOV($field, $type);
 			
 			foreach ($valuesList as $valueId => $label) {
 				
@@ -389,13 +380,11 @@ foreach ($formFields as $fieldId => $field) {
 			
 			break;
 		case 'centralised_radios':
-			
 			// Get list of values
+			$values = self::getFormFieldLOV($field, $type);
 			if ($userFieldId) {
-				$values = getDatasetFieldLOV($userFieldId);
 				$valuesSource = $field['dataset_values_source'];
 			} else {
-				$values = self::getUnlinkedFieldLOV($fieldId);
 				$valuesSource = $field['values_source'];
 			}
 			
@@ -438,13 +427,11 @@ foreach ($formFields as $fieldId => $field) {
 			
 			break;
 		case 'select':
-			
 			// Get list of values
+			$valuesList = self::getFormFieldLOV($field, $type);
 			if ($userFieldId) {
-				$valuesList = getDatasetFieldLOV($userFieldId);
 				$valuesSource = $field['dataset_values_source'];
 			} else {
-				$valuesList = self::getUnlinkedFieldLOV($fieldId);
 				$valuesSource = $field['values_source'];
 			}
 			
@@ -483,7 +470,6 @@ foreach ($formFields as $fieldId => $field) {
 			
 			break;
 		case 'centralised_select':
-			
 			// Filter this list if a source field has been changed
 			$filtered = false;
 			if (post('filter_list') && post('filter_list_id') && post('filter_list_value')) {
@@ -566,6 +552,42 @@ foreach ($formFields as $fieldId => $field) {
 			break;
 		case 'url':
 		case 'text':
+			$autocompleteHTML = '';
+			$resetValue = false;
+			if ($field['autocomplete']) {
+				$autocompleteList = array();
+				if ($field['autocomplete_class_name'] && $field['autocomplete_method_name']) {
+					if (inc($field['autocomplete_class_name'])) {
+						$autocompleteList = call_user_func(array($field['autocomplete_class_name'], $field['autocomplete_method_name']), $field['autocomplete_param_1'], $field['autocomplete_param_2']);
+					}
+				} elseif ($field['values_source']) {
+					$filterValue = false;
+					if (post('filter_list') && post('filter_list_id') && post('filter_list_value')) {
+						$sourceField = getRow(
+							ZENARIO_USER_FORMS_PREFIX . 'form_field_update_link', 
+							'source_field_id',
+							array('target_field_id' => $field['form_field_id'])
+						);
+						if ($sourceField && ($sourceField == post('filter_list_id'))) {
+							$filterValue = post('filter_list_value');
+						}
+					}
+					$autocompleteList = getCentralisedListValues($field['values_source'], $filterValue);
+				}
+				$autocompleteHTML .= '<div class="autocomplete_json" data-id="' . $fieldId . '" style="display:none;">' . json_encode($autocompleteList) . '</div>';
+				$autoValue = '';
+				
+				if (isset($data[$fieldName . '_auto'])) {
+					$autoValue = $data[$fieldName . '_auto'];
+				}
+				if (!isset($autocompleteList[$autoValue])) {
+					$resetValue = true;
+					$autoValue = '';
+				}
+				$autocompleteHTML .= '<input type="hidden" name="' . htmlspecialchars($fieldName . '_auto')  . '" value="' . $autoValue . '"/>';
+			}
+			
+			
 			$type = 'text';
 			if ($field['field_validation'] == 'email') {
 				$type = 'email';
@@ -582,6 +604,9 @@ foreach ($formFields as $fieldId => $field) {
 			}
 			
 			if ($fieldValue !== false) {
+				if ($resetValue) {
+					$fieldValue = '';
+				}
 				$html .= ' value="'. htmlspecialchars($fieldValue). '"';
 			}
 			if (isset($field['placeholder']) && $field['placeholder'] !== '' && $field['placeholder'] !== null) {
@@ -604,7 +629,7 @@ foreach ($formFields as $fieldId => $field) {
 					break;
 			}
 			$html .= ' maxlength="' . $maxlength . '" />';
-			
+			$html .= $autocompleteHTML;
 			break;
 		case 'textarea':
 			
@@ -740,7 +765,7 @@ foreach ($formFields as $fieldId => $field) {
 			break;
 		
 		case 'section_description':
-			$html .= '<div class="description"><p>' . htmlspecialchars($field['description']) . '</p></div>';
+			$html .= '<div class="description"><p>' . nl2br(self::formPhrase($field['description'], array(), $translate)) . '</p></div>';
 			break;
 	}
 	

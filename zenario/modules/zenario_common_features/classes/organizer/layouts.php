@@ -55,6 +55,9 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 			unset($panel['columns']['archived']['title']);
 			$panel['no_items_message'] = adminPhrase('There are no active Layouts for this Content Type.');
 		
+		} elseif ($mode == 'typeahead_search') {
+			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement__typeahead_search'];
+		
 		} elseif ($refinerName || in($mode, 'get_item_name', 'get_item_links')) {
 			unset($panel['trash']);
 			
@@ -80,7 +83,7 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__layouts/panels/layouts') return;
 		
-		if (!class_exists('zenario_grid_maker')) require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
+		require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
 		
 		$panel['key']['disableItemLayer'] = true;
 		

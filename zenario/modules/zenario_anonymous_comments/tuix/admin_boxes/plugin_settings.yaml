@@ -135,7 +135,7 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No email template selected
                         hide_remove_button: true
                     validation:
@@ -164,11 +164,11 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose Email template
-                        select_phrase: Select an Email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No Email template selected
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_awaiting_approval
                     note_below: _insert_email_template_note_here_
                 email_address_for_reports:
@@ -236,11 +236,11 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose Email template
-                        select_phrase: Select an Email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No Email template selected
                         hide_remove_button: true
                     validation:
-                        required_if_not_hidden: Please select an Email template.
+                        required_if_not_hidden: Please select an email template.
                     value: zenario_comments__to_admin_comment_notification_en
                     note_below: _insert_email_template_note_here_
     module_class_name: zenario_anonymous_comments

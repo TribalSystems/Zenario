@@ -2,9 +2,8 @@ zenario_enable_site:
     priv: _PRIV_EDIT_SITE_SETTING
     key: 
         id: ""
-    #max_height: 400
     hide_tab_bar: true
-    title: Enable or disable your site
+    title: Site status
     tabs: 
         site: 
             edit_mode: 
@@ -15,55 +14,49 @@ zenario_enable_site:
             notices: 
                 checked: 
                     type: success
-                    message: Checked for changes.
+                    message: Cache cleared; checked for changes.
                     show: false
             fields: 
                 desc:
                     snippet:
                         html: |
-                            Use this screen to enable or disable your site,
-                            and to put your site in development or production mode.
-                
+                            Use this screen to set the running status of the site.
                 enable_site_production: 
                     type: radio
                     name: radio
                     redraw_onchange: true
                     label: |
-                        Site enabled and in production mode.
+                        Site enabled; production mode
                     note_below: |
-                        When designers and developers have finished working on a site they should enable production mode.
-                
+                        Maximum speed through use of the cache. If developers make changes to .css and .yaml files, changes may not be seen until the button below is clicked.
                 enable_site_development: 
                     type: radio
                     name: radio
                     redraw_onchange: true
                     label: |
-                        Site enabled and in development mode.
+                        Site enabled; development mode
                     note_below: |
-                        Designers and developers should enable development mode when they are working on a site.
-
+                        For designers and developers. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
                 disable_site: 
                     type: radio
                     name: radio
                     format_onchange: true
                     label: |
-                        Site disabled and in development mode.
+                        Site disabled; development mode
                     note_below: |
-                        When your site is disabled, it can only be seen by administrators who are logged in.
-                
+                        Site not available to visitors, only available via admin mode. Site will run more slowly in admin mode because Zenario will check for changes in .css and .yaml files on each page load.
                 disabled_snippet:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('disable_site')
                     snippet:
                         html: >
-                            Visitors will be unable to access your site,
-                            and will see the following message:
+                            Zenario will display a holding page, as follows.
                 site_disabled_title:
                     indent: 1
                     visible_if: |
                         zenarioAB.value('disable_site')
-                    label: "Browser Title:"
+                    label: "Browser title:"
                     type: text
                 site_disabled_message:
                     indent: 1
@@ -71,46 +64,30 @@ zenario_enable_site:
                         zenarioAB.value('disable_site')
                     label: "Message:"
                     type: editor
+                    dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false
                     rows: 4
                     cols: 80
-                
-                desc2:
-                    snippet:
-                        html: >
-                            <p>
-                                In development mode,
-                                every time an administrator accesses a page on your site,
-                                Zenario will check:
-                            </p>
-                            <ul>
-                                <li><code>.css</code> files in skins</li>
-                                <li><code>.yaml</code> files in modules</li>
-                            </ul>
-                            <p>
-                                for changes or new files.
-                                This ensures that new <code>.css</code> and <code>.yaml</code> files
-                                are always included and prevents out of date files being cached,
-                                but may slow down your site in admin mode.
-                            </p>
                 desc3:
                     snippet:
                         html: >
                             <p>
-                                In production mode Zenario will <strong>not</strong> check
-                                when a <code>.css</code> or a <code>.yaml</code> file is created or modified.
-                                
-                                Your site will run faster, but when
-                                <code>.css</code> and <code>.yaml</code> files are edited or added,
-                                Zenario will not normally see the changes until the &ldquo;Check for changes&rdquo;
-                                button is pressed.
+                                Click the following button to clear cache and check for changes. This should only be needed in production mode.
                             </p>
                 
-                force_scan:
+                clear_cache:
                     indent: 1
                     type: submit
-                    value: Check for changes now
+                    value: 'Clear cache and check for changes'
                     class: submit_selected
                     format_onchange: true
+                    note_below: |
+                        <p>This button will:</p>
+                        <ul>
+                            <li>remove cached web pages, cached plugins, skin <code>.css</code> files, plugin <code>.js</code> and <code>.yaml</code> files from the server's <code>cache/</code> directory</li>
+                            <li>clear visitors' browsers' caches, on next load</li>
+                            <li>clear a reverse proxy cache, if used, on next load</li>
+                            <li>clear Organizer's cached data</li>
+                        </ul>

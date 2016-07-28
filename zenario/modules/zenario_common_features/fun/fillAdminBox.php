@@ -452,7 +452,8 @@ switch ($path) {
 			$box['title'] = adminPhrase('Editing metadata for document "[[filename]]".', array("filename"=>$documentName));
 			
 			$fields['details/document_title']['value'] = $documentDetails['title'];
-			$fields['details/document_name']['value'] = $documentName;
+			$fields['details/document_extension']['value'] = pathinfo($documentName, PATHINFO_EXTENSION);
+			$fields['details/document_name']['value'] = pathinfo($documentName, PATHINFO_FILENAME);
 			$fileDatetime=getRow('documents', 'file_datetime', array('type' => 'file','id' => $document_id));
 			$fields['details/date_uploaded']['value'] = date('jS F Y H:i', strtotime($fileDatetime));
 			

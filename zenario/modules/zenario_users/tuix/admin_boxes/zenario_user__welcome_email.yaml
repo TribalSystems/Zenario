@@ -15,13 +15,13 @@ zenario_user__welcome_email:
                     ord: 1
                     full_width: 1
                     snippet:
-                        html: "You are about to send a welcome email the user."
+                        html: "You are about to send a welcome email the selected user."
                     hidden: false
                 non_plain_text_info:
                     ord: 1.1
                     full_width: 1
                     snippet:
-                        html: "You are about to send a welcome email the user. <br> <br>As this site is configured to store only encrypted passwords for users, you will not be able to send the user a reminder of their existing password."
+                        html: "You are about to send a welcome email the user. <br> <br>As this site is configured to store only encrypted passwords for users (not plain text), the user's password will not be shown."
                     hidden: false
                 email: 
                     type: text
@@ -43,9 +43,9 @@ zenario_user__welcome_email:
                 include_password :
                     label: "Include password in welcome email"
                     type: checkbox
-                    side_note: 'If not checked then "********* (not shown)" will be sent in the welcome in the welocome email.'
+                    side_note: 'Check this to include the password; otherwise the password will be replace with asterisks.'
                 email_to_send:
-                    label: 'Email Template:'
+                    label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
                         min_path: zenario__email_template_manager/panels/email_templates
@@ -54,7 +54,7 @@ zenario_user__welcome_email:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required_if_not_hidden: Please select an Email Template
+                        required_if_not_hidden: Please select an email template
                     side_note: >
-                        An email based on the selected Email Template will be sent
-                        to the User.
+                        An email based on the selected email template will be sent
+                        to the user.

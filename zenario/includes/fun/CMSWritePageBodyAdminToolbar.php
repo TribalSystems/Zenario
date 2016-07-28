@@ -40,7 +40,7 @@ if (request('zenario_sk_return')) {
 
 
 //Get the HTML code from the microtemplates to get the basic HTML structure of the Admin Toolbar roughly right.
-$toolbarTempHTML = file_get_contents(moduleDir('zenario_common_features', 'js/microtemplates/zenario_toolbar.html'));
+$toolbarTempHTML = file_get_contents(moduleDir('zenario_common_features', 'admin_microtemplates/zenario_toolbar.html'));
 
 //Add in the merge fields above
 $searches = array();

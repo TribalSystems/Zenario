@@ -34,13 +34,25 @@ function addUserToGroup($userId, $groupId, $remove = false) {
 }
 
 //Check for permission to see a content item
+cms_core::$whitelist[] = 'checkPerm';
 //	function checkPerm($cID, $cType, $cVersion = false) {}
 
 //Check is a user is in a certain extranet group
+cms_core::$whitelist[] = 'checkUserInGroup';
 //	function checkUserInGroup($groupId, $userId = 'session') {}
 
-//Gets an array of ids => names of the groups that an user belongs to. 
+//Deprecated, please don't call
 //	function getUserGroups( $userId ) {}
+
+//Get details on the groups that a user is in
+cms_core::$whitelist[] = 'userGroups';
+function userGroups($userId = -1) {
+	if ($userId === -1) {
+		$userId = session('extranetUserID');
+	}
+	
+	return getUserGroups($userId, false);
+}
 
 //Attempt to automatically log a User in if the cookie is set on the User's Machine
 function logUserInAutomatically() {
@@ -114,6 +126,7 @@ function logUserOut() {
 	$_SESSION['FORGET_EXTRANET_LOG_ME_IN_COOKIE'] = true;
 }
 
+cms_core::$whitelist[] = 'userEmail';
 function userEmail($userId = 'session') {
 	if ($userId === 'session') {
 		$userId = session('extranetUserID');
@@ -130,6 +143,7 @@ function userId() {
 	return session('extranetUserID');
 }
 
+cms_core::$whitelist[] = 'userScreenName';
 function userScreenName($userId = 'session') {
 	if ($userId === 'session') {
 		$userId = session('extranetUserID');
@@ -142,6 +156,7 @@ function userScreenName($userId = 'session') {
 	}
 }
 
+cms_core::$whitelist[] = 'userUsername';
 function userUsername($userId = 'session') {
 	if ($userId === 'session') {
 		$userId = session('extranetUserID');
@@ -154,7 +169,44 @@ function userUsername($userId = 'session') {
 	}
 }
 
-//	function visitorIP()
+cms_core::$whitelist[] = 'visitorIP';
+//	function visitorIP() {}
+
+
+
+
+cms_core::$whitelist[] = 'userFieldDisplayValue';
+function userFieldDisplayValue($cfield, $userId = -1, $returnCSV = true) {
+	if ($userId === -1) {
+		$userId = session('extranetUserID');
+	}
+	return datasetFieldValue('users', $cfield, $userId, $returnCSV, true);
+}
+
+cms_core::$whitelist[] = 'userFieldValue';
+function userFieldValue($cfield, $userId = -1, $returnCSV = true) {
+	if ($userId === -1) {
+		$userId = session('extranetUserID');
+	}
+	return datasetFieldValue('users', $cfield, $userId, $returnCSV, false);
+}
+
+cms_core::$whitelist[] = 'datasetFieldDisplayValue';
+function datasetFieldDisplayValue($dataset, $cfield, $recordId, $returnCSV = true) {
+	return datasetFieldValue($dataset, $cfield, $recordId, $returnCSV, true);
+}
+
+cms_core::$whitelist[] = 'datasetFieldValue';
+//	function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true) {}
+
+
+//Deprecated old name!
+function getDatasetFieldValue($recordId, $cfield, $dataset = false) {
+	return datasetFieldValue($dataset, $cfield, $recordId, true);
+}
+
+
+
 
 
 
@@ -197,6 +249,7 @@ function countSmartGroupMembers($smartGroupId) {
 	return $row[0];
 }
 
+cms_core::$whitelist[] = 'checkUserIsInSmartGroup';
 function checkUserIsInSmartGroup($smartGroupId, $userId = -1) {
 	
 	if ($userId === -1) {
@@ -562,11 +615,18 @@ function getUserIdentifier($userId) {
 	return getRow('users', 'identifier', $userId);
 }
 
-function getUserFirstNameSpaceLastName($userId) {
+cms_core::$whitelist[] = 'userFirstAndLastName';
+function userFirstAndLastName($userId = -1) {
+	if ($userId === -1) {
+		$userId = session('extranetUserID');
+	}
 	if ($row = getRow('users', array('first_name', 'last_name'), $userId)) {
 		return $row['first_name']. ' '. $row['last_name'];
 	}
 	return null;
+}
+function getUserFirstNameSpaceLastName($userId) {
+	return userFirstAndLastName($userId);
 }
 
 function getUserIdFromScreenName($screenName) {
@@ -655,7 +715,7 @@ function deleteUser($userId) {
 		deleteRow('custom_dataset_values_link', array('dataset_id' => $dataset['id'], 'linking_id' => $userId));
 	}
 	
-	if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+	require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 	deleteUnusedImagesByUsage('user');
 }
 

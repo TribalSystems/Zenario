@@ -86,10 +86,11 @@ class zenario_users__admin_boxes__user__details extends module_base_class {
 			$fields['details/status']['read_only'] = true;
 			$fields['details/status']['values'] = array($user['status'] => $fields['details/status']['values'][$user['status']]);
 			
+			$values['dates/ip'] = $user['ip'];
+			$values['dates/last_login'] = $user['last_login'];
 			$values['dates/created_date'] = $user['created_date'];
 			$values['dates/modified_date'] = $user['modified_date'];
-			$values['dates/suspended_date'] = $user['suspended_date'];
-			
+			$values['dates/last_profile_update_in_frontend'] = $user['last_profile_update_in_frontend'];
 			
 			$box['title'] = adminPhrase('Editing the user "[[identifier]]"', $user);
 			

@@ -64,11 +64,8 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 			ORDER BY it.name";
 		$result = sqlSelect($sql);
 		
-		$tagNames = array();
 		$pickedTagNames = array();
 		while ($tag = sqlFetchAssoc($result)) {
-			$tagNames[$tag['name']] = $tag['name'];
-			
 			if ($tag['tag_id']) {
 				$pickedTagNames[] = $tag['name'];
 			}
@@ -77,9 +74,6 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 		
 		$box['tabs']['details']['fields']['tags']['value'] = implode(',', $pickedTagNames);
 		$box['tabs']['details']['fields']['tags']['tag_colors'] = getImageTagColours($byId = false, $byName = true);
-		
-		$box['tabs']['details']['fields']['tags']['values'] =
-		$box['tabs']['details']['fields']['new_tag']['values'] = $tagNames;
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
@@ -91,8 +85,8 @@ class zenario_common_features__admin_boxes__image extends module_base_class {
 			$box['tabs']['details']['errors'][] = adminPhrase("You must not change the file's extension.");
 		}
 		
-		//Catch the case where someone adds text into the "add tag" box but presses "Save" by mistake instead of "Add"
 		$tags = explodeAndTrim($values['details/tags']);
+			//Catch the case where someone adds text into the "add tag" box but presses "Save" by mistake instead of "Add"
 			if ($saving
 			 && $values['details/new_tag']
 			 && !in_array($values['details/new_tag'], $tags)) {

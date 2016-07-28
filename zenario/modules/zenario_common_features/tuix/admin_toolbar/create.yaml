@@ -1,0 +1,7 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+sections:
+    create:
+        buttons:
+            dummy_button:
+                hidden: true

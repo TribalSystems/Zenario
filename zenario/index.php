@@ -73,10 +73,10 @@ require editionInclude('index.pre_load');
 
 define('CHECK_IF_MAJOR_REVISION_IS_NEEDED', true);
 require CMS_ROOT. 'zenario/visitorheader.inc.php';
-zenarioInitialiseTwig();
+require CMS_ROOT. 'zenario/includes/twig.inc.php';
 
 
-if (checkPriv()) {
+if ($checkPriv = checkPriv()) {
 	require CMS_ROOT. 'zenario/adminheader.inc.php';
 	checkForChangesInCssJsAndHtmlFiles();
 	
@@ -94,7 +94,7 @@ if (checkPriv()) {
 $cID = $cType = $content = $version = $redirectNeeded = $aliasInURL = false;
 resolveContentItemFromRequest($cID, $cType, $redirectNeeded, $aliasInURL);
 
-if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && checkPriv())) {
+if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $checkPriv)) {
 	
 	//When fixing the language code in the URL, make sure we redirect using the full path
 	//as the language code might be in the domain/subdomain.
@@ -180,20 +180,33 @@ $hideLayout = false;
 $specificSlot = false;
 $specificInstance = false;
 $overrideSettings = false;
+$overrideFrameworkAndCSS = false;
 
 if (!empty($_REQUEST['method_call'])
  && ($_REQUEST['method_call'] == 'showSingleSlot' || $_REQUEST['method_call'] == 'showIframe')
  && (request('instanceId') || request('slotName'))) {
-	$specificSlot = request('slotName');
+	
 	$specificInstance = request('instanceId');
-	$hideLayout = $specificSlot && request('hideLayout');
-	$fakeLayout = $specificSlot && request('fakeLayout');
+	if ($specificSlot = request('slotName')) {
+		if (!$hideLayout = (bool) request('hideLayout')) {
+			$fakeLayout = (bool) request('fakeLayout');
+		}
+	}
 	
 	if ($fakeLayout
-	 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT'))
-	 && !empty($_REQUEST['overrideSettings'])) {
+	 && !empty($_REQUEST['overrideSettings'])
+	 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT'))) {
 		$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
 	}
+	
+	if ($fakeLayout
+	 && !empty($_REQUEST['overrideFrameworkAndCSS'])
+	 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT') || checkPriv('_PRIV_EDIT_CSS'))) {
+		$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
+	}
+
+} elseif (!empty($_REQUEST['overrideFrameworkAndCSS']) && checkPriv('_PRIV_EDIT_CSS')) {
+	$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
 }
 
 getSlotContents(
@@ -201,7 +214,7 @@ getSlotContents(
 	cms_core::$cID, cms_core::$cType, cms_core::$cVersion,
 	cms_core::$layoutId, cms_core::$templateFamily, cms_core::$templateFileBaseName,
 	$specificInstance, $specificSlot,
-	false, true, false, $overrideSettings);
+	false, true, false, $overrideSettings, $overrideFrameworkAndCSS);
 useGZIP(setting('compress_web_pages'));
 
 //Run post-display actions
@@ -221,14 +234,29 @@ if ($validDestURL = !$specialPage || $specialPage == 'zenario_home') {
 
 
 
-
 echo 
 '<!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $_SESSION["user_lang"], '" lang="', $_SESSION["user_lang"], '">
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 <title>', htmlspecialchars(cms_core::$pageTitle), '</title>
-<link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>';
+<link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>
+<meta property="og:url" content="', htmlspecialchars($canonicalURL), '"/>
+<meta property="og:type" content="', htmlspecialchars(cms_core::$pageOGType), '"/>
+<meta property="og:title" content="', htmlspecialchars(cms_core::$pageTitle), '"/>';
+
+$imageWidth = $imageHeight = $imageURL = false;
+if (cms_core::$pageImage && imageLink($imageWidth, $imageHeight, $imageURL, cms_core::$pageImage)) {
+	echo '
+<meta property="og:image" content="', htmlspecialchars(absCMSDirURL().$imageURL), '"/>';
+}
+
+echo '
+<meta property="og:description" content="', htmlspecialchars(cms_core::$pageDesc), '"/>
+<meta name="description" content="', htmlspecialchars(cms_core::$pageDesc), '" />
+<meta name="generator" content="Zenario ', getCMSVersionNumber(), '" />
+<meta name="keywords" content="', htmlspecialchars(cms_core::$pageKeywords), '" />';
+
 
 //If we were to include a <base> tag, this would be a more reliable way of handling relative URLs
 //on pages with slashes in their alias. However using the <base> tag will break links to #anchors that
@@ -268,13 +296,7 @@ if (getNumLanguages() > 1) {
 	}
 }
 
-echo
-'
-<meta name="description" content="', htmlspecialchars(cms_core::$description), '" />
-<meta name="keywords" content="', htmlspecialchars(cms_core::$keywords), '" />
-<meta name="generator" content="Zenario ', getCMSVersionNumber(), '" />';
-
-CMSWritePageHead('zenario/');
+CMSWritePageHead('zenario/', false, true, $overrideFrameworkAndCSS);
 echo "\n", setting('sitewide_head'), "\n</head>";
 
 
@@ -325,13 +347,22 @@ $skinDiv .= '">';
 //Functionality for only showing one Plugin in a slot
 if ($specificInstance || $specificSlot) {
 	
+	//Just show the plugin, without any of the <div>s from the layout around it
+	if ($hideLayout) {
+		CMSWritePageBody('zenario_showing_plugin_without_layout', '', true);
+		slot($specificSlot, 'grid');
+	
 	//Try and "fake" the grid, to get as many styles from the Skin as possible,
 	//while still showing the plugin on its own taking up the full width
-	if ($fakeLayout && $specificSlot) {
-		CMSWritePageBody('', false, $showPreview = 'plugin');
-		
-		echo '
-			<link rel="stylesheet" type="text/css" href="', htmlspecialchars(absCMSDirURL()), 'zenario/styles/admin_plugin_preview.min.css">';
+	} else {
+		if ($fakeLayout) {
+			echo '
+				<link rel="stylesheet" type="text/css" href="', htmlspecialchars(absCMSDirURL()), 'zenario/styles/admin_plugin_preview.min.css">';
+			
+			CMSWritePageBody('zenario_showing_plugin_preview', '', true);
+		} else {
+			CMSWritePageBody('zenario_showing_standalone_plugin', '', true);
+		}
 		
 		echo $skinDiv, $templateDiv, $contentItemDiv, '
 			<div class="container ', empty($_GET['grid_container'])? '' : 'container_'. (int) $_GET['grid_container'], '">
@@ -348,19 +379,6 @@ if ($specificInstance || $specificSlot) {
 				</div>
 			</div>
 		</div></div></div>';
-	
-	//Just show the plugin, without any of the <div>s from the layout around it
-	} elseif ($hideLayout && $specificSlot) {
-		CMSWritePageBody('', false);
-		slot($specificSlot, 'grid');
-	
-	//Just show the plugin and the layout normally, but with all other plugins hidden
-	} else {
-		CMSWritePageBody('', false);
-		
-		echo $skinDiv, $templateDiv, $contentItemDiv;
-			require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;
-		echo "\n", '</div></div></div>';
 	}
 	
 	
@@ -371,26 +389,37 @@ if ($specificInstance || $specificSlot) {
 	
 	CMSWritePageFoot('zenario/', false, false, false);
 
-//Show a preview in Admin Mode in an iframe
-} elseif (!empty($_GET['_sk_preview']) && checkPriv()) {
-	CMSWritePageBody('', false, $showPreview = 'page');
+//Show a preview, without the Admin Toolbar or any JavaScript
+} elseif (!empty($_REQUEST['_show_page_preview'])) {
+	CMSWritePageBody('zenario_showing_preview', '', true);
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;
 	
 	echo "\n", '</div></div></div>';
 	
-	echo '
-		<script type="text/javascript" src="zenario/libraries/mit/jquery/jquery.min.js?v=', ZENARIO_VERSION, '"></script>
-		<script type="text/javascript">
+	if (!empty($_REQUEST['_add_js'])) {
+		CMSWritePageFoot('zenario/', false, false, false);
+	} else {
+		echo '
+		<script type="text/javascript" src="zenario/libraries/mit/jquery/jquery.min.js?v=', ZENARIO_VERSION, '"></script>';
+	}
+	
+	echo '<script type="text/javascript">
 			$(\'*\').each(function(i, el) {
 				el.onclick = function() { return false; };
-			});
+			});';
+			
+			if (!empty($_REQUEST['_scroll_to'])) {
+				echo '
+					$(document).scrollTop('. (int) $_REQUEST['_scroll_to']. ');';
+			}
+	echo '
 		</script>';
 	
 
 //Normal functionality; show the whole page
 } else {
-	CMSWritePageBody();
+	CMSWritePageBody('', '', true, true);
 	showCookieConsentBox();
 	echo $skinDiv, $templateDiv, $contentItemDiv;
 	
@@ -405,13 +434,23 @@ if ($specificInstance || $specificSlot) {
 				'<a href="zenario/admin/organizer.php">Go to Organizer</a>',
 			'</div>';
 		
-		if (!checkPriv() && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
+		if (!$checkPriv && defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
 			reportDatabaseError($msg);
 		}
 	}
 	
 	echo "\n", '</div></div></div>';
 	CMSWritePageFoot('zenario/');
+	
+	//If someone just changed the CSS for a plugin, scroll down to that plugin to show the changes
+	if ($checkPriv && !empty($_SESSION['scroll_slot_on_'. cms_core::$cType. '_'. cms_core::$cID])) {
+		echo '
+			<script type="text/javascript">
+				zenario.scrollToSlotTop("'. jsEscape($_SESSION['scroll_slot_on_'. cms_core::$cType. '_'. cms_core::$cID]). '", false, 300);
+			</script>';
+		
+		unset($_SESSION['scroll_slot_on_'. cms_core::$cType. '_'. cms_core::$cID]);
+	}
 }
 
 

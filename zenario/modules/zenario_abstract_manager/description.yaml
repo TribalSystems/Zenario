@@ -16,14 +16,14 @@
 #    is installed or updated. Any changes you make to them may not appear until you
 #    increment your module's revision number.
 
-display_name: Abstract manager
+display_name: Abstract front-end administration
 author_name: Tribal Systems
 copyright_info: © Tribal Limited
 editions: Community, Pro, ProBusiness, Enterprise
 license_info: 'Modified BSD License'
 description: >
     <p>
-        An abstract manager module that you can extend to make your own module.
+        An abstract front-end administration module that you can extend to make your own module.
     </p>
 
 is_abstract: true

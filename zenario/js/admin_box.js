@@ -43,427 +43,49 @@ zenario.lib(function(
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	zenarioAF
+	zenarioABToolkit
 ) {
 	"use strict";
 
 zenarioAB.init('zenarioAB');
 
 
-FAB_NAME = 'AdminFloatingBox';
-FAB_LEFT = 50;
-FAB_TOP = 2;
-FAB_PADDING_HEIGHT = 188;
-FAB_TAB_BAR_HEIGHT = 53;
-FAB_WIDTH = 960;
-PLUGIN_SETTINGS_WIDTH = 800;
-PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW = 1100;
-PLUGIN_SETTINGS_BORDER_WIDTH = 4;
+var FAB_NAME = 'AdminFloatingBox',
+	FAB_LEFT = 50,
+	FAB_TOP = 2,
+	FAB_PADDING_HEIGHT = 188,
+	FAB_TAB_BAR_HEIGHT = 53,
+	FAB_WIDTH = 960,
+	PLUGIN_SETTINGS_WIDTH = 800,
+	PLUGIN_SETTINGS_MIN_WIDTH_FOR_PREVIEW = 1100,
+	PLUGIN_SETTINGS_BORDER_WIDTH = 4;
 
 
 
 
-
-
-
-//Open an admin floating box
-zenarioAB.open = function(path, key, tab, values, callBack, createAnotherObject, reopening, passMatchedIds) {
+zenarioAB.start = function(path, key, tab, values) {
+	var that = this;
 	
-	//Don't allow a box to be opened if Organizer is opened and covering the screen
-	if (zenarioA.checkIfBoxIsOpen('AdminOrganizer')) {
-		return false;
-	}
-	
-	//Record the current scroll location of the page behind the box
-	if (zenarioAB.documentScrollTop === false) {
-		zenarioAB.documentScrollTop = $(zenario.browserIsSafari()? 'body' : 'html').scrollTop();
-	}
-	
-	//Allow admin boxes to be opened in a simmilar format to Organizer panels; e.g. tag/path//id
-	if (!key) {
-		key = {};
-	}
-	path = ('' + path).split('//', 2);
-	if (path[1] && !key.id) {
-		key.id = path[1];
-	}
-	path = path[0];
-	
-	
-	//Open the box...
-	zenarioAB.isOpen = true;
-	zenarioAB.callBack = callBack;
-	zenarioAB.passMatchedIds = passMatchedIds;
-	zenarioAB.createAnotherObject = createAnotherObject;
-	zenarioAB.getRequestKey = key;
-	zenarioAB.changed = {};
-	zenarioAB.isSlidUp = false;
-	zenarioAB.previewHidden = true;
-	zenarioAB.hasPreviewWindow = false;
-	zenarioAB.lastPreviewValues = false;
-	zenarioAB.previewSlotWidth = false;
-	zenarioAB.previewSlotWidthInfo = '';
-	zenarioAB.heightBeforeSlideUp = false;
-	
-	zenarioAB.baseCSSClass = 'zenario_fbAdmin zenario_admin_box zenario_fab_' + path;
-	
-	if (!reopening) {
-		var html = zenarioA.microTemplate(zenarioAB.mtPrefix, {});
-		
-		//zenarioA.adjustBox = function(n, e, width, left, top, html, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
-		//zenarioA.openBox = function(html, className, n, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
-		zenarioA.openBox(html, zenarioAB.baseCSSClass, FAB_NAME, false, FAB_WIDTH, FAB_LEFT, FAB_TOP, true, true, '.zenario_fabHead', false);
-		
-		//...but hide the box itself, so only the overlay shows
-		get('zenario_fbAdminFloatingBox').style.display = 'none';
-	}
-	
-	//If any Admin Boxes are open, set a warning message for if an admin tries to leave the page 
-	window.onbeforeunload = zenarioA.onbeforeunload;
-	
-	zenarioAB.start(path, key, tab, values);
-	
-	return zenarioAB.cb = new zenario.callback;
+	//Ensure the Organizer map is loaded so various pickers can work
+	zenarioO.loadMap(function() {
+		//When Organizer is loaded, continue running the start() function from the parent class
+		methodsOf(zenarioABToolkit).start.call(zenarioAB, path, key, tab, values);
+	});
 };
 
 
-zenarioAB.initFields = function() {
-	zenarioAB.hasPreviewWindow = !!zenarioAB.pluginPreviewURL();
-	methodsOf(zenarioAF).initFields.call(zenarioAB);
+zenarioAB.openBox = function(html) {
+	//zenarioA.adjustBox = function(n, e, width, left, top, html, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+	//zenarioA.openBox = function(html, className, n, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+	zenarioA.openBox(html, zenarioAB.baseCSSClass, FAB_NAME, false, FAB_WIDTH, FAB_LEFT, FAB_TOP, true, true, '.zenario_fabHead', false);
+	
+	//...but hide the box itself, so only the overlay shows
+	get('zenario_fbAdminFloatingBox').style.display = 'none';
 };
 
-
-zenarioAB.refreshParentAndClose = function(disallowNavigation, saveAndContinue, createAnother) {
-	zenarioA.nowDoingSomething(false);
-	
-	var requests = {};
-	
-	if (!saveAndContinue) {
-		zenarioAB.isOpen = false;
-	}
-	
-	//Attempt to work out what to do next.
-	if (zenarioAB.callBack && !saveAndContinue) {
-		var values;
-		if (values = zenarioAB.getValueArrayofArrays()) {
-			zenarioAB.callBack(zenarioAB.tuix.key, values);
-		}
-		
-	} else if (zenarioO.init && (zenarioA.isFullOrganizerWindow || zenarioA.checkIfBoxIsOpen('og'))) {
-		//Reload Organizer if zenarioAB window is an Organizer window
-		var id = false;
-		
-		if (zenarioAB.tuix.key.id !== undefined) {
-			id = zenarioAB.tuix.key.id;
-		} else {
-			foreach (zenarioAB.tuix.key as var i) {
-				id = zenarioAB.tuix.key[i];
-				break;
-			}
-		}
-		
-		zenarioO.refreshToShowItem(id,
-			createAnother && phrase.createdAnother,
-			!saveAndContinue && phrase.savedButNotShown);
-		
-	} else if (zenario.cID && zenarioAB.tuix.key.slotName) {
-		//Refresh the slot if zenarioAB was a plugin settings FAB
-		zenario.refreshPluginSlot(zenarioAB.tuix.key.slotName, '', zenarioA.importantGetRequests);
-		
-		if (zenarioAT.init) {
-			zenarioAT.init();
-		}
-		
-	} else if (zenario.cID && (zenarioAB.path == 'zenario_menu' || zenarioAB.path == 'zenario_menu_text')) {
-		//If this is the front-end, and this was a menu FAB, just reload the menu plugins
-		zenarioA.reloadMenuPlugins();
-		
-		if (zenarioAT.init) {
-			zenarioAT.init();
-		}
-	
-	} else if (disallowNavigation || saveAndContinue) {
-		//Don't allow any of the actions below, as they involve navigation
-	
-	//Otherwise build up a URL from the primary key, if it looks valid
-	} else
-	if (zenarioAB.tuix.key.cID) {
-		
-		//If zenarioAB is the current content item, add any important get requests from plugins
-		if (zenarioAB.tuix.key.cID == zenario.cID
-		 && zenarioAB.tuix.key.cType == zenario.cType) {
-			requests = zenarioA.importantGetRequests;
-		}
-		
-		zenario.goToURL(zenario.linkToItem(zenarioAB.tuix.key.cID, zenarioAB.tuix.key.cType, requests));
-	
-	//For any other Admin Toolbar changes, reload the page
-	} else if (zenarioAT.init) {
-		
-		//Try to keep to the same version if possible.
-		requests = _.clone(zenarioA.importantGetRequests);
-		requests.cVersion = zenario.cVersion;
-		
-		zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, requests));
-	}
-	
-	var popout_message = zenarioAB.tuix.popout_message;
-	createAnother = createAnother && zenarioAB.createAnotherObject;
-	
-	if (!saveAndContinue && !createAnother) {
-		if (zenarioAB.cb) zenarioAB.cb.call();
-		zenarioAB.close();
-	}
-	
-	if (popout_message) {
-		zenarioA.showMessage(popout_message, true, false);
-	}
-	
-	if (saveAndContinue) {
-		zenarioAB.changed = {};
-		
-		if (zenarioAB.tuix.tabs) {
-			foreach (zenarioAB.tuix.tabs as var i => var zenarioABTab) {
-				if (zenarioABTab) {
-					if (zenarioAB.editModeOn(i)) {
-						zenarioAB.tuix.tabs[i]._saved_and_continued = true;
-					}
-				}
-			}
-		}
-		
-		zenarioAB.sortTabs();
-		zenarioAB.draw();
-	
-	} else if (createAnother) {
-		$('#zenario_abtab').clearQueue();
-		delete zenarioAB.tuix;
-		zenarioAB.open(
-			zenarioAB.createAnotherObject.path,
-			zenarioAB.getRequestKey,
-			zenarioAB.createAnotherObject.tab,
-			zenarioAB.createAnotherObject.values,
-			undefined,
-			zenarioAB.createAnotherObject,
-			true,
-			zenarioAB.passMatchedIds);
-	}
-};
-
-
-zenarioAB.close = function(keepMessageWindowOpen) {
-	//Close TinyMCE if it is open
-	zenarioAB.callFunctionOnEditors('remove');
-	zenarioA.nowDoingSomething(false);
-	
-	if (zenarioAB.sizing) {
-		clearTimeout(zenarioAB.sizing);
-	}
-	zenarioAB.stopPoking();
-	zenario.clearAllDelays();
-	
-	if (!keepMessageWindowOpen) {
-		zenarioA.closeFloatingBox();
-	}
-	
+zenarioAB.closeBox = function() {
 	zenarioA.closeBox(FAB_NAME);
-	zenarioAB.isOpen = false;
-	
-	//Return the page to it's original scroll position, before the box was opened
-	if (zenarioAB.documentScrollTop !== false) {
-		$(zenario.browserIsSafari()? 'body' : 'html').scrollTop(zenarioAB.documentScrollTop);
-		zenarioAB.documentScrollTop = false;
-	}
-	
-	delete zenarioAB.cb;
-	delete zenarioAB.tuix;
-	delete zenarioAB.lastPreviewValues;
-	delete zenarioAB.previewSlotWidth;
-	delete zenarioAB.previewSlotWidthInfo;
-	
-	return false;
 };
-
-zenarioAB.closeButton = function(onlyCloseIfNoChanges) {
-	//Check if there is an editor open
-	var message = zenarioA.onbeforeunload();
-	
-	//If there was, give the Admin a chance to stop leaving the page
-	if (message === undefined || (!onlyCloseIfNoChanges && confirm(message))) {
-		if (zenarioAB.isOpen) {
-			zenarioAB.close();
-		}
-	}
-	
-	return false;
-};
-
-
-
-
-
-
-
-
-
-
-
-zenarioAB.setData = function(data) {
-	zenarioAB.syncAdminBoxFromServerToClient(data, zenarioAB.tuix);
-};
-
-//Sync updates from the server to the array stored on the client
-zenarioAB.syncAdminBoxFromServerToClient = function($serverTags, $clientTags) {
-	for (var $key0 in $serverTags) {
-		if ($serverTags[$key0]['[[__unset__]]']) {
-			delete $clientTags[$key0];
-		
-		} else
-		if ($clientTags[$key0] === undefined || $clientTags[$key0] === null) {
-			$clientTags[$key0] = $serverTags[$key0];
-		
-		} else
-		if ($serverTags[$key0]['[[__replace__]]']) {
-			delete $serverTags[$key0]['[[__replace__]]'];
-			$clientTags[$key0] = $serverTags[$key0];
-		
-		} else
-		if ('object' != typeof $clientTags[$key0]) {
-			$clientTags[$key0] = $serverTags[$key0];
-		
-		} else
-		if (('object' == typeof $clientTags[$key0]) && ('object' != typeof $serverTags[$key0])) {
-			$clientTags[$key0] = $serverTags[$key0];
-		
-		} else {
-			zenarioAB.syncAdminBoxFromServerToClient($serverTags[$key0], $clientTags[$key0]);
-		}
-	}
-};
-
-
-zenarioAB.sendStateToServer = function() {
-	var $serverTags = {};
-	zenarioAB.syncAdminBoxFromClientToServerR($serverTags, zenarioAB.tuix);
-	
-	return JSON.stringify($serverTags);
-};
-
-//Sync updates from the client to the array stored on the server
-zenarioAB.syncAdminBoxFromClientToServerR = function($serverTags, $clientTags, $key1, $key2, $key3, $key4, $key5, $key6) {
-	
-	if ('object' != typeof $clientTags) {
-		return;
-	}
-	
-	var $type, $key0;
-	
-	for ($key0 in $clientTags) {
-		//Only allow certain tags in certain places to be merged in
-		if ((($type = 'array') && $key1 === undefined && $key0 == '_sync')
-		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'session')
-		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'cache_dir')
-		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'password')
-		 || (($type = 'value') && $key2 === undefined && $key1 == '_sync' && $key0 == 'iv')
-		 || (($type = 'array') && $key1 === undefined && $key0 == 'key')
-		 || (($type = 'value') && $key2 === undefined && $key1 == 'key')
-		 || (($type = 'value') && $key1 === undefined && $key0 == 'shake')
-		 || (($type = 'value') && $key1 === undefined && $key0 == 'download')
-		 || (($type = 'array') && $key1 === undefined && $key0 == 'tabs')
-		 || (($type = 'array') && $key2 === undefined && $key1 == 'tabs')
-		 || (($type = 'array') && $key3 === undefined && $key2 == 'tabs' && $key0 == 'edit_mode')
-		 || (($type = 'value') && $key4 === undefined && $key3 == 'tabs' && $key1 == 'edit_mode' && $key0 == 'on')
-		 || (($type = 'array') && $key3 === undefined && $key2 == 'tabs' && $key0 == 'fields')
-		 || (($type = 'array') && $key4 === undefined && $key3 == 'tabs' && $key1 == 'fields')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'current_value')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_display_value')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == '_was_hidden_before')
-		 || (($type = 'value') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'pressed')
-		 || (($type = 'array') && $key5 === undefined && $key4 == 'tabs' && $key2 == 'fields' && $key0 == 'multiple_edit')
-		 || (($type = 'value') && $key6 === undefined && $key5 == 'tabs' && $key3 == 'fields' && $key1 == 'multiple_edit' && $key0 == '_changed')) {
-			
-			//Update any values from the client on the server's copy
-			if ($type == 'value') {
-				if (('function' != typeof $clientTags[$key0]) && ('object' != typeof $clientTags[$key0])) {
-					$serverTags[$key0] = $clientTags[$key0];
-				}
-			
-			//For arrays, check them recursively
-			} else if ($type == 'array') {
-				if ('object' == typeof $clientTags[$key0]) {
-					$serverTags[$key0] = {};
-					zenarioAB.syncAdminBoxFromClientToServerR($serverTags[$key0], $clientTags[$key0], $key0, $key1, $key2, $key3, $key4, $key5);
-				}
-			}
-		}
-	}
-};
-
-
-zenarioAB.draw = function() {
-	if (zenarioAB.isOpen && zenarioAB.loaded && zenarioAB.tabHidden) {
-		zenarioAB.draw2();
-	}
-};
-
-
-zenarioAB.draw2 = function() {
-	
-	if (!zenarioAB.tuix.tabs) {
-		return;
-	}
-	
-	//Add wrapper CSS classes
-	get('zenario_fbAdminFloatingBox').className =
-		zenarioAB.baseCSSClass +
-		' ' +
-		(zenarioAB.tuix.css_class || 'zenario_fab_default_style') + 
-		' ' +
-		(engToBoolean(zenarioAB.tuix.hide_tab_bar)?
-			'zenario_admin_box_with_tabs_hidden'
-		  : 'zenario_admin_box_with_tabs_shown');
-	
-	//Don't show the requested tab if it has been hidden
-	if (zenarioAB.tuix.tab && (!zenarioAB.tuix.tabs[zenarioAB.tuix.tab] || zenarioA.hidden(zenarioAB.tuix.tabs[zenarioAB.tuix.tab]))) {
-		zenarioAB.tuix.tab = false;
-	}
-	
-	//Set the HTML for the floating boxes tabs and title
-	get('zenario_fabTabs').innerHTML = zenarioAB.drawTabs();
-	
-	
-	var isReadOnly = !zenarioAB.editModeOnBox(),
-		html = '',
-		m = {
-			isReadOnly: isReadOnly
-		};
-	
-	zenarioAB.setTitle(isReadOnly);
-	zenarioAB.showCloseButton();
-	
-	get('zenario_fbButtons').innerHTML = zenarioA.microTemplate('zenario_admin_box_buttons', m);
-	zenario.addJQueryElements('#zenario_fbButtons ', true);
-	
-	//Show the box
-	get('zenario_fbAdminFloatingBox').style.display = 'block';
-	
-	//Set the floating box to the max height for the user's screen
-	zenarioAB.size(true);
-	
-	zenarioA.nowDoingSomething(false);
-	
-	
-	var cb = new zenario.callback,
-		html = zenarioAB.drawFields(cb);
-	
-	zenarioAB.animateInTab(html, cb, $('#zenario_abtab'));
-
-	zenarioAB.shownTab = zenarioAB.tuix.tab;
-	delete zenarioAB.lastScrollTop;
-	
-	zenarioAB.startPoking();
-};
-
 
 
 
@@ -472,24 +94,7 @@ zenarioAB.setTitle = function(isReadOnly) {
 	var title, values, c, v, string2, identifier, id,
 		$zenario_fabId = $('#zenario_fabId');
 	
-	if (zenarioAB.tuix.key
-	 && zenarioAB.tuix.key.id
-	 && (title = zenarioAB.tuix.title_for_existing_records)) {
-		values = zenarioAB.getValues1D(false, true, true);
-	
-		foreach (values as c => v) {
-			if (title.indexOf('[[' + c + ']]') != -1) {
-			
-				while (title != (string2 = title.replace('[[' + c + ']]', v))) {
-					title = string2;
-				}
-			}
-		}
-	} else {
-		title = zenarioAB.tuix.title;
-	}
-	
-	if (!title) {
+	if (!(title = zenarioAB.getTitle())) {
 		$('#zenario_fabTitleWrap').css('display', 'none');
 	} else {
 		$('#zenario_fabTitleWrap').css('display', 'block');
@@ -508,19 +113,12 @@ zenarioAB.setTitle = function(isReadOnly) {
 	 && (identifier = zenarioAB.tuix.identifier)
 	 && (identifier.value = identifier.value || zenarioAB.tuix.key.id)) {
 		
-		$zenario_fabId.show().html(zenarioA.microTemplate('zenario_admin_box_identifier', identifier));
+		$zenario_fabId.show().html(zenarioAB.microTemplate(this.mtPrefix + '_identifier', identifier));
 	} else {
 		$zenario_fabId.hide();
 	}
 };
 
-zenarioAB.showCloseButton = function() {
-	if (this.tuix.cancel_button_message) {
-		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'none');
-	} else {
-		$('#zenario_fbAdminFloatingBox .zenario_fabClose').css('display', 'block');
-	}
-};
 
 
 
@@ -599,7 +197,8 @@ zenarioAB.size = function(refresh) {
 				$('#zenario_fabBox').width(FAB_WIDTH);
 				newWidth = FAB_WIDTH;
 				
-				zenarioAB.previewWidth = false;
+				zenarioAB.previewWidth =
+				zenarioAB.previewValues =
 				zenarioAB.lastPreviewValues = false;
 				
 				previewHidden = true;
@@ -612,7 +211,8 @@ zenarioAB.size = function(refresh) {
 				if (previewHidden) {
 					newWidth = PLUGIN_SETTINGS_WIDTH;
 				
-					zenarioAB.previewWidth = false;
+					zenarioAB.previewWidth =
+					zenarioAB.previewValues =
 					zenarioAB.lastPreviewValues = false;
 			
 			
@@ -675,156 +275,9 @@ zenarioAB.size = function(refresh) {
 		}
 	}
 	
-	//Stop the admin from scrolling the page bellow, to prevent a bug with TinyMCE
-	if (zenarioAB.isOpen && zenarioAB.documentScrollTop !== false) {
-		$(zenario.browserIsSafari()? 'body' : 'html').scrollTop(zenarioAB.documentScrollTop);
-	}
-	
 	zenarioAB.sizing = setTimeout(zenarioAB.size, 250);
 };
 
-
-//Get a URL needed for an AJAX request
-zenarioAB.returnAJAXURL = function(action) {
-	
-	//If an admin_box button requests all of the ids that are currently matched in Organizer,
-	//we'll need to get the details of the last Organizer panel accessed (the requests needed
-	//should be stored in zenarioO.lastRequests) and fire up the Organizer Panel to get the list of
-	//ids.
-	//When this script is done, it should then call admin_boxes.ajax.php.
-	if (action == 'start'
-	 && zenarioAB.passMatchedIds
-	 && zenarioO.lastRequests) {
-		return URLBasePath +
-			'zenario/admin/organizer.ajax.php' +
-			'?_get_matched_ids=1' +
-			'&_fab_path=' + encodeURIComponent(zenarioAB.path) +
-			'&path=' + encodeURIComponent(zenarioO.path) +
-			zenario.urlRequest(zenarioO.lastRequests) +
-			zenario.urlRequest(zenarioAB.getRequestKey);
-	
-	//Otherwise we can call admin_boxes.ajax.php directly.
-	} else {
-		return URLBasePath +
-			'zenario/admin/admin_boxes.ajax.php' +
-			'?path=' + encodeURIComponent(zenarioAB.path) +
-			zenario.urlRequest(zenarioAB.getRequestKey);
-	}
-};
-
-
-
-//Attempt to get the URL of a preview
-zenarioAB.pluginPreviewURL = function(slotName, instanceId) {
-	
-	if (zenarioAB.path != "plugin_settings"
-	 || !zenario.slots
-	 || !(slotName = slotName || (zenarioAB.tuix && zenarioAB.tuix.key && zenarioAB.tuix.key.slotName))
-	 || !(instanceId = instanceId || (zenarioAB.tuix && zenarioAB.tuix.key && zenarioAB.tuix.key.instanceId) || zenario.slots[slotName].instanceId)) {
-		return false;
-	}
-	
-	var grid = zenarioA.getGridSlotDetails(slotName),
-		requests = _.clone(zenarioA.importantGetRequests),
-		c, clas,
-		cssClasses = (grid && grid.cssClass && grid.cssClass.split(' ')) || [];
-	
-	requests.cVersion = zenario.cVersion;
-	requests.slotName = slotName;
-	requests.instanceId = instanceId;
-	requests.method_call = 'showSingleSlot';
-	requests.fakeLayout = 1;
-	requests.grid_columns = grid.columns;
-	requests.grid_container = grid.container;
-	
-	//Remember the width of the slot. Don't resize the preview window to be any bigger than this.
-	zenarioAB.previewSlotWidth = grid.pxWidth;
-	//Also remember the full description of the width
-	zenarioAB.previewSlotWidthInfo = grid.widthInfo;
-	
-	//If the preview window is open and we've previously set its size, request in the URL that the
-	//preview be the size of the window that we opened
-	if (zenarioAB.previewWidth) {
-		requests.grid_pxWidth = zenarioAB.previewWidth;
-	
-	//Otherwise just use the width of the slot for now
-	} else {
-		requests.grid_pxWidth = zenarioAB.previewSlotWidth;
-	}
-	
-	//Include all of the slot's custom CSS classes.
-	requests.grid_cssClass = '';
-	foreach (cssClasses as c => clas) {
-		//For the most part we just want the custom classes, so filter "alpha", "omega" and the "spans".
-		if (clas != 'alpha'
-		 && clas != 'omega'
-		 && !clas.match(/^span[\d_]*$/)) {
-			requests.grid_cssClass += clas + ' ';
-		}
-	}
-	
-	return zenario.linkToItem(zenario.cID, zenario.cType, requests);
-};
-
-
-//If this is a plugin settings FAB with a preview window, changing the value of any field
-//should update the preview if needed
-zenarioAB.addExtraAttsForTextFields = function(field, extraAtt) {
-	if (zenarioAB.hasPreviewWindow) {
-		extraAtt.onkeyup =
-			ifNull(extraAtt.onkeyup, '', '') +
-			" zenarioAB.updatePreview();";
-	}
-};
-
-zenarioAB.fieldChange = function(id, lov) {
-	zenarioAB.updatePreview(750);
-	methodsOf(zenarioAF).fieldChange.call(zenarioAB, id, lov);
-};
-
-//This function updates the preview, after a short delay to stop lots of spam updates happening all at once
-zenarioAB.updatePreview = function(delay) {
-	if (zenarioAB.hasPreviewWindow && !zenarioAB.previewHidden) {
-		zenario.actAfterDelayIfNotSuperseded('fabUpdatePreview', zenarioAB.updatePreview2, delay || 1000);
-	}
-};
-
-zenarioAB.updatePreview2 = function() {
-	
-	//Get the values of the plugin settings on this FAB
-	var previewValues = JSON.stringify(zenarioAB.getValues1D(true));
-	
-	//If they've changed since last time, refresh the preview window
-	if (zenarioAB.lastPreviewValues != previewValues) {
-		zenarioAB.lastPreviewValues = previewValues;
-		
-		$('<form action="' + htmlspecialchars(zenarioAB.pluginPreviewURL()) + '" method="post" target="zenario_fabPreviewFrame">' +
-			'<input name="overrideSettings" value="' + htmlspecialchars(previewValues) + '"/>' +
-		'</form>').appendTo('body').hide().submit().remove();
-	}
-};
-
-zenarioAB.showPreviewInPopoutBox = function() {
-	
-	var url = zenarioAB.pluginPreviewURL(),
-		previewValues = JSON.stringify(zenarioAB.getValues1D(true));
-	
-	if (!url) {
-		return;
-	}
-	
-	$.colorbox({
-		width: Math.floor($(window).width() * 0.7),
-		height: Math.floor($(window).height() * 0.9),
-		iframe: true,
-		preloading: false,
-		open: true,
-		title: zenarioAB.previewSlotWidthInfo || phrase.preview,
-		href: url + '&overrideSettings=' + encodeURIComponent(previewValues),
-		className: 'zenario_plugin_preview_popout_box'
-	});
-	$('#colorbox,#cboxOverlay,#cboxWrapper').css('z-index', '333000');
-};
 
 
 zenarioAB.slideToggle = function() {
@@ -879,33 +332,265 @@ zenarioAB.slideDown = function() {
 //If someone clicks on a tab, make sure that the form isn't hidden first!
 zenarioAB.clickTab = function(tab) {
 	zenarioAB.slideDown();
-	methodsOf(zenarioAF).clickTab.call(zenarioAB, tab);
+	methodsOf(zenarioABToolkit).clickTab.call(zenarioAB, tab);
 };
 
 
 
 
-zenarioAB.stopPoking = function() {
-	if (zenarioAB.poking) {
-		clearInterval(zenarioAB.poking);
+//Specific bespoke functions for a few cases. These could have been on onkeyup/onchange events, but zenarioAB way is more efficient.
+//Add the alias validation functions from the meta-data tab
+zenarioAB.validateAlias = function() {
+	zenario.actAfterDelayIfNotSuperseded('validateAlias', function() {
+		zenarioAB.validateAliasGo(); 
+	});
+};
+
+zenarioAB.validateAliasGo = function() {
+	
+	var req = {
+		_validate_alias: 1,
+		alias: get('alias').value
 	}
-	zenarioAB.poking = false;
+	
+	if (zenarioAB.tuix.key.cID) {
+		req.cID = zenarioAB.tuix.key.cID;
+	}
+	if (zenarioAB.tuix.key.cType) {
+		req.cType = zenarioAB.tuix.key.cType;
+	}
+	if (zenarioAB.tuix.key.equivId) {
+		req.equivId = zenarioAB.tuix.key.equivId;
+	}
+	if (get('language_id')) {
+		req.langId = get('language_id').value;
+	}
+	
+	if (get('update_translations')) {
+		req.lang_code_in_url = 'show';
+		if (get('update_translations').value == 'update_this' && get('lang_code_in_url')) {
+			req.lang_code_in_url = get('lang_code_in_url').value;
+		}
+	}
+
+	$.post(
+		URLBasePath + 'zenario/admin/quick_ajax.php',
+		req,
+		function(data) {
+			if (!(data = zenarioA.readData(data))) {
+				return false;
+			}
+			
+			var html = '';
+			
+			if (data) {
+				foreach (data as var error) {
+					html += (html? '<br />' : '') + data[error];
+				}
+			}
+			
+			get('alias_warning_display').innerHTML =  html;
+	}, 'text');
 };
 
-zenarioAB.startPoking = function() {
-	if (!zenarioAB.poking) {
-		zenarioAB.poking = setInterval(zenarioAB.poke, 2 * 60 * 1000);
+//bespoke functions for the Content Tab
+zenarioAB.generateAlias = function(text) {
+	return text
+			.toLowerCase()
+			.replace(
+				/[áÁàÀâÂåÅäÄãÃÆæçÇðÐéÉèÈêÊëËíÍìÌîÎïÏñÑóÓòÒôÔöÖõÕøØšŠúÚùÙûÛüÜýÝžŽ]/g,
+				function(chr) {
+					return {
+							'á':'a', 'Á':'a', 'à':'a', 'À':'a', 'â':'a', 'Â':'a', 'å':'a', 'Å':'a', 'ä':'a', 'Ä':'a', 'ã':'a', 'Ã':'a',
+							'Æ':'ae', 'æ':'ae',
+							'ç':'c', 'Ç':'c', 'ð':'d', 'Ð':'d', 'é':'e', 'É':'e', 'è':'e', 'È':'e', 'ê':'e', 'Ê':'e', 'ë':'e', 'Ë':'e',
+							'í':'i', 'Í':'i', 'ì':'i', 'Ì':'i', 'î':'i', 'Î':'i', 'ï':'i', 'Ï':'i', 'ñ':'n', 'Ñ':'n',
+							'ó':'o', 'Ó':'o', 'ò':'o', 'Ò':'o', 'ô':'o', 'Ô':'o', 'ö':'o', 'Ö':'o', 'õ':'o', 'Õ':'o', 'ø':'o', 'Ø':'o',
+							'š':'s', 'Š':'s', 'ú':'u', 'Ú':'u', 'ù':'u', 'Ù':'u', 'û':'u', 'Û':'u', 'ü':'u', 'Ü':'u', 'ý':'y', 'Ý':'y', 'ž':'z', 'Ž':'z'
+						}[chr];
+				})
+			.replace(/&/g, 'and')
+			.replace(/[^a-z0-9\s_-]/g, '')
+			.replace(/\s+/g, '-')
+			.replace(/^-+/, '')
+			.replace(/-+$/, '')
+			.replace(/-+/g, '-')
+			.substr(0, 50);
+};
+
+zenarioAB.contentTitleChange = function() {
+	
+	var menuTitleDOM = get('menu_title'),
+		aliasDOM = get('alias');
+	
+	if (menuTitleDOM && !zenarioAB.tuix.___menu_title_changed) {
+		menuTitleDOM.value = get('title').value.replace(/\s+/g, ' ');
+		menuTitleDOM.onkeyup();
+	}
+	
+	if (aliasDOM && !aliasDOM.disabled && !zenarioAB.tuix.___alias_changed) {
+		aliasDOM.value = zenarioAB.generateAlias(get('title').value);
+		zenarioAB.validateAlias();
 	}
 };
 
-zenarioAB.poke = function() {
-	zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
+
+
+//bespoke functions for Plugin Settings
+zenarioAB.viewFrameworkSource = function() {
+	var url =
+		URLBasePath +
+		'zenario/admin/organizer.php' +
+		'#zenario__modules/show_frameworks//' + zenarioAB.tuix.key.moduleId + '//' + zenario.encodeItemIdForOrganizer(zenarioAB.readField('framework'));
+	window.open(url);
+	
+	return false;
 };
+
+//Check to see if a svn image is selected in a picker field
+zenarioAB.svgSelected = function(fieldName) {
+	var field = zenarioAB.field(fieldName),
+		value = zenarioAB.value(fieldName),
+		pickedItems = field && value && zenarioAB.pickedItemsArray(field, value),
+		i, label;
+	
+	if (pickedItems) {
+		foreach (pickedItems as i => label) {
+			if (!_.isString(label)) {
+				label = label.label;
+			}
+			if (label && label.match(/\.svg( \[.*?\]|)$/i)) {
+				return true;
+			}
+		}
+	}
+	return false;
+};
+
+
+
+//bespoke functions for Admin Perms
+
+//Change a child-checkbox
+zenarioAB.adminPermChange = function(parentName, childrenName, toggleName, n, c) {
+	var parentChecked = true,
+		parentClass;
+	
+	//Count how many checkboxes are on the page, and how many of these are checked
+	if (n === undefined) {
+		c = 0;
+		n = $('input[name=' + childrenName + ']').each(function(i, e) {if (e.checked) ++c;}).size();
+	}
+	
+	//Check or uncheck the parent, depending on if at least one child is checked.
+	//Also set a CSS class on the row around the parent depending on how many were checked.
+	if (c == 0) {
+		parentChecked = false;
+		parentClass = 'zenario_permgroup_empty';
+	} else if (c < n) {
+		parentClass = 'zenario_permgroup_half_full';
+	} else {
+		parentClass = 'zenario_permgroup_full';
+	}
+	
+	get(parentName).checked =
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[parentName].current_value = parentChecked;
+	
+	$(get('row__' + parentName))
+		.removeClass('zenario_permgroup_empty')
+		.removeClass('zenario_permgroup_half_full')
+		.removeClass('zenario_permgroup_full')
+		.addClass(parentClass);
+	
+	//Set the "X / Y" display on the toggle
+	get(toggleName).value =
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].value =
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[toggleName].current_value = c + '/' + n;
+};
+
+//Change the parent checkbox
+zenarioAB.adminParentPermChange = function(parentName, childrenName, toggleName) {
+	var n = 0,
+		c = 0,
+		current_value = '',
+		checked = get(parentName).checked,
+		$children = $('input[name=' + childrenName + ']');
+	
+	//Loop through each value for the child checkboxes.
+	//Count them, and either turn them all on or all off, depending on whether the parent was checked
+	foreach (zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].values as var v) {
+		++n;
+		if (checked) {
+			current_value += (current_value? ',' : '') + v;
+			++c;
+		}
+	}
+	
+	//If the $children are currently drawn on the page, update them on the page
+	if ($children.size()) {
+		$children.each(function(i, el) {
+			el.checked = checked;
+			//$children.attr('checked', checked? 'checked' : false);
+		});
+	}
+	
+	//Update them in the data
+	zenarioAB.tuix.tabs[zenarioAB.tuix.tab].fields[childrenName].current_value = current_value;
+	
+	//Call the function above to update the count and the CSS
+	zenarioAB.adminPermChange(parentName, childrenName, toggleName, n, c);
+};
+
+//Date Previews in the Site Settings
+zenarioAB.previewDateFormat = function(formatField, previewField) {
+	zenario.actAfterDelayIfNotSuperseded(
+		formatField,
+		function() {
+			zenarioAB.previewDateFormatGo(formatField, previewField);
+		});
+};
+
+zenarioAB.previewDateFormatGo = function(formatField, previewField) {
+	if ((formatField = get(formatField))
+	 && (previewField = get(previewField))) {
+		previewField.value = zenario.moduleNonAsyncAJAX('zenario_common_features', {previewDateFormat: formatField.value});
+	}
+};
+
+zenarioAB.openSiteSettings = function(settingGroup, tab) {
+	zenarioAB.open(
+		'site_settings',
+		{
+			id: settingGroup
+		},
+		tab,
+		undefined,
+		function() {
+			zenarioO.reloadPage();
+		}
+	);
+};
+zenarioAB.enableOrDisableSite = function() {
+	zenarioAB.open(
+		'zenario_enable_site',
+		undefined,
+		undefined,
+		undefined,
+		function() {
+			zenarioO.reloadPage();
+		}
+	);
+};
+
+
+
+
+
 
 
 
 
 
 },
-	zenarioAF
+	zenarioABToolkit
 );

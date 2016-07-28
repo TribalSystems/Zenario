@@ -11,15 +11,19 @@ plugin_settings:
                         name: image_source
                     label: 'Image source:'
                     type: text
-                    hidden: Yes
+                    hidden: true
                     value: _CUSTOM_IMAGE
+                retina:
+                    hidden: true
+                    visible_if: 'false'
+                    value: ''
                     
                 show_custom_css_code:
                     plugin_setting:
                         name: show_custom_css_code
                     label: 'Add custom CSS'
                     type: checkbox
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 custom_css_code:
                     plugin_setting:
                         name: custom_css_code
@@ -38,7 +42,7 @@ plugin_settings:
                         name: mobile_behavior
                     label: 'Mobile behavior:'
                     type: select
-                    format_onchange: Yes
+                    format_onchange: true
                     values:
                         same_image:
                             label: Show same image
@@ -60,8 +64,8 @@ plugin_settings:
                         target_path: zenario__content/panels/image_library
                         select_phrase: Select mobile image...
                     value: ""
-                    format_onchange: Yes
-                    hidden: Yes
+                    format_onchange: true
+                    hidden: true
                     upload:
                         multi: false
                         accept: 'image/*'
@@ -94,8 +98,8 @@ plugin_settings:
                         resize_and_crop:
                             ord: "5"
                             label: Resize and crop
-                    format_onchange: Yes
-                    hidden: Yes
+                    format_onchange: true
+                    hidden: true
                 mobile_width:
                     plugin_setting:
                         name: mobile_width
@@ -108,7 +112,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    hidden: true
                 mobile_height:
                     plugin_setting:
                         name: mobile_height
@@ -121,19 +125,19 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    hidden: true
                 mobile_offset:
                     plugin_setting:
                         name: mobile_offset
                     label: 'Offset:'
                     type: text
-                    hidden: Yes
+                    hidden: true
                     style: 'width: 50px;'
                     value: "0"
                     slider:
                         min: "-10"
                         max: "10"
-                        before_field: Yes
+                        before_field: true
                         style: 'width: 200px;'
                     note_below: |
                         Move slider to the left to move the image left/down;
@@ -144,7 +148,7 @@ plugin_settings:
                         name: mobile_show_custom_css_code
                     label: 'Add custom CSS'
                     type: checkbox
-                    redraw_onchange: Yes
+                    redraw_onchange: true
                 mobile_custom_css_code:
                     plugin_setting:
                         name: mobile_custom_css_code

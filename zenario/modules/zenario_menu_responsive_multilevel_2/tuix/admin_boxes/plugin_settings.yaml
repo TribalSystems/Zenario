@@ -3,10 +3,6 @@
 plugin_settings:
     module_class_name: zenario_menu_responsive_multilevel_2
     tabs:
-        first_tab:
-            fields:
-                menu_show_admin_add_button:
-                    hidden: true
         animations:
             ord: 1.1
             label: Animations

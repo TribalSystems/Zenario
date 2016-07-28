@@ -47,6 +47,8 @@ if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && (!$nestedItem[
 		
 		sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 		
+		managePluginCSSFile('copy', $instanceId, $nestedItemId, $instanceId, $newNestedItemId);
+		
 		return $newNestedItemId;
 	}
 }

@@ -1,0 +1,50 @@
+.zenario_skin .zenario_sitemap__default_style ul,
+.zenario_skin .zenario_sitemap__default_style ul li {
+	list-style:none;
+	padding:0;
+	margin:0;
+}
+
+.zenario_skin .zenario_sitemap__default_style h2,
+.zenario_skin .zenario_sitemap__default_style h3,
+.zenario_skin .zenario_sitemap__default_style h4,
+.zenario_skin .zenario_sitemap__default_style h5,
+.zenario_skin .zenario_sitemap__default_style h6 {
+	font-size:1em;
+	margin:0;
+	padding:3px 0;
+}
+
+.zenario_skin .zenario_sitemap__default_style li h2 {
+	font-weight:bold;
+	padding:5px 15px;
+	background:url('../images/arrow-small-next.png') no-repeat 0 8px;
+}
+
+.zenario_skin .zenario_sitemap__default_style li.has_child h2 {
+	background:url('../images/arrow-small-down.png') no-repeat 0 11px;
+}
+
+.zenario_skin .zenario_sitemap__default_style h3 a,
+.zenario_skin .zenario_sitemap__default_style h4 a,
+.zenario_skin .zenario_sitemap__default_style h5 a,
+.zenario_skin .zenario_sitemap__default_style h6 a {
+	color:#27303f;
+}
+
+.zenario_skin .zenario_sitemap__default_style ul ul {
+	padding-left:15px;
+	padding-bottom:8px;
+}
+
+.zenario_skin .zenario_sitemap__default_style ul ul ul {
+	padding-bottom:0;
+}
+
+.zenario_skin .zenario_sitemap__default_style li.level1 {
+	border-bottom:1px dotted #27303f;
+}
+
+.zenario_skin .zenario_sitemap__default_style li.level1_1 {
+	border-top:1px dotted #27303f;
+}

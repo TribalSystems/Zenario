@@ -25,11 +25,15 @@ common_definitions:
         type: string
         description: A CSS class name for the item, which should define its icon.
     ord: &ord
-        type: number
-        description: |
-            The ord property controls the order in which things are drawn on the screen.
+        type: *stringy
+        description: >
+            This controls the order in which elements are drawn on the screen.
+            
             If not set, it defaults to the order the CMS finds them in.
-        default: (the order in which this was found in, e.g. 1, 2, 3, ...)
+            
+            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
+            you can use syntax of the form "name_of_other_element.001"
+            to place an element after the named element in the order.
     hidden: &hidden
         type: boolean
         html_description: >
@@ -345,7 +349,6 @@ properties:
                                     This will display Organizer in quick mode when clicked.
                                 required:
                                     - path
-                                    - min_path
                                 properties:
                                     path:
                                         type: string
@@ -369,7 +372,7 @@ properties:
                                             Refiners that "loop", going from and to the same panel over and over again,
                                             will still show the back button.
                                     
-                                            This must be a tag path.
+                                            If you enter a navigation path it will be converted to a tag path for you.
                                     max_path:
                                         type:
                                             - string
@@ -381,7 +384,7 @@ properties:
                                             This works like a limit; the Admin will not be able to navigate away from this
                                             panel except by pressing the back button.
                                     
-                                            This must be a tag path.
+                                            If you enter a navigation path it will be converted to a tag path for you.
                                     
                                             If you don't want to use a limit you can also set this property to false to disable it.
                                     disallow_refiners_looping_on_min_path:
@@ -400,8 +403,6 @@ properties:
                                     tag id of the page (e.g. html_42) and the id chosen from the picker.
                                 required:
                                     - path
-                                    - target_path
-                                    - min_path
                                 oneOf:
                                     -
                                         required:
@@ -423,7 +424,7 @@ properties:
                                         description: >
                                             The tag path of the panel in Organizer where the "Choose" button should be shown.
                                     
-                                            This must be a tag path.
+                                            If you enter a navigation path it will be converted to a tag path for you.
                                     min_path:
                                         type: string
                                         default: (defaults to the path property)
@@ -439,7 +440,7 @@ properties:
                                             Refiners that "loop", going from and to the same panel over and over again,
                                             will still show the back button.
                                     
-                                            This must be a tag path.
+                                            If you enter a navigation path it will be converted to a tag path for you.
                                     max_path:
                                         type:
                                             - string
@@ -451,7 +452,7 @@ properties:
                                             This works like a limit; the Admin will not be able to navigate away from this
                                             panel except by pressing the back button.
                                     
-                                            This must be a tag path.
+                                            If you enter a navigation path it will be converted to a tag path for you.
                                     
                                             If you don't want to use a limit you can also set this property to false to disable it.
                                     disallow_refiners_looping_on_min_path:

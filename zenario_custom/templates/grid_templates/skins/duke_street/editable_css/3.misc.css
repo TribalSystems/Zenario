@@ -1,0 +1,131 @@
+/* Common styles: pagination
+--------------------------------------------------------------------------------------------------*/
+
+.pag_pagination {
+	margin-top:10px;
+	text-align:center;
+	font-size:0.867em;
+}
+
+.pag_pagination span a {
+	display:inline-block;
+    line-height: 16px;
+    margin: 0 1px;
+    padding: 2px 5px;
+    -webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	color:#FFF;
+	background:#7A8080;
+   	-webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+}
+
+.pag_pagination span a:hover,
+.pag_pagination span.pag_page_on a {
+    background:#273040;
+    text-decoration:none;
+}
+
+/* Extranet
+--------------------------------------------------------------------------------------------------*/
+
+.extranet_wrap {
+	background:#e5e5de;
+	padding:15px 20px;
+}
+
+.extranet_wrap h1,
+.extranet_wrap h2,
+.extranet_wrap h3 {
+	color:#27303f;
+}
+
+.zenario_extranet_logout .extranet_wrap h1,
+.extranet_wrap .extranet_welcome_text {
+	font-size:1.333em;
+	line-height:1.2em;
+	margin-bottom:8px;
+}
+
+.extranet_wrap .extranet_field,
+.extranet_wrap .form_field {
+	padding:5px 0 10px;
+}
+
+.extranet_wrap .field_data {
+	width:80%;
+	padding:3px 10px;
+	color:#555;
+	background:#D8D8D3;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+}
+
+.extranet_wrap .extranet_btn {
+	padding:5px 0 10px;
+}
+
+.extranet_wrap .extranet_links {
+	border-top:1px dotted #27303f;
+	margin-top:10px;
+	padding-top:10px;
+}
+
+.zenario_skin .extranet_wrap input[type='text'],
+.zenario_skin .extranet_wrap input[type='password'],
+.zenario_skin .extranet_wrap textarea {
+	border-color:#e5e5de;
+}
+
+.zenario_skin .extranet_wrap input[type='text']:focus,
+.zenario_skin .extranet_wrap input[type='password']:focus,
+.zenario_skin .extranet_wrap textarea:focus {
+	border:1px solid #7a8080;
+}
+
+.zenario_skin .extranet_wrap .readonly input[type='text'],
+.zenario_skin .extranet_wrap .readonly input[type='password'],
+.zenario_skin .extranet_wrap .readonly textarea {
+	background-color:#EDEDED;
+	color:#646464;
+	cursor:default;
+}
+
+.zenario_skin .extranet_wrap .readonly input[type='text']:focus,
+.zenario_skin .extranet_wrap .readonly input[type='password']:focus,
+.zenario_skin .extranet_wrap .readonly textarea:focus {
+	border-color:#e5e5de;
+}
+
+.extranet_wrap .extranet_remember_me,
+.extranet_wrap .extranet_log_me_in,
+.extranet_wrap .extranet_links {
+	font-size:0.867em;
+	line-height:1.3em;
+}
+
+.zenario_extranet_profile .extranet_links {
+	font-size:1em;
+	line-height:34px;
+}
+
+.extranet_wrap a {
+	text-decoration:underline;
+}
+
+.zenario_extranet_profile .extranet_wrap a {
+	text-decoration:none;
+}
+
+.zenario_extranet_profile .extranet_edit_profile .extranet_btn {
+	display:inline-block;
+	margin-right:8px;
+}
+
+.zenario_extranet_user_image img.existing_image {
+	max-width:100%;
+	height:100%;
+}

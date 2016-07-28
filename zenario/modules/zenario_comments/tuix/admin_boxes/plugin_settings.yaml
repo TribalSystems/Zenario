@@ -266,7 +266,7 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No email template selected
                         hide_remove_button: true
                     validation:
@@ -295,7 +295,7 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No email template selected
                         hide_remove_button: true
                     validation:
@@ -361,7 +361,7 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No email template selected
                         hide_remove_button: true
                     validation:
@@ -397,7 +397,7 @@ plugin_settings:
                         max_path: zenario__email_template_manager/panels/email_templates
                         disallow_refiners_looping_on_min_path: true
                         one_to_one_choose_phrase: Choose email template
-                        select_phrase: Select an email template...
+                        select_phrase: select an email template...
                         nothing_selected_phrase: No email template selected
                         hide_remove_button: true
                     validation:

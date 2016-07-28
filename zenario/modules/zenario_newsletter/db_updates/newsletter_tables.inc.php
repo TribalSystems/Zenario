@@ -472,7 +472,7 @@ _sql
 				<tr>
 				 <td align="left" style="padding-bottom:10px; border-bottom:1px solid #DCDCDC; padding-bottom:15px;">
 					<h1 style="color:#03779C; font-size:24px; padding:5px 0px 0px 0px; margin:0px;">Introductory Title</h1>
-					<h2 style="color:#76AFC2; font-size:18px; padding:8px 0px 0px 0px; margin:0px;">Hello [[TITLE]] [[FIRST_NAME]] [[LAST_NAME]]</h2>
+					<h2 style="color:#76AFC2; font-size:18px; padding:8px 0px 0px 0px; margin:0px;">Hello [[SALUTATION]] [[FIRST_NAME]] [[LAST_NAME]]</h2>
 				 </td>
 				</tr>
 				<tr>
@@ -540,7 +540,7 @@ _html
 					<tr>
 						<td style="vertical-align:top; font-size:14px; padding:15px 15px 0px 15px; color:#444444;">
 							
-							<h1 style="font-size:18px; color:#72AFC4;">Hello [[TITLE]] [[FIRST_NAME]] [[LAST_NAME]]</h1>
+							<h1 style="font-size:18px; color:#72AFC4;">Hello [[SALUTATION]] [[FIRST_NAME]] [[LAST_NAME]]</h1>
 							<h2 style="font-size:18px; color:#03779E;">Company News</h2>
 							<p style="padding-right:20px;">Donec iaculis Nunc a purus eu sapien--lacinia fermentum. Donec iaculis Nunc a purus eu sapien--lacinia fermen-tum quam. Donec imperdiet, nibh sit amet pharetra placerat, tortor purus condimentum lectus.</p>
 							<p style="padding-right:20px;">Donec iaculis Nunc a purus eu sapien--lacinia fermentum. Donec iaculis <a href="#" style="color:#72AFC1;">Nunc a purus</a> eu sapien--lacinia fermen-tum quam. Donec imperdiet, nibh sit amet pharetra placerat, tortor purus condimentum lectus.</p>
@@ -611,7 +611,7 @@ _html
 					<tr>
 						<td style="vertical-align:top; font-size:14px; padding:15px 15px 0px 15px;">
 							
-							<h1 style="font-size:18px; color:#72AFC4;">Hello [[TITLE]] [[FIRST_NAME]] [[LAST_NAME]]</h1>
+							<h1 style="font-size:18px; color:#72AFC4;">Hello [[SALUTATION]] [[FIRST_NAME]] [[LAST_NAME]]</h1>
 							[Image here]
 							<h2 style="font-size:18px; color:#03779E;">Company News</h2>
 							<p style="padding-right:20px;">Donec iaculis Nunc a purus eu sapien--lacinia fermentum. Donec iaculis Nunc a purus eu sapien--lacinia fermen-tum quam. Donec imperdiet, nibh sit amet pharetra placerat, tortor purus condimentum lectus.</p>

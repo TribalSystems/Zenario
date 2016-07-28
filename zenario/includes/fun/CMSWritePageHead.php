@@ -36,6 +36,8 @@ $isWizard = $mode === 'wizard';
 $isWelcomeOrWizard = $isWelcome || $isWizard;
 $isOrganizer = $mode === 'organizer';
 $httpUserAgent = httpUserAgent();
+$checkPriv = checkPriv();
+$css_wrappers = setting('css_wrappers');
 
 
 //Some IE specific fixes
@@ -52,7 +54,7 @@ $notSupportedInAdminMode = $oldIE
 //In admin mode, if this is IE, require 10 or later. Direct 9 and earlier to the compatibility mode page.
 if (strpos($httpUserAgent, 'MSIE') !== false) {
 	
-	if ($isWelcomeOrWizard || checkPriv()) {
+	if ($isWelcomeOrWizard || $checkPriv) {
 		echo '
 <script type="text/javascript">
 	if (typeof JSON === "undefined" || ', engToBoolean($notSupportedInAdminMode), ') {
@@ -133,7 +135,7 @@ if ($isWelcomeOrWizard || ($isOrganizer && setting('organizer_favicon') == 'zena
 
 
 //Add CSS needed for the CMS in Admin mode
-if ($isWelcomeOrWizard || checkPriv()) {
+if ($isWelcomeOrWizard || $checkPriv) {
 	if (!cms_core::$skinId) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'libraries/mit/colorbox/colorbox.css?v=', $v, $gz, '"/>';
@@ -174,8 +176,10 @@ if ($isWelcomeOrWizard || checkPriv()) {
 }
 
 //Add the CSS for a skin, if there is a skin, and add CSS needed for any Module Swatches on the page
-if (setting('css_wrappers') == 'on' || (setting('css_wrappers') == 'visitors_only') && !checkPriv()) {
+if ($overrideFrameworkAndCSS === false && ($css_wrappers == 'on' || ($css_wrappers == 'visitors_only' && !$checkPriv))) {
+	
 	//If wrappers are enabled, link to skin.cache_wrapper.css.php
+	//(Note that wrappers are forced off when viewing a preview of layouts/CSS.)
 	if (cms_core::$skinId || cms_core::$layoutId) {
 		echo '
 <link rel="stylesheet" type="text/css" media="screen" href="', $prefix, 'styles/skin.cache_wrapper.css.php?v=', $v, '&amp;id=', (int) cms_core::$skinId, '&amp;layoutId=', (int) cms_core::$layoutId, $gz, '"/>
@@ -183,24 +187,8 @@ if (setting('css_wrappers') == 'on' || (setting('css_wrappers') == 'visitors_onl
 	}
 	
 } else {
-	//If CSS Wrappers are turned off, run through the logic in skin.cache_wrapper.css.php, and link to each individual file.
-	//This gives slower page load speeds, but is better for Module Developers to debug.
-	function includeCSSFile($path, $file, $pathURL = false, $media = 'screen') {
-		if (!$pathURL) {
-			$pathURL = $path;
-		}
-		
-		//Check if there's a stylesheet there
-		if (is_file(CMS_ROOT. $path. $file)) {
-			echo '
-<link rel="stylesheet" type="text/css" media="', $media, '" href="', htmlspecialchars($pathURL. $file), '"/>';
-			return true;
-		}
-		
-		return false;
-	}
 	
-	require CMS_ROOT. 'zenario/includes/wrapper.inc.php';
+	require_once CMS_ROOT. 'zenario/includes/wrapper.inc.php';
 	
 	if (cms_core::$skinId || cms_core::$layoutId) {
 		
@@ -208,10 +196,56 @@ if (setting('css_wrappers') == 'on' || (setting('css_wrappers') == 'visitors_onl
 		outputRulesForSlotMinHeights();
 		echo "\n", '</style>';
 		
+		//Watch out for the variables from the CSS preview, and translate them to the format
+		//needed by includeSkinFiles() if we see them there.
+		$overrideCSS = false;
+		$overridePrintCSS = false;
+		if ($overrideFrameworkAndCSS !== false) {
+			$files = array();
+			$overrideCSS = array();
+			$overridePrintCSS = array();
+			
+			foreach (array(
+				'this_css_tab',
+				'all_css_tab',
+				'0.reset.css',
+				'1.fonts.css',
+				'1.forms.css',
+				'1.layout.css',
+				'3.misc.css',
+				'4.responsive.css',
+				'print.css'
+			) as $tab) {
+				if (!empty($overrideFrameworkAndCSS[$tab. '/use_css_file'])
+				 && !empty($overrideFrameworkAndCSS[$tab. '/css_filename'])
+				 && isset($overrideFrameworkAndCSS[$tab. '/css_source'])) {
+				 	$files[$overrideFrameworkAndCSS[$tab. '/css_filename']] = $overrideFrameworkAndCSS[$tab. '/css_source'];
+				}
+			}
+			
+			ksort($files);
+			
+			foreach ($files as $file => &$contents) {
+				switch ($file) {
+					case 'tinymce.css':
+						break;
+					
+					case 'print.css':
+					case 'stylesheet_print.css':
+						$overridePrintCSS[] = array($file, $contents);
+						break;
+					
+					default:
+						$overrideCSS[] = array($file, $contents);
+				}
+			}
+		}
+		
 		$req = array('id' => (int) cms_core::$skinId, 'print' => '', 'layoutId' => cms_core::$layoutId);
-		includeSkinFiles($req);
+		includeSkinFiles($req, $v, $overrideCSS);
+		
 		$req = array('id' => (int) cms_core::$skinId, 'print' => '1');
-		includeSkinFiles($req);
+		includeSkinFiles($req, $v, $overridePrintCSS);
 	}
 }
 
@@ -229,7 +263,7 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 }
 
 
-if (checkPriv()) {
+if ($checkPriv) {
 	//Add CSS needed for modules in Admin Mode in the frontend
 	if (cms_core::$cID) {
 		$cssModuleIds = '';
@@ -303,12 +337,12 @@ if (cms_core::$cID) {
 				}
 		}
 		
-		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !checkPriv())) {
+		if (!empty($templateHTML['head_html']) && (empty($templateHTML['head_visitor_only']) || !$checkPriv)) {
 			echo "\n\n". $templateHTML['head_html'], "\n\n";
 		}
 	}
 	
-	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !checkPriv())) {
+	if (!empty($itemHTML['head_html']) && (empty($itemHTML['head_visitor_only']) || !$checkPriv)) {
 		echo "\n\n". $itemHTML['head_html'], "\n\n";
 	}
 	

@@ -36,5 +36,3 @@ dependencies:
 inheritance:
     inherit_frameworks_from_module: zenario_search_results
     inherit_settings_from_module: zenario_search_results
-    allow_upgrades_from_module:
-        zenario_search_results: true

@@ -1,0 +1,25 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+display_name: User Profile View 2
+description: |
+    <p>This Module enables you to display the profile of a given User to visitors.</p>
+    <p>The User whose profile you wish to display can be chosen in three ways:</p>
+    <ul>
+        <li>You can choose a specific User by using a Plugin setting</li>
+        <li>You can choose the logged in User</li>
+        <li>The User can be looked up by seeing if the page on which the Plugin is placed is associated with a User. This enables you to place the Plugin in the Layout Layer for a more maintainable solution.</li>
+    </ul>
+category: pluggable
+keywords: profile, view
+is_pluggable: true
+nestable: true
+default_framework: standard
+default_instance_name: Profile view
+dependencies:
+    zenario_users: true
+    zenario_country_manager: true

@@ -153,11 +153,7 @@ class zenario_pro_features extends zenario_common_features {
 				m.image_id,
 				m.rollover_image_id,
 				m.css_class,
-				t.descriptive_text,
-				m.menu_text_module_class_name,
-				m.menu_text_method_name,
-				m.menu_text_param_1,
-				m.menu_text_param_2
+				t.descriptive_text
 			FROM ". DB_NAME_PREFIX. "menu_nodes AS m
 			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
@@ -187,7 +183,7 @@ class zenario_pro_features extends zenario_common_features {
 			$cID, $cType, $cVersion,
 			$layoutId, $templateFamily, $templateFileBaseName,
 			$specificInstanceId, $specificSlotName, $ajaxReload,
-			$runPlugins, $overrideSettings = false
+			$runPlugins, $overrideSettings = false, $overrideFrameworkAndCSS = false
 	) {
 	
 		if (!request('method_call')
@@ -292,15 +288,27 @@ class zenario_pro_features extends zenario_common_features {
 															$slotContents[$slotNameNestId]['css_class'],
 															arrayKey($slotContents[$slotNameNestId], 'level'), !empty($slotContents[$slotNameNestId]['content_id'])));
 	
-													cms_core::$slotContents[$slotNameNestId]['class']->tApiSetCachableVars($vars['c']);
+													cms_core::$slotContents[$slotNameNestId]['class']->zAPISetCachableVars($vars['c']);
 													
 													if (isset(cms_core::$slotContents[$slotNameNestId]['page_title'])) {
 														cms_core::$pageTitle = cms_core::$slotContents[$slotNameNestId]['page_title'];
 													}
+													if (isset(cms_core::$slotContents[$slotNameNestId]['page_desc'])) {
+														cms_core::$pageDesc = cms_core::$slotContents[$slotNameNestId]['page_desc'];
+													}
+													if (isset(cms_core::$slotContents[$slotNameNestId]['page_image'])) {
+														cms_core::$pageImage = cms_core::$slotContents[$slotNameNestId]['page_image'];
+													}
+													if (isset(cms_core::$slotContents[$slotNameNestId]['page_keywords'])) {
+														cms_core::$pageKeywords = cms_core::$slotContents[$slotNameNestId]['page_keywords'];
+													}
+													if (isset(cms_core::$slotContents[$slotNameNestId]['page_og_type'])) {
+														cms_core::$pageOGType = cms_core::$slotContents[$slotNameNestId]['page_og_type'];
+													}
 													if (isset(cms_core::$slotContents[$slotNameNestId]['menu_title'])) {
 														cms_core::$menuTitle = cms_core::$slotContents[$slotNameNestId]['menu_title'];
 													}
-	
+													
 												} else {
 													$slotContents[$slotNameNestId]['init'] =
 													$slotContents[$slotNameNestId]['class'] = false;
@@ -335,7 +343,7 @@ class zenario_pro_features extends zenario_common_features {
 			$cID, $cType, $cVersion,
 			$layoutId, $templateFamily, $templateFileBaseName,
 			$specificInstanceId, $specificSlotName, $ajaxReload,
-			$runPlugins, $overrideSettings);
+			$runPlugins, $overrideSettings, $overrideFrameworkAndCSS);
 	
 	
 		//If a Plugin refused to show itself, cache this refusal as well
@@ -350,15 +358,15 @@ class zenario_pro_features extends zenario_common_features {
 		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = false, $showFirstLast = false, $alwaysShowNextPrev = false);
 	}
 	
-	public function pagSmartWithNPIfNeeded($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false);
+	public function pagSmartWithNPIfNeeded($currentPage, &$pages, &$html, $links = array(), $extraAttributes = array()) {
+		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = false, $links, $extraAttributes);
 	}
 	
-	public function pagSmartWithNP($currentPage, &$pages, &$html) {
-		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = true);
+	public function pagSmartWithNP($currentPage, &$pages, &$html, $links = array(), $extraAttributes = array()) {
+		$this->pageNumbers($currentPage, $pages, $html, 'Smart', $showNextPrev = true, $showFirstLast = false, $alwaysShowNextPrev = true, $links, $extraAttributes);
 	}
 	
-	protected function smartPageNumbers($currentPos, $count, $showFirstLast, &$pagesPos, &$pages, &$html, $currentPage, $prevPage, $nextPage) {
+	protected function smartPageNumbers($currentPos, $count, $showFirstLast, &$pagesPos, &$pages, &$html, $currentPage, $prevPage, $nextPage, $links = array(), $extraAttributes = array()) {
 		//Have a set list of positions that will be displayed, if there
 		$positions1 = array(
 				-999999,
@@ -413,7 +421,7 @@ class zenario_pro_features extends zenario_common_features {
 		
 		foreach ($positions2 as $pos => $dummy) {
 			$page = $pagesPos[$pos];
-			$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage);
+			$html .= $this->drawPageLink($page, $pages[$page], $page, $currentPage, $prevPage, $nextPage, $css = 'pag_page', $links, $extraAttributes);
 		}
 	}
 	
@@ -742,7 +750,7 @@ class zenario_pro_features extends zenario_common_features {
 									}
 								}
 								if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
-									cms_core::$slotContents[$slotNameNestId]['class']->tApiGetCachableVars($slots[$slotNameNestId]['c']);
+									cms_core::$slotContents[$slotNameNestId]['class']->zAPIGetCachableVars($slots[$slotNameNestId]['c']);
 								}
 							}
 						}

@@ -107,7 +107,7 @@ methods.showPanel = function($header, $panel, $footer) {
 		html = '',
 		data = methods.getCalendar(this.year, this.month, itemsByDate);
 	
-	html = zenarioA.microTemplate('zenario_organizer_calendar', {weeks: data});
+	html = this.microTemplate('zenario_organizer_calendar', {weeks: data});
 	
 	$panel.html(html).show();
 	

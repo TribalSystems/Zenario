@@ -72,6 +72,7 @@ site_settings:
                             You can add more by editing the <code>zenario_custom/site_description.yaml</code> file.
                 email_style_formats:
                     type: code_editor
+                    dont_trim: true
                     language: yaml
                     style: |
                         height: 30em;

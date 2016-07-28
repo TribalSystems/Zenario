@@ -19,7 +19,7 @@ plugin_settings:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an Email Template
+                        required: Please select an email template
                     value: zenario_extranet_change_email__to_user_email_change_en
                     note_below: >
                         Please see the Module description to get a full list of

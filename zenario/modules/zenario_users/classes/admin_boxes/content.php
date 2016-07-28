@@ -53,7 +53,7 @@ class zenario_users__admin_boxes__content extends zenario_users {
 			
 			
 			//Default newly create items to "public"
-			$values['privacy/privacy'] = ifNull($box['key']['target_privacy'], 'public');
+			$values['privacy/privacy'] = 'public';
 			
 			if (($cID = $box['key']['source_cID'])
 			 && ($cType = $box['key']['cType'])

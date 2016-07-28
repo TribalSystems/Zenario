@@ -92,7 +92,7 @@ methods.returnPageSize = function() {
 
 methods.drawItems = function($panel) {
 	this.items = this.getMergeFieldsForItemsAndColumns();
-	$panel.html(zenarioA.microTemplate('zenario_organizer_list', this.items));
+	$panel.html(this.microTemplate('zenario_organizer_list', this.items));
 	$panel.show();
 };
 
@@ -100,7 +100,7 @@ methods.drawItems = function($panel) {
 //Disable pagination if we're reordering items
 methods.drawPagination = function($footer) {
 	if (this.ordinalColumn()) {
-		$footer.html(zenarioA.microTemplate('zenario_organizer_pagination', this.items)).show();
+		$footer.html(this.microTemplate('zenario_organizer_pagination', this.items)).show();
 	} else {
 		methodsOf(panelTypes.grid).drawPagination.apply(this, arguments);
 	}
@@ -138,7 +138,7 @@ methods.openInspectionView = function(id) {
 		$slide
 			.clearQueue()
 			.removeClass('organizer_slidedown_view_closed').addClass('organizer_slidedown_view_open')
-			.html(zenarioA.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: id}))
+			.html(this.microTemplate(zenarioO.tuix.slidedown_view_microtemplate, {id: id}))
 			.slideDown();
 	}
 	

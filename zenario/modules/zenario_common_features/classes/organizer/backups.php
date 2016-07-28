@@ -79,6 +79,8 @@ class zenario_common_features__organizer__backups extends module_base_class {
 			createDatabaseBackupScript($g);
 			gzclose($g);
 			
+			@chmod($backupPath, 0666);
+			
 			return encodeItemIdForOrganizer($fileName);
 		
 		} elseif (post('delete') && checkPriv('_PRIV_RESTORE_SITE')) {
@@ -107,7 +109,7 @@ class zenario_common_features__organizer__backups extends module_base_class {
 					strtolower(substr($filename, -3)) != '.gz',
 					DB_NAME_PREFIX, $failures
 			)) {
-				echo '<!--Reload_Storekeeper-->';
+				echo '<!--Reload_Organizer-->';
 			} else {
 				foreach ($failures as $text) {
 					echo $text;

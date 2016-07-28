@@ -113,7 +113,7 @@ class zenario_users extends module_base_class {
 			$details['name'] = $details['db_column'];
 			$details['ordinal'] = $details['ord'];
 			$details['help_text'] = $details['note_below'];
-			$details['show_in_organizer_panel'] = $details['show_in_organizer'];
+			$details['show_in_organizer_panel'] = $details['organizer_visibility'] != 'none';
 			$details['organizer_allow_sort'] = $details['sortable'];
 			$details['admin_box_text_field_width'] = $details['width'];
 			$details['admin_box_text_field_rows'] = $details['height'];
@@ -296,7 +296,7 @@ class zenario_users extends module_base_class {
 	protected function impersonateUser($userId, $logAdminOut = false, $setCookie = false) {
 		//Log the admin out of admin mode
 		if ($logAdminOut) {
-			if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+			require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 			unsetAdminSession(false);
 		}
 		

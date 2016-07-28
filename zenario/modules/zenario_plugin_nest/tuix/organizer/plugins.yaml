@@ -162,7 +162,7 @@ zenario__modules:
                             key:
                                 instanceId: ""
                     framework_and_css:
-                        label: 'Framework & CSS'
+                        label: 'CSS & framework'
                         only_show_on_refiner: nest
                         admin_box:
                             path: plugin_css_and_framework
@@ -193,7 +193,7 @@ zenario__modules:
                         traits:
                             has_image: Yes
                     framework_and_css:
-                        label: 'Framework & CSS'
+                        label: 'CSS & framework'
                         traits:
                             is_not_tab: Yes
                         only_show_on_refiner: nest

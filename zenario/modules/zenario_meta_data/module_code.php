@@ -112,7 +112,7 @@ class zenario_meta_data extends module_base_class {
 			}
 		}
 		if ($this->setting('show_description')){
-			if ($this->mergeFields['Description'] = htmlspecialchars(cms_core::$description)){
+			if ($this->mergeFields['Description'] = htmlspecialchars(cms_core::$pageDesc)){
 				$this->showSections['show_description'] = true;
 			}
 		}
@@ -123,7 +123,7 @@ class zenario_meta_data extends module_base_class {
 			}
 		}	
 		if ($this->setting('show_keywords')){
-			if ($this->mergeFields['Keywords'] = htmlspecialchars(cms_core::$keywords)){
+			if ($this->mergeFields['Keywords'] = htmlspecialchars(cms_core::$pageKeywords)){
 				$this->showSections['show_keywords'] = true;
 			}
 		}	

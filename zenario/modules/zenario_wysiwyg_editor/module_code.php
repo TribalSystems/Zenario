@@ -282,7 +282,7 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 					'onclick' => htmlspecialchars_decode($this->editInlineButtonOnClick()));
 				
 				//To avoid confusion, you sholudn't be able to edit the contents of a Wireframe WYSIWYG Editor inline AND in the settings box
-				//The only thing you can change is the Framework and CSS
+				//The only thing you can change is the CSS and framework
 				unset($controls['actions']['settings']);
 			
 			//You also shouldn't be able to access any of the slot controls whilst the WYSIWYG Editor is open!

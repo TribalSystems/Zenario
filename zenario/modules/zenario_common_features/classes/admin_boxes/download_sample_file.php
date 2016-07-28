@@ -74,7 +74,7 @@ class zenario_common_features__admin_boxes__download_sample_file extends module_
 			@unlink($filename);
 			exit;
 		} else {
-			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel_1_7_8/Classes/PHPExcel.php';
+			require_once CMS_ROOT.'zenario/libraries/lgpl/PHPExcel/Classes/PHPExcel.php';
 			$objPHPExcel = new PHPExcel();
 			$objPHPExcel->getActiveSheet()->fromArray($datasetColumns, NULL, 'A1');
 			header('Content-Type: application/vnd.ms-excel');

@@ -183,7 +183,7 @@ methods.changeMadeToPanel = function() {
 		window.onbeforeunload = function() {
 			return that.saveChangesWarningMessage;
 		}
-		var warningMessage = 'You should either save your changes or click reset to discard them before leaving';
+		var warningMessage = 'Please either save your changes, or click Reset to discard them, before exiting the form editor.';
 		zenarioO.disableInteraction(warningMessage);
 		zenarioO.setButtons();
 	}
@@ -322,7 +322,7 @@ methods.showButtons = function($buttons) {
 			confirm_css: 'form_editor',
 			cancel_text: this.cancelButtonText
 		};
-		$buttons.html(zenarioA.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
+		$buttons.html(this.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
 		
 		//Add an event to the Apply button to save the changes
 		var lock = false
@@ -428,7 +428,7 @@ methods.setCurrentFieldValues = function(field) {
 	this.valuesChanged = true;
 	
 	// Set values HTML
-	var html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_field_value', mergeFields);
+	var html = this.microTemplate('zenario_organizer_admin_box_builder_field_value', mergeFields);
 	$('#field_values_list').html(html);
 	
 	// Init values
@@ -437,9 +437,9 @@ methods.setCurrentFieldValues = function(field) {
 	// Update preview
 	if ($.inArray(field.type, ['checkboxes', 'radios']) > -1) {
 		if (field.type == 'checkboxes') {
-			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', mergeFields);
+			html = this.microTemplate('zenario_organizer_admin_box_builder_checkbox_values_preview', mergeFields);
 		} else if (field.type == 'radios') {
-			html = zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', mergeFields);
+			html = this.microTemplate('zenario_organizer_admin_box_builder_radio_values_preview', mergeFields);
 		}
 		$('#organizer_form_field_values_' + id).html(html);
 	}
@@ -543,11 +543,6 @@ methods.returnDevToolsAJAXURL = function() {
 //Use this to add any requests you need to the AJAX URL used to call your panel
 methods.returnAJAXRequests = function() {
 	return {};
-};
-
-//You should return the page size you wish to use, or false to disable pagination
-methods.returnPageSize = function() {
-	return Math.max(20, Math.min(500, 1*zenarioA.adminSettings.organizer_page_size || 50));
 };
 
 //Sets the title shown above the panel.

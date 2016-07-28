@@ -1,0 +1,109 @@
+	<div class="event_listing">
+		{% if Title %}
+			<div class="location_listing_title"><h2>{{Title}} </h2></div>
+		{% endif %}
+		
+		{% for location_row in Location_Row_On_List %}
+			<div class="single_location country_{{location_row.Country_Code}}" id="location_id_{{location_row.Location_Id}}">
+				{% if show_sticky_images %}
+					<div class = "single_location_sticky_image">
+						{% if location_row.Default_Image_No_Link %}
+							<div class="location_image">
+							</div>
+						{% endif %}
+				
+						{% if location_row.Default_Image_With_Link %}
+							<a href="{{location_row.Link_To_Location}}" >
+								<div class="location_image"></div>
+							</a>
+						{% endif %}
+
+						{% if location_row.Location_Image_No_Link %}
+							<img src="{{location_row.Link_To_Image}}"/>
+						{% endif %}
+					
+						{% if location_row.Location_Image_With_Link %}
+							<a name="location_id_{{location_row.Location_Id}}"></a>
+							{% if location_row.Country_Section_Anchor %}
+								<a name="country_{{location_row.Country_Code_Section}}"></a>
+							{% endif %}
+							<a class="single_location_image_link" href="{{location_row.Link_To_Location}}" >
+								<img src="{{location_row.Link_To_Image}}"/>
+							</a>
+						{% endif %}
+					</div>
+				{% endif %}
+				<div class = "single_location_description">
+					<h2>{{location_row.Location_Name}}</h2>
+					{% if location_row.Location_Description %}
+						<span class="single_location_description">{{location_row.Location_Description}}</span>
+					{% endif %}
+					
+					{% if location_row.Location_Address1 %}
+						<span class="single_location_address1">{{location_row.Location_Address1}}</span>
+					{% endif %}
+					
+					{% if location_row.Location_Address2 %}
+						<span class="single_location_address2">{{location_row.Location_Address2}}</span>
+					{% endif %}
+
+					{% if location_row.Location_Locality %}
+						<span class="single_location_locality">{{location_row.Location_Locality}}</span>
+					{% endif %}
+
+					{% if location_row.Location_City %}
+						<span class="single_location_city">{{location_row.Location_City}}</span>
+					{% endif %}
+					
+					{% if location_row.Location_State %}
+						<span class="single_location_state">{{location_row.Location_State}}</span>
+					{% endif %}
+					
+					
+					{% if location_row.Location_Postcode %}
+						<span class="single_location_postcode">{{location_row.Location_Postcode}}</span>
+					{% endif %}
+					
+					{% if location_row.Location_Country %}
+						<span class="single_location_country">{{location_row.Location_Country}}</span>
+					{% endif %}
+
+					{% if location_row.Location_Phone %}
+						<span class="single_location_phone">{{location_row.Location_Phone}}</span>
+					{% endif %}
+
+					{% if location_row.Location_Fax %}
+						<span class="single_location_fax">{{location_row.Location_Fax}}</span>
+					{% endif %}
+
+					{% if location_row.Location_Email %}
+						<span class="single_location_email"><a href="mailto:{{location_row.Location_Email}}">{{location_row.Location_Email}}</a></span>
+					{% endif %}
+					
+					{% if location_row.Location_Url %}
+						<span class="single_location_url"><a href="{{location_row.Location_Url}}" target="_blank">{{location_row.Location_Url}}</a></span>
+					{% endif %}
+					
+					{% if location_row.Show_More_Link %}
+						<a class="single_location_more_link" href="{{location_row.Link_To_Location}}" >{{"_MORE"|trans}}</a>
+					{% endif %}
+
+					{% if location_row.Location_Map %}
+						<div class="btn_single_location">
+							<div class="r">
+								<a onclick="$.colorbox({href: '{{location_row.Map_URL}}',iframe: true,width: 491,height: 340});return false;" href="{{location_row.Map_URL}}" class="google_map_link i iframe">{{"_MAP"|trans}}</a>
+							</div>
+						</div>
+					{% endif %}
+				</div>
+			</div>
+		{% endfor %}
+		{{Pagination}}
+	</div>
+
+
+{% if Msg_Empty_List %}
+		<div class="no_location_to_show" > 
+			{{Msg_Empty_List}}
+		</div>
+{% endif %}

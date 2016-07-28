@@ -1,0 +1,141 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+plugin_settings:
+    module_class_name: zenario_twig_snippet
+    tabs:
+        first_tab:
+            fields:
+                html:
+                    label: 'Twig code:'
+                    type: code_editor
+                    dont_trim: true
+                    language: twig
+        caching:
+            label: Plugin caching
+            fields:
+                cache:
+                    plugin_setting:
+                        name: cache
+                    type: select
+                    empty_value: Don't use the cache
+                    values:
+                        safely:
+                            label: Use the cache safely (recommended)
+                        maximise:
+                            label: Maximise usage of the cache (advanced)
+                    redraw_onchange: true
+                if_user_logged_in:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: if_user_logged_in
+                    label: Allow caching when extranet users are logged in
+                    side_note: |
+                        If you display information about the current user,
+                        you should not allow your plugin to be cached when an extranet user is logged in,
+                        otherwise users will see information from other users.
+                    type: checkbox
+                if_get_set:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: if_get_set
+                    label: Allow caching when there is a variable in the GET request, that is not part of the canonical URL to the current page
+                    side_note: |
+                        If your code uses a variable from the GET request,
+                        you should not allow it to be cached when there is a variable in the GET request.
+                        Variables that Zenario uses (e.g. <code>cID</code>, <code>cType</code>) are excluded from this logic.
+                    type: checkbox
+                if_post_set:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: if_post_set
+                    label: Allow caching when there is a variable in the POST request
+                    side_note: |
+                        If your code uses a variable from the POST request,
+                        you should not allow it to be cached when there is a variable in the POST request.
+                    type: checkbox
+                if_session_set:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: if_session_set
+                    label: Allow caching when there is a variable in the visitor's SESSION (excluding the usual session variables set by Zenario)
+                    side_note: |
+                        If your code uses a variable from the visitor's SESSION,
+                        you should not allow it to be cached when there is a variable in the visitor's SESSION.
+                        Variables that Zenario uses are excluded from this logic.
+                    type: checkbox
+                if_cookie_set:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: if_cookie_set
+                    label: Allow caching when the visitor has a COOKIE (excluding the session cookie)
+                    side_note: |
+                        If your code uses a variable from a cookie,
+                        you should not allow it to be cached when a cookie was set.
+                        Cookies that Zenario sets (e.g. the session cookie) are excluded from this logic.
+                    type: checkbox
+                
+                clear_by_content:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: clear_by_content
+                    label: Clear the cache when a published content item is changed
+                    side_note: |
+                        Check this option if you display data from a content item, e.g. its title.
+                    type: checkbox
+                    value: 1
+                clear_by_menu:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: clear_by_menu
+                    label: Clear the cache when the menu is changed
+                    side_note: |
+                        Check this option if you display data from a menu node, e.g. its name or path.
+                    type: checkbox
+                    value: 1
+                clear_by_user:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: clear_by_user
+                    label: Clear the cache when data on an extranet user is changed
+                    side_note: |
+                        Check this option if you display data from an extranet user, e.g. their name.
+                    type: checkbox
+                    value: 1
+                clear_by_file:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: clear_by_file
+                    label: Clear the cache when a file, image or its meta-data is changed
+                    side_note: |
+                        Check this option if you display an image or download link, or data from a file, e.g. it's name or size.
+                    type: checkbox
+                    value: 1
+                clear_by_module:
+                    visible_if: |
+                        zenarioAB.value('cache') == 'maximise'
+                    indent: 1
+                    plugin_setting:
+                        name: clear_by_module
+                    label: Clear the cache if anything else changes in the system
+                    side_note: |
+                        Check this option if you display anything from the database that does not fall into any of the other categories.
+                    type: checkbox
+                    value: 1

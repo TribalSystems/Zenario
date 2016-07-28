@@ -21,7 +21,7 @@ plugin_settings:
                         hide_remove_button: Yes
                     value: "1"
                     validation:
-                        required: Please select a Menu Section
+                        required: Please select a menu section
                         
                 breadcrumb_trail:
                     plugin_setting:

@@ -21,6 +21,7 @@ zenario_newsletter_template:
                 body:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false
@@ -52,6 +53,7 @@ zenario_newsletter_template:
                 head:
                     label: 'HTML in head of email:'
                     type: code_editor
+                    dont_trim: true
                     language: html
                     style: >
                         width: 98%;

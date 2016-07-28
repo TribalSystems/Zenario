@@ -14,9 +14,9 @@ switch (get('mode')) {
 		break;
 	case 'zenarioO';
 		$type = 'organizer';
-		break;
 	default:
-		exit;
+		$type = 'visitor';
+		break;
 }
 
 if (!empty($_POST['load_tuix_files']) && $data = json_decode($_POST['load_tuix_files'], true)) {

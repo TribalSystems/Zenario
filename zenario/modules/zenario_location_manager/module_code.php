@@ -1356,11 +1356,9 @@ class zenario_location_manager extends module_base_class {
 	}
 	
 	public function showFile() {
-		$siteConfig = loadSiteConfig();
-		
 		echo '<html>
 				<head>
-				<script id="google_api" type="text/javascript" src="' . httpOrhttps() . 'maps.google.com/maps/api/js?sensor=false&key=' , $siteConfig['google_maps_api_key'] , '"></script>
+				<script id="google_api" type="text/javascript" src="' . httpOrhttps() . 'maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key')) . '"></script>
 				<script type="text/javascript" src="modules/zenario_location_manager/js/locations.js"></script>
 				</head>
 				<script type="text/javascript">

@@ -400,6 +400,7 @@ if ($getUploadedFileInCacheDir) {
 				$result =
 					imageLink(
 						$width, $height, $filePath, $file['id'], $width, $height, $mode, $offset,
+						$retina = false, $privacy = 'auto',
 						$useCacheDir, $internalFilePath = true, $returnImageStringIfCacheDirNotWorking = true);
 		
 				//The image link function will return false if a file is not an image, or if it was not found...

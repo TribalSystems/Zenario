@@ -10,25 +10,18 @@ zenario_quick_create:
         source_cVersion: ""
         translate: ""
         target_language_id: ""
-        lock_language_id: ""
         equivId: ""
         target_template_id: ""
         target_cType: ""
-        target_categories: ""
         id_is_menu_node_id: ""
         id_is_parent_menu_node_id: ""
         target_menu_parent: ""
         target_menu_section: ""
-        target_privacy: ""
         target_menu_title: ""
         target_title: ""
         target_alias: ""
         duplicate: ""
         duplicate_from_menu: ""
-        source_menu: ""
-        source_menu_parent: ""
-        quick_create_content: ""
-        quick_create_menu: ""
     title: Quick-create a Content Item
     hide_tab_bar: Yes
     tabs:
@@ -48,8 +41,9 @@ zenario_quick_create:
                         if (this.checked) {
                             get('alias').disabled = false;
                             get('title').disabled = false;
-                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').removeAttr('disabled');
-                            if (get('menu_title')) get('menu_title').disabled = false;
+                            if (get('menu_title')) {
+                                get('menu_title').disabled = false;
+                            }
                             $('#row__template_id input').removeAttr('disabled');
                             $('#row__template_id input.launch_keeper').removeClass('submit_disabled');
                             $('#more_options_button_content').addClass('submit_disabled').attr('disabled', 'disabled');
@@ -129,8 +123,9 @@ zenario_quick_create:
                         if (this.checked) {
                             get('alias').disabled = true;
                             get('title').disabled = true;
-                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
-                            if (get('menu_title')) get('menu_title').disabled = true;
+                            if (get('menu_title')) {
+                                get('menu_title').disabled = true;
+                            }
                             $('#row__template_id input').attr('disabled', 'disabled');
                             $('#row__template_id input.launch_keeper').addClass('submit_disabled');
                             $('#more_options_button_content').removeClass('submit_disabled').removeAttr('disabled');
@@ -165,7 +160,6 @@ zenario_quick_create:
                         if (this.checked) {
                             get('alias').disabled = true;
                             get('title').disabled = true;
-                            if (!zenarioAB.tuix.key.lock_language_id) $('#language_id').attr('disabled', 'disabled');
                             if (get('menu_title')) get('menu_title').disabled = true;
                             $('#row__template_id input').attr('disabled', 'disabled');
                             $('#row__template_id input.launch_keeper').addClass('submit_disabled');

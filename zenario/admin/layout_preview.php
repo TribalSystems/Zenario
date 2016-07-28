@@ -38,7 +38,7 @@ $gz = setting('compress_web_pages')? '&amp;gz=1' : '&amp;gz=0';
 
 
 
-zenarioInitialiseTwig();
+require CMS_ROOT. 'zenario/includes/twig.inc.php';
 
 if (!$layout = getRow('layouts', true, request('id'))) {
 	exit;
@@ -61,6 +61,7 @@ $version = array(
 	'title' => adminPhrase('Layout Preview'),
 	'description' => '',
 	'keywords' => '',
+	'sticky_image_id' => 0,
 	'css_class' => '',
 	'publication_date' => '',
 	'published_datetime' => '',
@@ -124,7 +125,7 @@ $skinDiv .= '">';
 
 
 
-CMSWritePageBody('', false, false);
+CMSWritePageBody('zenario_layout_preview');
 echo $skinDiv, $templateDiv, $contentItemDiv;
 
 require CMS_ROOT. cms_core::$templatePath. cms_core::$templateFilename;

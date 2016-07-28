@@ -194,6 +194,7 @@ function session($n) {
 
 
 function incCSS($file) {
+	$file = CMS_ROOT. $file;
 	if (file_exists($file. '.min.css')) {
 		require $file. '.min.css';
 	} elseif (file_exists($file. '.css')) {
@@ -204,10 +205,11 @@ function incCSS($file) {
 }
 
 function incJS($file, $wrapWrappers = false) {
-	
+	echo "\n";
+	$file = CMS_ROOT. $file;
 	if ($wrapWrappers && file_exists($file. '.js.php')) {
 		chdir(dirname($file));
-		require CMS_ROOT. $file. '.js.php';
+		require $file. '.js.php';
 		chdir(CMS_ROOT);
 	
 	} elseif (file_exists($file. '.pack.js')) {
@@ -216,9 +218,10 @@ function incJS($file, $wrapWrappers = false) {
 		require $file. '.min.js';
 	} elseif (file_exists($file. '.js')) {
 		require $file. '.js';
+	} else {
+		return;
 	}
-	
-	echo "\n/**/\n";
+	echo "/**/";
 }
 
 
@@ -375,18 +378,25 @@ function visitorIP() {
 	}
 }
 
+//Check if this is https
+function isHttps() {
+	return
+		(isset($_SERVER['HTTPS']) && engToBoolean($_SERVER['HTTPS']))
+	 || (defined('USE_FORWARDED_IP')
+	  && constant('USE_FORWARDED_IP')
+	  && !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
+	  && substr($_SERVER['HTTP_X_FORWARDED_PROTO'], 0, 5) == 'https')
+	 || (!empty($_SERVER['SCRIPT_URI'])
+	  && substr($_SERVER['SCRIPT_URI'], 0, 5) == 'https');
+}
+
 function setCookieOnCookieDomain($name, $value, $expire = COOKIE_TIMEOUT) {
 	
 	if ($expire > 1) {
 		$expire += time();
 	}
 	
-	if (COOKIE_DOMAIN) {
-		setcookie($name, $value, $expire, SUBDIRECTORY, COOKIE_DOMAIN);
-	} else {
-		setcookie($name, $value, $expire, SUBDIRECTORY);
-	}
-	
+	setcookie($name, $value, $expire, SUBDIRECTORY, COOKIE_DOMAIN, isHttps(), true);
 	$_COOKIE[$name] = $value;
 }
 
@@ -547,6 +557,8 @@ class cms_core {
 	public static $siteConfig = array();
 	public static $specialPages = array();
 	public static $slotContents = array();
+	public static $modulesLoaded = array();
+	public static $modulesOnPage = array();
 	public static $pluginsOnPage = 0;
 	
 	public static $homeCID = 0;
@@ -563,19 +575,26 @@ class cms_core {
 	public static $userAccessLogged = false;
 	public static $mustUseFullPath = false;
 	public static $cookieConsent = '';
+	public static $menuTitle = false;
 	public static $pageTitle = '';
-	public static $description = '';
-	public static $keywords = '';
+	public static $pageDesc = '';
+	public static $pageImage = 0;
+	public static $pageKeywords = '';
+	public static $pageOGType = 'webpage';
 	public static $moduleClassNameForPhrases = '';
 	public static $langs = array();
+	public static $timezone = null;
 	public static $date = false;
-	public static $menuTitle = false;
 	public static $rss = array();
 	public static $rss1st = true;
 	public static $pluginJS = '';
 	public static $itemCSS = '';
 	public static $templateCSS = '';
 	public static $frameworkFile = '';
+	public static $twig;
+	public static $isTwig = false;
+	public static $twigModules = array();
+	public static $whitelist = array('print_r', 'var_dump');
 
 	public static $skPath = '';
 	public static $skType = '';
@@ -586,6 +605,7 @@ class cms_core {
 	public static $apcDirs = array();
 	public static $apcFoundCodes = array();
 	public static $execEnabled = null;
+
 	
 	
 	public static function errorOnScreen($errno, $errstr, $errfile, $errline) {

@@ -1,4 +1,9 @@
 <a {{Image_Link_Href}}{{Target_Blank}} id="{{Image_css_id}}"></a>
 {% if Text %}
 	<div class="banner_text">{{Text}}</div>
+	{% if More_Link_Text %}
+		<div class="banner_more">
+			<a {{Link_Href}}{{Target_Blank}}>{{More_Link_Text}}</a>
+		</div>
+	{% endif %}
 {% endif %}

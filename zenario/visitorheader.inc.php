@@ -74,7 +74,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) {
 header('Content-Type: text/html; charset=UTF-8');
 
 //Include the CMS' library of functions
-if (!class_exists('cms_core')) require_once CMS_ROOT. 'zenario/basicheader.inc.php';
+require_once CMS_ROOT. 'zenario/basicheader.inc.php';
 startSession();
 
 require CMS_ROOT. 'zenario/includes/cms.inc.php';

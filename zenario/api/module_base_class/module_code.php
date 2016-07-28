@@ -162,6 +162,42 @@ class module_base_class extends zenario_api {
 	
 	
 	
+	  ///////////////////////////////////////////////
+	 //  Methods called by TUIX apps for visiors  //
+	///////////////////////////////////////////////
+	
+	
+	public function returnVisitorTUIXEnabled($path, $customisationName) {
+		switch ($path) {
+			default:
+				//Disallow this feature by default!
+				return false;
+		}
+	}
+	
+	public function fillVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values) {
+		
+		//...your PHP code...//
+	}
+	
+	public function formatVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes) {
+		
+		//...your PHP code...//
+	}
+	
+	public function validateVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes, $saving) {
+		
+		//...your PHP code...//
+	}
+	
+	public function saveVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes) {
+		
+		//...your PHP code...//
+	}
+	
+	
+	
+	
 	  /////////////////////////////////////
 	 //  Methods called by Admin Boxes  //
 	/////////////////////////////////////

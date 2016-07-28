@@ -71,7 +71,7 @@ class zenario_slideshow_2 extends module_base_class {
 						switch($slide['slide_visibility']) {
 							case 'logged_in_with_field':
 							case 'logged_in_without_field':
-								$fieldValue = getDatasetFieldValue($userId, $slide['field_id']);
+								$fieldValue = datasetFieldValue('users', $slide['field_id'], $userId);
 								$fieldMatches = (bool)$fieldValue;
 								if ($fieldValue != 1) {
 									$fieldMatches = false;

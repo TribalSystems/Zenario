@@ -7,14 +7,14 @@ plugin_settings:
             label: Filter
             fields:
                 content_type:
-                    ord: "11"
+                    ord: 11
                     plugin_setting:
                         name: content_type
                     label: 'Source content type:'
                     type: select
                     value: html
                 category:
-                    ord: "30"
+                    ord: 30
                     plugin_setting:
                         name: category
                         foreign_key_to: category
@@ -26,6 +26,23 @@ plugin_settings:
                         target_path: zenario__content/panels/categories
                         select_phrase: Select Category...
                     value: ""
+                    side_note: |
+                        Only show content items in this category.
+                omit_category:
+                    ord: 30.1
+                    plugin_setting:
+                        name: omit_category
+                        foreign_key_to: category
+                    label: 'Omit category:'
+                    pick_items:
+                        path: zenario__content/panels/categories
+                        min_path: zenario__content/panels/categories
+                        max_path: zenario__content/panels/categories
+                        target_path: zenario__content/panels/categories
+                        select_phrase: Select Category...
+                    value: ""
+                    side_note: |
+                        Never show a content item in this category.
         overall_list:
             label: Overall list
             fields:
@@ -140,8 +157,10 @@ plugin_settings:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
+                        select_phrase: select a content item...
                         hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select a content item
                     indent: 1
                 enable_rss:
                     plugin_setting:
@@ -233,6 +252,26 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     indent: 2
+                retina:
+                    indent: 2
+                    plugin_setting:
+                        name: retina
+                    label: 'Output a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        <% if (zenarioAB.value('canvas') == 'unlimited') { %>
+                            Halve the width &amp; height at which the image is displayed,
+                            so it appears crisp on retina screens.
+                        <% } else { %>
+                            If the source image is large enough
+                            output the resized image at twice its displayed width &amp; height,
+                            so it appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.
+                        <% } %>
+                    enable_microtemplates_in_properties: true
                 show_dates:
                     plugin_setting:
                         name: show_dates
@@ -337,13 +376,33 @@ plugin_settings:
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
                     indent: 2
+                author_retina:
+                    indent: 2
+                    plugin_setting:
+                        name: author_retina
+                    label: 'Output a retina image'
+                    type: checkbox
+                    value: ""
+                    side_note: |
+                        <% if (zenarioAB.value('author_canvas') == 'unlimited') { %>
+                            Halve the width &amp; height at which the image is displayed,
+                            so it appears crisp on retina screens.
+                        <% } else { %>
+                            If the source image is large enough
+                            output the resized image at twice its displayed width &amp; height,
+                            so it appear crisp on retina screens.
+                            This will increase the download size.
+                            <br/>
+                            If the source image is not large enough this will have no effect.
+                        <% } %>
+                    enable_microtemplates_in_properties: true
                 show_times:
                     plugin_setting:
                         name: show_times
                     label: 'Show time'
                     type: checkbox
                 hide_private_items:
-                    ord: "16"
+                    ord: 17
                     plugin_setting:
                         name: hide_private_items
                     label: 'Links to private items:'
@@ -354,7 +413,7 @@ plugin_settings:
                         1:
                             label: Only show to authorized Users
                 use_download_page:
-                    ord: "17"
+                    ord: 18
                     plugin_setting:
                         name: use_download_page
                     label: 'Use a download page'

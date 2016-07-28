@@ -1,0 +1,265 @@
+/*
+    ColorBox Core Style:
+    The following CSS is consistent between example themes and should not be altered.
+*/
+#colorbox, #cboxOverlay, #cboxWrapper{position:absolute; top:0; left:0; z-index:9999; overflow:hidden;}
+#cboxOverlay{position:fixed; width:100%; height:100%;}
+#cboxMiddleLeft, #cboxBottomLeft{clear:left;}
+#cboxContent{position:relative;}
+#cboxLoadedContent{overflow:auto; -webkit-overflow-scrolling: touch;}
+#cboxTitle{margin:0;}
+#cboxLoadingOverlay, #cboxLoadingGraphic{position:absolute; top:0; left:0; width:100%; height:100%;}
+#cboxPrevious, #cboxNext, #cboxClose, #cboxSlideshow{cursor:pointer;}
+.cboxPhoto{float:left; margin:auto; border:0; display:block; max-width:none;}
+.cboxIframe{width:100%; height:100%; display:block; border:0;}
+#colorbox, #cboxContent, #cboxLoadedContent{box-sizing:content-box; -moz-box-sizing:content-box; -webkit-box-sizing:content-box;}
+
+/* 
+    User Style:
+    Change the following styles to modify the appearance of ColorBox.  They are
+    ordered & tabbed in a way that represents the nesting of the generated HTML.
+*/
+
+#cboxOverlay {
+	background:url(images/overlay.png) repeat 0 0;
+}
+
+#colorbox {
+	outline:0;
+}
+
+#cboxContent {
+	background:#E5E5DE; 
+	margin:5px; 
+	border:5px solid #7A8080;
+	-webkit-box-shadow: 0px 0px 5px 0px ; 
+	box-shadow: 0px 0px 5px 0px ;
+}
+
+#cboxContent {
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px; 
+	border-radius: 10px; 
+}
+
+#cboxLoadedContent {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px; 
+	border-radius: 5px; 
+}
+
+.cboxIframe{	
+	background:#fff;
+}
+
+#cboxError{
+	padding:50px; 
+	border:1px solid #ccc;
+}
+
+#cboxLoadedContent { 
+	background:#E5E5DE; 
+}
+
+#cboxTitle{
+	position:absolute; 
+	bottom:0; 
+	left:0; 
+	color:#fff; 
+	background:url(images/overlay_bg_title.png) repeat 0 0; 
+	width:100%; 
+	padding:0; 
+}
+
+#cboxCurrent{position:absolute; top:-20px; height:10px; left:0px; color:#fff; background:#222; font-size:9px; padding:2px 3px; }
+
+#cboxLoadingGraphic{background:url(images/loading.gif) no-repeat center center;}
+
+/* these elements are buttons, and may need to have additional styles reset to avoid unwanted base styles */
+
+#cboxPrevious, 
+#cboxNext, 
+#cboxSlideshow, 
+#cboxClose {
+	border:0; 
+	padding:0; 
+	margin:0; 
+	overflow:visible; 
+	width:auto; 
+	background:none; 
+}
+        
+/* avoid outlines on :active (mouseclick), but preserve outlines on :focus (tabbed navigating) */
+
+#cboxPrevious:active, 
+#cboxNext:active, 
+#cboxSlideshow:active, 
+#cboxClose:active {
+	outline:0;
+}
+        
+#cboxSlideshow {
+	position:absolute; 
+	top:-20px; 
+	right:90px; 
+	color:#fff;
+}
+
+#cboxCurrent {
+	display:none !important;
+}
+
+#cboxTitle p {
+	padding:6px
+}
+
+#colorbox button#cboxPrevious,
+#colorbox button#cboxNext {
+	position:absolute; 
+	top:50%;  
+	width:26px; 
+	height:26px; 
+	min-width:26px;
+	line-height:26px; 
+	text-indent:-9999px;
+}
+
+#colorbox button#cboxPrevious {
+	left:5px; 
+	background:url(images/prev-button.png) no-repeat center 0;
+}
+
+#colorbox button#cboxNext {
+	right:5px; 
+	background:url(images/next-button.png) no-repeat center 0;
+}
+
+#colorbox button#cboxClose {
+	position:absolute; 
+	top:3px; 
+	right:3px; 
+	display:block; 
+	background:url(images/close-button-off.png) no-repeat top center; 
+	width:24px; 
+	height:24px; 
+	min-width:24px;
+	line-height:24px;  
+	text-indent:-9999px;
+}
+
+#colorbox button#cboxClose:hover {
+	background:url(images/close-button-over.png) no-repeat top center; 
+}
+
+#colorbox button#cboxClose,
+#colorbox button#cboxNext,
+#colorbox button#cboxPrevious {
+	background-color:transparent;
+   	-webkit-border-radius:0;
+    -moz-border-radius:0;
+    border-radius:0;
+    height:auto;
+   	-webkit-transition: none;
+    -moz-transition: none;
+    transition: none;
+}
+
+#colorbox .zenario_slot {
+	max-width:660px;
+	padding:20px 40px;
+	overflow:hidden;
+}
+
+/* Font
+--------------------------------------------------------------------------------------------------*/
+
+#cboxContent {
+	font-family:Arial;
+	font-size:93.8%;
+	line-height:20px;
+}
+
+#colorbox {
+	color:#27303f;
+}
+
+#colorbox h2,
+#colorbox h3,
+#colorbox h4,
+#colorbox h5,
+#colorbox h6,
+#colorbox a {
+	color:#a65b38;
+}
+
+#colorbox h1 {
+	font-size:1.867em;
+}
+
+#colorbox h2 {
+	font-size:1.333em;
+}
+
+#colorbox h3 {
+	font-size:1.200em;
+}
+
+#colorbox h4 {
+	font-size:1.133em;
+}
+
+#colorbox h5 {
+	font-size:1.067em;
+}
+
+#colorbox h6 {
+	font-size:0.933em;
+}
+
+#colorbox h1,
+#colorbox h2,
+#colorbox h3,
+#colorbox h4,
+#colorbox h5,
+#colorbox h6 {
+	line-height:1.2em;
+	margin-bottom:8px;
+}
+
+#colorbox p {
+	margin-bottom:10px;
+}
+
+#colorbox a {
+	text-decoration:none;
+}
+
+#colorbox a:hover {
+	text-decoration:underline;
+}
+
+#colorbox ul,
+#colorbox ol {
+	padding:10px 10px 0;
+	margin-left:30px;
+}
+
+/* Modules
+--------------------------------------------------------------------------------------------------*/
+
+#colorbox  .zenario_event_calendar .day_view h1 {
+	font-size:1.467em;
+}
+
+#colorbox  .zenario_event_calendar .day_view h3 {
+	margin-bottom:0;
+}
+
+#colorbox  .zenario_event_calendar .day_view h3 a {
+	color:#27303f;
+}
+
+#colorbox  .zenario_event_calendar .day_view .day_view_events_list ul {
+	margin:0;
+	padding:0;
+}

@@ -83,7 +83,7 @@ class zenario_plugin_nest_probusiness extends zenario_plugin_nest {
 						case 'logged_in_with_field':
 						case 'logged_in_without_field':
 						case 'without_field':
-							$fieldValue = getDatasetFieldValue($userId, $perms['field_id']);
+							$fieldValue = datasetFieldValue('users', $perms['field_id'], $userId);
 							$fieldValueMatches = (bool) $fieldValue;
 							
 							if ($perms['field_value'] && $perms['field_value'] != $fieldValue) {

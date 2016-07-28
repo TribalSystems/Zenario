@@ -160,7 +160,7 @@ function loadSiteConfig() {
 			LIMIT 1";
 		
 		if (!($result = sqlQuery($sql)) || !(sqlFetchRow($result))) {
-			if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+			require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
 			showStartSitePageIfNeeded(true);
 			exit;
 		}
@@ -276,8 +276,11 @@ function handleDatabaseError($dbconnection, $sql) {
 		exit;
 	}
 	
+	$debugBacktrace = debug_backtrace();
+	trimDebugBacktrace($debugBacktrace);
+	
 	if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-		reportDatabaseError("Database query error", $sqlErrno, $sqlError, $sql, print_r(debug_backtrace(), true));
+		reportDatabaseError("Database query error", $sqlErrno, $sqlError, $sql, print_r($debugBacktrace, true));
 	}
 	
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
@@ -293,7 +296,7 @@ function handleDatabaseError($dbconnection, $sql) {
 Database query error: ".$sqlErrno.", ".$sqlError.",\n$sql\n\n
 Trace-back information:\n";
 	
-	print_r(debug_backtrace());
+	print_r($debugBacktrace);
 	
 	if ($addDiv) {
 		echo '
@@ -325,7 +328,7 @@ function reportDatabaseError($errtext="", $errno="", $error="", $sql="", $backtr
 	$body = visitorIP(). " accessing ". $_SERVER['REQUEST_URI']. "\n\n". $errtext. "\n\n". $errno. "\n\n". $error. "\n\n". $sql. "\n\n". $backtrace. "\n\n";
 	
 	// Mail it
-	if (!function_exists('sendEmail')) require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
+	require_once CMS_ROOT. 'zenario/api/system_functions.inc.php';
 	$addressToOverriddenBy = false;
 	
 	//A little hack - don't allow sendEmail() to connect to the database
@@ -481,8 +484,8 @@ function checkForChangesInYamlFiles($forceScan = false) {
 	
 	if ($changed) {
 		//We'll need to be reading TUIX files, the functions needed for this are stored in admin.inc.php
-		if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
-		if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
+		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 		
 		
 		//Look to see what datasets are on the system, and which datasets extend which FABs
@@ -507,7 +510,7 @@ function checkForChangesInYamlFiles($forceScan = false) {
 		}
 	
 		$contents = array();
-		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'wizards') as $type) {
+		foreach (array('admin_boxes', 'admin_toolbar', 'slot_controls', 'organizer', 'visitor', 'wizards') as $type) {
 			foreach (moduleDirs('tuix/'. $type. '/') as $moduleClassName => $dir) {
 			
 				foreach (scandir($dir) as $file) {
@@ -614,6 +617,11 @@ function checkForChangesInYamlFiles($forceScan = false) {
 									} elseif ($type == 'slot_controls') {
 										if (!empty($tag['module_class_name'])) {
 											$settingGroup = $tag['module_class_name'];
+										}
+								
+									} elseif ($type == 'visitor') {
+										if (!empty($tag['customisation_name'])) {
+											$settingGroup = $tag['customisation_name'];
 										}
 									}
 								
@@ -730,7 +738,8 @@ function saveSystemFieldsFromTUIX($datasetId) {
 								$fieldDetails = getRow('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'tab_name' => $tabName, 'is_system_field' => 1, 'field_name' => $fieldName));
 								$values = array(
 									'default_label' => ifNull(arrayKey($field, 'dataset_label'), arrayKey($field, 'label'), ''),
-									'is_system_field' => 1
+									'is_system_field' => 1,
+									'allow_admin_to_change_visibility' => !empty($field['allow_admin_to_change_visibility'])
 								);
 								if (!$fieldDetails || !$fieldDetails['ord']) {
 									$values['ord'] = (float) ifNull(arrayKey($field, 'ord'), $fieldCount);
@@ -815,6 +824,26 @@ function setModulePrefix(&$module, $define = true, $oldFormat = false) {
 }
 
 
+function trimDebugBacktrace(&$debugBacktrace, $firstCall = true) {
+	
+	if ($firstCall) {
+		array_shift($debugBacktrace);
+	}
+	
+	foreach ($debugBacktrace as &$entry) {
+		if (is_object($entry)) {
+			$entry = '<<'. get_class($entry). '>>';
+		
+		} elseif (is_array($entry)) {
+			if ($entry === cms_core::$slotContents) {
+				$entry = '<<cms_core::$slotContents>>';
+			} else {
+				trimDebugBacktrace($entry, false);
+			}
+		}
+	}
+}
+
 function reportDatabaseErrorFromHelperFunction($error) {
 	echo adminPhrase('A database error has occured on this section of the site.'), "\n\n";
 	
@@ -825,13 +854,19 @@ function reportDatabaseErrorFromHelperFunction($error) {
 	}
 		
 	if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
-		reportDatabaseError(adminPhrase('Database query error'), '', $error, '', print_r(debug_backtrace(), true));
+		$debugBacktrace = debug_backtrace();
+		trimDebugBacktrace($debugBacktrace);
+		reportDatabaseError(adminPhrase('Database query error'), '', $error, '', print_r($debugBacktrace, true));
 	}
 	
 	exit;
 }
 
 //Check a table definition and see which columns are numeric
+define('ZENARIO_INT_COL', true);
+define('ZENARIO_FLOAT_COL', 1);
+define('ZENARIO_TIME_COL', 0);
+define('ZENARIO_STRING_COL', false);
 function checkTableDefinition($prefixAndTable, $checkExists = false) {
 	$pkCol = false;
 	$exists = false;
@@ -862,13 +897,13 @@ function checkTableDefinition($prefixAndTable, $checkExists = false) {
 				case 'int':
 				case 'integer':
 				case 'bigint':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = true;
+					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_INT_COL;
 					break;
 				
 				case 'float':
 				case 'double':
 				case 'decimal':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = 1;
+					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_FLOAT_COL;
 					break;
 				
 				case 'datetime':
@@ -876,11 +911,11 @@ function checkTableDefinition($prefixAndTable, $checkExists = false) {
 				case 'timestamp':
 				case 'time':
 				case 'year':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = 0;
+					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_TIME_COL;
 					break;
 				
 				default:
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = false;
+					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_STRING_COL;
 			}
 			
 			//Also check to see if there is a single primary key column
@@ -914,14 +949,21 @@ function checkTableDefinition($prefixAndTable, $checkExists = false) {
 }
 
 //Helper function for checkRowExists
-function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sign = '=', $in = 0) {
+function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, $ignoreMissingColumns = false, $sign = '=', $in = 0, $wasNot = false) {
 	
-	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col])) {
-		checkTableDefinition(cms_core::$lastDBPrefix. $table);
+	if (!isset(cms_core::$numericCols[$tableName][$col])) {
+		checkTableDefinition($tableName);
 	}
 	
-	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col])) {
-		reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => cms_core::$lastDBPrefix. $table)));
+	if (!isset(cms_core::$numericCols[$tableName][$col])) {
+		if ($ignoreMissingColumns && !$isWhere) {
+			return;
+		} else {
+			if (!function_exists('adminPhrase')) {
+				require_once CMS_ROOT. 'zenario/includes/cms.inc.php';
+			}
+			reportDatabaseErrorFromHelperFunction(adminPhrase('The column `[[col]]` does not exist in the table `[[table]]`.', array('col' => $col, 'table' => $tableName)));
+		}
 	}
 	
 	
@@ -930,10 +972,10 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 		foreach ($val as $sign2 => &$val2) {
 			if (is_numeric($sign2) || substr($sign2, 0, 1) == '=') {
 				if ($firstIn) {
-					checkRowExistsCol($table, $sql, $col, $val2, $first, $isWhere, 'IN (', 1);
+					checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT IN (' : 'IN (', 1);
 					$firstIn = false;
 				} else {
-					checkRowExistsCol($table, $sql, $col, $val2, $first, $isWhere, ', ', 2);
+					checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ', ', 2);
 				}
 			}
 		}
@@ -942,7 +984,9 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 		}
 		
 		foreach ($val as $sign2 => &$val2) {
+			$isNot = false;
 			if (substr($sign2, 0, 1) == '!') {
+				$isNot = true;
 				$sign2 = '!=';
 			}
 			if ($sign2 === '!='
@@ -953,7 +997,7 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 			 || $sign2 === '>='
 			 || $sign2 === 'LIKE'
 			 || $sign2 === 'NOT LIKE') {
-				checkRowExistsCol($table, $sql, $col, $val2, $first, $isWhere, $sign2);
+				checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $sign2, 0, $isNot);
 			}
 		}
 		
@@ -977,7 +1021,7 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 		$sql .= '`'. sqlEscape($col). '` ';
 	}
 	
-	if ($val === null || (!$val && cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col] === 0)) {
+	if ($val === null || (!$val && cms_core::$numericCols[$tableName][$col] === ZENARIO_TIME_COL)) {
 		if ($in) {
 			$sql .= $sign. 'NULL';
 		
@@ -991,10 +1035,10 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 			$sql .= 'IS NOT NULL';
 		}
 	
-	} elseif (!cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col]) {
+	} elseif (!cms_core::$numericCols[$tableName][$col]) {
 		$sql .= $sign. ' \''. sqlEscape((string) $val). '\'';
 	
-	} elseif (cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col] === 1) {
+	} elseif (cms_core::$numericCols[$tableName][$col] === ZENARIO_FLOAT_COL) {
 		$sql .= $sign. ' '. (float) $val;
 	
 	} else {
@@ -1007,31 +1051,37 @@ function checkRowExistsCol(&$table, &$sql, &$col, &$val, &$first, $isWhere, $sig
 //Declare a function to check if something exists in the database
 function checkRowExists(
 	$table, $ids,
-	$cols = false, $notZero = false, $multiple = false, $mode = false, $orderBy = array(),
-	$distinct = false, $array = false, $addId = false
+	$ignoreMissingColumns = false, $cols = false, $multiple = false, $mode = false, $orderBy = array(),
+	$distinct = false, $returnArrayIndexedBy = false, $addId = false
 ) {
+	$tableName = cms_core::$lastDBPrefix. $table;
 	
-	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
-		checkTableDefinition(cms_core::$lastDBPrefix. $table);
+	if (!isset(cms_core::$numericCols[$tableName])) {
+		checkTableDefinition($tableName);
 	}
 	
-	if (cms_core::$pkCols[cms_core::$lastDBPrefix. $table] === '') {
-		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => cms_core::$lastDBPrefix. $table)));
+	if (cms_core::$pkCols[$tableName] === '') {
+		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
 	}
 	
 	
-	if ($array) {
+	if ($returnArrayIndexedBy !== false) {
 		$out = array();
 		
-		if ($result = checkRowExists($table, $ids, $cols, $notZero, true, false, $orderBy, $distinct, false, !$distinct)) {
+		if ($result = checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
 			while ($row = sqlFetchAssoc($result)) {
 				
 				$id = false;
-				if ((($idCol = '[[ id column ]]') && (isset($row[$idCol])))
-				 || (($idCol = cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) && (isset($row[$idCol])))) {
+				if (is_string($returnArrayIndexedBy) && isset($row[$returnArrayIndexedBy])) {
+					$id = $row[$returnArrayIndexedBy];
+				
+				} elseif (isset($row['[[ id column ]]'])) {
+					$id = $row['[[ id column ]]'];
+				
+				} elseif (($idCol = cms_core::$pkCols[$tableName]) && (isset($row[$idCol]))) {
 					$id = $row[$idCol];
-					unset($row['[[ id column ]]']);
 				}
+				unset($row['[[ id column ]]']);
 				
 				if (is_string($cols)) {
 					if ($id) {
@@ -1054,8 +1104,8 @@ function checkRowExists(
 	
 	
 	if (!is_array($ids)) {
-		if (cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
-			$ids = array(cms_core::$pkCols[cms_core::$lastDBPrefix. $table] => $ids);
+		if (cms_core::$pkCols[$tableName]) {
+			$ids = array(cms_core::$pkCols[$tableName] => $ids);
 		} else {
 			$ids = array('id' => $ids);
 		}
@@ -1099,8 +1149,8 @@ function checkRowExists(
 				}
 			}
 	
-			if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && !in_array(cms_core::$pkCols[cms_core::$lastDBPrefix. $table], $cols)) {
-				$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
+			if ($addId && cms_core::$pkCols[$tableName] && !in_array(cms_core::$pkCols[$tableName], $cols)) {
+				$sql .= ', `'. sqlEscape(cms_core::$pkCols[$tableName]). '` as `[[ id column ]]`';
 			}
 	
 		} elseif ($cols === true) {
@@ -1116,8 +1166,8 @@ function checkRowExists(
 				$sql .= ' AS `'. sqlEscape($cols). '`';
 			}
 	
-			if ($addId && cms_core::$pkCols[cms_core::$lastDBPrefix. $table] && $cols != cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
-				$sql .= ', `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` as `[[ id column ]]`';
+			if ($addId && cms_core::$pkCols[$tableName] && $cols != cms_core::$pkCols[$tableName]) {
+				$sql .= ', `'. sqlEscape(cms_core::$pkCols[$tableName]). '` as `[[ id column ]]`';
 			}
 
 		} else {
@@ -1129,22 +1179,11 @@ function checkRowExists(
 	
 	
 	$sql .= '
-			FROM `'. sqlEscape(cms_core::$lastDBPrefix. $table). '`';
+			FROM `'. sqlEscape($tableName). '`';
 	
 	$first = true;
 	foreach($ids as $col => &$val) {
-		checkRowExistsCol($table, $sql, $col, $val, $first, true);
-	}
-	
-	if ($notZero && !is_array($cols) && $cols !== false) {
-		if ($first) {
-			$sql .= '
-			WHERE ';
-		} else {
-			$sql .= '
-			  AND ';
-		}
-		$sql .= '`'. sqlEscape($cols). '` != 0';
+		checkRowExistsCol($tableName, $sql, $col, $val, $first, true, $ignoreMissingColumns);
 	}
 	
 	if (!empty($orderBy)) {
@@ -1204,22 +1243,27 @@ function checkRowExists(
 	}
 }
 
-function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $ignore = false) {
+function setRow(
+	$table, $values, $ids = array(),
+	$ignore = false, $ignoreMissingColumns = false,
+	$markNewThingsInSession = false, $insertIfNotPresent = true
+) {
 	$sqlW = '';
+	$tableName = cms_core::$lastDBPrefix. $table;
 	
-	if (!isset(cms_core::$numericCols[cms_core::$lastDBPrefix. $table])) {
-		checkTableDefinition(cms_core::$lastDBPrefix. $table);
+	if (!isset(cms_core::$numericCols[$tableName])) {
+		checkTableDefinition($tableName);
 	}
 	
-	if (cms_core::$pkCols[cms_core::$lastDBPrefix. $table] === '') {
-		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => cms_core::$lastDBPrefix. $table)));
+	if (cms_core::$pkCols[$tableName] === '') {
+		reportDatabaseErrorFromHelperFunction(adminPhrase('The table `[[table]]` does not exist.', array('table' => $tableName)));
 	}
 	
 	
 	if (!is_array($ids)) {
 		
-		if (cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
-			$ids = array(cms_core::$pkCols[cms_core::$lastDBPrefix. $table] => $ids);
+		if (cms_core::$pkCols[$tableName]) {
+			$ids = array(cms_core::$pkCols[$tableName] => $ids);
 		} else {
 			$ids = array('id' => $ids);
 		}
@@ -1230,16 +1274,16 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $ig
 		
 		if (!empty($values)) {
 			$sql = '
-				UPDATE '. ($ignore? 'IGNORE ' : ''). '`'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
+				UPDATE '. ($ignore? 'IGNORE ' : ''). '`'. sqlEscape($tableName). '` SET ';
 			
 			$first = true;
 			foreach ($values as $col => &$val) {
-				checkRowExistsCol($table, $sql, $col, $val, $first, false);
+				checkRowExistsCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
 			}
 			
 			$first = true;
 			foreach($ids as $col => &$val) {
-				checkRowExistsCol($table, $sqlW, $col, $val, $first, true);
+				checkRowExistsCol($tableName, $sqlW, $col, $val, $first, true, $ignoreMissingColumns);
 			}
 			
 			sqlUpdate($sql. $sqlW, false);
@@ -1254,8 +1298,8 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $ig
 			}
 		}
 		
-		if ($insertIfNotPresent && cms_core::$pkCols[cms_core::$lastDBPrefix. $table]) {
-			if (($sql = 'SELECT `'. sqlEscape(cms_core::$pkCols[cms_core::$lastDBPrefix. $table]). '` FROM `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` '. $sqlW)
+		if ($insertIfNotPresent && cms_core::$pkCols[$tableName]) {
+			if (($sql = 'SELECT `'. sqlEscape(cms_core::$pkCols[$tableName]). '` FROM `'. sqlEscape($tableName). '` '. $sqlW)
 			 && ($result = sqlSelect($sql))
 			 && ($row = sqlFetchRow($result))
 			) {
@@ -1269,23 +1313,27 @@ function setRow($table, $values, $ids = array(), $insertIfNotPresent = true, $ig
 	
 	} elseif ($insertIfNotPresent) {
 		$sql = '
-			INSERT '. ($ignore? 'IGNORE ' : ''). 'INTO `'. sqlEscape(cms_core::$lastDBPrefix. $table). '` SET ';
+			INSERT '. ($ignore? 'IGNORE ' : ''). 'INTO `'. sqlEscape($tableName). '` SET ';
 		
 		$first = true;
 		$hadColumns = array();
 		foreach ($values as $col => &$val) {
-			checkRowExistsCol($table, $sql, $col, $val, $first, false);
+			checkRowExistsCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
 			$hadColumns[$col] = true;
 		}
 		
 		foreach ($ids as $col => &$val) {
 			if (!isset($hadColumns[$col])) {
-				checkRowExistsCol($table, $sql, $col, $val, $first, false);
+				checkRowExistsCol($tableName, $sql, $col, $val, $first, false, $ignoreMissingColumns);
 			}
 		}
 		
 		sqlUpdate($sql, false);
 		$id = sqlInsertId();
+		
+		if ($markNewThingsInSession) {
+			$_SESSION['new_id_in_'. $table] = $id;
+		}
 		
 		if (sqlAffectedRows() > 0) {
 			if (empty($ids)) {

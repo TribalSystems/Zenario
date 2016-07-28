@@ -31,119 +31,104 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_pro_features__admin_boxes__site_settings extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values){
+		
 		if (isset($box['tabs']['admin_domain']['fields']['admin_use_ssl'])) {
 			if (!setting('admin_use_ssl') && httpOrhttps() != 'https://') {
 				$box['tabs']['admin_domain']['fields']['admin_use_ssl']['read_only'] = true;
 			}
 		}
-		$fields['zenario_pro_features__caching/limit_caching_debug_info_by_ip']['note_below'] = 
-			'Only shows caching debug info when pages are viewed from your current IP address (' . visitorIP() . ').';
-		if (isset($box['tabs']['zenario_pro_features__caching'])) {
-			$values['zenario_pro_features__caching/limit_caching_debug_info_by_ip'] = (bool)setting('limit_caching_debug_info_by_ip');
+		
+		
+		$mrg = array('ip' => ifNull(setting('limit_caching_debug_info_by_ip'), visitorIP()));
+		
+		if (!$values['caching/limit_caching_debug_info_by_ip'] = (bool) setting('limit_caching_debug_info_by_ip')) {
+			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
+				adminPhrase('Only show debug info to my current IP address ([[ip]]).', $mrg);
+		
+		} elseif (setting('limit_caching_debug_info_by_ip') == visitorIP()) {
+			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
+				adminPhrase('Only show debug info to my current IP address ([[ip]]).', $mrg);
+		
+		} else {
+			$fields['caching/limit_caching_debug_info_by_ip']['label'] = 
+				adminPhrase('Only show debug info to the IP address ([[ip]]).', $mrg);
 		}
+		
+		//var_dump(setting('limit_caching_debug_info_by_ip'), $values['caching/limit_caching_debug_info_by_ip']);
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
-		if (isset($box['tabs']['zenario_pro_features__caching'])) {
-			
-			cleanDownloads();
-			if (is_writable(CMS_ROOT. 'public/images')
-			 && is_writable(CMS_ROOT. 'private/images')) {
-				$values['zenario_pro_features__caching/cache_images'] = 1;
-				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_writable']['show'] = true;
-				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_not_writable']['show'] = false;
+		if (isset($box['tabs']['zenario_pro_features__cache_stats']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
+				
+			$reset = false;
+			$dir = CMS_ROOT. 'cache/stats/page_caching/';
+				
+			//Reset the stats
+			if (!empty($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed'])) {
+				$reset = true;
+				foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses', 'from', 'to') as $stat) {
+					if (is_writable($dir. $stat)) {
+						unlink($dir. $stat);
+					} else {
+						$reset = false;
+					}
+				}
+				unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed']);
+			}
+				
+			if ($reset) {
+				$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = true;
 			} else {
-				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_writable']['show'] = false;
-				$box['tabs']['zenario_pro_features__caching']['notices']['img_dir_not_writable']['show'] = true;
+				$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = false;
 			}
-	
-			if (isset($box['tabs']['zenario_pro_features__clear_cache']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-				//Manually clear the cache
-				if (!empty($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed'])) {
-					$sql = '';
-					$ids = $values = array();
-					$table = 'site_settings';
-					reviewDatabaseQueryForChanges($sql, $ids, $values, $table);
-					unset($box['tabs']['zenario_pro_features__clear_cache']['fields']['clear_cache']['pressed']);
-	
-					$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = true;
-				} else {
-					$box['tabs']['zenario_pro_features__clear_cache']['notices']['notice']['show'] = false;
+				
+			$stats = array();
+			foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses') as $stat) {
+				$stats[$stat] = 0;
+				if (file_exists($dir. $stat)) {
+					$stats[$stat] = (int) trim(file_get_contents($dir. $stat));
 				}
+
+				unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
+				$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
 			}
-	
-			if (isset($box['tabs']['zenario_pro_features__cache_stats']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
-					
-				$reset = false;
-				$dir = CMS_ROOT. 'cache/stats/page_caching/';
-					
-				//Reset the stats
-				if (!empty($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed'])) {
-					$reset = true;
-					foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses', 'from', 'to') as $stat) {
-						if (is_writable($dir. $stat)) {
-							unlink($dir. $stat);
-						} else {
-							$reset = false;
-						}
-					}
-					unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['pressed']);
+				
+			foreach (array('from', 'to') as $stat) {
+				$stats[$stat] = '';
+				if (file_exists($dir. $stat)) {
+					$stats[$stat] = filemtime($dir. $stat);
 				}
-					
-				if ($reset) {
-					$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = true;
-				} else {
-					$box['tabs']['zenario_pro_features__cache_stats']['notices']['notice']['show'] = false;
-				}
-					
-				$stats = array();
-				foreach (array('total', 'hits', 'writes', 'partial_hits', 'partial_writes', 'misses') as $stat) {
-					$stats[$stat] = 0;
-					if (file_exists($dir. $stat)) {
-						$stats[$stat] = (int) trim(file_get_contents($dir. $stat));
-					}
-	
-					unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
-					$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
-				}
-					
-				foreach (array('from', 'to') as $stat) {
-					$stats[$stat] = '';
-					if (file_exists($dir. $stat)) {
-						$stats[$stat] = filemtime($dir. $stat);
-					}
-	
-					unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
-					$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
-				}
-					
-				unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['current_value']);
-				if ($stats['total'] == 0) {
-					$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = '';
-				} else {
-					$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = round(100 * (float) $stats['hits'] / $stats['total'], 2);
-				}
-					
-				if (file_exists($dir. 'from')) {
-					$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_selected';
-				} else {
-					$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_disabled';
-				}
+
+				unset($box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['current_value']);
+				$box['tabs']['zenario_pro_features__cache_stats']['fields'][$stat]['value'] = $stats[$stat];
+			}
+				
+			unset($box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['current_value']);
+			if ($stats['total'] == 0) {
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = '';
+			} else {
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['hits_pc']['value'] = round(100 * (float) $stats['hits'] / $stats['total'], 2);
+			}
+				
+			if (file_exists($dir. 'from')) {
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_selected';
+			} else {
+				$box['tabs']['zenario_pro_features__cache_stats']['fields']['clear_stats']['class'] = 'submit_disabled';
 			}
 		}
-		
 	}
+	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		
-		if (isset($box['tabs']['zenario_pro_features__caching'])) {
+		if (isset($box['tabs']['caching'])) {
 			
-			if ($values['zenario_pro_features__caching/caching_enabled']) {
-				if (!$values['zenario_pro_features__caching/cache_web_pages']
-				 && !$values['zenario_pro_features__caching/cache_plugins']
-				 && !$values['zenario_pro_features__caching/cache_css_js_wrappers']
-				 && !$values['zenario_pro_features__caching/cache_ajax']) {
-					$box['tabs']['zenario_pro_features__caching']['errors'][] =
+			if ($values['caching/caching_enabled']) {
+				if (!$values['caching/cache_web_pages']
+				 && !$values['caching/cache_plugins']
+				 && !$values['caching/cache_css_js_wrappers']
+				 && !$values['caching/cache_ajax']) {
+					$box['tabs']['caching']['errors'][] =
 						adminPhrase('Please select which things you wish to cache.');
 				}
 			}
@@ -153,17 +138,17 @@ class zenario_pro_features__admin_boxes__site_settings extends module_base_class
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		//Changes to the cache site settings..?
-		if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBooleanArray($box, 'tabs', 'zenario_pro_features__caching', 'edit_mode', 'on')) {
+		if (checkPriv('_PRIV_EDIT_SITE_SETTING') && engToBooleanArray($box, 'tabs', 'caching', 'edit_mode', 'on')) {
 			//Empty the cache if so
 			zenario_pro_features::clearCacheOnShutdown($clearAll = true);
 			
 			// Save the current users IP address if option checked
-			$value = false;
-			if ($values['zenario_pro_features__caching/caching_debug_info']
-				&& $values['zenario_pro_features__caching/limit_caching_debug_info_by_ip']) {
-				$value = visitorIP();
+			if (!setting('limit_caching_debug_info_by_ip') && $values['caching/limit_caching_debug_info_by_ip']) {
+				setSetting('limit_caching_debug_info_by_ip', visitorIP());
+			
+			} elseif (setting('limit_caching_debug_info_by_ip') && !$values['caching/limit_caching_debug_info_by_ip']) {
+				setSetting('limit_caching_debug_info_by_ip', '');
 			}
-			setSetting('limit_caching_debug_info_by_ip', $value);
 		}
 	}
 }

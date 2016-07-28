@@ -28,6 +28,45 @@
 
 //	function arrayKey(&$array, $key, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false, $key7 = false, $key8 = false, $key9 = false) {}
 
+function addOrdinalsToTUIX(&$tuix) {
+	
+	//Loop through an array of TUIX elements, inserting any missing ordinals
+	$ord = 0;
+	$replaces = array();
+	if (is_array($tuix)) {
+		foreach ($tuix as $key => &$tag) {
+			if (is_array($tag)) {
+				if (!isset($tag['ord'])) {
+					$tag['ord'] = ++$ord;
+				
+				//If the ordinal is a string, attempt to parse it
+				} elseif (!is_numeric($tag['ord'])) {
+					$replace = '';
+					foreach (preg_split('@(\b\w+\b|\.)@', $tag['ord'], -1,  PREG_SPLIT_DELIM_CAPTURE) as $i => $part) {
+						if ($i % 2) {
+							
+							//Only allow a period once in a number; e.g. 1.02.03 should be 1.0203
+							if ($part === '.') {
+								if (strpos($replace, '.') !== false) {
+									continue;
+								}
+							
+							//Look for the names of other elements,
+							//and replace the names with the ordinals of those elements
+							} elseif (!is_numeric($part) && isset($tuix[$part]['ord'])) {
+								$replace .= $tuix[$part]['ord'];
+								continue;
+							}
+						}
+						$replace .= $part;
+					}
+					$tag['ord'] = $replace;
+				}
+			}
+		}
+	}
+}
+
 function arrayValuesToKeys($a) {
 	$o = array();
 	if (is_array($a)) {
@@ -123,6 +162,7 @@ function engToBooleanArray(&$array, $key, $key2 = false, $key3 = false, $key4 = 
 }
 
 //Explode a string, and return any values that aren't empty and/or whitespace
+cms_core::$whitelist[] = 'explodeAndTrim';
 function explodeAndTrim($string, $mustBeNumeric = false, $separator = ',') {
 	$a = array();
 	foreach (explode($separator, $string) as $id) {
@@ -144,6 +184,7 @@ function explodeDecodeAndTrim($string, $separator = ',') {
 	return $a;
 }
 
+cms_core::$whitelist[] = 'get';
 //	function get($name) {}
 
 //A shortcut function to in_array, that looks similar to the MySQL in
@@ -257,10 +298,13 @@ function pullFromArray(&$array/*, $key1, $key2 [, $key3 [, $key4 [, ... ]]]*/) {
 	return false;
 }
 
+cms_core::$whitelist[] = 'post';
 //	function post($name) {}
 
+cms_core::$whitelist[] = 'request';
 //	function request($name) {}
 
+cms_core::$whitelist[] = 'session';
 //	function session($name) {}
 
 function SimpleXMLString(&$string) {

@@ -286,7 +286,7 @@ if (!empty($failures)) {
 	
 	//Drop the modules/plugin table from the existing installation
 	$error = false;
-	if (!function_exists('runSQL')) require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+	require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
 	runSQL(false, 'local-DROP.sql', $error);
 	runSQL(false, 'local-admin-DROP.sql', $error);
 	

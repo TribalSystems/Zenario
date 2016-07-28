@@ -42,6 +42,7 @@ incCSS('zenario/styles/admin');
 incCSS('zenario/styles/colorbox');
 
 //Include other third-party libraries
+incCSS('zenario/libraries/bsd/tokenize/jquery.tokenize');
 incCSS('zenario/libraries/mit/intro/introjs');
 incCSS('zenario/libraries/mit/spectrum/spectrum');
 incCSS('zenario/libraries/mit/toastr/toastr');

@@ -26,6 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+cms_core::$whitelist[] = 'canSetCookie';
 function canSetCookie() {
 	return setting('cookie_require_consent') != 'explicit' || !empty($_COOKIE['cookies_accepted']) || checkPriv();
 }
@@ -36,6 +37,7 @@ function hideCookieConsent() {
 	}
 }
 
+cms_core::$whitelist[] = 'inc';
 //	function inc($moduleClass) {}
 
 //	function isError($object) {}
@@ -78,17 +80,106 @@ function langSpecialPage($pageType, &$cID, &$cType, $preferredLanguageId = false
 	return false;
 }
 
+cms_core::$whitelist[] = 'now';
 function now() {
-	$result = sqlSelect("SELECT NOW()");
-	$row = sqlFetchRow($result);
+	$row = sqlFetchRow("SELECT NOW()");
 	return $row[0];
 }
 
+cms_core::$whitelist[] = 'dateNow';
 function dateNow() {
-	$result = sqlSelect("SELECT DATE(NOW())");
-	$row = sqlFetchRow($result);
+	$row = sqlFetchRow("SELECT DATE(NOW())");
 	return $row[0];
 }
+
+
+//Given a MySQL timestamp, a unix timestamp, or a PHP date object, return a PHP date object in the current user's timezone
+function convertToUserTimezone($time, $specificTimeZone = false) {
+	
+	//Accept either dates in UTC/GMT, or UNIX timestamps (in seconds, not in ms)
+	//Also accept a PHP date object (i.e. this function won't cause an error if someone accidentally calls it twice!)
+	if (is_numeric($time)) {
+		$time = new DateTime('@'. (int) $time);
+	
+	} elseif (is_string($time)) {
+		$time = new DateTime($time);
+	}
+	
+	if ($specificTimeZone) {
+		$time->setTimeZone(new DateTimeZone($specificTimeZone));
+	} else {
+		//Get the user's timezone, if not already checked
+		if (cms_core::$timezone === null) {
+			if (empty($_SESSION['extranetUserID'])
+			 || !($timezoneFieldId = setting('zenario_timezones__timezone_dataset_field'))
+			 || !($timezoneFieldCol = getRow('custom_dataset_fields', 'db_column', $timezoneFieldId))
+			 || !(cms_core::$timezone = getRow('users_custom_data', $timezoneFieldCol, $_SESSION['extranetUserID']))) {
+				cms_core::$timezone = false;
+			}
+		}
+		if (cms_core::$timezone) {
+			$time->setTimeZone(new DateTimeZone(cms_core::$timezone));
+		}
+	}
+	
+	return $time;
+}
+
+
+
+cms_core::$whitelist[] = 'getRelativeDate';
+function getRelativeDate($timestamp, $maxPeriod = "day", $addFullTime = false, $format_type = false, $languageId = false) {
+	
+	$time = convertToUserTimezone($timestamp);
+	if (!is_numeric($timestamp)) {
+		$timestamp = $time->getTimestamp();
+	}
+	
+	$etime = time() - (int) $timestamp;
+	if ($etime < 1) {
+		return phrase('[[time_elapsed]] secs ago', array('time_elapsed' => 0), 'zenario_common_features');
+	}
+	
+	$units = array('sec', 'min', 'hour', 'day', 'month', 'year');
+	$uPlurals = array('secs', 'mins', 'hours', 'days', 'months', 'years');
+	$uValues = array(1, 60, 3600, 86400);
+	$maxI = array_search($maxPeriod, $units);
+	
+	if ($maxI) {
+		if ($maxI > 3) {
+			$uValues[] = 86400 * (int) date('t');
+			if ($maxI > 4) {
+				$uValues[] = 86400 * (365 + (int) date('L'));
+			}
+		}
+		
+		for ($i = 1; $i <= $maxI; ++$i) {
+			if ($etime < $uValues[$i]) {
+				$r = round($etime / $uValues[--$i]);
+				
+				if ($r > 1) {
+					$relativeDate = phrase('[[time_elapsed]] ' . $uPlurals[$i] . ' ago', array('time_elapsed' => $r), 'zenario_common_features');
+				} else {
+					$relativeDate = phrase('[[time_elapsed]] ' . $units[$i] . ' ago', array('time_elapsed' => $r), 'zenario_common_features');
+				}
+			
+				if ($addFullTime) {
+					if (is_string($addFullTime)) {
+						return $relativeDate. ' ('. formatDateTimeNicely($time, $addFullTime, $languageId). ')';
+					} else {
+						return $relativeDate. ' ('. formatDateTimeNicely($time, $format_type, $languageId). ')';
+					}
+				} else {
+					return $relativeDate;
+				}
+			}
+		}
+	}
+	
+	return formatDateNicely($time, $format_type, $languageId);
+}
+
+
 
 function addSqlDateTimeByPeriodAndReturnStartEnd($sql_start_date, $by_period) {
 	if(strpos($sql_start_date, '23:59:59')) {
@@ -254,6 +345,7 @@ function setSetting($settingName, $value, $updateDB = true, $clearCache = true) 
 	}
 }
 
+cms_core::$whitelist[] = 'setting';
 //	function setting($settingName) {}
 
 function windowsServer() {

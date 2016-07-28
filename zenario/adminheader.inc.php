@@ -74,8 +74,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) {
 }
 
 
-if (!function_exists('inc')) require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
-if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+require_once CMS_ROOT. 'zenario/visitorheader.inc.php';
+require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 
 //Check if the admin is currently logged in
 if (!checkPriv()) {

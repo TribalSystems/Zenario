@@ -46,6 +46,8 @@ if ($methodCall == 'handleOrganizerPanelAJAX') {
 }
 
 
+$isForPlugin = request('cID') && request('cType') && request('instanceId');
+
 //Check which method call is being requested
 //Some method calls are associated with instances and content items, and some are not
 if ($methodCall == 'refreshPlugin'
@@ -54,16 +56,20 @@ if ($methodCall == 'refreshPlugin'
  || $methodCall == 'pluginAJAX'
  || $methodCall == 'showRSS'
  || $methodCall == 'showSlot'
- || ($methodCall == 'showFile' && request('cID') && request('cType') && request('instanceId'))) {
+ || ($methodCall == 'showFile' && $isForPlugin)
+ || ($methodCall == 'fillVisitorTUIX' && $isForPlugin)
+ || ($methodCall == 'formatVisitorTUIX' && $isForPlugin)
+ || ($methodCall == 'validateVisitorTUIX' && $isForPlugin)
+ || ($methodCall == 'saveVisitorTUIX' && $isForPlugin)) {
 
 	//showRSS and showFloatingBox method calls relate to content items
 	require CMS_ROOT. 'zenario/visitorheader.inc.php';
-	zenarioInitialiseTwig();
+	require CMS_ROOT. 'zenario/includes/twig.inc.php';
 	useGZIP(setting('compress_web_pages'));
 	
 	//If an admin is logged in, include admin functions for refreshing modules
 	if (checkPriv()) {
-		if (!function_exists('saveContent')) require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+		require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
 	}
 	
 	//Check the content item that this is being linked from, and whether the current user has permissions to access it
@@ -74,7 +80,8 @@ if ($methodCall == 'refreshPlugin'
 		$cVersion = getAppropriateVersion($cID, $cType);
 	}
 	
-	if (!cms_core::$cVersion = getShowableContent($content, $version, $cID, $cType, request('cVersion'))) {
+	$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
+	if (!$status || is_string($status)) {
 		exit;
 	}
 	
@@ -101,14 +108,27 @@ if ($methodCall == 'refreshPlugin'
 	
 	
 	if ($instanceId || $slotName) {
+	
+		$overrideSettings = false;
+		if (!empty($_REQUEST['overrideSettings'])
+		 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT'))) {
+			$overrideSettings = json_decode($_REQUEST['overrideSettings'], true);
+		}
+		$overrideFrameworkAndCSS = false;
+		if (!empty($_REQUEST['overrideFrameworkAndCSS'])
+		 && (checkPriv('_PRIV_CREATE_REVISION_DRAFT') || checkPriv('_PRIV_EDIT_DRAFT'))) {
+			$overrideFrameworkAndCSS = json_decode($_REQUEST['overrideFrameworkAndCSS'], true);
+		}
+		
 		getSlotContents(
 			cms_core::$slotContents,
 			cms_core::$cID, cms_core::$cType, cms_core::$cVersion,
 			cms_core::$layoutId, cms_core::$templateFamily, cms_core::$templateFileBaseName,
-			$instanceId, $slotName, $ajaxReload = true, $runPlugins = true, $exactMatch);
+			$instanceId, $slotName, $ajaxReload = true, $runPlugins = true, $exactMatch, $overrideSettings, $overrideFrameworkAndCSS);
 		
 		foreach (cms_core::$slotContents as $s => &$instance) {
 			$slotName = $s;
+			$moduleClassName = cms_core::$slotContents[$slotName]['class_name'];
 			$instanceId = cms_core::$slotContents[$slotName]['instance_id'];
 			$instanceFound = true;
 			break;
@@ -133,6 +153,10 @@ if ($methodCall == 'refreshPlugin'
 		|| $methodCall == 'handleAdminToolbarAJAX'
 		|| $methodCall == 'showFile'
 		|| $methodCall == 'showImage'
+		|| $methodCall == 'fillVisitorTUIX'
+		|| $methodCall == 'formatVisitorTUIX'
+		|| $methodCall == 'validateVisitorTUIX'
+		|| $methodCall == 'saveVisitorTUIX'
 		|| $methodCall == 'showStandalonePage') {
 	
 	//Allow handleAJAX, showFile, showImage and showStandalonePage to be for visitors or admins as needed
@@ -148,19 +172,19 @@ if ($methodCall == 'refreshPlugin'
 	}
 	
 	if (request('__pluginClassName__')) {
-		if (!($module = activateModule(request('__pluginClassName__')))) {
+		if (!($module = activateModule($moduleClassName = request('__pluginClassName__')))) {
 			exit;
 		}
 	} elseif (request('moduleClassName')) {
-		if (!($module = activateModule(request('moduleClassName')))) {
+		if (!($module = activateModule($moduleClassName = request('moduleClassName')))) {
 			exit;
 		}
 	} elseif (request('__pluginName__')) {
-		if (!($module = activateModule(request('__pluginName__')))) {
+		if (!($module = activateModule($moduleClassName = request('__pluginName__')))) {
 			exit;
 		}
 	} else {
-		if (!($module = activateModule(request('moduleName')))) {
+		if (!($module = activateModule($moduleClassName = request('moduleName')))) {
 			exit;
 		}
 	}
@@ -293,11 +317,190 @@ if ($methodCall == 'refreshPlugin'
 //Output a file
 if ($methodCall == 'showFile') {
 	
-	if (request('cID') && request('cType') && request('instanceId')) {
-		cms_core::$slotContents[$slotName]['class']->showFile();
-	} else {
-		$module->showFile();
+	if ($isForPlugin) {
+		$module = &cms_core::$slotContents[$slotName]['class'];
 	}
+	$module->showFile();
+	
+
+} elseif ($methodCall == 'fillVisitorTUIX'
+	   || $methodCall == 'formatVisitorTUIX'
+	   || $methodCall == 'validateVisitorTUIX'
+	   || $methodCall == 'saveVisitorTUIX') {
+	
+	require_once CMS_ROOT. 'zenario/includes/admin.inc.php';
+	require_once CMS_ROOT. 'zenario/includes/tuix_ajax.inc.php';
+	
+	//Exit if no path is specified
+	if (!$requestedPath = request('path')) {
+		echo 'No path specified!';
+		exit;
+	}
+	if (zenario_fea_tuix::$customisationName = request('_cn')) {
+		
+	} else {
+		zenario_fea_tuix::$customisationName = '';
+	}
+	$debugMode = checkPriv() && (bool) get('_debug');
+	
+	if ($isForPlugin) {
+		$module = &cms_core::$slotContents[$slotName]['class'];
+	}
+	
+	cms_core::$skType = 'visitor';
+	cms_core::$skPath = $requestedPath;
+	
+	//Check to see if this path is allowed.
+	if (!$module->returnVisitorTUIXEnabled($requestedPath, zenario_fea_tuix::$customisationName)) {
+		echo 'Access not allowed!';
+		exit;
+	}
+	
+	$tags = array();
+	$originalTags = array();
+	$moduleFilesLoaded = array();
+	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $requestedPath, zenario_fea_tuix::$customisationName);
+	
+	if (empty($tags[$requestedPath])) {
+		echo 'Path not found!';
+		exit;
+	}
+	$tags = $tags[$requestedPath];
+	$clientTags = false;
+	
+	
+	//Small hack for phrases:
+	//Try to note down the first YAML file that was used, and use this to report the path that the phrase was found in
+	//(Note that this may be wrong if more than one YAML file is used, but usually we only use one YAML file for each path)
+	if (!empty($moduleFilesLoaded[$moduleClassName]['paths'])) {
+		foreach ($moduleFilesLoaded[$moduleClassName]['paths'] as $yamlFilePath) {
+			zenario_fea_tuix::$yamlFilePath = $yamlFilePath;
+			break;
+		}
+	}
+	
+	
+	if ($debugMode) {
+		$staticTags = $tags;
+	}
+
+	//Debug mode - show the TUIX before it's been modified
+	if ($debugMode) {
+		$modules = array($moduleClassName = $module);
+		displayDebugMode($staticTags, $modules, $moduleFilesLoaded, $tagPath = $requestedPath);
+		exit;
+	}
+	
+	if (in($methodCall, 'formatVisitorTUIX', 'validateVisitorTUIX', 'saveVisitorTUIX') && !empty($_POST['_tuix'])) {
+		$filling = false;
+		$clientTags = json_decode($_POST['_tuix'], true);
+	
+		//checkBoxDefinition($box, $tags);
+		loadCopyOfTUIXFromServer($tags, $clientTags);
+		
+		syncAdminBoxFromClientToServer($tags, $clientTags);
+		
+		if (!empty($_REQUEST['_useSync'])) {
+			$originalTags = $tags;
+		}
+		
+		if (in($methodCall, 'validateVisitorTUIX', 'saveVisitorTUIX')) {
+			$fields = array();
+			$values = array();
+			$changes = array();
+			if (TUIXLooksLikeFAB($tags)) {
+				readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true);
+				
+				foreach ($tags['tabs'] as $tabName => &$tab) {
+					applyValidationFromTUIXOnTab($tab);
+				}
+			}
+			
+			$saving = $methodCall == 'saveVisitorTUIX';
+	
+			$module->validateVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes, $saving);
+			
+			
+			if ($saving) {
+				//Check if there are any errors
+				$doSave = true;
+				if (TUIXLooksLikeFAB($tags)) {
+					foreach ($tags['tabs'] as &$tab) {
+						if (!empty($tab['errors'])) {
+							$doSave = false;
+							break;
+						}
+					
+						if (!empty($tab['fields']) && is_array($tab['fields'])) {
+							foreach ($tab['fields'] as &$field) {
+								if (!empty($field['error'])) {
+									$doSave = false;
+									break 2;
+								}
+							}
+						}
+					}
+				}
+				
+				if ($doSave) {
+					$fields = array();
+					$values = array();
+					$changes = array();
+					if (TUIXLooksLikeFAB($tags)) {
+						readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
+					}
+					
+					$module->saveVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes);
+				}
+			}
+		}
+		
+	} else {
+		$filling = true;
+		
+		//Logic for initialising an Admin Box
+		if (!empty($tags['key']) && is_array($tags['key'])) {
+			foreach ($tags['key'] as $key => &$value) {
+				if (!empty($_REQUEST[$key])) {
+					$value = $_REQUEST[$key];
+				}
+			}
+		}
+		
+		$fields = array();
+		$values = array();
+		$changes = array();
+		if (TUIXLooksLikeFAB($tags)) {
+			readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
+		}
+	
+		$module->fillVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values);
+	}
+
+	$fields = array();
+	$values = array();
+	$changes = array();
+	if (TUIXLooksLikeFAB($tags)) {
+		readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $addOrds = true);
+	}
+
+	$module->formatVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes);
+	
+	if (TUIXLooksLikeFAB($tags)) {
+		//Try to save a copy of the admin box in the cache directory
+		saveCopyOfTUIXOnServer($tags);
+		
+		if (!empty($originalTags)) {
+			$output = array();
+			syncAdminBoxFromServerToClient($tags, $originalTags, $output);
+	
+			$tags = $output;
+		}
+	}
+
+	echo json_encode($tags);
+	exit;
+	
 	
 	
 //Show an image
@@ -427,7 +630,7 @@ if ($methodCall == 'showFile') {
 				$messageType = 'question';
 				
 				//Undocumented trick to refresh Organizer!
-			} else if (substr($message, 0, 25) == '<!--Reload_Storekeeper-->') {
+			} else if (substr($message, 0, 23) == '<!--Reload_Organizer-->' || substr($message, 0, 25) == '<!--Reload_Storekeeper-->') {
 					echo '
 									self.parent.zenarioO.reloadPage();
 								</script>
@@ -513,6 +716,10 @@ if ($methodCall == 'showFile') {
 		if (($showInFloatingBox = cms_core::$slotContents[$slotName]['class']->checkShowInFloatingBoxVar()) === true) {
 			echo
 				'<!--SHOW_IN_FLOATING_BOX-->';
+			if (($params = cms_core::$slotContents[$slotName]['class']->getFloatingBoxParams()) && is_array($params)) {
+				echo
+					'<!--FLOATING_BOX_PARAMS--' . json_encode($params) . '-->';
+			}
 		}
 		
 		//Display the level this Module is at
@@ -521,27 +728,19 @@ if ($methodCall == 'showFile') {
 				eschyp(arrayKey(cms_core::$slotContents[$slotName], 'level')),
 			'-->';
 		
-		if ($tabId = (int) cms_core::$slotContents[$slotName]['class']->tApiGetTabId()) {
+		if ($tabId = (int) cms_core::$slotContents[$slotName]['class']->zAPIGetTabId()) {
 			echo
 				'<!--TAB_ID--', $tabId, '-->';
 		}
 		
-		
-		//Check if the Plugin wants any JavaScript run
-		$scripts = array();
-		$scriptsBefore = array();
-		cms_core::$slotContents[$slotName]['class']->tApiCheckRequestedScripts($scripts, $scriptsBefore);
-		
-		if (count($scripts)) {
-			foreach ($scripts as &$script) {
-				echo '<!--SCRIPT--', eschyp(json_encode($script)), '-->';
-			}
-		}
-		
-		if (count($scriptsBefore)) {
-			foreach ($scriptsBefore as &$script) {
-				echo '<!--SCRIPT_BEFORE--', eschyp(json_encode($script)), '-->';
-			}
+		if (!empty(cms_core::$slotContents[$slotName]['css_class'])) {
+			echo
+				'<!--CSS_CLASS--',
+					eschyp(cms_core::$slotContents[$slotName]['css_class']),
+				'-->';
+		} else {
+			echo
+				'<!--CSS_CLASS---->';
 		}
 
 			
@@ -565,17 +764,6 @@ if ($methodCall == 'showFile') {
 						'<!--WIREFRAME-->';
 				}
 			}
-			
-			//Replace with
-			if (!empty(cms_core::$slotContents[$slotName]['css_class'])) {
-				echo
-					'<!--CSS_CLASS--',
-						eschyp(cms_core::$slotContents[$slotName]['css_class']),
-					'-->';
-			} else {
-				echo
-					'<!--CSS_CLASS---->';
-			}
 		
 			if (cms_core::$slotContents[$slotName]['class']->beingEdited()) {
 				echo '<!--IN_EDIT_MODE-->';
@@ -590,6 +778,24 @@ if ($methodCall == 'showFile') {
 			cms_core::$slotContents[$slotName]['class']->showSlot();
 			cms_core::$slotContents[$slotName]['class']->afterShowSlot();
 		}
+		
+		
+		//Check if the Plugin wants any JavaScript run
+		$scriptTypes = array();
+		cms_core::$slotContents[$slotName]['class']->zAPICheckRequestedScripts($scriptTypes);
+		
+		echo '<!--INFO-->';
+		foreach ($scriptTypes as $scriptType => &$scripts) {
+			foreach ($scripts as &$script) {
+				if ($scriptType === 0) {
+					echo '<!--SCRIPT_BEFORE--';
+				} else {
+					echo '<!--SCRIPT--';
+				}
+				echo eschyp(json_encode($script)), '-->';
+			}
+		}
+		echo '<!--/INFO-->';
 	
 	} else {
 		echo '<!--/INFO-->';

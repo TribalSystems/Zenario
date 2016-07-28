@@ -92,7 +92,7 @@ if (post('_format') || post('_validate')) {
 	$fields = array();
 	$values = array();
 	$changes = array();
-	readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true, $preDisplay = true);
+	readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true);
 	
 	//Run the fill method(s)
 	foreach ($modules as $className => &$module) {
@@ -108,7 +108,7 @@ if (post('_format') || post('_validate')) {
 $fields = array();
 $values = array();
 $changes = array();
-readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true, $preDisplay = true);
+readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = true);
 
 foreach ($modules as $className => &$module) {
 	$module->formatWizard($requestedPath, $tags, $fields, $values, $changes);

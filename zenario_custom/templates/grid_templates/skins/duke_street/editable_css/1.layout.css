@@ -1,0 +1,86 @@
+* {
+  margin: 0;
+}
+
+html, body {
+	height: 100%;
+}
+
+body .zenario_skin {
+	/* background:#7A8080; */
+	background:#ffffff;
+}
+
+.zenario_skin {
+	min-height: 100%;
+}
+
+.zenario_skin img {
+	display:block;
+}
+
+.zenario_slot_padding,
+.pad_slot {
+	display:none;
+}
+
+.space .pad_slot {
+	display: inline;
+}
+
+.Grid_Header {
+	background:#17202B;
+}
+
+.zenario_adminLoggedIn .Grid_Header .Top_Area {
+	margin-top:1px;
+}
+
+.Grid_Header .slot .zenario_slot {
+	height:100px;
+}
+
+.Grid_Body {
+	background:#FFF;
+}
+
+.Grid_Body .Full_Width {
+	margin-top:15px;
+}
+
+.Grid_Body .Main_Area {
+	margin-top:15px;
+}
+
+.Grid_Body .slot .zenario_slot {
+	margin-bottom:30px;
+}
+
+.Grid_Body .slot.Full_Width .zenario_slot,
+.Grid_Body .slot .zenario_slot .zenario_slot {
+	margin-bottom:0;
+}
+
+.Grid_Footer {
+	background:#7A8080;
+}
+
+.Grid_Footer .Footer_Area {
+	padding:15px 0;
+}
+
+.Grid_Footer .Footer_Area .slot .zenario_slot {
+	margin-bottom:5px;
+}
+
+.Grid_Footer .Footer_Area .slot .zenario_slot .zenario_slot {
+	margin-bottom:0;
+}
+
+body.zenario_adminLoggedIn .zenario_slotWithNoContents .zenario_slot {
+	background:#f0f0f0;
+}
+
+.slot.Built_On {
+	text-align: center;
+}

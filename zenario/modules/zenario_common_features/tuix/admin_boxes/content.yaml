@@ -6,29 +6,30 @@ zenario_content:
         cID: ""
         cType: ""
         cVersion: ""
+        
         source_cID: ""
         source_cVersion: ""
+        
+        create_from_toolbar: ""
+        from_cID: ""
+        from_cType: ""
+        
         translate: ""
-        target_language_id: ""
-        lock_language_id: ""
         equivId: ""
-        target_template_id: ""
-        target_cType: ""
-        target_categories: ""
         id_is_menu_node_id: ""
         id_is_parent_menu_node_id: ""
-        target_menu_parent: ""
-        target_menu_section: ""
-        target_privacy: ""
-        target_menu_title: ""
-        target_title: ""
-        target_alias: ""
         duplicate: ""
         duplicate_from_menu: ""
-        source_menu: ""
-        source_menu_parent: ""
-        quick_create_content: ""
-        quick_create_menu: ""
+        
+        target_cType: ""
+        target_title: ""
+        target_alias: ""
+        target_language_id: ""
+        target_template_id: ""
+        target_menu_parent: ""
+        target_menu_section: ""
+        target_menu_title: ""
+        
     identifier:
         css_class: content_draft
         label: Content item ID
@@ -40,6 +41,11 @@ zenario_content:
             edit_mode:
                 enabled: false
                 priv: _PRIV_EDIT_DRAFT
+            notices:
+                archived_template:
+                    show: false
+                    type: warning
+                    message: The chosen Layout is archived.
             fields:
                 title:
                     ord: 20
@@ -90,9 +96,45 @@ zenario_content:
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 Release Date:
                             </label>
+                
+                warning_message:
+                    ord: 33
+                    pre_field_html: <div class="zenario_fbWarning">
+                    snippet:
+                        html: ''
+                    post_field_html: </div>
+                    hidden: true
+                menu_options:
+                    ord: 34
+                    label: 'Menu options:'
+                    type: radios
+                    values:
+                        add_to_menu:
+                            ord: 10
+                            label: Add to menu
+                        orphan:
+                            ord: 20
+                            label: Don't add to menu (orphan)
+                    value: orphan
+                    format_onchange: true
+                add_to_menu:
+                    ord: 35
+                    label: 'Attach to menu:'
+                    pick_items:
+                        path: zenario__menu/panels/menu_position
+                        target_path: zenario__menu/panels/menu_position
+                        min_path: zenario__menu/panels/menu_position
+                        select_phrase: Place menu node...
+                        hide_info_button: true
+                        visible_if_for_all_selected_items: |
+                            zenario.engToBoolean(item.menu_id) || zenario.engToBoolean(item.is_dummy_child)
+                    indent: 1
+                    validation:
+                        required_if_not_hidden: Please choose a place in the menu or leave it as an orphan.
+                
                 create_menu:
                     ord: 39
-                    label: 'Add to menu:'
+                    label: 'Add to menu'
                     type: checkbox
                     format_onchange: true
                 menu_title:
@@ -102,12 +144,14 @@ zenario_content:
                     maxlength: 255
                     onchange: zenarioAB.tuix.___menu_title_changed = true;
                     onkeyup: |
-                        get('menu_path').value =
-                            !get('menu_title').value?
-                                ''
-                            :    !get('menu_parent_path').value?
-                                    get('menu_title').value
-                                :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                        if (get('menu_path')) {
+                            get('menu_path').value = 
+                                !get('menu_title').value ?
+                                    ''
+                                :    !get('menu_parent_path').value ?
+                                        get('menu_title').value
+                                    :    get('menu_parent_path').value + ' -> ' + get('menu_title').value;
+                        }
                 menu_path:
                     ord: 41
                     label: 'Path:'
@@ -118,6 +162,7 @@ zenario_content:
                     same_row: true
                     ord: 42
                     type: hidden
+                
                 alias:
                     ord: 50
                     label: 'Alias:'
@@ -133,8 +178,7 @@ zenario_content:
                         The combination of the content item's alias and its language code is unique across the site.
                         Lower case only, may not contain spaces or special characters.
                     post_field_html: '<div id="alias_warning_display"></div>'
-                domain_and_subdir:
-                    same_row: true
+                domain_and_subdir_container:
                     type: hidden
                 description:
                     ord: 70
@@ -224,12 +268,13 @@ zenario_content:
                     label: 'Summary:'
                     ord: 130
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: true
                     style: |
                         height: 12em;
                 lock_summary_view_mode:
-                    label: 'Protected:'
+                    label: 'Protected'
                     ord: 140
                     hidden: true
                     visible_if: '!zenarioAB.editModeOn()'
@@ -238,7 +283,7 @@ zenario_content:
                         Protected Summaries will not be updated when you edit
                         content using the WYSIWYG Editor Plugin.
                 lock_summary_edit_mode:
-                    label: 'Protect:'
+                    label: 'Protect'
                     ord: 150
                     hidden: true
                     visible_if: zenarioAB.editModeOn()
@@ -246,15 +291,33 @@ zenario_content:
                     note_below: >
                         By protecting the Summary, changes made using the WYSIWYG
                         Editor Plugin cannot be synced to the Summary.
+                layout_id:
+                    ord: 160
+                    label: 'Layout:'
+                    pick_items:
+                        path: zenario__layouts/panels/layouts
+                        target_path: zenario__layouts/panels/layouts
+                        min_path: zenario__layouts/panels/layouts
+                        max_path: zenario__layouts/panels/layouts
+                        disallow_refiners_looping_on_min_path: true
+                        one_to_one_choose_phrase: Choose this Layout
+                        select_phrase: Select a Layout...
+                        hide_remove_button: true
+                    format_onchange: true
+        content_dropdown:
+            ord: 25
+            label: Content
         content1:
             ord: 25.01
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
             fields:
                 content:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: true
                     style: 'width: 750px; height: 250px;'
@@ -267,10 +330,12 @@ zenario_content:
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
             fields:
                 content:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: true
                     style: 'width: 750px; height: 250px;'
@@ -283,10 +348,12 @@ zenario_content:
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
             fields:
                 content:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: true
                     style: 'width: 750px; height: 250px;'
@@ -299,10 +366,12 @@ zenario_content:
             edit_mode:
                 enabled: true
                 priv: _PRIV_EDIT_DRAFT
+            parent: content_dropdown
             fields:
                 content:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: true
                     style: 'width: 750px; height: 250px;'
@@ -310,46 +379,6 @@ zenario_content:
                     full_width: true
                     snippet:
                         html: ""
-        template:
-            ord: 30
-            label: 'Layout'
-            edit_mode:
-                enabled: false
-                priv: _PRIV_EDIT_CONTENT_ITEM_TEMPLATE
-                format_on_cancel_edit: true
-                format_on_revert: true
-            notices:
-                archived_template:
-                    show: false
-                    type: warning
-                    message: The chosen Layout is archived.
-            fields:
-                desc:
-                    full_width: true
-                    snippet:
-                        html: >
-                            Use this screen to select the Layout that is used for this
-                            Content Item.
-                layout_id:
-                    label: 'Layout:'
-                    pick_items:
-                        path: zenario__layouts/panels/layouts
-                        target_path: zenario__layouts/panels/layouts
-                        min_path: zenario__layouts/panels/layouts
-                        max_path: zenario__layouts/panels/layouts
-                        disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Choose this Layout
-                        select_phrase: Select a Layout...
-                        hide_remove_button: true
-                    format_onchange: true
-                skin_id:
-                    label: 'Skin:'
-                    read_only: true
-                    pick_items:
-                        path: zenario__layouts/panels/skins
-                        target_path: zenario__layouts/panels/skins
-                        min_path: zenario__layouts/panels/skins
-                        max_path: zenario__layouts/panels/skins
         css:
             ord: 31
             label: Background & CSS

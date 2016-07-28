@@ -231,7 +231,7 @@ methods.setSwitchButton = function($header, $panel, $footer) {
 		m.buttons[0].selected = true;
 	}
 
-	$switchButtons.show().html(zenarioA.microTemplate('zenario_organizer_switch_view_wrap', m));
+	$switchButtons.show().html(this.microTemplate('zenario_organizer_switch_view_wrap', m));
 	zenarioA.tooltips($switchButtons);
 	
 			$switchButtons.find('#zenario_organizer_switch_view_a').click(function() { that.changeViewMode('A'); });

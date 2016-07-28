@@ -3,6 +3,7 @@
 zenario_user_admin_box_form:
     key:
         id: ""
+        type: ""
     tabs:
         details:
             label: Details
@@ -38,6 +39,7 @@ zenario_user_admin_box_form:
                         p: Paragraph
                     value: h2
                     visible_if: zenarioAB.value('show_title');
+                    indent: 1
                 success_message_type:
                     label: 'Action after form submission:'
                     type: radios

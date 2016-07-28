@@ -234,11 +234,6 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			$values['email_style_formats'] = Spyc::YAMLDump($yaml, 4);
 		}
 
-		//Set the value of the template directory
-		if (isset($fields['template_dir/template_dir'])) {
-			$fields['template_dir/template_dir']['value'] = CMS_ROOT. 'zenario_custom/templates/grid_templates';
-		}
-
 		//On multisite sites, don't allow local Admins to change the directory paths
 		if (globalDBDefined() && !session('admin_global_id')) {
 			foreach (array('backup_dir', 'docstore_dir') as $dir) {
@@ -323,6 +318,35 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				} else {
 					$fields['sitemap/sitemap_url']['value'] =
 					$fields['sitemap/sitemap_url']['current_value'] = httpOrhttps() . primaryDomain(). SUBDIRECTORY. DIRECTORY_INDEX_FILENAME. '?method_call=showSitemap';
+				}
+			}
+		}
+		
+		if (isset($box['tabs']['caching'])) {
+			
+			cleanDownloads();
+			if (is_writable(CMS_ROOT. 'public/images')
+			 && is_writable(CMS_ROOT. 'private/images')) {
+				$values['caching/cache_images'] = 1;
+				$fields['caching/cache_images']['note_below'] =
+					adminPhrase('The <code>public/images/</code> and <code>private/images/</code> directories are writable, the CMS will create cached copies of images and thumbnails in these directories.');
+				$box['tabs']['caching']['notices']['img_dir_writable']['show'] = true;
+				$box['tabs']['caching']['notices']['img_dir_not_writable']['show'] = false;
+			} else {
+				$values['caching/cache_images'] = '';
+				$fields['caching/cache_images']['note_below'] =
+					adminPhrase('The <code>public/images/</code> and <code>private/images/</code> directories are not writable, images and thumbnails will not be cached.');
+			}
+	
+			if (isset($box['tabs']['clear_cache']) && checkPriv('_PRIV_EDIT_SITE_SETTING')) {
+				//Manually clear the cache
+				if (!empty($box['tabs']['clear_cache']['fields']['clear_cache']['pressed'])) {
+					
+					zenarioClearCache();
+	
+					$box['tabs']['clear_cache']['notices']['notice']['show'] = true;
+				} else {
+					$box['tabs']['clear_cache']['notices']['notice']['show'] = false;
 				}
 			}
 		}
@@ -542,7 +566,26 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 			}
 		}
 
-		foreach (array('backup_dir', 'docstore_dir', 'template_dir') as $dir) {
+		if (isset($box['tabs']['automated_backups']['fields']['check_automated_backups'])
+		 && engToBooleanArray($box['tabs']['automated_backups'], 'edit_mode', 'on')
+		 && $values['automated_backups/check_automated_backups']) {
+			if (!$values['automated_backups/automated_backup_log_path']) {
+				//Allow no path to be entered; this is actually the default state.
+				//This will cause a warning on the diagnostics screen.
+				//$box['tabs']['automated_backups']['errors'][] = adminPhrase('Please enter a file path.');
+	
+			} elseif (!is_file($values['automated_backups/automated_backup_log_path'])) {
+				$box['tabs']['automated_backups']['errors'][] = adminPhrase('This file does not exist.');
+	
+			} elseif (!is_readable($values['automated_backups/automated_backup_log_path'])) {
+				$box['tabs']['automated_backups']['errors'][] = adminPhrase('This file is not readable.');
+	
+			} elseif (false !== chopPrefixOffOfString(realpath($values['automated_backups/automated_backup_log_path']), realpath(CMS_ROOT))) {
+				$box['tabs']['automated_backups']['errors'][] = adminPhrase('Zenario is installed in this directory. Please choose a different path.');
+			}
+		}
+
+		foreach (array('backup_dir', 'docstore_dir') as $dir) {
 			if ($saving
 			 && isset($box['tabs'][$dir]['fields'][$dir])
 			 && engToBooleanArray($box['tabs'][$dir], 'edit_mode', 'on')) {
@@ -552,11 +595,8 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				} elseif (!is_dir($values[$dir. '/'. $dir])) {
 					$box['tabs'][$dir]['errors'][] = adminPhrase('This directory does not exist.');
 		
-				} elseif (realpath($values[$dir. '/'. $dir]) == realpath(CMS_ROOT)) {
-					$box['tabs'][$dir]['errors'][] = adminPhrase('The CMS is installed in this directory. Please choose a different directory.');
-		
-				} elseif (empty($values[$dir. '/template_dir_can_be_readonly']) && !is_writable($values[$dir. '/'. $dir])) {
-					$box['tabs'][$dir]['errors'][] = adminPhrase('This directory is not writable.');
+				} elseif (false !== chopPrefixOffOfString(realpath($values[$dir. '/'. $dir]), realpath(CMS_ROOT))) {
+					$box['tabs'][$dir]['errors'][] = adminPhrase('Zenario is installed in this directory. Please choose a different directory.');
 		
 				} else {
 					//Strip any trailing slashes off of a directory path
@@ -564,7 +604,6 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 				}
 			}
 		}
-		
 	}
 	
 	

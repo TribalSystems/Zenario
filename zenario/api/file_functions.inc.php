@@ -26,6 +26,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+cms_core::$whitelist[] = 'trackFileDownload';
 function trackFileDownload($url) {
 	if (!empty($_SESSION['admin_userid'])) {
 		return '';
@@ -171,6 +172,7 @@ function checkDocumentTypeIsExecutable($extension) {
 	}
 }
 
+cms_core::$whitelist[] = 'contentFileLink';
 function contentFileLink(&$url, $cID, $cType, $cVersion) {
 	$url = false;
 	
@@ -289,6 +291,7 @@ function documentTypeIsAllowed($file) {
 	return checkDocumentTypeIsAllowed($file);
 }
 
+cms_core::$whitelist[] = 'documentMimeType';
 function documentMimeType($file) {
 	$type = explode('.', $file);
 	$type = $type[count($type) - 1];
@@ -309,39 +312,43 @@ function isImageOrSVG($mimeType) {
 		|| $mimeType == 'image/svg+xml';
 }
 
-
-
-function getDocumentFileLink($file, $documentPrivacy, $pagePrivacy, $documentId = false) {
-	$frontLink = false;
-	if ($file['filename']) {
-		// If document has no explicit privacy setting, the page privacy decides the link
-		$path = docstoreFilePath($file['id'], false);
-		if ($documentPrivacy == 'auto') {
-			if (($pagePrivacy == 'public') && !windowsServer() && $path) {
-				$frontLink = createFilePublicLink($file, $path);
+function getDocumentFrontEndLink($documentId, $privateLink = false) {
+	$link = false;
+	$document = getRow('documents', array('file_id', 'privacy'), $documentId);
+	if ($document) {
+		// Create private link
+		if ($privateLink || ($document['privacy'] == 'private')) {
+			$link = createFilePrivateLink($document['file_id']);
+		// Create public link
+		} elseif ($document['privacy'] == 'public' && !windowsServer()) {
+			$link = createFilePublicLink($document['file_id']);
+		// Create link based on content item status and privacy
+		} elseif ($document['privacy'] == 'auto') {
+			if (cms_core::$status != 'published') {
+				$link = createFilePrivateLink($document['file_id']);
 			} else {
-				$frontLink = createFilePrivateLink($file['id']);
-				$pagePrivacy = 'private';
+				$contentItemPrivacy = getRow('translation_chains', 'privacy', array('equiv_id' => cms_core::$equivId, 'type' => cms_core::$cType));
+				if (($contentItemPrivacy == 'public') && !windowsServer()) {
+					$link = createFilePublicLink($document['file_id']);
+				} else {
+					$link = createFilePrivateLink($document['file_id']);
+					$contentItemPrivacy = 'private';
+				}
+				updateRow('documents', array('privacy' => $contentItemPrivacy), $documentId);
 			}
-			if ($documentId) {
-				updateRow('documents', array('privacy' => $pagePrivacy), $documentId);
-			}
-		// Create link for public document
-		} elseif ($documentPrivacy == 'public' && !windowsServer() && $path) {
-			$frontLink = createFilePublicLink($file, $path);
-		// Create link for private document
-		} else {
-			$frontLink = createFilePrivateLink($file['id']);
-		}
+		} 
 	}
-	return $frontLink;
+	return $link;
 }
 
-function createFilePublicLink($file, $path) {
+function createFilePublicLink($fileId) {
+	$path = docstoreFilePath($fileId, false);
+	$file = getRow('files', array('short_checksum', 'filename'), $fileId);
+	
 	$dirPath = 'public' . '/downloads/' . $file['short_checksum'];
 	$symFolder =  CMS_ROOT . $dirPath;
 	$symPath = $symFolder . '/' . $file['filename'];
-	$frontLink = $dirPath . '/' . $file['filename'];
+	$link = $dirPath . '/' . $file['filename'];
 	
 	if (!file_exists($symPath)) {
 		if(!file_exists($symFolder)) {
@@ -349,14 +356,14 @@ function createFilePublicLink($file, $path) {
 		}
 		symlink($path, $symPath);
 	}
-	return $frontLink;
+	return $link;
 }
 
 function createFilePrivateLink($fileId) {
 	return fileLink($fileId, hash64($fileId. '_'. randomString(10)), 'downloads');
 }
 
-
+cms_core::$whitelist[] = 'fileLink';
 function fileLink($fileId, $hash = false, $type = 'files', $customDocstorePath = false) {
 	//Check that this file exists
 	if (!$fileId
@@ -419,10 +426,16 @@ function guessAltTagFromFilename($filename) {
 
 function imageLink(
 	&$width, &$height, &$url, $fileId, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
-	$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false,
-	$privacy = 'auto'
+	$retina = false, $privacy = 'auto',
+	$useCacheDir = true, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false
 ) {
-	$url = $width = $height = $newWidth = $newHeight = $cropWidth = $cropHeight = $cropNewWidth = $cropNewHeight = false;
+	$url =
+	$width = $height =
+	$widthOut = $heightOut =
+	$newWidth = $newHeight =
+	$cropWidth = $cropHeight =
+	$cropNewWidth = $cropNewHeight = false;
+	
 	$widthLimit = (int) $widthLimit;
 	$heightLimit = (int) $heightLimit;
 	
@@ -449,23 +462,61 @@ function imageLink(
 		return false;
 	}
 	
-	
-	//If no limits were set, use the image's own width and height
-	if (!$widthLimit) {
-		$widthLimit = $image['width'];
-	}
-	if (!$heightLimit) {
-		$heightLimit = $image['height'];
+	//SVG images do not need to use the retina image logic, as they are always crisp
+	if ($isSVG = $image['mime_type'] == 'image/svg+xml') {
+		$retina = false;
 	}
 	
-	//Work out what size the resized image should actually be
-	resizeImageByMode(
-		$mode, $image['width'], $image['height'],
-		$widthLimit, $heightLimit,
-		$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
-		$image['mime_type']);
+	$imageWidth = (int) $image['width'];
+	$imageHeight = (int) $image['height'];
 	
-	$imageNeedsToBeResized = $image['width'] != $cropNewWidth || $image['height'] != $cropNewHeight;
+	//Special case for the "unlimited, but use a retina image" option
+	if ($retina && !$widthLimit && !$heightLimit) {
+		$newWidth =
+		$cropWidth =
+		$cropNewWidth = $imageWidth;
+		$newHeight =
+		$cropHeight =
+		$cropNewHeight = $imageHeight;
+		
+		$widthOut =
+		$widthLimit = (int) ($imageWidth / 2);
+		$heightOut =
+		$heightLimit = (int) ($imageHeight / 2);
+	
+	} else {
+		//If no limits were set, use the image's own width and height
+		if (!$widthLimit) {
+			$widthLimit = $imageWidth;
+		}
+		if (!$heightLimit) {
+			$heightLimit = $imageHeight;
+		}
+	
+		//Work out what size the resized image should actually be
+		resizeImageByMode(
+			$mode, $imageWidth, $imageHeight,
+			$widthLimit, $heightLimit,
+			$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
+			$image['mime_type']);
+	
+		$widthOut = $cropNewWidth;
+		$heightOut = $cropNewHeight;
+	
+		//Try to use a retina image if requested
+		if ($retina
+		 && (2 * $newWidth <= $imageWidth)
+		 && (2 * $newHeight <= $imageHeight)
+		 && (2 * $cropNewWidth <= $imageWidth)
+		 && (2 * $cropNewHeight <= $imageHeight)) {
+			$newWidth *= 2;
+			$newHeight *= 2;
+			$cropNewWidth *= 2;
+			$cropNewHeight *= 2;
+		}
+	}
+	
+	$imageNeedsToBeResized = $imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight;
 	
 	
 	//Check the privacy settings for the image
@@ -503,8 +554,10 @@ function imageLink(
 	
 	//Combine the resize options into a string
 	$settingCode = $mode. '_'. $widthLimit. '_'. $heightLimit. '_'. $offset;
-	//Workout a hash for the image at this size
-	$hash = hash64($settingCode. '_'. $image['checksum']);
+	
+	if ($retina) {
+		$settingCode .= '_2';
+	}
 	
 	//If the $useCacheDir variable is set and the public/private directories are writable,
 	//try to create this image on the disk
@@ -523,6 +576,9 @@ function imageLink(
 		//If the image should be in the private directory, don't worry about a friendly URL and
 		//just use the full hash.
 		} else {
+			//Workout a hash for the image at this size
+			$hash = hash64($settingCode. '_'. $image['checksum']);
+			
 			//Try to get a directory in the cache dir
 			$path = createCacheDir($hash, 'images', false);
 		}
@@ -545,8 +601,8 @@ function imageLink(
 				$url = absCMSDirURL(). $url;
 			}
 			
-			$width = $cropNewWidth;
-			$height = $cropNewHeight;
+			$width = $widthOut;
+			$height = $heightOut;
 			return true;
 		}
 	}
@@ -573,9 +629,29 @@ function imageLink(
 			}
 			
 			if ($xOK && $yOK) {
-				$image['width'] = $image[$c[1]];
-				$image['height'] = $image[$c[2]];
+				$imageWidth = $image[$c[1]];
+				$imageHeight = $image[$c[2]];
 				$image['data'] = getRow('files', $c[0], $fileId);
+				
+				//Repeat the call to resizeImageByMode() to resize the thumbnail to the correct size again
+				resizeImageByMode(
+					$mode, $imageWidth, $imageHeight,
+					$widthLimit, $heightLimit,
+					$newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight,
+					$image['mime_type']);
+	
+				if ($retina
+				 && (2 * $newWidth <= $imageWidth)
+				 && (2 * $newHeight <= $imageHeight)
+				 && (2 * $cropNewWidth <= $imageWidth)
+				 && (2 * $cropNewHeight <= $imageHeight)) {
+					$newWidth *= 2;
+					$newHeight *= 2;
+					$cropNewWidth *= 2;
+					$cropNewHeight *= 2;
+				}
+	
+				$imageNeedsToBeResized = $imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight;
 				break;
 			}
 		}
@@ -593,11 +669,7 @@ function imageLink(
 		}
 		
 		if ($imageNeedsToBeResized) {
-			resizeImageString(
-				$image['data'], $image['mime_type'],
-				$image['width'], $image['height'],
-				ifNull((int) $widthLimit, $image['width']), ifNull((int) $heightLimit, $image['height']),
-				$mode, $offset);
+			resizeImageStringToSize($image['data'], $image['mime_type'], $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset);
 		}
 		
 		//If $useCacheDir is set, attempt to store the image in the cache directory
@@ -619,8 +691,8 @@ function imageLink(
 				}
 			}
 			
-			$width = $cropNewWidth;
-			$height = $cropNewHeight;
+			$width = $widthOut;
+			$height = $heightOut;
 			return true;
 		
 		//Otherwise just return the data if $returnImageStringIfCacheDirNotWorking is set
@@ -635,6 +707,9 @@ function imageLink(
 	
 	//Otherwise, we'll have to link to file.php and do any resizing needed in there.
 	} else {
+		//Workout a hash for the image at this size
+		$hash = hash64($settingCode. '_'. $image['checksum']);
+		
 		//Note that using the session for each image is quite slow, so it's better to make sure that your cache/ directory is writable
 		//and not use this fallback logic!
 		if (!isset($_SESSION['zenario_allowed_files'])) {
@@ -649,12 +724,35 @@ function imageLink(
 		
 		$url = 'zenario/file.php?usage=resize&c='. $hash. '&filename='. rawurlencode($image['filename']);
 		
-		$width = $cropNewWidth;
-		$height = $cropNewHeight;
+		$width = $widthOut;
+		$height = $heightOut;
 		return true;
 	}
 }
 
+cms_core::$whitelist[] = 'imageLinkArray';
+function imageLinkArray(
+	$imageId, $widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+	$retina = false, $privacy = 'auto', $useCacheDir = true
+) {
+	$details = array(
+		'alt' => '',
+		'src' => '',
+		'width' => '',
+		'height' => '');
+	
+	if (imageLink(
+		$details['width'], $details['height'], $details['src'], $imageId, $widthLimit, $heightLimit, $mode, $offset,
+		$retina, $privacy, $useCacheDir
+	)) {
+		$details['alt'] = getRow('files', 'alt_tag', $imageId);
+		return $details;
+	}
+	
+	return false;
+}
+
+cms_core::$whitelist[] = 'itemStickyImageId';
 function itemStickyImageId($cID, $cType, $cVersion = false) {
 	if (!$cVersion) {
 		if (checkPriv()) {
@@ -670,13 +768,24 @@ function itemStickyImageId($cID, $cType, $cVersion = false) {
 function itemStickyImageLink(
 	&$width, &$height, &$url, $cID, $cType, $cVersion = false,
 	$widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
-	$useCacheDir = true, $privacy = 'auto'
+	$retina = false, $privacy = 'auto', $useCacheDir = true
 ) {
 	if ($imageId = itemStickyImageId($cID, $cType, $cVersion)) {
-		return imageLink($width, $height, $url, $imageId, $widthLimit, $heightLimit, $mode, $offset, $useCacheDir, $internalFilePath = false, $returnImageStringIfCacheDirNotWorking = false, $privacy);
-	} else {
-		return false;
+		return imageLink($width, $height, $url, $imageId, $widthLimit, $heightLimit, $mode, $offset, $retina, $privacy, $useCacheDir);
 	}
+	return false;
+}
+
+cms_core::$whitelist[] = 'itemStickyImageLinkArray';
+function itemStickyImageLinkArray(
+	$cID, $cType, $cVersion = false,
+	$widthLimit = 0, $heightLimit = 0, $mode = 'resize', $offset = 0,
+	$retina = false, $privacy = 'auto', $useCacheDir = true
+) {
+	if ($imageId = itemStickyImageId($cID, $cType, $cVersion)) {
+		return imageLinkArray($imageId, $widthLimit, $heightLimit, $mode, $offset, $retina, $privacy, $useCacheDir);
+	}
+	return false;
 }
 
 function createPpdfFirstPageScreenshotPng($file) {
@@ -798,7 +907,7 @@ function plainTextExtract($file, &$extract) {
 							$extract = file_get_contents($temp_file);
 							unlink($temp_file);
 							
-							$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
+							$extract = trim(utf8_encode(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract))));
 							return true;
 						}
 					}

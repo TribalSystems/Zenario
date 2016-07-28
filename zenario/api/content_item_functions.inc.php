@@ -30,7 +30,7 @@ function getCIDAndCTypeFromTagId(&$cID, &$cType, $tagId) {
 	if ($tagId
 	 && ($tagId = explode('_', trim($tagId), 2))
 	 && (!empty($tagId[1]))
-	 && (!preg_match('/[^a-z]/', $tagId[0]))
+	 && (!preg_match('/[^a-zA-Z]/', $tagId[0]))
 	 && (!preg_match('/[^0-9]/', $tagId[1]))
 	 && ($cType = $tagId[0])
 	 && ($cID = (int) $tagId[1])) {
@@ -51,6 +51,11 @@ function getEquivIdAndCTypeFromTagId(&$equivId, &$cType, $tagId) {
 
 function contentVersion($cID, $cType) {
 	return getRow('content_items', checkPriv()? 'admin_version' : 'visitor_version', array('id' => $cID, 'type' => $cType));
+}
+
+cms_core::$whitelist[] = 'categoryPublicName';
+function categoryPublicName($catId, $languageId = false) {
+	return phrase('_CATEGORY_'. $catId, false, '', $languageId);
 }
 
 //Get an item's title
@@ -97,9 +102,14 @@ function isPublished($statusOrCID, $cType = false, $cVersion = false) {
 //Get an item's description
 //	function isSpecialPage($cID, $cType) {}
 
+cms_core::$whitelist[] = 'langEquivalentItem';
 //	function langEquivalentItem(&$cID, &$cType, $langId = false) {}
 
+cms_core::$whitelist[] = 'phrase';
 //	function phrase($code, $replace = array()) {}
+
+cms_core::$whitelist[] = 'nphrase';
+//	function nphrase($text, $pluralText = false, $n = 1, $replace = array()) {}
 
 //Automatically generate SQL to search through Content, for example for a content list
 //A bit of a techy function so we've included the full code here, so you can see exactly what it does

@@ -32,9 +32,14 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
-		if ($actualId = chopPrefixOffOfString($box['key']['id'], 'content_type_')) {
-			$box['key']['id'] = $actualId;
-			$box['key']['opened_from_site_settings_panel'] = true;
+		//Allow this FAB to be opened from the modules panel, by module id
+		if (is_numeric($box['key']['id'])) {
+			$box['key']['idFromOrganizer'] = $box['key']['id'];
+			
+			if (!$box['key']['id'] = getRow('content_types', 'content_type_id', array('module_id' => $box['key']['id']))) {
+				echo adminPhrase('This module does not seem to have a content type associated with it');
+				exit;
+			}
 		}
 		
 		
@@ -62,6 +67,14 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 			$fields['details/module_id']['hidden'] = true;
 		} else {
 			$values['details/module_id'] = $details['module_id'];
+		}
+		
+		if ($details['default_parent_menu_node']) {
+			$values['details/set_default_parent_menu_node'] = true;
+			$values['details/default_parent_menu_node'] = $details['default_parent_menu_node'];
+			$values['details/menu_node_position'] = $details['menu_node_position'];
+			$values['details/menu_node_position_edit'] = $details['menu_node_position_edit'];
+			$values['details/hide_menu_node'] = $details['hide_menu_node'];
 		}
 		
 		$box['tabs']['details']['fields']['default_layout_id']['pick_items']['path'] =
@@ -115,12 +128,24 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 				'writer_field' => $values['details/writer_field'],
 				'summary_field' => $values['details/summary_field'],
 				'release_date_field' => $values['details/release_date_field'],
-				'enable_summary_auto_update' => $values['details/enable_summary_auto_update'],
+				'enable_summary_auto_update' => 0,
 				'enable_categories' => ($values['details/enable_categories'] == 'enabled') ? 1 : 0,
-				'default_layout_id' => $values['details/default_layout_id']);
+				'default_layout_id' => $values['details/default_layout_id'],
+				'default_parent_menu_node' => 0,
+				'menu_node_position' => null,
+				'menu_node_position_edit' => null,
+				'hide_menu_node' => 0
+			);
 			
-			if ($values['details/summary_field'] == 'hidden') {
-				$vals['enable_summary_auto_update'] = 0;
+			if ($values['details/summary_field'] != 'hidden') {
+				$vals['enable_summary_auto_update'] = $values['details/enable_summary_auto_update'];
+			}
+			
+			if ($values['details/set_default_parent_menu_node'] && $values['details/default_parent_menu_node']) {
+				$vals['default_parent_menu_node'] = $values['details/default_parent_menu_node'];
+				$vals['menu_node_position'] = $values['details/menu_node_position'];
+				$vals['menu_node_position_edit'] = $values['details/menu_node_position_edit'];
+				$vals['hide_menu_node'] = $values['details/hide_menu_node'];
 			}
 			
 			switch ($box['key']['id']) {
@@ -144,12 +169,15 @@ class zenario_common_features__admin_boxes__content_type_details extends module_
 			
 			updateRow('content_types', $vals, $box['key']['id']);
 		}
+		if ($box['key']['idFromOrganizer']) {
+			$box['key']['id'] = $box['key']['idFromOrganizer'];
+		}
 	}
 	
 	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		
-		if ($box['key']['opened_from_site_settings_panel']) {
-			$box['key']['id'] = 'content_type_'. $box['key']['id'];
+		//Put the key back to what it originally was, to prevent highlighting bugs in Organizer
+		if ($box['key']['idFromOrganizer']) {
+			$box['key']['id'] = $box['key']['idFromOrganizer'];
 		}
 	}
 }

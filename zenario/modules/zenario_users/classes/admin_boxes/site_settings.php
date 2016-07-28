@@ -51,12 +51,15 @@ class zenario_users__admin_boxes__site_settings extends module_base_class {
 		
 		// Show list of users dataset tabs
 		$dataset = getDatasetDetails('users');
-		$result = getRows('custom_dataset_tabs', array('label', 'ord', 'name'), array('dataset_id' => $dataset['id']), 'label');
+		$result = getRows('custom_dataset_tabs', array('label', 'default_label', 'ord', 'name'), array('dataset_id' => $dataset['id']), 'label');
 		while ($row = sqlFetchAssoc($result)) {
-			$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = array(
-				'label' => $row['label'],
-				'ord' => $row['ord']
-			);
+			$label = $row['label'] ? $row['label'] : $row['default_label'];
+			if ($label !== false && $label !== '') {
+				$fields['groups/default_groups_dataset_tab']['values'][$row['name']] = array(
+					'label' => $label,
+					'ord' => $row['ord']
+				);
+			}
 		}
 	}
 	

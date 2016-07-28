@@ -47,11 +47,15 @@ common_definitions:
         - string
         - "null"
     ord: &ord
-        type: number
+        type: *stringy
         description: >
             This controls the order in which elements are drawn on the screen.
             
             If not set, it defaults to the order the CMS finds them in.
+            
+            From version 7.3 onwards, if you are inserting elements into another module's TUIX,
+            you can use syntax of the form "name_of_other_element.001"
+            to place an element after the named element in the order.
     hidden: &hidden
         type: boolean
         description: >
@@ -349,6 +353,18 @@ additionalProperties:
                         type: string
                         description: >
                             A label to display on the tab's link.
+                    
+                    parent:
+                        type: string
+                        description: >
+                            Enter the code-name of another tab here to make your tab appear
+                            under the named tab as a dropdown.
+                        
+                            There's a limit of 2 levels; you can't have a dropdown inside another dropdown.
+                            
+                            
+                            This works from version 7.3 onwards.
+                    
                     hidden: *hidden
                     visible_if: *visible_if
                     errors:
@@ -506,6 +522,19 @@ additionalProperties:
                                 ord: *ord
                                 hidden: *hidden
                                 visible_if: *visible_if
+                                hide_with_field_above:
+                                    type: boolean
+                                    description: >
+                                        Hide this field if the field displayed above this field is hidden.
+                                        
+                                        This works from version 7.3 onwards.
+                                
+                                read_only:
+                                    type: boolean
+                                    description: >
+                                        Causes a field to always be drawn as a read-only field, even if
+                                        edit mode is enabled.
+                                
                                 row_class:
                                     type: string
                                     description: >
@@ -594,6 +623,7 @@ additionalProperties:
                                 
                                 type:
                                     enum:
+                                        - button
                                         - checkbox
                                         - checkboxes
                                         - code_editor
@@ -697,8 +727,6 @@ additionalProperties:
                                         stored in the field.
                                     required:
                                         - path
-                                        - target_path
-                                        - min_path
                                     properties:
                                         path:
                                             type: string
@@ -712,7 +740,7 @@ additionalProperties:
                                             description: >
                                                 The tag path of the panel in Organizer where the "Choose" button should be shown.
                                                 
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         min_path:
                                             type: string
                                             description: >
@@ -727,7 +755,7 @@ additionalProperties:
                                                 Refiners that "loop", going from and to the same panel over and over again,
                                                 will still show the back button.
                                                 
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                         max_path:
                                             type:
                                                 - string
@@ -739,7 +767,7 @@ additionalProperties:
                                                 This works like a limit; the Admin will not be able to navigate away from this
                                                 panel except by pressing the back button.
                                                 
-                                                This must be a tag path.
+                                                If you enter a navigation path it will be converted to a tag path for you.
                                                 
                                                 If you don't want to use a limit you can also set this property to false to disable it.
                                         disallow_refiners_looping_on_min_path:
@@ -774,24 +802,43 @@ additionalProperties:
                                             default: Nothing selected
                                             description: >
                                                 Text to show in place of a name if nothing is selected.
+                                        
+                                        hide_info_button:
+                                            type: boolean
+                                            description: >
+                                                This hides the blue "i" button from each selected item.
+                                                
+                                                This works from version 7.3 onwards.
+                                        
+                                        disable_type_ahead_search:
+                                            type: boolean
+                                            description: >
+                                                This disables the type-ahead search.
+                                        
                                         hide_select_button:
                                             type: boolean
                                             description: >
                                                 This hides the select button from the interface.
-                                        hide_remove_button:
-                                            type: boolean
-                                            description: >
-                                                This hides the remove button from the interface.
+                                                The type-ahead search will also be disabled.
+                                        
+                                        #In 7.3 the "hide_remove_button" property does nothing
+                                        #hide_remove_button:
+                                        #    type: boolean
+                                        #    description: >
+                                        #        This hides the remove button from the interface.
                                 
                                 
                                 snippet:
                                     type: object
                                     description: >
-                                        This lets you add some static html to your Admin Box, instead of a field.
+                                        This lets you add some static html to your Admin Box.
                                     oneOf:
                                         -
                                             required:
                                                 - html
+                                        -
+                                            required:
+                                                - label
                                         -
                                             required:
                                                 - url
@@ -802,7 +849,14 @@ additionalProperties:
                                         html:
                                             type: string
                                             description: >
-                                                Some HTML code to be placed instead of a field.
+                                                Some HTML code to display
+                                        
+                                        label:
+                                            type: string
+                                            description: >
+                                                Some text to display as a label.
+                                                
+                                                This works from version 7.3 onwards.
                                         
                                         url:
                                             type: string
@@ -829,11 +883,6 @@ additionalProperties:
                                                         Any inline styles you wish to add to your <hr> property.
                                 
                                 
-                                read_only:
-                                    type: boolean
-                                    description: >
-                                        Causes a field to always be drawn as a read-only field, even if
-                                        edit mode is enabled.
                                 value:
                                     type: *variable
                                     description: >
@@ -1076,6 +1125,19 @@ additionalProperties:
                                                 
                                                 This property must be written in your .yaml file.
                                                 It can't be changed in php.
+                                        
+                                        dont_save_default_value:
+                                            type: boolean
+                                            description: >
+                                                If the value of this field is equal to the value you entered above,
+                                                don't save it into the database.
+                                                
+                                                (For technical reasons this only works with the value above, and not the the <code>value</code>
+                                                property from the field itself.)
+                                        
+                                        
+                                                This works from version 7.3 onwards.
+                                        
                                         is_searchable_content:
                                             type: boolean
                                             static: true
@@ -1282,7 +1344,7 @@ additionalProperties:
                                     description: >
                                         Use this property to define a List of Values for <code>checkboxes</code>, <code>radios</code> or <code>select</code>-type fields.
                                         
-                                        From 7.0.5 onwards, you can use this property for a text field to add a jQuery auto-complete.
+                                        From 7.0.5 onwards, you can use this property for a text field to add a jQuery autocomplete.
                                         
                                         From 7.0.7 onwards, you can enter the code-name of lov.
                                     additionalProperties: &lovValues
@@ -1326,10 +1388,15 @@ additionalProperties:
                                             disabled:
                                                 type: boolean
                                                 description: >
-                                                    Makes a select list option disabled
-                                                    
-                                                    This works from version 7.0.6 onwards.
-                                                    
+                                                    Makes a select list or radio-group option disabled
+                                            disabled_if:
+                                                type: string
+                                                description: >
+                                                    A snippet of JavaScript code to be evaluated.
+            
+                                                    Options will be disabled/unselectable if the code provided does not evaluate to <code>true</code>.
+            
+                                                    See http://zenar.io/visibility-in-tuix for examples.
                                             accesskey:
                                                 type: *stringy
                                                 description: Sets the accesskey HTML attribute on a checkbox or radio option.
@@ -1397,6 +1464,16 @@ additionalProperties:
                                         This property only applies to hierarchical checkboxes.
                                         
                                         It will ensure that any parent checkboxes are checked if one of their children is checked.
+                                
+                                autocomplete_min_length:
+                                    type: number
+                                    description: >
+                                        If you use the values property above to add a jQuery autocomplete to a text field, you can
+                                        use this property to set the minimum length.
+                                        
+                                        Defaults to 0 if not set.
+                                        
+                                        This works from version 7.3 onwards.
                                 
                                 cols:
                                     type: number
@@ -1475,7 +1552,7 @@ additionalProperties:
                                                 - max
                                             description: >
                                                 This adds some styling, either before or after the slider,
-                                                to indicate that this is a minimum or a maximum.>
+                                                to indicate that this is a minimum or a maximum.
                                         before_field:
                                             type: boolean
                                             description: >
@@ -1598,21 +1675,56 @@ additionalProperties:
                                         If an Admin presses the return key on their keyboard, the CMS will simulate
                                         a click on the named button.
                                     
+                                enable_microtemplates_in_properties:
+                                    type: boolean
+                                    description: >
+                                        If enabled, this experimental feature lets you use microtemplates
+                                        to dynamically set some properties each time the field is displayed.
+                                        
+                                        E.g. this would let you set the post_field_html using JavaScript.
+                                        
+                                        You cannot use this for certain properties, such as value or current_value
+                                        that can take user-entered data.
+                                        
+                                        This works from version 7.3 onwards.
+                                
+                                allow_admin_to_change_visibility:
+                                    type: boolean
+                                    description: >
+                                        Allows admins to set a system fields visibility in the dataset editor. 
+                                        Without this property the visibility will be readonly. 
+                                        
+                                        Should only be set on fields that don't have any advanced logic to change 
+                                        visibility.
+                                
+                                        This works from version 7.3 onwards.
                                 style:
                                     type: string
                                     description: >
                                         Adds an inline style to the field (and also applies to code and html editors).
                                         For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
+                                
+                                dont_trim:
+                                    type: boolean
+                                    description: |
+                                        From version 7.3 onwards, the CMS will automatically trim() the values of fields when they are
+                                        validated or saved.
                                         
+                                        Set this property to true to disable this.
+                                
+                                maxlength:
+                                    type: integer
+                                    description: |
+                                        Sets a maxlength on a text field. (This doesn't work with code or html editors.)
+                                        
+                                        From version 7.3 onwards the CMS will automatically apply a substr() when the field is saved.
+                                
                                 rows:
                                     type: integer
                                     description: Sets the rows HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
                                 size:
                                     type: integer
                                     description: Sets the size HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
-                                maxlength:
-                                    type: integer
-                                    description: Sets the maxlength HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.
                                 accesskey:
                                     type: *stringy
                                     description: Sets the accesskey HTML attribute (doesn't apply to code or html editors). For multiple checkboxes/radiogroups, this will apply to each checkbox/radio option, unless overwritten.

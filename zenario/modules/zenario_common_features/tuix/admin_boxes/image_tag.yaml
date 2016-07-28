@@ -37,6 +37,7 @@ zenario_image_tag:
                 color:
                     label: 'Color:'
                     type: radios
+                    value: blue
                     values:
                         blue:
                             label: Blue

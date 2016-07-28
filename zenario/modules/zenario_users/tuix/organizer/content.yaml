@@ -12,6 +12,7 @@ zenario__content:
                     sql: gcl.group_id = [[REFINER_ID]]
             item_buttons:
                 privacy:
+                    ord: 3.1
                     parent: property_dropdown
                     priv: _PRIV_EDIT_CONTENT_ITEM_PERMISSIONS
                     label: Edit permissions
@@ -20,6 +21,7 @@ zenario__content:
                         path: zenario_content_privacy
                     without_traits:
                         ghost: Yes
+                
                 user_access_log:
                     parent: view_dropdown
                     hide_in_select_mode: Yes

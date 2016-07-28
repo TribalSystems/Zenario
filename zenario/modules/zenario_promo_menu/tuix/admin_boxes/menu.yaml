@@ -148,6 +148,7 @@ zenario_menu:
                     indent: 1
                     label: 'HTML'
                     type: editor
+                    dont_trim: true
                     insert_link_button:
                         exists: Yes
                     cols: "80"
@@ -181,7 +182,7 @@ zenario_menu:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
+                        select_phrase: select a content item...
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select a content item

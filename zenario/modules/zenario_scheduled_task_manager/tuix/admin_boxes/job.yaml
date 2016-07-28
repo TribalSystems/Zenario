@@ -44,25 +44,25 @@ zenario_job:
                     snippet:
                         html: '<b>On:</b>'
                 mon:
-                    label: 'Monday:'
+                    label: 'Monday'
                     type: checkbox
                 tue:
-                    label: 'Tuesday:'
+                    label: 'Tuesday'
                     type: checkbox
                 wed:
-                    label: 'Wednesday:'
+                    label: 'Wednesday'
                     type: checkbox
                 thr:
-                    label: 'Thursday:'
+                    label: 'Thursday'
                     type: checkbox
                 fri:
-                    label: 'Friday:'
+                    label: 'Friday'
                     type: checkbox
                 sat:
-                    label: 'Saturday:'
+                    label: 'Saturday'
                     type: checkbox
                 sun:
-                    label: 'Sunday:'
+                    label: 'Sunday'
                     type: checkbox
             show_errors_after_field: desc
         month:
@@ -79,40 +79,40 @@ zenario_job:
                             Use this tab to set on which months of the year, and on which days of those months, this task will run.
                                                             Every condition set must be met for the task to run.
                 jan:
-                    label: 'January:'
+                    label: 'January'
                     type: checkbox
                 feb:
-                    label: 'Feburary:'
+                    label: 'Feburary'
                     type: checkbox
                 mar:
-                    label: 'March:'
+                    label: 'March'
                     type: checkbox
                 apr:
-                    label: 'April:'
+                    label: 'April'
                     type: checkbox
                 may:
-                    label: 'May:'
+                    label: 'May'
                     type: checkbox
                 jun:
-                    label: 'June:'
+                    label: 'June'
                     type: checkbox
                 jul:
-                    label: 'July:'
+                    label: 'July'
                     type: checkbox
                 aug:
-                    label: 'August:'
+                    label: 'August'
                     type: checkbox
                 sep:
-                    label: 'September:'
+                    label: 'September'
                     type: checkbox
                 oct:
-                    label: 'October:'
+                    label: 'October'
                     type: checkbox
                 nov:
-                    label: 'November:'
+                    label: 'November'
                     type: checkbox
                 dec:
-                    label: 'December:'
+                    label: 'December'
                     type: checkbox
                 first_n_days_of_month:
                     label: 'Days of the month:'
@@ -135,12 +135,12 @@ zenario_job:
                             Use this tab to control when log entries are made and when
                             emails are sent.
                 log_on_error:
-                    label: 'On error write log entry:'
+                    label: 'On error write log entry'
                     type: checkbox
                     read_only: true
                     value: "1"
                 email_on_error:
-                    label: 'On error send email:'
+                    label: 'On error send email'
                     type: checkbox
                     read_only: true
                     value: "1"
@@ -154,10 +154,10 @@ zenario_job:
                                                         <br/>
                                                         If a different email address is entered above, error notifications will be sent to both addresses.
                 log_on_action:
-                    label: 'On action write log entry:'
+                    label: 'On action write log entry'
                     type: checkbox
                 email_on_action:
-                    label: 'On action send email:'
+                    label: 'On action send email'
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_action:
@@ -166,10 +166,10 @@ zenario_job:
                     maxlength: "200"
                     visible_if: "zenarioAB.value('email_on_action')"
                 log_on_no_action:
-                    label: 'If no action write log entry:'
+                    label: 'If no action write log entry'
                     type: checkbox
                 email_on_no_action:
-                    label: 'If no action send email:'
+                    label: 'If no action send email'
                     type: checkbox
                     redraw_onchange: true
                 email_address_on_no_action:

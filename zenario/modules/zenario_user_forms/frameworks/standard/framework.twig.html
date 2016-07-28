@@ -7,17 +7,19 @@
 		</{{title_tag}}>
 	{% endif %}
 	<div id="{{identifier|e}}" class="user_form">
+
 		{{openForm}}
 		{{formFields}}
 		{% if captcha %}
 			<div id="{{containerId}}_math_captcha" class="form_field captcha">
-				<div class="field_title">{{'Please help us combat form submissions by spam devices:'|trans}}</div>
+				<!--<div class="field_title">{{'Please help us combat form submissions by spam devices:'|trans}}</div>-->
 				{% if captcha_error %}
 					<div class="form_error">
 						{{captcha_error}}
 					</div>
 				{% endif %}
 				{{captcha_html}}
+				
 			</div>
 		{% endif %}
 		{{multiPageFormFinalBackButton}}

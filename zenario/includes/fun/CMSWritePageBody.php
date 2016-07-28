@@ -57,33 +57,39 @@ if ($includeAdminToolbar) {
 
 echo "\n", $bodyTag;
 
-switch ($showPreview) {
-	case 'page':
-		echo ' zenario_showing_preview';
-		break;
-	case 'plugin':
-		echo ' zenario_showing_plugin_preview';
-		break;
+if ($extraClassNames !== '') {
+	echo ' '. htmlspecialchars($extraClassNames);
 }
 
 echo '"', $attributes, '>';
 
-if (!$showPreview) {
-	
+$showingPreview =
+	$extraClassNames == 'zenario_showing_preview'
+ || $extraClassNames == 'zenario_showing_plugin_preview';
+
+if (!$showingPreview) {
 	//If this page is a normal webpage being displayed by index.php, output the "Start of body" slot
 	if (cms_core::$cID) {
 		echo "\n", setting('sitewide_body');
 	}
-	
-	//If the visitor's browser has JavaScript enabled, change the "no_js" CSS class to just "js".
-	//Note that by default replace() only affects the first match it comes to, and no_js was the
-	//very first class I wrote down, so I can get away with just this simple statement to save space!
-	echo '
+}
+
+//If the visitor's browser has JavaScript enabled, change the "no_js" CSS class to just "js".
+//Note that by default replace() only affects the first match it comes to, and no_js was the
+//very first class I wrote down, so I can get away with just this simple statement to save space!
+echo '
 <script type="text/javascript">
 	window.zenarioGrid = {};
-	document.body.className = document.body.className.replace(\'no_\', \'\');
+	document.body.className = document.body.className';
+	
+	if (!$showingPreview) {
+		echo '.replace("no_", "")';
+	}
+	
+	//Add a CSS class for whether this is retina or not.
+	//(Note that this won't work for IE 10 or earlier).
+	echo ' + (window.devicePixelRatio > 1? " retina" : " not_retina");
 </script>';
-}
 
 if ($includeAdminToolbar) {
 	CMSWritePageBodyAdminToolbar($toolbars, $toolbarAttr);

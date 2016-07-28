@@ -90,7 +90,7 @@ zenario_menu:
                         max_path: zenario__content/panels/content
                         target_path: zenario__content/panels/content
                         disallow_refiners_looping_on_min_path: true
-                        select_phrase: Select a content item...
+                        select_phrase: select a content item...
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: "You've set the destination to be to a content item, please select a content item."
@@ -226,10 +226,10 @@ zenario_menu:
                     side_note: |
                         This menu node will appear as a &lt;li&gt; with these CSS class names.
                 
-                hide_by_static_method:
+                call_static_method:
                     ord: 7.1
                     label: |
-                        Call a module's static method to show/hide the menu node
+                        Call a module's static method to customise this menu node
                     type: checkbox
                     format_onchange: true
                 menu__module_class_name:
@@ -260,41 +260,13 @@ zenario_menu:
                     label: 'Parameter 2:'
                     type: text
                     maxlength: 255
-                
-                overwrite_menu_text_by_static_method:
-                    ord: 7.51
-                    label: |
-                        Call a module's static method overwrite the menu text
-                    type: checkbox
-                    format_onchange: true
-                menu_text__module_class_name:
-                    ord: 7.52
-                    indent: 1
-                    hidden: true
-                    label: 'Module class name:'
-                    type: text
-                    maxlength: 200
-                menu_text__method_name:
-                    ord: 7.53
-                    indent: 1
-                    hidden: true
-                    label: 'Static method name:'
-                    type: text
-                    maxlength: 127
-                menu_text__param_1:
-                    ord: 7.54
-                    indent: 1
-                    hidden: true
-                    label: 'Parameter 1:'
-                    type: text
-                    maxlength: 255
-                menu_text__param_2:
-                    ord: 7.55
-                    indent: 1
-                    hidden: true
-                    label: 'Parameter 2:'
-                    type: text
-                    maxlength: 255
+                    note_below: |
+                        The static method can return:
+                        <ul>
+                            <li><code>false</code> to hide the menu node</li>
+                            <li><code>true</code> to show the menu node</li>
+                            <li>An <code>array()</code> to show the menu node, and set/overwrite its properties.</li>
+                        </ul>
                 
                 rel_tag:
                     ord: 8

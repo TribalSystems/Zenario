@@ -104,6 +104,7 @@ zenario_email_template:
                 body:
                     full_width: true
                     type: editor
+                    dont_trim: true
                     editor_options:
                         convert_urls: false
                         relative_urls: false

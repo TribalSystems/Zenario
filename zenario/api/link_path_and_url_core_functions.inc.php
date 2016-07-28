@@ -26,10 +26,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+cms_core::$whitelist[] = 'absCMSDirURL';
 function absCMSDirURL() {
 	return httpOrHttps(). httpHost(). SUBDIRECTORY;
 }
 
+cms_core::$whitelist[] = 'httpHost';
 function httpHost() {
 	if (!empty($_SERVER['HTTP_HOST'])) {
 		return $_SERVER['HTTP_HOST'];
@@ -52,15 +54,9 @@ function httpHostWithoutPort($host = false) {
 
 //Attempt to check whether we are in http or https, and return a value appropriately
 //If the USE_FORWARDED_IP constant is set we should try to check the HTTP_X_FORWARDED_PROTO variable.
+cms_core::$whitelist[] = 'httpOrhttps';
 function httpOrhttps() {
-	if ((isset($_SERVER['HTTPS'])
-	  && engToBoolean($_SERVER['HTTPS']))
-	 || (defined('USE_FORWARDED_IP')
-	  && constant('USE_FORWARDED_IP')
-	  && !empty($_SERVER['HTTP_X_FORWARDED_PROTO'])
-	  && substr($_SERVER['HTTP_X_FORWARDED_PROTO'], 0, 5) == 'https')
-	 || (!empty($_SERVER['SCRIPT_URI'])
-	  && substr($_SERVER['SCRIPT_URI'], 0, 5) == 'https')) {
+	if (isHttps()) {
 		return 'https://';
 	} else {
 		return 'http://';
@@ -84,8 +80,10 @@ function indexDotPHP($noBasePath = false) {
 	}
 }
 
+cms_core::$whitelist[] = 'moduleDir';
 //	function moduleDir($moduleName, $subDir = '') {}
 
+cms_core::$whitelist[] = 'adminDomain';
 function adminDomain() {
 	if (setting('admin_domain')) {
 		return setting('admin_domain');
@@ -98,6 +96,7 @@ function adminDomain() {
 	}
 }
 
+cms_core::$whitelist[] = 'primaryDomain';
 function primaryDomain() {
 	if (setting('primary_domain')) {
 		return setting('primary_domain');
@@ -133,6 +132,7 @@ function absCMSDir() {
 	return CMS_ROOT;
 }
 
+cms_core::$whitelist[] = 'linkToItem';
 /*	function linkToItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false
@@ -140,3 +140,6 @@ function absCMSDir() {
 */
 
 
+
+cms_core::$whitelist[] = 'linkToEquivalentItem';
+//	function linkToEquivalentItem($cID, $cType = 'html', $languageId = false, $fullPath = false, $request = '', $useAliasInAdminMode = false) {}

@@ -82,6 +82,8 @@ class zenario_html_snippet extends module_base_class {
 	
 	
 	function showContent() {
+		if (cms_core::$isTwig) return;
+		
 		if ($this->setting('hide_in_admin_mode') && checkPriv()) {
 			echo '<p>&nbsp;</p>';
 		} else {
@@ -90,6 +92,7 @@ class zenario_html_snippet extends module_base_class {
 	}
 	
 	public function fillAdminSlotControls(&$controls) {
+		if (cms_core::$isTwig) return;
 		
 		//If this is a version controlled plugin and the current administrator is an author,
 		//show the cut/copy/patse options
@@ -98,13 +101,13 @@ class zenario_html_snippet extends module_base_class {
 			//Check whether something compatible was previously copied
 			$copied =
 				!empty($_SESSION['admin_copied_contents']['class_name'])
-			 && in($_SESSION['admin_copied_contents']['class_name'], 'zenario_html_snippet', 'zenario_wysiwyg_editor');
+			 && in($_SESSION['admin_copied_contents']['class_name'], 'zenario_html_snippet', 'zenario_twig_snippet', 'zenario_wysiwyg_editor');
 			
 			//If something has been entered, show the copy button
 			if (!$this->empty) {
 				$controls['actions']['copy_contents']['hidden'] = false;
 				$controls['actions']['copy_contents']['onclick'] =
-					str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_wysiwyg_editor',
+					str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_twig_snippet,zenario_wysiwyg_editor',
 						$controls['actions']['copy_contents']['onclick']);
 			}
 			
@@ -115,7 +118,7 @@ class zenario_html_snippet extends module_base_class {
 				if (!$this->empty) {
 					$controls['actions']['cut_contents']['hidden'] = false;
 					$controls['actions']['cut_contents']['onclick'] =
-						str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_wysiwyg_editor',
+						str_replace('list,of,allowed,modules', 'zenario_html_snippet,zenario_twig_snippet,zenario_wysiwyg_editor',
 							$controls['actions']['cut_contents']['onclick']);
 				}
 			

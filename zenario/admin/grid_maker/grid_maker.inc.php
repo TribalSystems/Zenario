@@ -162,24 +162,26 @@ protected static function generateCSSR(
 //This is based on 960.gs, but with a few features removed (such as push, pull prefixes and suffixes),
 //and a more few more features added (such as a fluid option, a responsive option and customised left/right gutters)
 public static function generateCSS(&$css, $data) {
-	$css = '';
+	$css = '/*
+ * ';
 	
 	if ($data['fluid']) {
 		$data['gColWidth'] = (100 - ($data['gCols'] - 1) * $data['gGutter'] - $data['gGutterLeftEdge'] - $data['gGutterRightEdge']) / $data['gCols'];
 		$gGutterLeft = $data['gGutter'] / 2;
 		$gGutterRight = $data['gGutter'] / 2;
 		
-		$css .= '
-/*	'. $data['minWidth']. ' - '. $data['maxWidth']. ' fluid'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')
-	Based on the 960 Grid System from http://960.gs/ (Licensed under MIT)  */';
+		$css .= $data['minWidth']. ' - '. $data['maxWidth']. ' fluid'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')';
 	} else {
 		$gGutterLeft = ceil($data['gGutter'] / 2);
 		$gGutterRight = floor($data['gGutter'] / 2);
 		
-		$css .= '
-/*	'. $data['minWidth']. ' fixed'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')
-	Based on the 960 Grid System from http://960.gs/ (Licensed under MIT)  */';
+		$css .= $data['minWidth']. ' fixed'. ($data['responsive']? ' responsive' : ''). ($data['mirror']? ' left-to-right' : ''). ' Grid ('. $data['gCols']. ' col'. ($data['gCols'] > 1? 's' : ''). ')';
 	}
+	
+	$css .= '
+ * This file was created by the Zenario Gridmaker system, DO NOT EDIT
+ * Based on the 960 Grid System, see zenario/libraries/mit/960gs/README.md for more info
+*/';
 	
 	
 	//Calculate an array with all of the possible size-permutations of groupings that have been used
@@ -210,28 +212,26 @@ public static function generateCSS(&$css, $data) {
 	}
 	
 	if ($data['responsive']) {
+		//Hide grid-specific elements and responsive slots when not wide enough
 		$css .= '
 
-
-/*	Hide grid-specific elements and responsive slots when not displaying the grid  */
 
 .grid_clear,
 .grid_space,
 .pad_slot,
 .responsive {
 	display: none;
-}
+}';
+	
+	//Show the grid when wide enough
+	$css .= '
 
-
-/*	Only show the grid if the screen is wide enough  */
 
  @media all and (min-width: '. $data['minWidth']. 'px) {';
 	}
 	
 	$css .= '
 
-
-/*	Main container  */
 
 body {
 	min-width: '. $data['minWidth']. 'px;
@@ -258,11 +258,9 @@ body {
 	padding: 0;
 }
 
-
-/*	Grid cells and gutters  */
-
 .container_'. $data['gCols']. ' .span {';
 	
+	//Grid cells and gutters
 	if ($data['gCols'] > 1) {
 		$css .= '
 	display: inline;
@@ -284,21 +282,16 @@ body {
 	}
 	
 	$css .= '
-}
-
-';
+}';
 	
 	if ($data['fluid']) {
 		$css .= '
-/*	Fluid widths and margins for cells (and any nested cells)  */
 ';
-		
+		//Fluid widths and margins for cells (and any nested cells)
 		zenario_grid_maker::generateCSSR($css, $data, $groupings, $data['gCols'], '.container_'. $data['gCols']. ' ');
 		
+		//Full width cells
 		$css .= '
-
-/*	Full width cells  */
-
 .container_'. $data['gCols']. ' .span1_1 {
 	width: '. (100 - $data['gGutterLeftEdge'] - $data['gGutterRightEdge']). '%;
 }
@@ -317,18 +310,15 @@ body {
 		}
 	
 	} else {
-		$css .= '
-/*	Widths for cells  */';
+		//Widths for cells
 		for ($i = 1; $i <= $data['gCols']; ++$i) {
 			$css .= "\n\n.container_". $data['gCols']. " .span". $i. " {\n\twidth: ". ($i * $data['gColWidth'] + ($i - 1) * $data['gGutter']). "px;\n}";
 		}
 	}
 	
 	if ($data['fluid']) {
+		//The outermost gutters of the page
 		$css .= '
-
-
-/*	The outermost gutters of the page  */
 
 .container_'. $data['gCols']. ' .alpha {
 	margin-left: '. $data['gGutterLeftEdge']. '%;
@@ -336,13 +326,11 @@ body {
 
 .container_'. $data['gCols']. ' .omega {
 	margin-right: '. $data['gGutterRightEdge']. '%;
-}
-';
+}';
 	
 	} else {
+		//The outermost gutters of the page
 		$css .= '
-
-/*	The outermost gutters of the page  */
 
 .container_'. $data['gCols']. ' .alpha {
 	margin-left: '. $data['gGutterLeftEdge']. 'px;
@@ -350,14 +338,12 @@ body {
 
 .container_'. $data['gCols']. ' .omega {
 	margin-right: '. $data['gGutterRightEdge']. 'px;
-}
-';
+}';
 	}
 	
 	if ($maxDepth) {
+		//Remove the outermost gutters from nested cells
 		$css .= '
-
-/*	Remove the outermost gutters from nested cells  */
 ';
 		
 		$prefix = '.container ';
@@ -384,20 +370,18 @@ body {
 	}
 	
 	if ($data['gCols'] > 1) {
-		$css .= "
-
-
-/*	Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width  */
+		//Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width
+		$css .= '
 
 .container .omega {
 	margin-left: -50px;
 	float: right;
-}
-
-
-/*	Make sure the <div>s clear properly, and stop empty slots collapsing the grid.
-	Code used from http://sonspring.com/journal/clearing-floats
-	and http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified  */
+}';
+	
+	//Make <div>s clear properly, and stop empty slots collapsing the grid.
+	//Code used from http://sonspring.com/journal/clearing-floats
+	//and http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified
+	$css .= "
 
 .container:before,
 .container:after {
@@ -424,22 +408,20 @@ body {
 .container:after,
 .grid_clear {
 	clear: both;
-}
-
-
-/*	Fix a problem in IE 6/7.
-	This code could be moved to an IE-specific stylesheet.  */
+}";
+	
+	//Hack to fix a bug in IE 6/7.
+	$css .= '
 
 body.ie6 .container,
 body.ie7 .container {
 	zoom: 1;
-}";
+}';
 	
 	} else {
+		//Make sure the <div>s clear properly
 		$css .= '
 
-
-/*	Make sure the <div>s clear properly  */
 
 .container_'. $data['gCols']. ':after,
 .grid_clear {
@@ -448,10 +430,8 @@ body.ie7 .container {
 	}
 
 	if ($data['responsive']) {
+		//Only show certain responsive slots when not displaying the grid
 		$css .= '
-
-
-/*	Only show certain responsive slots when not displaying the grid  */
 
 .container .responsive_only {
 	display: none;
@@ -481,7 +461,32 @@ static $respClasses = array(
 //Generate the template HTML needed for a grid.
 public static function generateHTML(&$html, &$data) {
 	
-	$html .= "<". "?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed'); ?". ">";
+	$html .= "<". "?php if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
+
+	/*
+	 * DO NOT EDIT THIS FILE!
+	 *
+	 * This file was created by the Zenario Gridmaker system.
+	 * Any manual edits will be lost when the system next changes this file.
+	 */
+
+	". 'if (file_exists(CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\')) {
+		require CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\';
+	}
+?'. ">
+";
+	
+	if (!empty($data['cells']) && is_array($data['cells'])) {
+		$lines = array();
+		zenario_grid_maker::generateHTMLR($html, $lines, $data, $data, $data['gCols'], 0);
+		unset($lines);
+	}
+		
+	$html .= "
+
+<". '?php if (file_exists(CMS_ROOT. cms_core::$templatePath. \'/includes/footer.inc.php\')) {
+	require CMS_ROOT. cms_core::$templatePath. \'/includes/footer.inc.php\';
+}?'. '>';
 	
 	$meta = array();
 	foreach (array('cols', 'minWidth', 'maxWidth', 'fluid', 'responsive') as $var) {
@@ -492,23 +497,14 @@ public static function generateHTML(&$html, &$data) {
 		}
 	}
 	
-	$html .= "\n\n<script type=\"text/javascript\">\n\tzenarioGrid = ". json_encode($meta). ";\n</script>";
-	
-	$html .= "\n\n<". '?php if (file_exists(CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\')) {';
-	$html .= "\n\t". 'require CMS_ROOT. cms_core::$templatePath. \'/includes/header.inc.php\';';
-	$html .= "\n}?". '>';
-	
-	if (!empty($data['cells']) && is_array($data['cells'])) {
-		$lines = array();
-		zenario_grid_maker::generateHTMLR($html, $lines, $data, $data, $data['gCols'], 0);
-		unset($lines);
-	}
-		
-	$html .= "\n\n<". '?php if (file_exists(CMS_ROOT. cms_core::$templatePath. \'/includes/footer.inc.php\')) {';
-	$html .= "\n\t". 'require CMS_ROOT. cms_core::$templatePath. \'/includes/footer.inc.php\';';
-	$html .= "\n}?". '>';
-	
-	$html .= "\n\n\n";
+	$html .= '
+
+<script type="text/javascript">
+	zenarioGrid = '. json_encode($meta). ';
+</script>
+
+';
+
 	zenario_grid_maker::addCode($html, $data);
 	$html .= "\n";
 	zenario_grid_maker::addChecksum($html);
@@ -1148,7 +1144,7 @@ public static function generateDirectory(&$data, $writeToFS = false, $preview = 
 					zenario_grid_maker::generateHTML($html, $data);
 				}
 				
-				zenario_grid_maker::put($tFilePath, $html);
+				zenario_grid_maker::put($tFilePath, $html, true);
 			}
 			unset($html);
 			
@@ -1157,7 +1153,7 @@ public static function generateDirectory(&$data, $writeToFS = false, $preview = 
 				zenario_grid_maker::generateCSS($css, $data);
 			}
 			
-			zenario_grid_maker::put($cssFilePath, $css);
+			zenario_grid_maker::put($cssFilePath, $css, false);
 			unset($css);
 		
 		} catch (Exception $e) {
@@ -1232,12 +1228,12 @@ protected static function mkdir($path) {
 }
 
 //Create a new file in the target directory
-protected static function put($path, $contents) {
+protected static function put($path, $contents, $isExecutable) {
 	if (zenario_grid_maker::$mode == 'fs') {
 		if (!@file_put_contents(zenario_grid_maker::$tempDir. $path, $contents)) {
 			throw new Exception('_ZENARIO_GRID_MAKER_ERROR_003');
 		}
-		@chmod(zenario_grid_maker::$tempDir. $path, 0666);
+		@chmod(zenario_grid_maker::$tempDir. $path, $isExecutable? 0664 : 0666);
 		updateDataRevisionNumber();
 	
 	} elseif (zenario_grid_maker::$mode == 'zip') {
@@ -1247,10 +1243,10 @@ protected static function put($path, $contents) {
 
 //Copy a file
 //Note that $from needs to be the full path, but $to is relative to the source/target directory
-protected static function copy($from, $to) {
+protected static function copy($from, $to, $isExecutable) {
 	if (zenario_grid_maker::$mode == 'fs') {
 		copy($from, zenario_grid_maker::$tempDir. $to);
-		@chmod(zenario_grid_maker::$tempDir. $to, 0666);
+		@chmod(zenario_grid_maker::$tempDir. $to, $isExecutable? 0664 : 0666);
 		updateDataRevisionNumber();
 	
 	} elseif (zenario_grid_maker::$mode == 'zip') {

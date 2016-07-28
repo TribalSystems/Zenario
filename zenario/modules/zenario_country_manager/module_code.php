@@ -294,6 +294,58 @@ class zenario_country_manager extends module_base_class {
 		}
 	}
 	
+	public static function getCountryDialingCodes($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array('can_filter' => false);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				$codes = array();
+				$sql = '
+					SELECT id, english_name, phonecode
+					FROM ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+					WHERE active = 1
+					AND phonecode != 0
+					ORDER BY english_name';
+				$result = sqlSelect($sql);
+				while ($row = sqlFetchAssoc($result)) {
+					$codes[$row['id']] = static::formatCountryDialingCode($row['english_name'], $row['phonecode']);
+				}
+				return $codes;
+			case ZENARIO_CENTRALISED_LIST_MODE_VALUE:
+				return array();
+		}
+	}
+	
+	public static function getCountryShortDialingCodes($mode, $value = false) {
+		switch ($mode) {
+			case ZENARIO_CENTRALISED_LIST_MODE_INFO:
+				return array('can_filter' => false);
+			case ZENARIO_CENTRALISED_LIST_MODE_LIST:
+				$codes = array();
+				$sql = '
+					SELECT id, english_name, phonecode
+					FROM ' . DB_NAME_PREFIX . ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries
+					WHERE active = 1
+					AND phonecode != 0
+					ORDER BY english_name';
+				$result = sqlSelect($sql);
+				while ($row = sqlFetchAssoc($result)) {
+					$codes[$row['id']] = static::formatCountryDialingCode($row['english_name'], $row['phonecode'], true);
+				}
+				return $codes;
+			case ZENARIO_CENTRALISED_LIST_MODE_VALUE:
+				return array();
+		}
+	}
+	
+	public static function formatCountryDialingCode($name, $code, $short = false) {
+		$string = '(' . '+' . $code . ')';
+		if (!$short) {
+			$string = $name . ' ' . $string;
+		}
+		return $string;
+	}
+	
 	public static function getEnglishCountryName_framework($mergeFields, $attributes) {
 		$out = '';
 		if ($value = ifNull(arrayKey($mergeFields, arrayKey($attributes, 'name')), arrayKey($attributes, 'value'))) {
@@ -304,6 +356,14 @@ class zenario_country_manager extends module_base_class {
 			return htmlspecialchars($out);
 		} else {
 			return $out;
+		}
+	}
+
+	public static function getCountryName($code, $languageId = false){
+		if (!$code) {
+			return '';
+		} else {
+			return phrase('_COUNTRY_NAME_'. strtoupper($code), false, 'zenario_country_manager', $languageId);
 		}
 	}
 
@@ -363,24 +423,29 @@ class zenario_country_manager extends module_base_class {
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		if (cms_core::$isTwig) return;
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
+		if (cms_core::$isTwig) return;
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if (cms_core::$isTwig) return;
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if (cms_core::$isTwig) return;
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 
 
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
+		if (cms_core::$isTwig) return;
 		require funIncPath(__FILE__, __FUNCTION__);
  	}
 }

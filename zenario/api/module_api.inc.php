@@ -93,19 +93,69 @@ class zenario_api {
 	 //  Environment Functions  //
 	/////////////////////////////
 	
-	protected final function cache($methodName, $expiryTimeInSeconds = 600, $request = '') {
+	public final function allowCaching(
+		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
+	) {
+		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['cache_if'];
+		
+		foreach (array('a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetSet, 'p' => $ifPostSet, 's' => $ifSessionSet, 'c' => $ifCookieSet) as $if => $set) {
+			if (!isset($vs[$if])) {
+				$vs[$if] = true;
+			}
+			$vs[$if] = $vs[$if] && $vs['a'] && $set;
+		}
+	}
+	
+	public final function clearCacheBy(
+		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
+	) {
+		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['clear_cache_by'];
+		
+		foreach (array('content' => $clearByContent, 'menu' => $clearByMenu, 'user' => $clearByUser, 'file' => $clearByFile, 'module' => $clearByModuleData) as $if => $set) {
+			if (!isset($vs[$if])) {
+				$vs[$if] = false;
+			}
+			$vs[$if] = $vs[$if] || $set;
+		}
+	}
+	
+	public final function callScriptBeforeAJAXReload($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+		$args = func_get_args();
+		$this->zAPICallScriptWhenLoaded(0, $args);
+	}
+	
+	public final function callScript($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+		$args = func_get_args();
+		$this->zAPICallScriptWhenLoaded(1, $args);
+	}
+	
+	public final function callScriptAtTheEnd($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+		$args = func_get_args();
+		$this->zAPICallScriptWhenLoaded(2, $args);
+	}
+	
+	protected final function callScriptAdvanced($beforeAJAXReload, $className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
+		$args = func_get_args();
+		array_splice($args, 0, 1);
+		$this->zAPICallScriptWhenLoaded($beforeAJAXReload? 0 : 1, $args);
+	}
+	
+	public final function cache($methodName, $expiryTimeInSeconds = 600, $request = '') {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	protected final function checkPostIsMine() {
+	public final function checkPostIsMine() {
 		return !empty($_POST) && (empty($_POST['containerId']) || $_POST['containerId'] == $this->containerId);
 	}
+	public final function checkRequestIsMine() {
+		return !empty($_REQUEST) && (empty($_REQUEST['containerId']) || $_REQUEST['containerId'] == $this->containerId);
+	}
 
-	protected final function clearCache($methodName, $request = '', $useLike = false) {
+	public final function clearCache($methodName, $request = '', $useLike = false) {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected final function getCIDAndCTypeFromSetting(&$cID, &$cType, $setting, $getLanguageEquivalent = true) {
+	public final function getCIDAndCTypeFromSetting(&$cID, &$cType, $setting, $getLanguageEquivalent = true) {
 		if (getCIDAndCTypeFromTagId($cID, $cType, $this->setting($setting))) {
 			if ($getLanguageEquivalent) {
 				langEquivalentItem($cID, $cType);
@@ -117,8 +167,27 @@ class zenario_api {
 		return false;
 	}
 	
-	protected final function setting($name) {
-		return isset($this->tApiSettings[$name])? $this->tApiSettings[$name] : false;
+	public final function setting($name) {
+		return isset($this->zAPISettings[$name])? $this->zAPISettings[$name] : false;
+	}
+	
+	protected final function setSetting(
+		$name, $value,
+		$isContent = false, $format = 'text',
+		$foreignKeyTo = null, $foreignKeyId = 0, $foreignKeyChar = '', $danglingCrossReferences = 'remove'
+	) {
+		$this->zAPISettings[$name] = $value;
+		
+		setRow('plugin_settings',
+			array(
+				'value' => $value,
+				'is_content' => $this->isVersionControlled? ($isContent? 'version_controlled_content' : 'version_controlled_setting') : 'synchronized_setting',
+				'format' => $format,
+				'foreign_key_to' => $foreignKeyTo,
+				'foreign_key_id' => $foreignKeyId,
+				'foreign_key_char' => $foreignKeyChar,
+				'dangling_cross_references' => $danglingCrossReferences),
+			array('name' => $name, 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
 	}
 	
 	
@@ -129,110 +198,145 @@ class zenario_api {
 	///////////////////////////
 	
 	//New Twig version of zenario frameworks
-	protected final function twigFramework($vars = array(), $return = false, $customFilePath = false) {
+	protected final function twigFramework($vars = array(), $return = false, $fromString = false, $fromFile = false) {
 		
-		//Ensure that any cache files are created as 0666, so they can be deleted
-		$oldMask = umask(0);
-		$return = '';
 		
-		if ($customFilePath) {
-			$path = dirname($customFilePath). '/';
-			$twigFile = basename($customFilePath);
-		
-		} elseif ($this->framework && $this->frameworkPath) {
-			$path = CMS_ROOT. $this->frameworkPath;
-			$twigFile = 'framework.twig.html';
-			
-		} else {
-			return $return;
+		//Add plugin environment variables
+		if (!isset($vars['containerId'])) {
+			$vars['containerId'] = $this->containerId;
+		}
+		if (!isset($vars['instanceId'])) {
+			$vars['instanceId'] = $this->instanceId;
+		}
+		if (!isset($vars['isVersionControlled'])) {
+			$vars['isVersionControlled'] = $this->isVersionControlled;
+		}
+		if (!isset($vars['moduleId'])) {
+			$vars['moduleId'] = $this->moduleId;
+		}
+		if (!isset($vars['moduleClassName'])) {
+			$vars['moduleClassName'] = $this->moduleClassName;
+		}
+		if (!isset($vars['slotName'])) {
+			$vars['slotName'] = $this->slotName;
+		}
+		if (!isset($vars['slotLevel'])) {
+			$vars['slotLevel'] = $this->slotLevel;
 		}
 		
-		cms_core::$frameworkFile = $path. $twigFile;
+		//Add the CMS' environment variable
+		if (!isset($vars['equivId'])) {
+			$vars['equivId'] = cms_core::$equivId;
+		}
+		if (!isset($vars['cID'])) {
+			$vars['cID'] = cms_core::$cID;
+		}
+		if (!isset($vars['cType'])) {
+			$vars['cType'] = cms_core::$cType;
+		}
+		if (!isset($vars['cVersion'])) {
+			$vars['cVersion'] = cms_core::$cVersion;
+		}
+		if (!isset($vars['isDraft'])) {
+			$vars['isDraft'] = cms_core::$isDraft;
+		}
+		if (!isset($vars['alias'])) {
+			$vars['alias'] = cms_core::$alias;
+		}
+		if (!isset($vars['langId'])) {
+			$vars['langId'] = cms_core::$langId;
+		}
+		if (!isset($vars['adminId'])) {
+			$vars['adminId'] = cms_core::$adminId;
+		}
+		if (!isset($vars['userId'])) {
+			$vars['userId'] = cms_core::$userId;
+		}
 		
-		if (is_file(cms_core::$frameworkFile)) {
+		//Add the current plugin
+		if (!isset($vars['this'])) {
+			$vars['this'] = $this;
+		}
+		
+		
+		//Add any modules that said they should be available in Twig
+		foreach (cms_core::$twigModules as $className => &$class) {
+			if (!isset($vars[$className])) {
+				$vars[$className] = $class;
+			}
+		}
+		
+		
+		$output = '';
+		$twigFile = 'framework.twig.html';
+		cms_core::$isTwig = true;
+		cms_core::$moduleClassNameForPhrases = $this->moduleClassNameForPhrases;
+		
+		try {
+			if ($fromString === false) {
+				if ($fromFile === false) {
+					if ($this->framework
+					 && $this->frameworkPath
+					 && (is_file(cms_core::$frameworkFile = CMS_ROOT. $this->frameworkPath. $twigFile))) {
+				
+						if ($return) {
+							$output = cms_core::$twig->render($this->frameworkPath. $twigFile, $vars);
+						} else {
+							echo cms_core::$twig->render($this->frameworkPath. $twigFile, $vars);
+						}
 			
-			$loader = new Twig_Loader_Filesystem($path);
-			$twig = new Twig_Environment($loader, array(
-				'cache' => CMS_ROOT. 'cache/frameworks/',
-				'autoescape' => false,
-				'auto_reload' => true
-			));
-			
-			$twig->addExtension(new Twig_Extensions_Extension_I18n());
-			cms_core::$moduleClassNameForPhrases = $this->moduleClassNameForPhrases;
-			
-			
-			//Add some default variables if they are not set
-			if (!isset($vars['containerId'])) {
-				$vars['containerId'] = $this->containerId;
-			}
-			if (!isset($vars['instanceId'])) {
-				$vars['instanceId'] = $this->instanceId;
-			}
-			if (!isset($vars['isVersionControlled'])) {
-				$vars['isVersionControlled'] = $this->isVersionControlled;
-			}
-			if (!isset($vars['moduleId'])) {
-				$vars['moduleId'] = $this->moduleId;
-			}
-			if (!isset($vars['moduleClassName'])) {
-				$vars['moduleClassName'] = $this->moduleClassName;
-			}
-			if (!isset($vars['slotName'])) {
-				$vars['slotName'] = $this->slotName;
-			}
-			if (!isset($vars['equivId'])) {
-				$vars['equivId'] = cms_core::$equivId;
-			}
-			if (!isset($vars['cID'])) {
-				$vars['cID'] = cms_core::$cID;
-			}
-			if (!isset($vars['cType'])) {
-				$vars['cType'] = cms_core::$cType;
-			}
-			if (!isset($vars['cVersion'])) {
-				$vars['cVersion'] = cms_core::$cVersion;
-			}
-			if (!isset($vars['isDraft'])) {
-				$vars['isDraft'] = cms_core::$isDraft;
-			}
-			if (!isset($vars['alias'])) {
-				$vars['alias'] = cms_core::$alias;
-			}
-			if (!isset($vars['langId'])) {
-				$vars['langId'] = cms_core::$langId;
-			}
-			if (!isset($vars['adminId'])) {
-				$vars['adminId'] = cms_core::$adminId;
-			}
-			if (!isset($vars['userId'])) {
-				$vars['userId'] = cms_core::$userId;
-			}
-			
-			
-			if ($return) {
-				$return = $twig->render($twigFile, $vars);
+					} else {
+						if ($return) {
+							$output = adminPhrase('This plugin requires a framework, but no framework was set.');
+						} else {
+							echo adminPhrase('This plugin requires a framework, but no framework was set.');
+						}
+					}
+				} else {
+					if ($return) {
+						$output = cms_core::$twig->render($fromFile, $vars);
+					} else {
+						echo cms_core::$twig->render($fromFile, $vars);
+					}
+				}
 			} else {
-				echo $twig->render($twigFile, $vars);
+				if ($return) {
+					$output = cms_core::$twig->render("\n". $fromString, $vars);
+				} else {
+					echo cms_core::$twig->render("\n". $fromString, $vars);
+				}
 			}
-		
-		} else {
-			echo 'This plugin requires a framework, but no framework was set. ';
+		} catch (Exception $e) {
+			cms_core::$canCache = false;
+			
+			if (!checkPriv()) {
+				if (defined('DEBUG_SEND_EMAIL') && DEBUG_SEND_EMAIL === true) {
+					reportDatabaseError("Twig syntax error in visitor mode", $e->getMessage());
+				}
+	
+				if (!defined('SHOW_SQL_ERRORS_TO_VISITORS') || SHOW_SQL_ERRORS_TO_VISITORS !== true) {
+					echo 'A syntax error has occured in a framework on this section of the site. Please contact a site Administrator.';
+					exit;
+				}
+			}
+
+			if ($return) {
+				$output = $e->getMessage();
+			} else {
+				echo $e->getMessage();
+			}
 		}
 		
-		cms_core::$frameworkFile = '';
-		
-		//Restore the default file permission settings
-		umask($oldMask);
-		return $return;
+		cms_core::$isTwig = false;
+		return $output;
 	}
 	
 	protected final function frameworkIsTwig() {
 		if (!$this->frameworkLoaded) {
-			$this->tApiLoadFramework();
+			$this->zAPILoadFramework();
 		}
 		
-		return $this->tApiFrameworkIsTwig;
+		return $this->zAPIFrameworkIsTwig;
 	}
 	
 	//HTML escape something for the old framework system, but leave it alone if this is Twig
@@ -244,16 +348,12 @@ class zenario_api {
 		}
 	}
 	
-	protected final function closeForm() {
+	public final function closeForm() {
 		return '
 				</form>';
 	}
 	
-	public final function tAPITwigPhrase($code) {
-		return $this->phrase($code);
-	}
-	
-	protected final function openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = false, $fadeOutAndIn = true, $usePost = true) {
+	public final function openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = false, $fadeOutAndIn = true, $usePost = true) {
 		
 		return '
 				<form method="'. ($usePost? 'post' : 'get'). '" '. $extraAttributes. '
@@ -267,7 +367,7 @@ class zenario_api {
 					'. $this->remember('containerId', $this->containerId);
 	}
 	
-	protected final function pagination($paginationStyleSettingName, $currentPage, $pages, &$html, &$links = array()) {
+	protected final function pagination($paginationStyleSettingName, $currentPage, $pages, &$html, &$links = array(), $extraAttributes = array()) {
 		//Attempt to check if the named class exists, and fall back to 'pagSimpleNumbers' if not
 		$classAndMethod = explode('::', ifNull($this->setting($paginationStyleSettingName), $paginationStyleSettingName), 2);
 		
@@ -288,14 +388,26 @@ class zenario_api {
 			$this->cssClass,
 			$this->slotLevel, $this->isVersionControlled),
 			$this->eggId, $this->tabId);
-		$class->$method($currentPage, $pages, $html, $links);
+		$class->$method($currentPage, $pages, $html, $links, $extraAttributes);
 	}
 	
-	protected final function phrase($code, $replace = array()) {
-		return phrase($code, $replace, $this->moduleClassNameForPhrases, cms_core::$langId);
+	protected final function translatePhrasesInTUIX(&$tags, $path, $languageId = false, $scan = false) {
+		translatePhrasesInTUIX($tags, $this->zAPISettings, $path, $this->moduleClassNameForPhrases, $languageId, $scan);
 	}
 	
-	protected final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
+	protected final function translatePhrasesInTUIXObjects($tagNames, &$tags, $path, $languageId = false, $scan = false) {
+		translatePhrasesInTUIXObjects($tagNames, $tags, $this->zAPISettings, $path, $this->moduleClassNameForPhrases, $languageId, $scan);
+	}
+		
+	public final function phrase($text, $replace = array()) {
+		return phrase($text, $replace, $this->moduleClassNameForPhrases, cms_core::$langId);
+	}
+	
+	public final function nphrase($text, $pluralText = false, $n = 1, $replace = array()) {
+		return nphrase($text, $pluralText, $n, $replace, $this->moduleClassNameForPhrases, cms_core::$langId);
+	}
+	
+	public final function refreshPluginSlotAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
 		return
 			$this->linkToItemAnchor($this->cID, $this->cType, $fullPath = false, '&slotName='. $this->slotName. ($this->tabId? '&tab='. $this->tabId : ''). urlRequest($requests)).
 			' onclick="'.
@@ -303,11 +415,11 @@ class zenario_api {
 				' return false;"';
 	}
 	
-	protected final function refreshPluginSlotAnchorAndJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
+	public final function refreshPluginSlotAnchorAndJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
 		return array($this->refreshPluginSlotAnchor($requests, $scrollToTopOfSlot), $this->refreshPluginSlotJS($requests, $scrollToTopOfSlot, $fadeOutAndIn));
 	}
 	
-	protected final function refreshPluginSlotJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
+	public final function refreshPluginSlotJS($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = true) {
 		return 
 			$this->moduleClassName.'.refreshPluginSlot('.
 				'\''. $this->slotName. '\', '.
@@ -316,7 +428,7 @@ class zenario_api {
 				($fadeOutAndIn? 1 : 0). ');';
 	}
 	
-	protected final function remember($name, $value = false, $htmlId = false, $type = 'hidden') {
+	public final function remember($name, $value = false, $htmlId = false, $type = 'hidden') {
 		
 		if ($value === false) {
 			$value = request($name);
@@ -354,48 +466,6 @@ class zenario_api {
 	 //  Initialization Functions  //
 	////////////////////////////////
 	
-	protected final function allowCaching(
-		$atAll, $ifUserLoggedIn = true, $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true
-	) {
-		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['cache_if'];
-		
-		foreach (array('a' => $atAll, 'u' => $ifUserLoggedIn, 'g' => $ifGetSet, 'p' => $ifPostSet, 's' => $ifSessionSet, 'c' => $ifCookieSet) as $if => $set) {
-			if (!isset($vs[$if])) {
-				$vs[$if] = true;
-			}
-			$vs[$if] = $vs[$if] && $vs['a'] && $set;
-		}
-	}
-	
-	protected final function clearCacheBy(
-		$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false
-	) {
-		$vs = &cms_core::$slotContents[$this->slotName. ($this->eggId? '-'. $this->eggId : '')]['clear_cache_by'];
-		
-		foreach (array('content' => $clearByContent, 'menu' => $clearByMenu, 'user' => $clearByUser, 'file' => $clearByFile, 'module' => $clearByModuleData) as $if => $set) {
-			if (!isset($vs[$if])) {
-				$vs[$if] = false;
-			}
-			$vs[$if] = $vs[$if] || $set;
-		}
-	}
-	
-	protected final function callScript($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
-		$args = func_get_args();
-		$this->tApiCallScriptWhenLoaded(false, $args);
-	}
-	
-	protected final function callScriptBeforeAJAXReload($className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
-		$args = func_get_args();
-		$this->tApiCallScriptWhenLoaded(true, $args);
-	}
-	
-	protected final function callScriptAdvanced($beforeAJAXReload, $className, $scriptName /*[, $arg1 [, $arg2 [, ... ]]]*/) {
-		$args = func_get_args();
-		array_splice($args, 0, 1);
-		$this->tApiCallScriptWhenLoaded($beforeAJAXReload, $args);
-	}
-	
 	protected final function captcha() {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
@@ -405,19 +475,19 @@ class zenario_api {
 	}
 
 	protected final function forcePageReload($reload = true) {
-		$this->tApiForcePageReload($reload);
+		$this->zAPIForcePageReload($reload);
 	}
 
 	protected final function headerRedirect($link) {
-		$this->tApiHeaderRedirect($link);
+		$this->zAPIHeaderRedirect($link);
 	}
 
 	protected final function markSlotAsBeingEdited($beingEdited = true) {
-		$this->tApiMarkSlotAsBeingEdited($beingEdited);
+		$this->zAPIMarkSlotAsBeingEdited($beingEdited);
 	}
 
-	protected final function showInFloatingBox($showInFloatingBox = true) {
-		$this->cmsApiShowInFloatingBox($showInFloatingBox);
+	protected final function showInFloatingBox($showInFloatingBox = true, $floatingBoxParams = false) {
+		$this->cmsApiShowInFloatingBox($showInFloatingBox, $floatingBoxParams);
 	}
 
 	protected final function scrollToTopOfSlot($scrollToTop = true) {
@@ -432,22 +502,43 @@ class zenario_api {
 		cms_core::$slotContents[$this->slotName]['page_title'] = $title;
 		cms_core::$pageTitle = $title;
 	}
+	
+	protected final function setPageDesc($description) {
+		cms_core::$slotContents[$this->slotName]['page_desc'] = $description;
+		cms_core::$pageDesc = $description;
+	}
+	
+	protected final function setPageImage($imageId) {
+		cms_core::$slotContents[$this->slotName]['page_image'] = $imageId;
+		cms_core::$pageImage = $imageId;
+	}
+	
+	protected final function setPageKeywords($keywords) {
+		cms_core::$slotContents[$this->slotName]['page_keywords'] = $keywords;
+		cms_core::$pageKeywords = $keywords;
+	}
+	
+	protected final function setPageOGType($type) {
+		cms_core::$slotContents[$this->slotName]['page_og_type'] = $type;
+		cms_core::$pageOGType = $type;
+	}
 
 	protected final function setMenuTitle($title) {
 		cms_core::$slotContents[$this->slotName]['menu_title'] = $title;
 		cms_core::$menuTitle = $title;
 	}
+	
 
 	protected final function showInMenuMode($shownInMenuMode = true) {
-		$this->tApiShowInMenuMode($shownInMenuMode);
+		$this->zAPIShowInMenuMode($shownInMenuMode);
 	}
 
 	protected final function showInEditMode($shownInEditMode = true) {
-		$this->tApiShowInEditMode($shownInEditMode);
+		$this->zAPIShowInEditMode($shownInEditMode);
 	}
 	//Old name, left in for backwards compatability reasons
 	protected final function showReusablePluginInEditMode($shownInEditMode = true) {
-		$this->tApiShowInEditMode($shownInEditMode);
+		$this->zAPIShowInEditMode($shownInEditMode);
 	}
 	
 	
@@ -457,36 +548,36 @@ class zenario_api {
 	 //  Link/Path/URL Functions  //
 	///////////////////////////////
 	
-	protected final function linkToItem(
+	public final function linkToItem(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
 		return linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode);
 	}
 	
-	protected final function linkToItemAnchor(
+	public final function linkToItemAnchor(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
 		return ' href="'. htmlspecialchars(linkToItem($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode)). '"';
 	}
 	
-	protected final function linkToItemAnchorAndJS(
+	public final function linkToItemAnchorAndJS(
 		$cID, $cType = 'html', $fullPath = false, $request = '', $alias = false,
 		$autoAddImportantRequests = false, $useAliasInAdminMode = false
 	) {
 		return array($this->linkToItemAnchor($cID, $cType, $fullPath, $request, $alias, $autoAddImportantRequests, $useAliasInAdminMode), $this->linkToItemJS($cID, $cType, $request));
 	}
 	
-	protected final function linkToItemJS($cID, $cType = 'html', $request = '') {
+	public final function linkToItemJS($cID, $cType = 'html', $request = '') {
 		return $this->moduleClassName. '.goToItem(\''. jsOnClickEscape($cID). '\', \''. jsOnClickEscape($cType). '\', \''. jsOnClickEscape($request). '\');';
 	}
 	
-	protected final function moduleDir($subDir = '') {
+	public final function moduleDir($subDir = '') {
 		return moduleDir($this->moduleClassName, $subDir);
 	}
 	
-	protected final function AJAXLink($requests = '') {
+	public final function AJAXLink($requests = '') {
 		return 'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=handleAJAX'. urlRequest($requests);
 	}
 	
@@ -495,7 +586,7 @@ class zenario_api {
 		return $this->AJAXLink($requests);
 	}
 	
-	protected final function pluginAJAXLink($requests = '') {
+	public final function pluginAJAXLink($requests = '') {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=handlePluginAJAX'.
@@ -510,14 +601,14 @@ class zenario_api {
 			urlRequest($requests);
 	}
 	
-	protected final function showFileLink($requests = '') {
+	public final function showFileLink($requests = '') {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showFile'.
 			urlRequest($requests);
 	}
 	
-	protected final function showFloatingBoxLink($requests = '') {
+	public final function showFloatingBoxLink($requests = '') {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showFloatingBox'.
@@ -532,7 +623,7 @@ class zenario_api {
 			urlRequest($requests);
 	}
 	
-	protected final function showSingleSlotLink($requests = '', $hideLayout = true) {
+	public final function showSingleSlotLink($requests = '', $hideLayout = true) {
 		return
 			$this->linkToItem($this->cID, $this->cType, false, 
 			  (checkPriv()?
@@ -552,21 +643,21 @@ class zenario_api {
 		return $this->showSingleSlotLink($requests, $hideLayout);
 	}
 	
-	protected final function showImageLink($requests) {
+	public final function showImageLink($requests) {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showImage'.
 			urlRequest($requests);
 	}
 	
-	protected final function showStandalonePageLink($requests) {
+	public final function showStandalonePageLink($requests) {
 		return
 			httpOrHttps(). httpHost(). SUBDIRECTORY.
 			'zenario/ajax.php?moduleClassName='. $this->moduleClassName. '&method_call=showStandalonePage'.
 			urlRequest($requests);
 	}
 	
-	protected final function showRSSLink($allowFriendlyURL = false, $overwriteFriendlyURL = true) {
+	public final function showRSSLink($allowFriendlyURL = false, $overwriteFriendlyURL = true) {
 		$request = 'method_call=showRSS';
 		
 	 	//Attempt to check whether we can use Friendly URLs for the RSS links
@@ -623,8 +714,8 @@ class zenario_api {
 	protected function getImageHtmlSnippet($image_id, &$snippet_field, $widthLimit = false, $heightLimit = false){
 		if($image_id) {
 			$width = $height = $url = $widthR = $heightR = $urlR = false;
-			imageLink($width, $height, $url, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $useCacheDir = false);
-			imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit = 700, $heightLimit = 200, $mode = 'resize', $offset = 0, $useCacheDir = false);
+			imageLink($width, $height, $url, $image_id, $widthLimit, $heightLimit, $mode = 'resize', $offset = 0, $retina = false, $privacy = 'auto', $useCacheDir = false);
+			imageLink($widthR, $heightR, $urlR, $image_id, $widthLimit = 700, $heightLimit = 200, $mode = 'resize', $offset = 0, $retina = true, $privacy = 'auto', $useCacheDir = false);
 	
 			$snippet_field = '
 			<p style="text-align: center;">
@@ -648,100 +739,85 @@ class zenario_api {
 	//about them.
 	
 	//Plugin Settings
-	public $tApiSettings;
+	public $zAPISettings;
 
 	//Disable AJAX Relaod
-	private $tApiForcePageReloadVar = false;
+	private $zAPIForcePageReloadVar = false;
 	public final function checkForcePageReloadVar() {
-		return $this->tApiForcePageReloadVar;
+		return $this->zAPIForcePageReloadVar;
 	}
-	protected final function tApiForcePageReload($reload) {
-		$this->tApiForcePageReloadVar = $reload;
+	protected final function zAPIForcePageReload($reload) {
+		$this->zAPIForcePageReloadVar = $reload;
 	}
 	
 	//Reload to a different location
-	private $tApiHeaderRedirectLocation = false;
-	protected final function tApiHeaderRedirect($location) {
-		$this->tApiHeaderRedirectLocation = $location;
+	private $zAPIHeaderRedirectLocation = false;
+	protected final function zAPIHeaderRedirect($location) {
+		$this->zAPIHeaderRedirectLocation = $location;
 	}
 	public final function checkHeaderRedirectLocation() {
-		return $this->tApiHeaderRedirectLocation;
+		return $this->zAPIHeaderRedirectLocation;
 	}
 
 	//How to display after an AJAX reload
-	private $tApiShowInFloatingBox = false;
-	public final function checkShowInFloatingBoxVar() {
-		return $this->tApiShowInFloatingBox;
+	private $zAPIShowInFloatingBox = false;
+	private $zAPIFloatingBoxParams = false;
+	public final function getFloatingBoxParams() {
+		return $this->zAPIFloatingBoxParams;
 	}
-	protected final function cmsApiShowInFloatingBox($showInFloatingBox) {
-		$this->tApiShowInFloatingBox = $showInFloatingBox;
+	public final function checkShowInFloatingBoxVar() {
+		return $this->zAPIShowInFloatingBox;
+	}
+	protected final function cmsApiShowInFloatingBox($showInFloatingBox, $floatingBoxParams) {
+		$this->zAPIShowInFloatingBox = $showInFloatingBox;
+		$this->zAPIFloatingBoxParams = $floatingBoxParams;
 	}
 	
-	private $tApiScrollToTop = null;
+	private $zAPIScrollToTop = null;
 	public final function checkScrollToTopVar() {
-		return $this->tApiScrollToTop;
+		return $this->zAPIScrollToTop;
 	}
 	protected final function cmsApiScrollToTopOfSlot($scrollToTop) {
-		$this->tApiScrollToTop = $scrollToTop;
+		$this->zAPIScrollToTop = $scrollToTop;
 	}
 
 	//A list of JavaScript functions to run
-	private $tApiScripts = array();
-	private $tApiScriptsBefore = array();
-	protected final function tApiCallScriptWhenLoaded($beforeAJAXReload, &$script) {
-		if ($beforeAJAXReload && request('method_call') == 'refreshPlugin') {
-			$this->tApiScriptsBefore[] = $script;
-		} else {
-			$this->tApiScripts[] = $script;
-		}
+	private $zAPIScripts = array(array(), array(), array());
+	protected final function zAPICallScriptWhenLoaded($scriptType, &$script) {
+		$this->zAPIScripts[$scriptType][] = $script;
 	}
-	public final function tApiCheckRequestedScripts(&$scripts, &$scriptsBefore) {
-		$scripts = $this->tApiScripts;
-		$scriptsBefore = $this->tApiScriptsBefore;
-	}
-	public final function tApiAddRequestedScripts() {
-		if (!empty($this->tApiScripts)) {
-			echo '
-				<script type="text/javascript">';
-				
-					foreach ($this->tApiScripts as &$script) {
-						echo '
-					zenario.callScript("', jsEscape(json_encode($script)), '");';
-					}
-					
-			echo '
-				</script>';
-		}
+	public final function zAPICheckRequestedScripts(&$scripts) {
+		$scripts = $this->zAPIScripts;
 	}
 	
 	//Mark this Plugin as Menu-related
-	private $tApiShownInMenuMode;
+	private $zAPIShownInMenuMode;
 	public final function shownInMenuMode() {
-		return $this->tApiShownInMenuMode;
+		return $this->zAPIShownInMenuMode;
 	}
-	protected final function tApiShowInMenuMode($shownInMenuMode) {
-		$this->tApiShownInMenuMode = $shownInMenuMode;
+	protected final function zAPIShowInMenuMode($shownInMenuMode) {
+		$this->zAPIShownInMenuMode = $shownInMenuMode;
 	}
 	
 	//Mark this Library plugin as shown in Edit Mode
-	private $tApiShownInEditMode;
+	private $zAPIShownInEditMode;
 	public final function shownInEditMode() {
-		return $this->tApiShownInEditMode;
+		return $this->zAPIShownInEditMode;
 	}
-	protected final function tApiShowInEditMode($shownInEditMode) {
-		$this->tApiShownInEditMode = $shownInEditMode;
+	protected final function zAPIShowInEditMode($shownInEditMode) {
+		$this->zAPIShownInEditMode = $shownInEditMode;
 	}
 	
 	//Mark this Plugin as being editing
-	private $tApiSlotBeingEdited;
+	private $zAPISlotBeingEdited;
 	public final function beingEdited() {
-		return $this->tApiSlotBeingEdited;
+		return $this->zAPISlotBeingEdited;
 	}
-	protected final function tApiMarkSlotAsBeingEdited($beingEdited) {
-		$this->tApiSlotBeingEdited = $beingEdited;
+	protected final function zAPIMarkSlotAsBeingEdited($beingEdited) {
+		$this->zAPISlotBeingEdited = $beingEdited;
 	}
 	
-	public final function tApiGetTabId() {
+	public final function zAPIGetTabId() {
 		return $this->tabId;
 	}
 
@@ -756,42 +832,42 @@ class zenario_api {
 	private $frameworkLoaded = false;
 	private $zenario2Twig = false;
 	protected $frameworkOutputted = false;
-	protected $tApiFrameworkIsTwig = false;
+	protected $zAPIFrameworkIsTwig = false;
 	
-	private $tApiFirst = true;
-	private final function tApiFirst() {
-		if ($this->tApiFirst) {
-			$this->tApiFirst = false;
+	private $zAPIFirst = true;
+	private final function zAPIFirst() {
+		if ($this->zAPIFirst) {
+			$this->zAPIFirst = false;
 			return 'first';
 		} else {
 			return '';
 		}
 	}
 	
-	private $tApiOddOrEven = 'even';
-	private final function tApiOddOrEven($change = true) {
+	private $zAPIOddOrEven = 'even';
+	private final function zAPIOddOrEven($change = true) {
 		if ($change) {
-			$this->tApiOddOrEven = $this->tApiOddOrEven == 'odd'? 'even' : 'odd';
+			$this->zAPIOddOrEven = $this->zAPIOddOrEven == 'odd'? 'even' : 'odd';
 		}
-		return $this->tApiOddOrEven;
+		return $this->zAPIOddOrEven;
 	}
 	
 	
-	public final function tApiGetCachableVars(&$a) {
-		$a = array();
-		$a[0] = $this->framework;
-		$a[1] = $this->tApiScripts;
-		$a[2] = $this->tApiScriptsBefore;
-		$a[3] = $this->tabId;
-		$a[4] = $this->cssClass;
-		$a[5] = $this->eggId;
-		$a[6] = $this->tabId;
+	public final function zAPIGetCachableVars(&$a) {
+		$a = array(
+			$this->framework,
+			$this->zAPIScripts,
+			false, //not used any more
+			$this->tabId,
+			$this->cssClass,
+			$this->eggId,
+			$this->tabId);
 	}
 	
-	public final function tApiSetCachableVars(&$a) {
+	public final function zAPISetCachableVars(&$a) {
 		$this->framework = $a[0];
-		$this->tApiScripts = $a[1];
-		$this->tApiScriptsBefore = $a[2];
+		$this->zAPIScripts = $a[1];
+		//$a[2] isn't used anymore
 		$this->tabId = $a[3];
 		$this->cssClass = $a[4];
 		$this->eggId = $a[5];
@@ -799,7 +875,7 @@ class zenario_api {
 	}
 	
 	
-	public final function setInstanceVariables($locationAndInstanceDetails, $nest = 0, $tab = 0) {
+	public final function setInstanceVariables($locationAndInstanceDetails, $nest = 0, $tab = 0, $settings = false) {
 		//Set the variables above from the array given
 		list($this->cID, $this->cType, $this->cVersion, $this->slotName,
 			 $this->instanceName, $this->instanceId,
@@ -830,6 +906,10 @@ class zenario_api {
 				$this->containerId .= '-'. $this->eggId;
 			}
 		}
+		
+		if ($settings !== false) {
+			$this->zAPISettings = $settings;
+		}
 	}
 	
 	public final function setInstance($locationAndInstanceDetails = false, $nest = 0, $tab = 0) {
@@ -856,7 +936,7 @@ class zenario_api {
 			
 			//Look up this plugin's settings, starting with the default values
 			//Make sure to get default values if they are defined in extened Modules
-			$this->tApiSettings = array();
+			$this->zAPISettings = array();
 			foreach (getModuleInheritances($this->moduleClassName, 'inherit_settings') as $className) {
 				$sql = "
 					SELECT `name`, default_value
@@ -865,8 +945,8 @@ class zenario_api {
 				$result = sqlQuery($sql);
 				
 				while($row = sqlFetchAssoc($result)) {
-					if (!isset($this->tApiSettings[$row['name']])) {
-						$this->tApiSettings[$row['name']] = $row['default_value'];
+					if (!isset($this->zAPISettings[$row['name']])) {
+						$this->zAPISettings[$row['name']] = $row['default_value'];
 					}
 				}
 			}
@@ -889,7 +969,7 @@ class zenario_api {
 			$result = sqlQuery($sql);
 			
 			while($row = sqlFetchAssoc($result)) {
-				$this->tApiSettings[$row['name']] = $row['value'];
+				$this->zAPISettings[$row['name']] = $row['value'];
 			}
 		}
 	}
@@ -938,7 +1018,7 @@ class zenario_api {
 	//Any calls to frameworkHead() or to framework() for sections other than "Outer" are stored in the $this->zenario2Twig array.
 	//After showSlot is finished, we'll output the $this->zenario2Twig arrat using Twig.
 	public final function afterShowSlot() {
-		if ($this->tApiFrameworkIsTwig
+		if ($this->zAPIFrameworkIsTwig
 		 && $this->zenario2Twig !== false) {
 			$this->twigFramework($this->zenario2Twig);
 			$this->zenario2Twig = false;
@@ -990,7 +1070,7 @@ class zenario_api {
 		}
 	}
 	
-	protected final function tApiLoadFramework() {
+	protected final function zAPILoadFramework() {
 		//Keep an eye on whether this method has already run, and don't let it be called twice
 		if ($this->frameworkLoaded) {
 			return true;
@@ -1003,7 +1083,7 @@ class zenario_api {
 		//New framework code, using Twig
 		if (is_file($file = $path. 'framework.twig.html')) {
 			//No loading needed here; Twig recompiles if needed when displaying a framework.
-			$this->tApiFrameworkIsTwig = true;
+			$this->zAPIFrameworkIsTwig = true;
 		
 		//Old framework code
 		//Check to see if the framework html file exists, and start loading it if it does
@@ -1160,7 +1240,7 @@ class zenario_api {
 						} elseif ($attributes['type'] == 'toggle' && isset($_POST['cID']) && isset($_POST[$attributes['name']. '__n'])) {
 							//Look up the list of possible values
 							$lov = false;
-							$this->tApiFrameworkLOV($attributes['type'], $attributes, $lov);
+							$this->zAPIFrameworkLOV($attributes['type'], $attributes, $lov);
 							
 							//Get the total number of toggles, and look at each toggle in turn
 							for ($k = 1; $k <= (int) $_POST[$attributes['name']. '__n']; ++$k) {
@@ -1223,17 +1303,17 @@ class zenario_api {
 		}
 	}
 	
-	public final function tApiGetSlotLevel() {
+	public final function zAPIGetSlotLevel() {
 		return $this->slotLevel == 1? adminPhrase('this Content Item') : ($this->slotLevel == 2? adminPhrase('this Layout') : adminPhrase('this Template Family'));
 	}
 	
-	protected final function tApiFramework(
+	protected final function zAPIFramework(
 								$section = 'Outer', $mergeFields = array(),
 								$allowedSubSections = array(), $subSectionDepthLimit = 5,
 								$half = false, $halfwayPoint = true, $recursing = false
 							 ) {
 		if (!$this->frameworkLoaded) {
-			$this->tApiLoadFramework();
+			$this->zAPILoadFramework();
 		}
 		
 		//Check the framework and framework section exist
@@ -1241,7 +1321,7 @@ class zenario_api {
 			echo 'This plugin requires a framework, but no framework was set. ';
 		}
 		
-		if ($this->tApiFrameworkIsTwig) {
+		if ($this->zAPIFrameworkIsTwig) {
 			//Attempt to automatically migrate a Module using the old framework system to using Twig
 		
 			//I'll add support for the following situations:
@@ -1354,19 +1434,19 @@ class zenario_api {
 							if ($showThisSection) {
 								if ($displayThings && $conditionMet) {
 									if (is_array($showThisSection)) {
-										$this->tApiFramework(
+										$this->zAPIFramework(
 												$thing, $showThisSection,
 												$allowedSubSections, $subSectionDepthLimit-1,
 												false, false, true);
 								
 									} elseif (is_array($allowedSubSections[$thing])) {
-										$this->tApiFramework(
+										$this->zAPIFramework(
 												$thing, $allowedSubSections[$thing],
 												$allowedSubSections, $subSectionDepthLimit-1,
 												false, false, true);
 								
 									} else {
-											$this->tApiFramework(
+											$this->zAPIFramework(
 												$thing, $mergeFieldsRow,
 												$allowedSubSections, $subSectionDepthLimit-1,
 												false, false, true);
@@ -1400,7 +1480,7 @@ class zenario_api {
 								//Otherwise, attempt to look up the value of that field
 								$value = null;
 								$attributes = arrayKey($this->fieldInfo, $section, $thing['field']);
-								$this->tApiFrameworkField($mergeFieldsRow, false, ifNull($attributes, array('name' => $thing['field'])), $value, false);
+								$this->zAPIFrameworkField($mergeFieldsRow, false, ifNull($attributes, array('name' => $thing['field'])), $value, false);
 							
 								if (!isset($thing['value'])) {
 									//If no specific value is mentioned, only check if the value looks set
@@ -1455,15 +1535,15 @@ class zenario_api {
 							//Have a few special cases
 							} elseif ($thing == 'ODD_OR_EVEN') {
 								//Output 'odd' then 'even' alternately
-								echo $this->tApiOddOrEven();
+								echo $this->zAPIOddOrEven();
 						
 							} elseif ($thing == 'LAST_ODD_OR_EVEN') {
 								//Output the last value of "ODD_OR_EVEN"
-								echo $this->tApiOddOrEven(false);
+								echo $this->zAPIOddOrEven(false);
 						
 							} elseif ($thing == 'FIRST') {
 								//Output 'first' the first time it this merge field is used
-								echo $this->tApiFirst();
+								echo $this->zAPIFirst();
 						
 							} elseif ($thing == 'CONTAINER_ID') {
 								//Output the container id
@@ -1510,7 +1590,7 @@ class zenario_api {
 							
 							//Check for a list of values, if one has been set
 							$lov = false;
-							$this->tApiFrameworkLOV($type, $attributes, $lov);
+							$this->zAPIFrameworkLOV($type, $attributes, $lov);
 						
 							//Draw the field
 							if (($type == 'checkbox' && !is_array($lov))
@@ -1523,7 +1603,7 @@ class zenario_api {
 							 || $type == 'text'
 							 || $type == 'textarea'
 							 || $type == 'toggle') {
-								$this->tApiFrameworkField($mergeFieldsRow, $type, $attributes, $value, $readOnly);
+								$this->zAPIFrameworkField($mergeFieldsRow, $type, $attributes, $value, $readOnly);
 							}
 						
 							if (!$readOnly && $type == 'select' && !empty($attributes['null'])) {
@@ -1543,7 +1623,7 @@ class zenario_api {
 												htmlspecialchars($dispVal),
 											'</option>'; 
 									} else {
-										$this->tApiFrameworkField($mergeFieldsRow, $type, $attributes, $value, $readOnly, ++$i, $saveVal, $dispVal);
+										$this->zAPIFrameworkField($mergeFieldsRow, $type, $attributes, $value, $readOnly, ++$i, $saveVal, $dispVal);
 									}
 								}
 							
@@ -1574,11 +1654,11 @@ class zenario_api {
 		}
 	}
 	
-	private final function tApiFrameworkField(&$mergeFieldsRow, $type, $attributes, &$value, $readonly, $i = false, $saveVal = false, $dispVal = false) {
+	private final function zAPIFrameworkField(&$mergeFieldsRow, $type, $attributes, &$value, $readonly, $i = false, $saveVal = false, $dispVal = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	private final function tApiFrameworkLOV($type, &$attributes, &$lov) {
+	private final function zAPIFrameworkLOV($type, &$attributes, &$lov) {
 		//Load the List of Values for a field
 		if ($type == 'checkbox' || $type == 'radio' || $type == 'select' || $type == 'toggle') {
 			if (!empty($attributes['source_module']) && !empty($attributes['source_method']) && inc($attributes['source_module'])) {
@@ -1626,9 +1706,9 @@ class zenario_api {
 		}
 	}
 	
-	protected final function tApiListFrameworkFields($section, &$fields, &$allowedSubSections = array(), $limit = 5) {
+	protected final function zAPIListFrameworkFields($section, &$fields, &$allowedSubSections = array(), $limit = 5) {
 		if (!$this->frameworkLoaded) {
-			$this->tApiLoadFramework();
+			$this->zAPILoadFramework();
 		}
 		
 		if (!--$limit || !$this->checkFrameworkSectionExists($section)) {
@@ -1640,7 +1720,7 @@ class zenario_api {
 			foreach ($sectionContents as $type => &$thing) {
 				if ($type == CMS_FRAMEWORK_SECTION) {
 					if (!empty($allowedSubSections[$thing])) {
-						$this->tApiListFrameworkFields($thing, $fields, $allowedSubSections, $limit);
+						$this->zAPIListFrameworkFields($thing, $fields, $allowedSubSections, $limit);
 					}
 				}
 			}
@@ -1716,19 +1796,28 @@ class zenario_api {
 	//This is intended as a replacement for the old useThisClassInstead() functionality
 	//Rather than put all of your Admin Box/Organizer functionality in one module,
 	//this lets you divvy it up into different subclasses.
-	public $tAPIrunSubClassSafetyCatch = false;
-	protected final function runSubClass($filePath, $type = false, $path = false) {
+	public $zAPIrunSubClassSafetyCatch = false;
+	protected final function runSubClass($filePath, $type = false, $path = false, $customisationName = -1) {
 		
 		//Add a check to stop subclasses calling themsevles again, which would cause an
 		//infinite loop!
-		if ($this->tAPIrunSubClassSafetyCatch) {
+		if ($this->zAPIrunSubClassSafetyCatch) {
 			return false;
 		}
 		
-		if ($className = includeModuleSubclass($filePath, $type, $path)) {
-			$c = new $className;
-			$c->tAPIrunSubClassSafetyCatch = true;
-			return $c;
+		if ($className = includeModuleSubclass($filePath, $type, $path, $customisationName)) {
+			$class = new $className;
+			$class->zAPIrunSubClassSafetyCatch = true;
+			$class->setInstanceVariables(array(
+				$this->cID, $this->cType, $this->cVersion, $this->slotName,
+				$this->instanceName, $this->instanceId,
+				$this->moduleClassName, $this->moduleClassNameForPhrases,
+				$this->moduleId,
+				$this->defaultFramework, $this->framework,
+				$this->cssClass,
+				$this->slotLevel, $this->isVersionControlled),
+				$this->eggId, $this->tabId, $this->zAPISettings);
+			return $class;
 		} else {
 			return false;
 		}
@@ -1744,7 +1833,7 @@ class zenario_api {
 	
 	protected final function checkFrameworkSectionExists($section = 'Outer') {
 		if (!$this->frameworkLoaded) {
-			$this->tApiLoadFramework();
+			$this->zAPILoadFramework();
 		}
 		
 		return !(empty($this->frameworkData[$section]) || !is_array($this->frameworkData[$section]));
@@ -1756,7 +1845,7 @@ class zenario_api {
 								$half = false, $halfwayPoint = true
 							 ) {
 						
-		$this->tApiFramework(
+		$this->zAPIFramework(
 				$section, $mergeFields, $allowedSubSections, $subSectionDepthLimit, $half, $halfwayPoint);
 	}
 
@@ -1765,13 +1854,13 @@ class zenario_api {
 								$halfwayPoint = true,
 								$mergeFields = array(),
 								$allowedSubSections = array(), $subSectionDepthLimit = 5) {
-		$this->tApiFramework(
+		$this->zAPIFramework(
 				$section, $mergeFields, $allowedSubSections, $subSectionDepthLimit, 1, $halfwayPoint);
 	}
 	
 	protected final function frameworkFields($section = 'Outer', $allowedSubSections = array(), $subSectionDepthLimit = 5) {
 		$fields = array();
-		$this->tApiListFrameworkFields($section, $fields, $allowedSubSections, $subSectionDepthLimit);
+		$this->zAPIListFrameworkFields($section, $fields, $allowedSubSections, $subSectionDepthLimit);
 		return $fields;
 	}
 	
@@ -1802,15 +1891,15 @@ class zenario_api {
 								$halfwayPoint = true,
 								$mergeFields = array(),
 								$allowedSubSections = array(), $subSectionDepthLimit = 5) {
-		$this->tApiFramework(
+		$this->zAPIFramework(
 				$section, $mergeFields, $allowedSubSections, $subSectionDepthLimit, 2, $halfwayPoint);
 	}
 	
 	protected final function loadFramework() {
-		$this->tApiLoadFramework();
+		$this->zAPILoadFramework();
 	}
 	
 	protected final function resetOddOrEven() {
-		$this->tApiOddOrEven = 'odd';
+		$this->zAPIOddOrEven = 'odd';
 	}
 }

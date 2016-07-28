@@ -95,12 +95,8 @@ class zenario_menu_multicolumn extends zenario_menu {
 				echo '
 <ul>
 	<li>'. $this->drawMenuItemWithLevel($val, 1);
-				if (isset($val['children']) && is_array($val['children'])) {
-					echo '
-		<div class="columns_wrap">
-		
-			<div class="column">';					
-					
+				if (isset($val['children']) && is_array($val['children']) && $val['children']) {
+					echo '<div class="columns_wrap"><div class="column">';
 					$currentInCol = 0;
 					
 					//Loop through level 2s

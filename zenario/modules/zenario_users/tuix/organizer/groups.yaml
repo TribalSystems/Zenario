@@ -21,6 +21,7 @@ zenario__users:
             no_items_message: No groups are defined.
             default_sort_column: label
             item:
+                css_class: zenario_group
                 tooltip_when_link_is_active: 'View users in the Group "[[label]]"'
                 link:
                     path: zenario__users/panels/users

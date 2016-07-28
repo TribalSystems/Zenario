@@ -73,7 +73,7 @@ if (!defined('SUBDIRECTORY')) {
 require CMS_ROOT. 'zenario/api/admin_functions.inc.php';
 require CMS_ROOT. 'zenario/api/array_and_object_functions.inc.php';
 require CMS_ROOT. 'zenario/api/content_item_functions.inc.php';
-if (!function_exists('getRow')) require_once CMS_ROOT. 'zenario/api/database_functions.inc.php';
+require_once CMS_ROOT. 'zenario/api/database_functions.inc.php';
 require CMS_ROOT. 'zenario/api/file_functions.inc.php';
 require CMS_ROOT. 'zenario/api/link_path_and_url_core_functions.inc.php';
 require CMS_ROOT. 'zenario/api/string_functions.inc.php';
@@ -99,11 +99,11 @@ function getCMSVersionNumber($revision = false) {
 
 
 //Write the URLBasePath, and other related JavaScript variables, to the page
-function CMSWritePageHead($prefix, $mode = false, $includeOrganizer = true) {
+function CMSWritePageHead($prefix, $mode = false, $includeOrganizer = false, $overrideFrameworkAndCSS = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
-function CMSWritePageBody($attributes = '', $includeAdminToolbar = true, $showPreview = false) {
+function CMSWritePageBody($extraClassNames = '', $attributes = '', $showSitewideBodySlot = false, $includeAdminToolbar = false) {
 	require funIncPath(__FILE__, __FUNCTION__);
 }
 
@@ -1571,7 +1571,7 @@ function getShowableContent(&$content, &$version, $cID, $cType = 'html', $reques
 		$versionColumns = array(
 			'version',
 			'title', 'description', 'keywords',
-			'layout_id', 'css_class',
+			'layout_id', 'css_class', 'sticky_image_id',
 			'publication_date', 'published_datetime', 'created_datetime',
 			'rss_slot_name', 'rss_nest');
 		
@@ -1717,9 +1717,12 @@ function setShowableContent(&$content, &$version) {
 	cms_core::$cVersion = $version['version'];
 	cms_core::$adminVersion = $content['admin_version'];
 	cms_core::$visitorVersion = $content['visitor_version'];
+	
 	cms_core::$pageTitle = $version['title'];
-	cms_core::$description = $version['description'];
-	cms_core::$keywords = $version['keywords'];
+	cms_core::$pageDesc = $version['description'];
+	cms_core::$pageImage = $version['sticky_image_id'];
+	cms_core::$pageKeywords = $version['keywords'];
+	
 	cms_core::$itemCSS = $version['css_class'];
 	cms_core::$date = ifNull($version['publication_date'], $version['published_datetime'], $version['created_datetime']);
 	cms_core::$rss = $version['rss_nest']. '_'. $version['rss_slot_name'];
@@ -1988,6 +1991,13 @@ function adminPhrase($code, $replace = false) {
 
 function nAdminPhrase($text, $pluralText = false, $n = 1, $replace = array(), $zeroText = false) {
 	
+	if (!is_array($replace)) {
+		$replace = array();
+	}
+	if (!isset($replace['count'])) {
+		$replace['count'] = $n;
+	}
+	
 	if ($zeroText !== false && $n === 0) {
 		return adminPhrase($zeroText, $replace);
 	
@@ -2036,7 +2046,7 @@ function getVLPPhrase($code, $replace = false, $languageId = false, $returnFalse
 }
 
 //Replacement function for gettext()/ngettext() in our Twig frameworks
-function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
+function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
 	
 	if (false === $code
 	 || is_null($code)
@@ -2229,7 +2239,19 @@ function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId 
 
 function nphrase($text, $pluralText = false, $n = 1, $replace = array(), $moduleClass = 'lookup', $languageId = false) {
 	
-	if ($pluralText !== false && $n !== 1) {
+	//Allow the caller to enter the name of a merge field that contains $n
+	if (is_string($n) && !is_numeric($n) && isset($replace[$n])) {
+		$n = $replace[$n];
+	} else {
+		if (!is_array($replace)) {
+			$replace = array();
+		}
+		if (!isset($replace['count'])) {
+			$replace['count'] = $n;
+		}
+	}
+	
+	if ($pluralText !== false && $n !== 1 && $n !== '1') {
 		return phrase($pluralText, $replace, $moduleClass, $languageId, 2);
 	} else {
 		return phrase($text, $replace, $moduleClass, $languageId, 2);
@@ -2494,11 +2516,25 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 		$cachingRestrictions = 'staticFunctionCalled';
 		if (!(inc($row['module_class_name']))
 		 || !(method_exists($row['module_class_name'], $row['method_name']))
-		 || !(call_user_func(
+		 || !($overrides = call_user_func(
 				array($row['module_class_name'], $row['method_name']),
 					$row['param_1'], $row['param_2'])
 		)) {
 			return false;
+		
+		} else {
+			//If an array is returned, show the menu node but override any
+			//of the options it had
+			if (is_array($overrides)) {
+				foreach ($overrides as $key => &$override) {
+					$row[$key] = $override;
+				}
+			
+			//If a string is returned, set the text of the menu node
+			//This is an un-documented feature for backwards compatibility
+			} elseif (is_string($overrides)) {
+				$row['name'] = $overrides;
+			}
 		}
 	}
 	
@@ -2565,11 +2601,7 @@ function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, 
 			m.image_id,
 			m.rollover_image_id,
 			m.css_class,
-			t.descriptive_text,
-			m.menu_text_module_class_name,
-			m.menu_text_method_name,
-			m.menu_text_param_1,
-			m.menu_text_param_2
+			t.descriptive_text
 		FROM ". DB_NAME_PREFIX. "menu_nodes AS m
 		INNER JOIN ". DB_NAME_PREFIX. "menu_text AS t
 		   ON t.menu_id = m.id
@@ -2604,7 +2636,6 @@ function getMenuStructure(
 	$language = false,
 	$onlyFollowOnLinks = false,
 	$onlyIncludeOnLinks = false,
-	$showAdminAddMenuItem = true,
 	$showInvisibleMenuItems = false,
 	$showMissingMenuNodes = false,
 	$recurseCount = 0,
@@ -2616,11 +2647,6 @@ function getMenuStructure(
 	
 	if (++$recurseCount == 1) {
 		$level1counter = 0;
-	}
-	
-	//Never show the "add menu node" icons on a layout preview
-	if (cms_core::$cID === -1) {
-		$showAdminAddMenuItem = false;
 	}
 	
 	//Look up all of the Menu Items on this level
@@ -2706,10 +2732,20 @@ function getMenuStructure(
 					}
 				}
 			}
-		
+			
 			if ($showMenuItem) {
 				if ($row['target_loc'] == 'ext' && $row['ext_url']) {
 					$row['url'] = $row['ext_url'];
+				
+					//Allow anyone writing a static method to easily add extra requests to the URL
+					//by using the extra_requests property
+					if (!empty($row['extra_requests'])) {
+						if (is_array($row['extra_requests'])) {
+							$row['url'] .= '&'. http_build_query($row['extra_requests']);
+						} else {
+							$row['url'] .= '&'. $row['extra_requests'];
+						}
+					}
 						
 				} else if ($row['target_loc'] == 'int' && $row['cID']) {
 					$request = '';
@@ -2718,7 +2754,20 @@ function getMenuStructure(
 						$request = '&download=1';
 					}
 					if ($requests) {
-						$request .= $requests;
+						$request .= addAmp($requests);
+					}
+					//Allow anyone writing a static method to easily add extra requests to the URL
+					//by using the extra_requests property
+					if (!empty($row['extra_requests'])) {
+						if (is_array($row['extra_requests'])) {
+							$request .= '&'. http_build_query($row['extra_requests']);
+						} else {
+							$request .= '&'. $row['extra_requests'];
+						}
+					}
+					
+					if (cms_core::$cID == $row['cID'] && cms_core::$cType == $row['cType'] && cms_core::$menuTitle !== false) {
+						$row['name'] = cms_core::$menuTitle;
 					}
 					
 					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], true);
@@ -2730,10 +2779,6 @@ function getMenuStructure(
 					$row['url'] = $link;
 					if (!empty($row['anchor'])) {
 						$row['url'] .= '#'.$row['anchor'];
-					}
-					
-					if (cms_core::$cID == $row['cID'] && cms_core::$cType == $row['cType'] && cms_core::$menuTitle !== false) {
-						$row['name'] = cms_core::$menuTitle;
 					}
 			
 				} else {
@@ -2766,7 +2811,7 @@ function getMenuStructure(
 												$sectionId, $currentMenuId, $row['mID'],
 												$numLevels, $maxLevel1MenuItems, $language,
 												$onlyFollowOnLinks, $onlyIncludeOnLinks,
-												$showAdminAddMenuItem, $showInvisibleMenuItems, $showMissingMenuNodes,
+												$showInvisibleMenuItems, $showMissingMenuNodes,
 												$recurseCount, $requests);
 						
 						if ($row['target_loc'] == 'none' && checkPriv()) {
@@ -2802,10 +2847,6 @@ function getMenuStructure(
 					}
 				}
 				
-				//Even if a Menu Node had no children, Admins should still have an "add menu" button if appropriate
-				if ($showAdminAddMenuItem && $goFurther && $followLink && checkPriv('_PRIV_ADD_MENU_ITEM') && empty($row['children'])) {
-					$row['children'] = array('add' => showAdminAddMenuItem($sectionId, $language, $row['mID']));
-				}
 			}
 			
 			
@@ -2829,13 +2870,6 @@ function getMenuStructure(
 		foreach ($unsets as $menuId => $dummy) {
 			unset($rows[$menuId]);
 		}
-	}
-	
-	if (
-		checkPriv('_PRIV_ADD_MENU_ITEM') && $showAdminAddMenuItem
-		&& ($recurseCount > 1 || $level1counter < $maxLevel1MenuItems)
-	) {
-		$rows['add'] = showAdminAddMenuItem($sectionId, $language, $parentMenuId);
 	}
 	
 	if ($recurseCount>1000) {
@@ -2862,7 +2896,6 @@ function showAdminAddMenuItem($sectionId, $language, $parentMenuId) {
 			'is_admin_add_menu_item' => true,
 			'onclick' =>
 				"zenarioAB.open('". (checkPriv('_PRIV_CREATE_FIRST_DRAFT')? 'zenario_quick_create' : 'zenario_menu'). "', {
-					quick_create_menu: 1,
 					target_menu_parent: ". (int) $parentMenuId. ",
 					target_menu_section: ". (int) $sectionId. ",
 					target_language_id: '". jsEscape($language). "'
@@ -2880,6 +2913,21 @@ function showAdminAddMenuItem($sectionId, $language, $parentMenuId) {
 
 
 
+
+function linkToEquivalentItem(
+	$cID, $cType = 'html', $languageId = false, $fullPath = false, $request = '', $useAliasInAdminMode = false
+) {
+
+	if (langEquivalentItem($cID, $cType, $languageId)) {
+		return linkToItem(
+			$cID, $cType, $fullPath, $request, false,
+			false, $useAliasInAdminMode,
+			false, $languageId
+		);
+	} else {
+		return false;
+	}
+}
 
 
 //Build a link to a content item
@@ -3275,14 +3323,17 @@ define('ZENARIO_CENTRALISED_LIST_MODE_LIST', 2);
 define('ZENARIO_CENTRALISED_LIST_MODE_FILTERED_LIST', 3);
 define('ZENARIO_CENTRALISED_LIST_MODE_VALUE', 4);
 
-function getDatasetDetails($dataset) {
+function getDatasetDetails($dataset, $cols = true) {
 	if (is_array($dataset)) {
 		return $dataset;
+	
 	} elseif (is_numeric($dataset)) {
-		return getRow('custom_datasets', true, $dataset);
-	} else {
-		return getRow('custom_datasets', true, array('system_table' => $dataset));
+		return getRow('custom_datasets', $cols, $dataset);
+	
+	} elseif ($out = getRow('custom_datasets', $cols, array('system_table' => array($dataset, DB_NAME_PREFIX. $dataset)))) {
+		return $out;
 	}
+	return getRow('custom_datasets', $cols, array('label' => $dataset));
 }
 
 function getDatasetTabDetails($datasetId, $tabName) {
@@ -3294,29 +3345,24 @@ function getDatasetFieldBasicDetails($fieldId) {
 		SELECT type, is_system_field, db_column, label, default_label
 		FROM ". DB_NAME_PREFIX. "custom_dataset_fields
 		WHERE id = ". (int) $fieldId;
-	
-	$result = sqlSelect($sql);
-	return sqlFetchAssoc($result);
+	return sqlFetchAssoc($sql);
 }
 
-function getDatasetFieldDetails($field, $dataset = false) {
+function getDatasetFieldDetails($field, $dataset = false, $cols = true) {
 	if (is_numeric($field)) {
-		return getRow('custom_dataset_fields', true, $field);
+		return getRow('custom_dataset_fields', $cols, $field);
 	} else {
-		if (!is_numeric($dataset) && !is_array($dataset)) {
-			$dataset = getDatasetDetails($dataset);
+		if (!is_numeric($dataset)) {
+			$dataset = getDatasetDetails($dataset, array('id'));
+			$dataset = $dataset['id'];
 		}
-		if (!empty($dataset['id'])) {
-			return getRow('custom_dataset_fields', true, array('dataset_id' => $dataset['id'], 'db_column' => $field));
-		}
+		return getRow('custom_dataset_fields', $cols, array('dataset_id' => $dataset, 'db_column' => $field));
 	}
 }
 
 function getDatasetFieldsDetails($dataset) {
-	if (is_string($dataset)) {
-		$dataset = getDatasetDetails($dataset);
-	}
-	if (is_array($dataset)) {
+	if (!is_numeric($dataset)) {
+		$dataset = getDatasetDetails($dataset, array('id'));
 		$dataset = $dataset['id'];
 	}
 	
@@ -3330,15 +3376,18 @@ function getDatasetFieldsDetails($dataset) {
 	return $out;
 }
 
-function getDatasetFieldValue($recordId, $cfield, $dataset = false) {
+function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true, $forDisplay = false) {
+	if ($dataset && !is_array($dataset)) {
+		$dataset = getDatasetDetails($dataset, array('id', 'system_table', 'table'));
+	}
 	if (!is_array($cfield)) {
-		$cfield = getDatasetFieldDetails($cfield, $dataset);
+		$cfield = getDatasetFieldDetails($cfield, $dataset, array('id', 'dataset_id', 'is_system_field', 'type', 'values_source', 'dataset_foreign_key_id', 'db_column'));
 	}
 	if (!$cfield) {
 		return false;
 	}
-	if (empty($dataset)) {
-		$dataset = getDatasetDetails($cfield['dataset_id']);
+	if (!is_array($dataset)) {
+		$dataset = getDatasetDetails($cfield['dataset_id'], array('id', 'system_table', 'table'));
 	}
 	if (!$dataset) {
 		return false;
@@ -3351,41 +3400,90 @@ function getDatasetFieldValue($recordId, $cfield, $dataset = false) {
 	
 	} else {
 		//Checkbox values are stored in the custom_dataset_values_link table
-		if ($cfield['type'] == 'checkboxes') {
-			
-			if (!isset($cfield['values'])) {
-				$cfield['values'] = getDatasetFieldLOV($cfield, false);
-			}
-			
-			if (empty($cfield['values'])) {
-				return '';
-			} else {
-				return inEscape(
-					getRowsArray(
-						'custom_dataset_values_link',
-						'value_id',
-						array(
-							'linking_id' => $recordId,
-							'value_id' => array_keys($cfield['values']))),
-					'numeric');
-			}
 		
-		//For file pickers, load file ids from the custom_dataset_files_link table
-		} elseif ($cfield['type'] == 'file_picker') {
-			return inEscape(
-				getRowsArray(
+		switch ($cfield['type']) {
+			case 'checkboxes':
+				
+				$sql = "
+					SELECT cdvl.value_id
+					FROM ". cms_core::$lastDBPrefix. "custom_dataset_values_link AS cdvl
+					INNER JOIN ". cms_core::$lastDBPrefix. "custom_dataset_field_values AS cdfv
+					   ON cdfv.id = cdvl.value_id
+					  AND cdfv.field_id = ". (int) $cfield['id']. "
+					WHERE cdvl.linking_id = ". (int) $recordId;
+				
+				$values = sqlSelectArray($sql, true);
+			
+				if ($forDisplay) {
+					$values = getRowsArray('custom_dataset_field_values', 'label', array('field_id' => $cfield['id'], 'id' => $values), 'label');
+				
+					if ($returnCSV) {
+						return implode(', ', $values);
+					} else {
+						return $values;
+					}
+				} else {
+					if ($returnCSV) {
+						return inEscape($values, 'numeric');
+					} else {
+						return $values;
+					}
+				}
+				
+				break;
+			
+			case 'file_picker':
+				$values = getRowsArray(
 					'custom_dataset_files_link',
 					'file_id',
 					array(
 						'dataset_id' => $dataset['id'],
 						'field_id' => $cfield['id'],
-						'linking_id' => $recordId)),
-				'numeric');
-		
-		} else {
-			return getRow($dataset['table'], $cfield['db_column'], $recordId);
+						'linking_id' => $recordId));
+			
+				if ($forDisplay) {
+					$values = getRowsArray('files', 'filename', array('id' => $values), 'filename');
+				
+					if ($returnCSV) {
+						return implode(', ', $values);
+					} else {
+						return $values;
+					}
+				} else {
+					if ($returnCSV) {
+						return inEscape($values, 'numeric');
+					} else {
+						return $values;
+					}
+				}
+				
+				break;
+			
+			default:
+				$value = getRow($dataset['table'], $cfield['db_column'], $recordId);
+				
+				if ($forDisplay) {
+					switch ($cfield['type']) {
+						case 'radios':
+						case 'select':
+							return getRow('custom_dataset_field_values', 'label', array('field_id' => $cfield['id'], 'id' => $value));
+
+						case 'centralised_radios':
+						case 'centralised_select':
+							return getCentralisedListValue($cfield['values_source'], $value);
+						
+						case 'dataset_select':
+						case 'dataset_picker':
+							if ($labelDetails = getDatasetLabelFieldDetails($cfield['dataset_foreign_key_id'])) {
+								return getRow($labelDetails['table'], $labelDetails['db_column'], $value);
+							}
+					}
+				}
+				
+				return $value;
 		}
 	}
+	
 }
 
 //Checkboxes are stored in the custom_dataset_values_link table as there could be more than one of them.
@@ -3529,15 +3627,14 @@ function getDatasetFieldLOVFlatArrayToLabeled(&$value, $key) {
 	}
 }
 
-function getDatasetFieldLOV($field, $flat = true) {
+function getDatasetFieldLOV($field, $flat = true, $filter = false) {
 	if (!is_array($field)) {
 		$field = getDatasetFieldDetails($field);
 	}
 	
 	$lov = array();
 	if (chopPrefixOffOfString($field['type'], 'centralised_')) {
-		$filter = false;
-		if (isset($field['values_source_filter'])) {
+		if (!empty($field['values_source_filter'])) {
 			$filter = $field['values_source_filter'];
 		}
 		if ($lov = getCentralisedListValues($field['values_source'], $filter)) {
@@ -3560,7 +3657,21 @@ function getDatasetFieldLOV($field, $flat = true) {
 				}
 			}
 		}
-	
+	} elseif ($field['type'] == 'text') {
+		if ($field['db_column']) {
+			$dataset = getDatasetDetails($field['dataset_id']);
+			$table = $field['is_system_field'] ? $dataset['system_table'] : $dataset['table'];
+			$sql = '
+				SELECT DISTINCT ' . sqlEscape($field['db_column']) . '
+				FROM ' . DB_NAME_PREFIX . $table . '
+				ORDER BY ' . sqlEscape($field['db_column']);
+			$result = sqlSelect($sql);
+			while ($row = sqlFetchRow($result)) {
+				if ($row[0]) {
+					$lov[$row[0]] = $row[0];
+				}
+			}
+		}
 	} else {
 		if ($flat) {
 			$cols = 'label';
@@ -3648,23 +3759,27 @@ function getDatasetLabelFieldDetails($otherDatasetId) {
 }
 
 
-function getUserGroups($user_id) {
+function getUserGroups($user_id, $flat = true) {
 	$groups = array();
 	
 	//Look up a list of group names on the system
 	if (!is_array(cms_core::$groups)) {
-		cms_core::$groups = getRowsArray('custom_dataset_fields', 'db_column', array('type' => 'group', 'is_system_field' => 0));
+		cms_core::$groups = getRowsArray('custom_dataset_fields', array('id', 'label', 'db_column'), array('type' => 'group', 'is_system_field' => 0), 'db_column', 'db_column');
 	}
 	
 	if (!empty(cms_core::$groups)) {
 		//Get the row from the users_custom_data table for this user
 		//(Note that the group names stored in cms_core::$groups are the column names)
-		$inGroups = getRow('users_custom_data', cms_core::$groups, $user_id);
+		$inGroups = getRow('users_custom_data', array_keys(cms_core::$groups), $user_id);
 		
 		//Come up with a subsection of the groups that this user is in
-		foreach (cms_core::$groups as $groupId => $groupName) {
-			if (!empty($inGroups[$groupName])) {
-				$groups[$groupId] = $groupName;
+		foreach (cms_core::$groups as $groupCol => $group) {
+			if (!empty($inGroups[$groupCol])) {
+				if ($flat) {
+					$groups[$group['id']] = $groupCol;
+				} else {
+					$groups[$group['id']] = $group;
+				}
 			}
 		}
 	}
@@ -3691,7 +3806,7 @@ function checkUserInGroup($groupId, $userId = 'session') {
 	$sql = "
 		SELECT 1
 		FROM ". DB_NAME_PREFIX. "users_custom_data
-		WHERE `" .$group_name . "` = 1
+		WHERE `". sqlEscape($group_name). "` = 1
 		  AND user_id = ". (int) $userId;
 	
 	$result = sqlQuery($sql);
@@ -3744,72 +3859,76 @@ function getContentStatus($cID, $cType) {
 
 
 //Given an image size and a target size, resize the image (maintaining aspect ratio).
-function resizeImage($image_width, $image_height, $constraint_width, $constraint_height, &$width_out, &$height_out, $allowUpscale = false) {
-	$width_out = $image_width;
-	$height_out = $image_height;
+function resizeImage($imageWidth, $imageHeight, $constraint_width, $constraint_height, &$width_out, &$height_out, $allowUpscale = false) {
+	$width_out = $imageWidth;
+	$height_out = $imageHeight;
 	
-	if ($image_width == $constraint_width && $image_height == $constraint_height) {
+	if ($imageWidth == $constraint_width && $imageHeight == $constraint_height) {
 		return;
 	}
 	
-	if (!$allowUpscale && ($image_width <= $constraint_width) && ($image_height <= $constraint_height)) {
+	if (!$allowUpscale && ($imageWidth <= $constraint_width) && ($imageHeight <= $constraint_height)) {
 		return;
 	}
 
-	if (($constraint_width / $image_width) < ($constraint_height / $image_height)) {
+	if (($constraint_width / $imageWidth) < ($constraint_height / $imageHeight)) {
 		$width_out = $constraint_width;
-		$height_out = (int) ($image_height * $constraint_width / $image_width);
+		$height_out = (int) ($imageHeight * $constraint_width / $imageWidth);
 	} else {
 		$height_out = $constraint_height;
-		$width_out = (int) ($image_width * $constraint_height / $image_height);
+		$width_out = (int) ($imageWidth * $constraint_height / $imageHeight);
 	}
 
 	return;
 }
 
 //Given an image size and a target size, resize the image by different conditions and return the values used in the calculations
-function resizeImageByMode(&$mode, $width, $height, $maxWidth, $maxHeight, &$newWidth, &$newHeight, &$cropWidth, &$cropHeight, &$cropNewWidth, &$cropNewHeight, $mimeType = '') {
+function resizeImageByMode(
+	&$mode, $imageWidth, $imageHeight, $maxWidth, $maxHeight,
+	&$newWidth, &$newHeight, &$cropWidth, &$cropHeight, &$cropNewWidth, &$cropNewHeight,
+	$mimeType = ''
+) {
 	
 	$maxWidth = (int) $maxWidth;
 	$maxHeight = (int) $maxHeight;
 	$allowUpscale = $mimeType == 'image/svg+xml';
 	
 	if ($mode == 'unlimited') {
-		$cropNewWidth = $cropWidth = $newWidth = $width;
-		$cropNewHeight = $cropHeight = $newHeight = $height;
+		$cropNewWidth = $cropWidth = $newWidth = $imageWidth;
+		$cropNewHeight = $cropHeight = $newHeight = $imageHeight;
 	
 	} elseif ($mode == 'stretch') {
 		$allowUpscale = true;
-		$cropWidth = $width;
-		$cropHeight = $height;
+		$cropWidth = $imageWidth;
+		$cropHeight = $imageHeight;
 		$cropNewWidth = $newWidth = $maxWidth;
 		$cropNewHeight = $newHeight = $maxHeight;
 	
 	} elseif ($mode == 'resize_and_crop') {
 		
-		if (($maxWidth / $width) < ($maxHeight / $height)) {
-			$newWidth = (int) ($width * $maxHeight / $height);
+		if (($maxWidth / $imageWidth) < ($maxHeight / $imageHeight)) {
+			$newWidth = (int) ($imageWidth * $maxHeight / $imageHeight);
 			$newHeight = $maxHeight;
-			$cropWidth = (int) ($maxWidth * $height / $maxHeight);
-			$cropHeight = $height;
+			$cropWidth = (int) ($maxWidth * $imageHeight / $maxHeight);
+			$cropHeight = $imageHeight;
 			$cropNewWidth = $maxWidth;
 			$cropNewHeight = $maxHeight;
 		
 		} else {
 			$newWidth = $maxWidth;
-			$newHeight = (int) ($height * $maxWidth / $width);
-			$cropWidth = $width;
-			$cropHeight = (int) ($maxHeight * $width / $maxWidth);
+			$newHeight = (int) ($imageHeight * $maxWidth / $imageWidth);
+			$cropWidth = $imageWidth;
+			$cropHeight = (int) ($maxHeight * $imageWidth / $maxWidth);
 			$cropNewWidth = $maxWidth;
 			$cropNewHeight = $maxHeight;
 		}
 	
 	} elseif ($mode == 'fixed_width') {
-		$maxHeight = $allowUpscale? 999999 : $height;
+		$maxHeight = $allowUpscale? 999999 : $imageHeight;
 		$mode = 'resize';
 	
 	} elseif ($mode == 'fixed_height') {
-		$maxWidth = $allowUpscale? 999999 : $width;
+		$maxWidth = $allowUpscale? 999999 : $imageWidth;
 		$mode = 'resize';
 	
 	} else {
@@ -3819,9 +3938,9 @@ function resizeImageByMode(&$mode, $width, $height, $maxWidth, $maxHeight, &$new
 	if ($mode == 'resize') {
 		$newWidth = false;
 		$newHeight = false;
-		resizeImage($width, $height, $maxWidth, $maxHeight, $newWidth, $newHeight, $allowUpscale);
-		$cropWidth = $width;
-		$cropHeight = $height;
+		resizeImage($imageWidth, $imageHeight, $maxWidth, $maxHeight, $newWidth, $newHeight, $allowUpscale);
+		$cropWidth = $imageWidth;
+		$cropHeight = $imageHeight;
 		$cropNewWidth = $newWidth;
 		$cropNewHeight = $newHeight;
 	}
@@ -3847,10 +3966,105 @@ function resizeImageByMode(&$mode, $width, $height, $maxWidth, $maxHeight, &$new
 	}
 }
 
-function resizeImageString(&$image, $mime_type, &$width, &$height, $maxWidth, $maxHeight, $mode = 'resize', $offset = 0) {
-	require funIncPath(__FILE__, __FUNCTION__);
+function resizeImageString(&$image, $mime_type, &$imageWidth, &$imageHeight, $maxWidth, $maxHeight, $mode = 'resize', $offset = 0) {
+	//Work out the new width/height of the image
+	$newWidth = $newHeight = $cropWidth = $cropHeight = $cropNewWidth = $cropNewHeight = false;
+	resizeImageByMode($mode, $imageWidth, $imageHeight, $maxWidth, $maxHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $mime_type);
+	
+	resizeImageStringToSize($image, $mime_type, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset);
+	
+	if (!is_null($image)) {
+		$imageWidth = $cropNewWidth;
+		$imageHeight = $cropNewHeight;
+	}
 }
 
+function resizeImageStringToSize(&$image, $mime_type, $imageWidth, $imageHeight, $newWidth, $newHeight, $cropWidth, $cropHeight, $cropNewWidth, $cropNewHeight, $offset = 0) {
+	//Check if the image needs to be resized
+	if ($imageWidth != $cropNewWidth || $imageHeight != $cropNewHeight) {
+		if (isImage($mime_type)) {
+			//Load the original image into a canvas
+			if ($image = @imagecreatefromstring($image)) {
+				//Make a new blank canvas
+				$trans = -1;
+				$resized_image = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+		
+				//Transparent gifs need a few fixes. Firstly, we need to fill the new image with the transparent colour.
+				if ($mime_type == 'image/gif' && ($trans = imagecolortransparent($image)) >= 0) {
+					$colour = imagecolorsforindex($image, $trans);
+					$trans = imagecolorallocate($resized_image, $colour['red'], $colour['green'], $colour['blue']);				
+			
+					imagefill($resized_image, 0, 0, $trans);				
+					imagecolortransparent($resized_image, $trans);
+		
+				//Transparent pngs should also be filled with the transparent colour initially.
+				} elseif ($mime_type == 'image/png') {
+					imagealphablending($resized_image, false); // setting alpha blending on
+					imagesavealpha($resized_image, true); // save alphablending setting (important)
+					$trans = imagecolorallocatealpha($resized_image, 255, 255, 255, 127);
+					imagefilledrectangle($resized_image, 0, 0, $cropNewWidth, $cropNewHeight, $trans);
+				}
+		
+				$xOffset = 0;
+				$yOffset = 0;
+				if ($newWidth != $cropNewWidth) {
+					$xOffset = (int) (((10 - $offset) / 20) * ($imageWidth - $cropWidth));
+		
+				} elseif ($newHeight != $cropNewHeight) {
+					$yOffset = (int) ((($offset + 10) / 20) * ($imageHeight - $cropHeight));
+				}
+		
+				//Place a resized copy of the original image on the canvas of the new image
+				imagecopyresampled($resized_image, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+		
+				//The resize algorithm doesn't always respect the transparent colour nicely for gifs.
+				//Solve this by resizing using a different algorithm which doesn't do any anti-aliasing, then using
+				//this to create a transparent mask. Then use the mask to update the new image, ensuring that any pixels
+				//that should be transparent actually are.
+				if ($mime_type == 'image/gif') {
+					if ($trans >= 0) {
+						$mask = imagecreatetruecolor($cropNewWidth, $cropNewHeight);
+						imagepalettecopy($image, $mask);
+				
+						imagefill($mask, 0, 0, $trans);				
+						imagecolortransparent($mask, $trans);
+				
+						imagetruecolortopalette($mask, true, 256); 
+						imagecopyresampled($mask, $image, 0, 0, $xOffset, $yOffset, $cropNewWidth, $cropNewHeight, $cropWidth, $cropHeight);
+				
+						$maskTrans = imagecolortransparent($mask);
+						for ($y = 0; $y < $cropNewHeight; ++$y) {
+							for ($x = 0; $x < $cropNewWidth; ++$x) {
+								if (imagecolorat($mask, $x, $y) === $maskTrans) {
+									imagesetpixel($resized_image, $x, $y, $trans);
+								}
+							}
+						}
+					}
+				}
+		
+		
+				$temp_file = tempnam(sys_get_temp_dir(), 'Img');
+					if ($mime_type == 'image/gif') imagegif($resized_image, $temp_file);
+					if ($mime_type == 'image/png') imagepng($resized_image, $temp_file);
+					if ($mime_type == 'image/jpeg') imagejpeg($resized_image, $temp_file, ifNull((int) setting('jpeg_quality'), 99));
+			
+					imagedestroy($resized_image);
+					unset($resized_image);
+					$image = file_get_contents($temp_file);
+				unlink($temp_file);
+
+				//$imageWidth = $cropNewWidth;
+				//$imageHeight = $cropNewHeight;
+			} else {
+				$image = null;
+			}
+		} else {
+			//$imageWidth = $cropNewWidth;
+			//$imageHeight = $cropNewHeight;
+		}
+	}
+}
 
 
 
@@ -3961,8 +4175,8 @@ function cleanDownloads() {
 		 && is_dir(CMS_ROOT. 'private/images')
 		 && is_dir(CMS_ROOT. 'cache/frameworks')) {
 			
-			//Check if this function was last run within the last 5 minutes
-			$lifetime = 5 * 60;
+			//Check if this function was last run within the last 30 minutes
+			$lifetime = 30 * 60;
 			if (file_exists($accessed = 'cache/stats/clean_downloads/accessed')) {
 				$timeA = fileatime($accessed);
 				$timeM = filemtime($accessed);
@@ -3972,7 +4186,7 @@ function cleanDownloads() {
 				}
 			
 				if ($timeA > $time - $lifetime) {
-					//If it was run in the last 5 minutes, don't run it again now...
+					//If it was run in the last 30 minutes, don't run it again now...
 					define('ZENARIO_CLEANED_DOWNLOADS', true);
 					return true;
 				}
@@ -4210,11 +4424,17 @@ function formatDateNicely($date, $format_type = false, $languageId = false, $tim
 		$format_type = str_replace('%D', '%e', $format_type);
 	}
 	
+	if (is_numeric($date)) {
+		$date = convertToUserTimezone($date);
+	}
+	if (is_object($date)) {
+		$sql = "SELECT DATE_FORMAT('". sqlEscape($date->format('Y-m-d H:i:s')). "', '". sqlEscape($format_type. $time_format). "')";
+	} else {
+		$sql = "SELECT DATE_FORMAT('". sqlEscape($date). "', '". sqlEscape($format_type. $time_format). "')";
+	}
 	
-	$sql = "SELECT DATE_FORMAT('" . sqlEscape($date) . "', '" . sqlEscape($format_type. $time_format) . "')";
-	
-	$result = sqlQuery($sql);
-	list($formattedDate) = sqlFetchRow($result);
+	$formattedDate = sqlFetchRow($sql);
+	$formattedDate = $formattedDate[0];
 	
 	$returnDate = '';
 	if ($rss) {
@@ -4249,14 +4469,19 @@ function formatDateTimeNicely($date, $format_type = false, $languageId = false, 
 	return formatDateNicely($date, $format_type, $languageId, true, $rss);
 }
 
-function formatTimeNicely($time,$format_type) {
-	$sql = "SELECT TIME_FORMAT('" . sqlEscape($time) . "', '" . sqlEscape($format_type) . "') as new_time";
-	$result = sqlQuery($sql);
-	$row = sqlFetchArray($result);
-	if($row) {
-		$new_time = $row['new_time'];
-	} 
-	return $new_time;
+function formatTimeNicely($time, $format_type) {
+	
+	if (is_numeric($time)) {
+		$time = convertToUserTimezone($time);
+	}
+	if (is_object($time)) {
+		$sql = "SELECT TIME_FORMAT('". sqlEscape($time->format('Y-m-d H:i:s')). "', '". sqlEscape($format_type). "')";
+	} else {
+		$sql = "SELECT TIME_FORMAT('". sqlEscape($time). "', '". sqlEscape($format_type). "')";
+	}
+	
+	$row = sqlFetchRow($sql);
+	return $row[0];
 }
 
 function configFileSize($size) {
@@ -4556,9 +4781,19 @@ function activateModule($name) {
 }
 
 
-function inc($moduleClass) {
+function inc($module) {
+	
+	if (!is_array($module)) {
+		$module = sqlFetchAssoc("
+			SELECT id, class_name, status
+			FROM ". DB_NAME_PREFIX. "modules
+			WHERE class_name = '". sqlEscape($module). "'
+			LIMIT 1");
+	}
+	
 	$missingPlugin = array();
-	if (($module = getModuleDetails($moduleClass, 'class'))
+	
+	if ($module
 	 && ($module['status'] == 'module_running' || $module['status'] == 'module_is_abstract')
 	 && (includeModuleAndDependencies($module['class_name'], $missingPlugin))) {
 		setModulePrefix($module);
@@ -4568,7 +4803,7 @@ function inc($moduleClass) {
 	}
 }
 
-function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path = false) {
+function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path = false, $customisationName = -1, $raiseFileMissingErrors = false) {
 	
 	if (!$type) {
 		$type = cms_core::$skType;
@@ -4580,6 +4815,15 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 	//Catch a renamed variable
 	if ($type == 'storekeeper') {
 		$type = 'organizer';
+	}
+	
+	//If the $customisationName is not set, try to load what it was set to in the zenario_fea_tuix class
+	if ($customisationName === -1) {
+		if ($type == 'visitor' && class_exists('zenario_fea_tuix')) {
+			$customisationName = zenario_fea_tuix::$customisationName;
+		} else {
+			$customisationName = '';
+		}
 	}
 	
 	if (strpos($filePathOrModuleClassName, '/') === false
@@ -4618,13 +4862,45 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 		require_once $phpPath;
 	
 		if (class_exists($className)) {
+			
+			//For visitor TUIX, if a $customisationName has been set, look up the
+			//module that added that customisation.
+			if ($type == 'visitor' && $customisationName) {
+				//Note that if we have modules overriding each other's customisations,
+				//we must get the last module in the dependency stack - i.e. the module
+				//that uses this customisation and has no dependants also using this customisation.
+				$sql = "
+					SELECT a.module_class_name
+					FROM ". DB_NAME_PREFIX. "tuix_file_contents AS a
+					LEFT JOIN ". DB_NAME_PREFIX. "module_dependencies AS md
+					   ON a.module_class_name = md.dependency_class_name
+					LEFT JOIN ". DB_NAME_PREFIX. "tuix_file_contents AS b
+					   ON b.module_class_name = md.module_class_name
+					  AND b.`type` = 'visitor'
+					  AND a.path = 'assetwolf_list_assets'
+					WHERE a.`type` = 'visitor'
+					  AND a.path = 'assetwolf_list_assets'
+					  AND a.setting_group = 'with_customer_and_location'
+					  AND md.dependency_class_name IS NULL
+					  AND b.module_class_name IS NULL";
+				
+				if (($row = sqlFetchRow($sql))
+				 && ($row[0] != $moduleClassName)) {
+					return includeModuleSubclass($row[0], $type, $path, '', true);
+				}
+			}
+			
 			return $className;
 		} else {
 			exit('The class '. $className. ' was not defined in '. $phpPath);
 		}
 	
 	} else {
-		return false;
+		if ($raiseFileMissingErrors) {
+			exit('The class '. $className. ' could not be loaded because the file at '. $phpPath. ' was not found.');
+		} else {
+			return false;
+		}
 	}
 }
 
@@ -4662,9 +4938,8 @@ function includeModuleAndDependencies($moduleName, &$missingPlugin, $recurseCoun
 	}
 	
 	//Check that this has not been included already - if so, our job has already been done
-	$file = moduleDir($moduleName, 'module_code.php');
-	if (in_array($file, get_included_files())) {
-		return true;
+	if (isset(cms_core::$modulesLoaded[$moduleName])) {
+		return cms_core::$modulesLoaded[$moduleName];
 	}
 
 	//Check for dependencies
@@ -4680,7 +4955,9 @@ function includeModuleAndDependencies($moduleName, &$missingPlugin, $recurseCoun
 	}
 	
 	$missingPlugin = false;
-	if (file_exists($file)) {
+	
+	$file = moduleDir($moduleName, 'module_code.php');
+	if (cms_core::$modulesLoaded[$moduleName] = file_exists($file = moduleDir($moduleName, 'module_code.php'))) {
 		require_once $file;
 		return true;
 	} else {
@@ -4755,7 +5032,7 @@ function getSlotContents(
 	$cID, $cType, $cVersion,
 	$layoutId = false, $templateFamily = false, $templateFileBaseName = false,
 	$specificInstanceId = false, $specificSlotName = false, $ajaxReload = false,
-	$runPlugins = true, $exactMatch = false, $overrideSettings = false
+	$runPlugins = true, $exactMatch = false, $overrideSettings = false, $overrideFrameworkAndCSS = false
 ) {
 	
 	if ($layoutId === false) {
@@ -4833,6 +5110,7 @@ function getSlotContents(
 		  AND vcpi.content_type = '". sqlEscape($cType). "'
 		  AND vcpi.content_version = ". (int) $cVersion. "
 		  AND vcpi.slot_name = pi.slot_name
+		  AND pi.instance_id = 0
 		WHERE TRUE";
 	
 	if ($exactMatch && $specificInstanceId) {
@@ -4935,22 +5213,30 @@ function getSlotContents(
 	$edition = cms_core::$edition;
 	
 	//Attempt to initialise each plugin on the page
-	foreach ($slots as $slotName => $dummy) {
-		//Attempt to check to see if it is in the filesystem, then include it in the list of running instances
-		if (!empty($slotContents[$slotName]['class_name']) && !empty($slotContents[$slotName]['instance_id'])) {
-			if ($runPlugins) {
+	if ($runPlugins) {
+		foreach ($slots as $slotName => $dummy) {
+			if (!empty($slotContents[$slotName]['class_name']) && !empty($slotContents[$slotName]['instance_id'])) {
+				$moduleClassName = $slotContents[$slotName]['class_name'];
+		
+				if (!isset(cms_core::$modulesOnPage[$moduleClassName])) {
+					cms_core::$modulesOnPage[$moduleClassName] = array();
+				}
+				cms_core::$modulesOnPage[$moduleClassName][] = $slotName;
+			}
+		}
+				
+		foreach ($slots as $slotName => $dummy) {
+			if (!empty($slotContents[$slotName]['class_name']) && !empty($slotContents[$slotName]['instance_id'])) {
 				$edition::loadPluginInstance(
 					$slotContents, $slotName,
 					$cID, $cType, $cVersion,
 					$layoutId, $templateFamily, $templateFileBaseName,
 					$specificInstanceId, $specificSlotName, $ajaxReload,
-					$runPlugins, $overrideSettings);
-			}
+					$runPlugins, $overrideSettings, $overrideFrameworkAndCSS);
 		
-		} elseif (!empty($slotContents[$slotName]['level'])) {
-			if ($runPlugins) {
+			} elseif (!empty($slotContents[$slotName]['level'])) {
 				setupNewBaseClassPlugin($slotName);
-				
+			
 				//Treat the case of hidden (item layer) and empty (layout layer) as just empty,
 				//but if there is something hidden at the item layer and there is a plugin
 				//at the layout layer, show a special message
@@ -5129,20 +5415,6 @@ function getPluginInstanceInTemplateSlot($slotName, $templateFamily, $layoutId, 
 	}
 }
 
-function zenarioInitialiseTwig() {
-	require CMS_ROOT. 'zenario/libraries/bsd/twig/lib/Twig/Autoloader.php';
-	Twig_Autoloader::register();
-	
-	require CMS_ROOT. 'zenario/libraries/mit/twig-extensions/lib/Twig/Extensions/Autoloader.php';
-	Twig_Extensions_Autoloader::register();
-	
-	cleanDownloads();
-	//$loader = new Twig_Loader_Filesystem(/*'/path/to/templates'*/);
-	//cms_core::$twig = new Twig_Environment($loader, array(
-	//	'cache' => CMS_ROOT. 'cache/frameworks/',
-	//));
-}
-
 //Attempt to find the path to a Framework
 function frameworkPath($framework, $className, $includeFilename = false, $limit = 10) {
 	if (!--$limit) {
@@ -5218,12 +5490,12 @@ function sendSignal($signalName, $signalParams) {
 	
 		$sql = "
 			SELECT module_id, module_class_name, module_class_name AS class_name, static_method
-			FROM ". DB_NAME_PREFIX. "signals
+			FROM ". cms_core::$lastDBPrefix. "signals
 			WHERE signal_name = '". sqlEscape($signalName). "'
 			  AND module_class_name NOT IN (
 				SELECT suppresses_module_class_name
-				FROM ". DB_NAME_PREFIX. "signals AS e
-				INNER JOIN ". DB_NAME_PREFIX. "modules AS m
+				FROM ". cms_core::$lastDBPrefix. "signals AS e
+				INNER JOIN ". cms_core::$lastDBPrefix. "modules AS m
 				   ON e.module_id = m.id
 				WHERE e.signal_name = '". sqlEscape($signalName). "'
 				  AND e.suppresses_module_class_name != ''

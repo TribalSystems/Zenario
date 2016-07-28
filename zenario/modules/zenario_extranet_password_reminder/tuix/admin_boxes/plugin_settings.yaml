@@ -19,7 +19,7 @@ plugin_settings:
                         select_phrase: Select Email Template...
                         hide_remove_button: Yes
                     validation:
-                        required: Please select an Email Template
+                        required: Please select an email template
                     value: >
                         zenario_extranet_password_reminder__to_user_password_reminder_en
                     note_below: >

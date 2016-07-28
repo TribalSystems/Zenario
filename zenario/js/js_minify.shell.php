@@ -80,7 +80,14 @@ function applyCompilationMacros($code) {
 	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
 	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
 	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
-
+	
+	//We don't have node as a dependency so we can't use Babel.
+	//So we'll try and make do with a few replacements instead!
+	$patterns[] = '/\(([\w\s,]*)\)\s*\=\>\s*\{/';
+	$replacements[] = 'function ($1) {';
+	$patterns[] = '/(\b\w+\b)\s*\=\>\s*\{/';
+	$replacements[] = 'function ($1) {';
+	
 	return preg_replace($patterns, $replacements, $code);
 }
 
@@ -280,6 +287,7 @@ if ($specific) {
 		foreach ($scan as $file) {
 			if (substr($file, -3) == '.js'
 			 && substr($file, -7) != '.min.js'
+			 && substr($file, -9) != '.nomin.js'
 			 && substr($file, -8) != '.pack.js') {
 				$file = substr($file, 0, -3);
 				minify($dir, $file, $level);
@@ -297,6 +305,7 @@ if ($specific) {
 		$file = basename($specific);
 		if (substr($file, -3) == '.js'
 		 && substr($file, -7) != '.min.js'
+		 && substr($file, -9) != '.nomin.js'
 		 && substr($file, -8) != '.pack.js') {
 			$file = substr($file, 0, -3);
 			minify($dir, $file, $level);
@@ -317,7 +326,9 @@ if ($specific) {
 //Minify JavaScript files in the API directory
 if ((is_dir($dir = 'zenario/api/')) && ($scan = scandir($dir))) {
 	foreach ($scan as $file) {
-		if (substr($file, -3) == '.js' && substr($file, -7) != '.min.js') {
+		if (substr($file, -3) == '.js'
+		 && substr($file, -7) != '.min.js'
+		 && substr($file, -9) != '.nomin.js') {
 			$file = substr($file, 0, -3);
 			minify($dir, $file, $level);
 		
@@ -334,6 +345,7 @@ if ((is_dir($dir = 'zenario/js/')) && ($scan = scandir($dir))) {
 	foreach ($scan as $file) {
 		if (substr($file, -3) == '.js'
 		 && substr($file, -7) != '.min.js'
+		 && substr($file, -9) != '.nomin.js'
 		 && substr($file, -8) != '.pack.js') {
 			$file = substr($file, 0, -3);
 			minify($dir, $file, $level);
@@ -365,6 +377,7 @@ foreach (array(
 					foreach ($scan as $file) {
 						if (substr($file, -3) == '.js'
 						 && substr($file, -7) != '.min.js'
+						 && substr($file, -9) != '.nomin.js'
 						 && substr($file, -8) != '.pack.js') {
 							$file = substr($file, 0, -3);
 							minify($dir, $file, $level);
@@ -381,6 +394,7 @@ if ((is_dir($dir = 'zenario/libraries/mit/jquery/')) && ($scan = scandir($dir)))
 	foreach ($scan as $file) {
 		if (substr($file, -3) == '.js'
 		 && substr($file, -7) != '.min.js'
+		 && substr($file, -9) != '.nomin.js'
 		 && substr($file, -8) != '.pack.js') {
 			$file = substr($file, 0, -3);
 			minify($dir, $file, $level);
@@ -420,6 +434,13 @@ minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $
 
 //Minify Modernizr
 minify('zenario/libraries/bsd/modernizr/', 'modernizr', $level, '.js');
+
+//Minify Tokenizer
+minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.css');
+minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.js');
+
+//Minify enquire.js
+minify('zenario/libraries/mit/enquire/', 'enquire', $level, '.js');
 
 //Minify intro.js
 minify('zenario/libraries/mit/intro/', 'introjs', $level, '.css');

@@ -117,7 +117,6 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 						'format' => 'yes_or_no',
 						'ord' => $ord + 0.01,
 						'width' => 'xxsmall',
-						'align_right' => true,
 						'db_column' => $dbColumnFlag,
 						'table_join' => $tableJoin
 					);

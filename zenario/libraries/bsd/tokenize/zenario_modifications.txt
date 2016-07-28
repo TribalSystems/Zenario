@@ -1,0 +1,73 @@
+Added a custom formatting function to format the HTML of each token.
+Also made it so that if the formatting function returns false, the token is rejected:
+	Replaced:
+            if(this.options.maxElements > 0 && $('li.Token', this.tokensContainer).length >= this.options.maxElements){
+	With:
+            var html;
+            if (this.options.formatTokenHTML) {
+            	html = this.options.formatTokenHTML(value, text);
+            } else {
+            	html = '<span>' + text + '</span>';
+            }
+            
+			if (html === false || (this.options.maxElements > 0 && $('li.Token', this.tokensContainer).length >= this.options.maxElements)) {
+
+
+
+	Replaced:
+                .append('<span>' + text + '</span>')
+	With:
+                .append(html)
+
+
+
+
+Added the option to parse the JSON data from the AJAX request before use:
+	Replaced:
+                        success: function(data){
+                            if(data){
+
+	With:
+                        success: function(data){
+                            if(data){
+                            	
+                            	if ($this.options.parseData) {
+                            		data = $this.options.parseData(data);
+                            	}
+
+
+Tweak to disable the typeahead when the picker is full:
+	Replaced:
+                default:
+                    this.resetPendingTokens();
+
+
+	With:
+                default:
+                	//Added by Tribal
+                	if (this.options.maxElements > 0 && $('li.Token', this.tokensContainer).length >= this.options.maxElements) {
+	                    e.preventDefault();
+                	}
+                
+                    this.resetPendingTokens();
+
+
+Added the ability to disable the typeahead but keep the field in edit mode
+	After:
+		disable: function()
+	
+	Added:
+
+        /**
+         * Disable just the typeahead
+         *
+         * @returns {$.tokenize}
+         */
+        disableTypeAhead: function(){
+
+            this.select.prop('disabled', true);
+            this.searchInput.prop('disabled', true);
+
+            return this;
+
+        },

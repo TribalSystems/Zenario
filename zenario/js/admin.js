@@ -65,55 +65,8 @@ zenarioA.tooltipLengthThresholds = {
 
 
 
-//Wrapper to the underscore.js function's template library
-zenarioA.microTemplates = {};
-zenarioA.microTemplate = function(template, data, i) {
-	if (template === undefined || !data) {
-		return '';
-
-	} else if (_.isArray(data)) {
-		var l = data.length,
-			html = '';
-		for (var j = 0; j < l; ++j) {
-			html += zenarioA.microTemplate(template, data[j], j);
-		}
-		return html;
-	}
-
-	if (data.i === undefined && i !== undefined) {
-		data.i = 1*i;
-	}
-
-	if (template.length < 255 && zenarioA.microTemplates[template]) {
-		//Named templates from one of the js/microtemplate directories
-		//The template name is taken from the filename
-		if (typeof zenarioA.microTemplates[template] == 'string') {
-			try {
-				var tmp = $.extend({}, _.templateSettings, true);
-				//_.templateSettings = {variable: 'm', escape: /\[\[(.+?)\]\]/g, interpolate: /\{\{(.+?)\}\}/g, evaluate: /<%([\s\S]+?)%>/g};
-				_.templateSettings = {variable: 'm', escape: false, interpolate: /\{\{(.+?)\}\}/g, evaluate: /[<\{]%([\s\S]+?)%[>\}]/g, twigStyleSyntax: true};
-		
-					zenarioA.microTemplates[template] = _.template(zenarioA.microTemplates[template]);
-		
-				_.templateSettings = tmp;
-			} catch (e) {
-				console.log('Error in template ' + template + ': \n\n' + zenarioA.microTemplates[template]);
-				throw e;
-			}
-		}
-	
-		return zenarioA.microTemplates[template](data);
-
-	} else {
-		//Custom/one-off templates
-		var checksum = 'microtemplate_' + hex_md5(template);
-		
-		if (zenarioA.microTemplates[checksum] === undefined) {
-			zenarioA.microTemplates[checksum] = template;
-		}
-		
-		return zenarioA.microTemplate(checksum, data, i);
-	}
+zenarioA.microTemplate = function(template, data, filter) {
+	return zenario.microTemplate(template, data, filter, zenarioA.microTemplates);
 };
 
 
@@ -209,7 +162,8 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 	//Commands
 
 	//Reload Storekeeper
-	if (message.substr(0, 25) == '<!--Reload_Storekeeper-->' && zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode) {
+	if ((message.substr(0, 23) == '<!--Reload_Organizer-->' || message.substr(0, 25) == '<!--Reload_Storekeeper-->')
+	 && (zenarioO.init && !window.zenarioOQuickMode && !window.zenarioOSelectMode)) {
 		//Still show the Admin the contents of the message via an alert, if there was a message
 		message = message.substr(25);
 		if (message) {
@@ -506,7 +460,7 @@ zenarioA.toggleShowHelpTourNextTime = function() {
 
 //Get information on a single item from Storekeeper 
 zenarioA.getSKItem =
-zenarioA.getItemFromOrganizer = function(path, id) {
+zenarioA.getItemFromOrganizer = function(path, id, async) {
 	var i,
 		data,
 		first = false,
@@ -530,8 +484,11 @@ zenarioA.getItemFromOrganizer = function(path, id) {
 			url += encodeURIComponent(id) + '&_limit=1';
 		}
 	}
+	
+	if (async) {
+		return zenario.ajax(url, {}, true, false);
 
-	if (data = zenario.checkSessionStorage(url, {}, true)) {
+	} else if (data = zenario.checkSessionStorage(url, {}, true)) {
 		return data;
 	} else {
 		data = zenario.nonAsyncAJAX(url, false, true);
@@ -996,15 +953,9 @@ zenarioA.cancelMovePlugin = function(el) {
 zenarioA.refreshAllSlotsWithCutCopyPaste = function(allowedModules) {
 	
 	//Try to get a list of every type of plugin affected
-	var slotName, m, module, modules = {};
-	
-	allowedModules = allowedModules.split(',');
-	
-	foreach (allowedModules as m => module) {
-		if (module) {
-			modules[module] = true;
-		}
-	}
+	var slotName,
+		module,
+		modules = zenarioA.csvToObject(allowedModules);
 	
 	modules.zenario_banner = true;
 	modules.zenario_html_snippet = true;
@@ -1194,10 +1145,6 @@ zenarioA.replacePluginSlot = function(slotName, instanceId, level, tabId, conten
 			} else if (details[0] == 'WIREFRAME') {
 				isVersionControlled = true;
 			
-			//Change the Class name of the slot
-			} else if (details[0] == 'CSS_CLASS') {
-				get('plgslt_' + slotName).className = 'zenario_slot ' + zenario.uneschyp(details[1])
-			
 			//Add a JavaScript namespace for a Plugin if one is not already present
 			//Also watch out for modules requesting JavaScript files to be added
 			} else if (details[0] == 'NAMESPACE') {
@@ -1280,6 +1227,9 @@ zenarioA.checkForEdits = function() {
 zenarioA.onbeforeunload = function() {
 	//If any Admin Boxes are open, and look like they might have been changed, set a warning message for if an admin tries to leave the page 
 	if (zenarioAB.isOpen && zenarioAB.editModeOnBox() && (zenarioAB.changes() || zenarioAB.callFunctionOnEditors('isDirty'))) {
+		return phrase.leaveAdminBoxWarning;
+	
+	} else if (zenarioSE.isOpen && zenarioSE.editModeOnBox() && (zenarioSE.changes() || zenarioSE.callFunctionOnEditors('isDirty'))) {
 		return phrase.leaveAdminBoxWarning;
 	
 	//Set a warning if any slots are being edited
@@ -2186,7 +2136,7 @@ zenarioA.showPagePreview = function(width, height, description, id) {
 		preloading: false,
 		open: true,
 		title: title,
-		href: URLBasePath + 'index.php?cID=' + id + '&_sk_preview=1',
+		href: URLBasePath + 'index.php?cID=' + id + '&_show_page_preview=1',
 		className: 'zenario_page_preview_colorbox'
 	});
 };
@@ -2401,19 +2351,17 @@ zenarioA.organizerSelect = function(
 
 	win.zenarioOQueue = [{path: path, branch: -1, selectedItems: {}}];
 	
-	//minPath and targetPath should default to path, as long as it is not a navigation path
-	if (path.indexOf('//') === -1) {
-		if (!minPath) {
-			minPath = path;
-		}
-		if (!targetPath) {
-			targetPath = path;
-		}
+	//minPath and targetPath should default to path if not set
+	if (!minPath) {
+		minPath = path;
+	}
+	if (!targetPath) {
+		targetPath = path;
 	}
 	
 	//Max path should default to the target path if not set
 	if (maxPath === undefined) {
-		if (targetPath && targetPath.indexOf('//') === -1) {
+		if (targetPath) {
 			maxPath = targetPath;
 		}
 		
@@ -2427,6 +2375,7 @@ zenarioA.organizerSelect = function(
 	win.zenarioOTargetPath = targetPath;
 	win.zenarioOMinPath = minPath;
 	win.zenarioOMaxPath = maxPath;
+	win.zenarioOCheckPaths = true;
 	win.zenarioODisallowRefinersLoopingOnMinPath = engToBoolean(disallowRefinersLoopingOnMinPath);
 	
 	win.zenarioOCallbackObject = callbackObject;
@@ -2495,53 +2444,6 @@ zenarioA.SKInit = function() {
 		'<iframe id="zenario_sk_iframe" src="' + URLBasePath + 'zenario/admin/organizer.php?openedInIframe=1&amp;rand=' + (new Date).getTime() + '"></iframe>';
 	
 	zenarioA.SKInitted = true;
-};
-
-//Attempt to preload Organizer ten seconds after the current page has finished loading
-zenarioA.SKStartInit = function() {
-	
-	//Don't do anything for IE 6 and 7
-	if (zenario.browserIsIE(7)) {
-		return false;
-	}
-	
-	if (!window.zenario_inIframe && !zenarioA.openedInIframe) {
-		setTimeout(zenarioA.SKInit, zenarioA.storekeeperInitTime);
-	}
-};
-
-
-zenarioA.getCustomFromSK = function(field, path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath) {
-	zenarioA.SKTarget = field;
-	zenarioA.organizerSelect('zenarioA', 'setCustom', false, path, targetPath, minPath, maxPath, disallowRefinersLoopingOnMinPath);
-};
-
-//Handle callback for custom things
-zenarioA.setCustom = function(path, key, row) {
-	get(zenarioA.SKTarget).value = key.id;
-	get('name_for_' + zenarioA.SKTarget).value = row[row.__label_tag__];
-};
-
-//Handle callback for a Group
-zenarioA.setGroupNameAndId = function(path, key, row) {
-	get(zenarioA.SKTarget).value = key.id;
-	get('name_for_' + zenarioA.SKTarget).value = row.name;
-};
-
-//Handle callback for a user
-zenarioA.setUserNameAndId = function(path, key, row) {
-	get(zenarioA.SKTarget).value = key.id;
-	get('name_for_' + zenarioA.SKTarget).value = row.username;
-};
-
-zenarioA.setContentIdAndCType = function(path, key, row, panel) {
-	get(zenarioA.SKTarget).value = key.id;
-	get('name_for_' + zenarioA.SKTarget).value = zenarioA.formatOrganizerItemName(panel, key.id);
-};
-
-zenarioA.removeNameAndId = function(field) {
-	get(field).value = '';
-	get('name_for_' + field).value = get('nothing_selected_phrase_for_' + field).value;
 };
 
 
@@ -2794,7 +2696,7 @@ zenarioA.reloadMenuPlugins = function() {
 			var slotName = el.id.substr(7);
 			
 			//zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
-			zenario.refreshPluginSlot(slotName, 'lookup', undefined, false, false, false, false, false);
+			zenario.refreshPluginSlot(slotName, 'lookup', zenarioA.importantGetRequests, false, false, false, false, false);
 		}
 	});
 };
@@ -3059,14 +2961,18 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	}
 	
 	var ajaxMethodCall;
-	if (zenarioCallingLibrary.encapName == 'zenarioO') {
-		ajaxMethodCall = 'handleOrganizerPanelAJAX';
-	} else if (zenarioCallingLibrary.encapName == 'zenarioAT') {
-		ajaxMethodCall = 'handleAdminToolbarAJAX';
-	} else if (zenarioCallingLibrary.encapName == 'zenarioW') {
-		ajaxMethodCall = 'handleWizardAJAX';
-	} else {
-		ajaxMethodCall = 'handleAdminBoxAJAX';
+	switch (zenarioCallingLibrary.encapName) {
+		case 'zenarioO':
+			ajaxMethodCall = 'handleOrganizerPanelAJAX';
+			break;
+		case 'zenarioAT':
+			ajaxMethodCall = 'handleAdminToolbarAJAX';
+			break;
+		case 'zenarioW':
+			ajaxMethodCall = 'handleWizardAJAX';
+			break;
+		default:
+			ajaxMethodCall = 'handleAdminBoxAJAX';
 	}
 	
 	if (!link && object.link) {
@@ -3333,7 +3239,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			popout.href = item.href;
 		
 		} else if (item && item.frontend_link && popout.href === undefined) {
-			popout.href = zenarioO.parseReturnLink(item.frontend_link, '_sk_preview=1');
+			popout.href = zenarioO.parseReturnLink(item.frontend_link, '_show_page_preview=1');
 		
 		} else if (item && popout.href) {
 			popout.href += popout.href.indexOf('?') === -1? '?' : '&';
@@ -3372,17 +3278,6 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			popout.href = zenario.addBasePath(popout.href);
 		}
 		
-		if (item && item.width) {
-			popout.initialWidth = item.width;
-			//popout.innerWidth = item.width;
-			//popout.initialWidth = 1*item.width + (zenarioA.colorboxInterfaceWidth = 72)
-		}
-		if (item && item.height) {
-			popout.initialHeight = item.height;
-			//popout.innerHeight = item.height;
-			//popout.initialHeight = 1*item.height + (zenarioA.colorboxInterfaceHeight = 72)
-		}
-		
 		if (popout.css_class) {
 			var cssClasses = ('' + popout.css_class).split(' ');
 			popout.onOpen = function() { zenario.addClassesToColorbox(cssClasses); };
@@ -3390,10 +3285,17 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		}
 		
 		if (popout.iframe && popout.width === undefined) {
-			popout.width = Math.min(Math.floor($(window).width() * 0.93), 1200);
+			popout.width = '93%';
 		}
 		if (popout.iframe && popout.height === undefined) {
-			popout.height = Math.floor($(window).height() * 0.9);
+			popout.height = '90%';
+		}
+		
+		if (item && item.width) {
+			popout.initialWidth = item.width;
+		}
+		if (item && item.height) {
+			popout.initialHeight = item.height;
 		}
 		
 		if (popout.preloading === undefined) {
@@ -3721,6 +3623,175 @@ zenarioA.sortLogic = function(a, b, propA, propB) {
 		//Otherwise try a string comparision
 		} else {
 			return ('' + vA).toUpperCase() < ('' + vB).toUpperCase()? -1 : 1;
+		}
+	}
+};
+
+
+zenarioA.getSortedIdsOfTUIXElements = function(tuix, toSort, column, desc) {
+	//Build an array to sort, containing:
+		//0: The item's actual index
+		//1: The value to sort by
+		//2: Whether this value is numeric
+	var value,
+		numeric,
+		i, thing,
+		format = false,
+		sortedArray = [];
+	
+	if (!column) {
+		column = 'ord';
+	}
+	
+	if (toSort == 'items'
+	 && tuix.columns
+	 && tuix.columns[column]) {
+		format = tuix.columns[column].format;
+	}
+	
+	if (!_.isObject(toSort)) {
+		toSort = tuix[toSort];
+	}
+	
+	if (toSort) {
+		foreach (toSort as i => thing) {
+			if (thing) {
+				//Check if the value is a number, and if so make sure that it is numeric so it is sorted numericaly
+				value = thing[column];
+				
+				if (format == 'true_or_false' || format == 'yes_or_no') {
+					sortedArray.push([i, engToBoolean(value), true]);
+				
+				} else if (format != 'remove_zero_padding' && value == (numeric = 1*value)) {
+					sortedArray.push([i, numeric, true]);
+				
+				} else if (value) {
+					sortedArray.push([i, value.toLowerCase(), false]);
+				
+				} else {
+					sortedArray.push([i, 0, true]);
+				}
+			}
+		}
+	}
+	
+	//Sort this array
+	if (desc) {
+		sortedArray.sort(zenarioA.sortArrayDesc);
+	} else {
+		sortedArray.sort(zenarioA.sortArrayForOrganizer);
+	}
+	
+	//Remove fields that were just there to help sort
+	foreach (sortedArray as i) {
+		sortedArray[i] = sortedArray[i][0];
+	}
+	
+	return sortedArray;
+}
+
+//Given two elements from the above function, say which order they should be in
+zenarioA.sortArrayForOrganizer = function(a, b) {
+	if (a[1] === b[1]) {
+		//If their values are the same type and identical, say that they're identical
+		return 0;
+	
+	} else if (a[2]? b[2] : !b[2]) {
+		//If they're the same type, use a < to work out which is smallest
+		return a[1] < b[1]? -1 : 1;
+	
+	} else {
+		//Otherwise order by numeric data first, then strings
+		return a[2]? -1 : 1;
+	}
+};
+
+zenarioA.sortArrayDesc = function(a, b) {
+	return zenarioA.sortArrayForOrganizer(b, a);
+};
+
+zenarioA.csvToObject = function(aString) {
+	
+	if (_.isString(aString)) {
+		
+		var anArrayIndex,
+			anObject = {},
+			anArray = aString.split(',');
+		
+		for (anArrayIndex in anArray) {
+			if (anArray[anArrayIndex] !== '') {
+				anObject[anArray[anArrayIndex]] = true;
+			}
+		}
+		
+		return anObject;
+	}
+	return aString;
+};
+
+
+
+
+
+
+
+
+
+
+
+zenarioA.setButtonKin = function(buttons, parentClass) {
+	zenarioA.setKin(buttons, parentClass || 'organiser_button_with_children');
+};
+
+zenarioA.setKin = function(buttons, parentClass) {
+	
+	var bi, button, tuix,
+		pi, parentId, parentButton,
+		buttonsPos = {};
+	
+	foreach (buttons as bi => button) {
+		buttonsPos[button.id] = bi;
+	}
+	
+	//Add parent/child relationships
+	foreach (buttons as bi => button) {
+		
+		//Accept either an array of TUIX objects, or a list of objects with pointers to TUIX objects.
+		tuix = button.tuix || button;
+		
+		if (parentId = tuix.parent) {
+			pi = buttonsPos[parentId];
+			
+			if (parentButton = buttons[pi]) {
+				
+				if (!parentButton.children) {
+					parentButton.children = [];
+					
+					if (parentClass !== undefined) {
+						parentButton.css_class = parentButton.css_class? parentButton.css_class + ' ' + parentClass : parentClass;
+					}
+				}
+				
+				if (button.enabled
+				 && !engToBoolean(tuix.remove_filter)) {
+					parentButton.childEnabled = true;
+				}
+				if (button.current) {
+					parentButton.childCurrent = true;
+				}
+				
+				parentButton.children.push(button);
+			}
+		}
+	}
+	
+	//Remove children from the top-level buttons
+	for (bi = buttons.length - 1; bi >= 0; --bi) {
+		button = buttons[bi];
+		tuix = button.tuix || button;
+		
+		if (tuix.parent || (engToBoolean(tuix.hide_when_children_are_not_visible) && !button.children)) {
+			buttons.splice(bi, 1);
 		}
 	}
 };

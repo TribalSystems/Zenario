@@ -1,0 +1,15 @@
+<div class="zfea_error" style="min-width: 300px; min-height: 300px;">
+	<div class="zfea_error_body">
+		{{m.body}}
+	</div>
+	
+	<div class="zfea_error_buttons">
+		<form>
+			<input type="button" class="zfea_ok" value="{{m.that.hardcodedPhrase.ok|escape}}" onclick="$.colorbox.close();"/>
+			
+			<% if (m.retry) { %>
+				<input type="button" class="zfea_retry" value="{{m.that.hardcodedPhrase.retry|escape}}" id="zfea_retry"/>
+			<% } %>
+		</form>
+	</div>
+</div>

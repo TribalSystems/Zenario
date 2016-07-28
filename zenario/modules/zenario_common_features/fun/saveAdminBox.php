@@ -198,7 +198,11 @@ switch ($path) {
 						$document['file_id']);
 		
 		$oldDocumentName = $document['filename'];
-		$documentName = trim($values['details/document_name']);
+		if($box['key']['id']){
+			$documentName = trim($values['details/document_name']).'.'.trim($values['details/document_extension']);
+		}else{
+			$documentName = trim($values['details/document_name']);
+		}
 		
 		// Rename public files directory and update filename if different
 		if ($oldDocumentName != $documentName) {

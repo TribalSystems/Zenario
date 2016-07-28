@@ -44,6 +44,8 @@ if (($instance = getPluginInstanceDetails($instanceId))
 		  )";
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
+	managePluginCSSFile('delete', $instanceId, $nestedItemId);
+	
 	deleteRow('nested_plugins', array('instance_id' => $instanceId, 'id' => $nestedItemId));
 	
 	if ($instance['content_id']) {

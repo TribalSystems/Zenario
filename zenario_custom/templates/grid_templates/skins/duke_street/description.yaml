@@ -10,6 +10,10 @@
 # (The directory name will be used if you leave this blank.)
 display_name: Duke Street
 
+# Prevent the files in the skin's editable_css/ directory to be edited.
+# If you don't wish your editable_css/ directory to be writable you should set this to false.
+disable_editable_css: false
+
 # If an admin manually sets a background colour or background image,
 # this selector will be used to apply the background colour or image.
 background_selector: 'body .zenario_skin, .zenario_skin .Grid_Body'
@@ -60,7 +64,7 @@ style_formats:
         classes: "code"
 
 # Any CSS class names that you define for a plugin will appear as an option on the
-# "Framework & CSS" settings for that plugin.
+# "CSS & framework" settings for that plugin.
 pickable_css_class_names:
     plugins:
         -

@@ -12,8 +12,9 @@ zenario__locations:
                     id_column: s.id
                     where_statement: |
                         WHERE ('[[ORGANIZER_MODE]]' = 'get_item_name'
-                                                        OR [[REFINER__SUB_SECTORS]] IS NOT NULL
-                                                        OR s.parent_id = 0)
+                            OR '[[ORGANIZER_MODE]]' = 'typeahead_search'
+                            OR [[REFINER__SUB_SECTORS]] IS NOT NULL
+                            OR s.parent_id = 0)
                 refiners:
                     location_sectors:
                         sql: 's.id IN (SELECT sector_id FROM [[DB_NAME_PREFIX]][[ZENARIO_LOCATION_MANAGER_PREFIX]]location_sector_score_link WHERE location_id IN [[REFINER_IDS]])'

@@ -20,6 +20,7 @@ zenario__content:
             item:
                 name: Category
                 names: Categories
+                css_class: zenario_category_icon
                 tooltip_when_link_is_active: 'View sub-categories of "[[name]]".'
                 link:
                     path: zenario__content/panels/categories

@@ -1,0 +1,48 @@
+/* Nest revealable panel
+--------------------------------------------------------------------------------------------------*/
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap {
+	position:relative;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panel_anchor .panel {
+	display:none;
+	position:absolute;
+	top:30px;
+	left:0;
+	padding:10px;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul,
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul li {
+	list-style:none;
+	padding:0;
+	margin:0;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul li div {
+	display:none;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul li a {
+	display:inline-block;
+	height:20px;
+	line-height:20px;
+	padding:5px 10px 5px 20px;
+	background:#cac9c4 url('../images/arrow-small-down.png') no-repeat 8px center;
+	color:#27303f;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul li a:hover,
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panel_anchor .panel {
+	background:#e5e5de;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs .panel_open ul li a,
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs .panel_open ul li a:hover {
+	background:#e5e5de url('../images/arrow-small-up.png') no-repeat 8px center;
+}
+
+.zenario_plugin_nest__default_style .revealable_panel_wrap .panels_tabs ul li a:hover {
+	text-decoration:none;
+}

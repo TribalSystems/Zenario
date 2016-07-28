@@ -1133,40 +1133,6 @@ _sql
 
 
 
-//Remake the tuix_file_contents table to start tracking which panel types are used in which files
-//(Technically I could have added the column and truncated the table, but I may as well
-// drop and recreate it.)
-);	revision( 32260
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
-_sql
-
-, <<<_sql
-	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
-_sql
-
-, <<<_sql
-	CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
-		`type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','wizards') NOT NULL,
-		`path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
-		`module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
-		`filename` varchar(255) CHARACTER SET ascii NOT NULL,
-		`last_modified` int(10) unsigned NOT NULL DEFAULT '0',
-		`checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
-		PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
-		KEY (`panel_type`)
-	) ENGINE=MyISAM DEFAULT CHARSET=utf8
-_sql
-
-, <<<_sql
-	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
-	WHERE name = 'yaml_files_last_changed'
-_sql
-
-
-
 //Create a table to store the default values for admin settings
 );	revision( 32310
 , <<<_sql
@@ -1361,6 +1327,168 @@ _sql
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
 	ADD COLUMN `is_creatable` tinyint(1) NOT NULL DEFAULT 1 AFTER `enable_categories`
+_sql
+
+
+
+
+
+//
+//Version 7.3
+//
+
+
+//Remake the tuix_file_contents table to start tracking which panel types are used in which files
+//(Technically I could have added the column and truncated the table, but I may as well
+// drop and recreate it.)
+);	revision( 34750
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]xml_file_tuix_contents`
+_sql
+
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tuix_file_contents`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]tuix_file_contents` (
+		`type` enum('admin_boxes','admin_toolbar','help','organizer','slot_controls','visitor','wizards') NOT NULL,
+		`path` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`panel_type` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`setting_group` varchar(255) CHARACTER SET ascii NOT NULL DEFAULT '',
+		`module_class_name` varchar(200) CHARACTER SET ascii NOT NULL,
+		`filename` varchar(255) CHARACTER SET ascii NOT NULL,
+		`last_modified` int(10) unsigned NOT NULL DEFAULT '0',
+		`checksum` varchar(32) CHARACTER SET ascii NOT NULL DEFAULT '',
+		PRIMARY KEY (`type`,`path`,`setting_group`,`module_class_name`,`filename`),
+		KEY (`panel_type`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]site_settings`
+	WHERE name = 'yaml_files_last_changed'
+_sql
+
+//Add columns to content types table for new options for a default place in the menu
+); revision (34752
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]content_types`
+	ADD COLUMN `default_parent_menu_node` int(10) NOT NULL DEFAULT 0,
+	ADD COLUMN `menu_node_position` enum('start','end') DEFAULT NULL,
+	ADD COLUMN `menu_node_position_edit` enum('force','suggest') DEFAULT NULL,
+	ADD COLUMN `hide_menu_node` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+
+//In the site settings table, the name column should not have a default value
+);	revision( 35070
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]site_settings`
+	MODIFY COLUMN `name` varchar(255) NOT NULL
+_sql
+
+
+//Increase the width of the name column in the plugin settings table
+);	revision( 35500
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_settings`
+	MODIFY COLUMN `name` varchar(255) NOT NULL
+_sql
+
+);	revision( 35550
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_setting_defs`
+	DROP KEY `module_class_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_setting_defs`
+	MODIFY COLUMN `name` varchar(255) NOT NULL
+_sql
+
+);	revision( 35600
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]plugin_setting_defs`
+	ADD KEY `module_class_name` (`module_class_name` (75), `name` (175))
+_sql
+
+
+//Remove the old unused columns to do with customising the menu node text from the menu nodes table,
+//merging their into the columns that are still used if possible
+);  revision( 35990
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]menu_nodes` SET
+		module_class_name = menu_text_module_class_name,
+		method_name = menu_text_method_name,
+		param_1 = menu_text_param_1,
+		param_2 = menu_text_param_2
+	WHERE menu_text_module_class_name IS NOT NULL
+	  AND menu_text_module_class_name != ''
+	  AND (module_class_name IS NULL
+	    OR module_class_name = '')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	DROP COLUMN `menu_text_module_class_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	DROP COLUMN `menu_text_method_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	DROP COLUMN `menu_text_param_1`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	DROP COLUMN `menu_text_param_2`
+_sql
+
+
+);	revision( 36070
+, <<<_sql
+	DELETE FROM `[[DB_NAME_PREFIX]]module_dependencies`
+	WHERE `type` = 'allow_upgrades'
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]module_dependencies`
+	MODIFY COLUMN `type` enum('dependency', 'inherit_frameworks', 'include_javascript', 'inherit_settings') NOT NULL
+_sql
+
+
+//Add a column to track which modules provide functions for Twig frameworks
+);	revision( 36400
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	ADD COLUMN `for_use_in_twig` tinyint(1) unsigned NOT NULL default 0
+	AFTER `can_be_version_controlled`
+_sql
+
+
+//Add a column to control enabling the skin editor.
+//Note a little bit of fiddly logic here for backwards compatability reasons:
+	//By default, old skins (e.g. skins created before 7.3) should default to not enabled.
+		//This is implemented here, by making the column "default 0"
+	//Skins created after 7.3 should default to enabled
+		//This is implemented in the checkForChangesInCssJsAndHtmlFiles() function
+);	revision( 36450
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
+	ADD COLUMN `enable_editable_css` tinyint(1) NOT NULL default 0
+	AFTER `background_selector`
+_sql
+
+//The enable_editable_css column should default to 1
+);	revision( 36451
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
+	MODIFY COLUMN `enable_editable_css` tinyint(1) NOT NULL default 1
 _sql
 
 );

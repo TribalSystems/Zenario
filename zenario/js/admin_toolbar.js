@@ -52,24 +52,24 @@ zenario.lib(function(
 
 zenarioA.toolbar = 'preview';
 
+
+zenarioAT.setURL = function() {
+	return zenarioAT.url = URLBasePath +
+		'zenario/admin/admin_toolbar.ajax.php' +
+		'?get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests)) +
+		zenario.urlRequest(zenarioAT.getKey());
+};
+
 zenarioAT.runOnInit = [];
 zenarioAT.init = function(firstLoad) {
 	
 	if (firstLoad && zenarioAT.loadedBefore) {
 		return;
 	}
-	zenarioAT.loadedBefore = true;
 	zenarioAT.loaded = false;
+	zenarioAT.loadedBefore = true;
 	
-	var url =
-		URLBasePath +
-		'zenario/admin/admin_toolbar.ajax.php' +
-		'?get=' + encodeURIComponent(JSON.stringify(zenarioA.importantGetRequests)) +
-		zenario.urlRequest(zenarioAT.getKey());
-	
-	zenarioAT.url = url;
-	
-	zenario.ajax(url, false, true, true, true, 7500).after(zenarioAT.init2);
+	zenario.ajax(zenarioAT.setURL(), false, true, true, true, 7500).after(zenarioAT.init2);
 
 	
 	
@@ -104,6 +104,7 @@ zenarioAT.init = function(firstLoad) {
 
 
 zenarioAT.init2 = function(tuix) {
+	zenarioAT.setURL();
 	zenarioAT.tuix = tuix;
 	
 	
@@ -119,6 +120,7 @@ zenarioAT.init2 = function(tuix) {
 	*/
 	zenarioAT.draw();
 	zenarioAT.loaded = true;
+	zenarioAT.loadedBefore = true;
 	
 	foreach (zenarioAT.runOnInit as var i) {
 		zenarioAT.runOnInit[i]();
@@ -126,9 +128,11 @@ zenarioAT.init2 = function(tuix) {
 	zenarioAT.runOnInit = [];
 };
 
-$(document).ready(function() {
-	zenarioAT.init(true);
-});
+//This used to send an AJAX request to load the Admin Toolbar when the page was ready
+//It was replaced by a script tag in CMSWritePageFoot().
+//$(document).ready(function() {
+//	zenarioAT.init(true);
+//});
 
 
 zenarioAT.clickTab = function(toolbar) {

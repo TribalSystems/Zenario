@@ -276,7 +276,7 @@ class zenario_plugin_nest extends module_base_class {
 	protected function loadTab($tabNum) {
 		
 		$sql = "
-			SELECT np.id, np.tab, np.module_id, np.framework, np.css_class
+			SELECT np.id, np.tab, np.ord, np.module_id, np.framework, np.css_class
 			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
 			WHERE np.instance_id = ". (int) $this->instanceId. "
 			  AND np.is_tab = 0
@@ -299,17 +299,42 @@ class zenario_plugin_nest extends module_base_class {
 			 && (includeModuleAndDependencies($details['class_name'], $missingPlugin))
 			 && (method_exists($details['class_name'], 'showSlot'))) {
 				
-				$this->modules[$tabNum][$row['id']] = $slotNameNestId = $this->slotName. '-'. $row['id'];
+				$eggId = $row['id'];
+				$baseCSSName = $details['css_class_name'];
+				
+				$this->modules[$tabNum][$eggId] = $slotNameNestId = $this->slotName. '-'. $eggId;
 				
 				cms_core::$slotContents[$slotNameNestId] = $details;
 				cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-				cms_core::$slotContents[$slotNameNestId]['egg_id'] = $row['id'];
+				cms_core::$slotContents[$slotNameNestId]['egg_id'] = $eggId;
 				cms_core::$slotContents[$slotNameNestId]['framework'] = ifNull($row['framework'], $details['default_framework']);
 				cms_core::$slotContents[$slotNameNestId]['css_class'] = $details['css_class_name'];
 				
+				
 				if ($row['css_class']) {
 					cms_core::$slotContents[$slotNameNestId]['css_class'] .= ' '. $row['css_class'];
+				} else {
+					cms_core::$slotContents[$slotNameNestId]['css_class'] .= ' '. $baseCSSName. '__default_style';
 				}
+				
+				
+				//Add a CSS class for this version controller plugin, or this library plugin
+				if ($this->isVersionControlled) {
+					if (cms_core::$cID !== -1) {
+						cms_core::$slotContents[$slotNameNestId]['css_class'] .=
+							' '. cms_core::$cType. '_'. cms_core::$cID. '_'. $this->slotName.
+							'_'. $baseCSSName.
+							'_'. $row['tab']. '_'. $row['ord'];
+					}
+				} else {
+					cms_core::$slotContents[$slotNameNestId]['css_class'] .=
+						' '. $baseCSSName.
+						'_'. $this->instanceId.
+						'_'. $eggId;
+				}
+				
+				
+				
 				
 				if ($this->isVersionControlled) {
 					cms_core::$slotContents[$slotNameNestId]['content_id'] = $this->cID;
@@ -348,7 +373,7 @@ class zenario_plugin_nest extends module_base_class {
 					 || $overrideCanvas == 'fixed_width_and_height'
 					 || ($overrideCanvas == 'fixed_width' && $eggCanvas == 'fixed_height')
 					 || ($overrideCanvas == 'fixed_height' && $eggCanvas == 'fixed_width')) {
-						cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['canvas'] = 'fixed_width_and_height';
+						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['canvas'] = 'fixed_width_and_height';
 					
 					//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
 					//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
@@ -358,7 +383,7 @@ class zenario_plugin_nest extends module_base_class {
 					 || $eggCanvas == 'unlimited'
 					 || !(($overrideCanvas == 'resize_and_crop')
 						 ^ ($eggCanvas == 'resize_and_crop'))) {
-						cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['canvas'] = $overrideCanvas;
+						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['canvas'] = $overrideCanvas;
 					
 					} else {
 						$inheritDimensions = false;
@@ -367,21 +392,21 @@ class zenario_plugin_nest extends module_base_class {
 					if ($inheritDimensions && $this->setting('banner_width')) {
 						if (!$this->eggSetting($slotNameNestId, 'width')
 						 || !in($eggCanvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['width'] = $this->setting('banner_width');
+							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['width'] = $this->setting('banner_width');
 						}
 					}
 					
 					if ($inheritDimensions && $this->setting('banner_height')) {
 						if (!$this->eggSetting($slotNameNestId, 'height')
 						 || !in($eggCanvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['height'] = $this->setting('banner_height');
+							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['height'] = $this->setting('banner_height');
 						}
 					}
 				}
 				
 				//Also have some nest-wide options to enable colorbox popups, and to set restrictions there too
 				if ($this->setting('enlarge_image') && !in($this->eggSetting($slotNameNestId, 'link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL')) {
-					cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['link_type'] = '_ENLARGE_IMAGE';
+					cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['link_type'] = '_ENLARGE_IMAGE';
 					
 					$inheritDimensions = true;
 					$eggCanvas = $this->eggSetting($slotNameNestId, 'enlarge_canvas');
@@ -392,7 +417,7 @@ class zenario_plugin_nest extends module_base_class {
 					 || $overrideCanvas == 'fixed_width_and_height'
 					 || ($overrideCanvas == 'fixed_width' && $eggCanvas == 'fixed_height')
 					 || ($overrideCanvas == 'fixed_height' && $eggCanvas == 'fixed_width')) {
-						cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['enlarge_canvas'] = 'fixed_width_and_height';
+						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_canvas'] = 'fixed_width_and_height';
 					
 					//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
 					//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
@@ -402,7 +427,7 @@ class zenario_plugin_nest extends module_base_class {
 					 || $eggCanvas == 'unlimited'
 					 || !(($overrideCanvas == 'resize_and_crop')
 						 ^ ($eggCanvas == 'resize_and_crop'))) {
-						cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['enlarge_canvas'] = $overrideCanvas;
+						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_canvas'] = $overrideCanvas;
 					
 					} else {
 						$inheritDimensions = false;
@@ -411,14 +436,14 @@ class zenario_plugin_nest extends module_base_class {
 					if ($inheritDimensions && $this->setting('enlarge_width')) {
 						if (!$this->eggSetting($slotNameNestId, 'enlarge_width')
 						 || !in($eggCanvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['enlarge_width'] = $this->setting('enlarge_width');
+							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_width'] = $this->setting('enlarge_width');
 						}
 					}
 					
 					if ($inheritDimensions && $this->setting('enlarge_height')) {
 						if (!$this->eggSetting($slotNameNestId, 'enlarge_height')
 						 || !in($eggCanvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings['enlarge_height'] = $this->setting('enlarge_height');
+							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_height'] = $this->setting('enlarge_height');
 						}
 					}
 				}
@@ -462,20 +487,6 @@ class zenario_plugin_nest extends module_base_class {
 		//Add any Plugin JavaScript calls
 		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
 			if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
-				if ($this->needToAddCSSAndJS()) {
-					//Add the script of a Nested Plugin to the Nest
-					$scripts = array();
-					$scriptsBefore = array();
-					cms_core::$slotContents[$slotNameNestId]['class']->tApiCheckRequestedScripts($scripts, $scriptsBefore);
-					
-					foreach ($scripts as &$script) {
-						$this->tApiCallScriptWhenLoaded(false, $script);
-					}
-					foreach ($scriptsBefore as &$script) {
-						$this->tApiCallScriptWhenLoaded(true, $script);
-					}
-				}
-				
 				//Check to see if any Eggs want to scroll to the top of the slot
 				$scrollToTop = cms_core::$slotContents[$slotNameNestId]['class']->checkScrollToTopVar();
 				if ($scrollToTop !== null) {
@@ -516,8 +527,8 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	protected function eggSetting($slotNameNestId, $setting) {
-		if (!empty(cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings[$setting])) {
-			return cms_core::$slotContents[$slotNameNestId]['class']->tApiSettings[$setting];
+		if (!empty(cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings[$setting])) {
+			return cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings[$setting];
 		} else {
 			return false;
 		}
@@ -554,6 +565,18 @@ class zenario_plugin_nest extends module_base_class {
 		if ($p) {
 			echo '
 				</span>';
+		}
+		
+		if ($this->needToAddCSSAndJS()) {
+			//Add the script of a Nested Plugin to the Nest
+			$scriptTypes = array();
+			cms_core::$slotContents[$slotNameNestId]['class']->zAPICheckRequestedScripts($scriptTypes);
+			
+			foreach ($scriptTypes as $scriptType => &$scripts) {
+				foreach ($scripts as &$script) {
+					$this->zAPICallScriptWhenLoaded($scriptType, $script);
+				}
+			}
 		}
 	}
 	

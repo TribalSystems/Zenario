@@ -28,9 +28,6 @@
 /* new toolbar */
 
 #zenario_at_logout_link a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_categories_none a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_permissions_closed a,
@@ -56,6 +53,22 @@
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_group_members a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed_specific_users a {
 	background-image:url('../admin/images/password-protected-group-admin-toolbar-icon.png');
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;
+	cursor:pointer;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
+	background:#E2E2E2 url('../admin/images/icon-categories-grey.png') no-repeat center center;
+}
+
+#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
+	background:#C5E8F4 url('../admin/images/icon-categories-coloured.png') no-repeat center center;
 }
 
 #zenario_at_wrap {
@@ -452,7 +465,6 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a,
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_categories_none a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a,
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .item_permissions_closed a,
@@ -465,11 +477,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_some a {
-	background-position:-913px -164px;
-}
-
-#zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_categories_none a {
-	background-position:-913px -112px;
+	cursor:pointer;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_open a {
@@ -479,6 +487,7 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_permissions_closed a {
 	background-position:-863px -164px;
+	cursor:pointer;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias a {

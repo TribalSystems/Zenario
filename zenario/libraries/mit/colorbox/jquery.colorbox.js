@@ -21,11 +21,13 @@
 		width: false,
 		initialWidth: "600",
 		innerWidth: false,
-		maxWidth: false,
+		minWidth: 100,
+		maxWidth: '100%',
 		height: false,
 		initialHeight: "450",
 		innerHeight: false,
-		maxHeight: false,
+		minHeight: 100,
+		maxHeight: '100%',
 		scalePhotos: true,
 		scrolling: true,
 		opacity: 0.9,
@@ -788,11 +790,21 @@
 
 		function getWidth() {
 			settings.w = settings.w || $loaded.width();
+			
+			var minWidth = settings.get('minWidth', 'x');
+			minWidth = minWidth && setSize(minWidth);
+			settings.w = minWidth && minWidth > settings.w ? minWidth : settings.w;
+			
 			settings.w = settings.mw && settings.mw < settings.w ? settings.mw : settings.w;
 			return settings.w;
 		}
 		function getHeight() {
 			settings.h = settings.h || $loaded.height();
+			
+			var minHeight = settings.get('minHeight', 'y');
+			minHeight = minHeight && setSize(minHeight);
+			settings.h = minHeight && minHeight > settings.h ? minHeight : settings.h;
+			
 			settings.h = settings.mh && settings.mh < settings.h ? settings.mh : settings.h;
 			return settings.h;
 		}
@@ -1009,6 +1021,8 @@
 
 					if (settings.h) {
 						photo.style.marginTop = Math.max(settings.mh - photo.height, 0) / 2 + 'px';
+					} else if (settings.get('minHeight')) {
+						photo.style.marginTop = Math.max(settings.get('minHeight') - photo.height, 0) / 2 + 'px';
 					}
 
 					if ($related[1] && (settings.get('loop') || $related[index + 1])) {

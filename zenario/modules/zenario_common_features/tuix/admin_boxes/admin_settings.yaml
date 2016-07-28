@@ -19,22 +19,6 @@ zenario_admin:
                 #    snippet:
                 #        html: >
                 #            Use this screen to change how this Admin uses Zenario.
-                organizer_page_size:
-                    admin_setting:
-                        name: organizer_page_size
-                    label: 'Organizer page size for this administrator:'
-                    type: select
-                    value: 50
-                    values:
-                        20: 20
-                        50: 50
-                        100: 100
-                        200: 200
-                    side_note: |
-                        The number of items to show per page.
-                    validation:
-                        required: Please enter the number of items to show per page.
-                        numeric: The number of items per page must be numeric.
                 show_help_tour_next_time:
                     admin_setting:
                         name: show_help_tour_next_time

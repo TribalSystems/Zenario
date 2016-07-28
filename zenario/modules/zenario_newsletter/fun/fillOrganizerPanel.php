@@ -37,10 +37,6 @@ switch ($path) {
 		break;
 
 	case 'zenario__email_template_manager/panels/newsletters':
-	$panel['columns']['opened']['hidden'] = true;
-	$panel['columns']['opened_percentage']['hidden'] = true;
-	$panel['columns']['clicked']['hidden'] = true;
-	$panel['columns']['clicked_percentage']['hidden'] = true;
 	
 		$panel['title'] = adminPhrase('Draft Newsletters');
 		$panel['item']['css_class'] = 'zenario_newsletter_draft';
@@ -70,14 +66,15 @@ switch ($path) {
 			} 
 		}
 		
-		if($refinerName == 'archive') {
-			if(!setting('zenario_newsletter__enable_opened_emails')) {
-				unset($panel['columns']['opened']);
-				unset($panel['columns']['opened_percentage']);
-			}
-			$panel['columns']['clicked']['hidden'] = false;
-			$panel['columns']['clicked_percentage']['hidden'] = false;
+		if (!($refinerName == 'archive' && setting('zenario_newsletter__enable_opened_emails'))) {
+			unset($panel['columns']['opened']);
+			unset($panel['columns']['opened_percentage']);
+		}
+		if ($refinerName != 'archive') {
+			unset($panel['columns']['clicked']);
+			unset($panel['columns']['clicked_percentage']);
 		
+		} else {
 			$sql = '
 				SELECT newsletter_id
 				FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link
@@ -92,9 +89,7 @@ switch ($path) {
 					$sql = '
 						SELECT COUNT(DISTINCT user_id) as userCount
 						FROM ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletter_user_link as nul
-						INNER JOIN ' . DB_NAME_PREFIX . ZENARIO_NEWSLETTER_PREFIX . 'newsletters as n
-						ON n.id = nul.newsletter_id
-					';
+						WHERE nul.newsletter_id = '. (int) $id;
 					
 					$result = sqlSelect($sql);
 					$smartGroupTotal = sqlFetchAssoc($result);

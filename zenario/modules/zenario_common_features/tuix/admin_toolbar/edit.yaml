@@ -3,30 +3,8 @@
 sections:
     edit:
         buttons:
-
             property_dropdown:
                 label: Properties
-                hide_when_children_are_not_visible: true
-            publish:
-                priv: _PRIV_PUBLISH_CONTENT_ITEM
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                label: Publish...
-                css_class: publish label_without_icon
-                tooltip: Publish this content item|Click to Publish
-                admin_box:
-                    path: zenario_publish
-            action_dropdown:
-                label: Actions
-                hide_when_children_are_not_visible: true
-            category_dropdown:
-                label: Categories
-                hide_when_children_are_not_visible: true
-            view_dropdown:
-                label: View
-                hide_when_children_are_not_visible: true
-            lock_dropdown:
-                label: Locking
                 hide_when_children_are_not_visible: true
 
         # property_dropdown
@@ -86,14 +64,28 @@ sections:
                     edit: true
                 admin_box:
                     path: zenario_content_layout
-            view_slots:
-                visible_if: |
-                    zenarioA.checkSpecificPermsOnThisPage()
-                parent: property_dropdown
-                label: View item's slots
-                organizer_quick:
-                    min_path: zenario__content/panels/slots
-                    target_path: zenario__content/panels/slots
+            
+            #publish:
+            #    priv: _PRIV_PUBLISH_CONTENT_ITEM
+            #    visible_if: |
+            #        zenarioA.checkSpecificPermsOnThisPage()
+            #    label: Publish...
+            #    css_class: publish label_without_icon
+            #    tooltip: Publish this content item|Click to Publish
+            #    admin_box:
+            #        path: zenario_publish
+            action_dropdown:
+                label: Actions
+                hide_when_children_are_not_visible: true
+            category_dropdown:
+                label: Categories
+                hide_when_children_are_not_visible: true
+            view_dropdown:
+                label: View
+                hide_when_children_are_not_visible: true
+            lock_dropdown:
+                label: Locking
+                hide_when_children_are_not_visible: true
 
         #action_dropdown
             start_editing:
@@ -134,7 +126,7 @@ sections:
             duplicate_content:
                 parent: action_dropdown
                 priv: _PRIV_CREATE_FIRST_DRAFT
-                label: Duplicate content item
+                label: Duplicate
                 admin_box:
                     path: zenario_content
                     key:
@@ -189,29 +181,28 @@ sections:
                             message_type: warning
                         request:
                             create_draft_by_copying: 1
-            hide_content:
-                parent: action_dropdown
-                priv: _PRIV_HIDE_CONTENT_ITEM
+            delete_archives:
+                priv: _PRIV_TRASH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                appears_in_toolbars:
-                    edit: true
-                label: Hide this content item
-                css_class: zenario_hide_content label_to_the_left
+                parent: action_dropdown
+                hide_in_select_mode: true
+                label: Delete archived versions
+                multiple_select: true
                 ajax:
                     confirm:
                         message: |
-                            Hiding this content item will make it not visible to visitors. Any menu nodes linking to it will also be hidden.
+                            Are you sure you wish to delete any archived versions of this content item?
                             
-                            You can restore the item to public view by creating a new draft and then re-publishing.
-                            
-                            Are you sure you wish to proceed?
-                        button_message: Hide
+                            This cannot be undone.
+                        button_message: Delete archived versions
                         cancel_button_message: Cancel
                         message_type: warning
                     request:
-                        hide: 1
+                        delete_archives: 1
             delete_draft:
+                #parent: action_dropdown
+                ord: 999
                 appears_in_toolbars:
                     edit: true
                 priv: _PRIV_DELETE_DRAFT
@@ -232,6 +223,28 @@ sections:
                         message_type: warning
                     request:
                         delete: 1
+            hide_content:
+                parent: action_dropdown
+                priv: _PRIV_HIDE_CONTENT_ITEM
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                appears_in_toolbars:
+                    edit: true
+                label: Hide
+                css_class: zenario_hide_content label_to_the_left
+                ajax:
+                    confirm:
+                        message: |
+                            Hiding this content item will make it not visible to visitors. Any menu nodes linking to it will also be hidden.
+                            
+                            You can restore the item to public view by creating a new draft and then re-publishing.
+                            
+                            Are you sure you wish to proceed?
+                        button_message: Hide
+                        cancel_button_message: Cancel
+                        message_type: warning
+                    request:
+                        hide: 1
             trash_content:
                 parent: action_dropdown
                 appears_in_toolbars:
@@ -239,7 +252,7 @@ sections:
                 priv: _PRIV_TRASH_CONTENT_ITEM
                 visible_if: |
                     zenarioA.checkSpecificPermsOnThisPage()
-                label: Trash this content item
+                label: Trash
                 css_class: zenario_trash_content label_to_the_left
                 
                 admin_box:
@@ -331,20 +344,28 @@ sections:
                     path: zenario_content_categories
 
 #view_dropdown
-            view_items_translations:
-                parent: view_dropdown
-                label: Translations
-                organizer_quick:
-                    target_path: zenario__content/panels/chained
-                    min_path: zenario__content/panels/chained
-                    disallow_refiners_looping_on_min_path: true
             view_items_images:
                 parent: view_dropdown
-                label: Images attached to this content item
+                label: Attached images
                 organizer_quick:
                     target_path: zenario__content/panels/inline_images_for_content
                     min_path: zenario__content/panels/inline_images_for_content
                     disallow_refiners_looping_on_min_path: true
+            view_items_translations:
+                parent: view_dropdown
+                label: Translations of this content item
+                organizer_quick:
+                    target_path: zenario__content/panels/chained
+                    min_path: zenario__content/panels/chained
+                    disallow_refiners_looping_on_min_path: true
+            view_slots:
+                visible_if: |
+                    zenarioA.checkSpecificPermsOnThisPage()
+                parent: view_dropdown
+                label: Slots and plugins on this content item
+                organizer_quick:
+                    min_path: zenario__content/panels/slots
+                    target_path: zenario__content/panels/slots
 
 #lock_dropdown
             lock:

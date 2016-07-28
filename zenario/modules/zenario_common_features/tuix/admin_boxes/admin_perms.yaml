@@ -194,6 +194,8 @@ zenario_admin:
                             label: Uninitialise a module
                         _PRIV_EDIT_CONTENT_TYPE:
                             label: Change content type settings
+                        _PRIV_EDIT_CSS:
+                            label: Edit CSS files on the filesystem
                 perm_manage:
                     is_admin_permission: true
                     grouping: specific_actions

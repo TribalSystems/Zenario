@@ -52,13 +52,20 @@ incJS('zenario/api/javascript_core');
 incJS('zenario/js/visitor');
 incJS('zenario/api/javascript');
 
-//Include jQuery modules
-//Note: this order is quite sensitive, as some give JavaScript errors if included in a certain order
+//Include jQuery modules and some other third-party libraries
 incJS('zenario/js/easing');
 incJS('zenario/libraries/mit/colorbox/jquery.colorbox');
+incJS('zenario/libraries/bsd/javascript_md5/md5');
 
 echo '
-zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.jquery.min.js";';
+zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.jquery.min.js";
+zenario.mtSettings = {
+variable: "m",
+escape: false,
+interpolate: /\{\{(.+?)\}\}/g,
+evaluate: /[<\{]%([\s\S]+?)%[>\}]/g,
+twigStyleSyntax: true
+}';
 
 
 

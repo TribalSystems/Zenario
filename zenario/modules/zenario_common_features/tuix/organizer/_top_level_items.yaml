@@ -252,11 +252,16 @@ zenario__administration:
             tooltip: Create and restore backups
             link:
                 path: zenario__administration/panels/backups
+        content_types:
+            label: Content types
+            tooltip: Change settings for content types (e.g. blog posts, HTML pages, news items...)
+            link:
+                path: zenario__content/panels/content_types
         custom_datasets:
             label: Datasets
             tooltip: Manage custom datasets
             link:
-                path: 'zenario__administration/panels/custom_datasets'
+                path: zenario__administration/panels/custom_datasets
         file_types:
             #css_class: dropbox_files
             label: File types

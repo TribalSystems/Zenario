@@ -9,6 +9,7 @@ zenario_import:
         file_path: ''
         ID_column: ''
         dataset: ''
+        new_records: ''
     title: Dataset Import Wizard - Step 1 of 4
     hide_tab_bar: Yes
     save_button_message: Import now
@@ -146,10 +147,12 @@ zenario_import:
                 csv_preview:
                     label: 'Preview (up to line 200):'
                     type: code_editor
+                    dont_trim: true
                     read_only: true
                 problems:
                     label: 'Problems:'
                     type: code_editor
+                    dont_trim: true
                     read_only: true
                 desc2:
                     snippet:

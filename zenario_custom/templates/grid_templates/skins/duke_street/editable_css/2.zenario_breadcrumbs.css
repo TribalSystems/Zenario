@@ -1,0 +1,15 @@
+.Grid_Body .slot .zenario_breadcrumbs__default_style {
+	margin-bottom:15px;
+}
+
+.zenario_breadcrumbs__default_style {
+	font-size:0.800em;
+}
+
+.zenario_breadcrumbs__default_style a {
+	color:#27303f;
+}
+
+.zenario_breadcrumbs__default_style .current a {
+	color:#a65b38;
+}

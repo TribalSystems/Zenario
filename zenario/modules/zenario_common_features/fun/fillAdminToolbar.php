@@ -59,6 +59,18 @@ if (!$content || !$version) {
 		}
 	}
 	
+	if (cms_core::$templateFamily != 'grid_templates'
+	 || !cms_core::$skinId
+	 || !($skin = getRow('skins', array('display_name', 'enable_editable_css'), cms_core::$skinId))
+	 || !($skin['enable_editable_css'])) {
+		unset($adminToolbar['sections']['template']['buttons']['edit_skin']);
+	
+	} elseif (isset($adminToolbar['sections']['template']['buttons']['edit_skin'])) {
+		$adminToolbar['sections']['template']['buttons']['edit_skin']['admin_box']['key']['skinId'] = cms_core::$skinId;
+		$adminToolbar['sections']['template']['buttons']['edit_skin']['label'] =
+			adminPhrase('Edit skin "[[display_name]]"', $skin);
+	}
+	
 	if (isset($adminToolbar['sections']['template']['buttons']['settings']['admin_box']['key']['id'])) {
 		$adminToolbar['sections']['template']['buttons']['settings']['admin_box']['key']['id'] = cms_core::$layoutId;
 	}
@@ -82,6 +94,16 @@ if (cms_core::$status == 'trashed' || ($cVersion < cms_core::$adminVersion && (!
 	unset($adminToolbar['sections']['menu1']);
 	unset($adminToolbar['sections']['edit']['buttons']['start_editing']);
 	unset($adminToolbar['sections']['edit']['buttons']['cant_start_editing']);
+}
+
+//Disable the "start editing"/"Rollback" buttons if a draft exists
+if (cms_core::$adminVersion > $cVersion
+ && cms_core::$adminVersion > cms_core::$visitorVersion) {
+	unset($adminToolbar['sections']['edit']['buttons']['start_editing']);
+	unset($adminToolbar['sections']['edit']['buttons']['rollback_item']);
+} else {
+	unset($adminToolbar['sections']['edit']['buttons']['cant_start_editing']);
+	unset($adminToolbar['sections']['edit']['buttons']['no_rollback_item']);
 }
 
 if (cms_core::$status == 'trashed' || $cVersion != cms_core::$adminVersion) {
@@ -146,6 +168,16 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$status == 'hidden') {
 	unset($adminToolbar['sections']['edit']['buttons']['unhide']);
 }
 
+if (cms_core::$adminVersion == 1
+ || !in ($cVersion, cms_core::$visitorVersion, cms_core::$adminVersion)
+ || !checkRowExists('content_item_versions', array(
+		'id' => cms_core::$cID,
+		'type' => cms_core::$cType,
+		'version' => array('!' => array(cms_core::$visitorVersion, cms_core::$adminVersion)))
+)) {
+	unset($adminToolbar['sections']['edit']['buttons']['delete_archives']);
+}
+
 //Draft Version
 if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	
@@ -188,7 +220,7 @@ if ($cVersion == cms_core::$adminVersion && cms_core::$isDraft) {
 	}
 
 } else {
-	unset($adminToolbar['sections']['edit']['buttons']['publish']);
+	unset($adminToolbar['sections']['status_button']['buttons']['publish']);
 	unset($adminToolbar['sections']['edit']['buttons']['delete_draft']);
 	
 
@@ -225,8 +257,6 @@ if (cms_core::$isDraft) {
 	unset($adminToolbar['sections']['edit']['buttons']['rollback_item']);
 	unset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying']);
 } else {
-	unset($adminToolbar['sections']['edit']['buttons']['no_rollback_item']);
-	unset($adminToolbar['sections']['edit']['buttons']['cant_start_editing']);
 	unset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']);
 }
 
@@ -235,7 +265,7 @@ if (checkPriv('_PRIV_EDIT_DRAFT', $cID, $cType)) {
 	unset($adminToolbar['toolbars']['edit_disabled']);
 } else {
 	unset($adminToolbar['toolbars']['edit']);
-	unset($adminToolbar['sections']['edit']['buttons']['publish']);
+	unset($adminToolbar['sections']['status_button']['buttons']['publish']);
 	
 	if (isset($adminToolbar['toolbars']['edit_disabled'])) {
 		if (isDraft(cms_core::$status) && $cVersion != cms_core::$adminVersion) {
@@ -353,11 +383,11 @@ if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
 	
 	if ($cTypeDetails['description_field'] != 'hidden') {
 		$tooltip .= 
-			'<br/>'. adminPhrase('Description:'). ' '. htmlspecialchars(cms_core::$description);
+			'<br/>'. adminPhrase('Description:'). ' '. htmlspecialchars(cms_core::$pageDesc);
 	}
 	if ($cTypeDetails['keywords_field'] != 'hidden') {
 		$tooltip .= 
-			'<br/>'. adminPhrase('Keywords:'). ' '. htmlspecialchars(cms_core::$keywords);
+			'<br/>'. adminPhrase('Keywords:'). ' '. htmlspecialchars(cms_core::$pageKeywords);
 	}
 	if ($cTypeDetails['release_date_field'] != 'hidden') {
 		$tooltip .= 
@@ -506,12 +536,10 @@ $adminToolbar['sections']['history']['buttons']['content_item_current']['tooltip
 	adminPhrase('Version status: [[status]]<br/><i>This version is in view</i>', $mrg);
 
 //At the top right of the toolbar, show either a Publish button, or the current status if we can't currently publish
-if (isset($adminToolbar['sections']['edit']['buttons']['publish'])
- && isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
+if (isset($adminToolbar['sections']['status_button']['buttons']['publish'])) {
 	unset($adminToolbar['sections']['status_button']['buttons']['status_button']);
 
 } else {
-	unset($adminToolbar['sections']['status_button']['buttons']['publish']);
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['css_class'] .= ' '. getContentItemVersionToolbarIcon($content, $cVersion, 'zenario_at_status_button_');
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['label'] = ucwords($mrg['status']);
 	$adminToolbar['sections']['status_button']['buttons']['status_button']['tooltip'] =
@@ -722,6 +750,7 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 				$adminToolbar['sections']['menu1'] = $adminToolbar['sections']['primary_menu_node'];
 			}
 			
+			
 			if (!empty($adminToolbar['sections']['menu'. $i]['buttons'])) {
 				foreach ($adminToolbar['sections']['menu'. $i]['buttons'] as $tagName => &$button) {
 					if (is_array($button)) {
@@ -799,6 +828,61 @@ unset($adminToolbar['toolbars']['menu_secondary']);
 unset($adminToolbar['sections']['no_menu_nodes']);
 unset($adminToolbar['sections']['primary_menu_node']);
 unset($adminToolbar['sections']['secondary_menu_node']);
+
+
+
+if (isset($adminToolbar['sections']['create'])) {
+	
+	// Create a 'create button' for each content type in the order HTML, News, Events, Others dropdown (Alphabetical)
+	$orderedContentTypes = array();
+	$contentTypes = getContentTypes(false, true);
+	$topButtons = array('html', 'news', 'event');
+	foreach ($topButtons as $contentType) {
+		if (isset($contentTypes[$contentType])) {
+			$orderedContentTypes[$contentType] = $contentTypes[$contentType];
+			unset($contentTypes[$contentType]);
+		}
+	}
+	$orderedContentTypes = $orderedContentTypes + $contentTypes;
+	
+	if ($contentTypes) {
+		$adminToolbar['sections']['create']['buttons']['other_dropdown'] = array(
+			'label' => adminPhrase('Other'),
+			'ord' => 9999
+		);
+	}
+	
+	$ord = 1;
+	foreach ($orderedContentTypes as $contentTypeId => $contentType) {
+		$button = array(
+			'priv' => '_PRIV_CREATE_FIRST_DRAFT',
+			'ord' => ++$ord,
+			'label' => $contentType['content_type_name_en'],
+			'appears_in_toolbars' => array(
+				'create' => true
+			),
+			'admin_box' => array(
+				'path' => 'zenario_content',
+				'key' => array(
+					'id' => '',
+					'cID' => '',
+					'cType' => $contentTypeId,
+					'create_from_toolbar' => 1,
+					'from_cID' => cms_core::$cID,
+					'from_cType' => cms_core::$cType,
+					'target_language_id' => cms_core::$langId
+				)
+			)
+		);
+		
+		if (!in_array($contentTypeId, $topButtons)) {
+			$button['parent'] = 'other_dropdown';
+		}
+		
+		$adminToolbar['sections']['create']['buttons'][$contentTypeId] = $button;
+	}
+}
+
 
 
 
@@ -897,9 +981,19 @@ $adminToolbar['sections']['icons']['buttons']['layout_id']['tooltip'] =
 	'Layout ID: '.$layoutLabel.'<br /> Layout Name: '.$layoutName.'<br /> Items using this Layout: '.$layoutItemCount;
 
 $visitorURL = linkToItem(
-	$cID, $cType, $fullPath = false, $request = '', cms_core::$alias,
+	$cID, $cType, $fullPath = true, $request = '', cms_core::$alias,
 	$autoAddImportantRequests = false, $useAliasInAdminMode = true);
 
+if (isset($adminToolbar['sections']['icons']['buttons']['copy_url'])) {
+	$adminToolbar['sections']['icons']['buttons']['copy_url']['onclick'] =
+		//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
+		'zenario.copy("'. jsEscape($visitorURL). '");'.
+		//Small little hack here:
+			//After the URL is copy/pasted, the dropdown stays open which is counter-intuative.
+			//However the dropdown is powered by pure CSS and there's no way to close it using JavaScript.
+			//So as a workaround, redraw the admin toolbar with the dropdown closed.
+		'zenarioAT.draw();';
+}
 if (isset($adminToolbar['sections']['icons']['buttons']['go_to_alias'])) {
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['label'] = adminPhrase('Go to content item via its alias "[[alias]]"', array('alias' => (cms_core::$alias)));
 	$adminToolbar['sections']['icons']['buttons']['go_to_alias']['frontend_link'] = $visitorURL;

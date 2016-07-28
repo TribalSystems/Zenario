@@ -30,5 +30,3 @@ dependencies:
 inheritance:
     inherit_frameworks_from_module: zenario_content_list
     inherit_settings_from_module: zenario_content_list
-    allow_upgrades_from_module:
-        zenario_content_list: Yes

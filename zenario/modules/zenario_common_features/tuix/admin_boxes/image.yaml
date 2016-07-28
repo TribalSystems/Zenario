@@ -26,7 +26,12 @@ zenario_image:
                     label: 'Size:'
                     snippet:
                         html: ""
+                
+                left_column:
+                    type: grouping
+                    name: left_column
                 tags:
+                    grouping: left_column
                     label: 'Tags:'
                     pick_items:
                         path: zenario__content/panels/image_tags
@@ -34,12 +39,21 @@ zenario_image:
                         hide_select_button: true
                         nothing_selected_phrase: No tags set
                     cols: 4
+                
+                right_column:
+                    type: grouping
+                    name: right_column
                 new_tag:
+                    grouping: right_column
+                    #indent: 1
                     type: text
                     maxlength: 15
-                    full_width: true
+                    #full_width: true
+                    label: 'Create a new tag for this image:'
                     return_key_presses_button: zenario_image_add_tag_button
                     placeholder: Enter the name for a new tag
+                    style: >
+                        width: 15em;
                     onkeyup: |
                         if (this.value) {
                             var up = ('' + this.value),
@@ -50,6 +64,7 @@ zenario_image:
                             }
                         }
                 add_tag:
+                    grouping: right_column
                     same_row: true
                     snippet:
                         html: >
@@ -58,13 +73,14 @@ zenario_image:
                                 class="submit"
                                 id="zenario_image_add_tag_button"
                                 onclick="
-                                    if (get('new_tag').value) {
-                                        zenarioAB.addToPickedItems(get('new_tag').value, 'tags');
-                                        get('new_tag').value = '';
+                                    var nt = zenario.get('new_tag');
+                                    if (nt.value) {
+                                        zenarioAB.addToPickedItems(nt.value, 'tags');
+                                        nt.value = '';
                                         $('.ui-autocomplete').hide();
                                     }
                                 "
-                                value="Add tag"
+                                value="Create tag"
                             />
                     
                 desc:
@@ -79,6 +95,7 @@ zenario_image:
                 floating_box_title:
                     label: 'Default floating box title:'
                     type: editor
+                    dont_trim: true
                     #editor_options:
                     #    height: 30
                     #    min_height: 30

@@ -35,7 +35,7 @@ class zenario_common_features__organizer__menu_nodes extends module_base_class {
 		
 		if (!(get('refiner__language') && get('refiner__language') != setting('default_language'))
 		 && !get('refiner__show_language_choice')
-		 && !in($mode, 'get_item_name', 'get_item_links')) {
+		 && !in($mode, 'typeahead_search', 'get_item_name', 'get_item_links')) {
 			$panel['db_items']['where_statement'] = $panel['db_items']['custom_where_statement_if_no_missing_items'];
 		}
 		

@@ -32,13 +32,13 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		
+		$tags = explodeAndTrim($box['key']['id']);
+		
 		if ($box['key']['cID']) {
 			$count = 1;
 			$box['key']['id'] = $box['key']['cType']. '_'. $box['key']['cID'];
 		} else {
-			$tags = explodeAndTrim($box['key']['id']);
 			$count = count($tags);
-			
 			if ($count == 1) {
 				getCIDAndCTypeFromTagId($box['key']['cID'], $box['key']['cType'], $tags[0]);
 			}
@@ -52,8 +52,146 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 				adminPhrase('Are you sure you wish to publish the [[count]] selected content items?', array('count' => $count));
 		}
 		
+		// Show warning if any documents on the page will have their privacy set after publish
+		if (inc('zenario_document_container')) {
+			
+			$moduleId = getModuleId('zenario_document_container');
+			$showDocumentWarning = false;
+			$documentChangesMessage = array();
+			$documentPrivacyLink = array();
+			$documentPrivacyConflicts = array();
+			
+			foreach ($tags as $tagId) {
+				
+				$documentChangesMessage[$tagId] = '';
+				$documentFoundOnPage = false;
+				$cId = $cType = false;
+				getCIDAndCTypeFromTagId($cId, $cType, $tagId);
+				
+				$contentItem = getRow(
+					'content_items', 
+					array('admin_version', 'equiv_id'), 
+					array('id' => $cId, 'type' => $cType)
+				);
+				$contentPrivacy = getRow(
+					'translation_chains',
+					'privacy',
+					array('equiv_id' => $contentItem['equiv_id'], 'type' => $cType)
+				);
+				
+				$slots = array();
+				getSlotContents($slots, $cId, $cType, $contentItem['admin_version']);
+				
+				$privacy = 'public';
+				if ($contentPrivacy != 'public') {
+					$privacy = 'private';
+				}
+				
+				if ($count == 1) {
+					$documentChangesMessage[$tagId] .= "When you publish this page the following documents will be made " . $privacy . " according to this pages permissions\n";
+				} else {
+					$formattedTag = formatTagFromTagId($tagId);
+					$documentChangesMessage[$tagId] .= "\nWhen you publish the page \"" . $formattedTag . "\" the following documents will be made " . $privacy . " according to the pages permissions\n";
+				}
+				
+				foreach ($slots as $slotName => $slotInfo) {
+					
+					$titleShown = false;
+					
+					if ($slotInfo['module_id'] == $moduleId) {
+						
+						if ($slotInfo['class']->setting('container_mode') == 'documents') {
+							
+							$documentId = $slotInfo['class']->setting('document_source'); 
+							$document = getRow(
+								'documents', 
+								array(
+									'id', 
+									'file_id', 
+									'type', 
+									'thumbnail_id', 
+									'folder_name',
+									'filename', 
+									'privacy', 
+									'file_datetime', 
+									'title'
+								),
+								$documentId
+							);
+							
+							$folderId = false;
+							if ($document['type'] == 'folder') {
+								$folderId = $documentId;
+								$documentId = false;
+							}
+							
+							$documents = array();
+							if (($folderId || $documentId) && ($documents = $slotInfo['class']->getFilesInFolder($folderId, $documentId))) {
+								$documents = $slotInfo['class']->addMergeFields($documents, $level = 1);
+							}
+							
+							if ($slotInfo['class']->setting('show_files_in_folders') != 'folder') {
+								if ($childFolders = $slotInfo['class']::getFoldersInFolder($folderId)) {
+									$slotInfo['class']->addFilesToDocumentArray($documents, $childFolders, $level);
+								}
+							}
+							
+							foreach ($documents as $document) {
+								if ($document['type'] == 'file' && $document['privacy'] == 'auto') {
+									
+									$documentFoundOnPage = true;
+									$showDocumentWarning = true;
+									
+									if (isset($documentPrivacyLink[$document['id']]) && $documentPrivacyLink[$document['id']] != $privacy) {
+										$documentPrivacyConflicts[$document['id']] = $document;
+									}
+									$documentPrivacyLink[$document['id']] = $privacy;
+									
+									if (!$titleShown) {
+										$documentChangesMessage[$tagId] .= "\nFrom the document container plugin \"" . $slotInfo['instance_name'] . '":' . "\n";
+										$titleShown = true;
+									}
+									
+									$documentChangesMessage[$tagId] .= ' - ';
+									$documentChangesMessage[$tagId] .= $document['Title_Exists'] ? $document['Title_Exists'] : $document['Document_Title'];
+									$documentChangesMessage[$tagId] .= "\n";
+								}
+							}
+						}
+					}
+				}
+				if (!$documentFoundOnPage) {
+					unset($documentChangesMessage[$tagId]);
+				}
+			}
+			
+			if ($showDocumentWarning) {
+				$box['tabs']['publish']['notices']['document_changes']['show'] = true;
+				
+				
+				if ($documentPrivacyConflicts) {
+					$box['tabs']['publish']['notices']['document_warning']['show'] = true;
+					$documentWarningMessage = "WARNING: The following documents were found on both public and private pages:\n";
+					
+					foreach ($documentPrivacyConflicts as $documentId => $document) {
+						$documentWarningMessage .= ' - ';
+						$documentWarningMessage .= $document['Title_Exists'] ? $document['Title_Exists'] : $document['Document_Title'];
+						$documentWarningMessage .= "\n";
+					}
+					$box['tabs']['publish']['notices']['document_warning']['message'] = $documentWarningMessage;
+				}
+				
+				foreach ($documentChangesMessage as $message) {
+					$box['tabs']['publish']['notices']['document_changes']['message'] .= $message;
+				}
+				
+				$box['max_height'] = false;
+			}
+		}
+		
 		$clash = static::checkForClashingPublicationDates($box['key']['id']);
 		
+		// Scheduled publishing options
 		if (inc('zenario_scheduled_task_manager')) {
 			$allJobsEnabled = setting('jobs_enabled');
 			$scheduledPublishingEnabled = getRow('jobs', 'enabled', array('job_name' => 'jobPublishContent', 'module_class_name' => 'zenario_common_features'));
@@ -97,7 +235,10 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 		$fields['publish/publish_mins']['hidden'] = 
 			(!($values['publish/publish_options'] == 'schedule')
 			|| $fields['publish/publish_options']['hidden']);
-		$box['max_height'] = (($values['publish/publish_options'] == 'schedule') ? 250 : 150);
+		
+		if ($box['tabs']['publish']['notices']['document_changes']['show'] == false) {
+			$box['max_height'] = (($values['publish/publish_options'] == 'schedule') ? 250 : 150);
+		}
 	}
 	
 	protected static function checkForClashingPublicationDates($tagIds, $date = false) {
@@ -167,7 +308,6 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		$ids = (($box['key']['id']) ? $box['key']['id'] : $box['key']['cID']);
-		
 		foreach (explodeAndTrim($ids) as $id) {
 			$cID = $cType = false;
 			if (!empty($box['key']['cID']) && !empty($box['key']['cType'])) {

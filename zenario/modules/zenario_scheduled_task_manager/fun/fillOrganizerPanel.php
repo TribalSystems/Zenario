@@ -33,9 +33,20 @@ switch ($path) {
 		
 		if (setting('jobs_enabled')) {
 			unset($panel['collection_buttons']['enable_all']);
+			unset($panel['collection_buttons']['not_enabled_dropdown']);
 		} else {
 			unset($panel['collection_buttons']['suspend_all']);
+			unset($panel['collection_buttons']['enabled_dropdown']);
 		}
+		
+		$panel['collection_buttons']['copy_code']['onclick'] =
+			//Attempt to copy the cannonical URL to the clipboard when the visitor presses this button
+			'zenario.copy("'. jsEscape('* * * * *  php '. CMS_ROOT. moduleDir('zenario_scheduled_task_manager', 'cron/run_every_minute.php'). ' 1'). '");'.
+			//Small little hack here:
+				//After the URL is copy/pasted, the dropdown stays open which is counter-intuative.
+				//However the dropdown is powered by pure CSS and there's no way to close it using JavaScript.
+				//So as a workaround, redraw the admin toolbar with the dropdown closed.
+			'zenarioO.setButtons();';
 		
 		foreach ($panel['items'] as &$item) {
 			

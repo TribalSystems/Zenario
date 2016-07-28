@@ -301,8 +301,12 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 						$sql = "
 							DELETE FROM ". DB_NAME_PREFIX. "template_slot_link
 							WHERE family_name = '". sqlEscape($layout['family_name']). "'
-							  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'
+							  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'";
+						
+						if (!empty($newNames)) {
+							$sql .= "
 							  AND slot_name NOT IN (". inEscape($newNames). ")";
+						}
 						sqlUpdate($sql);
 					}
 				}

@@ -61,7 +61,9 @@ while ($row = sqlFetchAssoc($result)) {
 		$lastEquivTag = $row['content_type']. '_'. $row['equiv_id'];
 		$menuId = false;
 	}
-	
+	if ($hideMenuNodes) {
+		$row['invisible'] = true;
+	}
 	$menuId = saveMenuDetails($row, $menuId, $resyncIfNeeded = false, $skipSectionChecks = true);
 	saveMenuText($menuId, $row['language_id'], $row);
 	$menuIds[$menuId] = $menuId;

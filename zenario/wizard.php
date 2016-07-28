@@ -44,7 +44,7 @@ echo
 
 //checkForChangesInCssJsAndHtmlFiles();
 $v = zenarioCodeVersion();
-CMSWritePageHead('', 'wizard', false);
+CMSWritePageHead('', 'wizard');
 
 echo '
 	<link rel="stylesheet" type="text/css" href="styles/admin_welcome.min.css?v=', $v, '" media="screen" />
@@ -68,7 +68,7 @@ echo '
 </head>';
 
 
-CMSWritePageBody('', false);
+CMSWritePageBody();
 CMSWritePageFoot('', 'wizard', false, false);
 
 if ((file_exists(CMS_ROOT. ($logoURL = 'wizard-logo.png')))

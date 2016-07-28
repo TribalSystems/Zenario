@@ -42,6 +42,77 @@ function zenarioAJAXIncludeModule(&$modules, &$tag, $type, $requestedPath, $sett
 	}
 }
 
+function TUIXLooksLikeFAB(&$tags) {
+	return !empty($tags['tabs']) && is_array($tags['tabs']);
+}
+
+function TUIXIsFormField(&$field) {
+	
+	if (!$field || !empty($field['snippet'])) {
+		return false;
+	}
+	
+	if (!empty($field['type'])) {
+		switch ($field['type']) {
+			case 'grouping':
+			case 'submit':
+			case 'toggle':
+			case 'button':
+				return false;
+		}
+	}
+	
+	return true;
+}
+
+function saveCopyOfTUIXOnServer(&$tags) {
+
+	//Try to save a copy of the admin box in the cache directory
+	if (($adminBoxSyncStoragePath = adminBoxSyncStoragePath($tags))
+	 && (@file_put_contents($adminBoxSyncStoragePath, adminBoxEncodeTUIX($tags)))) {
+		@chmod($adminBoxSyncStoragePath, 0666);
+		$tags['_sync']['session'] = false;
+
+	//Fallback code to store in the session
+	} else {
+		if (empty($_SESSION['admin_box_sync'])) {
+			$_SESSION['admin_box_sync'] = array(0 => 0); //I want to start counting from 1 so the key is not empty
+		}
+	
+		if (empty($tags['_sync']['session']) || empty($_SESSION['admin_box_sync'][$tags['_sync']['session']])) {
+			$tags['_sync']['session'] = count($_SESSION['admin_box_sync']);
+		}
+	
+		$_SESSION['admin_box_sync'][$tags['_sync']['session']] = adminBoxEncodeTUIX($tags);
+		$tags['_sync']['cache_dir'] = false;
+	}
+}
+
+function loadCopyOfTUIXFromServer(&$tags, &$clientTags) {
+
+	//Attempt to pick the right box and load from the Storage
+		//(This may be in the cache directory or the session, depending on whether the cache was writable)
+	if (($adminBoxSyncStoragePath = adminBoxSyncStoragePath($clientTags))
+	 && (file_exists($adminBoxSyncStoragePath))
+	 && (adminBoxDecodeTUIX($tags, $clientTags, file_get_contents($adminBoxSyncStoragePath)))) {
+	
+	} else
+	if (!empty($clientTags['_sync']['session'])
+	 && !empty($_SESSION['admin_box_sync'][$clientTags['_sync']['session']])
+	 && (adminBoxDecodeTUIX($tags, $clientTags, $_SESSION['admin_box_sync'][$clientTags['_sync']['session']]))) {
+	
+	} else {
+		if (!empty($clientTags['_sync']['session']) || !setting('fab_use_cache_dir')) {
+			echo adminPhrase('An error occurred when syncing this form with the server. There is a problem with the server\'s $_SESSION variable.');
+		
+		} else {
+			echo adminPhrase('An error occurred when syncing this form with the server. A file placed in the cache/ directory could not be found.');
+		}
+		exit;
+	}
+}
+
+
 function adminBoxSyncStoragePath(&$box) {
 	
 	if (!setting('fab_use_cache_dir')) {
@@ -154,12 +225,26 @@ function adminBoxDecodeTUIX(&$tags, &$clientTags, $string) {
 	return ($tags = json_decode($string, true)) && (is_array($tags));
 }
 
-function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $resetErrors, $preDisplay) {
+function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $resetErrors, $addOrds = false) {
 	
 	if (!empty($box['tabs']) && is_array($box['tabs'])) {
+		
+		if ($addOrds) {
+			addOrdinalsToTUIX($box['tabs']);
+			
+			if (!empty($box['lovs']) && is_array($box['lovs'])) {
+				foreach ($box['lovs'] as &$lov) {
+					addOrdinalsToTUIX($lov);
+				}
+			}
+		}
+		
 		foreach ($box['tabs'] as $tabName => &$tab) {
 			if (is_array($tab) && !empty($tab['fields']) && is_array($tab['fields'])) {
 				
+				if ($addOrds) {
+					addOrdinalsToTUIX($tab['fields']);
+				}
 				if ($resetErrors || !isset($tab['errors']) || !is_array($tab['errors'])) {
 					$tab['errors'] = array();
 				}
@@ -176,9 +261,12 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 					$isField = 
 						!empty($field['upload'])
 					 || !empty($field['pick_items'])
-					 || (!empty($field['type']) && $field['type'] != 'submit' && $field['type'] != 'toggle');
+					 || (!empty($field['type']) && $field['type'] != 'submit' && $field['type'] != 'toggle' && $field['type'] != 'button');
 
 					
+					if ($addOrds && !empty($field['values']) && is_array($field['values'])) {
+						addOrdinalsToTUIX($field['values']);
+					}
 					if ($resetErrors) {
 						unset($field['error']);
 					}
@@ -196,8 +284,18 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 						if (isset($field['value']) && is_array($field['value'])) {
 							unset($field['value']);
 						}
-						if ((isset($field['current_value']) && is_array($field['current_value'])) || $readOnly) {
-							unset($field['current_value']);
+						if (isset($field['current_value'])) {
+							if (is_array($field['current_value']) || $readOnly) {
+								unset($field['current_value']);
+							
+							} elseif (!$filling && $resetErrors) {
+								if (empty($field['dont_trim']) || !engToBoolean($field['dont_trim'])) {
+									$field['current_value'] = trim($field['current_value']);
+								}
+								if (!empty($field['maxlength']) && (int) $field['maxlength']) {
+									$field['current_value'] = mb_substr($field['current_value'], 0, (int) $field['maxlength'], 'UTF-8');
+								}
+							}
 						}
 						
 						if (!isset($field[$currentValue])) {
@@ -259,115 +357,110 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 }
 
 function applyValidationFromTUIXOnTab(&$tab) {
-	
-	//Check if the tab is in edit mode
-	if (engToBooleanArray($tab, 'edit_mode', 'on')) {
-		
-		//Loop through each field, looking for fields with validation set
-		if (isset($tab['fields']) && is_array($tab['fields'])) {
-			foreach ($tab['fields'] as $fieldName => &$field) {
-				if (empty($field['validation'])) {
-					continue;
-				}
+	//Loop through each field, looking for fields with validation set
+	if (isset($tab['fields']) && is_array($tab['fields'])) {
+		foreach ($tab['fields'] as $fieldName => &$field) {
+			if (empty($field['validation'])) {
+				continue;
+			}
+			
+			$fieldValue = '';
+			if (isset($field['current_value'])) {
+				$fieldValue = (string) $field['current_value'];
+			} elseif (isset($field['value'])) {
+				$fieldValue = (string) $field['value'];
+			}
+			$notSet = !(trim($fieldValue) || $fieldValue === '0');
+			
+			//Check for required fields
+			if (($msg = arrayKey($field['validation'], 'required')) && $notSet) {
+				$field['error'] = $msg;
+			
+			//Check for fields that are required if not hidden. (Note that it is the user submitted data from the client
+			//which determines whether a field was hidden.)
+			} elseif (($msg = arrayKey($field['validation'], 'required_if_not_hidden'))
+				   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($field, 'hidden')
+				   //&& !engToBooleanArray($tab, '_was_hidden_before')
+				   && !engToBooleanArray($field, '_was_hidden_before')
+				   && $notSet
+			) {
+				$field['error'] = $msg;
+			
+			//If a field was not required, do not run any further validation logic on it if it is empty 
+			} elseif ($notSet) {
+				continue;
+			
+			} elseif (($msg = arrayKey($field['validation'], 'email')) && !validateEmailAddress($fieldValue)) {
+				$field['error'] = $msg;
+			
+			} elseif (($msg = arrayKey($field['validation'], 'emails')) && !validateEmailAddress($fieldValue, true)) {
+				$field['error'] = $msg;
+			
+			} elseif (($msg = arrayKey($field['validation'], 'no_spaces')) && preg_replace('/\S/', '', $fieldValue)) {
+				$field['error'] = $msg;
+			
+			} elseif (($msg = arrayKey($field['validation'], 'numeric')) && !is_numeric($fieldValue)) {
+				$field['error'] = $msg;
+			
+			} elseif (($msg = arrayKey($field['validation'], 'screen_name')) && !validateScreenName($fieldValue)) {
+				$field['error'] = $msg;
+			
+			} else {
+				//Check validation rules for file pickers
+				$must_be_image = !empty($field['validation']['must_be_image']);
+				$must_be_image_or_svg = !empty($field['validation']['must_be_image_or_svg']);
+				$must_be_gif_or_png = !empty($field['validation']['must_be_gif_or_png']);
+				$must_be_gif_ico_or_png = !empty($field['validation']['must_be_gif_ico_or_png']);
+				$must_be_ico = !empty($field['validation']['must_be_ico']);
 				
-				$fieldValue = '';
-				if (isset($field['current_value'])) {
-					$fieldValue = (string) $field['current_value'];
-				} elseif (isset($field['value'])) {
-					$fieldValue = (string) $field['value'];
-				}
-				$notSet = !(trim($fieldValue) || $fieldValue === "0");
-				
-				//Check for required fields
-				if (($msg = arrayKey($field['validation'], 'required')) && $notSet) {
-					$field['error'] = $msg;
-				
-				//Check for fields that are required if not hidden. (Note that it is the user submitted data from the client
-				//which determines whether a field was hidden.)
-				} elseif (($msg = arrayKey($field['validation'], 'required_if_not_hidden'))
-					   && !engToBooleanArray($tab, 'hidden') && !engToBooleanArray($field, 'hidden')
-					   //&& !engToBooleanArray($tab, '_was_hidden_before')
-					   && !engToBooleanArray($field, '_was_hidden_before')
-					   && $notSet
-				) {
-					$field['error'] = $msg;
-				
-				//If a field was not required, do not run any further validation logic on it if it is empty 
-				} elseif ($notSet) {
-					continue;
-				
-				} elseif (($msg = arrayKey($field['validation'], 'email')) && !validateEmailAddress($fieldValue)) {
-					$field['error'] = $msg;
-				
-				} elseif (($msg = arrayKey($field['validation'], 'emails')) && !validateEmailAddress($fieldValue, true)) {
-					$field['error'] = $msg;
-				
-				} elseif (($msg = arrayKey($field['validation'], 'no_spaces')) && preg_replace('/\S/', '', $fieldValue)) {
-					$field['error'] = $msg;
-				
-				} elseif (($msg = arrayKey($field['validation'], 'numeric')) && !is_numeric($fieldValue)) {
-					$field['error'] = $msg;
-				
-				} elseif (($msg = arrayKey($field['validation'], 'screen_name')) && !validateScreenName($fieldValue)) {
-					$field['error'] = $msg;
-				
-				} else {
-					//Check validation rules for file pickers
-					$must_be_image = !empty($field['validation']['must_be_image']);
-					$must_be_image_or_svg = !empty($field['validation']['must_be_image_or_svg']);
-					$must_be_gif_or_png = !empty($field['validation']['must_be_gif_or_png']);
-					$must_be_gif_ico_or_png = !empty($field['validation']['must_be_gif_ico_or_png']);
-					$must_be_ico = !empty($field['validation']['must_be_ico']);
+				if ($must_be_image
+				 || $must_be_image_or_svg
+				 || $must_be_gif_or_png
+				 || $must_be_gif_ico_or_png
+				 || $must_be_ico) {
 					
-					if ($must_be_image
-					 || $must_be_image_or_svg
-					 || $must_be_gif_or_png
-					 || $must_be_gif_ico_or_png
-					 || $must_be_ico) {
+					//These validation rules should work for multiple file pickers, so we'll need to
+					//split by a comma and validate each file separately
+					foreach (explodeAndTrim($fieldValue) as $file) {
 						
-						//These validation rules should work for multiple file pickers, so we'll need to
-						//split by a comma and validate each file separately
-						foreach (explodeAndTrim($fieldValue) as $file) {
-							
-							//If this file has just been picked, we'll need to check it from the disk
-							if ($filepath = getPathOfUploadedFileInCacheDir($file)) {
-								$mimeType = documentMimeType($filepath);
-							
-							//Otherwise look for it in the files table
-							} else {
-								$mimeType = getRow('files', 'mime_type', $file);
-							}
-							
-							$isIcon = in($mimeType, 'image/vnd.microsoft.icon', 'image/x-icon');
-							$isGIFPNG = in($mimeType, 'image/gif', 'image/png');
-							
-							//Check all of the possible rules for image validation.
-							//Stop checking image validation rules for this field as soon
-							//as we find one picked file that doesn't match one rule
-							if ($must_be_image && !isImage($mimeType)) {
-								$field['error'] = $field['validation']['must_be_image'];
-								break;
-							
-							} else
-							if ($must_be_image_or_svg && !isImageOrSVG($mimeType)) {
-								$field['error'] = $field['validation']['must_be_image_or_svg'];
-								break;
-							
-							} else
-							if ($must_be_gif_or_png && !$isGIFPNG) {
-								$field['error'] = $field['validation']['must_be_gif_or_png'];
-								break;
-							
-							} else
-							if ($must_be_gif_ico_or_png && !($isGIFPNG || $isIcon)) {
-								$field['error'] = $field['validation']['must_be_gif_ico_or_png'];
-								break;
-							
-							} else
-							if ($must_be_ico && !$isIcon) {
-								$field['error'] = $field['validation']['must_be_ico'];
-								break;
-							}
+						//If this file has just been picked, we'll need to check it from the disk
+						if ($filepath = getPathOfUploadedFileInCacheDir($file)) {
+							$mimeType = documentMimeType($filepath);
+						
+						//Otherwise look for it in the files table
+						} else {
+							$mimeType = getRow('files', 'mime_type', $file);
+						}
+						
+						$isIcon = in($mimeType, 'image/vnd.microsoft.icon', 'image/x-icon');
+						$isGIFPNG = in($mimeType, 'image/gif', 'image/png');
+						
+						//Check all of the possible rules for image validation.
+						//Stop checking image validation rules for this field as soon
+						//as we find one picked file that doesn't match one rule
+						if ($must_be_image && !isImage($mimeType)) {
+							$field['error'] = $field['validation']['must_be_image'];
+							break;
+						
+						} else
+						if ($must_be_image_or_svg && !isImageOrSVG($mimeType)) {
+							$field['error'] = $field['validation']['must_be_image_or_svg'];
+							break;
+						
+						} else
+						if ($must_be_gif_or_png && !$isGIFPNG) {
+							$field['error'] = $field['validation']['must_be_gif_or_png'];
+							break;
+						
+						} else
+						if ($must_be_gif_ico_or_png && !($isGIFPNG || $isIcon)) {
+							$field['error'] = $field['validation']['must_be_gif_ico_or_png'];
+							break;
+						
+						} else
+						if ($must_be_ico && !$isIcon) {
+							$field['error'] = $field['validation']['must_be_ico'];
+							break;
 						}
 					}
 				}
@@ -375,6 +468,271 @@ function applyValidationFromTUIXOnTab(&$tab) {
 		}
 	}
 }
+
+
+class zenario_fea_tuix {
+	public static $customisationName = '';
+	public static $yamlFilePath = -1;
+}
+
+
+function translatePhraseInTUIX(&$tag, &$overrides, $path, &$moduleClass, &$languageId, &$scan, $i = false, $j = false, $k = false) {
+	
+	if ($k !== false) {
+		$phrase = &$tag[$i][$j][$k];
+	} elseif ($j !== false) {
+		$phrase = &$tag[$i][$j];
+	} elseif ($i !== false) {
+		$phrase = &$tag[$i];
+	} else {
+		$phrase = &$tag;
+	}
+	
+	//Don't try and translate numbers, e.g. the hour/minute select list
+	if (is_numeric($phrase)) {
+		return;
+	}
+	
+	if ($i !== false) {
+		$path .= '.'. $i;
+	}
+	if ($j !== false) {
+		$path .= '.'. $j;
+	}
+	if ($k !== false) {
+		$path .= '.'. $k;
+	}
+	
+	if ($scan) {
+		$overrides[$path] = $phrase;
+		
+	} else {
+		
+		if (isset($overrides[$path])) {
+			$phrase = $overrides[$path];
+		}
+		
+		$phrase = phrase($phrase, false, $moduleClass, $languageId, zenario_fea_tuix::$yamlFilePath);
+		//function phrase($code, $replace = array(), $moduleClass = 'lookup', $languageId = false, $backtraceOffset = 1) {
+	}
+}
+	
+function translatePhrasesInTUIXObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType = false) {
+	
+	if (isset($t[$i='title'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+	if (isset($t[$i='label'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+	if (isset($t[$i='tooltip'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+	if (isset($t[$i='disabled_tooltip'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+	
+	if ($objectType === false) {
+		if (isset($t[$i='subtitle'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+		if (isset($t[$i='no_items_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+		if (isset($t[$i='title_for_existing_records'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+		if (isset($t[$i='search_bar_placeholder'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+	
+	} else {
+		switch ($objectType) {
+			case 'lovs':
+				if (!empty($t) && is_array($t)) {
+					foreach ($t as $k => &$lov) {
+						$q = $p. '.'. $k;
+						translatePhrasesInTUIXObject($lov, $o, $q, $c, $l, $s, 'lov');
+					}
+				}
+				break;
+		
+			case 'lov':
+			case 'values':
+				if (is_string($t)) {
+					translatePhraseInTUIX($t, $o, $p, $c, $l, $s);
+				}
+				break;
+		
+			case 'tabs':
+				translatePhrasesInTUIXObjects(array('notices', 'fields', 'custom_template_fields'), $t, $o, $p, $c, $l, $s);
+				break;
+		
+			case 'notices':
+				if (isset($t[$i='message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+				if (isset($t[$i='multiple_select_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+				break;
+			
+			case 'fields':
+			case 'custom_template_fields':
+				translatePhrasesInTUIXObjects(array('values'), $t, $o, $p, $c, $l, $s);
+		
+				if (isset($t[$i='side_note'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+				if (isset($t[$i='note_below'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+				if (isset($t[$i='empty_value'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
+				if (isset($t[$i='snippet'][$j='label'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='validation'][$j='required'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+		
+				//Translate button values
+				if (isset($t['value']) && isset($t['type']) && ($t['type'] == 'button' || $t['type'] == 'toggle' || $t['type'] == 'submit')) {
+			
+					//Only translate the values if they look like text
+					if ('' !== trim(preg_replace(array('/\\{\\{.*?\\}\\}/', '/\\{\\%.*?\\%\\}/', '/\\<\\%.*?\\%\\>/', '/\\W/'), '', $t['value']))) {
+						translatePhraseInTUIX($t, $o, $p, $c, $l, $s, 'value');
+					}
+				}
+				break;
+		
+			case 'collection_buttons':
+			case 'item_buttons':
+			case 'inline_buttons':
+			case 'quick_filter_buttons':
+				if (isset($t[$i='confirm'][$j='title'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='confirm'][$j='message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='confirm'][$j='button_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='confirm'][$j='cancel_button_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='ajax'][$j='confirm'][$k='title'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j, $k);
+				if (isset($t[$i='ajax'][$j='confirm'][$k='message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j, $k);
+				if (isset($t[$i='ajax'][$j='confirm'][$k='button_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j, $k);
+				if (isset($t[$i='ajax'][$j='confirm'][$k='cancel_button_message'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j, $k);
+				break;
+		}
+	}
+}
+
+
+function translatePhrasesInTUIXObjects($tagNames, &$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false) {
+	
+	if (!is_array($tagNames)) {
+		$tagNames = array($tagNames);
+	}
+	
+	foreach ($tagNames as &$tagName) {
+		if (!empty($tags[$tagName]) && is_array($tags[$tagName])) {
+			foreach ($tags[$tagName] as $key => &$object) {
+				$p = $path. '.'. $tagName. '.'. $key;
+				translatePhrasesInTUIXObject(
+					$object, $overrides, $p, $moduleClass, $languageId, $scan, $tagName);
+			}
+		}
+	}
+}
+
+//Automatically translate any titles/labels in TUIX
+function translatePhrasesInTUIX(&$tags, &$overrides, $path, $moduleClass, $languageId = false, $scan = false) {
+	
+	$path = 'phrase.'. $path;
+	
+	translatePhrasesInTUIXObject(
+		$tags, $overrides, $path, $moduleClass, $languageId, $scan);
+	
+	translatePhrasesInTUIXObjects(
+		array('lovs', 'tabs', 'columns', 'collection_buttons', 'item_buttons', 'inline_buttons', 'quick_filter_buttons'),
+		$tags, $overrides, $path, $moduleClass, $languageId, $scan);
+}
+
+function lookForPhrasesInTUIX($path, $customisationName = '') {
+	
+	$overrides = array();
+	$tags = array();
+	$moduleFilesLoaded = array();
+	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $path, $customisationName);
+
+	if (!empty($tags[$path])) {
+		translatePhrasesInTUIX(
+			$tags[$path], $overrides, $path, false, false, true);
+	}
+	
+	return $overrides;
+}
+
+function setupOverridesForPhrasesInTUIX(&$box, &$fields, $path, $customisationName = '') {
+	
+	$ord = 1000;
+	
+	$fields['phrase_table_start'] = array(
+		'ord' => ++$ord,
+		'snippet' => array(
+			'html' => '
+				<table><tr>
+					<th>Phrase</th>
+					<th>Customise</th>
+				</tr>
+			'
+		)
+	);
+	
+	$valuesInDB = array();
+	loadAllPluginSettings($box, $valuesInDB);
+
+	
+	foreach (lookForPhrasesInTUIX($path, $customisationName) as $ppath => $defaultText) {
+		
+		$fields[$ppath] = array(
+			'plugin_setting' => array(
+				'name' => $ppath,
+				'value' => $defaultText,
+				'dont_save_default_value' => true
+			),
+			'ord' => ++$ord,
+            'same_row' => true,
+            'pre_field_html' => '
+				<tr style="margin-top: 5px;"><td style="padding-top: 10px;">
+					'. htmlspecialchars($defaultText). '
+					<br/>
+					<span style="font-size: 8px;">(<span style="font-family: \'Courier New\', Courier, monospace;"
+					>'. htmlspecialchars(substr($ppath, 7)). '</span>)</span>
+				</td><td style="padding-top: 10px;">
+			',
+            'type' => strpos(trim($defaultText), "\n") === false? 'text' : 'textarea',
+            'style' => 'width: 30em;',
+            'post_field_html' => '
+                </td></tr>
+            '
+        );
+        
+        if (isset($valuesInDB[$ppath])) {
+        	$fields[$ppath]['value'] = $valuesInDB[$ppath];
+        } else {
+        	$fields[$ppath]['value'] = $defaultText;
+        }
+	}
+	
+	$fields['phrase_table_end'] = array(
+		'ord' => ++$ord,
+		'same_row' => true,
+		'snippet' => array(
+			'html' => '
+                </table>'
+		)
+	);
+	
+	if (checkRowExists('languages', array('translate_phrases' => 1))) {
+		$mrg = array(
+			'def_lang_name' => htmlspecialchars(getLanguageName(setting('default_language'))),
+			'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
+		);
+		
+		$fields['phrase_table_end']['show_phrase_icon'] = true;
+		$fields['phrase_table_end']['snippet']['html'] .= '
+			<br/>
+			<span>'.
+			adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg).
+			'</span>';
+	}
+}
+
+
+function loadAllPluginSettings(&$box, &$valuesInDB) {
+	$valuesInDB = array();
+	if (!empty($box['key']['instanceId'])) {
+		$sql = "
+			SELECT name, `value`
+			FROM ". DB_NAME_PREFIX. "plugin_settings
+			WHERE instance_id = ". (int) $box['key']['instanceId']. "
+			  AND nest = ". (int) $box['key']['nest'];
+		$result = sqlQuery($sql);
+
+		while($row = sqlFetchAssoc($result)) {
+			$valuesInDB[$row['name']] = $row['value'];
+		}
+	}
+}
+
 
 //Sync updates from the client to the array stored on the server
 function syncAdminBoxFromClientToServer(&$serverTags, &$clientTags, $key1 = false, $key2 = false, $key3 = false, $key4 = false, $key5 = false, $key6 = false) {

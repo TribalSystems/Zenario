@@ -48,11 +48,14 @@ class zenario_common_features__admin_boxes__enable_site extends module_base_clas
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		$box['tabs']['site']['notices']['checked']['show'] = false;
-		if (!empty($fields['site/force_scan']['pressed'])) {
+		if (!empty($fields['site/clear_cache']['pressed'])) {
 			$box['tabs']['site']['notices']['checked']['show'] = true;
 			
-			checkForChangesInYamlFiles($forceScan = true);
-			checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true, $forceScan = true);
+			zenarioClearCache();
+			
+			$box['tabs']['site']['show_errors_after_field'] = 'desc2';
+		} else {
+			unset($box['tabs']['site']['show_errors_after_field']);
 		}
 	}
 

@@ -45,6 +45,7 @@ zenario__menu:
                 db_column: mp.parent_tag
             
             disable_periodic_refresh: true
+            label_format_for_picked_items: "[[menu_path]]"
             columns:
                 parent_id:
                     db_column: mp.parent_tag
@@ -58,6 +59,8 @@ zenario__menu:
                     title: Name/Text
                     db_column: IF (mi.id IS NULL, ms.section_name, mt.name)
                     show_by_default: true
+                    searchable: true
+                    search_column: mt.name
                 redundancy:
                     db_column: mi.redundancy
                 target_loc:
@@ -70,7 +73,6 @@ zenario__menu:
                     db_column: mi.content_type
                 target:
                     title: Target
-                    searchable: true
                     db_column: |
                         IF (mi.target_loc = 'int',
                             IF (c.id IS NOT NULL,
@@ -83,3 +85,5 @@ zenario__menu:
                         )
                     item_link: content_item_or_url
                     show_by_default: true
+                menu_path:
+                    title: Path

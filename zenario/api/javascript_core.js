@@ -54,24 +54,7 @@ zenario.lib(function(
 	//This is a shortcut function for initialising a new class.
 	//It just uses normal JavaScript class inheritance, but it makes the syntax
 	//a little more readable and friendly when creating a new class
-	window.extensionOf =
-	zenario.extensionOf = function(parent, initFun) {
-		
-		if (!parent) {
-			return initFun || (function() {});
-		}
-	
-		if (!initFun) {
-			initFun = function() {
-				parent.apply(this, arguments);
-			};
-		}
-	
-		initFun.prototype = new parent;
-		initFun.prototype.constructor = parent;
-	
-		return initFun;
-	};
+//	zenario.extensionOf = function(parent, initFun) {}
 	
 	//This is a shortcut function for accessing the prototype of a class so you
 	//can then define its methods.
@@ -82,7 +65,13 @@ zenario.lib(function(
 		return thisClass.prototype;
 	};
 	
-	
+	//JavaScript version of our PHP in() function, which itself is similar to MySQL's IN()
+	//Most of our functions use camelCase, but "in" is a reserved word in JavaScript.
+	//However as JavaScript is case-sensitive we have just made this upper-case as a work-around.
+	window.IN =
+	zenario.IN = function(value) {
+		return _.contains(arguments, value, 1);
+	};
 	
 	//Shortcut to document.getElementById()
 	window.get = 
@@ -142,12 +131,21 @@ zenario.lib(function(
 
 	window.engToBoolean =
 	zenario.engToBoolean = function(text) {
-		return text && (text = (text + '').toLowerCase()) && (text != '0' && text != 'false' && text != 'no' && text != 'off')? 1:0;
+		
+		if (typeof text == 'function') {
+			text = text();
+		}
+		
+		return text && (text = (text + '').trim().toLowerCase()) && (text != '0' && text != 'false' && text != 'no' && text != 'off')? 1:0;
 	};
 
 	window.htmlspecialchars =
 	zenario.htmlspecialchars = function(text, preserveLineBreaks, preserveSpaces) {
-	
+		
+		if (typeof text == 'function') {
+			text = text();
+		}
+		
 		if (text === undefined || text === null || text === false) {
 			return '';
 		}
@@ -321,14 +319,18 @@ zenario.lib(function(
 		}
 	
 		var phrases = zenario.nonAsyncAJAX(url, false, true, true);
+		
+		zenario.registerPhrases(vlpClass, phrases);
 	
+		return phrases;
+	};
+	
+	zenario.registerPhrases = function(vlpClass, phrases) {
 		if (!zenario.phrases[vlpClass]) {
 			zenario.phrases[vlpClass] = phrases;
 		} else {
 			$.extend(zenario.phrases[vlpClass], phrases);
 		}
-	
-		return phrases;
 	};
 
 	//Look up a Plugin's VLP Phrase
@@ -343,13 +345,23 @@ zenario.lib(function(
 			zenario.phrases[vlpClass][text] = text;
 		}
 	
-		if (!mrg) {
-			mrg = {};
+		return zenario.applyMergeFields(zenario.phrases[vlpClass][text], mrg);
+	};
+
+	zenario.nphrase = function(vlpClass, text, pluralText, n, mrg) {
+		if (pluralText !== undefined && (1*n) !== 1) {
+			return zenario.phrase(vlpClass, pluralText, mrg);
+		} else {
+			return zenario.phrase(vlpClass, text, mrg);
 		}
+	};
+
+	zenario.applyMergeFields = function(text, mrg) {
+		mrg = mrg || {};
 	
 		var trans = '',
 			b,
-			bits = ('' + zenario.phrases[vlpClass][text]).split(/\[\[(.*?)\]\]/g);
+			bits = ('' + text).split(/\[\[(.*?)\]\]/g);
 	
 		foreach (bits as b) {
 			if (b % 2) {
@@ -360,17 +372,9 @@ zenario.lib(function(
 				trans += bits[b];
 			}
 		}
-	
+		
 		return trans;
 	};
-
-	zenario.nphrase = function(vlpClass, text, pluralText, n, mrg) {
-		if (pluralText !== undefined && (1*n) !== 1) {
-			return zenario.phrase(vlpClass, pluralText, mrg);
-		} else {
-			return zenario.phrase(vlpClass, text, mrg);
-		}
-	}
 
 
 	//Link to a content item
@@ -440,6 +444,8 @@ zenario.lib(function(
 		}
 	};
 
+
+//	zenario.microTemplate = function(template, data, filter) {};
 
 
 
@@ -857,7 +863,7 @@ zenario.lib(function(
 			zenario.urlRequest(requests);
 	};
 	
-	zenario.showSingleSlotLink = function(moduleClassName, slotNameOrContainedElement, requests, hideLayout) {
+	zenario.showSingleSlotLink = function(moduleClassName, slotNameOrContainedElement, requests, hideLayout, cID, cType) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
 			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
 		
@@ -865,7 +871,7 @@ zenario.lib(function(
 			hideLayout = true;
 		}
 		
-		return zenario.linkToItem(zenario.cID, zenario.cType,
+		return zenario.linkToItem(cID || zenario.cID, cType || zenario.cType,
 			'moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showSingleSlot' +
 			(hideLayout? '&hideLayout=1' : '') +
 		  (zenario.adminId?
@@ -885,6 +891,33 @@ zenario.lib(function(
 	zenario.showStandalonePageLink = function(moduleClassName, requests) {
 		return URLBasePath + 
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showStandalonePage' +
+			zenario.urlRequest(requests);
+	};
+	
+	
+	zenario.visitorTUIXLink = function(moduleClassName, path, customisationName, requests, mode) {
+		
+		return URLBasePath +
+			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) +
+			'&path=' + encodeURIComponent(path) +
+			'&_cn=' + encodeURIComponent(customisationName || '') +
+			'&method_call=' + (mode == 'format' || mode == 'validate' || mode == 'save'? mode : 'fill') + 'VisitorTUIX' +
+			zenario.urlRequest(requests);
+	};
+	
+	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
+		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
+			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
+		
+		return zenario.visitorTUIXLink(moduleClassName, path, customisationName, undefined, mode) +
+			'&cID=' + zenario.cID +
+			'&cType=' + zenario.cType +
+		  (zenario.adminId?
+			'&cVersion=' + zenario.cVersion
+		   : '') +
+			'&instanceId=' + instanceId +
+			'&slotName=' + slotName +
+			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
 

@@ -11,8 +11,8 @@
 
 
 .organizer_item_image.zenario_email_template_panel {
-	background: center 4px no-repeat;
-	background-image: url('images/email-template-list-v2.png');
+	background: center center no-repeat;
+	background-image: url('images/icon-email-templates-list-dark.png');
 }
 
 .zenario_email_template_manager_log__failed span {

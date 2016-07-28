@@ -48,17 +48,21 @@ if ($level == 1) {
 	}
 }
 
+$controls['info']['slot_name']['label'] = adminPhrase('Slot class name: <span>[[slotName]]</span>', array('slotName' => $slotName));
+
 switch ($level) {
 	case 1:
 		$pageMode = array('edit' => true);
 		$couldChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType);
 		$canChange = checkPriv('_PRIV_MANAGE_ITEM_SLOT', $cID, $cType, $cVersion);
+		$controls['info']['in_this_slot']['label'] = adminPhrase('In this slot on this content item:');
 		
 		break;
 	
 	case 2:
 		$pageMode = array('layout' => true);
 		$couldChange = $canChange = checkPriv('_PRIV_MANAGE_TEMPLATE_SLOT');
+		$controls['info']['in_this_slot']['label'] = adminPhrase('In this slot on this layout:');
 		
 		break;
 	
@@ -69,10 +73,9 @@ switch ($level) {
 $settingsPageMode = $isVersionControlled? array('edit' => true) : $pageMode;
 
 
+
 //Format options if the slot is empty
 if (!$moduleId) {
-	$controls['info']['slot_name']['label'] = adminPhrase('[[slotName]]:', array('slotName' => $slotName));
-	
 	$pageMode = array('edit' => true, 'layout' => true);
 	
 	if (!$level) {
@@ -107,7 +110,6 @@ if (!$moduleId) {
 	
 
 } else {
-	$controls['info']['slot_name']['label'] = adminPhrase('In [[slotName]]:', array('slotName' => $slotName));
 	
 	//Get information from the plugin itself
 	
@@ -115,7 +117,7 @@ if (!$moduleId) {
 	//Show the wrapping html, id and css class names for the slot
 	if (isset(cms_core::$slotContents[$slotName]['class']) && !empty(cms_core::$slotContents[$slotName]['class'])) {
 		$a = array();
-		cms_core::$slotContents[$slotName]['class']->tApiGetCachableVars($a);
+		cms_core::$slotContents[$slotName]['class']->zAPIGetCachableVars($a);
 		$framework = $a[0];
 		$cssClass = $a[4];
 		

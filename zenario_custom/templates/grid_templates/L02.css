@@ -1,9 +1,9 @@
+/*
+ * 769 - 1140 fluid responsive Grid (12 cols)
+ * This file was created by the Zenario Gridmaker system, DO NOT EDIT
+ * Based on the 960 Grid System, see zenario/libraries/mit/960gs/README.md for more info
+*/
 
-/*	769 - 1140 fluid responsive Grid (12 cols)
-	Based on the 960 Grid System from http://960.gs/ (Licensed under MIT)  */
-
-
-/*	Hide grid-specific elements and responsive slots when not displaying the grid  */
 
 .grid_clear,
 .grid_space,
@@ -13,12 +13,8 @@
 }
 
 
-/*	Only show the grid if the screen is wide enough  */
-
  @media all and (min-width: 769px) {
 
-
-/*	Main container  */
 
 body {
 	min-width: 769px;
@@ -31,18 +27,12 @@ body {
 	padding: 0;
 }
 
-
-/*	Grid cells and gutters  */
-
 .container_12 .span {
 	display: inline;
 	float: left;
 	margin-left: 2.1%;
 	margin-right: 2.1%;
 }
-
-
-/*	Fluid widths and margins for cells (and any nested cells)  */
 
 .container_12 .span {
 	margin-left: 2.1%;
@@ -93,9 +83,6 @@ body {
 	width: 91.317%;
 }
 
-
-/*	Full width cells  */
-
 .container_12 .span1_1 {
 	width: 100%;
 }
@@ -104,9 +91,6 @@ body {
 	width: 100%;
 }
 
-
-/*	The outermost gutters of the page  */
-
 .container_12 .alpha {
 	margin-left: 0%;
 }
@@ -114,9 +98,6 @@ body {
 .container_12 .omega {
 	margin-right: 0%;
 }
-
-
-/*	Remove the outermost gutters from nested cells  */
 
 .container .span .alpha {
 	margin-left: 0;
@@ -127,18 +108,10 @@ body {
 	margin-left: -50px;
 }
 
-
-/*	Right-float the right-most cell - this hack is needed as old browsers will have rounding errors in the total width  */
-
 .container .omega {
 	margin-left: -50px;
 	float: right;
 }
-
-
-/*	Make sure the <div>s clear properly, and stop empty slots collapsing the grid.
-	Code used from http://sonspring.com/journal/clearing-floats
-	and http://www.yuiblog.com/blog/2010/09/27/clearfix-reloaded-overflowhidden-demystified  */
 
 .container:before,
 .container:after {
@@ -167,17 +140,10 @@ body {
 	clear: both;
 }
 
-
-/*	Fix a problem in IE 6/7.
-	This code could be moved to an IE-specific stylesheet.  */
-
 body.ie6 .container,
 body.ie7 .container {
 	zoom: 1;
 }
-
-
-/*	Only show certain responsive slots when not displaying the grid  */
 
 .container .responsive_only {
 	display: none;

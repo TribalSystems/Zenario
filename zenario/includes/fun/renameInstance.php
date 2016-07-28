@@ -129,23 +129,30 @@ if ($createNewInstance) {
 	
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
-	//If we were saving from a nested Plugin, convert its id to the new format
-	if ($nest) {
-		$sql = "
-			SELECT np_new.id AS nest
-			FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
-			INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
-			   ON np_new.instance_id = ". (int) $instanceId. "
-			  AND np_old.tab = np_new.tab
-			  AND np_old.ord = np_new.ord
-			  AND np_old.module_id = np_new.module_id
-			WHERE np_old.instance_id = ". (int) $oldInstanceId. "
-			  AND np_old.id = ". (int) $nest;
+	//Copy any nested plugins
+	$sql = "
+		SELECT np_old.id AS old_id, np_new.id AS new_id
+		FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old
+		INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np_new
+		   ON np_new.instance_id = ". (int) $instanceId. "
+		  AND np_old.tab = np_new.tab
+		  AND np_old.ord = np_new.ord
+		  AND np_old.module_id = np_new.module_id
+		WHERE np_old.instance_id = ". (int) $oldInstanceId;
+	
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		//If we were saving from a nested Plugin, convert its id to the new format
+		if ($nest
+		 && $nest == $row['old_id']) {
+			$nest = $row['new_id'];
+		}
 		
-		$result = sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
-		$row = sqlFetchAssoc($result);
-		$nest = $row['nest'];
+		//Copy any plugin CSS files
+		managePluginCSSFile('copy', $oldInstanceId, $row['old_id'], $instanceId, $row['new_id']);
 	}
+	
+	managePluginCSSFile('copy', $oldInstanceId, false, $instanceId);
 	
 	sendSignal('eventPluginInstanceDuplicated', array('oldInstanceId' => $oldInstanceId, 'newInstanceId' => $instanceId));
 	

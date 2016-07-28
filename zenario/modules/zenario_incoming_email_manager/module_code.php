@@ -459,12 +459,12 @@ class zenario_incoming_email_manager extends module_base_class {
 					$details['module_display_name'] = getModuleDisplayName($details['module_id']);
 					$box['title'] = adminPhrase('Viewing/Editing Incoming Email Handler "[[job_name]]" for the Module [[module_display_name]]', $details);
 					
-					$box['tabs']['reporting']['fields']['log_on_error']['label'] = adminPhrase('Log errors when processing email:');
-					$box['tabs']['reporting']['fields']['email_on_error']['label'] = adminPhrase('Send email notification when there is an error processing an email:');
-					$box['tabs']['reporting']['fields']['log_on_action']['label'] = adminPhrase('Log processed email:');
-					$box['tabs']['reporting']['fields']['email_on_action']['label'] = adminPhrase('Send email notification when an email is processed:');
-					$box['tabs']['reporting']['fields']['log_on_no_action']['label'] = adminPhrase('Log email that could not be processed:');
-					$box['tabs']['reporting']['fields']['email_on_no_action']['label'] = adminPhrase('Send email notification when an email could not be processed:');
+					$box['tabs']['reporting']['fields']['log_on_error']['label'] = adminPhrase('Log errors when processing email');
+					$box['tabs']['reporting']['fields']['email_on_error']['label'] = adminPhrase('Send email notification when there is an error processing an email');
+					$box['tabs']['reporting']['fields']['log_on_action']['label'] = adminPhrase('Log processed email');
+					$box['tabs']['reporting']['fields']['email_on_action']['label'] = adminPhrase('Send email notification when an email is processed');
+					$box['tabs']['reporting']['fields']['log_on_no_action']['label'] = adminPhrase('Log email that could not be processed');
+					$box['tabs']['reporting']['fields']['email_on_no_action']['label'] = adminPhrase('Send email notification when an email could not be processed');
 				}
 				
 				//set enable always

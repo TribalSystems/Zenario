@@ -11,6 +11,7 @@ description: |
     <p>This is a Module which reads RSS and Atom feeds from third-party sources and displays them on your site.</p>
             <p>Includes caching feature to avoid unnecessary hits on the source website.</p>
             <p>Contains many options for configuring how the feed is displayed. You can specify date and time formatting, what amount of feed's content to display, the target of any links, and how long to cache.</p>
+            <p>You can add a text filter to the incoming feed so that only certain items are displayed. Using a regular expression (text filter) applied to the title, description or date of the incoming data, you can specify that only the matching items are displayed.</p>
 category: pluggable
 keywords: atom, feed, news, newsfeed, rss
 vlp_class_name: zenario_feed_reader

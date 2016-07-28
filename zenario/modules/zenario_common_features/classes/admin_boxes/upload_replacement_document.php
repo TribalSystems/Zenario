@@ -92,8 +92,11 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				'file_id' => $newFileId,
 			);
 			
+			$documentProperties['filename'] = $filename;
+			$documentProperties['file_datetime'] = date("Y-m-d H:i:s");
+
 			if (!$values['file/keep_meta_data']) {
-				$documentProperties['filename'] = $filename;
+				updateRow('documents', array('title' => ""), array('id' => $documentId));
 				deleteRow('documents_custom_data', $documentId);
 			}
 			
@@ -109,6 +112,7 @@ class zenario_common_features__admin_boxes__upload_replacement_document extends 
 				}
 			}
 			setRow('documents', $documentProperties, $documentId);
+			updateRow('documents', array('privacy' => 'public'), $documentId);
 		}
 	}
 }

@@ -33,8 +33,7 @@ class zenario_location_listing extends module_base_class {
 	var $pageSize;
 	var $pageCount;
 	var $mergeFields = array();
-	var $subSections = array();
-
+	protected $data;
 
 
 	public function init() {
@@ -205,7 +204,6 @@ class zenario_location_listing extends module_base_class {
 
 	public function showSlot() {
 		$mergeFields = array();
-		$subSections = array();
 		if ($numRows = $this->getLocationCount()) {
 			
 			$this->pageCount = (int) ceil($numRows / $this->pageSize);
@@ -220,11 +218,11 @@ class zenario_location_listing extends module_base_class {
 			for ($i = 1; $i <= $this->pageCount; ++$i){
 				$pages[$i] = '&page='. $i;
 			}
-			if ($mergeFields['Title'] = $this->setting('title')) {
-				$subSections = array('Location_Listing_Title' => true);
-			}
-			$this->frameworkHead('Location_List','Location_Row_On_List',$mergeFields, $subSections);
-
+			
+			
+			$this->data['Title'] = $this->setting('title');
+			$this->data['show_sticky_images'] = $this->setting('show_sticky_images');
+			
 			$lastCountryCode = "";
 			while($row=sqlFetchAssoc($result)){
 				$mergeFields = array();
@@ -236,16 +234,18 @@ class zenario_location_listing extends module_base_class {
 					if ($lastCountryCode != $row['country_id']) {
 						$lastCountryCode = $row['country_id'];
 						$mergeFields['Country_Code_Section'] = $lastCountryCode;
-						$subSections['Country_Section_Anchor'] = true;
+						$mergeFields['Country_Section_Anchor'] = true;
 					}
 				}
+				
+				
+				 
 
-				if ($row['image_id']) {
+				if ($row['image_id'] && $this->setting('show_sticky_images')) {
 					$mergeFields['Link_To_Image'] =
 					$mergeFields['Image_Width'] =
 					$mergeFields['Image_Height'] = '';
-	
-					imageLink($mergeFields['Image_Width'], $mergeFields['Image_Height'], $mergeFields['Link_To_Image'], $row['image_id'], 150, 100);
+					imageLink($mergeFields['Image_Width'], $mergeFields['Image_Height'], $mergeFields['Link_To_Image'], $row['image_id'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'));
 				}
 
 				$cID = $row['equiv_id'];
@@ -257,46 +257,45 @@ class zenario_location_listing extends module_base_class {
 					$mergeFields['Link_To_Location'] = htmlspecialchars($linkToLocation);
 					
 					if ($row['image_id']) {
-						$subSections['Location_Image_With_Link']=true;				
+						$mergeFields['Location_Image_With_Link']=true;				
 					} else {
-						$subSections['Default_Image_With_Link']=true;				
+						$mergeFields['Default_Image_With_Link']=true;				
 					}
 				
 				} else {
 					if ($row['image_id']) {
-						$subSections['Location_Image_No_Link']=true;				
+						$mergeFields['Location_Image_No_Link']=true;				
 					} else {
-						$subSections['Default_Image_No_Link']=true;				
+						$mergeFields['Default_Image_No_Link']=true;				
 					}
 				}
 
 				if ($row['latitude'] && $row['longitude']) {
-					$subSections['Location_Map'] = true;
+					$mergeFields['Location_Map'] = true;
 					$mergeFields['Map_URL'] = $this->showFloatingBoxLink("&map_zoom=" . $row['map_zoom'] ."&map_center_lat=" . $row['latitude'] . "&map_center_lng=" . $row['longitude'] . "&location_id=" . (int) $row['id']);
 				}
 				
 				foreach ($row as $key => $value) {
 					$fieldName = 'Location_'. str_replace(' ', '_', ucwords(str_replace('_', ' ', $key)));
 					$mergeFields[$fieldName] = htmlspecialchars($value);
-					$subSections[$fieldName] = (bool) $value;
 				}
 				
 				if (isset($mergeFields['Location_Summary'])) {
 					$mergeFields['Location_Description'] = nl2br($mergeFields['Location_Summary']);
-					$subSections['Location_Description'] = true;
 				}
 				
-				$this->framework('Location_Row_On_List',$mergeFields,$subSections);
+				$this->data['Location_Row_On_List'][] =$mergeFields;
 			}
 			
-			$mergeFields['Pagination'] = '';
-			$this->pagination('pagination', $this->page, $pages, $mergeFields['Pagination']);
 			
-			$this->frameworkFoot('Location_List','Location_Row_On_List',$mergeFields);
+			$this->data['Pagination']='';
+			$this->pagination('pagination', $this->page, $pages, $this->data['Pagination']);
 		} else {
-			$mergeFields['Msg_Empty_List']=	$this->phrase ('_NO_LOCATIONS_TO_DISPLAY');
-			$this->framework('No_Location',$mergeFields,array());
+			$this->data['Msg_Empty_List']=	$this->phrase('_NO_LOCATIONS_TO_DISPLAY');
 		}
+		
+		$this->twigFramework($this->data);
+		
 	}
 
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
@@ -358,6 +357,29 @@ class zenario_location_listing extends module_base_class {
 				} else {
 					$box['tabs']['first_tab']['fields']['region']['hidden'] = true;
 				}
+				
+				//Sticky image
+				$box['tabs']['first_tab']['fields']['width']['hidden'] = true;
+				$box['tabs']['first_tab']['fields']['height']['hidden'] = true;
+				if($values['first_tab/show_sticky_images'] && $values['first_tab/canvas']){
+					switch($values['first_tab/canvas']){
+						case 'fixed_width':
+							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
+							break;
+						case 'fixed_height':
+							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
+							break;
+						case 'fixed_width_and_height':
+							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
+							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
+							break;
+						case 'resize_and_crop':
+							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
+							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
+							break;
+					}
+				}
+				
 				break;
 		}
 	}
@@ -367,7 +389,7 @@ class zenario_location_listing extends module_base_class {
 		echo '
 			<html>
 				<head>
-					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
+					<script id="google_api" type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key')) . '"></script>
 				</head>
 				<body onload="
 					function initMap(elId,lat,lng,zoom) {

@@ -20,16 +20,15 @@ site_settings:
                 email_address_admin:
                     site_setting:
                         name: email_address_admin
-                    label: 'Admin Email Address:'
+                    label: 'Notifications email address:'
                     type: text
                     note_below: |
                         Email address to which general administrative emails should be sent.
-                        This is used during an Extranet User signup and other places.
                     validation:
-                        required: Please enter an Email Address.
-                        email: Please enter a valid Email Address.
+                        required: Please enter an email eddress.
+                        email: Please ensure the email address is in a valid format.
                 email_address_system:
-                    label: 'System Email Address:'
+                    label: 'Support email address:'
                     type: text
                     read_only: true
                     note_below: |
@@ -39,30 +38,28 @@ site_settings:
                 email_address_from:
                     site_setting:
                         name: email_address_from
-                    label: 'Email Address &quot;From&quot;:'
+                    label: '&quot;From&quot; email address:'
                     type: text
-                    value: myname@example.com
+                    value: yourname@example.com
                     note_below: |
                         Email address which all server-generated emails should appear to come from.
                             (Some anti-spam systems can wrongly identify server-generated emails as spam,
                              so you might want to choose a special address here and tell your anti-spam software about it.
                              You might also use a real email account if you want to trap undeliverable messages sent to users,
                              so that you catch any bounces via this account.)
-                        <br/>
-                            If you enter your own SMTP details on the SMTP tab then the &amp;quot;From&amp;quot; address
-                            may be overwritten by your SMTP server.
                     validation:
-                        required: 'Please enter an Email Address &quot;From&quot;.'
-                        email: 'Please enter a valid Email Address &quot;From&quot;.'
+                        required: 'Please enter an email address &quot;From&quot;.'
+                        email: 'Please ensure this &quot;From&quot; email address is in a valid format.'
                 email_name_from:
                     site_setting:
                         name: email_name_from
-                    label: 'Email Name &quot;From&quot;:'
+                    label: '&quot;From&quot; name:'
                     type: text
-                    value: Manager
-                    note_below: 'A real name associated with the Email Address &quot;From&quot;.'
+                    value: Zenario website
+                    note_below: |
+                        A name associated with the &quot;From&quot; email address. If you enter your own SMTP details on the SMTP tab then this may be overwritten by your SMTP server.
                     validation:
-                        required: Please enter a Name.
+                        required: Please enter a name.
                 warning_email_frequency:
                     site_setting:
                         name: warning_email_frequency
@@ -256,6 +253,7 @@ site_settings:
                             You can add more by editing the <code>zenario_custom/site_description.yaml</code> file.
                 email_style_formats:
                     type: code_editor
+                    dont_trim: true
                     language: yaml
                     style: |
                         height: 30em;

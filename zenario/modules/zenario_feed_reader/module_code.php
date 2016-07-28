@@ -46,14 +46,19 @@ class zenario_feed_reader extends module_base_class {
 	protected $link = '';
 	protected $attributes = '';
 	protected $linkTarget = '';
-
 	protected $feedTitle = '';
+	protected $field = '';
+	protected $pattern = '';
 	
 	function init() {
 		
 		if ( 'new_window' == $this->setting( 'target' ) ) {
 			$this->linkTarget = ' target="_blank"';
 		}
+		
+		$this->field = $this->setting( 'regexp_field' );
+		$this->pattern = '/'. $this->setting( 'regexp' ) . '/';
+		
 		return true;
 	}
 
@@ -84,36 +89,44 @@ class zenario_feed_reader extends module_base_class {
 
 	function endElementHandler( $xmlParser, $tagName ) {
 		if ( $this->insideItem && ( 'ITEM' == $tagName || 'ENTRY' == $tagName ) ) {
-			$this->link = trim( $this->link );
-			if (  empty( $this->link ) ) {	
-				array_push( $this->content, array( 
-					'title' => htmlspecialchars( trim( $this->title ) ),
-					'description' => ( trim( $this->description) ),
-					'date' =>  trim( $this->date ) ) ); 
+			if ( ( $this->field == 'title' && ! preg_match( $this->pattern, $this->title ) ) 
+				|| ( $this->field == 'description' && ! preg_match( $this->pattern, $this->description ) )
+				|| ( $this->field == 'date' && ! preg_match( $this->pattern, $this->date ) )
+				|| ( $this->field == 'title_or_description' && ! preg_match( $this->pattern, $this->title . $this->description ) ) 
+				) {
+				//$this->itemCount++;
 			} else {
-				array_push( $this->content, array( 
-					'title' => '<a href="' . trim( $this->link ) . '"' . $this->linkTarget . '>'. htmlspecialchars( trim( $this->title ) ) . '</a>',
-					'description' => ( trim( $this->description) ),
-					'date' =>  trim( $this->date ) ) ); 
-			}
-			
-			if ($this->setting('rss_date_format')=='backslashed_american'){
-				$dateFeedContent = trim($this->date);
-			}elseif($this->setting('rss_date_format')=='backslashed_european'){
-				$dateFeedContent = explode('/',trim($this->date));
-				if (count($dateFeedContent)==3){
-					$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
-				} else{
-					$dateFeedContent=$feedContent['date'];
+				$this->link = trim( $this->link );
+				if (  empty( $this->link ) ) {	
+					array_push( $this->content, array( 
+						'title' => htmlspecialchars( trim( $this->title ) ),
+						'description' => ( trim( $this->description) ),
+						'date' =>  trim( $this->date ) ) ); 
+				} else {
+					array_push( $this->content, array( 
+						'title' => '<a href="' . trim( $this->link ) . '"' . $this->linkTarget . '>'. htmlspecialchars( trim( $this->title ) ) . '</a>',
+						'description' => ( trim( $this->description) ),
+						'date' =>  trim( $this->date ) ) ); 
 				}
-			}elseif($this->setting('rss_date_format')=='autodetect'){
-				$dateFeedContent = trim($this->date);
-			} else {
-				$dateFeedContent = trim($this->date);
+
+				if ($this->setting('rss_date_format')=='backslashed_american'){
+					$dateFeedContent = trim($this->date);
+				}elseif($this->setting('rss_date_format')=='backslashed_european'){
+					$dateFeedContent = explode('/',trim($this->date));
+					if (count($dateFeedContent)==3){
+						$dateFeedContent=$dateFeedContent[1] . '/' . $dateFeedContent[0] . '/' . $dateFeedContent[2] ;
+					} else{
+						$dateFeedContent=$feedContent['date'];
+					}
+				}elseif($this->setting('rss_date_format')=='autodetect'){
+					$dateFeedContent = trim($this->date);
+				} else {
+					$dateFeedContent = trim($this->date);
+				}
+				$this->newsDates[] = strtotime($dateFeedContent);
+				$this->newsTitles[] = $this->title;
 			}
-			$this->newsDates[] = strtotime($dateFeedContent);
-			$this->newsTitles[] = $this->title;
-			
+
 			$this->title = '';
 			$this->description = '';
 			$this->link = '';
@@ -122,6 +135,8 @@ class zenario_feed_reader extends module_base_class {
 			$this->insideItem = false;
 		}
 	}
+
+
 
 	function characterDataHandler( $xmlParser, $data ) {
 		if ( $this->insideItem ) {
@@ -293,11 +308,11 @@ class zenario_feed_reader extends module_base_class {
 			case 'plugin_settings':
 				$box['tabs']['display']['fields']['date_format']['hidden'] = $values['display/show_date_time']=='dont_show';
 				$box['tabs']['display']['fields']['feed_title']['hidden'] = $values['display/title']!='use_custom_title';
+				$box['tabs']['filtering']['fields']['regexp']['hidden'] = $values['filtering/regexp_field']=='do_no_filter';
 				break;
 				
 		}
 	}
-
 }
 
 ?>

@@ -1,0 +1,222 @@
+<% if (zenarioA.adminSettings && zenarioA.adminSettings.show_dev_tools) { %>
+	<div class="zenario_debug" style="z-index: 1;" onclick="{{m.that.globalName}}.debug();"><div></div></div>
+<% } %>
+
+<div class="zfea zfea_{{m.that.path|escape}} {{m.tuix.css_class|escape}}">
+	<% if (m.tuix.title !== undefined) { %>
+		<h1>{{m.tuix.title|escape}}</h1>
+	<% } %>
+	
+	<div class="zfea_back_button">
+		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'back';} )}}
+	</div>
+	<div class="zfea_buttons zfea_top_buttons">
+		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'top';} )}}
+	</div>
+	
+	<% if (!m.tuix.hide_search_bar && (m.tuix.sortedItems.length > 0 || (!m.tuix.sortedItems.length && m.that.request.search))) { %>
+		<form
+			id="search_form_{{m.that.containerId}}"
+			class="search_form"
+			onsubmit="return {{m.that.globalName}}.doSearch(event);"
+		>
+			<input
+				type="search"
+				name="search"
+				id="search_{{m.that.containerId}}"
+				value="{{zenario.htmlspecialchars(m.that.request.search)}}"
+				placeholder="{{m.tuix.search_bar_placeholder|escape}}"
+				onsearch="return {{m.that.globalName}}.doSearch(event);"
+			/>
+			<input type="submit" value="{{m.that.phrase('Search')}}"/>
+		
+			<% if (m.that.request.search != undefined && m.that.request.search != '') { %>
+				<input type="button" value="{{m.that.phrase('Clear search')}}" onclick="
+					{{m.that.globalName}}.go(this, {search: '', page: ''});
+					return false;
+				"/>
+			<% } %>
+		</form>
+	<% } %>
+
+	<% var ci, col, chi, child, bi, button, ii, item; %>
+	<div class="zfea_buttons zfea_search_buttons">
+		{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return button.location == 'search';} )}}
+	</div>
+
+	<% if (m.tuix.hide_column_headings) { %>
+		<div class="zfea_buttons sorted_buttons">
+			{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return !button.location;} )}}
+		</div>
+	<% } %>
+
+	<% if (m.tuix.subtitle !== undefined) { %>
+		<div class="subtitle">
+			<h1>{{m.tuix.subtitle|escape}}</h1>
+		</div>
+	<% } %>
+	
+	<table class="table_list">
+		<tr>
+			<% if (!m.tuix.hide_column_headings) { %>
+				<% if (!m.that.responsive) { %>
+					<% foreach (m.tuix.sortedColumns as ci => col) { %>
+						<th>{{col.title|escape}}</th>
+					<% } %>
+				<% } %>
+				<% if (m.tuix.sortedCollectionButtons.length || m.tuix.sortedItemButtons.length) { %>
+					<% if (!m.that.responsive) { %>
+						<th class="sorted_buttons">
+					<% } else { %>
+						<th class="sorted_buttons" colspan="2">
+					<% } %>
+						{{m.that.microTemplate(m.that.mtPrefix + '_button', m.tuix.sortedCollectionButtons, button => {return !button.location;} )}}
+					</th>
+				<% } %>
+			<% } %>
+		</tr>
+		<% if (!m.that.responsive) { %>
+			<% foreach (m.tuix.sortedItems as ii => item) { %>
+				<tr class="zfea_row {{item.row_class|escape}}">
+					<% foreach (m.tuix.sortedColumns as ci => col) { %>
+						<td
+							id="{{('zfea_' + m.that.slotName + '_row_' + ii + '_col_' + ci)|escape}}"
+							data-label="{{col.title|escape}}" 
+							style="
+								<% if (col.align_right) { %>
+									text-align: right;
+								<% } %>
+							"
+						>
+
+						
+							<div class="col_value col_value_for__{{col.id|escape}}">
+								{{m.that.microTemplate(m.that.mtPrefix + '_list_cell', {col: col, item: item})}}
+						
+								<% if (col.children) { %>
+									<% foreach (col.children as chi => child) { %>
+								
+										</div><div class="col_child_value  col_value_for__{{child.id|escape}}">
+											<% if (child.title) { %>
+												<label>{{child.title|escape}}</label>
+											<% } %>
+										
+											{{m.that.microTemplate(m.that.mtPrefix + '_list_cell', {col: child, item: item})}}
+									<% } %>
+								<% } %>
+							</div>
+						</td>
+					<% } %>
+					<% if (item.sortedItemButtons.length) { %>
+						<td class="sorted_buttons">
+							<% foreach (item.sortedItemButtons as bi => button) { %>
+								<a
+									<% if (button.href) { %>
+										href="{{button.href|escape}}"
+									<% } %>
+									<% if (button.onclick) { %>
+										onclick="var itemId = '{{item.id|escape}}'; {{button.onclick|escape}}"
+									<% } %>
+									class="{{button.css_class|escape}}"
+									title="{{button.tooltip|escape}}"
+								>{{button.label|escape}}</a>
+							<% } %>
+						</td>
+					<% } %>
+				</tr>
+			<% } %>
+		<% } else { %>
+			<% foreach (m.tuix.sortedItems as ii => item) { %>
+				<% foreach (m.tuix.sortedColumns as ci => col) { %>
+					<tr class="responsive_col">
+						<td><label>{{col.title|escape}}</label></td>
+						<td
+							style="
+								<% if (col.align_right) { %>
+									text-align: right;
+								<% } %>
+							"
+						>
+							<div class="col_value col_value_for__{{col.id|escape}}">
+								{{m.that.microTemplate(m.that.mtPrefix + '_list_cell', {col: col, item: item})}}
+							</div>
+						</td>
+					</tr>
+					<% if (col.children) { %>
+						<% foreach (col.children as chi => child) { %>
+							<tr class="responsive_col responsive_child_col">
+								<td><label>{{child.title|escape}}</label></td>
+								<td
+									style="
+										<% if (child.align_right) { %>
+											text-align: right;
+										<% } %>
+									"
+								>
+									<div class="col_child_value  col_value_for__{{child.id|escape}}">
+										{{m.that.microTemplate(m.that.mtPrefix + '_list_cell', {col: child, item: item})}}
+									</div>
+								</td>
+							</tr>
+						<% } %>
+					<% } %>
+				<% } %>
+				<% if (item.sortedItemButtons.length) { %>
+					<tr><td colspan="2" class="sorted_buttons">
+						<% foreach (item.sortedItemButtons as bi => button) { %>
+							<a
+								<% if (button.href) { %>
+									href="{{button.href|escape}}"
+								<% } %>
+								<% if (button.onclick) { %>
+									onclick="var itemId = '{{item.id|escape}}'; {{button.onclick|escape}}"
+								<% } %>
+								class="{{button.css_class|escape}}"
+								title="{{button.tooltip|escape}}"
+							>{{button.label|escape}}</a>
+						<% } %>
+					</td></tr>
+				<% } %>
+			<% } %>
+		<% } %>
+		<% if (m.tuix.sortedItems.length == 0) { %>
+			<% if (!m.tuix.hide_search_bar && m.that.request.search) { %>
+				<% if (m.tuix.no_items_in_search_message) { %>
+					<tr><td>{{m.tuix.no_items_in_search_message}}</td></tr>
+				<% } %>
+			<% } else { %>
+				<% if (m.tuix.no_items_message) { %>
+					<tr><td>{{m.tuix.no_items_message}}</td></tr>
+				<% } %>
+			<% } %>
+		<% } %>
+		
+		
+	</table>
+	
+	<div
+		class="zea_pagination"
+		id="pagination_{{m.that.containerId}}"
+		style="display: none;"
+	>
+	
+	    <!-- optional left control buttons --> 
+	    <nav id="pagination_{{m.that.containerId}}_m_left"></nav><nav id="pagination_{{m.that.containerId}}_o_left"></nav> 
+	
+	    <div class='paginator_p_wrap'> 
+	        <div class='paginator_p_bloc'> 
+	            <!--<a class='paginator_p'></a> // page number : dynamically added --> 
+	        </div> 
+	    </div> 
+	
+	    <!-- optional right control buttons --> 
+	    <nav id="pagination_{{m.that.containerId}}_o_right"></nav><nav id="pagination_{{m.that.containerId}}_m_right"></nav> 
+	
+	
+	    <!-- slider --> 
+	    <div class='paginator_slider ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all'> 
+	        <a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a> 
+	    </div> 
+	
+	</div>
+</div>

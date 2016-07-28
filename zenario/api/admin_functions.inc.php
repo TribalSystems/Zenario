@@ -35,6 +35,7 @@ function adminId() {
 }
 
 //Check for an admin priv
+cms_core::$whitelist[] = 'checkPriv';
 //	function checkPriv($action = false, $editCID = false, $editCType = false, $editCVersion = 'latest') {}
 
 //	function exitIfNotCheckPriv($action = false, $editCID = false, $editCType = false, $editCVersion = 'latest') {}
@@ -59,6 +60,7 @@ function paginationOptions() {
 }
 
 //Get the value of an admin's setting
+cms_core::$whitelist[] = 'adminSetting';
 function adminSetting($settingName) {
 	if (!isset(cms_core::$adminSettings[$settingName])) {
 		cms_core::$adminSettings[$settingName] =

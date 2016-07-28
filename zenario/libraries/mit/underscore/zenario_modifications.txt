@@ -16,3 +16,15 @@ causing bugs if both were used on the same line.)
       
       if (escape) {
 
+
+Added a modification such that if you attempt to escape a function,
+the function is called and its results are escaped
+  Replaced
+    return function(string) {
+
+  With
+    return function(string) {
+      
+      if (typeof string == 'function') {
+      	string = string();
+      }

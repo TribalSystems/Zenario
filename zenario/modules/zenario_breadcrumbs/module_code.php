@@ -85,10 +85,6 @@ class zenario_breadcrumbs extends zenario_menu {
 			'rel_tag' => '',
 			'image_id' => '',
 			'rollover_image_id' => '',
-			'menu_text_module_class_name' => '',
-			'menu_text_method_name' => '',
-			'menu_text_param_1' => '',
-			'menu_text_param_2' => '',
 			'on' => true,
 			'children' => array());
 		

@@ -3,7 +3,7 @@
 zenario_content_type_details:
     key:
         id: ""
-        opened_from_site_settings_panel: false
+        idFromOrganizer: ''
     identifier:
         label: Content type
     hide_tab_bar: true
@@ -33,95 +33,149 @@ zenario_content_type_details:
                     type: text
                     maxlength: "255"
                 default_layout_id:
-                    label: 'Default Layout:'
+                    label: 'Default layout:'
                     pick_items:
                         path: ""
-                        target_path: zenario__layouts/panels/layouts
-                        min_path: zenario__layouts/panels/layouts
-                        max_path: zenario__layouts/panels/layouts
+                        #target_path: zenario__layouts/panels/layouts
+                        #min_path: zenario__layouts/panels/layouts
+                        #max_path: zenario__layouts/panels/layouts
                         disallow_refiners_looping_on_min_path: true
-                        one_to_one_choose_phrase: Choose Layout
-                        select_phrase: Select Layout...
+                        one_to_one_choose_phrase: Choose layout
+                        select_phrase: Select layout...
                         hide_remove_button: true
+                set_default_parent_menu_node:
+                    label: 'When creating, auto-attach to menu'
+                    type: checkbox
+                    side_note: |
+                        When a content item of this type is created, automatically attach it to the menu.
+                    redraw_onchange: true
+                default_parent_menu_node:
+                    label: 'Parent menu node:'
+                    pick_items:
+                        path: zenario__menu/panels/sections
+                        min_path: zenario__menu/panels/sections
+                        target_path: zenario__menu/panels/menu_nodes
+                        max_path: zenario__menu/panels/menu_nodes
+                        select_phrase: Select menu node...
+                        disallow_refiners_looping_on_min_path: true
+                        hide_remove_button: true
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    validation:
+                        required_if_not_hidden: |
+                            Please choose a parent menu node.
+                            (You cannot make new content items be automatically added to the top level of the site's navigation.)
+                    indent: 1
+                menu_node_position:
+                    label: 'Where:'
+                    type: radios
+                    values:
+                        start:
+                            label: At the start
+                        end:
+                            label: At the end
+                    value: end
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    side_note: |
+                        Choose whether the menu node for a newly-created content item is at the start or end of the menu.
+                    indent: 1
+                menu_node_position_edit:
+                    label: 'Option:'
+                    type: radios
+                    values:
+                        suggest:
+                            label: Allow administrator to override
+                        force:
+                            label: Don't allow administrator to override
+                    value: force
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    side_note: |
+                        Choose whether the auto-allocated menu position may be changed by the administrator.
+                    indent: 1
+                hide_menu_node:
+                    label: 'Invisible in menu navigation'
+                    type: checkbox
+                    visible_if: zenarioAB.value('set_default_parent_menu_node')
+                    side_note: |
+                        Make the auto-created menu node be invisible
+                        (will appear in a breadcrumb trail but not in the menu navigation).
+                    indent: 1
                 enable_categories:
-                    label: 'Support for Categories'
+                    label: 'Support for categories:'
                     type: radios
                     value: 0
                     values:
                         enabled:
-                            ord: 1
-                            label: 'Enabled'
+                            label: Enabled
                         disabled:
-                            ord: 2
-                            label: 'Disabled'
+                            label: Disabled
+                    side_note: |
+                        When enabled, administrator will be able to assign content items of this content type to categories.
+                        This is useful if you use a Content Summary List plugin, for example to make a list of recent news items.
                 description_field:
                     label: 'Description field:'
                     type: radios
                     values:
                         mandatory:
-                            ord: "1"
-                            label: Mandatory
+                            label: 'Enabled & mandatory'
                         optional:
-                            ord: "2"
-                            label: Optional
+                            label: 'Enabled & optional'
                         hidden:
-                            ord: "3"
-                            label: Hidden
+                            label: 'Disabled (not recommended)'
+                    side_note: |
+                        This allows administrators to enter a description meta tag for content items,
+                        which is useful for giving search engines information about the page. 
                 keywords_field:
                     label: 'Keywords field:'
                     type: radios
                     values:
                         mandatory:
-                            ord: "1"
-                            label: Mandatory
+                            label: 'Enabled & mandatory (not recommended)'
                         optional:
-                            ord: "2"
-                            label: Optional
+                            label: 'Enabled & optional'
                         hidden:
-                            ord: "3"
-                            label: Hidden
+                            label: Disabled
+                    side_note: |
+                        This allows administrators to enter a keywords meta tag for content items.
+                        Search engines usually disregard this meta tag, but it can help with on-site searching.
                 release_date_field:
-                    label: 'Release Date field:'
+                    label: 'Release date field:'
                     type: radios
                     values:
                         mandatory:
-                            ord: "1"
-                            label: Mandatory
+                            label: 'Enabled & mandatory'
                         optional:
-                            ord: "2"
-                            label: Optional
+                            label: 'Enabled & optional'
                         hidden:
-                            ord: "3"
-                            label: Hidden
+                            label: Disabled
+                    side_note: |
+                        This allows administrators to give content items a &quot;publication date&quot;.
+                        This will appear on the page itself and in a Content Summary List that lists the content item
+                        (subject to appropriate plugin settings).
+                        Recommended for news, blog or other date-sensitive content.
                 writer_field:
                     label: 'Writer field:'
                     type: radios
                     values:
                         mandatory:
-                            ord: "1"
-                            label: Mandatory
+                            label: 'Enabled & mandatory'
                         optional:
-                            ord: "2"
-                            label: Optional
+                            label: 'Enabled & optional'
                         hidden:
-                            ord: "3"
-                            label: Hidden
+                            label: Disabled
                 summary_field:
-                    label: 'Content Summary:'
+                    label: 'Content summary:'
                     type: radios
                     values:
                         mandatory:
-                            ord: "1"
-                            label: Mandatory
+                            label: 'Enabled & mandatory'
                         optional:
-                            ord: "2"
-                            label: Optional
+                            label: 'Enabled & optional'
                         hidden:
-                            ord: "3"
-                            label: Hidden
+                            label: Disabled
                     redraw_onchange: true
                 enable_summary_auto_update:
-                    label: 'Enable auto-update of Summaries:'
+                    label: 'Enable auto-update of summaries'
                     type: checkbox
                     visible_if: "zenarioAB.value('summary_field') != 'hidden'"
                     indent: 1
+                

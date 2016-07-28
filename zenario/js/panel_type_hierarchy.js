@@ -165,7 +165,7 @@ methods.showPanel = function($header, $panel, $footer) {
 };
 
 methods.getHierarchyMicroTemplateHTML = function(m) {
-	return zenarioA.microTemplate('zenario_organizer_hierarchy', m)
+	return this.microTemplate('zenario_organizer_hierarchy', m)
 }
 
 methods.getItems = function() {
@@ -281,7 +281,7 @@ methods.showButtons = function($buttons) {
 	//show apply/cancel buttons instead of the usual buttons
 	if (this.changingHierarchy) {
 		//Change the buttons to apply/cancel buttons
-		$buttons.html(zenarioA.microTemplate('zenario_organizer_apply_cancel_buttons', {}));
+		$buttons.html(this.microTemplate('zenario_organizer_apply_cancel_buttons', {}));
 		
 		//Add an event to the Apply button to save the changes
 		$buttons.find('#organizer_applyButton')

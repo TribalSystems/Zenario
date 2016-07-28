@@ -20,6 +20,8 @@ zenario__user_forms:
                         f.admin_email_addresses != '' 
                         AND f.admin_email_addresses IS NOT NULL
                         AND f.status != 'archived'
+                type:
+                    sql: f.type = [[REFINER__TYPE]]
             columns:
                 id:
                     title: ID
@@ -35,7 +37,8 @@ zenario__user_forms:
                     show_by_default: true
                     searchable: true
                     width: xlarge
-                
+                type:
+                    db_column: f.type
                 form_email_addresses:
                     title: Email
                     db_column: f.admin_email_addresses
@@ -104,6 +107,29 @@ zenario__user_forms:
                     admin_box:
                         path: zenario_user_admin_box_form
                     hide_on_refiner: archived
+                create_advanced_dropdown:
+                    hide_in_select_mode: true
+                    hide_on_filter: true
+                    label: Advanced
+                    hide_on_refiner: archived
+                    hide_when_children_are_not_visible: true
+                create_profile_form:
+                    priv: _PRIV_MANAGE_FORMS
+                    parent: create_advanced_dropdown
+                    label: Create profile form
+                    admin_box:
+                        path: zenario_user_admin_box_form
+                        key:
+                            type: profile
+                create_registration_form:
+                    priv: _PRIV_MANAGE_FORMS
+                    parent: create_advanced_dropdown
+                    label: Create registration form
+                    admin_box:
+                        path: zenario_user_admin_box_form
+                        key:
+                            type: registration
+            
             item_buttons:
                 edit:
                     priv: _PRIV_MANAGE_FORMS

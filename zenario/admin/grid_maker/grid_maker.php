@@ -17,7 +17,7 @@ echo
 	<title>',  adminPhrase('Grid Maker'), '</title>';
 
 $prefix = '../../';
-CMSWritePageHead($prefix, false, false);
+CMSWritePageHead($prefix);
 
 
 checkForChangesInCssJsAndHtmlFiles($runInProductionMode = true);
@@ -28,7 +28,7 @@ echo '
 
 
 echo '</head>';
-CMSWritePageBody('', false);
+CMSWritePageBody();
 
 
 ?>

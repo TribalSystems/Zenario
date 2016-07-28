@@ -77,4 +77,56 @@ class zenario_error_log extends module_base_class {
 				break;
 		}
 	}
+	
+	// Scheduled task to report yesterdays errors
+	public static function jobReportErrors() {
+		$yesterday = new DateTime();
+		$yesterday->sub(new DateInterval('P1D'));
+		
+		// Get all errors from yesterday
+		$sql = '
+			SELECT logged, page_alias, referrer_url
+			FROM ' . DB_NAME_PREFIX . ZENARIO_ERROR_LOG_PREFIX . 'error_log
+			WHERE logged BETWEEN "' . sqlEscape($yesterday->format('Y-m-d 00:00:00')) . '" AND "' . sqlEscape($yesterday->format('Y-m-d 23:59:59')) . '"
+			ORDER BY logged DESC';
+		$errors = sqlSelect($sql);
+		// Send report
+		if (sqlNumRows($errors) > 0) {
+			echo sqlNumRows($errors) . " 404 Error(s):\n";
+			while ($error = sqlFetchAssoc($errors)) {
+				echo "\n---------------\n";
+				echo adminPhrase('Logged:') . ' ' . $error['logged'] . "\n";
+				echo adminPhrase('Requested page alias:') . ' ' . $error['page_alias'] . "\n";
+				echo adminPhrase('Referrer URL:') . ' ' . $error['referrer_url'] . "\n";
+			}
+			return true;
+		// If last action is over 1 week old and no errors send a message
+		} else {
+			$moduleId = getModuleId('zenario_error_log');
+			$job = getRow(
+				'jobs', 
+				array('last_action'), 
+				array(
+					'manager_class_name' => 'zenario_scheduled_task_manager',
+					'job_name' => 'jobReportErrors',
+					'module_id' => $moduleId
+				)
+			);
+			if (!$job['last_action']) {
+				echo 'No errors to report';
+				return true;
+			}
+			
+			$now = new DateTime();
+			$lastAction = new DateTime($job['last_action']);
+			$lastWeek = $now->sub(new DateInterval('P1W'));
+			$interval = $lastAction->diff($lastWeek);
+			if (!$interval->invert) {
+				echo 'No errors to report';
+				return true;
+			}
+			
+		}
+		return false;
+	}
 }

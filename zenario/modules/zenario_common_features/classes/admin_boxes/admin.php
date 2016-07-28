@@ -143,7 +143,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			}
 			
 			if ($box['key']['id'] == adminId()) {
-				$box['title'] = adminPhrase('Managing your profile');
+				$box['title'] = adminPhrase('Editing your profile');
 				
 				if ($details['authtype'] != 'local') {
 					$box['tabs']['details']['fields']['desc']['snippet']['html'] =
@@ -157,7 +157,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 				}
 			
 			} elseif ($details['authtype'] != 'local') {
-				$box['title'] = adminPhrase('Managing the multi-site administrator "[[username]]"', $details);
+				$box['title'] = adminPhrase('Editing the account of multi-site administrator "[[username]]"', $details);
 				
 				$box['tabs']['details']['fields']['desc']['snippet']['html'] =
 					adminPhrase("This administrator's details are stored in a global database outside of this site's database. You can only make changes via the control site.");
@@ -165,7 +165,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 					adminPhrase("This administrator's permissions are stored in a global database outside of this site's database. You can only make changes via the control site.");
 			
 			} else {
-				$box['title'] = adminPhrase('Managing the local administrator "[[username]]"', $details);
+				$box['title'] = adminPhrase('Editing the account of local administrator "[[username]]"', $details);
 				
 				$box['tabs']['details']['fields']['desc']['snippet']['html'] =
 					adminPhrase("Use this screen to change this administrator's details.");
@@ -216,8 +216,11 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 			'If checked, the Administrator is a client account. This site allows for [[limit]] local administrators.', 
 			$limitCount,
 			array('limit' => $limit));
-
-		return false;
+		
+		$fields['permissions/permissions']['values']['specific_languages']['side_note'] =
+			adminPhrase($fields['permissions/permissions']['values']['specific_languages']['side_note'],
+				array('default_language' => ifNull(setting('default_language'), 'en')));
+		
 	}
 
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
@@ -547,7 +550,7 @@ class zenario_common_features__admin_boxes__admin extends module_base_class {
 
 			if ($box['key']['id'] == adminId()) {
 				setAdminSession(adminId());
-				$box['popout_message'] = '<!--Reload_Storekeeper-->';
+				$box['popout_message'] = '<!--Reload_Organizer-->';
 			}
 		}
 		

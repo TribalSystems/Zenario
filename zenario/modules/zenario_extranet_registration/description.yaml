@@ -57,4 +57,7 @@ dependencies:
     zenario_extranet: true
     zenario_users: true
     zenario_country_manager: true
+    zenario_user_forms: true
+inheritance:
+    include_javascript_from_module: zenario_user_forms
 default_instance_name: Extranet Registration

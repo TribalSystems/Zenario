@@ -42,7 +42,7 @@ echo '<!DOCTYPE HTML>
 			margin: 0;
 		}
 	</style>
-	<script src="' . httpOrhttps() . 'maps.google.com/maps/api/js?sensor=false" type="text/javascript"></script>
+	<script src="' . httpOrhttps() . 'maps.googleapis.com/maps/api/js?v=3" type="text/javascript"></script>
 </head>
 <body>
 	<div id="map">

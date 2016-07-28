@@ -35,12 +35,11 @@ class zenario_menu extends module_base_class {
 	var $numLevels;
 	var $maxLevel1MenuItems;
 	var $language;
-	var $showAdminAddMenuItem;
 	var $onlyFollowOnLinks;
 	var $onlyIncludeOnLinks;
 	var $showInvisibleMenuItems;
 	var $showMissingMenuNodes;
-	var $requests;
+	var $requests = false;
 	
 	//Load settings from the instance of this plugin
 	function init() {
@@ -61,7 +60,6 @@ class zenario_menu extends module_base_class {
 		$this->numLevels				= $this->setting('menu_number_of_levels');
 		$this->maxLevel1MenuItems		= 999;
 		$this->language					= false;
-		$this->showAdminAddMenuItem		= $this->setting('menu_show_admin_add_button');
 		$this->onlyFollowOnLinks		= !$this->setting('menu_show_all_branches');
 		$this->onlyIncludeOnLinks		= false;
 		$this->showInvisibleMenuItems	= false;
@@ -77,10 +75,6 @@ class zenario_menu extends module_base_class {
 		
 		//Get the Menu Node for this content item
 		$this->currentMenuId = getSectionMenuItemFromContent(cms_core::$equivId, cms_core::$cType, $this->sectionId);
-		
-		if (!$this->isVersionControlled && !$this->eggId && checkPriv() && $this->setting('author_advice')) {
-			$this->showInEditMode();
-		}
 		
 		return $this->currentMenuId || !$this->setting('hide_if_current_item_not_in_menu');
 	}
@@ -149,7 +143,7 @@ class zenario_menu extends module_base_class {
 							 $this->sectionId, $this->currentMenuId, $parentMenuId,
 							 $this->numLevels, $this->maxLevel1MenuItems, $this->language,
 							 $this->onlyFollowOnLinks, $this->onlyIncludeOnLinks, 
-							 $this->showAdminAddMenuItem, $this->showInvisibleMenuItems,
+							 $this->showInvisibleMenuItems,
 							 $this->showMissingMenuNodes,$recurseCount = 0,$this->requests);
 							 
 		switch ($cachingRestrictions) {
@@ -426,7 +420,6 @@ class zenario_menu extends module_base_class {
 				$language = false,
 				$onlyFollowOnLinks = true,
 				$onlyIncludeOnLinks = true,
-				$showAdminAddMenuItem = false,
 				$showInvisibleMenuItems = true,
 				$showMissingMenuNodes = false,
 				$recurseCount = 0,
@@ -468,12 +461,6 @@ class zenario_menu extends module_base_class {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	public function fillAdminSlotControls(&$controls) {
-		if ($this->setting('author_advice')) {
-			$controls['notes']['author_advice']['label'] = nl2br(htmlspecialchars($this->setting('author_advice')));
-		}
-	}
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case "plugin_settings":
@@ -489,6 +476,26 @@ class zenario_menu extends module_base_class {
 				}
 				
 				break;
+		}
+	}
+	
+	
+	//This method can be called from the Advanced tab of the menu node properties.
+	//It looks for requests in the URL/POST, and adds them on to the menu nodes so that they are not lost
+	public static function rememberRequests($requests) {
+		
+		$extra_requests = array();
+		
+		foreach (explodeAndTrim($requests) as $var) {
+			if (isset($_REQUEST[$var])) {
+				$extra_requests[$var] = $_REQUEST[$var];
+			}
+		}
+		
+		if (!empty($extra_requests)) {
+			return array('extra_requests' => $extra_requests);
+		} else {
+			return true;
 		}
 	}
 }

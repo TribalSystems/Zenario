@@ -795,9 +795,79 @@ _sql
 	AFTER `name`
 _sql
 
+//Add a column for autocomplete text fields
+); revision( 34756
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `autocomplete` tinyint(1) NOT NULL default 0
+	AFTER `include_in_export`
+_sql
 
-//Add a missing key to the users table
-); revision( 34663
+//Add a column for form special types
+); revision( 34758
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `type` enum('standard', 'profile', 'registration') NOT NULL default 'standard'
+	AFTER `name`
+_sql
+
+//Add column for repeat form field details
+); revision( 35072
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `show_repeat_field` tinyint(1) NOT NULL DEFAULT 0,
+	ADD COLUMN `repeat_field_label` varchar(255)
+_sql
+
+// Add column for repeat field error
+); revision( 35073
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `repeat_error_message` varchar(255)
+_sql
+
+
+//Fix some more bugs with the global_id and last_updated_timestamp columns, where my last attempted fixes had left some
+//sites with duplicated keys as a result
+);	revision(35800
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP KEY `global_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP KEY `global_id_2`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`global_id`)
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP KEY `last_updated_timestamp`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP KEY `last_updated_timestamp_2`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	ADD KEY (`last_updated_timestamp`)
+_sql
+
+
+//Add a missing key to the users table, if it doesn't exist
+); revision( 35850
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	DROP KEY `status`
+_sql
+
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]users`
 	ADD KEY (`status`)
@@ -806,13 +876,70 @@ _sql
 
 //Make the default label column a little bigger on the custom_dataset_tabs table
 //to avoid database errors
-); revision( 34664
+); revision( 35880
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_tabs`
 	MODIFY COLUMN `default_label` varchar(255) NOT NULL DEFAULT ''
 _sql
 
+//Add a new column to allow system fields to be hidden from the dataset editor. Must be set to allow changing the visibility.
+); revision( 36073
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `allow_admin_to_change_visibility` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+); revision( 36075
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_dataset_fields`
+	ADD COLUMN `organizer_visibility` enum('none', 'hide', 'show_by_default', 'always_show') NOT NULL DEFAULT 'none' AFTER `admin_box_visibility`,
+	ADD KEY (`organizer_visibility`)
+	
+_sql
+
+// Add a column for a custom code name, used so modules can reference a field by this unique name without having to know the id of the field
+); revision( 36080
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `custom_code_name` varchar(255) DEFAULT NULL AFTER `name`,
+	ADD COLUMN `protected` tinyint(1) NOT NULL DEFAULT 0 AFTER `field_type`
+_sql
+
+// Add columns to store a static method to get a list of values to autocomplete a text field
+); revision( 36085
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `autocomplete_class_name` varchar(255) DEFAULT NULL,
+	ADD COLUMN `autocomplete_method_name` varchar(255) DEFAULT NULL,
+	ADD COLUMN `autocomplete_param_1` varchar(255) DEFAULT NULL,
+	ADD COLUMN `autocomplete_param_2` varchar(255) DEFAULT NULL
+_sql
+
+// Add flag for autocomplete
+); revision( 36086
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `autocomplete` tinyint(1) NOT NULL DEFAULT 0
+_sql
+
+// Add flag for autocomplete
+); revision( 36088
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `autocomplete_no_filter_placeholder` varchar(255) DEFAULT NULL
+_sql
+
+);	revision(36390
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]custom_datasets`
+	ADD UNIQUE KEY (`label`)
+_sql
+
 );
+
+
+
+
 
 
 
