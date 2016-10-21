@@ -1,4 +1,7 @@
-  ![Zenario](http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@2x.png)
+<p align="center"><img
+  alt="Zenario" width="142" height="57"
+  src="http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@2x.png"
+/></p>
 
 What is Zenario?
 -------------------
