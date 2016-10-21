@@ -29,12 +29,9 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Remove a tab, and merge modules in the tab with the next tab
-if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && ($nestedItem['is_tab'])) {
+if (($slide = getNestDetails($nestedItemId, $instanceId)) && ($slide['is_slide'])) {
 	//Merge with the previous tab, unless this is the first tab, in which case merge with the next tab
-	$tab = $nestedItem['tab'] > 1? $nestedItem['tab'] - 1 : 1;
-	
-	//Get the highest ordinal in the tab to the left
-	$maxOrd = self::maxOrd($instanceId, $tab);
+	$tab = $slide['tab'] > 1? $slide['tab'] - 1 : 1;
 	
 	//Delete the tab
 	deleteRow('nested_plugins', array('instance_id' => $instanceId, 'id' => $nestedItemId));
@@ -42,7 +39,9 @@ if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && ($nestedItem['
 	if ($className) {
 		call_user_func(array($className, 'resyncNest'), $instanceId);
 	}
+	
+	foreach (explodeAndTrim($slide['states']) as $state) {
+		static::deletePath($instanceId, $state);
+	}
 }
 
-
-?>

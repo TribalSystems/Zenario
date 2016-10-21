@@ -334,7 +334,7 @@ _sql
 //Automatically strip off all of the [[ double square brackets ]] from the title fields of banners
 //as these are now not needed
 );	revision( 29180
-,<<<_sql
+, <<<_sql
 	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
 	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
 	   ON pi.id = ps.instance_id
@@ -429,7 +429,7 @@ _sql
 //Automatically strip off all of the [[ double square brackets ]] from the heading fields of content lists
 //as these are now not needed
 );	revision( 29560
-,<<<_sql
+, <<<_sql
 	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
 	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
 	   ON pi.id = ps.instance_id
@@ -1484,11 +1484,537 @@ _sql
 	AFTER `background_selector`
 _sql
 
+
+//Add a column to track which modules provide functions for Twig frameworks
+);	revision( 36485
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	ADD COLUMN `edition` enum('Other', 'Community', 'Pro', 'ProBusiness', 'Enterprise') default 'Other'
+	AFTER `display_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]modules`
+	ADD KEY (`edition`)
+_sql
+
+
+//Remove component skins as a feature; all skins are now usable skins
+);	revision( 36486
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
+	DROP COLUMN `type`
+_sql
+
 //The enable_editable_css column should default to 1
-);	revision( 36451
+);	revision( 36490
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]skins`
 	MODIFY COLUMN `enable_editable_css` tinyint(1) NOT NULL default 1
+_sql
+
+
+//Convert the how categories are saved in the plugin settings of the 
+//content list probusiness, so it can be safely merged in with the
+//normal content list plugin.
+);	revision( 36500
+//Firstly, delete some possible junk data that could cause a clash
+, <<<_sql
+	DELETE ps2.*
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = ps.instance_id
+	  AND ps2.nest = ps.nest
+	  AND ps2.name = 'omit_category'
+	WHERE ps.nest = 0
+	  AND m.class_name = 'zenario_content_list_probusiness'
+	  AND ps.name = 'refine_type'
+	  AND ps.value = 'not_in_any_category'
+_sql
+
+, <<<_sql
+	DELETE ps2.*
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	   ON np.id = ps.nest
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = np.module_id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = ps.instance_id
+	  AND ps2.nest = ps.nest
+	  AND ps2.name = 'omit_category'
+	WHERE ps.nest != 0
+	  AND m.class_name = 'zenario_content_list_probusiness'
+	  AND ps.name = 'refine_type'
+	  AND ps.value = 'not_in_any_category'
+_sql
+
+//Make sure the new enable_omit_category checkbox is checked when it should be
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  ps.`instance_id`,
+	  'enable_omit_category',
+	  ps.`nest`,
+	  1,
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	WHERE ps.name = 'omit_category'
+	  AND ps.value IS NOT NULL
+	  AND ps.value
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  ps.`instance_id`,
+	  'enable_omit_category',
+	  ps.`nest`,
+	  1,
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = ps.instance_id
+	  AND ps2.nest = ps.nest
+	  AND ps2.name = 'category'
+	  AND ps2.value IS NOT NULL
+	  AND ps2.value
+	WHERE ps.name = 'refine_type'
+	  AND ps.value = 'not_in_any_category'
+_sql
+
+//Next, convert the names and values of the plugin settings that need to change
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = ps.instance_id
+	  AND ps2.nest = ps.nest
+	  AND ps2.name = 'category'
+	SET ps.value = 'any_categories',
+		ps2.name = 'omit_category'
+	WHERE ps.nest = 0
+	  AND m.class_name = 'zenario_content_list_probusiness'
+	  AND ps.name = 'refine_type'
+	  AND ps.value = 'not_in_any_category'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	   ON np.id = ps.nest
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = np.module_id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps2
+	   ON ps2.instance_id = ps.instance_id
+	  AND ps2.nest = ps.nest
+	  AND ps2.name = 'category'
+	SET ps.value = 'any_categories',
+		ps2.name = 'omit_category'
+	WHERE ps.nest != 0
+	  AND m.class_name = 'zenario_content_list_probusiness'
+	  AND ps.name = 'refine_type'
+	  AND ps.value = 'not_in_any_category'
+_sql
+
+
+
+
+//In version 7.4, we're removing the revealable panel and roundabout modules,
+//and merging any existing plugins into the slideshow modules.
+//Set the mode plugin setting for any revealable panel or roundabout plugins.
+	//The default value for slideshows is "cycle"
+	//Roundabouts sholud use "roundaabout"
+	//Revealable panels should use "none", and will need their CSS rewritten
+);	revision( 36900
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  'mode',
+	  0,
+	  'roundabout',
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.module_id = m.id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = pi.id
+	  AND ps.nest = 0
+	  AND ps.name = 'speed'
+	WHERE m.class_name = 'zenario_roundabout'
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  'mode',
+	  0,
+	  '',
+	  ps.`is_content`
+	FROM `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.module_id = m.id
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	   ON ps.instance_id = pi.id
+	  AND ps.nest = 0
+	  AND ps.name = 'speed'
+	WHERE m.class_name = 'zenario_revealable_panel'
+_sql
+
+//Automatically strip off all of the [[ double square brackets ]] from the title fields of
+//nests, and labels of tabs, as they are now not needed
+);	revision( 36910
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]plugin_settings` AS ps
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.id = ps.instance_id
+	INNER JOIN `[[DB_NAME_PREFIX]]modules` AS m
+	   ON m.id = pi.module_id
+	SET ps.value = REPLACE(REPLACE(ps.value, '[[', ''), ']]', '')
+	WHERE ps.nest = 0
+	  AND m.class_name IN (
+		'zenario_plugin_nest',
+		'zenario_plugin_tabbed_nest',
+		'zenario_plugin_nest_probusiness',
+		'zenario_slideshow',
+		'zenario_slideshow_probusiness',
+		'zenario_roundabout',
+		'zenario_revealable_panel')
+	  AND ps.name = 'heading_text'
+	  AND ps.value LIKE '[[%]]'
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET name_or_title = REPLACE(REPLACE(name_or_title, '[[', ''), ']]', '')
+	WHERE is_tab = 1
+_sql
+
+
+//Add the tab options from ProBusiness into community
+);	revision( 36920
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `visibility`
+		enum('everyone','logged_out','logged_in','logged_in_with_field','logged_in_without_field','without_field','call_static_method','in_smart_group')
+		NOT NULL default 'everyone'
+	AFTER `name_or_title`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `smart_group_id` int(10) unsigned NOT NULL default 0
+	AFTER `visibility`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `field_id` int(10) unsigned NOT NULL default 0
+	AFTER `smart_group_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `field_value` varchar(255) NOT NULL default ''
+	AFTER `field_id`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `module_class_name` varchar(200) NOT NULL default ''
+	AFTER `field_value`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `method_name` varchar(127) NOT NULL default ''
+	AFTER `module_class_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `param_1` varchar(200) NOT NULL default ''
+	AFTER `method_name`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `param_2` varchar(200) NOT NULL default ''
+	AFTER `param_1`
+_sql
+
+
+//Rename is_tab to is_slide, we'll be trying to consistantly refer to them as "Slides" now as "Tabs" was confusing
+);	revision( 36940
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	CHANGE COLUMN `is_tab` `is_slide` tinyint(1) NOT NULL default 0
+_sql
+
+
+
+
+
+//Combine four frameworks for the plugin nest into one, and replace
+//the choices with two plugin settings
+);	revision( 36980
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  'show_tabs',
+	  0,
+	  IF (pi.framework LIKE '%tab%', '1', ''),
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.module_id = m.id
+	WHERE m.class_name IN (
+		'zenario_slideshow', 'zenario_slideshow_probusiness',
+		'zenario_plugin_nest', 'zenario_plugin_tabbed_nest', 'zenario_plugin_nest_probusiness',
+		'zenario_roundabout', 'zenario_revealable_panel')
+_sql
+
+, <<<_sql
+	INSERT IGNORE INTO `[[DB_NAME_PREFIX]]plugin_settings` (
+	  `instance_id`,
+	  `name`,
+	  `nest`,
+	  `value`,
+	  `is_content`
+	)
+	SELECT 
+	  pi.id,
+	  'show_next_prev_buttons',
+	  0,
+	  IF (pi.framework LIKE '%button%', '1', ''),
+	  IF (pi.content_id, 'version_controlled_setting', 'synchronized_setting')
+	FROM `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.module_id = m.id
+	WHERE m.class_name IN (
+		'zenario_slideshow', 'zenario_slideshow_probusiness',
+		'zenario_plugin_nest', 'zenario_plugin_tabbed_nest', 'zenario_plugin_nest_probusiness',
+		'zenario_roundabout', 'zenario_revealable_panel')
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]plugin_instances` AS pi
+	   ON pi.module_id = m.id
+	SET pi.framework = 'standard'
+	WHERE m.class_name IN (
+		'zenario_slideshow', 'zenario_slideshow_probusiness',
+		'zenario_plugin_nest', 'zenario_plugin_tabbed_nest', 'zenario_plugin_nest_probusiness',
+		'zenario_roundabout', 'zenario_revealable_panel')
+_sql
+
+
+//Add a column for setting how many columns a plugin in a nest should take up.
+);	revision( 36985
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `cols` tinyint(2) signed NOT NULL default 0
+	COMMENT '0 means full-width, -1 means grouped with the previous plugin'
+	AFTER `ord`
+_sql
+
+//Add a column for the responsive mode of a slot
+);	revision( 36990
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `small_screens` enum('show', 'hide', 'only') default 'show'
+	AFTER `cols`
+_sql
+
+//Also add columns like this to the table that records normal slots, so we can start tracking these
+);	revision( 36995
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]template_slot_link`
+	ADD COLUMN `ord` smallint(4) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]template_slot_link`
+	ADD COLUMN `cols` tinyint(2) unsigned NOT NULL default 0
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]template_slot_link`
+	ADD COLUMN `small_screens` enum('show', 'hide', 'only') default 'show'
+_sql
+
+//Add a list of states to each slide in a nest
+);	revision( 37000
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `states` SET (
+		'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+		'AA','AB','AC','AD','AE','AF','AG','AH','AI','AJ','AK','AL','AM','AN','AO','AP','AQ','AR','AS','AT','AU','AV','AW','AX','AY','AZ',
+		'BA','BB','BC','BD','BE','BF','BG','BH','BI','BJ','BK','BL'
+	) NOT NULL default ''
+	AFTER `is_slide`
+_sql
+
+//Add a new option to the Menu Nodes table for adding GET requests
+);	revision( 37070
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	ADD COLUMN `add_registered_get_requests` tinyint(1) unsigned NOT NULL default 1
+	AFTER `hide_private_item`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	ADD COLUMN `hide_if_no_get_requests` tinyint(1) unsigned NOT NULL default 0
+	AFTER `add_registered_get_requests`
+_sql
+
+//Create a table for the conductor to save its paths
+);	revision( 37080
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]nested_paths`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]nested_paths` (
+		`instance_id` int(10) unsigned NOT NULL,
+		`from_state` char(2) CHARACTER SET ascii NOT NULL,
+		`to_state` char(2) CHARACTER SET ascii NOT NULL,
+		`commands` TEXT,
+		PRIMARY KEY (`instance_id`,`to_state`,`from_state`),
+		UNIQUE KEY (`instance_id`,`from_state`,`to_state`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+//I changed my mind about one of the columns above
+	//To do - delete the two lines about hide_if_no_get_requests when ther are deleted from my dev site
+);	revision( 37090
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`
+	DROP COLUMN `hide_if_no_get_requests`
+_sql
+
+//Add a new column for tabs in nest, that works just like "Invisible in menu navigation" for menu nodes
+);	revision( 37100
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	ADD COLUMN `invisible_in_nav` tinyint(1) NOT NULL default 0
+	AFTER `is_slide`
+_sql
+
+
+//Fix a bug where an enum value was missing in the template_slot_link table
+);	revision( 37110
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]template_slot_link`
+	MODIFY COLUMN `small_screens` enum('show', 'hide', 'only', 'first') default 'show'
+_sql
+
+//Add a new column for HTML in the head of email templates like newletters and newsletter templates have
+); revision( 37112
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]email_templates`
+	ADD COLUMN `head` mediumtext AFTER `email_name_from`
+_sql
+
+
+//All nested banners should have the text "Banner:" in front of them so we can see that they're banners
+); revision( 37200
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]modules` AS m
+	INNER JOIN `[[DB_NAME_PREFIX]]nested_plugins` AS np
+	   ON m.id = np.module_id
+	  AND np.is_slide = 0
+	  AND np.name_or_title != m.display_name
+	SET np.name_or_title = CONCAT(m.display_name, ': ', np.name_or_title)
+	WHERE m.class_name IN ('zenario_banner', 'zenario_image_container')
+_sql
+
+
+//Add "logged_in_not_in_smart_group" as an option for slide visibility
+//Remove the logged_in_with_field/logged_in_without_field/without_field options for slide visibility,
+//but keep the data of anything that picked it so we can migrate it to smart groups later.
+//Note that "without_field" is being removed as an option, so we are silently switching that
+//to "logged_in_without_field".
+); revision( 37230
+, <<<_sql
+	DROP TABLE IF EXISTS `[[DB_NAME_PREFIX]]tmp_migrate_slide_visibility`
+_sql
+
+, <<<_sql
+	CREATE TABLE `[[DB_NAME_PREFIX]]tmp_migrate_slide_visibility` AS
+	SELECT GROUP_CONCAT(id) AS `slide_ids`, field_id, field_value
+	FROM `[[DB_NAME_PREFIX]]nested_plugins`
+	WHERE is_slide = 1
+	  AND visibility IN ('logged_in_with_field','logged_in_without_field','without_field')
+	GROUP BY field_id, field_value
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	MODIFY COLUMN `visibility` enum('everyone','logged_out','logged_in','logged_in_with_field','logged_in_without_field','without_field','call_static_method','in_smart_group','logged_in_not_in_smart_group') NOT NULL DEFAULT 'everyone'
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]nested_plugins`
+	SET visibility = IF (visibility = 'logged_in_with_field', 'in_smart_group','logged_in_not_in_smart_group')
+	WHERE is_slide = 1
+	  AND visibility IN ('logged_in_with_field','logged_in_without_field','without_field')
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	DROP COLUMN field_id
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	DROP COLUMN field_value
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]nested_plugins`
+	MODIFY COLUMN `visibility` enum('everyone','logged_out','logged_in','call_static_method','in_smart_group','logged_in_not_in_smart_group') NOT NULL DEFAULT 'everyone'
 _sql
 
 );

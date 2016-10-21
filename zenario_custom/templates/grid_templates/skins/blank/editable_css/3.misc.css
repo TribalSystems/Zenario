@@ -1,0 +1,68 @@
+/*  Common styles
+	Links like buttons
+--------------------------------------------------------------------------------------------------*/
+
+.register_button a {
+	margin-top: 20px;
+	display: inline-block;
+	background: #46963b;
+	text-decoration: none;
+	font-size: .5em;
+	padding: 6px 10px;
+	color: #fff;
+	text-align: center;
+	border-radius: 15px;
+	border: none;
+	-webkit-transition: all 0.15s ease-in;
+    -moz-transition: all 0.15s ease-in;
+    transition: all 0.15s ease-in;
+}
+
+.register_button a:hover {
+	background: #0a4a85;
+	text-decoration: none;
+}
+
+.grey_first_row .zenario_banner .banner_more a,
+.grey_second_row .zenario_banner .banner_more a,
+.subscribe_button .banner_more a,
+.news_listing .content_list_more a,
+.events_listing .single_event_description .single_event_more_link,
+.zenario_skin input[type='submit'],
+.slot_back_link .zenario_banner a {
+	min-width: 111px;
+	display: inline-block;
+	background: #0a4a85;
+	text-decoration: none;
+	font-size: .75em;
+	padding: 4px 7px;
+	color: #fff;
+	text-align: center;
+	cursor: pointer;
+	border-radius: 25px;
+	border: none;
+	-webkit-transition: all 0.15s ease-in;
+    -moz-transition: all 0.15s ease-in;
+    transition: all 0.15s ease-in;
+}
+
+     /* Large buttons
+     ------------------------------------------------------------------*/
+		.subscribe_button .banner_more a,
+		.zenario_skin input[type="submit"] {
+			min-width: 118px;
+			font-family: "Verdana", sans-serif;
+			font-size: .85em !important;
+			padding: 8px 0;
+		}
+
+.grey_first_row .zenario_banner .banner_more a:hover,
+.grey_second_row .zenario_banner .banner_more a:hover,
+.subscribe_button .banner_more a:hover,
+.news_listing .content_list_more a:hover,
+.events_listing .single_event_description .single_event_more_link:hover,
+.zenario_skin input[type='submit']:hover,
+.slot_back_link .zenario_banner a:hover {
+	background: #46963b;
+}
+

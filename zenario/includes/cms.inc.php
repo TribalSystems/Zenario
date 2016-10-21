@@ -151,7 +151,7 @@ function showCookieConsentBox() {
 		//Add the logo
 		$logoURL = $logoWidth = $logoHeight = false;
 		if (setting('admin_link_logo') == 'custom'
-		 && (imageLink($logoWidth, $logoHeight, $logoURL, setting('admin_link_custom_logo'), 50, 50))) {
+		 && (imageLink($logoWidth, $logoHeight, $logoURL, setting('admin_link_custom_logo'), 50, 50, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 			if (strpos($logoURL, '://') === false) {
 				$logoURL = absCMSDirURL(). $logoURL;
@@ -291,8 +291,6 @@ function showCookieConsentBox() {
 
 //Display a Plugin in a slot
 function slot($slotName, $mode = false) {
-	//echo '<div style="border: 1px black solid;">'. $slotName. '</div>'; return;
-	
 	//Replacing anything non-alphanumeric with an underscore
 	$slotName = HTMLId($slotName);
 	
@@ -1259,10 +1257,12 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	if (!empty($_SERVER['HTTP_HOST'])) {
 		if ($adminMode) {
 			if (adminDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		} else {
 			if (primaryDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		}
@@ -1351,6 +1351,18 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 			}
 			
 			$aliasInURL = $aliasInURL[0];
+		}
+		
+		//Catch the case where the language id is in the URL, and nothing else.
+		//This should be a link to the home page in that language.
+		if ($aliasInURL && isset(cms_core::$langs[$aliasInURL])) {
+			$reqLangId = $aliasInURL;
+			$aliasInURL = false;
+			
+			//N.b. this is not a valid URL is there is only one language on a site!
+			if (count(cms_core::$langs) < 2) {
+				$redirectNeeded = 301;
+			}
 		}
 		
 		//Language codes with no alias means the home page for that language
@@ -1807,7 +1819,7 @@ function templateSkinId($template, $fallback = false) {
 			return $skinId;
 		
 		} elseif ($fallback) {
-			return getRow('skins', 'id', array('family_name' => $template['family_name'], 'type' => 'usable', 'missing' => 0));
+			return getRow('skins', 'id', array('family_name' => $template['family_name'], 'missing' => 0));
 		}
 	}
 	return false;
@@ -1959,7 +1971,11 @@ function getPhrase($code, $replace = false) {
 	return adminPhrase($code, $replace);
 }
 
-function adminPhrase($code, $replace = false) {
+function adminPhrase($code, $replace = false, $moduleClass = false) {
+	
+	if ($moduleClass) {
+		return phrase($code, $replace, $moduleClass);
+	}
 	
 	//No support for a multilingual admin interface yet.
 	$lang = 'en';
@@ -2038,6 +2054,30 @@ function secondsToAdminPhrase($seconds) {
 	}
 	
 	return $t;
+}
+
+
+function exitIfUploadError($moduleClass = false) {
+	$error = arrayKey($_FILES, 'Filedata', 'error');
+	switch ($error) {
+		case UPLOAD_ERR_INI_SIZE:
+		case UPLOAD_ERR_FORM_SIZE:
+			echo adminPhrase('Your file was too large to be uploaded.', false, $moduleClass);
+			exit;
+		case UPLOAD_ERR_PARTIAL:
+		case UPLOAD_ERR_NO_FILE:
+			echo adminPhrase('There was a problem whilst uploading your file.', false, $moduleClass);
+			exit;
+		case UPLOAD_ERR_NO_TMP_DIR:
+			echo 'UPLOAD_ERR_NO_TMP_DIR';
+			exit;
+		case UPLOAD_ERR_CANT_WRITE:
+			echo 'UPLOAD_ERR_CANT_WRITE';
+			exit;
+		case UPLOAD_ERR_EXTENSION:
+			echo 'UPLOAD_ERR_EXTENSION';
+			exit;
+	}
 }
 
 //Deprecated, please use phrase() instead
@@ -2222,7 +2262,29 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 				array(
 					'language_id' => setting('default_language'),
 					'module_class_name' => $moduleClass,
-					'code' => $code));
+					'code' => $code),
+				
+				//Don't clear the cache for this update
+				false, false, false, true, $checkCache = false);
+			
+			//For multilingual sites, we need to note down this information against
+			//the current language as well, to
+			//fix a bug where missing phrases would continously clear the cache.
+			if (setting('default_language') != $languageId) {
+				setRow(
+					'visitor_phrases',
+					array(
+						'seen_in_visitor_mode' => checkPriv()? 0 : 1,
+						'seen_in_file' => '-',
+						'seen_at_url' => '-'),
+					array(
+						'language_id' => $languageId,
+						'module_class_name' => $moduleClass,
+						'code' => $code),
+					
+					//Don't clear the cache for this update
+					false, false, false, true, $checkCache = false);
+			}
 		}
 	}
 	
@@ -2316,20 +2378,11 @@ function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectio
 				LIMIT 1";
 		}
 		
-		$result = sqlQuery($sql);
-		
 		if ($fetchSecondaries) {
-			$rows = array();
-			while($row = sqlFetchAssoc($result)) {
-				$rows[] = $row;
-			}
-			return $rows;
+			return sqlFetchAssocs($sql);
 		
-		} elseif ($row = sqlFetchAssoc($result)) {
-			return $row;
-			
 		} else {
-			return false;
+			return sqlFetchAssoc($sql);
 		}
 	} else {
 		return false;
@@ -2380,7 +2433,7 @@ function getMenuInLanguage($mID, $langId) {
 		INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 		   ON m.id = t.menu_id
 		LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
-		   ON m.equiv_id = c.id
+		   ON m.equiv_id = c.equiv_id
 		  AND m.content_type = c.type
 		  AND m.target_loc = 'int'
 		  AND t.language_id = c.language_id
@@ -2511,7 +2564,7 @@ function getMenuParent($mID) {
 
 function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 	
-	// Hide menu node if static method is set and returns false
+	// Hide menu node if static method is set
 	if (!empty($row['module_class_name'])) {
 		$cachingRestrictions = 'staticFunctionCalled';
 		if (!(inc($row['module_class_name']))
@@ -2520,7 +2573,8 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 				array($row['module_class_name'], $row['method_name']),
 					$row['param_1'], $row['param_2'])
 		)) {
-			return false;
+			//A little hack - return null so we can tell the difference
+			return null;
 		
 		} else {
 			//If an array is returned, show the menu node but override any
@@ -2539,6 +2593,7 @@ function shouldShowMenuItem(&$row, &$cachingRestrictions) {
 	}
 	
 	if ($row['target_loc'] == 'int') {
+		
 		//Check to see if there is a published version
 		if (!$row['visitor_version']) {
 			//If a Menu Node is translated, but a Content Item does not have a translation, try to link to a Content Item in the default Language
@@ -2592,6 +2647,7 @@ function lookForMenuItems($parentMenuId, $language, $sectionId, $currentMenuId, 
 			c.alias,
 			m.use_download_page,
 			m.hide_private_item,
+			m.add_registered_get_requests,
 			t.ext_url,
 			c.visitor_version,
 			m.invisible,
@@ -2720,6 +2776,7 @@ function getMenuStructure(
 			
 			} else {
 				$row['active'] = $showMenuItem = shouldShowMenuItem($row, $cachingRestrictions);
+				$row['conditionally_hidden'] = $showMenuItem === null;
 				
 				if (checkPriv()) {
 					//Always show an Admin a Menu Node
@@ -2770,7 +2827,7 @@ function getMenuStructure(
 						$row['name'] = cms_core::$menuTitle;
 					}
 					
-					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], true);
+					$link = linkToItem($row['cID'], $row['cType'], false, $request, $row['alias'], $row['add_registered_get_requests']);
 					
 					if ($downloadDocument) {
 						$row['onclick'] = trackFileDownload($link);
@@ -3412,7 +3469,7 @@ function datasetFieldValue($dataset, $cfield, $recordId, $returnCSV = true, $for
 					  AND cdfv.field_id = ". (int) $cfield['id']. "
 					WHERE cdvl.linking_id = ". (int) $recordId;
 				
-				$values = sqlSelectArray($sql, true);
+				$values = sqlFetchValues($sql);
 			
 				if ($forDisplay) {
 					$values = getRowsArray('custom_dataset_field_values', 'label', array('field_id' => $cfield['id'], 'id' => $values), 'label');
@@ -3835,19 +3892,6 @@ function getGroupLabel($group_id) {
 		return adminPhrase("_ALL_EXTRANET_USERS");
 	}
 
-}
-
-function getGroupPrivateName($group_id) {
-	$sql = "
-		SELECT name
-		FROM ". DB_NAME_PREFIX."groups
-		WHERE id = ". (int) $group_id;
-	
-	$result = sqlQuery($sql);
-	if ($row = sqlFetchArray($result)) {
-		return $row['name'];
-	}
-	return false;
 }
 
 
@@ -4287,7 +4331,7 @@ function getContentItemCategories($cID, $cType, $publicOnly = false, $langId = f
 	$result = sqlQuery($sql);
 	
 	if (sqlNumRows($result)>0) {
-		while ($row = sqlFetchArray($result)) {
+		while ($row = sqlFetchAssoc($result)) {
 			if (!$row['public']) {
 				$row['public_name'] = false;
 			} else {
@@ -4803,7 +4847,26 @@ function inc($module) {
 	}
 }
 
-function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path = false, $customisationName = -1, $raiseFileMissingErrors = false) {
+
+function getModulePrefix($module, $mustBeRunning = true, $oldFormat = false) {
+	
+	if (!is_array($module)) {
+		$module = sqlFetchAssoc("
+			SELECT id, class_name, status
+			FROM ". DB_NAME_PREFIX. "modules
+			WHERE class_name = '". sqlEscape($module). "'
+			  ". ($mustBeRunning? "AND status IN ('module_running', 'module_is_abstract')" : ""). "
+			LIMIT 1");
+	}
+	
+	if (!$module) {
+		return false;
+	} else {
+		return setModulePrefix($module, false, $oldFormat);
+	}
+}
+
+function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path = false, $raiseFileMissingErrors = false) {
 	
 	if (!$type) {
 		$type = cms_core::$skType;
@@ -4815,15 +4878,6 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 	//Catch a renamed variable
 	if ($type == 'storekeeper') {
 		$type = 'organizer';
-	}
-	
-	//If the $customisationName is not set, try to load what it was set to in the zenario_fea_tuix class
-	if ($customisationName === -1) {
-		if ($type == 'visitor' && class_exists('zenario_fea_tuix')) {
-			$customisationName = zenario_fea_tuix::$customisationName;
-		} else {
-			$customisationName = '';
-		}
 	}
 	
 	if (strpos($filePathOrModuleClassName, '/') === false
@@ -4862,34 +4916,6 @@ function includeModuleSubclass($filePathOrModuleClassName, $type = false, $path 
 		require_once $phpPath;
 	
 		if (class_exists($className)) {
-			
-			//For visitor TUIX, if a $customisationName has been set, look up the
-			//module that added that customisation.
-			if ($type == 'visitor' && $customisationName) {
-				//Note that if we have modules overriding each other's customisations,
-				//we must get the last module in the dependency stack - i.e. the module
-				//that uses this customisation and has no dependants also using this customisation.
-				$sql = "
-					SELECT a.module_class_name
-					FROM ". DB_NAME_PREFIX. "tuix_file_contents AS a
-					LEFT JOIN ". DB_NAME_PREFIX. "module_dependencies AS md
-					   ON a.module_class_name = md.dependency_class_name
-					LEFT JOIN ". DB_NAME_PREFIX. "tuix_file_contents AS b
-					   ON b.module_class_name = md.module_class_name
-					  AND b.`type` = 'visitor'
-					  AND a.path = 'assetwolf_list_assets'
-					WHERE a.`type` = 'visitor'
-					  AND a.path = 'assetwolf_list_assets'
-					  AND a.setting_group = 'with_customer_and_location'
-					  AND md.dependency_class_name IS NULL
-					  AND b.module_class_name IS NULL";
-				
-				if (($row = sqlFetchRow($sql))
-				 && ($row[0] != $moduleClassName)) {
-					return includeModuleSubclass($row[0], $type, $path, '', true);
-				}
-			}
-			
 			return $className;
 		} else {
 			exit('The class '. $className. ' was not defined in '. $phpPath);
@@ -4919,13 +4945,7 @@ function getModuleDependencies($moduleName) {
 		WHERE d.module_class_name = '". sqlEscape($moduleName). "'
 		  AND `type` = 'dependency'";
 	
-	$depends = array();
-	$result = sqlQuery($sql);
-	while($row = sqlFetchAssoc($result)) {
-		$depends[] = $row;
-	}
-	
-	return $depends;
+	return sqlFetchAssocs($sql);
 }
 
 
@@ -5525,11 +5545,11 @@ function sendSignal($signalName, $signalParams) {
 /* Skins */
 
 function getSkinFromId($skinId) {
-	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'type', 'extension_of_skin', 'css_class', 'missing'), array('id' => $skinId));
+	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'css_class', 'missing'), array('id' => $skinId));
 }
 
 function getSkinFromName($familyName, $skinName) {
-	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'type', 'extension_of_skin', 'css_class', 'missing'), array('family_name' => $familyName, 'name' => $skinName));
+	return getRow('skins', array('id', 'family_name', 'name', 'display_name', 'extension_of_skin', 'css_class', 'missing'), array('family_name' => $familyName, 'name' => $skinName));
 }
 
 function getSkinPath($templateFamily = false, $skinName = false) {
@@ -5613,6 +5633,12 @@ function equivId($cID, $cType) {
 }
 
 function langEquivalentItem(&$cID, &$cType, $langId = false) {
+	
+	//Catch the case where a tag id is entered, not a cID and cType
+	if (!is_numeric($cID)) {
+		$tagId = $cID;
+		getCIDAndCTypeFromTagId($cID, $cType, $tagId);
+	}
 	
 	if (!$cID) {
 		return false;

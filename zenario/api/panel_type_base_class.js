@@ -193,6 +193,10 @@ methods.returnShowLeftColumn = function() {
 	return !window.zenarioONotFull;
 };
 
+methods.returnIsMultiLineList = function() {
+	return false;
+};
+
 //Function to search and sort the items on the client side.
 //You should return an array of matching ids in the correct order.
 methods.sortAndSearchItems = function() {

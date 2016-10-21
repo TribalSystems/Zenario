@@ -1,0 +1,29 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_path:
+    key:
+        id: ''
+        instanceId: ''
+        from_state: ''
+        to_state: ''
+        idInOrganizer: ''
+    max_height: 180
+    hide_tab_bar: true
+    #identifier:
+    #    css_class: ''
+    #    label: 'Path:'
+    #    value: ''
+    tabs:
+        path:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                commands:
+                    type: text
+                    maxlength: 2048
+                    placeholder: Enter a list of commands, comma separated
+                    validation:
+                        required: |
+                            Please enter the name of at least one command

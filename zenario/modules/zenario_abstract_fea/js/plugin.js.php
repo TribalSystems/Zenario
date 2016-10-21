@@ -5,6 +5,7 @@ if (!zenarioA.init) {
 		incJS('zenario/js/admin');
 		incJS('zenario/js/form');
 		
+		incJS('zenario/libraries/bsd/tokenize/jquery.tokenize');
 		incJS('zenario/libraries/mit/jquery/jquery-ui.autocomplete');
 		incJS('zenario/libraries/mit/jquery/jquery-ui.slider');
 		incJS('zenario/libraries/mit/jpaginator/jPaginator');
@@ -14,8 +15,5 @@ if (!zenarioA.init) {
 
 <?php
 	incJS('zenario/libraries/bsd/bez/jquery.bez');
-	incJS('zenario/libraries/mit/enquire/enquire');
-	//require 'form.js';
 	require 'form.min.js';
-	//require 'plugin.min.js';
 ?>

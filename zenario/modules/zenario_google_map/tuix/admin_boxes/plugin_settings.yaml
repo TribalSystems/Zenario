@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_google_map
     tabs:
         first_tab:
             label: Map
@@ -21,20 +22,26 @@ plugin_settings:
                         zenario, Dukesbridge House, 23 Duke Street, Reading, RG1 4SA,
                         United Kingdom
                 width:
-                    label: 'Size:'
-                    pre_field_html: 'width:'
                     plugin_setting:
                         name: width
+                    label: 'Width:'
                     type: text
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
                     value: "300"
-                    style: width:50px;
-                height:
-                    pre_field_html: '&nbsp;height:'
+                    maxlength: "5"
+                    style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    same_row: Yes
-                    type: text
+                height:
                     plugin_setting:
                         name: height
+                    label: 'Height:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
                     value: "300"
-                    style: width:50px;
-    module_class_name: zenario_google_map
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'

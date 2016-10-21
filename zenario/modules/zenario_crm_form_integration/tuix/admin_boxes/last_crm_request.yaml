@@ -1,0 +1,24 @@
+zenario_crm_form_integration__last_crm_request:
+    title: Last CRM request
+    hide_tab_bar: true
+    key:
+        id: ''
+    tabs:
+        details:
+            label: Details
+            edit_mode:
+                enabled: true
+            fields:
+                url:
+                    label: 'URL:'
+                    type: text
+                    readonly: true
+                datetime:
+                    label: 'Datetime:'
+                    type: text
+                    readonly: true
+                request:
+                    label: 'Requests:'
+                    type: textarea
+                    readonly: true
+                    rows: 20

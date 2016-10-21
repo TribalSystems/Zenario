@@ -2,7 +2,7 @@
 ---
 zenario_create_vlp:
     priv: _PRIV_MANAGE_LANGUAGE_CONFIG
-    title: Creating a Language Pack
+    title: Defining a language
     key:
         id: ""
     max_height: "375"
@@ -15,32 +15,32 @@ zenario_create_vlp:
                 always_on: Yes
             fields:
                 language_id:
-                    label: 'Language Code:'
+                    label: 'Language code:'
                     type: text
                     maxlength: "15"
-                    note_below: |
-                        The Language Code for this language, e.g. <code>en</code>, <code>en-us</code> or <code>en-gb</code>. See
+                    side_note: |
+                        The language code for this language, e.g. <code>en</code>, <code>en-us</code> or <code>en-gb</code>. See
                                                         <a href="http://www.w3.org/International/articles/language-tags/" target="_blank">
                                                             http://www.w3.org/International/articles/language-tags/
                                                         </a> for more information.
                                                         <br/>
                                                         The code must be entered in lower-case, and you are restricted to using tags that are no longer than 15 characters.
                 english_name:
-                    label: 'Language English Name:'
+                    label: 'Language English name:'
                     type: text
                     maxlength: "100"
                     validation:
                         required: Please enter an English name.
-                    note_below: >
+                    side_note: >
                         The name of the language in English. This will be displayed
                         in the CMS to Administrators.
                 language_local_name:
-                    label: 'Language Local Name:'
+                    label: 'Language local name:'
                     type: text
                     maxlength: "100"
                     validation:
                         required: Please enter a local name.
-                    note_below: >
+                    side_note: >
                         The name of the language, in its local tongue. This will be
                         displayed to visitors.
                 flag_filename:
@@ -51,7 +51,7 @@ zenario_create_vlp:
                         width: 6em;
                     pre_field_html: >
                         lang_
-                    note_below: |
-                        Any Language Pickers on your site will use this CSS class name when they wish to show a flag.
+                    side_note: |
+                        Any language pickers on your site will use this CSS class name when they wish to show a flag.
                     validation:
                         required: Please enter a class name

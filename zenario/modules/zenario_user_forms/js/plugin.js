@@ -1,139 +1,260 @@
 (function(module) {
 	'use strict';
 	
-	module.recaptcha = function() {
-		onloadCallback();
-	};
-	
-	module.updateRestatementFields = function(id, mode) {
-		var selector;
+	module.initForm = function(containerId, slotName, ajaxURL, formHTML, formFinalSubmitSuccessfull, inFullScreen, allowProgressBarNavigation, page, maxPageReached, showLeavingPageMessage) {
+		this.containerId = containerId;
 		
-		if (id) {
-			selector = ':input[data-mirror-of="' + id + '"]';
-		} else {
-			selector = ':input[data-mirror-of]';
-		};
+		var that = this;
 		
-		$(selector).each(function(i, el) {
-			var $mirror = $(el),
-				$source = $('#' + $mirror.data('mirror-of'));
-			if (mode == 'checkbox' || mode == 'radio') {
-				$mirror.prop('checked', $source.prop('checked'));
-			} else {
-				$mirror.val($source.val());
-			}
-		});
-	};
-	
-	module.initCalculateField = function(containerId, field, sourceField1, sourceField2, calculationType, mirrorFields) {
-		var sourceField1 = $('input#'+containerId+'_field_value_'+sourceField1),
-			sourceField2 = $('input#'+containerId+'_field_value_'+sourceField2);
-		
-		sourceField1.on('keyup', function() {
-			module.calculate(containerId, field,  sourceField1, sourceField2, calculationType, mirrorFields);
+		$('#' + containerId + '_user_form form').on('submit', function() {
+		    window.onbeforeunload = null;
 		});
 		
-		sourceField2.on('keyup', function() {
-			module.calculate(containerId, field, sourceField1, sourceField2, calculationType, mirrorFields);
-		});
-	};
-	
-	module.calculate = function(containerId, field, soruceField1, sourceField2, calculationType, mirrorFields) {
-		var value1 = soruceField1.val(),
-			value2 = sourceField2.val(),
-			sum = 0;
+		this.startPoking();
 		
-		value1 = Number(value1);
-		if (!isNaN(value1) && isFinite(value1)) {
-			sum += value1;
+		if (showLeavingPageMessage) {
+            if (maxPageReached > 1) {
+                window.onbeforeunload = function() {
+                    return true;
+                }
+            }
+            if (formFinalSubmitSuccessfull) {
+                window.onbeforeunload = null;
+            }
+        }
+		
+		if (allowProgressBarNavigation) {
+		    $('#' + containerId + ' .page_switcher li.step').on('click', function() {
+		        var targetPage = $(this).data('page');
+		        if (targetPage <= maxPageReached && targetPage != page) {
+		            window.onbeforeunload = null;
+		            that.submitForm(containerId, slotName, {'target_page': targetPage}, true);
+		        }
+		    });
 		}
 		
-		value2 = Number(value2);
-		if (!isNaN(value2) && isFinite(value1)) {
-			if (calculationType == '-') {
-				value2 *= -1;
-			}
-			sum += value2;
-		}
-		
-		sum = parseFloat(sum.toFixed(2));
-		
-		module.setJSCalculatedField(containerId, field, sum);
-		
-		if (mirrorFields) {
-			for (field in mirrorFields) {
-				if (mirrorFields.hasOwnProperty(field)) {
-					$(':input[data-mirror-of="'+containerId+'_field_value_'+mirrorFields[field]+'"]').val(sum);
+		// Fix for modal forms with file inputs
+		if (formHTML) {
+			$.colorbox({
+				transition: 'none',
+				html: formHTML,
+				escKey: false,
+				overlayClose: false,
+				onOpen: function() {
+					var cb = get('colorbox');
+					cb.className = module.moduleClassName;
+					$(cb).hide().fadeIn();
 				}
-			}
+			});
+			zenario.resizeColorbox();
 		}
-	};
-	
-	module.setJSCalculatedField = function(containerId, field, value) {
-		$('#'+containerId+'_field_value_'+field).val(value);
-	};
-	
-	
-	
-	module.toggleFieldVisibility = function(containerId, fieldId, visibleConditionFieldId, visibleConditionFieldValue, visibleConditionFieldType) {
-		$('#'+containerId+'_field_'+visibleConditionFieldId+' :input').on('change', function() {
-			var value;
-			if (visibleConditionFieldType == 'checkbox') {
-				value = $(this).is(':checked');
-			} else {
-				value = $(this).val();
-			}
-			if ((visibleConditionFieldValue === null && value !== '') || value == visibleConditionFieldValue) {
-				$('#'+containerId+'_field_'+fieldId).show();
-			} else {
-				$('#'+containerId+'_field_'+fieldId).hide();
-			}
+		// Init print page button
+		$('#' + containerId + '_print_page').on('click', function() {
+			that.printFormPage(containerId);
 		});
-	};
-	
-	module.initJQueryElements = function(containerId, formSubmitted) {
-		// Fullscreen
+		
+		// Init fullscreen button
 		var $fullScreenButton = $('#' + containerId + '_fullscreen');
+		var $fullScreenInput = $('#' + containerId + ' input[name="inFullScreen"]');
 		$fullScreenButton.on('click', function() {
 			zenario.enableFullScreen($('#' + containerId)[0]);
 		});
-		
 		$(document).on(zenario.fullScreenChangeEvent, function() {
 			var isFullScreen = zenario.isFullScreen();
 			$fullScreenButton.toggle(!isFullScreen);
-			$('#' + containerId).toggleClass('in_fullscreen', isFullScreen);
+			$fullScreenInput.val(isFullScreen ? 1 : 0);
+			$('#' + containerId + '_form_wrapper').toggleClass('in_fullscreen', isFullScreen);
 		});
-		
-		if (formSubmitted) {
+		if (formFinalSubmitSuccessfull) {
 			zenario.exitFullScreen();
 		}
 		
-		//jQuery datepickers
+		// Init date pickers
 		$('#' + containerId + '_user_form input.jquery_form_datepicker').each(function(i, el) {
 			zenario.loadDatePicker();
-			
-			//Flexible Form functionality for date pickers that degrade gracefully into three select lists
-			//if JavaScript is not enabled.
 			if (el.id) {
 				el.value = $.datepicker.formatDate(zenario.dpf, $.datepicker.parseDate('yy-mm-dd', get(el.id + '__0').value));
-				
-				$('#' + el.id).datepicker({
+				var options = {
 					dateFormat: zenario.dpf,
 					altField: '#' + el.id + '__0',
 					altFormat: 'yy-mm-dd',
 					showOn: 'focus'
+				};
+				if ($(this).data('selectors')) {
+					options.changeMonth = true;
+					options.changeYear = true;
+					options.yearRange = "c-100:c+5";
+				}
+				
+				var $datepicker = $('#' + el.id);
+				$datepicker.datepicker(options);
+				
+				$('#' + el.id + '__clear').on('click', function() {
+					$datepicker.datepicker('setDate', null);
 				});
 			}
 		});
-		
+		// Init select list source fields
+		$('#' + containerId + '_user_form select.source_field').on('change', function() {
+			module.submitForm(containerId, slotName, {'filter': 1});
+		});
+		// Init visible on condition fields
+		$('#' + containerId + '_user_form .form_field.visible_on_condition').each(function(i, el) {
+			var cFieldId = $(this).data('cfieldid');
+			var cFieldValue = $(this).data('cfieldvalue');
+			var fieldId = $(this).data('id');
+			if (cFieldId) {
+				$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
+					var value;
+					if ($(this).is(':checkbox')) {
+						value = $(this).is(':checked');
+					} else {
+						value = $(this).val();
+					}
+					if ((cFieldValue === null && value !== '') || value == cFieldValue) {
+						$('#' + containerId + '_field_' + fieldId).show();
+					} else {
+						$('#' + containerId + '_field_' + fieldId).hide();
+					}
+				});
+			}
+		});
+		// Init visible on condition repeat blocks
+		$('#' + containerId + '_user_form .repeat_block.visible_on_condition').each(function(i, el) {
+			var cFieldId = $(this).data('cfieldid');
+			var cFieldValue = $(this).data('cfieldvalue');
+			var fieldId = $(this).data('id');
+			if (cFieldId) {
+				$('#' + containerId + '_field_' + cFieldId + ' :input').on('change', function() {
+					var value;
+					if ($(this).is(':checkbox')) {
+						value = $(this).is(':checked');
+					} else {
+						value = $(this).val();
+					}
+					if ((cFieldValue === null && value !== '') || value == cFieldValue) {
+						$('#' + containerId + '_repeat_block_' + fieldId).show();
+					} else {
+						$('#' + containerId + '_repeat_block_' + fieldId).hide();
+					}
+				});
+			}
+		});
+		// Init restatement (mirror) fields
+		$('#' + containerId + '_user_form .form_field.restatement').each(function(i, el) {
+			var that = this;
+			var fieldId = $(this).data('fieldid');
+			if (fieldId) {
+				var $field = $('#' + containerId + '_user_form .form_field :input[name="field_' + fieldId + '"]');
+				// If field is on same form page update in real time
+				if ($field.length > 0) {
+					
+					if ($field.is('input')) {
+						$field.on('keyup', function() {
+							$(that).find(':input').val($(this).val());
+						});
+					} else if ($field.is('select')) {
+						$field.on('change', function() {
+							$(that).find(':input').val($(this).val() === '' ? '' : $(this).find('option:selected').text());
+						});
+					}
+				}
+			}
+		});
+		// Init calculated fields
+		$('#' + containerId + '_user_form .form_field.calculated').each(function(i, el) {
+			var $calc = $(this).find('input');
+			var prefix = $(this).data('prefix');
+			var postfix = $(this).data('postfix');
+			var calculationCode = $('#' + containerId + '_field_' + $(el).data('id') + '_calculation_code').text();
+			if (calculationCode) {
+				calculationCode = JSON.parse(calculationCode);
+				var fieldValues = {};
+				var equation = '';
+				if (calculationCode) {
+					
+					var equation = that.buildFieldCalculation(containerId, calculationCode, fieldValues);
+					
+					if (equation) {
+						// Add fields not on page to equation
+						var $field, $fields = {};
+						for (i in fieldValues) {
+							$field = $('#' + containerId + '_user_form .form_field input[name="field_' + i + '"]');
+							if ($field.length > 0) {
+								$fields[i] = $field;
+							} else {
+								equation = equation.replace('[[FIELD_' + i + ']]', +fieldValues[i]);
+							}
+						}
+						
+						var maxNumberSize = 999999999999999;
+						var minNumberSize = -1 * maxNumberSize;
+						var j, fieldValue, search;
+						for (i in $fields) {
+							$fields[i].on('keyup', function() {
+								var equationWithMergeFields = equation;
+								var xIsNaN = false;
+								var x = 0;
+								
+								for (j in $fields) {
+									fieldValue = $fields[j].val();
+									if (fieldValue == '' || isNaN(fieldValue) || fieldValue.toLowerCase().indexOf('e') > -1) {
+										xIsNaN = true;
+										break;
+									}
+									search = '\\[\\[FIELD_' + j + '\\]\\]';
+									equationWithMergeFields = equationWithMergeFields.replace(new RegExp(search, 'g'), fieldValue);
+								}
+								
+								if (!xIsNaN) {
+									x = Parser.evaluate(equationWithMergeFields);
+									if (!_.isFinite(x) || (x > maxNumberSize) || (x < minNumberSize)) {
+										xIsNaN = true;
+									}
+								}
+								if (xIsNaN) {
+									x = 'NaN';
+								} else {
+									x = +x.toFixed(2);
+									if (prefix) {
+										x = prefix + '' + x;
+									}
+									if (postfix) {
+										x = x + '' + postfix;
+									}
+								}
+								
+								$calc.val(x);
+								
+								// Update any restatement fields that target this field on the page
+								$('#' + containerId + '_user_form .form_field.restatement[data-fieldid="' + $(el).data('id') + '"] :input').val(x);
+							});
+						}
+					}
+				}
+			}
+			
+		});
+		// Init repeat blocks
+		$('#' + containerId + '_user_form .repeat_block').each(function(i, el) {
+			var blockId = $(this).data('id');
+			$(this).find('div.add').on('click', function() {
+				module.submitForm(containerId, slotName, {'add_repeat_row': blockId});
+			});
+			$(this).find('div.delete').on('click', function() {
+				var row = $(this).data('row');
+				module.submitForm(containerId, slotName, {'delete_repeat_row': blockId, 'row': row});
+			});
+		});
+		// Init autocomplete lists
 		var $autocompleteLists = $('#' + containerId + '_user_form .autocomplete_json');
 		$autocompleteLists.each(function() {
 			var that = this;
-			var values = JSON.parse($(this).html());
+			var values = JSON.parse($(this).text());
 			if (values) {
 				var list = [];
-				for (var i in values) {
-					list.push({value: i, label: values[i]});
+				for (var i = 0; i < values.length; i++) {
+					list.push({value: values[i].v, label: values[i].l});
 				}
 				$(this).prev().autocomplete({
 					minLength: 0,
@@ -146,13 +267,12 @@
 							label = ui.item.label;
 							value = ui.item.value;
 						}
-						
 						$(that).next().val(value);
 						$(that).prev().val(label);
-						$('#' + containerId + '_filter_list').val(1);
-						$('#' + containerId + '_filter_list_id').val($(that).parent().data('id'));
-						$('#' + containerId + '_filter_list_value').val(value);
-						$('#' + containerId + '_user_form form').submit();
+						// If this is a source field, reload the form to filter any target fields
+						if ($(that).data('source_field')) {
+							module.submitForm(containerId, slotName, {'filter': 1});
+						}
 					},
 					focus: function(event, ui) {
 						this.value = ui.item.label;
@@ -167,131 +287,27 @@
 							});
 							$(this).data('ui-autocomplete')._trigger('select', 'autocompleteselect', {item:found});
 						}
-					}
+					},
+					open: function(event, ui) {
+						var that = this;
+						$('#' + containerId + '_user_form').scroll(function() {
+							$(that).autocomplete('close');
+						});
+ 					}
 				}).on('click', function () {
+					if (list.length == 0) {
+						var placeholder = $(that).data('auto_placeholder');
+						if (placeholder) {
+							$(this).prop('placeholder', placeholder);
+						}
+					}
 					$(this).autocomplete("search", "");
 				});
 			}
 		});
-	};
-	
-	module.submitMultiPageForm = false;
-	
-	module.initMultiPageForm = function(AJAXURL, containerId, identifier, isFloatingBox, pageCount) {
-		// Enter key advances to next stage instead of submitting form
-		$('#'+identifier+' :input:not(textarea)').on('keydown', function(event) {
-			if (event.keyCode == 13) {
-				event.preventDefault();
-				$(this).parents('fieldset').find('input.next').click();
-			}
-		});
-		
-		// Navigate to next section
-		$('#'+identifier+' input.next').on('click', function(event) {
-			
-			if (module.submitMultiPageForm) {
-				return;
-			}
-			
-			event.preventDefault();
-			var current = $(this).parent(),
-				next = $(this).parent().next(),
-				currentPageId = current.prop('id'),
-				post = false,
-				pageNo = currentPageId.match(/\d+$/),
-				submitForm = $(this).is('input[type="submit"]'),
-				$form;
-			
-			// Entire form should be valid if submitting form
-			if (submitForm) {
-				$form = $('#'+identifier);
-			} else {
-				$form = $('#'+currentPageId);
-			}
-			
-			// Get fields in form section
-			post = $form.find(':input').serialize();
-			
-			// Add any file fields
-			$form.find(':input[type="file"]').each(function(i, el) {
-				var $el = $(el);
-				post += '&' + $el.prop('name') + '=' + $el.val();
-			});
-			
-			// Add page data
-			post += '&_pageNo='+pageNo+'&_pageCount='+pageCount;
-			
-			var captcha_code = $('#' + containerId + '_math_captcha_input').val();
-			if (captcha_code) {
-				post += '&captcha_code=' + captcha_code;
-			}
-			
-			// Validate fields on current page
-			zenario.ajax(AJAXURL, post).after(function(errors) {
-				errors = JSON.parse(errors);
-				
-				// Remove any old errors from current page
-				$('#'+currentPageId+' div.form_error').remove();
-				if (!_.isEmpty(errors)) {
-					// Show any errors
-					var html = '',
-						errorSelector = '';
-					for (var fieldId in errors) {
-						if (fieldId == 'captcha') {
-							html = '<div class="form_error">'+ errors[fieldId] +'</div>';
-							$('#' + containerId + '_math_captcha div.field_title').after(html);
-						} else {
-							errorSelector = '#'+containerId+'_field_'+fieldId;
-							html = '<div class="form_error">'+ errors[fieldId].message +'</div>';
-							if ((errors[fieldId].type == 'checkbox' || errors[fieldId].type == 'group') || !$(errorSelector+' div.field_title').length) {
-								$(errorSelector).append(html);
-							} else {
-								$(errorSelector+' div.field_title').after(html);
-							}
-						}
-					}
-					var selector = containerId;
-					if (isFloatingBox) {
-						selector = 'colorbox';
-					}
-					
-					if (!zenario.isFullScreen()) {
-						$('#'+selector).effect( "shake", {distance: 10, times: 3, duration: 300});
-					}
-				} else {
-					// Submit if final button
-					if (submitForm) {
-						module.submitMultiPageForm = true;
-						$('#'+identifier+'__form input:submit').click();
-					} else {
-						current.css('visibility', 'visible');
-						next.show('slide', {direction: 'right'}, 500);
-						current.hide();
-						if (!isFloatingBox) {
-							$('html, body').animate({scrollTop:$('#'+containerId).offset().top - 20});
-						}
-					}
-				}
-			});
-		});
-		
-		// Navigate to previous section
-		$('#'+identifier+' input.previous').on('click', function() {
-			var current = $(this).parent(),
-				prev = $(this).parent().prev();
-			
-			current.css('visibility', 'visible');
-			prev.show('slide', {direction: 'left'}, 500);
-			current.hide();
-			$('html, body').animate({scrollTop:$('#'+containerId).offset().top - 20});
-			
-		});
-	};
-	
-	
-	module.initFilePickerFields = function(containerId, AJAXURL) {
-		
-		$('#' + containerId + ' .form_field.field_file_picker').each(function() {
+		//TODO improve this
+		// Init file picker fields
+		$('#' + containerId + '_user_form .field_file_picker').each(function() {
 			var that = this,
 				$fileupload = $(this).find('.file_picker_field'),
 				$progressBar = $(this).find('.progress_bar'),
@@ -326,7 +342,7 @@
 			
 			// Init file uploader
 			$fileupload.fileupload({
-				url: AJAXURL,
+				url: ajaxURL + '&filePickerUpload=1',
 				dataType: 'json',
 				maxFileSize: 10000000, //10MB
 				acceptFileTypes: acceptFileTypes,
@@ -352,7 +368,7 @@
 						} else {
 							html += 	'<p>' + file.name + '</p>';
 						}
-						html += 	'<input name="file_picker_' + field_id + '_' + (++fileNumber) + '" type="hidden" value="' + file.id + '" />';
+						html += 	'<input name="field_' + field_id + '_' + (++fileNumber) + '" type="hidden" value="' + file.id + '" />';
 						html += 	'<span class="delete_file_button">' + zenario.phrase('zenario_user_forms', 'Delete') + '</span>';
 						html += '</div>';
 						$(that).find('.files').append($(html));
@@ -402,6 +418,93 @@
 				$fileupload.fileupload('option', 'done').call($fileupload, $.Event('done'), {result: data});
 			}
 		});
-		
 	};
+	
+	module.printFormPage = function() {
+		var htmlToPrint = $('#' + this.containerId + ' .form_fields').html();
+		
+		var left = window.screenX + ($(window).width() / 2);
+		var top = window.screenY;
+		
+		var newWin = window.open('','Print-Window','width=300,height=300,left=' + left + ',top=' + top );
+		
+		newWin.document.open();
+		newWin.document.write('<html><body onload="window.print()">' + htmlToPrint + '</body></html>');
+		newWin.document.close();
+		
+		setTimeout(function(){newWin.close();},10);
+	};
+	
+	module.buildFieldCalculation = function(containerId, calculationCode, fieldValues) {
+		var equation = '';
+		for (var i = 0; i < calculationCode.length; i++) {
+			switch (calculationCode[i]['type']) {
+				case 'static_value':
+					equation += +calculationCode[i]['value'];
+					break;
+				case 'field':
+					if (calculationCode[i]['v'] == 'NaN') {
+						if ($('#' + containerId + '_user_form .form_field input[name="field_' + calculationCode[i]['value'] + '"]').length <= 0) {
+							return false;
+						}
+					}
+					fieldValues[calculationCode[i]['value']] = calculationCode[i]['v']; 
+					equation += '[[FIELD_' + calculationCode[i]['value'] + ']]';
+					break;
+				case 'parentheses_open':
+					equation += '(';
+					break;
+				case 'parentheses_close':
+					equation += ')';
+					break;
+				case 'operation_addition':
+					equation += '+';
+					break;
+				case 'operation_subtraction':
+					equation += '-';
+					break;
+				case 'operation_multiplication':
+					equation += '*';
+					break;
+				case 'operation_division':
+					equation += '/';
+					break;
+			}
+		}
+		return equation;
+	};
+	
+	module.submitForm = function(containerId, slotName, values, scrollToTop) {
+		var $form = $('#' + containerId + '_user_form form');
+		if (!scrollToTop) {
+			$form.removeAttr('onsubmit').submit(function(e) {
+				e.preventDefault();
+				return zenario.formSubmit(this, 0, 1, slotName);
+			});
+		}
+		if (values) {
+			for (var i in values) {
+				$form.append('<input type="hidden" name="' + i + '" value="' + values[i] + '"/>');
+			}
+		}
+		$form.submit();
+	};
+	
+	module.stopPoking = function() {
+        if (module.poking) {
+            clearInterval(module.poking);
+        }
+        module.poking = false;
+    };
+
+    module.startPoking = function() {
+        if (!module.poking) {
+            module.poking = setInterval(module.poke, 2 * 60 * 1000);
+        }
+    };
+
+    module.poke = function() {
+        zenario.ajax(URLBasePath + 'zenario/admin/quick_ajax.php?keep_session_alive=1')
+    };
+	
 })(zenario_user_forms);

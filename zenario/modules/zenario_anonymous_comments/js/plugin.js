@@ -39,31 +39,38 @@ zenario.lib(function(
 
 zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) {
 	
-	//how to handle mobile..?
-	if (zenario.browserIsiPad() || zenario.browserIsiPhone()) {
-		return;
-	}
-	
-	
-	
-	var toolbar = 'bold italic underline strikethrough style-code | removeformat',
+	var isMobile = zenario.browserIsMobile(),
+		toolbarGap = ' | ',
+		toolbar,
+		toolbarLeft = 'bold italic underline strikethrough style-code | removeformat',
+		toolbarRight = 'style-p style-pre blockquote | numlist bullist | outdent indent',
 		plugins = 'lists paste autoresize stylebuttons',
+		fixed_toolbar_container = '#toolbar_container_for_' + editorId,
 		editorPhrases, options;
 	
-	if (enableImages || enableLinks) {
-		toolbar += ' |';
-		
-		if (enableImages) {
-			toolbar += ' image';
-			plugins += ' image';
-		}
-		if (enableImages) {
-			plugins += ' autolink link';
-			toolbar += ' link unlink';
-		}
-	}
+	if (isMobile) {
+		toolbar = [toolbarLeft, toolbarRight];
+		$(fixed_toolbar_container).height(72);
+		fixed_toolbar_container = false;
 	
-	toolbar += ' | style-p style-pre blockquote | numlist bullist | outdent indent';
+	} else {
+		toolbar = toolbarLeft;
+		
+		if (enableImages || enableLinks) {
+			toolbar += toolbarGap;
+		
+			if (enableImages) {
+				toolbar += 'image';
+				plugins += ' image';
+			}
+			if (enableImages) {
+				toolbar += 'link unlink';
+				plugins += ' autolink link';
+			}
+		}
+		
+		toolbar += toolbarGap + toolbarRight;
+	}
 	
 	
 	if (!(editorPhrases = zenario_anonymous_comments.editorPhrases)) {
@@ -108,7 +115,7 @@ zenario_anonymous_comments.load = function(editorId, enableImages, enableLinks) 
 		image_alignment: false,
 
 		inline: true,
-		fixed_toolbar_container: '#toolbar_container_for_' + editorId,
+		fixed_toolbar_container: fixed_toolbar_container,
 		setup: function(editor) {
 			tinyMCE.i18n.add('en', {
 				'Bold': editorPhrases._EDITOR_BOLD,

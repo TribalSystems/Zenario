@@ -54,7 +54,7 @@ plugin_settings:
                 show_sticky_images:
                     plugin_setting:
                         name: show_sticky_images
-                    label: "Show Item's Sticky image:"
+                    label: "Show Item's Sticky image"
                     type: checkbox
                     value: ""
                     format_onchange: Yes
@@ -93,6 +93,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1
                 height:
                     plugin_setting:
                         name: height
@@ -105,6 +106,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1
                 date_format:
                     plugin_setting:
                         name: date_format

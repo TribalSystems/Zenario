@@ -441,7 +441,7 @@ class zenario_users extends module_base_class {
 				id,
 				global_id,
 				/*parent_id,*/
-				ip,
+				last_login_ip,
 				session_id,
 				identifier,
 				screen_name,
@@ -713,7 +713,7 @@ class zenario_users extends module_base_class {
 			$sql .= "	INNER JOIN ". DB_NAME_PREFIX. "users_custom_data AS ucd
 						ON ucd.user_id = u.id";
 		}
-		$sql .= " WHERE u.status = 'active' AND u.last_login LIKE '%".$date."%'";
+		$sql .= " WHERE u.status = 'active' AND u.last_login LIKE '%". sqlEscape($date). "%'";
 			
 		if($datasetColumnNameLiveUser){
 			$sql .= " AND ucd.".sqlEscape($datasetColumnNameLiveUser)." = 1";
@@ -770,7 +770,21 @@ class zenario_users extends module_base_class {
 		return false;
 	}
 	
+	public static function uploadUserImage($userIds) {
+		$imageId = addFileToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true);
+		if ($imageId) {
+			foreach (explode(',', $userIds) as $userId) {
+				updateRow('users', array('image_id' => $imageId), $userId);
+			}
+			deleteUnusedImagesByUsage('user');
+		}
+	}
 	
-	
+	public static function deleteUserImage($userIds) {
+		foreach (explode(',', $userIds) as $userId) {
+			updateRow('users', array('image_id' => 0), $userId);
+		}
+		deleteUnusedImagesByUsage('user');
+	}
 	
 }

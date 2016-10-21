@@ -57,11 +57,8 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 
 	}
 	
-	
-
-	public function showRSS() {
-		//header('Content-type: application/json');
-		header("Content-type: text/javascript; charset=UTF-8");
+	public function handlePluginAJAX() {
+	    header("Content-type: text/javascript; charset=UTF-8");
 		
 		$output = array();
 		
@@ -123,13 +120,7 @@ class zenario_search_entry_box_predictive_probusiness extends zenario_search_res
 	
 	
 	public function init() {
-		if (get('method_call') == 'showRSS') {
-			//Adding this line would allow predictive searches to be cached.
-			//$this->registerGetRequest('searchString');
-		} else {
-			$this->callScript('zenario_search_entry_box_predictive_probusiness', 'autocomplete', $this->containerId, $this->showRSSLink(), $this->setting('dropdown_position'));
-		}
-		
+		$this->callScript('zenario_search_entry_box_predictive_probusiness', 'autocomplete', $this->containerId, $this->pluginAJAXLink(), $this->setting('dropdown_position'));
 		
 		return zenario_search_results::init();
 	}

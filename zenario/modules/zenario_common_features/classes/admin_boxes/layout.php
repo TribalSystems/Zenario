@@ -93,7 +93,7 @@ class zenario_common_features__admin_boxes__layout extends module_base_class {
 		//For new Layouts, check how many possible Skins there are for this Template Family.
 		//If there is only one possible choice, choose it by default.
 		if (!$box['key']['id']) {
-			$result = getRows('skins', 'id', array('family_name' => $box['key']['family_name'], 'type' => 'usable', 'missing' => 0));
+			$result = getRows('skins', 'id', array('family_name' => $box['key']['family_name'], 'missing' => 0));
 			if (($row1 = sqlFetchAssoc($result))
 			 && !($row2 = sqlFetchAssoc($result))) {
 				$box['tabs']['template']['fields']['skin_id']['value'] = $row1['id'];

@@ -8,9 +8,12 @@
 			<% } else if (m.onclick) { %>
 				onclick="{{m.onclick|escape}}"
 			<% } %>
+			<% if (m.tuix.onmouseover) { %>
+				onmouseover="{{m.tuix.onmouseover|escape}}"
+			<% } %>
 		>
 			<span>{{m.label|escape}}</span>
 		</a>
-		{{m.children? '<ul>' + zenarioA.microTemplate('zenario_organizer_button_children', m.children) + '</ul>'  : ''}}
+		{{m.children? '<ul>' + zenarioA.microTemplate('zenario_toolbar_button_children', m.children) + '</ul>'  : ''}}
 	</li>
 </ul>

@@ -30,7 +30,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $pluginName = null;
 foreach (explode(',', $eggIds) as $eggId) {
 	if (($nestedItem = getNestDetails($eggId))
-	 && (!$nestedItem['is_tab'])) {
+	 && (!$nestedItem['is_slide'])) {
 		if ($pluginName === null) {
 			$pluginName = $nestedItem['name_or_title'];
 		} else {

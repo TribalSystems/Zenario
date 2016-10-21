@@ -87,7 +87,7 @@ cms_core::$twig->addExtension(new Twig_Extensions_Extension_I18n());
 
 
 //Create instances of any modules that say they are usable in Twig Frameworks
-foreach (sqlSelectArray("
+foreach (sqlFetchAssocs("
 	SELECT id, class_name, status
 	FROM ". DB_NAME_PREFIX. "modules
 	WHERE for_use_in_twig = 1"

@@ -29,7 +29,12 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Add a new Plugin to the nest, placing it in the right-most tab
-if ($instance = getPluginInstanceDetails($addPluginInstance)) {
+if (($instance = getPluginInstanceDetails($addPluginInstance))
+ && (getRow('modules', 'nestable', $instance['module_id']))) {
+	
+	if ($tab && $tabIsTabId) {
+		$tab = getRow('nested_plugins', 'tab', array('instance_id' => $instanceId, 'id' => $tab));
+	}
 	
 	if (!$tab) {
 		$tab = ifNull(self::maxTab($instanceId), 1);

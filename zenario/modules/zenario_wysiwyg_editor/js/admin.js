@@ -44,12 +44,12 @@ zenario_wysiwyg_editor.summaries = {};
 zenario_wysiwyg_editor.animationsHiddenInEditors = false;
 zenario_wysiwyg_editor.hideAnimationsInEditors = function() {
 	zenario_wysiwyg_editor.animationsHiddenInEditors = true;
-}
+};
 
 zenario_wysiwyg_editor.imagesHiddenInEditors = false;
 zenario_wysiwyg_editor.hideImagesInEditors = function() {
 	zenario_wysiwyg_editor.imagesHiddenInEditors = true;
-}
+};
 
 zenario_wysiwyg_editor.open = function(containerId, editorId, summaryLocked, summaryEmpty, summaryMatches, delayed) {
 	
@@ -167,7 +167,7 @@ directionality	ltr rtl
 	};
 	
 	zenario_wysiwyg_editor.startPoking();
-}
+};
 
 zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice) {
 	
@@ -226,10 +226,25 @@ zenario_wysiwyg_editor.saveViaAJAX = function(el, close, confirm, confirmChoice)
 		zenario_wysiwyg_editor.doClose(slotName);
 	} else {
 		zenarioA.notification(phrase.contentSaved);
+		//zenario_wysiwyg_editor.notification(editorId, {
+		//	text: phrase.contentSaved,
+		//	type: 'success',
+		//	timeout: 5000,
+		//	closeButton: false
+		//});
 	}
-}
+};
 
-
+//https://www.tinymce.com/docs/advanced/creating-custom-notifications/
+//New notifications in 7.3
+zenario_wysiwyg_editor.notification = function(editorId, options) {
+	
+	var editor = $('div#' + editorId).tinymce();
+	
+	if (editor && editor.notificationManager) {
+		editor.notificationManager.open(options);
+	}
+};
 
 zenario_wysiwyg_editor.close = function(el) {
 
@@ -241,7 +256,7 @@ zenario_wysiwyg_editor.close = function(el) {
 		'<input type="button" class="submit_selected" value="' + phrase.abandonChanges + '" onclick="zenarioA.closeFloatingBox(); zenario_wysiwyg_editor.doClose(\'' + slotName + '\');" />' +
 		'<input type="button" class="submit" value="' + phrase.cancel + '"/>',
 		true);
-}
+};
 
 zenario_wysiwyg_editor.doClose = function(slotName) {
 	zenario_wysiwyg_editor.stopPoking();
@@ -251,7 +266,7 @@ zenario_wysiwyg_editor.doClose = function(slotName) {
 	
 	//Reload the Admin Toolbar
 	zenarioAT.init();
-}
+};
 
 
 zenario_wysiwyg_editor.stopPoking = function() {

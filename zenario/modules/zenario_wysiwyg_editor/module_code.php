@@ -72,6 +72,11 @@ class zenario_wysiwyg_editor extends zenario_html_snippet {
 				'</div>
 			</form>';
 	}
+
+	public function addToPageFoot() {
+		
+		//...your PHP code...//
+	}
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {

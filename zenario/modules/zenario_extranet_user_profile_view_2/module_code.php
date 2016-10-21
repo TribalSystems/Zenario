@@ -64,20 +64,6 @@ class zenario_extranet_user_profile_view_2 extends module_base_class {
 		return true;
 	}
 
-	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		switch ($path) {
-			case "plugin_settings":
-				if (!$values['first_tab/max_user_image_width']) {
-					$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a maximum image width.');
-				}
-
-				if (!$values['first_tab/max_user_image_height']) {
-					$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a maximum image height.');
-				}
-				break;
-		}
-	}
-
 	public function showSlot() {
 		$this->twigFramework($this->data);
 	}
@@ -91,6 +77,14 @@ class zenario_extranet_user_profile_view_2 extends module_base_class {
 			}
 		} else {
 			return false;
+		}
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				$this->showHideImageOptions($fields, $values, 'first_tab', false, 'max_user_image_', false, 'Max image size (width × height):');
+				break;
 		}
 	}
 }

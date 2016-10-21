@@ -211,8 +211,8 @@ class zenario_image_container extends zenario_banner {
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		parent::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		
 		switch ($path) {
-				
 			case 'plugin_settings':
 				$fields['alt_tag']['hidden'] = true;
 				$fields['text/title']['hidden'] = true;
@@ -226,17 +226,8 @@ class zenario_image_container extends zenario_banner {
 				$fields['mobile_image']['hidden'] = !$use_mobile_image;
 				
 				$mobile_canvas_hidden = !$use_mobile_image;
-				$fields['mobile_canvas']['hidden'] = $mobile_canvas_hidden;
-	
-				$fields['mobile_width']['hidden'] = $mobile_canvas_hidden
-					|| !in($values['mobile_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
 				
-				$fields['mobile_height']['hidden'] = $mobile_canvas_hidden
-					|| !in($values['mobile_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-				
-				$fields['mobile_offset']['hidden'] = $mobile_canvas_hidden
-					|| $values['mobile_canvas'] != 'resize_and_crop';
-				
+				$this->showHideImageOptions($fields, $values, 'mobile_tab', $mobile_canvas_hidden, 'mobile_');
 				$fields['mobile_show_custom_css_code']['hidden'] = $mobile_canvas_hidden;
 				$fields['mobile_custom_css_code']['hidden'] = !$values['mobile_show_custom_css_code'];
 				

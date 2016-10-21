@@ -1810,6 +1810,63 @@ additionalProperties:
                                         
                                         See http://zenar.io/visibility-in-tuix for examples.
                                 
+                                traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items with all the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                without_traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items without any of the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                one_with_traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button if at least one of the selected items has all of the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                one_without_traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button if at least one of the selected items has none of the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                with_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items with the listed columns set.
+                                without_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items where the listed columns are empty.
+                                one_with_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button if at least one of the selected items has all of the listed columns set.
+                                one_without_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button if at least one of the selected items has empty values in all of the listed columns.
+                                
                                 hide_when_children_are_not_visible:
                                     type: boolean
                                     description: >
@@ -1991,6 +2048,35 @@ additionalProperties:
                                 hidden: *hidden
                                 visible_if: *visible_if
                                 
+                                traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items with all the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                without_traits:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items without any of the listed traits.
+                                        
+                                        Warning: this feature is deprecated!
+                                with_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items with the listed columns set.
+                                without_columns_set:
+                                    type: object
+                                    additionalProperties:
+                                        type: *variable
+                                    description: >
+                                        Only show this button for items where the listed columns are empty.
+                                
                                 disabled:
                                     type: boolean
                                     description: >
@@ -2151,6 +2237,38 @@ additionalProperties:
                                 default: 99
                                 description: >
                                     The maximum depth to use in hierachy mode.
+                            
+                            start_with_all_items_open:
+                                type: boolean
+                                description: >
+                                    New in version 7.4.
+                                    
+                                    When the panel first loads, if this is set, all items will be open.
+                                    
+                                    Does not work if lazy load is enabled.
+                            
+                            send_full_hierarchy_onchange:
+                                type: boolean
+                                description: >
+                                    New in version 7.4.
+                                    
+                                    If an admin makes a change, normally only the changed ordinals are sent.
+                                    
+                                    If you enable this option, every ordinal will be sent.
+                            
+                            disable_dragging_top_level:
+                                type: boolean
+                                description: >
+                                    New in version 7.4.
+                                    
+                                    This hides the drag-handles from the top level.
+                            
+                            disable_dragging_children:
+                                type: boolean
+                                description: >
+                                    New in version 7.4.
+                                    
+                                    This hides the drag-handles from any child items - i.e. you may only drag top level items.
                         
                         description: >
                             New in version 7.0.4.
@@ -2485,6 +2603,14 @@ additionalProperties:
                     
                     
                     
+                    hide_filter_warning:
+                        type: boolean
+                        description: >
+                            Set this property to disable the "Item saved, but your filter prevents it from appearing" message
+                            from appearing.
+                            
+                            This works from version 7.4 onwards.
+                            
                     __page__:
                         type: number
                         description: >

@@ -121,7 +121,7 @@ plugin_settings:
                         Moving the slider to the left will move the image left or down;
                         moving the slider to the right will move the image right or up.
                 retina:
-                    indent: 2
+                    indent: 1
                     plugin_setting:
                         name: retina
                     label: 'Output a retina image'
@@ -294,8 +294,13 @@ plugin_settings:
                     indent: 1
                     plugin_setting:
                         name: target_blank
-                    label: 'Open in a new window'
-                    type: checkbox
+                    type: select
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
+                        2:
+                            label: Open in a floating box
                     value: ""
                 enlarge_canvas:
                     indent: 1

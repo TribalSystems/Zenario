@@ -1,21 +1,21 @@
 <div class="zenario_at_toolbar_container_top">
 	<div class="zenario_at_content zenario_at_toolbar">
-		<% if (!zenarioA.hidden(m.sections.history, true)) { %>
+		<% if (!zenarioA.hidden(m.sections.history)) { %>
 			<div class="zenario_at_history">
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.history)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.translations, true)) { %>
+		<% if (!zenarioA.hidden(m.sections.translations)) { %>
 			<div class="zenario_at_translations">
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.translations)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.help, true)) { %>
+		<% if (!zenarioA.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.page_preview_sizes)}}
 			</div>
 		<% } %>
-		<% if (!zenarioA.hidden(m.sections.help, true)) { %>
+		<% if (!zenarioA.hidden(m.sections.help)) { %>
 			<div class="zenario_at_help">
 				{{zenarioA.microTemplate('zenario_toolbar_button', m.sections.help)}}
 			</div>

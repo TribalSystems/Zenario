@@ -22,10 +22,12 @@
 					<div class="field_type" data-type="calculated"><span class="calculated"></span><h4>Calculated</h4></div>
 					<div class="field_type" data-type="section_description"><span class="section_description"></span><h4>Subheading</h4></div>
 					<div class="field_type" data-type="page_break"><span class="page_break"></span><h4>Page break</h4></div>
+					<div class="field_type" data-type="repeat_start"><span class="repeat_start"></span><h4>Repeat block</h4></div>
 				</div>
 			</div>
 			<div class="field_type_list_header field_type_section">
 				<h5>Centralised data source</h5>
+				<p>For a list of countries, regions or another centralised list, drag one of these fields onto your form and choose the data source.</p>
 			</div>
 			<div id="organizer_centralised_field_type_list" class="field_type_list field_type_section">
 				<div class="field_type" data-type="centralised_radios"><span class="centralised_radios"></span><h4>Radios</h4></div>
@@ -33,6 +35,7 @@
 			</div>
 			<div class="field_type_list_header field_type_section">
 				<h5>Linked fields</h5>
+				<p>Add fields that connect this form with the Users Database.</p>
 			</div>
 			<div id="organizer_linked_field_type_list" class="field_type_list field_type_section">
 				{{zenarioA.microTemplate('zenario_organizer_form_builder_dataset_tab', {})}}
@@ -45,11 +48,17 @@
 	</div>
 	
 	<div class="form_outer">
+		<p id="organizer_fields_error" class="error" style="display:none;"></p>
 		<div class="form_header">
 			<h5>{{m.form_title}}</h5>
 		</div>
+		
+		<!--<div id="organizer_field_to_top" class="to_top">TOP</div>-->
+		
 		<div id="organizer_form_fields" class="form">
 			{{zenarioA.microTemplate('zenario_organizer_form_builder_field', m.items)}}
 		</div>
+		
+		<!--<div id="organizer_field_to_bottom" class="to_bottom">BOTTOM</div>-->
 	</div>
 </div>

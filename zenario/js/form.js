@@ -73,6 +73,15 @@ methods.microTemplate = function(template, data, filter) {
 
 
 
+methods.onThisRow = function(name, id) {
+	return name + id.replace(/\D/g, '');
+};
+
+methods.valueOnThisRow = function(name, id) {
+	return this.value(this.onThisRow(name, id));
+};
+
+
 methods.getKey = function(itemLevel) {
 	return this.tuix && this.tuix.key;
 };
@@ -345,13 +354,18 @@ methods.retryAJAX = function(url, post, done, nowDoingSomething) {
 
 
 methods.switchToATabWithErrors = function() {
-	if (this.tuix && this.tuix.tabs) {
-		if (!this.errorOnTab(this.tuix.tab)) {
-			foreach (this.sortedTabs as var i) {
-				var tab = this.sortedTabs[i];
-				if (this.tuix.tabs[tab] && !zenarioA.hidden(this.tuix.tabs[tab])) {
+	
+	var i, tab, tuix = this.tuix
+	
+	if (tuix && tuix.tabs) {
+		if (!this.errorOnTab(tuix.tab)) {
+			foreach (this.sortedTabs as i => tab) {
+				
+				if (tuix.tabs[tab]
+					//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+				 && !zenarioA.hidden(undefined, undefined, tab, tuix, undefined, undefined, undefined, undefined, tuix.tabs[tab])) {
 					if (this.errorOnTab(tab)) {
-						this.tuix.tab = tab;
+						tuix.tab = tab;
 						return true;
 					}
 				}
@@ -415,10 +429,14 @@ methods.drawTabs = function(microTemplate) {
 	//Generate the HTML for the tabs
 	var tabTUIX,
 		onclick,
-		data = [];
-	foreach (this.sortedTabs as var i => var tab) {
+		data = [],
+		i, tab;
+	
+	foreach (this.sortedTabs as i => tab) {
 		tabTUIX = this.tuix.tabs[tab];
-		if (tabTUIX && !zenarioA.hidden(tabTUIX)) {
+		if (tabTUIX
+			//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+		 && !zenarioA.hidden(undefined, undefined, tab, this.tuix, undefined, undefined, undefined, undefined, tabTUIX)) {
 			
 			//Only allow this tab to be clicked if it looks like there's something on it
 			//Dummy tabs that only exist to be the parents in drop-down menus should not be clickable
@@ -453,6 +471,8 @@ methods.drawTabs = function(microTemplate) {
 methods.drawFields = function(cb, microTemplate) {
 	
 	zenarioA.clearHTML5UploadFromDragDrop();
+	
+	this.splitValues = {};
 	
 	var tab = this.tuix.tab,
 		tabs = this.tuix.tabs[tab],
@@ -850,10 +870,14 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 	}
 	
 	if (lovField) {
-		if (lovField.disabled_if !== undefined && zenarioA.eval(lovField.disabled_if, lovField, undefined, lov)) {
+		if (lovField.disabled_if !== undefined
+			//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
+		 && zenarioA.eval(lovField.disabled_if, lovField, undefined, lov, this.tuix, undefined, undefined, field)) {
 			readOnly = true;
 		}
-	} else if (field.disabled_if !== undefined && zenarioA.eval(field.disabled_if, field, undefined, id)) {
+	} else
+	if (field.disabled_if !== undefined
+	 && zenarioA.eval(field.disabled_if, undefined, undefined, id, this.tuix, undefined, undefined, field)) {
 		readOnly = true;
 	}
 	
@@ -918,6 +942,10 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 		parentsValuesExist = false;
 	
 	
+	if (!field['class'] && field.css_class) {
+		field['class'] = field.css_class;
+	}
+	
 	if (!field.snippet && value === undefined) {
 		value = this.value(id, tab, undefined, true);
 	}
@@ -975,8 +1003,9 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 						parentsValuesExist = true;
 						existingParents[val.parent] = true;
 					}
-				
-					if (zenarioA.hidden(val, false, undefined, v)) {
+					
+					//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+					if (zenarioA.hidden(val, undefined, v, this.tuix, undefined, undefined, field)) {
 						continue;
 					} else if (val.ord !== undefined) {
 						sortOrder.push([v, val.ord]);
@@ -1004,7 +1033,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 		//Close the last row if it was left open, unless this field should be on the same line
 		field._startNewRow = !engToBoolean(field.same_row);
 		
-		hidden = zenarioA.hidden(field, false, undefined, id);
+		hidden = zenarioA.hidden(undefined, undefined, id, this.tuix, undefined, undefined, field);
 		
 		if (lastFieldWasHidden
 		 && engToBoolean(field.hide_with_field_above)) {
@@ -1112,11 +1141,35 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 	
 	//Draw HTML snippets
 	if (field.snippet) {
+		if (field.snippet.separator) {
+			html += '<hr class="input_separator"';
+			
+			if (field.snippet.separator.style) {
+				html += ' style="' + htmlspecialchars(field.snippet.separator.style) + '"';
+			}
+			
+			html += '/>';
+		}
+		if (field.snippet.label) {
+			html += '<label id="label__' + htmlspecialchars(id) + '">' + htmlspecialchars(field.snippet.label) + '</label>';
+		}
+		
+		//Draw the second part of a "type: radios" field that was split using the split_values_if_selected property
+		if (field.snippet.show_split_values_from) {
+			if (this.splitValues
+			 && this.splitValues[field.snippet.show_split_values_from]) {
+				html += this.splitValues[field.snippet.show_split_values_from];
+				delete this.splitValues[field.snippet.show_split_values_from];
+			
+			//Auto-hide snippets with the show_split_values_from property set,
+			//if there were no split values to display
+			} else {
+				return false;
+			}
+		}
+		
 		if (field.snippet.html) {
 			html += '<span id="snippet__' + htmlspecialchars(id) + '">' + field.snippet.html + '</span>';
-		
-		} else if (field.snippet.label) {
-			html += '<label id="label__' + htmlspecialchars(id) + '">' + htmlspecialchars(field.snippet.label) + '</label>';
 		
 		} else if (field.snippet.url) {
 			if (!engToBoolean(field.snippet.cache)) {
@@ -1129,14 +1182,6 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 				html += this.cachedAJAXSnippets[field.snippet.url];
 			}
 		
-		} else if (field.snippet.separator) {
-			html += '<hr class="input_separator"';
-			
-			if (field.snippet.separator.style) {
-				html += ' style="' + htmlspecialchars(field.snippet.separator.style) + '"';
-			}
-			
-			html += '/>';
 		}
 	
 	//Draw multiple checkboxes/radiogroups
@@ -1315,12 +1360,19 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 							} else {
 								language = 'ace/mode/' + language;
 							}
-				
+							
 							codeEditor.session.setMode(language);
+							codeEditor.setOptions({
+								enableBasicAutocompletion: true,
+								enableLiveAutocompletion: true
+							});
+				
 						} catch (e) {
 							console.log('Ace editor could not load that language', language);
 						}
 					}
+					
+					codeEditor.$blockScrolling = Infinity;
 					
 					if (editingPositions = that.editingPositions[tab + '/' + id]) {
 						codeEditor.session.setScrollTop(editingPositions.top);
@@ -1729,9 +1781,7 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 		if (field.type == 'url' && !readOnly) {
 			html +=
 				'&nbsp; ' +
-				'<input type="button" class="submit" value="Test" onclick="' +
-					"if (get('" + htmlspecialchars(id) + "').value) window.open(zenario.addBasePath(get('" + htmlspecialchars(id) + "').value));" +
-				'"/>';
+				'<input type="button" class="submit" value="' + phrase.test + '" onclick="' + this.globalName + '.testURL(\'' + jsEscape(id) + '\');" />';
 		}
 		
 		if (field.post_field_label !== undefined) {
@@ -1756,6 +1806,32 @@ methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHid
 methods.addExtraAttsForTextFields = function(field, extraAtt) {
 };
 
+//Test a URL typed into a URL field by opening it
+methods.testURL = function(id) {
+	
+	//Get the value of the field
+	var link = get(id).value,
+		domTargetBlank = get(this.onThisRow('target_blank_', id)) || get(this.onThisRow('target_blank', id));
+	
+	if (!link) {
+		return;
+	
+	//Small hack here - if there is a "target_blank" field, and it's set to show in a colorbox,
+	//then show the test in a colorbox as well.
+	} else if (domTargetBlank && domTargetBlank.value == 2) {
+		$.colorbox({
+			href: link,
+			iframe: true,
+			width: '95%',
+			height: '95%',
+			className: 'zenario_url_test_colorbox'
+		});
+	
+	} else {
+		window.open(zenario.addBasePath(link));
+	}
+};
+
 
 
 
@@ -1776,7 +1852,9 @@ methods.hierarchicalSelect = function(picked_items, field, sortOrder, parentsVal
 		
 		} else
 		if (engToBoolean(val.disabled)
-		 || (val.disabled_if !== undefined && zenarioA.eval(val.disabled_if, val, undefined, v))) {
+		 || (val.disabled_if !== undefined
+			//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
+		  && zenarioA.eval(val.disabled_if, val, undefined, v, this.tuix, undefined, undefined, field))) {
 			disabled = ' disabled="disabled"';
 		}
 		
@@ -1852,7 +1930,7 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 		debounce: 200,
 		
 		sortable: engToBoolean(upload.reorder_items),
-		placeholder: pick_items.nothing_selected_phrase || phrase.nothing_selected,
+		placeholder: pick_items.nothing_selected_phrase || upload.nothing_selected_phrase || phrase.nothing_selected,
 		
 		//If multiple select is not enabled, every time a value is added it should replace what is already there.
 		//(Note that I don't want to use {maxElements: 1} to stop people selecting more than one because I want
@@ -2028,7 +2106,7 @@ methods.chooseFromDropbox = function(id) {
 				cb = new zenario.callback;
 			
 			foreach (files as f => file) {
-				cb.add(zenario.ajax('zenario/ajax.php?method_call=handleAdminBoxAJAX&fetchFromDropbox=1&path=' + encodeURIComponent(that.path), file, true));
+				cb.add(zenario.ajax(this.ajaxURL() + '&fetchFromDropbox=1', file, true));
 			}
 			
 			cb.after(function() {
@@ -2050,12 +2128,7 @@ methods.chooseFromDropbox = function(id) {
 						values += ',' + file.id;
 					}
 					
-					if (!field.values) {
-						field.values = {};
-					}
-					if (!field.values[file.id]) {
-						field.values[file.id] = that.formatLabelFromFile(file);
-					}
+					that.setFileDetails(field, file);
 				}
 				
 				if (values !== '') {
@@ -2069,6 +2142,19 @@ methods.chooseFromDropbox = function(id) {
 	
 	zenarioA.showAJAXLoader();
 	Dropbox.choose(options);
+};
+
+methods.setFileDetails = function(field, file) {
+	
+	if (!field.values) {
+		field.values = {};
+	}
+	if (!field.values[file.id]) {
+		field.values[file.id] = {
+			file: file,
+			label: this.formatLabelFromFile(file)
+		};
+	}
 };
 
 methods.formatLabelFromFile = function(file) {
@@ -2133,13 +2219,7 @@ methods.upload = function(id, setUpDragDrop) {
 				
 				if (file && file.id) {
 					values += ',' + file.id;
-					
-					if (!field.values) {
-						field.values = {};
-					}
-					if (!field.values[file.id]) {
-						field.values[file.id] = that.formatLabelFromFile(file);
-					}
+					that.setFileDetails(field, file);
 				}
 			}
 			
@@ -2151,7 +2231,7 @@ methods.upload = function(id, setUpDragDrop) {
 	
 	if (setUpDragDrop) {
 		zenarioA.setHTML5UploadFromDragDrop(
-			URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX&path=' + encodeURIComponent(that.path),
+			that.ajaxURL(),
 			{
 				fileUpload: 1
 			},
@@ -2160,8 +2240,12 @@ methods.upload = function(id, setUpDragDrop) {
 			get('zenario_fbAdminInner')
 		);
 	} else {
-		zenarioA.action(this, object, undefined, undefined, undefined, {fileUpload: 1});
+		zenarioA.action(this, object, undefined, undefined, undefined, {fileUpload: 1}, undefined, this.ajaxURL());
 	}
+};
+
+methods.ajaxURL = function() {
+	return URLBasePath + 'zenario/ajax.php?method_call=handleAdminBoxAJAX&path=' + encodeURIComponent(this.path);
 };
 
 methods.uploadComplete = function(responses) {
@@ -2296,17 +2380,9 @@ methods.pickedItemsArray = function(field, value) {
 			if (field.upload
 			 && (i == 1 * i)
 			 && (file = zenarioA.lookupFileDetails(i))) {
-				if (!field.values) {
-					field.values = {};
-				}
 				
-				picked_items[i] = file.filename;
-				
-				if (engToBoolean(file.width) && engToBoolean(file.height)) {
-					picked_items[i] += ' [' + file.width + ' × ' + file.height + 'px]';
-				}
-				
-				field.values[i] = picked_items[i];
+				this.setFileDetails(field, file);
+				picked_items[i] = field.values[i];
 			
 			} else {
 				picked_items[i] = i;
@@ -2335,7 +2411,16 @@ methods.pickedItemsValue = function(picked_items) {
 
 //Draw hierarchical checkboxes or radiogroups
 methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, parent, parents, level) {
-	var cols = 1;
+	
+	var cols = 1,
+		col = 0,
+		html = '',
+		m, v,
+		lovField,
+		isSelected,
+		hadSelected = false,
+		splitValuesAfterSelected = false;
+	
 	
 	//Set a depth limit to try and prevent infinite loops
 	if (!level) {
@@ -2365,11 +2450,6 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 		parents[parent] = true;
 	}
 	
-	
-	var col = 0,
-		html = '',
-		m, v,
-		lovField;
 	
 	if (level) {
 		html += '<div class="zenario_hierarchical_box_children" id="' + htmlspecialchars('children_for___' + id + '___' + parent) + '">';
@@ -2408,42 +2488,40 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 			m.cols = cols;
 			
 			//Work out whether this should be checked
-			var thisValue;
-			
 			//If the field has no value set, it should not be checked unless the radiogroup had no value either
 				//(i.e. the "not set" option)
 			if (!value) {
-				thisValue = !v;
+				isSelected = !v;
 			
 			} else if (value === true || value === 1 || value === '1') {
-				thisValue = v === true || v === 1 || v === '1';
+				isSelected = v === true || v === 1 || v === '1';
 			
 			//Otherwise, check or don't check the checkbox/radiogroup depending on the current value of the field
 			//Attempt to get the values from picked_items if we can, otherwise use the value.
 			} else if (!picked_items) {
-				thisValue = v == value;
+				isSelected = v == value;
 			} else if (picked_items[v] !== undefined) {
-				thisValue = true;
+				isSelected = true;
 			} else {
-				thisValue = false;
+				isSelected = false;
 			}
 			
-			m.checked = thisValue;
+			m.checked = isSelected;
 			
 			//Include logic for checking parents/unchecking children on selection/deselection of checkboxes
 			if (field.type == 'checkboxes' && engToBoolean(field.checking_child_checks_parents)) {
 				var onchange = '';
-				
+			
 				//Include logic for checking parents/unchecking children on selection/deselection of checkboxes
 				if (parent) {
 					onchange += "if (this.checked) { for (var cb in " + JSON.stringify(parents) + ") { get('" + htmlspecialchars(id) + "___' + cb).checked = true; } } "
 				}
-				
+			
 				//Include logic for unchecking children on deselection
 				if (existingParents[v]) {
 					onchange += "if (!this.checked) { $('#children_for___' + this.id + ' input').attr('checked', false); } ";
 				}
-				
+			
 				if (onchange) {
 					if (field.onchange) {
 						thisField.onchange = onchange + ' ' + field.onchange;
@@ -2457,15 +2535,15 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 						delete thisField.onchange;
 					}
 				}
-			
+		
 			} else if (field.type == 'checkboxes' && engToBoolean(field.checking_parent_checks_children)) {
 				var onchange = '';
-				
+			
 				//Include logic for checking children on selection
 				if (existingParents[v]) {
 					onchange += "if (this.checked) { $('#children_for___' + this.id + ' input').each(function(i, el) {el.checked = true;}) }; ";
 				}
-				
+			
 				if (onchange) {
 					if (field.onchange) {
 						thisField.onchange = onchange + ' ' + field.onchange;
@@ -2480,10 +2558,10 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 					}
 				}
 			}
-			
+		
 			m.lovId = id + '___' + v;
 			m.lovField = lovField;
-			
+		
 			if (field.indeterminates
 			 && engToBoolean(field.indeterminates[v])) {
 				(function(id) {
@@ -2495,17 +2573,37 @@ methods.hierarchicalBoxes = function(cb, tab, id, value, field, thisField, picke
 					});
 				})(m.lovId);
 			}
-			
+		
 			//methods.drawField = function(cb, tab, id, customTemplate, field, lastFieldWasHidden, lov, value, readOnly, tempReadOnly, sortOrder, existingParents, lovField) {
-			m.lovHTML = this.drawField(cb, tab, id, true, thisField, undefined, v, thisValue, false, tempReadOnly, sortOrder, existingParents, lovField);
-			
+			m.lovHTML = this.drawField(cb, tab, id, true, thisField, undefined, v, isSelected, false, tempReadOnly, sortOrder, existingParents, lovField);
+		
 			m.childrenHTML = '';
 			if (existingParents[v]) {
 				m.childrenHTML = this.hierarchicalBoxes(cb, tab, id, value, field, thisField, picked_items, tempReadOnly, sortOrder, existingParents, v, _.extend({}, parents), level + 1);
 				col = 0;
 			}
 			
-			html += this.microTemplate(this.mtPrefix + '_radio_or_checkbox', m);
+			
+			if (splitValuesAfterSelected) {
+				if (!this.splitValues) {
+					this.splitValues = {};
+				}
+				if (!this.splitValues[id]) {
+					this.splitValues[id] = '';
+				}
+				this.splitValues[id] += this.microTemplate(this.mtPrefix + '_radio_or_checkbox', m);; 
+			
+			} else {
+				html += this.microTemplate(this.mtPrefix + '_radio_or_checkbox', m);; 
+			}
+			
+			if (isSelected
+			 && lovField.split_values_if_selected
+			 && !level
+			 && field.type === 'radios') {
+				splitValuesAfterSelected = true;
+			}
+			//hadSelected = hadSelected || isSelected;
 		}
 	}
 	
@@ -2531,6 +2629,7 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 		valueObject = {},
 		label = field.values && field.values[item];
 	
+	
 	if (_.isObject(label)) {
 		valueObject = label;
 		label = label.label;
@@ -2544,6 +2643,7 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 	var numeric = item == 1 * item,
 		extension,
 		widthAndHeight,
+		file,
 		path,
 		src,
 		mi = {
@@ -2600,8 +2700,18 @@ methods.drawPickedItem = function(item, id, field, readOnly) {
 		
 		//Generate a link to the selected file
 		if (numeric) {
-			//If this is an existing file (with a numeric id), link by id
-			src = URLBasePath + 'zenario/file.php?id=' + item;
+			if ((file = field.values && field.values[item] && field.values[item].file)
+			 && (file.checksum)) {
+				//If this is an existing file (with a numeric id), link by id
+				src = URLBasePath + 'zenario/file.php?c=' + encodeURIComponent(file.checksum);
+			
+				if (file.usage) {
+					src += '&usage=' + encodeURIComponent(file.usage);
+				}
+			} else {
+				//Otherwise if this looks like a numeric id, try to link by id
+				src = URLBasePath + 'zenario/file.php?id=' + item;
+			}
 		} else {
 			//Otherwise try to display it from the cache/uploads/ directory
 			src = URLBasePath + 'zenario/file.php?getUploadedFileInCacheDir=' + encodeURIComponent(item);
@@ -2987,6 +3097,7 @@ methods.currentValue = function(f, tab, readOnly) {
 	}
 };
 
+//Get the value of a field
 methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	if (!tab) {
 		tab = this.tuix.tab;
@@ -3003,22 +3114,27 @@ methods.value = function(f, tab, readOnly, getButtonLabelsAsValues) {
 	if (!field
 	 || field.snippet
 	 || field.type == 'grouping') {
-		return '';
 	
 	} else if (!getButtonLabelsAsValues && (field.type == 'submit' || field.type == 'toggle' || field.type == 'button')) {
-		return !!field.pressed;
+		value = !!field.pressed;
 	
 	} else if (!readOnly && field.current_value !== undefined) {
-		return field.current_value;
+		value = field.current_value;
 	
 	} else if (field.value !== undefined) {
-		return field.value;
+		value = field.value;
 	
 	} else if (field.multiple_edit && field.multiple_edit.original_value !== undefined) {
-		return field.multiple_edit.original_value;
+		value = field.multiple_edit.original_value;
+	}
 	
+	//Sometimes numbers might be returned as strings.
+	//This is usually fine, except for '0', which evaluates to true when we want it to evaluate to false,
+	//so correct that here!
+	if (value === '0') {
+		return 0;
 	} else {
-		return '';
+		return value;
 	}
 };
 

@@ -45,10 +45,9 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$box['save_button_message'] = adminPhrase('Save & Close');
 			$box['save_and_continue_button_message'] = adminPhrase('Save & Continue');
 		}
-
-
+		
 		$menu = false;
-		if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id']))) {
+		if ($box['key']['id'] && ($menu = getMenuNodeDetails($box['key']['id'], setting('default_language')))) {
 			exitIfNotCheckPriv('_PRIV_VIEW_MENU_ITEM');
 	
 			$box['key']['sectionId'] = $menu['section_id'];
@@ -75,6 +74,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 		
 			} elseif ($menu['target_loc'] == 'ext') {
 				$values['text/target_loc'] = 'ext';
+				$values['ext_url'] = $menu['ext_url'];
 			}
 			$values['text/use_download_page'] = $menu['use_download_page'];
 			$values['text/hide_private_item'] = $menu['hide_private_item'];
@@ -92,6 +92,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$values['advanced/use_rollover_image'] = (bool) $menu['rollover_image_id'];
 			$values['advanced/rollover_image_id'] = $menu['rollover_image_id'];
 			$values['advanced/css_class'] = $menu['css_class'];
+			$values['advanced/add_registered_get_requests'] = $menu['add_registered_get_requests'];
 	
 			if ($values['advanced/call_static_method'] = (bool) $menu['module_class_name']) {
 				$values['advanced/menu__module_class_name'] = $menu['module_class_name'];
@@ -203,6 +204,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 	
 			if ($box['key']['parentMenuID']) {
 				$box['tabs']['text']['fields'][$parentPath]['value'] = getMenuPath($box['key']['parentMenuID'], $lang['id']);
+				
 			}
 	
 			if ($numLangs > 1) {
@@ -462,6 +464,7 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 			$submission['accesskey'] = $values['advanced/accesskey'];
 			$submission['rel_tag'] = $values['advanced/rel_tag'];
 			$submission['css_class'] = $values['advanced/css_class'];
+			$submission['add_registered_get_requests'] = $values['advanced/add_registered_get_requests'];
 	
 			$call_static_method = $values['advanced/call_static_method'];
 			$submission['module_class_name'] = $call_static_method ? $values['advanced/menu__module_class_name'] : '';
@@ -545,6 +548,5 @@ class zenario_common_features__admin_boxes__menu extends module_base_class {
 				langEquivalentItem($box['key']['cID'], $box['key']['cType'], $box['key']['languageId']);
 			}
 		}
-		
 	}
 }

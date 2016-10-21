@@ -38,7 +38,6 @@ switch ($path) {
 	case 'zenario_quick_create':
 		return require funIncPath(__FILE__, 'content.validateAdminBox');
 	
-	
 	case 'zenario_document_folder':
 		
 		if ($values['details/folder_name'] == "") {

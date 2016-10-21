@@ -863,6 +863,9 @@ class zenario_incoming_email_manager extends module_base_class {
 				$fetch['fetch_server'], $fetch['fetch_username'], $fetch['fetch_password'], $fetch['fetch_mailbox'], 180,
 				$fetch['fetch_keep_mail']? $fetch['fetch_processed_mailbox'] : false, $fetch['fetch_error_mailbox']);
 			
+			$actionTakenTotal = $noActionTakenTotal = $errorTotal = 0;
+			$dontSendLogEmail = setting('zenario_incoming_email_manager__send_summary_email');
+			
 			while ($email = zenario_incoming_email_manager::fetchEmail()) {
 				
 				if (!$path = zenario_incoming_email_manager::saveDecode($email)) {
@@ -897,14 +900,19 @@ class zenario_incoming_email_manager extends module_base_class {
 				
 				switch ($result) {
 					case '<!--action_taken-->':
+						++$actionTakenTotal;
 						if ($overallResult != 'error') {
 							$overallResult = '<!--action_taken-->';
 						}
+						zenario_incoming_email_manager::markEmailAsProcessed(false);
+						break;
 					case '<!--no_action_taken-->':
+						++$noActionTakenTotal;
 						zenario_incoming_email_manager::markEmailAsProcessed(false);
 						break;
 					
 					default:
+						++$errorTotal;
 						$overallResult = 'error';
 						zenario_incoming_email_manager::markEmailAsProcessed(true);
 				}
@@ -916,7 +924,8 @@ class zenario_incoming_email_manager extends module_base_class {
 					$managerClassName,
 					$serverTime, $jobId, $jobName,
 					$logActions, $logInaction, $emailActions, $emailInaction,
-					$emailAddressAction, $emailAddressInaction, $emailAddressError);
+					$emailAddressAction, $emailAddressInaction, $emailAddressError,
+					$dontSendLogEmail);
 			}
 			
 			//Update the status of the job
@@ -927,6 +936,22 @@ class zenario_incoming_email_manager extends module_base_class {
 				$serverTime, $jobId, $jobName,
 				$logActions, $logInaction, $emailActions, $emailInaction,
 				$emailAddressAction, $emailAddressInaction, $emailAddressError);
+			
+			//Send a summary email instead of individual emails for each email checked
+			$totalEmails = $actionTakenTotal + $noActionTakenTotal + $errorTotal;
+			if ($dontSendLogEmail && $errorTotal > 0) {
+				$message =  "Total emails processed: " . $totalEmails . "\n\n";
+				$message .= "Action taken: " . $actionTakenTotal . "\n";
+				$message .= "No action taken: " . $noActionTakenTotal . "\n";
+				$message .= "Error: " . $errorTotal . "\n\n";
+				$message .= "To see detailed log info check the Organizer link above and select 'View log'.";
+				
+				$emailList = zenario_scheduled_task_manager::getLogEmailList($overallResult, $emailAddressAction, $emailAddressInaction, $emailAddressError);
+				
+				$status = zenario_scheduled_task_manager::getTaskStatus($overallResult);
+				
+				zenario_scheduled_task_manager::sendLogEmails($managerClassName, $serverTime, $jobName, $jobId, $status, $message, $emailList);
+			}
 		
 		} catch (Exception $e) {
 			$overallResult = 'error';
@@ -1064,7 +1089,9 @@ class zenario_incoming_email_manager extends module_base_class {
 		$managerClassName,
 		$serverTime, $jobId, $jobName,
 		$logActions, $logInaction, $emailActions, $emailInaction,
-		$emailAddressAction, $emailAddressInaction, $emailAddressError
+		$emailAddressAction, $emailAddressInaction, $emailAddressError,
+		$dontSendLogEmail = false
+		
 	) {
 
 		$logId =
@@ -1073,7 +1100,8 @@ class zenario_incoming_email_manager extends module_base_class {
 				$managerClassName,
 				$serverTime, $jobId, $jobName,
 				$logActions, $logInaction, $emailActions, $emailInaction,
-				$emailAddressAction, $emailAddressInaction, $emailAddressError);
+				$emailAddressAction, $emailAddressInaction, $emailAddressError,
+				$dontSendLogEmail);
 		
 		if ($logId) {
 			$header = $addresses = false;

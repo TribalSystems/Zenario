@@ -59,18 +59,6 @@ additionalProperties:
                 - key
                 - tabs
     properties:
-        customisation_name:
-            type: string
-            description: >
-                Normally if you define elements for the FEA toolkit, you define them under a path and they always appear
-                when using that path.
-                
-                However you can declare a customisation using this property.
-                
-                When you declare a customisation, the elements you define in this file will only
-                appear when using that customisation.
-        
-        
         title:
             type: string
             description: >
@@ -218,14 +206,42 @@ additionalProperties:
                                     Note that if this property is not defined then it will default to true.
                                 default: true
                     
-                    # The fields property will be auto-copied from admin_boxes.ajax.php
-                    # by the dev tools when this file is loaded
-                    #fields:
+                    # The fields property here will be array_merge_recursive() with the fields property
+                    # from admin_box_schema.yaml by the dev tools when this file is loaded.
+                    fields:
+                        additionalProperties:
+                            properties:
+                                confirm: &confirm
+                                    type: object
+                                    description: >
+                                        Use this to display a confirmation prompt before performing the button's action.
+                                    properties:
+                                        title:
+                                            type: string
+                                            description: >
+                                                A title for the confirmation prompt.
+                                        message:
+                                            type: string
+                                            description: >
+                                                A message for the confirmation prompt.
+                            
+                                                If this is an item or inline button, your message may contain [[merge_field]]s
+                                                which match up to the column names, and will be populated according to the item
+                                                which is selected.
+                                        button_message:
+                                            type: string
+                                            description: >
+                                                A message for the confirm button
+                                        cancel_button_message:
+                                            type: string
+                                            description: >
+                                                A message for the cancel button
+                        
         
         
-        # The fields lovs will be auto-copied from admin_boxes.ajax.php
-        # by the dev tools when this file is loaded
-        #lovs:
+        # The lovs property here will be array_merge_recursive() with the lovs property
+        # from admin_box_schema.yaml by the dev tools when this file is loaded.
+        lovs: {}
         
         
         
@@ -345,36 +361,7 @@ additionalProperties:
                         description: >
                             Setting this properly lets you override the default location and put the button in a different position.
                     
-                    confirm:
-                        type: object
-                        description: >
-                            Use this to display a confirmation prompt before performing the button's action.
-                        properties:
-                            title:
-                                type: string
-                                description: >
-                                    A title for the confirmation prompt.
-                            message:
-                                type: string
-                                description: >
-                                    A message for the confirmation prompt.
-                            
-                                    If this is an item or inline button, your message may contain [[merge_field]]s
-                                    which match up to the column names, and will be populated according to the item
-                                    which is selected.
-                                    (Note that this won't work if multiple items are selected.)
-                            
-                                    If you don't want a hard-coded warning message, then you can omit the message
-                                    property completely. This will cause the CMS will launch an AJAX call to your
-                                    handleOrganizerPanelAJAX() method (using $_GET rather than $_POST) to look up the text needed.
-                            button_message:
-                                type: string
-                                description: >
-                                    A message for the confirm button
-                            cancel_button_message:
-                                type: string
-                                description: >
-                                    A message for the cancel button
+                    confirm: *confirm
                     
                     onclick: &onclick
                         type: string
@@ -406,6 +393,11 @@ additionalProperties:
                                 type: string
                                 description: >
                                     A mode to go to when your button is pressed
+                            command:
+                                type: string
+                                description: >
+                                    If the conductor is running, issue this command.
+                                    Note that this overrides the normal navigation.
                         additionalProperties:
                             type: *variable
                             description: >

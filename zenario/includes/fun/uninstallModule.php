@@ -43,6 +43,7 @@ uninstallModuleCheckForDependencies($module);
 //Remove all data about the module
 $result = getRows('plugin_instances', 'id', array('module_id' => $moduleId));
 while ($row = sqlFetchAssoc($result)) {
+	deleteRow('nested_paths', array('instance_id' => $row['id']));
 	deletePluginInstance($row['id']);
 }
 

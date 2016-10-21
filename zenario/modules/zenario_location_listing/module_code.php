@@ -358,27 +358,8 @@ class zenario_location_listing extends module_base_class {
 					$box['tabs']['first_tab']['fields']['region']['hidden'] = true;
 				}
 				
-				//Sticky image
-				$box['tabs']['first_tab']['fields']['width']['hidden'] = true;
-				$box['tabs']['first_tab']['fields']['height']['hidden'] = true;
-				if($values['first_tab/show_sticky_images'] && $values['first_tab/canvas']){
-					switch($values['first_tab/canvas']){
-						case 'fixed_width':
-							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
-							break;
-						case 'fixed_height':
-							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
-							break;
-						case 'fixed_width_and_height':
-							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
-							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
-							break;
-						case 'resize_and_crop':
-							$box['tabs']['first_tab']['fields']['width']['hidden'] = false;
-							$box['tabs']['first_tab']['fields']['height']['hidden'] = false;
-							break;
-					}
-				}
+				$hidden = !$values['first_tab/show_sticky_images'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
 				
 				break;
 		}

@@ -29,7 +29,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //The "Plugin CSS and Framework" FAB used to be part of the "Plugin Settings" FAB.
-//The logic that runs it is still stored there,
+//The logic that runs it is still there, on a big switch statement between the two modes.
 includeModuleSubclass('zenario_common_features', 'admin_boxes', 'plugin_settings');
 
 class zenario_common_features__admin_boxes__plugin_css_and_framework extends zenario_common_features__admin_boxes__plugin_settings {

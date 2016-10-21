@@ -51,16 +51,16 @@ class zenario_banner extends module_base_class {
 
 	protected function setupLink(&$mergeFields, &$cID, &$cType, $useTranslation = true, $link_type = 'link_type', $hyperlink_target = 'hyperlink_target', $target_blank = 'target_blank', $url = 'url') {
 		
+		$mergeFields['Target_Blank'] = '';
+		$link = $downloadFile = $cID = $cType = false;
+		
 		//Check to see if an item is set in the hyperlink_target setting 
-		$cID = $cType = false;
 		if ($this->setting($link_type) == '_CONTENT_ITEM'
 		 && ($linkExists = $this->getCIDAndCTypeFromSetting(
 			$cID, $cType,
 			$hyperlink_target,
 			!$this->isVersionControlled && $this->setting('use_translation'))
 		)) {
-			
-			$mergeFields['Target_Blank'] = '';
 			
 			$downloadFile = ($cType == 'document' && !$this->setting('use_download_page'));
 			
@@ -76,11 +76,7 @@ class zenario_banner extends module_base_class {
 				'href="'. htmlspecialchars($link). '"';
 			
 			if ($downloadFile) {
-				$mergeFields['Target_Blank'] .= ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
-			}
-			
-			if ($this->setting($target_blank)) {
-				$mergeFields['Target_Blank'] .= " target=\"_blank\"";
+				$mergeFields['Target_Blank'] = ' onclick="'. htmlspecialchars(trackFileDownload($link)). '"';
 			}
 			
 			
@@ -130,19 +126,24 @@ class zenario_banner extends module_base_class {
 				 || !(($equivId = equivId($cID, $cType))
 				   && checkRowExists('content_items', array('equiv_id' => $equivId, 'type' => $cType, 'status' => array('!1' => 'trashed', '!2' => 'deleted'))))) {
 					
-					$this->setSetting($link_type, '_NO_LINK');
-					$this->setSetting($hyperlink_target, '');
-					$this->setSetting($target_blank, '');
+					$this->setSetting($link_type, '_NO_LINK', true);
+					$this->setSetting($hyperlink_target, '', true);
+					$this->setSetting($target_blank, '', true);
 				}
 			
-			} elseif ($this->setting($link_type) == '_EXTERNAL_URL' && $this->setting($url)) {
+			} elseif ($this->setting($link_type) == '_EXTERNAL_URL' && ($link = $this->setting($url))) {
 				$mergeFields['Link_Href'] =
 				$mergeFields['Image_Link_Href'] =
-					'href="'. htmlspecialchars($this->setting($url)). '"';
-				
-				if ($this->setting($target_blank)) {
-					$mergeFields['Target_Blank'] = " target=\"_blank\"";
-				}
+					'href="'. htmlspecialchars($link). '"';
+			}
+		}
+		
+		if ($link && ($openIn = $this->setting($target_blank))) {
+			
+			$mergeFields['Target_Blank'] .= ' target="_blank"';
+			
+			if (!$downloadFile && $openIn == 2) {
+				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. jsEscape($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
 			}
 		}
 	}
@@ -152,8 +153,8 @@ class zenario_banner extends module_base_class {
 	function init() {
 		if ($this->isVersionControlled) {
 			if (post('_zenario_save_content_')) {
-				$this->setSetting('text', post('content__content'), true, 'translatable_html');
-				$this->setSetting('title', post('content__title'), true, 'translatable_text');
+				$this->setSetting('text', post('content__content'), true, true, 'translatable_html');
+				$this->setSetting('title', post('content__title'), true, true, 'translatable_text');
 				exit;
 			}
 		
@@ -223,7 +224,109 @@ class zenario_banner extends module_base_class {
 				}
 			}
 			
-			if (imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))) {
+			
+			//Get the resize options for the image from the plugin settings
+			$banner_canvas = $this->setting('canvas');
+			$banner_width = $this->setting('width');
+			$banner_height = $this->setting('height');
+			
+			//If this banner is in a nest, check if there are default settings set by the nest
+			if (isset($this->parentNest)
+			 && $this->parentNest->banner_canvas) {
+				
+				$inheritDimensions = true;
+				
+				//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
+				if ($banner_canvas == 'fixed_width_and_height'
+				 || $this->parentNest->banner_canvas == 'fixed_width_and_height'
+				 || ($this->parentNest->banner_canvas == 'fixed_width' && $banner_canvas == 'fixed_height')
+				 || ($this->parentNest->banner_canvas == 'fixed_height' && $banner_canvas == 'fixed_width')) {
+					$banner_canvas = 'fixed_width_and_height';
+				
+				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
+				//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
+				//they're not both different
+				} else
+				if (!$banner_canvas
+				 || $banner_canvas == 'unlimited'
+				 || !(($this->parentNest->banner_canvas == 'resize_and_crop') XOR ($banner_canvas == 'resize_and_crop'))) {
+					$banner_canvas = $this->parentNest->banner_canvas;
+				
+				} else {
+					$inheritDimensions = false;
+				}
+				
+				if ($inheritDimensions && $this->parentNest->banner_width) {
+					if (!$banner_width
+					 || !in($banner_canvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
+						$banner_width = $this->parentNest->banner_width;
+					}
+				}
+				
+				if ($inheritDimensions && $this->parentNest->banner_height) {
+					if (!$banner_height
+					 || !in($banner_canvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
+						$banner_height = $this->parentNest->banner_height;
+					}
+				}
+			}
+			
+			$banner__enlarge_image = true;
+			$banner__enlarge_canvas = $this->setting('enlarge_canvas');
+			$banner__enlarge_width = (int) $this->setting('enlarge_width');
+			$banner__enlarge_height = (int) $this->setting('enlarge_height');
+			
+			//Also have some nest-wide options to enable colorbox popups, and to set restrictions there too
+			if (isset($this->parentNest)
+			 && $this->parentNest->banner__enlarge_image
+			 && !in($this->setting('link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL')) {
+				
+				//Set the link type to "_ENLARGE_IMAGE" if it's not already.
+				$this->setSetting('link_type', '_ENLARGE_IMAGE', false);
+				
+				$inheritDimensions = true;
+				
+				//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
+				if ($banner__enlarge_canvas == 'fixed_width_and_height'
+				 || $this->parentNest->banner__enlarge_canvas == 'fixed_width_and_height'
+				 || ($this->parentNest->banner__enlarge_canvas == 'fixed_width' && $banner__enlarge_canvas == 'fixed_height')
+				 || ($this->parentNest->banner__enlarge_canvas == 'fixed_height' && $banner__enlarge_canvas == 'fixed_width')) {
+					$banner__enlarge_canvas = 'fixed_width_and_height';
+				
+				//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
+				//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
+				//they're not both different
+				} else
+				if (!$banner__enlarge_canvas
+				 || $banner__enlarge_canvas == 'unlimited'
+				 || !(($this->parentNest->banner__enlarge_canvas == 'resize_and_crop') XOR ($banner__enlarge_canvas == 'resize_and_crop'))) {
+					$banner__enlarge_canvas = $this->parentNest->banner__enlarge_canvas;
+				
+				} else {
+					$inheritDimensions = false;
+				}
+				
+				if ($inheritDimensions && $this->parentNest->banner__enlarge_width) {
+					if (!$banner__enlarge_width
+					 || !in($banner__enlarge_canvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
+						$banner__enlarge_width = $this->parentNest->banner__enlarge_width;
+					}
+				}
+				
+				if ($inheritDimensions && $this->parentNest->banner__enlarge_height) {
+					if (!$banner__enlarge_height
+					 || !in($banner__enlarge_canvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
+						$banner__enlarge_height = $this->parentNest->banner__enlarge_height;
+					}
+				}
+			}
+			
+			
+			
+			
+			
+			
+			if (imageLink($width, $height, $url, $imageId, $banner_width, $banner_height, $banner_canvas, $this->setting('offset'), $this->setting('retina'))) {
 				
 				if ($this->setting('image_source') == '_CUSTOM_IMAGE') {
 					$this->clearCacheBy(
@@ -243,7 +346,7 @@ class zenario_banner extends module_base_class {
 				
 				if ($this->setting('use_rollover')
 				 && $this->setting('image_source') == '_CUSTOM_IMAGE'
-				 && imageLink($width, $height, $url2, $this->setting('rollover_image'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), $this->setting('offset'), $this->setting('retina'))) {
+				 && imageLink($width, $height, $url2, $this->setting('rollover_image'), $banner_width, $banner_height, $banner_canvas, $this->setting('offset'), $this->setting('retina'))) {
 					$this->mergeFields['Image_Rollover'] = array(
 							'Image_Src' => htmlspecialchars($url2),
 							'Image_Height' => $height,
@@ -263,7 +366,7 @@ class zenario_banner extends module_base_class {
 						'onmouseover="get(\''. $this->containerId. '_img\').src = get(\''. $this->containerId. '_rollover\').src;" ';
 				
 				} elseif (($this->setting('link_type')=='_ENLARGE_IMAGE') && ($this->setting('image_source') != '_STICKY_IMAGE') && (!arrayKey($this->mergeFields,'Link_Href'))){
-					if (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $this->setting('enlarge_width'), $this->setting('enlarge_height'), $this->setting('enlarge_canvas'))) {
+					if (imageLink($widthFullSize, $heightFullSize, $urlFullSize, $imageId, $banner__enlarge_width, $banner__enlarge_height, $banner__enlarge_canvas)) {
 						if ($this->setting('disable_rel')) {
 							$this->mergeFields['Link_Href'] =
 							$this->mergeFields['Image_Link_Href'] = 'rel="colorbox_no_arrows" href="' . htmlspecialchars($urlFullSize) . '" class="enlarge_in_fancy_box"';

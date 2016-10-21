@@ -103,25 +103,30 @@ methods.showFieldDetailsSection = function(section, noValidation) {
 };
 
 //TODO improve this!
-methods.showDetailsSection = function(section) {
+methods.showDetailsSection = function(section, noTransition) {
 	var sections = ['organizer_field_type_list', 'organizer_field_details', 'organizer_tab_details'],
 		index = $.inArray(section, sections);
 	if (index > -1) {
+		// Hide other sections
+		foreach (sections as key => name) {
+			$('#' + name + '_outer').hide();
+		}
 		
 		// Show selected sections and destroy other forms
-		$('#' + section + '_outer').show();
+		var direction = 'left';
+		if (section == 'organizer_field_type_list') {
+			direction = 'right';
+		}
+		
+		if (noTransition || this.noTransition) {
+			this.noTransition = false;
+			$('#' + section + '_outer').show();
+		} else {
+			$('#' + section + '_outer').show('drop', {direction: direction}, 200);
+		}
 		
 		if (section == 'organizer_field_type_list') {
 			this.current = false;
-		}
-		
-		delete(sections[index]);
-		
-		// Hide other sections
-		foreach (sections as key => section) {
-			if (section) {
-				$('#' + section + '_outer').hide();
-			}
 		}
 	}
 };
@@ -149,7 +154,9 @@ methods.initAddNewFieldsButton = function() {
 // Deselect a field
 methods.unselectField = function() {
 	this.current.type = this.current.id = false;
-	$(this.formFieldInlineButtonsSelector).hide();
+	if (this.formFieldInlineButtonsSelector) {
+		$(this.formFieldInlineButtonsSelector).hide();
+	}
 	$(this.formFieldsSelector).removeClass('selected');
 };
 
@@ -209,6 +216,8 @@ methods.saveChanges = function() {
 		
 		that.changingForm = false;
 		that.changesSaved = true;
+		
+		that.saveLock = false;
 		
 		zenarioO.reload();
 	});
@@ -312,6 +321,7 @@ methods.createRadioList = function(options, checkedValue, name, disabled) {
 
 //Draw (or hide) the button toolbar
 //This is called every time different items are selected, the panel is loaded, refreshed or when something in the header toolbar is changed.
+methods.saveLock = false;
 methods.showButtons = function($buttons) {
 	var that = this;
 	
@@ -325,16 +335,16 @@ methods.showButtons = function($buttons) {
 		$buttons.html(this.microTemplate('zenario_organizer_apply_cancel_buttons', mergeFields));
 		
 		//Add an event to the Apply button to save the changes
-		var lock = false
 		$buttons.find('#organizer_applyButton')
 			.click(function() {
 				var afterValidate = function(errors) {
 					if (_.isEmpty(errors)) {
-						if (lock == true) {
+						
+						if (that.saveLock == true) {
 							return false;
 						}
 						zenarioA.nowDoingSomething('saving', true);
-						lock = true;
+						that.saveLock = true;
 						that.saveChanges();
 					}
 				};

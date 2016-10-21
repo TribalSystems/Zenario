@@ -5,8 +5,12 @@ sections:
         buttons:
             view_dropdown:
                 label: View
-                hide_when_children_are_not_visible: Yes
+                hide_when_children_are_not_visible: true
                 ord: 20
+                onmouseover: 'zenarioA.closeSlotControls();'
+                # n.b. I've used "zenarioA.closeSlotControls()" above there to
+                # close the slot control drop-down if it is still open when someone mouses-over these dropdowns
+            
             head:
                 label: HTML in head of page
                 parent: view_dropdown

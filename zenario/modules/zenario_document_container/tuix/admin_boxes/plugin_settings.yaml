@@ -22,14 +22,40 @@ plugin_settings:
                 document_source:
                     plugin_setting:
                         name: document_source
-                    label: 'Select Document or Folder:'
+                    label: 'Select document or folder:'
+                    side_note: 'Select either a specific document, or a folder containing one or more documents.'
                     pick_items:
                         path: zenario__content/panels/documents
                         min_path: zenario__content/panels/documents
                         max_path: zenario__content/panels/documents
                         target_path: zenario__content/panels/documents
-                        select_phrase: Select Document or Folder...
+                        select_phrase: Select...
                     format_onchange: true
+                    indent: 1
+                show_files_in_folders:
+                    plugin_setting:
+                        name: show_files_in_folders
+                    label: "Show Documents:"
+                    type: radios
+                    value: folder
+                    values:
+                        all:
+                            ord: 3
+                            label: "In all sub-folders (all levels)"
+                        sub-folders:
+                            ord: 2
+                            label: 'In sub-folders of selected folder (1 level down)'
+                        folder:
+                            ord: 1
+                            label: 'Only in selected folder'
+                    format_onchange: true
+                    indent: 1
+                show_folders_in_results:
+                    plugin_setting:
+                        name: show_folders_in_results
+                    label: "Show sub-folder names in results"
+                    type: checkbox
+                    indent: 2
                 show_folder_name_as_title:
                     plugin_setting:
                         name: show_folder_name_as_title
@@ -52,18 +78,17 @@ plugin_settings:
                     value: h1
                     side_note: |
                         Choose which HTML tags the title will be displayed in.
+                    indent: 1
                 show_title:
                     plugin_setting:
                         name: show_title
-                    label: "Show document title"
+                    label: "Show document title (if available)"
                     type: checkbox
                     format_onchange: true
-                    note_below: |
-                        If this setting is checked and no title has been entered for a document nothing will show.
                 offer_download_as_zip:
                     plugin_setting:
                         name: offer_download_as_zip
-                    label: 'Offer download as ZIP'
+                    label: 'Offer download as ZIP file'
                     type: checkbox
                     format_onchange: true
                 zip_file_name:
@@ -75,6 +100,7 @@ plugin_settings:
                         You can specify the name of the ZIP archive. If you
                         leave this field empty, the folder name will be used.
                     post_field_html: '.zip'
+                    indent: 1
                 zip_size_limit:
                     plugin_setting:
                         name: zip_size_limit
@@ -86,29 +112,7 @@ plugin_settings:
                     side_note: >
                         Please specify the maximum size of the unpacked files. If
                         not specified, 10 MB is assumed.
-                
-                show_files_in_folders:
-                    plugin_setting:
-                        name: show_files_in_folders
-                    label: "Show Documents:"
-                    type: radios
-                    value: folder
-                    values:
-                        all:
-                            ord: 3
-                            label: "In all sub-folders (all levels)"
-                        sub-folders:
-                            ord: 2
-                            label: 'In sub-folders of selected folder (1 level down)'
-                        folder:
-                            ord: 1
-                            label: 'Only in selected folder'
-                    format_onchange: true
-                show_folders_in_results:
-                    plugin_setting:
-                        name: show_folders_in_results
-                    label: "Show sub-folder names in results"
-                    type: checkbox
+                    indent: 1
                 show_file_size:
                     plugin_setting:
                         name: show_file_size
@@ -148,6 +152,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: true
+                    indent: 1
                 width:
                     plugin_setting:
                         name: width
@@ -160,6 +165,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 height:
                     plugin_setting:
                         name: height
@@ -172,6 +178,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 document_tags:
                     plugin_setting:
                         name: document_tags

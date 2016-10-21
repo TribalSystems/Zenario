@@ -1,0 +1,169 @@
+/* Connect with us
+--------------------------------------------------------------------------------------------------*/
+
+.slot_connect .zenario_plugin_nest {
+	overflow: hidden;
+	text-align: right;
+	margin-bottom: 50px;
+}
+
+.slot_connect .zenario_plugin_nest .nest_title {
+	position: relative;
+    top: -10px;
+}
+   
+.slot_connect .zenario_plugin_nest h1 {
+	font-size: 1.25em;
+	color: #0a4a85;
+}
+
+.slot_connect .zenario_plugin_nest .nest_title,
+.slot_connect .zenario_plugin_nest .nest_plugins_wrap,
+.slot_connect .zenario_plugin_nest .zenario_slot {
+	display:inline-block;
+}
+
+.slot_connect .zenario_plugin_nest .nest_title {
+	margin-right: 10px;
+}
+
+.slot_connect .zenario_plugin_nest .zenario_banner:hover {
+	cursor: pointer;
+}
+
+
+/* Home grey panel, nests common styles
+--------------------------------------------------------------------------------------------------*/
+
+.grey_first_row,
+.grey_second_row  {
+	text-align: center;
+}
+
+.grey_first_row .nest_wrap,
+.grey_second_row .nest_wrap {
+	display: block;
+	overflow: hidden;
+}
+
+.grey_first_row .zenario_slot,
+.grey_second_row .zenario_slot {
+    display: inline-block;
+    float: left;
+    margin: 0 1.5%;
+    position: relative;
+}
+
+.grey_first_row .zenario_banner .banner_title h3 a,
+.grey_second_row .zenario_banner .banner_title h3 a  {
+	font-family: "freight-sans-pro", "Verdana", sans-serif;
+	font-size: 1.2em;
+	color: #151515;
+	font-weight: 600;
+	cursor: default;
+}
+
+.grey_first_row .zenario_banner .banner_title h3 a:hover,
+.grey_second_row .zenario_banner .banner_title h3 a:hover {
+	text-decoration: none;
+}
+
+.grey_first_row .zenario_banner a,
+.grey_second_row .zenario_banner a {
+	cursor: default;
+} 
+
+.grey_first_row .zenario_banner img,
+.grey_second_row .zenario_banner img  {
+	margin: 6px 0 10px;
+	-webkit-transition: all 0.2s ease-in;
+    -moz-transition: all 0.2s ease-in;
+    transition: all 0.2s ease-in;
+}
+
+.grey_first_row .zenario_banner .banner_text p:nth-child(1),
+.grey_second_row .zenario_banner .banner_text p:nth-child(1)  {
+	font-size: .95em;
+	font-weight: 700;
+}
+
+.grey_first_row .zenario_banner .banner_text p:nth-child(2),
+.grey_second_row .zenario_banner .banner_text p:nth-child(2) {
+	font-size: .75em;
+}
+
+.grey_first_row .zenario_banner .banner_more a {
+	margin-top: 10px;
+}
+
+
+
+/* Home grey panel, nest 1
+--------------------------------------------------------------------------------------------------*/
+
+.grey_first_row .zenario_slot {
+    width: 30% !important;
+}
+
+.grey_first_row .zenario_banner img {
+	border-radius: 50%;
+	border: 8px solid #fff;
+	box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.9);
+}
+
+
+/* Home grey panel, nest 2
+--------------------------------------------------------------------------------------------------*/
+
+.grey_second_row {
+	margin-top: 67px;
+}
+
+.grey_second_row .zenario_slot {
+    width: 22% !important;
+}
+
+
+/* Home grey panel, nest 2
+--------------------------------------------------------------------------------------------------*/
+
+.partners {
+	overflow: hidden;
+	border-bottom: 1px solid #d2d8db !important;
+    margin-top: 15px;
+    padding-bottom: 8px;
+}
+
+.partners .nest_title {
+	margin-bottom: 20px;
+}
+
+.partners .nest_title h1 {
+	font-weight: 600;
+	font-size: 1.5em;
+	color: #2e74b4;
+}
+
+.partners .nest_plugins {
+	overflow: hidden;
+	background: url('../images/curve-bg-light-blue-on-white.jpg') no-repeat center center;
+}
+
+.partners .nest_plugins .zenario_image_container {
+	width: 23% !important;
+	height: 190px;
+	display: inline-block;
+    position: relative;
+    float: left;
+    margin: 20px 1% 20px;
+    background-color:  #ffffff;
+    box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.31);
+}
+
+.partners .nest_plugins .zenario_image_container a {
+    width: 100% !important;
+    height: 100% !important;
+    background-position: center !important;
+    background-size: 80% auto;
+}
+

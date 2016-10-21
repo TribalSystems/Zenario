@@ -1,0 +1,47 @@
+/* User form
+--------------------------------------------------------------------------------------------------*/
+
+
+.zenario_user_forms {
+	overflow:hidden;
+	clear: both;
+	position: relative;
+    top: -45px;
+	background-color:  #c2e1fd;
+	box-shadow: 0px 2px 5px 0px rgba(1, 1, 1, 0.16);
+	padding: 5% 13%;
+	margin-bottom: 0 !important;
+}
+
+.zenario_user_forms .form_field {
+	padding:14px 0;
+	overflow:hidden;
+}
+
+
+.zenario_user_forms .field_title {
+	font-family: "freight-sans-pro", "Verdana", sans-serif;
+	font-weight: 500;
+	font-size: 1.25em;
+	padding-bottom:3px;
+}
+
+.zenario_user_forms .field_section_description .field_title {
+	font-weight:700;
+	font-size:1.250em;
+	color:#0060a0;
+}
+
+.zenario_user_forms .forms {
+	width:100%;
+	overflow:hidden;
+}
+
+.zenario_user_forms input[type="submit"] {
+	margin-top: 20px;
+}
+
+
+
+
+

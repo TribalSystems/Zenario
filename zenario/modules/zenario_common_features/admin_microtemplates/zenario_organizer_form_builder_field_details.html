@@ -88,14 +88,36 @@
 					style="display:none;"
 				<% } %>
 			>
-				<% if (m.type != 'page_break') { %>
+				<% if (m.type != 'page_break' && m.type != 'page_end') { %>
 					<div class="field">
-						<div class="title">Label:</div>
+						<div class="title">
+							<% if (m.type == 'repeat_start') { %>
+								Section heading:
+							<% } else { %>
+								Label:
+							<% } %>
+						</div>
 						<div class="value">
-							<input name="field_label" id="field__field_label" type="text" value="{{m.field_label|e}}" maxlength="255"/>
+							<input name="label" id="field__field_label" type="text" value="{{m.label|e}}" maxlength="255"/>
 						</div>
 						<div class="note_below">
-							This will be the field label as seen by the user. 
+							<% if (m.type == 'repeat_start') { %>
+								This will be the heading at the start of the repeating section.
+							<% } else { %>
+								This will be the field label as seen by the user. 
+							<% } %>
+						</div>
+					</div>
+				<% } %>
+				
+				<% if (m.type == 'section_description') { %>
+					<div class="field">
+						<div class="title">Description:</div>
+						<div class="value">
+							<textarea id="field__description" name="description">{{m.description|e}}</textarea>
+							<div class="note_below">
+								This is a description of the section placed under the label.
+							</div>
 						</div>
 					</div>
 				<% } %>
@@ -143,42 +165,67 @@
 					
 				<% } %>
 				
-				<% if (m.type != 'page_break' && m.type != 'section_description') { %>
-					
-					<div class="field" id="field_container__visibility">
-						<div class="title">Visibility:</div>
+				
+                <% if (m.type != 'page_end') { %>
+                    <div class="field" id="field_container__visibility">
+                        <div class="title">Visibility:</div>
+                        <div class="value">
+                            <select name="visibility">
+                                {{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visibility_options)}}
+                            </select>
+                        </div>
+                    </div>
+				<% } %>
+				
+				<% if (m.visibility == 'visible_on_condition') { %>
+					<div class="field" id="field_container__visible_condition_field_id">
+						<div class="title">Visible on condition field:</div>
 						<div class="value">
-							<select name="visibility">
-								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visibility_options)}}
+							<select name="visible_condition_field_id">
+								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visible_condition_field_id_options)}}
 							</select>
+						</div>
+						<div class="note_below">
+							Select a field that this fields visibility will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select)
 						</div>
 					</div>
 					
-					<% if (m.visibility == 'visible_on_condition') { %>
-						<div class="field" id="field_container__visible_condition_field_id">
-							<div class="title">Visible on condition field:</div>
+					<% if (m.visible_condition_field_id) { %>
+						<div class="field">
+							<div class="title">Visible if:</div>
 							<div class="value">
-								<select name="visible_condition_field_id">
-									{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visible_condition_field_id_options)}}
+								<select name="visible_condition_field_value">
+									{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visible_condition_field_value_options)}}
 								</select>
 							</div>
-							<div class="note_below">
-								Select a field that this fields visibility will rely on from the current form (the following types of field are allowed: checkbox, radios, select, centralised radios and centralised select)
-							</div>
 						</div>
-						
-						<% if (m.visible_condition_field_id) { %>
-							<div class="field">
-								<div class="title">Visible if:</div>
-								<div class="value">
-									<select name="visible_condition_field_value">
-										{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.visible_condition_field_value_options)}}
-									</select>
-								</div>
-							</div>
-						<% } %>
 					<% } %>
+				<% } %>
+				
+				<% if (m.type == 'repeat_start') { %>
+					<div class="field">
+						<div class="title">Minimum rows:</div>
+						<div class="value">
+							<input name="min_rows" id="field__min_rows" type="text" value="{{m.min_rows|e}}" maxlength="255"/>
+						</div>
+						<div class="note_below">
+							The number of rows that are always shown and cannot be deleted.
+						</div>
+					</div>
 					
+					<div class="field">
+						<div class="title">Maximum rows:</div>
+						<div class="value">
+							<input name="max_rows" id="field__max_rows" type="text" value="{{m.max_rows|e}}" maxlength="255"/>
+						</div>
+						<div class="note_below">
+							The maximum number of rows that can be added.
+						</div>
+					</div>
+				<% } %>
+				
+				
+				<% if (m.type != 'page_break' && m.type != 'section_description' && m.type != 'repeat_start' && m.type != 'page_end') { %>
 					
 					<div class="field" id="field_container__readonly_or_mandatory">
 						<div class="title">Mandatory / Read-only:</div>
@@ -234,7 +281,7 @@
 				<% } %>
 				
 				<% if (m.type == 'text') { %>
-					<div class="field" id="field_container__validation">
+					<div class="field" id="field_container__field_validation">
 						<div class="title">Validation:</div>
 						<div class="value">
 							<select name="field_validation">
@@ -247,7 +294,7 @@
 						<div class="field">
 							<div class="title">Error message when validation fails:</div>
 							<div class="value">
-								<input name="validation_error_message" type="text" value="{{m.validation_error_message|e}}" maxlength="255"/>
+								<input name="field_validation_error_message" type="text" value="{{m.field_validation_error_message|e}}" maxlength="255"/>
 							</div>
 							<div class="note_below">
 								Enter an error message when validation fails. 
@@ -283,7 +330,18 @@
 					</div>
 				<% } %>
 				
-				<% if (m.type != 'page_break' && m.type != 'section_description') { %>
+				<% if (m.type == 'date') { %>
+					<div class="field">
+						<div class="value">
+							<input id="field__show_month_year_selectors" name="show_month_year_selectors" type="checkbox" 
+								<% if (m.show_month_year_selectors) { %> checked="checked" <% } %>
+							/>
+							<label for="field__show_month_year_selectors" class="title">Show month and year selectors</label>
+						</div>
+					</div>
+				<% } %>
+				
+				<% if (m.type != 'page_break' && m.type != 'section_description' && m.type != 'repeat_start' && m.type != 'page_end') { %>
 					<div class="field">
 						<div class="title">Note below field:</div>
 						<div class="value">
@@ -296,67 +354,55 @@
 				
 				<% } %>
 				
-				<% if (m.type == 'section_description') { %>
-					<div class="field">
-						<div class="title">Description:</div>
-						<div class="value">
-							<textarea id="field__description" name="description">{{m.description|e}}</textarea>
-							<div class="note_below">
-								This is a description of the section placed under the label.
-							</div>
-						</div>
-					</div>
-				<% } %>
-				
 				<% if (m.type == 'page_break') { %>
 					<div class="field">
-						<div class="title">Next button text:</div>
+						<div class="title">"Next" button text:</div>
 						<div class="value">
 							<input name="next_button_text" type="text" value="{{m.next_button_text|e}}" maxlength="255"/>
-						</div>
-						<div class="note_below">
-							Enter the text for the next button used on the form page before this page break.
 						</div>
 					</div>
 					
 					<div class="field">
-						<div class="title">Back button text:</div>
+						<div class="title">"Back" button text:</div>
 						<div class="value">
 							<input name="previous_button_text" type="text" value="{{m.previous_button_text|e}}" maxlength="255"/>
 						</div>
-						<div class="note_below">
-							Enter the text for the back button used on the form page before this page break.
+					</div>
+				<% } %>
+				
+				<% if (m.type == 'page_break' || m.type == 'page_end') { %>
+				    <div class="field">
+						<div class="value">
+							<input id="field__hide_in_page_switcher" name="hide_in_page_switcher" type="checkbox" 
+								<% if (m.hide_in_page_switcher) { %> checked="checked" <% } %>
+							/>
+							<label for="field__hide_in_page_switcher" class="title">Hide in page switcher</label>
 						</div>
 					</div>
 				<% } %>
 				
 				<% if (m.type == 'calculated') { %>
 					<div class="field">
-						<div class="title">Numeric field A:</div>
+						<div class="title">Value prefix:</div>
 						<div class="value">
-							<select name="numeric_field_1">
-								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.numeric_field_1_options)}}
-							</select>
+							<input name="value_prefix" type="text" value="{{m.value_prefix|e}}" maxlength="255"/>
+						</div>
+					</div>
+					<div class="field">
+						<div class="title">Value postfix:</div>
+						<div class="value">
+							<input name="value_postfix" type="text" value="{{m.value_postfix|e}}" maxlength="255"/>
 						</div>
 					</div>
 					
+					
 					<div class="field">
-						<div class="title">Numeric field B:</div>
 						<div class="value">
-							<select name="numeric_field_2">
-								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.numeric_field_2_options)}}
-							</select>
+							<textarea readonly>{{m.calculation_code_display|e}}</textarea>
+							<input type="button" id="edit_field_calculation" value="Edit calculation">
 						</div>
 					</div>
 					
-					<div class="field">
-						<div class="title">Calculation type:</div>
-						<div class="value">
-							<select name="calculation_type">
-								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.calculation_type_options)}}
-							</select>
-						</div>
-					</div>
 				<% } %>
 				
 				<% if (m.type == 'restatement') { %>
@@ -366,6 +412,9 @@
 							<select name="restatement_field">
 								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.restatement_field_options)}}
 							</select>
+						</div>
+						<div class="note_below">
+							You can mirror text, calculated, select lists and centralised select lists.
 						</div>
 					</div>
 				<% } %>
@@ -382,7 +431,7 @@
 					style="display:none;"
 				<% } %>
 			>
-				<% if (m.type != 'checkboxes' && m.type != "section_description") { %>
+				<% if (m.type != 'checkboxes' && m.type != "section_description" && m.type != "repeat_start") { %>
 					<div class="field" id="field_container__default_value_options">
 						<div class="title">Pre-populate field:</div>
 						<div class="value">
@@ -443,10 +492,21 @@
 					<% } %>
 				<% } %>
 				
+				<% if (m.type == 'checkboxes') { %>
+					<div class="field">
+						<div class="title">Checkbox columns:</div>
+						<div class="value">
+							<select name="value_field_columns">
+								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.value_field_columns_options)}}
+							</select>
+						</div>
+					</div>
+				<% } %>
+				
 				<div class="field">
 					<div class="title">CSS classes:</div>
 					<div class="value">
-						<input name="css_classes" type="text" value="{{m.css_classes|e}}" maxlength="255"/>
+						<input id="field__css_classes" name="css_classes" type="text" value="{{m.css_classes|e}}" maxlength="255"/>
 					</div>
 					<div class="note_below">
 						Enter a list of classes separated by spaces that'll be applied to this field.
@@ -456,10 +516,10 @@
 				<div class="field">
 					<div class="title">Wrapper div class:</div>
 					<div class="value">
-						<input name="div_wrap_class" type="text" value="{{m.div_wrap_class|e}}" maxlength="255"/>
+						<input id="field__div_wrap_class" name="div_wrap_class" type="text" value="{{m.div_wrap_class|e}}" maxlength="255"/>
 					</div>
 					<div class="note_below">
-						Enter a class for a wrapper div around this field and all fields below until a page break or a field with a different wrapper div is found.
+						Enter a class for a wrapper div around this field. Fields above or below with the same wrapper div class will also be added into this div.
 					</div>
 				</div>
 				

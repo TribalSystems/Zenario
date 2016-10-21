@@ -104,15 +104,10 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		
 		if (empty($a)) {
 			
-			//If this is from an existing Layout, check what the slot names originally were and what they are now.
-			$newNames = array();
-			$oldToNewNames = array();
-			zenario_grid_maker::checkForRenamedSlots($data, $newNames, $oldToNewNames);
-			
-			
 			//Attempt to save, and report on what happened
+			$slots = array();
 			$status =
-				zenario_grid_maker::generateDirectory($data, $writeToFS = true, $preview, $fileBaseName);
+				zenario_grid_maker::generateDirectory($data, $slots, $writeToFS = true, $preview, $fileBaseName);
 			
 			if (isError($status)) {
 				echo adminPhrase($status);
@@ -219,95 +214,72 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 						
 						$a['success'] .= ' '. adminPhrase('Your layout has been created.');
 					}
-					
-					//Whether we are saving a new layout or updating an existing one,
-					//update the information on the grid.
-					if ($a['layoutId']) {
-						$submission = array();
-						foreach (array('cols', 'minWidth', 'maxWidth', 'fluid', 'responsive') as $var) {
-							$submission[$var] = $data[$var];
-						}
-						saveTemplate($submission, $a['layoutId']);
-					}
 						
 					
-					//Look for any renamed slots
-					if ($renameSlotsInDatabase && !empty($layout)) {
+					if (!empty($layout)) {
 						
-						foreach ($oldToNewNames as $oldName => $newName) {
-							//Try to catch the case where two slots have their names switched.
-							//Don't change the data in the database if this has happened.
-							if (empty($oldToNewNames[$newName])
-							 && !checkRowExists(
-									'template_slot_link',
-									array(
-										'family_name' => $layout['family_name'],
-										'file_base_name' => $layout['file_base_name'],
-										'slot_name' => $newName)
-							)) {
-								//Switch the slot names in the system
-								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "plugin_layout_link
-									SET slot_name = '". sqlEscape($newName). "'
-									WHERE slot_name = '". sqlEscape($oldName). "'
-									  AND layout_id = ". (int) $layout['layout_id'];
-								sqlUpdate($sql);
+						//Look for any renamed slots
+						if ($renameSlotsInDatabase) {
+						
+							//If this is from an existing Layout, check what the slot names originally were and what they are now.
+							$newNames = array();
+							$oldToNewNames = array();
+							zenario_grid_maker::checkForRenamedSlots($data, $newNames, $oldToNewNames);
+						
+							foreach ($oldToNewNames as $oldName => $newName) {
+								//Try to catch the case where two slots have their names switched.
+								//Don't change the data in the database if this has happened.
+								if (empty($oldToNewNames[$newName])
+								 && !checkRowExists(
+										'template_slot_link',
+										array(
+											'family_name' => $layout['family_name'],
+											'file_base_name' => $layout['file_base_name'],
+											'slot_name' => $newName)
+								)) {
+									//Switch the slot names in the system
+									$sql = "
+										UPDATE IGNORE ".  DB_NAME_PREFIX. "plugin_layout_link
+										SET slot_name = '". sqlEscape($newName). "'
+										WHERE slot_name = '". sqlEscape($oldName). "'
+										  AND layout_id = ". (int) $layout['layout_id'];
+									sqlUpdate($sql);
 								
-								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "template_slot_link
-									SET slot_name = '". sqlEscape($newName). "'
-									WHERE slot_name = '". sqlEscape($oldName). "'
-									  AND family_name = '". sqlEscape($layout['family_name']). "'
-									  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'";
-								sqlUpdate($sql);
+									$sql = "
+										UPDATE IGNORE ".  DB_NAME_PREFIX. "template_slot_link
+										SET slot_name = '". sqlEscape($newName). "'
+										WHERE slot_name = '". sqlEscape($oldName). "'
+										  AND family_name = '". sqlEscape($layout['family_name']). "'
+										  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'";
+									sqlUpdate($sql);
 								
-								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
-									INNER JOIN ".  DB_NAME_PREFIX. "plugin_instances AS pi
-									   ON pi.content_id = v.id
-									  AND pi.content_type = v.type
-									  AND pi.content_version = v.version
-									SET pi.slot_name = '". sqlEscape($newName). "'
-									WHERE pi.slot_name = '". sqlEscape($oldName). "'
-									  AND v.layout_id = ". (int) $layout['layout_id'];
-								sqlUpdate($sql);
+									$sql = "
+										UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
+										INNER JOIN ".  DB_NAME_PREFIX. "plugin_instances AS pi
+										   ON pi.content_id = v.id
+										  AND pi.content_type = v.type
+										  AND pi.content_version = v.version
+										SET pi.slot_name = '". sqlEscape($newName). "'
+										WHERE pi.slot_name = '". sqlEscape($oldName). "'
+										  AND v.layout_id = ". (int) $layout['layout_id'];
+									sqlUpdate($sql);
 								
-								$sql = "
-									UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
-									INNER JOIN ".  DB_NAME_PREFIX. "plugin_item_link AS pil
-									   ON pil.content_id = v.id
-									  AND pil.content_type = v.type
-									  AND pil.content_version = v.version
-									SET pil.slot_name = '". sqlEscape($newName). "'
-									WHERE pil.slot_name = '". sqlEscape($oldName). "'
-									  AND v.layout_id = ". (int) $layout['layout_id'];
-								sqlUpdate($sql);
+									$sql = "
+										UPDATE IGNORE ".  DB_NAME_PREFIX. "content_item_versions AS v
+										INNER JOIN ".  DB_NAME_PREFIX. "plugin_item_link AS pil
+										   ON pil.content_id = v.id
+										  AND pil.content_type = v.type
+										  AND pil.content_version = v.version
+										SET pil.slot_name = '". sqlEscape($newName). "'
+										WHERE pil.slot_name = '". sqlEscape($oldName). "'
+										  AND v.layout_id = ". (int) $layout['layout_id'];
+									sqlUpdate($sql);
+								}
 							}
 						}
-						
-						//Make sure all of the slots are recorded in the database
-						foreach ($newNames as $newName) {
-							setRow(
-								'template_slot_link',
-								array(),
-								array(
-									'family_name' => $layout['family_name'],
-									'file_base_name' => $layout['file_base_name'],
-									'slot_name' => $newName)
-							);
-						}
-						
-						//Remove any deleted slots from the database
-						$sql = "
-							DELETE FROM ". DB_NAME_PREFIX. "template_slot_link
-							WHERE family_name = '". sqlEscape($layout['family_name']). "'
-							  AND file_base_name = '". sqlEscape($layout['file_base_name']). "'";
-						
-						if (!empty($newNames)) {
-							$sql .= "
-							  AND slot_name NOT IN (". inEscape($newNames). ")";
-						}
-						sqlUpdate($sql);
+					
+						//Update the new slots in the DB
+						zenario_grid_maker::updateMetaInfoInDB($data, $slots, $layout);
 					}
 				}
 			}
@@ -323,7 +295,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 		exit;
 	
 	} elseif (!empty($_REQUEST['zip'])) {
- 		$status = zenario_grid_maker::generateDirectory($data, $writeToFS = false);
+		$slots = array();
+ 		$status = zenario_grid_maker::generateDirectory($data, $slots, $writeToFS = false);
  		if (isError($status)) {
  			echo adminPhrase($status);
  		} else {
@@ -350,7 +323,8 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 	
 		
 		if (request('html') || !request('css')) {
-			zenario_grid_maker::generateHTML($html, $data);
+			$slots = array();
+			zenario_grid_maker::generateHTML($html, $data, $slots);
 		}
 		if (request('css') || !request('html')) {
 			zenario_grid_maker::generateCSS($css, $data);
@@ -416,7 +390,12 @@ if (is_array($data) && zenario_grid_maker::validateData($data)) {
 					if (window.opener && window.opener.zenarioG) {
 						window.opener.zenarioG.resizePreview();
 					}
-				">';
+				">
+				<script type="text/javascript">
+					window.zenarioSGS = function() {
+						//...
+					};
+				</script>';
 			
 			
 		

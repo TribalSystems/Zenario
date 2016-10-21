@@ -30,9 +30,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__group extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$groupID = $box['key']['id'];
-		if ($groupID) {
-			$groupDetails = getRow('custom_dataset_fields', array('label', 'db_column'), $groupID);
+		if ($box['key']['id']) {
+			$groupDetails = getRow('custom_dataset_fields', array('label', 'db_column'), $box['key']['id']);
 			
 			$box['title'] = adminPhrase('Editing the group "[[label]]"', $groupDetails);
 			
@@ -63,15 +62,17 @@ class zenario_users__admin_boxes__group extends zenario_users {
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		
 		exitIfNotCheckPriv('_PRIV_MANAGE_GROUP');
-		$groupID = $box['key']['id'];
 		
 		$groupDetails = array(
 			'label' => $values['details/name'], 
 			'db_column' => $values['details/db_column'],
 		);
 		
-		if (!$groupID) {
-			
+		$oldName = false;
+		if ($box['key']['id']) {
+			$oldName = getRow('custom_dataset_fields', 'db_column', $box['key']['id']);
+		
+		} else {
 			$dataset = getDatasetDetails('users');
 			$tab_name = setting('default_groups_dataset_tab');
 			
@@ -92,8 +93,8 @@ class zenario_users__admin_boxes__group extends zenario_users {
 			$groupDetails['ord'] = $ord;
 		}
 		
-		$box['key']['id'] = setRow('custom_dataset_fields', $groupDetails, $groupID);
+		$box['key']['id'] = setRow('custom_dataset_fields', $groupDetails, $box['key']['id']);
 		
-		createDatasetFieldInDB($box['key']['id'], $values['details/db_column']);
+		createDatasetFieldInDB($box['key']['id'], $oldName);
 	}
 }

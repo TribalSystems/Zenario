@@ -35,7 +35,7 @@ zenario.lib(function(
 	zenario, zenarioA, zenarioAB, zenarioAT, zenarioO,
 	get, engToBoolean, htmlspecialchars, ifNull, jsEscape, phrase,
 	extensionOf, methodsOf, has,
-	getSlotnameFromEl, zenarioGrid
+	getContainerIdFromEl, zenarioGrid
 ) {
 	"use strict";
 
@@ -45,7 +45,9 @@ zenario.lib(function(
 		methods = methodsOf(zenarioFEA);
 
 
-
+methods.idVarName = function(mode) {
+	return 'id';
+};
 
 
 
@@ -92,7 +94,7 @@ methods.ffov = function(mode) {
 	
 	var that = this,
 		cb = new zenario.callback,
-		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.slotName, this.path, this.customisationName, this.request, mode, true),
+		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.containerId, this.path, this.customisationName, this.request, mode, true),
 		post = false;
 	
 	if (mode != 'fill') {
@@ -120,10 +122,10 @@ methods.ffov = function(mode) {
 					that.transitionInOnNextScreen = that.tuix.transition_in_on_next_screen;
 				}
 				
-				that.go(that.slotName, that.tuix.go);
+				that.go(that.containerId, that.tuix.go);
 			
 			} else {
-				that.sortOutTUIX(that.slotName, that.tuix);
+				that.sortOutTUIX(that.containerId, that.tuix);
 				that.draw();
 				cb.call();
 			}
@@ -136,20 +138,35 @@ methods.ffov = function(mode) {
 methods.draw = function() {
 	this.draw2();
 };
+methods.redrawTab = function() {
+	this.draw2();
+	this.hideLoader(true);
+};
 methods.draw2 = function() {
 	this.sortTabs();
 	
 	this.tuix.form_title = this.getTitle();
 	
-	var cb = new zenario.callback;
-	$('#plgslt_' + this.slotName).html(this.drawFields(cb, this.mtPrefix + '_form', this.tuix));
+	var DOMlastFieldInFocus,
+		cb = new zenario.callback;
 	
-	zenario.addJQueryElements('#plgslt_' + this.slotName + ' ');
+	$('#' + this.containerId).html(this.drawFields(cb, this.mtPrefix + '_form', this.tuix));
+	
+	zenario.addJQueryElements(this.containerId + ' ');
+	//zenario.tooltips(this.containerId + ' .zfea_field_tooltip');
+	
+	if (this.path == this.prevPath
+	 && this.lastFieldInFocus
+	 && (DOMlastFieldInFocus = get(this.lastFieldInFocus))) {
+		DOMlastFieldInFocus.focus();
+	}
 	
 	cb.call();
 };
 
-
+methods.ajaxURL = function() {
+	return zenario.pluginAJAXLink(undefined, this.containerId, {path: this.path});
+};
 
 
 
@@ -184,12 +201,9 @@ methods.microTemplate = function(template, data, filter) {
 	return html;
 };
 
-methods.showLoader = function(hide) {
-	this.removeResponsiveHandler();
-	
-	var containerId = 'plgslt_' + this.slotName,
-		loaderId = 'loader_for_' + containerId,
-		container = get(containerId),
+methods.showLoader = function(hide, wasRedraw) {
+	var loaderId = 'loader_for_' + this.containerId,
+		container = get(this.containerId),
 		loader = get(loaderId),
 		$container = $(container),
 		$loader;
@@ -200,6 +214,12 @@ methods.showLoader = function(hide) {
 	} else {
 		this.loading = true;
 		$container.removeClass('fea_loaded').addClass('fea_loading');
+	}
+	
+	if (wasRedraw) {
+		$container.removeClass('fea_just_loaded').addClass('fea_just_redrawn');
+	} else {
+		$container.removeClass('fea_just_redrawn').addClass('fea_just_loaded');
 	}
 	
 	if (loader) {
@@ -219,16 +239,16 @@ methods.showLoader = function(hide) {
 		$loader.width($container.width()).height($container.height()).show();
 	}
 };
-methods.hideLoader = function() {
-	this.showLoader(true);
+methods.hideLoader = function(wasRedraw) {
+	this.showLoader(true, wasRedraw);
 };
 
 
 
 
 methods.reload = function(callWhenLoaded) {
-	if (this.slotName) {
-		this.runLogic(this.slotName, this.request, callWhenLoaded || (function() {}));
+	if (this.containerId) {
+		this.runLogic(this.containerId, this.request, callWhenLoaded || (function() {}));
 	}
 };
 
@@ -243,19 +263,18 @@ methods.checkModeAndPathOnRequest = function(request) {
 	}
 };
 
-methods.runLogic = function(slotName, request, callWhenLoaded) {
-	this.removeResponsiveHandler();
+methods.runLogic = function(containerId, request, callWhenLoaded) {
 	this.checkModeAndPathOnRequest(request);
 	
 	this.mode = request.mode;
 	this.path = request.path;
 	this.request = request;
-	this.slotName = slotName;
+	this.containerId = containerId;
 	
-	this.logic(slotName, request, callWhenLoaded);
+	this.logic(containerId, request, callWhenLoaded);
 };
 
-methods.logic = function(slotName, request, callWhenLoaded) {
+methods.logic = function(containerId, request, callWhenLoaded) {
 	if (request.path.match(/list/)) {
 		this.showList(callWhenLoaded);
 	} else {
@@ -276,48 +295,65 @@ methods.showList = function(callWhenLoaded) {
 	}
 	
 	var that = this,
-		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.slotName, this.request.path, this.customisationName, this.request);
+		redrawn = false,
+		url = this.url = zenario.pluginVisitorTUIXLink(this.moduleClassName, this.containerId, this.request.path, this.customisationName, this.request);
 	
 	this.showLoader();
 	this.ajax(url, false, true).after(function(tuix) {
-		that.hideLoader();
 	
 		that.tuix = tuix;
-		that.sortOutTUIX(that.slotName, that.tuix);
 		
-		delete that.responsiveHandler;
-		
-		var minWidth = window.matchMedia && zenarioGrid.responsive && 1 * zenarioGrid.minWidth;
-		
-		if (!minWidth) {
-			that.drawList();
-			callWhenLoaded();
-		
-		} else {
-			enquire.register(
-				that.responsiveQuery = 'screen and (min-width: ' + minWidth + 'px)',
-				that.responsiveHandler = {
-					match : function() {
-						that.drawList();
-						callWhenLoaded();
-					},
-					doesntMatch : function() {
-						that.drawList(true);
-						callWhenLoaded();
-					}
-				}
-			);
-		}
+		that.drawList();
+		that.hideLoader(redrawn);
+		callWhenLoaded();
 		
 	});
 };
 
+//These signals will fire if the page is resized and switches between mobile/desktop views
+//assetwolf_2.resizedToMobile = function() {
+//	console.log('resizedToMobile');
+//};
+//
+//assetwolf_2.resizedToDesktop = function() {
+//	console.log('resizedToDesktop');
+//};
 
-methods.drawList = function(responsive) {
-	this.responsive = responsive;
+methods.sizeTableListCells = function() {
+	$('.zfea_with_responsive_table .zfea_table_list_wrap tr').each(function(i, el) {
+		var maxHeight = 0,
+			$children = $(el).children();
+	
+		$children.each(function(i, child) {
+			$(child).css('height', '');
+		});
+		$children.each(function(i, child) {
+			maxHeight = Math.max(maxHeight, $(child).height());
+		});
+		$children.each(function(i, child) {
+			$(child).height(maxHeight);
+		});
+	});
+};
+
+methods.sizeTableListCellsIfNeededAfterDelay = function() {
+	if (zenario.mobile) {
+		var that = this;
+		setTimeout(function() {
+			that.sizeTableListCells();
+		}, 0);
+	}
+};
+
+
+
+
+methods.drawList = function() {
 	this.hadSparkline = false;
 	
-	$('#plgslt_' + this.slotName).html(this.microTemplate(this.mtPrefix + '_list', {}));
+	this.sortOutTUIX(this.containerId, this.tuix);
+	
+	$('#' + this.containerId).html(this.microTemplate(this.mtPrefix + '_list', {}));
 	
 	var that = this,
 		page = 1 * this.tuix.__page__,
@@ -352,57 +388,82 @@ methods.drawList = function(responsive) {
 			//coeffAcceleration: 2,
 			
 			onPageClicked: function(a,num) { 
-				that.go(that.slotName, {page: num});
+				that.go(that.containerId, {page: num});
 			}
 		});
 	}
 	
 
-	zenario.addJQueryElements('#plgslt_' + this.slotName + ' ');
+	zenario.addJQueryElements(this.containerId + ' ');
 	
 	//call sparkline
 	if (this.hadSparkline) {
 		this.initSparklineChart();
 	}
+	
+	if (!this.addedResizeListener
+	 && window.addEventListener) {
+		window.addEventListener("resize", this.sizeTableListCells);
+	}
+	this.addedResizeListener = true;
+	
+	if (zenario.mobile) {
+		this.sizeTableListCellsIfNeededAfterDelay();
+	}
+
 };
 
-methods.removeResponsiveHandler = function() {
-	if (this.responsiveHandler) {
-		enquire.unregister(this.responsiveQuery, this.responsiveHandler);
-		delete this.responsiveHandler;
-	}
-};
 
 
 
 methods.getPathFromMode = function(mode) {
 	//N.b. "create" is just an alias for "edit" to give a nicer URL
-	return 'zenario_' + mode.replace(/^create_/, 'edit_');
+	return 'zenario_' + mode;
 };
 methods.getModeFromPath = function(path) {
-	return path.replace(/^zenario_/, '').replace(/^create_/, 'edit_');
+	return path.replace(/^zenario_/, '');
 };
 
 
-methods.recordRequestsInURL = function(slotName, request) {
-	zenario.recordRequestsInURL(slotName, this.checkRequests(request, true));
+methods.recordRequestsInURL = function(containerId, request) {
+	zenario.recordRequestsInURL(containerId, this.checkRequests(request, true));
 };
 
-methods.checkRequests = function(request, forDisplay, merge, keepClutter) {
-	var key, value;
+methods.checkRequests = function(request, forDisplay, itemId, merge, keepClutter) {
+	
+	var key, value, idVarName;
 	
 	
-	request = _.extend({}, request, merge);
+	request = zenario.clone(request, merge);
 	
 	this.checkModeAndPathOnRequest(request);
+	
+	idVarName = this.idVarName(request.mode || this.mode) || 'id';
 	
 	//Automatically add everything that's defined in the key
 	if (this.tuix
 	 && this.tuix.key) {
 		foreach (this.tuix.key as key => value) {
+			
+			//Catch the case where the idVarName is not "id",
+			//but "id" was used in the code!
+			if (key == 'id'
+			 && idVarName != 'id'
+			 && this.tuix.key[idVarName] === undefined) {
+				key = idVarName;
+			}
+			
 			if (request[key] === undefined) {
 				request[key] = value;
 			}
+		}
+	}
+	
+	if (request[idVarName] === undefined) {
+		if (itemId) {
+			request[idVarName] = itemId;
+		} else if (keepClutter) {
+			request[idVarName] = '';
 		}
 	}
 	
@@ -429,7 +490,7 @@ methods.checkRequests = function(request, forDisplay, merge, keepClutter) {
 	return request;
 };
 
-methods.init = function(globalName, microtemplatePrefix, moduleClassName, slotName, request, setDefaultMode, pages, hasEditPerms, customisationName) {
+methods.init = function(globalName, microtemplatePrefix, moduleClassName, containerId, request, setDefaultMode, pages, hasEditPerms, customisationName) {
 	
 	methodsOf(zenarioF).init.call(this, globalName, microtemplatePrefix);
 	
@@ -439,12 +500,11 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, slotNa
 	this.path = '';
 	this.prevPath = '';
 	this.customisationName = customisationName || '';
-	this.slotName = slotName;
-	this.containerId = 'plgslt_' + slotName;
+	this.containerId = containerId;
 	this.defaultMode = setDefaultMode;
 	this.hasEditPerms = hasEditPerms;
 	this.moduleClassName = moduleClassName;
-	this.go(slotName, request, undefined, true);
+	this.go(containerId, request, undefined, true);
 	
 	
 	//Error phrases
@@ -452,6 +512,7 @@ methods.init = function(globalName, microtemplatePrefix, moduleClassName, slotNa
 	this.hardcodedPhrase = {
 		'ok': 'OK',
 		'retry': 'Retry',
+		'cancel': 'Cancel',
 		'unknownMode': 'Unknown mode requested',
 		'error404': 'Could not access a file on the server. Please check that you have uploaded all of the CMS files to the server, and that you have no misconfigured rewrite rules in your Apache config or .htaccess file that might cause a 404 error.',
 		'error500': "Something on the server is incorrectly set up or misconfigured.",
@@ -482,14 +543,14 @@ methods.doSearch = function(e) {
 	var requests = this.request,//{{JSON.stringify(m.that.request)|escape}},
 		search = {search: get('search_' + this.containerId).value};
 
-	this.go(this.slotName, this.checkRequests(requests, false, search));
+	this.go(this.containerId, this.checkRequests(requests, false, undefined, search));
 	
 	return false;
 }
 
 
-methods.go = function(slotName, request, itemId, wasInitialLoad) {
-	slotName = getSlotnameFromEl(slotName);
+methods.go = function(containerId, request, itemId, wasInitialLoad) {
+	containerId = getContainerIdFromEl(containerId);
 	
 	//If a mode or path is not specified, assume we stay on the default path
 	if (request.mode === undefined
@@ -497,14 +558,24 @@ methods.go = function(slotName, request, itemId, wasInitialLoad) {
 		request.path = this.path;
 	}
 	
-	request = this.checkRequests(request, false, itemId? {id: itemId} : undefined);
-	this.last[slotName] = {request: request};
+	request = this.checkRequests(request, false, itemId);
+	this.last[containerId] = {request: request};
 	this.prevPath = this.path;
 	
 	//Check if the link should be directed to a different page
 	var page,
-		that = this;
+		that = this,
+		command = request.command;
 	
+	delete request.command;
+
+	if (command
+	 && zenario_conductor.commandEnabled(containerId, command)) {
+		delete request.mode;
+		delete request.path;
+		zenario_conductor.go(containerId, command, request);
+	
+	} else
 	if (!wasInitialLoad
 	 && request.mode
 	 && request.mode != this.defaultMode
@@ -515,9 +586,9 @@ methods.go = function(slotName, request, itemId, wasInitialLoad) {
 		zenario.goToURL(zenario.linkToItem(page.cID, page.cType, request));
 	
 	} else {
-		this.runLogic(slotName, request, function() {
+		this.runLogic(containerId, request, function() {
 			if (!wasInitialLoad) {
-				that.recordRequestsInURL(slotName, request);
+				that.recordRequestsInURL(containerId, request);
 			}
 			
 			if (that.transitionInOnNextScreen) {
@@ -533,19 +604,37 @@ methods.go = function(slotName, request, itemId, wasInitialLoad) {
 };
 
 
-methods.hidden = function(tuixObject, item, id) {
+methods.hidden = function(tuixObject, item, id, tuix, button, column, field, section, tab) {
+	tuixObject = tuixObject || button || column || field || item || section || tab;
+	
+	//Check if this button mentions the conductor
+	if (button
+	 && button.go
+	 && button.go.command) {
+		
+		//If so, check if this command is enabled and hide it if not.
+		if (zenario_conductor.enabled(this.containerId)) {
+			if (!zenario_conductor.commandEnabled(this.containerId, button.go.command)) {
+				return true;
+			}
+		
+		//If not, check if there is any fullback functionality and hide it if not
+		} else if (!button.go.mode) {
+			return true;
+		}
+	}
 	
 	if (!this.hasEditPerms
 	 && engToBoolean(tuixObject.needs_edit_perms)) {
 		return true;
 	} else {
-		return zenarioA.hidden(tuixObject, true, item, id)
+		return zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
 	}
 };
 
 
-methods.sortOutTUIX = function(slotName, tuix) {
-	slotName = getSlotnameFromEl(slotName);
+methods.sortOutTUIX = function(containerId, tuix) {
+	containerId = getContainerIdFromEl(containerId);
 	
 	this.newlyNavigated = this.path != this.prevPath;
 	
@@ -577,14 +666,10 @@ methods.sortOutTUIX = function(slotName, tuix) {
 		col = tuix.columns[id];
 		col.id = id;
 		
-		if (this.hidden(col, undefined, id)) {
-			continue;
+		if (!this.hidden(undefined, undefined, id, tuix, undefined, col)) {
+			tuix.sortedColumns.push(col);
 		}
-		
-		tuix.sortedColumns.push(col);
 	}
-	
-	zenarioA.setKin(tuix.sortedColumns);
 	
 	foreach (tuix.sortedItemIds as i => id) {
 		item = tuix.items[id];
@@ -597,13 +682,13 @@ methods.sortOutTUIX = function(slotName, tuix) {
 		foreach (tuix.sortedItemButtonIds as j => jd) {
 			button = _.clone(tuix.item_buttons[jd]);
 			button.id = jd;
-			this.setupButtonLinks(slotName, button, id);
+			this.setupButtonLinks(containerId, button, id);
 			
 			if (firstItem) {
 				tuix.sortedItemButtons.push(button);
 			}
 			
-			if (!this.hidden(button, item, jd)) {
+			if (!this.hidden(undefined, item, jd, tuix, button)) {
 				item.sortedItemButtons.push(button);
 			}
 		}
@@ -614,56 +699,74 @@ methods.sortOutTUIX = function(slotName, tuix) {
 		button = tuix.collection_buttons[id];
 		button.id = id;
 		
-		if (this.hidden(button, undefined, id)) {
+		if (this.hidden(undefined, undefined, id, tuix, button)) {
 			continue;
 		}
 		
-		this.setupButtonLinks(slotName, button);
+		this.setupButtonLinks(containerId, button);
 		
-		if (!this.hidden(button, item, jd)) {
+		if (!this.hidden(undefined, item, id, tuix, button)) {
 			tuix.sortedCollectionButtons.push(button);
 		}
 	}
 	
-	this.last[slotName].tuix = tuix;
+	zenarioA.setKin(tuix.sortedColumns);
+	zenarioA.setKin(tuix.sortedCollectionButtons, 'zfea_button_with_children');
+	zenarioA.setKin(tuix.sortedItemButtons, 'zfea_button_with_children');
+	
+	this.last[containerId].tuix = tuix;
 };
 
-methods.setupButtonLinks = function(slotName, button, itemId) {
-	slotName = getSlotnameFromEl(slotName);
+methods.setupButtonLinks = function(containerId, button, itemId) {
+	containerId = getContainerIdFromEl(containerId);
 	
 	var page,
 		request,
-		onclick;
+		onclick,
+		command;
 	
 	if (button.go
 	 || button.ajax
 	 || button.confirm) {
 		
-		onclick = this.globalName + ".button(this, '" + jsEscape(slotName) + "', '" + jsEscape(button.id) + "'";
+		if (!button.onclick
+		 || !button.onclick.match(/\bzzdonezzthiszz\b/)) {
+			onclick = this.globalName + ".button(this, '" + jsEscape(containerId) + "', '" + jsEscape(button.id) + "'";
 		
-		if (itemId) {
-			onclick += ", '" + jsEscape(itemId) + "'";
-			
-			if (button.go) request = this.checkRequests(button.go, true, {id: itemId});
-		} else {
-			onclick += ", undefined";
-			
-			if (button.go) request = this.checkRequests(button.go, true);
+			if (itemId) {
+				onclick += ", '" + jsEscape(itemId) + "'";
+			} else {
+				onclick += ", undefined";
+			}
+		
+			if (button.go) {
+				request = this.checkRequests(button.go, true, itemId);
+			}
+		
+			if (button.onclick) {
+				onclick += ", function () {" + button.onclick + "}";
+			}
+		
+			onclick += "); return false; /* zzdonezzthiszz */";
+		
+			button.onclick = onclick;
 		}
-		
-		if (button.onclick) {
-			onclick += ", function () {" + button.onclick + "}";
-		}
-		
-		onclick += "); return false;";
-		
-		button.onclick = onclick;
 	}
 	
 	//Check if this button has a "go" link
 	if (button.href === undefined) {
 		if (request) {
+			command = request.command;
+			delete request.command;
+			
+			if (command
+			 && zenario_conductor.commandEnabled(containerId, command)) {
+			 	delete request.mode;
+			 	delete request.path;
+				button.href = zenario_conductor.link(containerId, command, request);
+			
 			//Check if the link should be directed to a different page. If so, just include a href and don't set an onclick
+			} else
 			if (request.mode
 			 && request.mode != this.defaultMode
 			 && (page = this.pages[request.mode])
@@ -680,19 +783,41 @@ methods.setupButtonLinks = function(slotName, button, itemId) {
 	}
 };
 
-methods.button = function(el, slotName, buttonName, itemId, onclickFun, confirmed) {
+//Submit/toggle button presses on forms
+methods.clickButton = function(el, id) {
+	
+	var that = this,
+		button = this.field(id),
+		clickButton = methodsOf(zenarioF).clickButton;
+	
+	if (button.confirm
+	 && !this.hidden(button.confirm, undefined, id, this.tuix, button, undefined, button)) {
+		awf.confirm(
+			button.confirm,
+			function () {
+				clickButton.call(that, el, id);
+			}
+		);
+		
+	} else {
+		clickButton.call(this, el, id);
+	}
+};
+
+//Collection/item button presses on lists
+methods.button = function(el, containerId, buttonName, itemId, onclickFun, confirmed) {
 	if (this.loading) {
 		return;
 	}
 	
 	delete this.transitionInOnNextScreen;
 	
-	slotName = getSlotnameFromEl(slotName);
+	containerId = getContainerIdFromEl(containerId);
 	
 	var that = this,
 		button,
 		item = false,
-		last = this.last[slotName],
+		last = this.last[containerId],
 		request,
 		confirm,
 		funReturn;
@@ -709,7 +834,7 @@ methods.button = function(el, slotName, buttonName, itemId, onclickFun, confirme
 	 		button.confirm
 	 	|| (button.go && button.go.confirm)
 	 	|| (button.ajax && button.ajax.confirm))
-	 && (!this.hidden(confirm, itemId, buttonName))) {
+	 && (!this.hidden(confirm, item, buttonName, last.tuix, button))) {
 		
 		if (item) {
 			confirm = _.extend({}, confirm);
@@ -717,7 +842,7 @@ methods.button = function(el, slotName, buttonName, itemId, onclickFun, confirme
 		}
 		
 		this.confirm(confirm, function() {
-			that.button(el, slotName, buttonName, itemId, onclickFun, true);
+			that.button(el, containerId, buttonName, itemId, onclickFun, true);
 		});
 	
 	} else {
@@ -733,8 +858,8 @@ methods.button = function(el, slotName, buttonName, itemId, onclickFun, confirme
 		}
 		
 		if (button.ajax) {
-			request = this.checkRequests(button.ajax.request, false, {id: itemId}, true);
-			this.command(slotName, request, last.request);
+			request = this.checkRequests(button.ajax.request, false, itemId, undefined, true);
+			this.runAJAXRequest(containerId, request, last.request);
 
 		} else {
 			if (button.transition_out) {
@@ -743,7 +868,7 @@ methods.button = function(el, slotName, buttonName, itemId, onclickFun, confirme
 			if (button.transition_in_on_next_screen) {
 				this.transitionInOnNextScreen = button.transition_in_on_next_screen;
 			}
-			this.go(slotName, button.go, itemId);
+			this.go(containerId, button.go, itemId);
 		}
 	}
 	
@@ -874,13 +999,13 @@ methods.sparkline = function() {
 			foreach (this.tuix.sortedItems as ii => item) {
 				
 				var i,
-					$td = $(get('zfea_' + this.slotName + '_row_' + ii + '_col_' + ci)),
+					$td = $(get('zfea_' + this.containerId + '_row_' + ii + '_col_' + ci)),
 					data = item[col.id],
 					chart = {};
 				//chart.type = '...';
 				
 				if (!data.values) {
-					var columnId = 'zfea_' + this.slotName + '_row_' + ii + '_col_' + ci;
+					var columnId = 'zfea_' + this.containerId + '_row_' + ii + '_col_' + ci;
 					$('#'+columnId).html(data.no_data_message);
 					continue;
 				}
@@ -917,7 +1042,8 @@ methods.initSparklineChart = function() {
 	
 	zenario.loadLibrary('zenario/libraries/not_to_redistribute/highcharts/highcharts.min.js', function() {
 		that.sparkline();
-
+		
+		that.sizeTableListCellsIfNeededAfterDelay();
 	});
 };
 
@@ -930,7 +1056,7 @@ methods.initSparklineChart = function() {
 
 
 methods.transitionIn = function(transition_in) {
-	var $slot = $('#plgslt_' + this.slotName),
+	var $slot = $('#' + this.containerId),
 		$zfea = $slot.find('.zfea'),
 		options = transition_in.options || {};
 	
@@ -958,7 +1084,7 @@ methods.transitionOut = function(transition_out) {
 		return;
 	}
 	
-	var $slot = $('#plgslt_' + this.slotName),
+	var $slot = $('#' + this.containerId),
 		$cloneS = $slot.clone()
 			.attr('id', '')
 			.css('position', 'absolute')
@@ -1024,17 +1150,17 @@ methods.confirm = function(confirm, after) {
 };
 
 
-methods.command = function(slotName, request, goAfter) {
+methods.runAJAXRequest = function(containerId, request, goAfter) {
 	if (this.loading) {
 		return;
 	}
 	
-	slotName = getSlotnameFromEl(slotName);
+	containerId = getContainerIdFromEl(containerId);
 	
 	$.colorbox.remove();
 	
 	var that = this,
-		url = zenario.pluginAJAXLink(this.moduleClassName, slotName);
+		url = zenario.pluginAJAXLink(this.moduleClassName, containerId);
 	
 	this.showLoader();
 	this.ajax(url, request).after(function(resp) {
@@ -1043,7 +1169,7 @@ methods.command = function(slotName, request, goAfter) {
 		if (resp) {
 			that.AJAXErrorHandler(resp);
 		} else {
-			that.go(slotName, goAfter);
+			that.go(containerId, goAfter);
 		}
 	});
 };
@@ -1052,8 +1178,8 @@ methods.command = function(slotName, request, goAfter) {
 methods.phrase = function(text, mrg) {
 	
 	var moduleClassNameForPhrases =
-		zenario.slots[this.slotName]
-	 && zenario.slots[this.slotName].moduleClassNameForPhrases;
+		zenario.slots[this.containerId]
+	 && zenario.slots[this.containerId].moduleClassNameForPhrases;
 	
 	return zenario.phrase(moduleClassNameForPhrases, text, mrg);
 };
@@ -1091,7 +1217,7 @@ methods.pickerLink = function(pageName, request) {
 	var page;
 	
 	if (page = this.pages[pageName]) {
-		return this.showSingleSlotLink(page.slotName, request, false, page.cID, page.cType);
+		return this.showSingleSlotLink(page.containerId, request, false, page.cID, page.cType);
 	} else {
 		return false;
 	}
@@ -1161,4 +1287,4 @@ methods.AJAXErrorHandler = function(resp, statusType, statusText) {
 
 
 
-}, zenario.getSlotnameFromEl, window.zenarioGrid || {});
+}, zenario.getContainerIdFromEl, window.zenarioGrid || {});

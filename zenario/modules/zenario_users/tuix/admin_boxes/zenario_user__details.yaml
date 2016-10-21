@@ -243,7 +243,7 @@ zenario_user__details:
                     type: date
                     change_month_and_year: true
                     read_only: true
-                ip: 
+                last_login_ip: 
                     visible_if: |
                         zenarioAB.value('status', 'details') != 'contact'
                     label: "Last Login IP"

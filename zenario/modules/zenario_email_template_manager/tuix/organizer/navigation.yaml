@@ -20,6 +20,7 @@ zenario__email_template_manager:
             link:
                 path: zenario__email_template_manager/panels/email_log
         plugin_email_addresses:
+            css_class: plugin_album_instance
             ord: 3
             priv: _PRIV_VIEW_USER
             label: Plugin recipients

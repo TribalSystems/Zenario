@@ -2108,11 +2108,13 @@ body.ie6 .zenario_now h1 {
 
 /*  The CSS Class Picker  */
 
-#cboxOverlay.zenario_css_class_picker {
+#cboxOverlay.zenario_css_class_picker,
+#cboxOverlay.zenario_url_test_colorbox {
 	z-index: 319999;
 }
 
-#colorbox.zenario_css_class_picker {
+#colorbox.zenario_css_class_picker,
+#colorbox.zenario_url_test_colorbox {
 	z-index: 320000;
 }
 
@@ -3269,7 +3271,8 @@ body.ie6 .zenario_now h1 {
 }
 
 #zenario_fbAdminFloatingBox.zenario_fab_with_no_preview #zenario_fabPreview,
-#zenario_fbAdminFloatingBox.zenario_fab_with_preview_hidden #zenario_fabPreview {
+#zenario_fbAdminFloatingBox.zenario_fab_with_preview_hidden #zenario_fabPreview,
+#zenario_fbAdminFloatingBox.zenario_fab_with_preview_hidden #zenario_fabUpdatePreview {
 	display: none;
 }
 

@@ -30,6 +30,27 @@ plugin_settings:
                                 If the URL contains the parameter l_id, use its value to get the ID of the location.
                     value: location_from_selector
                 
+                use_custom_url_request:
+                    visible_if: "zenarioAB.value('location_source_mode') == 'location_from_url'"
+                    plugin_setting:
+                        name: use_custom_url_request
+                    label: 'Use custom URL request'
+                    type: checkbox
+                    indent: 1
+                    format_onchange: true
+                url_request:
+                    visible_if: "zenarioAB.value('location_source_mode') == 'location_from_url' && zenarioAB.value('use_custom_url_request')"
+                    plugin_setting:
+                        name: url_request
+                    label: 'URL request:'
+                    type: text
+                    validation:
+                        required_if_not_hidden: Please enter a URL request.
+                    value: "l_id"
+                    maxlength: "255"
+                    style: 'width: 7em;'
+                    indent: 2
+                
                 location:
                     label: 'Other Location:'
                     plugin_setting:
@@ -80,34 +101,34 @@ plugin_settings:
                     format_onchange: true
                     side_note: |
                         If a location has any images associated with it, the first image will be displayed.
-                
+                    indent: 1
                 max_location_image_width:
                     plugin_setting:
                         name: max_location_image_width
-                    pre_field_html: 'width:'
-                    label: 'Maximum image size:'
+                    label: 'Width:'
                     type: text
-                    size: "5"
-                    maxlength: "5"
-                    style: 'width: 50px'
-                    value: "120"
                     validation:
-                        numeric: The maximum image width must be numeric
-                    indent: 1
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    indent: 2
                 max_location_image_height:
                     plugin_setting:
                         name: max_location_image_height
-                    pre_field_html: '&nbsp;height:'
-                    post_field_html: '&nbsp;pixels'
+                    label: 'Height:'
                     type: text
-                    size: "5"
-                    same_row: true
-                    maxlength: "5"
-                    style: 'width: 50px'
-                    value: "120"
                     validation:
-                        numeric: The maximum image width must be numeric
-                    indent: 1
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
+                    same_row: true
+                    indent: 2
                 show_map:
                     plugin_setting:
                         name: show_map
@@ -117,63 +138,28 @@ plugin_settings:
                     format_onchange: true
                     
                 map_width:
-                    label: 'Map size:'
-                    pre_field_html: 'width:'
                     plugin_setting:
                         name: map_width
+                    label: 'Width:'
                     type: text
-                    value: "500"
-                    style: width:50px;
                     validation:
-                        required_if_not_hidden: Please enter the map width
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
+                    value: "500"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
                     indent: 1
                 map_height:
-                    pre_field_html: '&nbsp;height:'
-                    post_field_html: '&nbsp;pixels'
-                    same_row: true
-                    type: text
                     plugin_setting:
                         name: map_height
-                    value: "500"
+                    label: 'Height:'
+                    type: text
                     validation:
-                        required_if_not_hidden: Please enter the map height
-                    style: width:50px;
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
+                    value: "500"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
                     indent: 1
-                og_tags:
-                    plugin_setting:
-                        name: og_tags
-                    label: 'Set OG tags'
-                    type: checkbox
-                    side_note: "If checked, you will be able to select the information which will be visible to external pages by using OG tags"
-                    format_onchange: true
-                og_title:
-                    visible_if: "zenarioAB.value('og_tags')"
-                    plugin_setting:
-                        name: og_title
-                    label: 'Set OG title tag'
-                    type: checkbox
-                    indent: 1
-                og_image:
-                    visible_if: "zenarioAB.value('og_tags')"
-                    plugin_setting:
-                        name: og_image
-                    label: 'Set OG image tag'
-                    type: checkbox
-                    indent: 1
-                og_description:
-                    visible_if: "zenarioAB.value('og_tags')"
-                    plugin_setting:
-                        name: og_description
-                    label: 'Set OG description tag'
-                    type: checkbox
-                    indent: 1
-                    format_onchange: true
-                og_description_data_set_field:
-                    visible_if: "zenarioAB.value('og_description') && zenarioAB.value('og_tags')"
-                    plugin_setting:
-                        name: og_description_data_set_field
-                    label: "Select the data set field to set text in the OG description tag:"
-                    type: select
-                    empty_value: ' -- Select -- '
-                    value: ""
-                    indent: 2

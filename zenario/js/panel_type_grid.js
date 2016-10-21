@@ -64,6 +64,15 @@ var methods = methodsOf(
 
 
 
+
+
+//Use this to add any requests you need to the AJAX URL used to call your panel
+methods.returnAJAXRequests = function() {
+	return {
+		skinId: zenario.skinId || (windowParent && windowParent.zenario && windowParent.zenario.skinId)
+	};
+};
+
 methods.returnPanelTitle = function() {
 	var title = this.tuix.title;
 	
@@ -564,9 +573,9 @@ methods.getMergeFieldsForItemsAndColumns = function(useLargerThumbnails) {
 	if (!itemsExist) {
 		//Display a message if there were no items to display
 		if (zenarioO.filteredView) {
-			data.no_items_message = this.tuix.no_items_in_search_message? this.tuix.no_items_in_search_message : phrase.noItemsInSearch;
+			data.no_items_message = this.tuix.no_items_in_search_message || phrase.noItemsInSearch;
 		} else {
-			data.no_items_message = this.tuix.no_items_message? this.tuix.no_items_message : phrase.noItems;
+			data.no_items_message = this.tuix.no_items_message || phrase.noItems;
 		}
 	}
 	

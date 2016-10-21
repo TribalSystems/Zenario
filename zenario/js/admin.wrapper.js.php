@@ -47,6 +47,7 @@ incJS('zenario/js/admin_toolbar');
 
 //Include Ace Editor extensions
 incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-modelist');
+incJS('zenario/libraries/bsd/ace/src-min-noconflict/ext-language_tools');
 
 //Include jQuery modules
 //Include a small pre-loader library for TinyMCE (the full code is load-on-demand)

@@ -112,12 +112,17 @@ plugin_settings:
                 target_blank_znz:
                     indent: 1
                     visible_if: |
-                        zenarioAB.value('link_type_znz') == '_EXTERNAL_URL'
+                        zenario.IN(zenarioAB.value('link_type_znz'), '_CONTENT_ITEM', '_EXTERNAL_URL')
                     grouping: 'image_link image_link_znz'
                     plugin_setting:
                         name: target_blank_znz
-                    label: 'Open in a new window'
-                    type: checkbox
+                    type: select
+                    empty_value: 'Open in the same window'
+                    values:
+                        1:
+                            label: Open in a new window
+                        2:
+                            label: Open in a floating box
                     value: "" 
             
             fields:

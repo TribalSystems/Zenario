@@ -59,21 +59,55 @@ if ($createNewInstance) {
 			instance_id,
 			tab,
 			ord,
+			cols,
+			small_screens,
 			module_id,
 			framework,
 			css_class,
-			is_tab,
-			name_or_title
+			is_slide,
+			name_or_title,
+			states,
+			visibility,
+			smart_group_id,
+			module_class_name,
+			method_name,
+			param_1,
+			param_2
 		) SELECT
 			". (int) $instanceId. " AS `instance_id`,
 			tab,
 			ord,
+			cols,
+			small_screens,
 			module_id,
 			framework,
 			css_class,
-			is_tab,
-			name_or_title
+			is_slide,
+			name_or_title,
+			states,
+			visibility,
+			smart_group_id,
+			module_class_name,
+			method_name,
+			param_1,
+			param_2
 		FROM ". DB_NAME_PREFIX. "nested_plugins
+		WHERE instance_id = ". (int) $oldInstanceId;
+	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
+	
+	//Copy paths in the conductor
+	$sql = "
+		INSERT INTO ". DB_NAME_PREFIX. "nested_paths (
+			instance_id,
+			from_state,
+			to_state,
+			commands
+		) SELECT
+			". (int) $instanceId. " AS `instance_id`,
+			from_state,
+			to_state,
+			commands
+		FROM ". DB_NAME_PREFIX. "nested_paths
 		WHERE instance_id = ". (int) $oldInstanceId;
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
@@ -129,7 +163,7 @@ if ($createNewInstance) {
 	
 	sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
 	
-	//Copy any nested plugins
+	//Copy any CSS for nested plugins
 	$sql = "
 		SELECT np_old.id AS old_id, np_new.id AS new_id
 		FROM ". DB_NAME_PREFIX. "nested_plugins AS np_old

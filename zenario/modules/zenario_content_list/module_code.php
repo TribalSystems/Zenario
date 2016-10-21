@@ -28,12 +28,16 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 class zenario_content_list extends module_base_class {
+	
 	protected $dataField;
 	protected $pages;
 	protected $totalPages;
 	protected $rows = false;
 	protected $items = false;
 	protected $sql;
+	
+	protected $show_language = false;
+	protected $target_blank = false;
 	
 	
 	//Returns a list of fields needed by the Plugin
@@ -63,6 +67,13 @@ class zenario_content_list extends module_base_class {
 				fi.alt_tag';
 		}
 		
+		if ($this->setting('only_show_child_items')) {
+			$sql .= ",
+				mi2.id AS menu_id,
+				mi2.parent_id AS menu_parent_id,
+				mh.separation AS menu_separation";
+		}
+		
 		return $sql;
 	}
 	
@@ -72,13 +83,68 @@ class zenario_content_list extends module_base_class {
 	protected function lookForContentTableJoins() {
 		$sql = "";
 		
-		//Filter by a category if requested
-		if ($this->setting('category') && checkRowExists('categories', array('id' => $this->setting('category')))) {
+		//Filter by a categories if requested
+		if ($categories = $this->setting('category')) {
+			foreach (explodeAndTrim($categories, true) as $catId) {
+				if (checkRowExists('categories', array('id' => (int) $catId))) {
+					if ($this->setting('refine_type') != 'any_categories') {
+						$sql .= "
+					INNER";
+					} else {
+						$sql .= "
+					LEFT";
+					}
+		
+					$sql .= " JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
+					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
+					  AND cil_". (int) $catId. ".content_type = c.type
+					  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
+				}
+			}
+		}
+		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+			foreach (explodeAndTrim($categories, true) as $catId) {
+				if (checkRowExists('categories', array('id' => (int) $catId))) {
+					$sql .= "
+					LEFT JOIN ". DB_NAME_PREFIX. "category_item_link AS cil_". (int) $catId. "
+					   ON cil_". (int) $catId. ".equiv_id = c.equiv_id
+					  AND cil_". (int) $catId. ".content_type = c.type
+					  AND cil_". (int) $catId. ".category_id = ". (int) $catId;
+				}
+			}
+		}
+		
+		//Only show child-nodes of the current Menu Node
+		if ($this->setting('only_show_child_items')) {
 			$sql .= "
-				INNER JOIN ". DB_NAME_PREFIX. "category_item_link AS cil
-				   ON cil.equiv_id = c.equiv_id
-				  AND cil.content_type = c.type
-				  AND cil.category_id = ". (int) $this->setting('category');
+			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mi1
+			   ON mi1.equiv_id = ". (int) cms_core::$equivId. "
+			  AND mi1.content_type = '". sqlEscape($this->cType). "'
+			  AND mi1.target_loc = 'int'";
+			
+			if (!$this->setting('show_secondaries')) {
+				$sql .= "
+			  AND mi1.redundancy = 'primary'";
+			}
+			
+			$sql .= "
+			INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS mi2
+			   ON mi2.equiv_id = c.equiv_id
+			  AND mi2.content_type = c.type
+			  AND mi2.target_loc = 'int'";
+			
+			if (!$this->setting('show_secondaries')) {
+				$sql .= "
+			  AND mi2.redundancy = 'primary'";
+			}
+			
+			$sql .= "
+			INNER JOIN ". DB_NAME_PREFIX. "menu_hierarchy AS mh
+			   ON mi1.id = mh.ancestor_id
+			  AND mi2.id = mh.child_id
+			  AND mh.separation <= ". (int) $this->setting('child_item_levels');
+			
+			$this->showInMenuMode();
 		}
 		
 		if ($this->setting('show_author_image')) {
@@ -96,20 +162,141 @@ class zenario_content_list extends module_base_class {
 	//Adds to the WHERE clause of the SQL query
 	//Intended to be easily overwritten
 	protected function lookForContentWhere() {
-		$sql = "
-			AND v.type = '". sqlEscape($this->setting('content_type')). "'
-			AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+		$sql = "";
 		
-		if ($this->setting('omit_category')) {
-			$sql .= ' 
-				AND c.tag_id NOT IN (
-					SELECT c2.tag_id
-					FROM ' . DB_NAME_PREFIX . 'content_items c2
-					INNER JOIN ' . DB_NAME_PREFIX . 'category_item_link AS cil2
-						ON cil2.equiv_id = c2.equiv_id
-						AND cil2.content_type = c2.type
-						AND cil2.category_id = '. (int)$this->setting('omit_category') . '
-				)';
+		if ($this->setting('content_type') != 'all') {
+			$sql .= "
+			  AND v.type = '". sqlEscape($this->setting('content_type')). "'";
+		} else {
+			$cTypes = array();
+			foreach (getContentTypes() as $cType) {
+				switch (arrayKey($cType,'content_type_id')){
+					case 'recurringevent':
+					case 'event':
+						break;
+					default:
+						$cTypes[] = $cType['content_type_id'];
+						break;
+				}
+			}
+			if ($cTypes) {
+				$sql .= "
+				  AND v.type IN ('" . implode("','", $cTypes) . "')";
+			}
+		}
+		
+		$first = true;
+		if ($this->setting('refine_type') == 'any_categories' && ($categories = $this->setting('category'))) {
+			foreach (explodeAndTrim($categories, true) as $catId) {
+				if (checkRowExists('categories', array('id' => (int) $catId))) {
+					if ($first) {
+						$sql .= "
+							AND (";
+					} else {
+						$sql .= "
+							OR";
+					}
+					
+					$sql .= " cil_". (int) $catId. ".category_id IS NOT NULL";
+					$first = false;
+				}
+			}
+		}
+		if (!$first) {
+			$sql .= ")";
+		}
+		
+		if ($this->setting('enable_omit_category') && ($categories = $this->setting('omit_category'))) {
+			foreach (explodeAndTrim($categories, true) as $catId) {
+				if (checkRowExists('categories', array('id' => (int) $catId))) {
+					$sql .= "
+						AND cil_". (int) $catId. ".category_id IS NULL";
+				}
+			}
+		}
+		
+		if ($this->setting('language_selection') == 'visitor') {
+			//Only return content in the current language
+			$sql .= "
+			  AND c.language_id = '". sqlEscape(session('user_lang')). "'";
+		
+		} elseif ($this->setting('language_selection') == 'specific_languages') { 
+			//Return content in languages selected by admin
+			$arr = array('');
+			foreach(explode(",", $this->setting('specific_languages')) as $langCode)  {
+				$arr[] = sqlEscape($langCode);
+			}
+			$sql .="
+				AND c.language_id IN ('". implode("','", $arr) . "')";
+		}
+		
+		//Exclude this page itself
+		$sql .= "
+		  AND v.tag_id != '". sqlEscape($this->cType. '_'. $this->cID). "'";
+		
+		
+		//Release date section
+		
+		//Date range
+		$startDate = $this->setting('start_date');
+		$endDate = $this->setting('end_date');
+		
+		if ($this->setting('release_date')=='date_range'){
+			$sql .= "
+				AND DATE(v.publication_date) >= '" . sqlEscape($startDate) . "'
+				";
+			
+			$sql .= "
+				AND DATE(v.publication_date) <=  '" . sqlEscape($endDate) . "'
+				";
+		}
+
+		//Relative date range
+		if ($this->setting('release_date')=='relative_date_range' && $this->setting('relative_operator')
+					&& ((int)$this->setting('relative_value'))>0 && $this->setting('relative_units')) {
+			if ($this->setting('relative_operator')=='older'){
+				$sqlOperator = " < ";
+			} else {
+				$sqlOperator = " >= ";
+			}
+			
+			switch ($this->setting('relative_units')){
+				case 'days':
+					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " DAY)  ";
+					break;
+				case 'months':
+					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " MONTH)  ";
+					break;
+				case 'years':
+					$sql .= " AND publication_date " . $sqlOperator . " DATE_SUB(DATE(NOW()), INTERVAL " . (int)$this->setting('relative_value') . " YEAR)  ";
+					break;
+			}
+		}
+		
+		//prior_to_date
+		if ($this->setting('release_date')=='prior_to_date'){
+			$priorToDate = $this->setting('prior_to_date');
+			
+			$sql .= "
+				AND DATE(v.publication_date) <  '".sqlEscape($priorToDate)."'
+				";
+		}
+		//on_date
+		if ($this->setting('release_date')=='on_date'){
+			$onDate = $this->setting('on_date');
+
+			
+			$sql .= "
+				AND DATE(v.publication_date) =  '" . sqlEscape($onDate) . "'
+				";
+		}
+		//after_date
+		if ($this->setting('release_date')=='after_date'){
+			$afterDate = $this->setting('after_date');
+			
+			$sql .= "
+				AND DATE(v.publication_date) >  '" . sqlEscape($afterDate) . "'
+				";
 		}
 		
 		return $sql;
@@ -119,7 +306,16 @@ class zenario_content_list extends module_base_class {
 	//Sort the Content
 	//Intended to be easily overwritten
 	protected function orderContentBy() {
-		if ($this->setting('order') == 'Alphabetically') {
+		if ($this->setting('only_show_child_items') && $this->setting('order') == 'Menu') {
+			if ($this->setting('child_item_levels') == 1) {
+				return "
+				ORDER BY mi2.ordinal";
+			} else {
+				return "
+				ORDER BY mh.separation, mi2.ordinal";
+			}
+		
+		} elseif ($this->setting('order') == 'Alphabetically') {
 			return "
 			ORDER BY v.title";
 		
@@ -161,10 +357,14 @@ class zenario_content_list extends module_base_class {
 	
 	
 	public function init() {
+		$this->show_language = $this->setting('show_language');
+		$this->target_blank = $this->setting('target_blank');
+		
 		$this->allowCaching(
 			$atAll = true, $ifUserLoggedIn = $this->setting('hide_private_items'), $ifGetSet = true, $ifPostSet = true, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
-			$clearByContent = true, $clearByMenu = false, $clearByUser = false, $clearByFile = $this->setting('show_sticky_images'), $clearByModuleData = false);
+			$clearByContent = true, $clearByMenu = $this->setting('only_show_child_items'), $clearByUser = false, $clearByFile = $this->setting('show_sticky_images'), $clearByModuleData = false);
+		
 		
 		if ($this->setting('data_field') == 'description') {
 			$this->dataField = 'v.description';
@@ -183,6 +383,11 @@ class zenario_content_list extends module_base_class {
 		//Loop through each item to display, and add its details to an array of merge fields
 		$this->items = array();
 		$oddOrEven = 'odd';
+		
+		if ($showCategory = $this->setting('show_content_items_lowest_category') && setting('enable_display_categories_on_content_lists')) {
+			$categories = getRowsArray('categories', array('name', 'id', 'parent_id', 'public'), array());
+		}
+		
 		
 		if ($result = $this->lookForContent()) {
 			while($row = sqlFetchAssoc($result)) {
@@ -203,7 +408,6 @@ class zenario_content_list extends module_base_class {
 					$item['Author'] = $row['writer_name'];
 				}
 				if (isset($row['writer_image_id']) && !empty($row['writer_image_id'])) {
-					
 					$width = $height = $url = false;
 					imageLink($width, $height, $url, $row['writer_image_id'], $this->setting('author_width'), $this->setting('author_height'), $this->setting('author_canvas'), (int)$this->setting('author_offset'), $this->setting('author_retina'));
 					$item['Author_Image_Src'] = $url;
@@ -246,7 +450,12 @@ class zenario_content_list extends module_base_class {
 							imageLink($width, $height, $url, $imageId, $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
 						}
 					} else {
-						itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+						$foundStickyImage = itemStickyImageLink($width, $height, $url, $row['id'], $row['type'], $row['version'], $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+						
+						if (!$foundStickyImage && $this->setting('fall_back_to_default_image') && $this->setting('default_image_id')) {
+							$width = $height = $url = false;
+							imageLink($width, $height, $url, $this->setting('default_image_id'), $this->setting('width'), $this->setting('height'), $this->setting('canvas'), 0, $this->setting('retina'));
+						}
 					} 
 				}
 				
@@ -282,6 +491,32 @@ class zenario_content_list extends module_base_class {
 					}
 				}
 				
+				if ($this->setting('only_show_child_items')) {
+					$item['Menu_Id'] = $row['menu_id'];
+					$item['Menu_Parent_Id'] = $row['menu_parent_id'];
+					$item['Menu_Separation'] = $row['menu_separation'];
+				}
+		
+				if ($this->show_language) {
+					$item['Language'] = htmlspecialchars(getLanguageName($row['language_id'], false));
+				}
+		
+				if ($this->target_blank) {
+					$item['Target_Blank'] = ' target="_blank"';
+				}
+				
+				if ($showCategory) {
+					$categoryId = static::getContentItemLowestPublicCategory($row['equiv_id'], $row['type'], $categories);
+					if ($categoryId) {
+						$item['Category'] = phrase('_CATEGORY_' . $categoryId);
+						$item['Category_Id'] = $categoryId;
+						$category = getRow('categories', array('landing_page_equiv_id', 'landing_page_content_type'), $categoryId);
+						if ($category['landing_page_equiv_id'] && $category['landing_page_content_type']) {
+							$item['Category_Landing_Page_Link'] = linkToItem($category['landing_page_equiv_id'], $category['landing_page_content_type']);
+						}
+					}
+				}
+				
 				
 				$this->addExtraMergeFields($row, $item);
 				
@@ -296,6 +531,55 @@ class zenario_content_list extends module_base_class {
 		return !empty($this->items) || ((bool)$this->setting('show_headings_if_no_items'));
 	}
 	
+	// Gets a content items lowest level public category (return false if there are multiple)
+	public static function getContentItemLowestPublicCategory($equivId, $cType, $allCategories) {
+		$publicCategories = array();
+		$sql = '
+			SELECT c.name, c.id, c.parent_id, c.public
+			FROM ' . DB_NAME_PREFIX . 'category_item_link l
+			INNER JOIN ' . DB_NAME_PREFIX . 'categories c
+				ON l.category_id = c.id
+			WHERE l.equiv_id = ' . (int)$equivId . '
+			AND l.content_type = "' . sqlEscape($cType) . '"';
+		$result = sqlSelect($sql);
+		while ($row = sqlFetchAssoc($result)) {
+			if ($row['public']) {
+				$publicCategories[$row['id']] = $row;
+			}
+		}
+		
+		$highestLevel = 0;
+		$publicCategoryLevels = array();
+		foreach ($publicCategories as $categoryId => $category) {
+			$level = static::getCategoryLevel($categoryId, $allCategories);
+			if ($level !== false) {
+				$publicCategoryLevels[$level][] = $categoryId;
+				if ($level > $highestLevel) {
+					$highestLevel = $level;
+				}
+			}
+		}
+		
+		if (!isset($publicCategoryLevels[$highestLevel]) || (count($publicCategoryLevels[$highestLevel]) !== 1)) {
+			return false;
+		}
+		
+		return $publicCategoryLevels[$highestLevel][0];
+	}
+	
+	public static function getCategoryLevel($categoryId, $categories) {
+		$category = $categories[$categoryId];
+		$level = 1;
+		while ($category['parent_id'] != 0) {
+			if (isset($categories[$category['parent_id']])) {
+				$category = $categories[$category['parent_id']];
+				++$level;
+			} else {
+				return false;
+			}
+		}
+		return $level;
+	}
 	
 	
 	
@@ -446,7 +730,8 @@ class zenario_content_list extends module_base_class {
 				'Show_Sticky_Image' => (bool) $this->setting('show_sticky_images'),
 				'Show_RSS_Link' => (bool) $this->setting('enable_rss'),
 				'Show_Title' => (bool)$this->setting('show_headings'),
-				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items')
+				'Show_No_Title' => (bool)$this->setting('show_headings_if_no_items'),
+				'Show_Category' => (bool)$this->setting('show_content_items_lowest_category') && (bool)setting('enable_display_categories_on_content_lists')
 			)
 		);
 		
@@ -481,9 +766,6 @@ class zenario_content_list extends module_base_class {
 				$box['tabs']['pagination']['fields']['pagination_style']['values'] = 
 					paginationOptions();
 				
-				if (!is_array(arrayKey($box['tabs']['first_tab']['fields']['content_type'], 'values'))) {
-					$box['tabs']['first_tab']['fields']['content_type']['values'] = array();
-				}
 				foreach (getContentTypes() as $cType) {
 					switch (arrayKey($cType,'content_type_id')){
 						case 'recurringevent':
@@ -491,11 +773,17 @@ class zenario_content_list extends module_base_class {
 							break;
 						default:
 							$box['tabs']['first_tab']['fields']['content_type']['values'][$cType['content_type_id']] =
-								htmlspecialchars($cType['content_type_name_en']);
+								$cType['content_type_name_en'];
 							break;
 					}
 				}
 				
+				$categoriesEnabled = setting('enable_display_categories_on_content_lists');
+				if (!$categoriesEnabled) {
+					$fields['each_item/show_content_items_lowest_category']['disabled'] = true;
+					$fields['each_item/show_content_items_lowest_category']['side_note'] = adminPhrase('You must enable this option in your site settings under "Categories".');
+					$values['each_item/show_content_items_lowest_category'] = false;
+				}
 				break;
 		}
 	}
@@ -526,25 +814,81 @@ class zenario_content_list extends module_base_class {
 					array('ctype' => htmlspecialchars(getContentTypeName($this->setting('content_type')))));
 		}
 		
+		switch ($this->setting('only_show')) {
+			case 'public':
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Show: Public Content Items only');
+				break;
+			
+			case 'all':
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Show: Public and Private Content Items');
+				break;
+			
+			case 'private':
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Show: Private Content Items only');
+				break;
+		}
+		
+		if ($this->setting('language_selection') == 'all') {
+			$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Show Items in: All enabled Languages');
+		} elseif ($this->setting('language_selection') == 'visitor') {
+			$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase("Show Items in: Visitor's Language");
+		} elseif ($this->setting('language_selection') == 'specific_languages') {
+			$langs = getLanguages();
+			$arr = array();
+			foreach(explode(",", $this->setting('specific_languages')) as $langCode )  {
+				$arr[] = arrayKey($langs, $langCode, 'english_name');
+			}
+			sort($arr);
+			$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase("Show Items in: " . htmlspecialchars(implode(", ", $arr)));
+		}
+		
+		if ($this->setting('only_show_child_items')) {
+			if ((int) $this->setting('child_item_levels') == 1) {
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Menu Levels: Content in the menu one level below current Item');
+			
+			} elseif ((int) $this->setting('child_item_levels') >= 99) {
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Menu Levels: All Content in the menu below current Item');
+			
+			} else {
+				$controls['notes']['filter_settings']['label'] .= '<br/>'. adminPhrase('Menu Levels: Content in the menu up to [[child_item_levels]] levels below',
+														array('child_item_levels' => (int) $this->setting('child_item_levels')));
+			}
+		}
+		
+		if ($this->setting('author_advice')) {
+			$controls['notes']['author_advice']['label'] = nl2br(htmlspecialchars($this->setting('author_advice')));
+		}
+		
 		$this->fillAdminSlotControlsShowFilterSettingsCategories($controls);
 	}
 	
 	public function fillAdminSlotControlsShowFilterSettingsCategories(&$controls) {
 		if ($this->setting('category')) {
 			$first = true;
-			foreach(explode(',', $this->setting('category')) as $catId) {
+			foreach(explodeAndTrim($this->setting('category'), true) as $catId) {
 				if ($name = getCategoryName($catId)) {
-					
+					$separator = ",";
+					$labelPrefix = "";
+				
+					if ($this->setting('refine_type') != 'any_categories') {
+						$separator = " AND ";
+						$labelPrefix = "In ";
+					} else {
+						$separator = " OR ";
+						$labelPrefix = "In ";
+					}
+
+				
 					if ($first) {
 						$first = false;
 						$controls['notes']['filter_settings']['label'] .=
 							'<br/>'.
-							adminPhrase('Category:').
+							adminPhrase($labelPrefix . 'Category:').
 							' ';
 					} else {
-						$controls['notes']['filter_settings']['label'] .= ', ';
+						$controls['notes']['filter_settings']['label'] .= $separator;
 					}
-					
+				
 					$controls['notes']['filter_settings']['label'] .= htmlspecialchars($name);
 				}
 			}

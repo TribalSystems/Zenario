@@ -47,40 +47,40 @@ class zenario_abstract_fea extends module_base_class {
 	
 	
 	
-	protected function populateItemsIdCol($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsIdCol($path, &$tags, &$fields, &$values) {
 		return 'id';
 	}
-	protected function populateItemsSelect($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsSelect($path, &$tags, &$fields, &$values) {
 		return "SELECT id, name";
 	}
-	protected function populateItemsFrom($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsFrom($path, &$tags, &$fields, &$values) {
 		return "FROM ". DB_NAME_PREFIX. "table";
 	}
-	protected function populateItemsWhere($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsWhere($path, &$tags, &$fields, &$values) {
 		return "WHERE false";
 	}
-	protected function populateItemsOrderBy($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsOrderBy($path, &$tags, &$fields, &$values) {
 		return "ORDER BY name";
 	}
-	protected function populateItemsPageSize($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItemsPageSize($path, &$tags, &$fields, &$values) {
 		return false;
 	}
 	protected function formatItemRow(&$item, $path, &$tags, &$fields, &$values) {
 		//...
 	}
 	
-	protected function populateItems($path, $customisationName, &$tags, &$fields, &$values) {
+	protected function populateItems($path, &$tags, &$fields, &$values) {
 		
 		$page = 1;
 		$limit = '';
 		$itemCount = 0;
-		$idCol =  $this->populateItemsIdCol($path, $customisationName, $tags, $fields, $values);
+		$idCol =  $this->populateItemsIdCol($path, $tags, $fields, $values);
 		
-		if ($pageSize = $this->populateItemsPageSize($path, $customisationName, $tags, $fields, $values)) {
+		if ($pageSize = $this->populateItemsPageSize($path, $tags, $fields, $values)) {
 			$row = sqlFetchRow(
 				"SELECT COUNT(*)
-				". $this->populateItemsFrom($path, $customisationName, $tags, $fields, $values). "
-				". $this->populateItemsWhere($path, $customisationName, $tags, $fields, $values));
+				". $this->populateItemsFrom($path, $tags, $fields, $values). "
+				". $this->populateItemsWhere($path, $tags, $fields, $values));
 			$itemCount = $row[0];
 			
 			if ((!$page = (int) request('page'))
@@ -95,10 +95,10 @@ class zenario_abstract_fea extends module_base_class {
 		
 		
 		$result = sqlSelect(
-				$this->populateItemsSelect($path, $customisationName, $tags, $fields, $values). "
-				". $this->populateItemsFrom($path, $customisationName, $tags, $fields, $values). "
-				". $this->populateItemsWhere($path, $customisationName, $tags, $fields, $values). "
-				". $this->populateItemsOrderBy($path, $customisationName, $tags, $fields, $values). "
+				$this->populateItemsSelect($path, $tags, $fields, $values). "
+				". $this->populateItemsFrom($path, $tags, $fields, $values). "
+				". $this->populateItemsWhere($path, $tags, $fields, $values). "
+				". $this->populateItemsOrderBy($path, $tags, $fields, $values). "
 				". $limit);
 		
 		$tags['items'] = array();

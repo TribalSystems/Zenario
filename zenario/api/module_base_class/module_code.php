@@ -167,7 +167,7 @@ class module_base_class extends zenario_api {
 	///////////////////////////////////////////////
 	
 	
-	public function returnVisitorTUIXEnabled($path, $customisationName) {
+	public function returnVisitorTUIXEnabled($path) {
 		switch ($path) {
 			default:
 				//Disallow this feature by default!
@@ -175,22 +175,22 @@ class module_base_class extends zenario_api {
 		}
 	}
 	
-	public function fillVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values) {
+	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
 		
 		//...your PHP code...//
 	}
 	
-	public function formatVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes) {
+	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
 		
 		//...your PHP code...//
 	}
 	
-	public function validateVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes, $saving) {
+	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
 		
 		//...your PHP code...//
 	}
 	
-	public function saveVisitorTUIX($path, $customisationName, &$tags, &$fields, &$values, &$changes) {
+	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
 		
 		//...your PHP code...//
 	}

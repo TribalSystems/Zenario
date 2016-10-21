@@ -67,7 +67,7 @@ function getDistinctRowsArray($table, $cols, $ids = array(), $orderBy = array(),
 //New in 7.1
 cms_core::$whitelist[] = 'selectCount';
 function selectCount($table, $ids = array()) {
-	return checkRowExists($table, $ids, false, false, false, 'count');
+	return (int) checkRowExists($table, $ids, false, false, false, 'count');
 }
 
 cms_core::$whitelist[] = 'selectMax';
@@ -81,7 +81,7 @@ function selectMin($table, $cols, $ids = array(), $ignoreMissingColumns = false)
 }
 
 function getNextAutoIncrementId($table) {
-	if ($row = sqlFetchAssoc(sqlSelect("SHOW TABLE STATUS LIKE '". sqlEscape(cms_core::$lastDBPrefix. $table). "'"))) {
+	if ($row = sqlFetchAssoc("SHOW TABLE STATUS LIKE '". sqlEscape(cms_core::$lastDBPrefix. $table). "'")) {
 		return $row['Auto_increment'];
 	}
 	return false;
@@ -110,7 +110,7 @@ function correctMySQLDatatypes($table, &$data) {
 	$numericCols = &cms_core::$numericCols[cms_core::$lastDBPrefix. $table];
 	
 	foreach ($data as $key => &$value) {
-		if (isset($numericCols[$key])) {
+		if ($value !== null && isset($numericCols[$key])) {
 			if ($numericCols[$key] === ZENARIO_INT_COL) {
 				$value = (int) $value;
 			} elseif ($numericCols[$key] === ZENARIO_FLOAT_COL) {
@@ -225,11 +225,27 @@ function sqlFetchArray($result) {
 }
 
 //Replacement for mysql_fetch_assoc()
-function sqlFetchAssoc($result) {
+function sqlFetchAssoc($result, $table = false) {
 	if (is_string($result)) {
 		$result = sqlSelect($result);
 	}
-	return $result->fetch_assoc();
+	$row = $result->fetch_assoc();
+	
+	//If we know the table name we're selecting from,
+	//try to automatically convert any int/float columns to ints/floats
+	if ($table && is_array($row)) {
+		foreach ($row as $col => &$value) {
+			if ($value !== null && !empty(cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col])) {
+				if (cms_core::$numericCols[cms_core::$lastDBPrefix. $table][$col] === ZENARIO_FLOAT_COL) {
+					$value = (float) $value;
+				} else {
+					$value = (int) $value;
+				}
+			}
+		}
+	}
+	
+	return $row;
 }
 
 //Replacement for mysql_fetch_row()
@@ -253,20 +269,48 @@ function sqlNumRows($result) {
 	return $result->num_rows;
 }
 
-//New in 7.3, this quickly gets an array from a sql query
-function sqlSelectArray($result, $oneCol = false) {
+//Fetch just one value from a SQL query
+function sqlFetchValue($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
+	if ($row = $result->fetch_row()) {
+		return $row[0];
+	} else {
+		return false;
+	}
+}
+
+//Fetch multiple values from a SQL query (one column, multiple rows)
+function sqlFetchValues($result) {
 	if (is_string($result)) {
 		$result = sqlSelect($result);
 	}
 	$out = array();
-	if ($oneCol) {
-		while ($row = sqlFetchRow($result)) {
-			$out[] = $row[0];
-		}
-	} else {
-		while ($row = sqlFetchAssoc($result)) {
-			$out[] = $row;
-		}
+	while ($row = $result->fetch_row()) {
+		$out[] = $row[0];
+	}
+	return $out;
+}
+
+//Fetch multiple values from a SQL query (multiple columns, multiple rows)
+function sqlFetchAssocs($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
+	$out = array();
+	while ($row = $result->fetch_assoc()) {
+		$out[] = $row;
+	}
+	return $out;
+}
+function sqlFetchRows($result) {
+	if (is_string($result)) {
+		$result = sqlSelect($result);
+	}
+	$out = array();
+	while ($row = $result->fetch_row()) {
+		$out[] = $row;
 	}
 	return $out;
 }

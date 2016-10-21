@@ -35,6 +35,8 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //This can also be used as a work-around for Modules that want to insert data in other Modules tables;
 //The tables will be created in the first loop, then the data can be inserted in the second loop in a run-every-update file
 
+require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
+
 for ($i = 0; $i < ($andDoUpdates? 2 : 1); ++$i) {
 	$revisionsNeeded = false;
 	$currentRevisionOut = false;

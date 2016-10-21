@@ -8,8 +8,51 @@ plugin_settings:
                 html:
                     label: 'Twig code:'
                     type: code_editor
+                    value: ""
                     dont_trim: true
                     language: twig
+        javascript:
+            label: 'JavaScript'
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            Use this if you need to add JavaScript to the bottom of the page.
+                            The
+                            <a href="http://zenar.io/ref-var-slotname" target="_blank"><code>slotName</code></a>
+                            and
+                            <a href="http://zenar.io/ref-var-containerid" target="_blank"><code>containerId</code></a>
+                            variables are avilable to use in your code if you need them.
+                            
+                javascript:
+                    plugin_setting:
+                        name: javascript
+                    label: 'JavaScript code:'
+                    type: code_editor
+                    value: ""
+                    dont_trim: true
+                    language: javascript
+                    style: >
+                        height: 25em;
+                minify:
+                    type: submit
+                    value: ' ▼ Minify ▼ '
+                    format_onchange: true
+                    side_note: |
+                        Press this button to minify your JavaScript code
+                minified_javascript:
+                    plugin_setting:
+                        name: minified_javascript
+                    label: 'Minified code:'
+                    type: code_editor
+                    value: ""
+                    dont_trim: true
+                    language: javascript
+                    style: >
+                        height: 4em;
+                    note_below: |
+                        If provided, the minified code will be used instead of your JavaScript code
+                        for a smaller page-size.
         caching:
             label: Plugin caching
             fields:

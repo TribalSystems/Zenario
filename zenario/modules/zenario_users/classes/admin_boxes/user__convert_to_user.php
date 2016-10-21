@@ -84,19 +84,12 @@ class zenario_users__admin_boxes__user__convert_to_user extends zenario_users {
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (($id = (int)$box['key']['id']) && checkPriv('_PRIV_CHANGE_USER_STATUS')) {
-			$sql ="
-					UPDATE "
-					. DB_NAME_PREFIX . "users
-					SET
-						status='active'
-					WHERE
-						id=" . $id;
-			sqlQuery($sql);
 			$cols = array(
 				'email' => $values['details/email'],
 				'salutation' => $values['details/salutation'],
 				'first_name' => $values['details/first_name'],
 				'last_name' => $values['details/last_name'],
+				'status' => 'active',
 				'terms_and_conditions_accepted' => $values['details/terms_and_conditions_accepted']
 			);
 	

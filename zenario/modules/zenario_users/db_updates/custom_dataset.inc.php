@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-if (needRevision(46)) {
+if (needRevision(50)) {
 	
 	//Add or update a record in the custom_datasets table with the correct details
 	//(Note if you upgrade from version 7 or earlier this will have been done manually
@@ -64,9 +64,16 @@ if (needRevision(46)) {
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'terms_and_conditions_accepted');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'screen_name_confirmed');
 	registerDatasetSystemField($datasetId, 'checkbox', 'details', 'send_activation_email_to_user', '');
+	
+	registerDatasetSystemField($datasetId, 'date', 'dates', 'created_date');
+	registerDatasetSystemField($datasetId, 'date', 'dates', 'modified_date');
+	registerDatasetSystemField($datasetId, 'date', 'dates', 'last_login');
+	registerDatasetSystemField($datasetId, 'text', 'dates', 'last_login_ip');
+	registerDatasetSystemField($datasetId, 'date', 'dates', 'last_profile_update_in_frontend');
+	registerDatasetSystemField($datasetId, 'date', 'dates', 'suspended_date');
 	//registerDatasetSystemField($datasetId, $type, $tabName, $fieldName, $dbColumn = false, $validation = 'none', $valuesSource = '', $fundamental = false, $isRecordName = false)
 	
-	revision(46);
+	revision(50);
 }
 
 if (needRevision(42)) {

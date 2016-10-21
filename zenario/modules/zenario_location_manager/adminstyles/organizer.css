@@ -1,9 +1,10 @@
-#organizer_leftColumn div.organizer_legend a.locations_top_level {
+.organizer_top_level_image.locations_top_level {
 	background: url('images/locations-leftbar-icons.png') no-repeat center 0px;
 }
 
-#organizer_leftColumn div.legend_on a.locations_top_level,
-#organizer_leftColumn div.organizer_legend a.locations_top_level:hover {
+#zenario_at_top_left_menu .organizer_top_level_image.locations_top_level,
+#organizer_leftColumn .legend_on a.locations_top_level,
+.organizer_top_level_image.locations_top_level:hover {
 	background-position:center -35px;
 }
 

@@ -1,16 +1,7 @@
-zenarioA.eval = function(c, tuixObject, item, id) {
-	var ev;
-	c += "";
-	
+zenarioA.doEval = function(c, tuixObject, item, id, tuix, button, column, field, section, tab) {
 	if (c.search(/^\s*function/) === 0) {
-		ev = eval("(" + c + ")");
+		return eval("(" + c + ")");
 	} else {
-		ev = eval(c);
+		return eval(c);
 	}
-	
-	if (typeof ev == "function") {
-		ev = ev(tuixObject, item, id);
-	}
-	
-	return zenario.engToBoolean(ev);
 };

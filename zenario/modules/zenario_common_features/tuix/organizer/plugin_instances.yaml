@@ -3,6 +3,8 @@
 zenario__modules:
     panels:
         plugins:
+            key:
+                skinId: ''
             title: Plugin Library
             view_mode: list
             db_items:

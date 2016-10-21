@@ -395,7 +395,6 @@ zenarioO.init2 = function() {
 	zenarioA.tooltips();
 	
 	
-	zenarioO.sortedTopLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map);
 	zenarioO.setNavigation();
 	zenarioO.setTopRightButtons();
 	
@@ -1007,7 +1006,7 @@ zenarioO.go = function(path, branch, refiner, queued, lastInQueue, backwards, do
  	//Check to see if there were any filters previously set on this panel
 	if (filters && !_.isEmpty(filters)) {
 		//If so, use them
-		filters = $.extend(true, {}, filters);
+		filters = zenario.clone(filters);
 	
 	} else {
 		//Otherwise start with empty filters
@@ -2236,7 +2235,7 @@ zenarioO.resetBranches = function() {
 		'searches': {}
 	}];
 };
-zenarioO.resetBranches();
+
 
 //Add a new branch
 zenarioO.branch = function(path, lastPath, lastTitle, noReturnEnabled) {
@@ -2797,7 +2796,7 @@ zenarioO.topLevelClick = function(id, j, first) {
 	zenarioO.resetBranches();
 	
 	if (j !== undefined) {
-		var obj = $.extend(true, {}, zenarioO.map[id].nav[j]);
+		var obj = zenario.clone(zenarioO.map[id].nav[j]);
 		
 		zenarioA.action(zenarioO, obj, false, -1);
 	} else {
@@ -3106,7 +3105,7 @@ zenarioO.action2 = function() {
 		var goNum = ++zenarioO.goNum;
 		get('organizer_preloader_circle').style.display = 'block';
 		
-		zenario.ajax(URLBasePath + zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
+		zenario.ajax(zenarioO.actionTarget, zenarioO.actionRequests, false, false, true).after(function(message) {
 			//Check that this isn't an out-of-date request that has come in syncronously via AJAX
 			if (goNum != zenarioO.goNum) {
 				return;
@@ -3229,18 +3228,28 @@ zenarioO.refreshPage = function(hash, dontAutoDetectMode, task) {
 		if (hash == 'zenario__administration/panels/site_settings//site_reset') {
 			task = 'site_reset';
 		
-		} else if (hash.substr(0, 31) == 'zenario__administration/panels/backups') {
+		} else if (hash && hash.substr(0, 31) == 'zenario__administration/panels/backups') {
 			task = 'restore';
 		
 		} else {
 			task = 'reload_sk';
 		}
 	}
-
-	window.location.href =
-		URLBasePath +
-		'zenario/admin/welcome.php?task=' + task + '&og=' + encodeURIComponent(hash) +
-		(zenarioA.fromCID? '&fromCID=' + zenarioA.fromCID + '&fromCType=' + zenarioA.fromCType : '');
+	
+	var href = URLBasePath + 'zenario/admin/welcome.php?task=' + task;
+	
+	//If this is the front-end, link back to the front end, otherwise go back to Organizer
+	if (zenario.cID) {
+		href += '&cID=' + zenario.cID + '&cType=' + zenario.cType + '&cVersion=' + zenario.cVersion;
+	} else {
+		href += '&og=' + encodeURIComponent(hash);
+		
+		if (zenario.cID) {
+			href += '&fromCID=' + zenarioA.fromCID + '&fromCType=' + zenarioA.fromCType;
+		}
+	}
+	
+	window.location.href = href;
 };
 
 //Refresh the panel to show an item after a button click or admin box is saved.
@@ -3338,6 +3347,7 @@ zenarioO.refreshToShowItem = function(itemId, growlIfItemIsVisible, growlIfItemI
 			
 			//If an item was just saved, but isn't visible, show the "Item saved, but your filter prevents it from appearing" message
 			if (growlIfItemIsNotVisible
+			 && !engToBoolean(zenarioO.tuix.hide_filter_warning)
 			 && !(zenarioO.tuix.items && zenarioO.tuix.items[itemId])) {
 				
 				//Quickly check if the item still exists; e.g. we shouldn't show this for deleted items
@@ -4219,6 +4229,9 @@ zenarioO.changeSortOrder = function(c) {
 	zenarioO.prefs[zenarioO.path].sortBy = zenarioO.sortBy;
 	zenarioO.prefs[zenarioO.path].sortDesc = zenarioO.sortDesc;
 	
+	if (zenarioO.pi) {
+		zenarioO.pi.cmsSetsSortColumn(zenarioO.sortBy, zenarioO.sortDesc);
+	}
 	zenarioO.runSearch();
 	
 	//This line is not needed now we don't use the view options for sorting columns
@@ -4429,7 +4442,8 @@ zenarioO.isShowableColumn = function(c, shown) {
 	if (shown) {
 		return zenarioO.shownColumns[c] && zenarioO.isShowableColumn(c);
 	} else {
-		return zenarioO.tuix.columns[c] && !zenarioA.hidden(zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
+		//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+		return zenarioO.tuix.columns[c] && !zenarioA.hidden(undefined, undefined, c, zenarioO.tuix, undefined, zenarioO.tuix.columns[c]) && zenarioO.tuix.columns[c].title && !engToBoolean(zenarioO.tuix.columns[c].server_side_only);
 	}
 };
 
@@ -4941,7 +4955,7 @@ zenarioO.getFromLastPanel = function(branchLevel, path, thing, branchBelow, time
 
 //Warning: the zenarioO.setBackButton() and zenarioO.getBackButtonTitle() functions both
 //rely on the zenarioO.setNavigation() function being called first!
-zenarioO.setNavigation = function() {
+zenarioO.setNavigation = function(returnData) {
 	var i, j,
 		itemNo, jtemNo,
 		ti = -1,
@@ -4961,6 +4975,10 @@ zenarioO.setNavigation = function() {
 		path = zenarioO.path,
 		navPath = zenarioO.getHash(true),
 		thisNavPath;
+	
+	if (!zenarioO.sortedTopLevelItems) {
+		zenarioO.sortedTopLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map);
+	}
 	
 	zenarioO.currentTopLevelPathHasRefiner = false;
 	
@@ -5003,47 +5021,55 @@ zenarioO.setNavigation = function() {
 	
 	
 	//Loop through each top level nav
-	foreach (zenarioO.sortedTopLevelItems as itemNo) {
-		i = zenarioO.sortedTopLevelItems[itemNo];
-		
-		if (i == 'top_right_buttons'
-		 || zenarioA.hidden(zenarioO.map[i])) {
-			continue;
-		}
+	foreach (zenarioO.sortedTopLevelItems as itemNo => i) {
 		
 		var first2nd = true,
 			si = -1,
 			prop,
-			nav;
+			topLevel = zenarioO.map[i],
+			secondLevel,
+			topLevelTUIX,
+			secondLevelTUIX,
+			panelItemDefaults,
+			item_css_class;
+		
+		if (i == 'top_right_buttons'
+			//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+		 || zenarioA.hidden(undefined, undefined, i, zenarioO.tuix, undefined, undefined, undefined, topLevel)) {
+			continue;
+		}
 		
 		//Set data to pass to the microtemplate
-		data.items[++ti] = {
+		topLevelTUIX = data.items[++ti] = {
 			id: i,
 			items: [],
 			selected: i === selected1st,
-			css_class: zenarioO.map[i].css_class,
-			label: ifNull(zenarioO.map[i].label, zenarioO.map[i].name),
-			tooltip: zenarioO.map[i].tooltip,
-			youtube_video_id: zenarioO.map[i].youtube_video_id,
-			youtube_thumbnail_title: zenarioO.map[i].youtube_thumbnail_title
+			css_class: topLevel.css_class,
+			label: topLevel.label || topLevel.name,
+			tooltip: topLevel.tooltip,
+			href: topLevel.href,
+			onclick: topLevel.onclick,
+			youtube_video_id: topLevel.youtube_video_id,
+			youtube_thumbnail_title: topLevel.youtube_thumbnail_title
 		};
-		zenarioO.setDataAttributes(zenarioO.map[i], data.items[ti]);
+		zenarioO.setDataAttributes(topLevel, topLevelTUIX);
 		
 		if (i === selected1st) {
 			data.selected1st = ti;
 		}
 		
 		//Sort the second level nav under this top level
-		if ((nav = zenarioO.map[i].nav)
-		 && (_.isObject(nav))) {
-			sortedSecondLevelItems = zenarioO.getSortedIdsOfTUIXElements(zenarioO.map[i].nav);
+		if (topLevel.nav
+		 && _.isObject(topLevel.nav)) {
+			sortedSecondLevelItems = zenarioO.getSortedIdsOfTUIXElements(topLevel.nav);
 		
 			//Loop through each second level nav
 			foreach (sortedSecondLevelItems as jtemNo => j) {
+				secondLevel = topLevel.nav[j];
 			
-				if (zenarioO.map[i].nav[j].link
-				 && zenarioO.map[i].nav[j].link.path) {
-					path = zenarioO.map[i].nav[j].link.path;
+				if (secondLevel.link
+				 && secondLevel.link.path) {
+					path = secondLevel.link.path;
 				} else {
 					path = i + '/nav/' + j + '/panel';
 				}
@@ -5055,31 +5081,54 @@ zenarioO.setNavigation = function() {
 						zenarioO.currentTopLevelPathHasRefiner = true;
 					}
 				}
-			
-				if (zenarioA.hidden(zenarioO.map[i].nav[j])) {
+				
+				//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+				if (zenarioA.hidden(undefined, undefined, j, zenarioO.tuix, secondLevel, undefined, undefined, topLevel)) {
 					continue;
 				}
+				
+				item_css_class = secondLevel.css_class;
+				
+				//If a CSS class wasn't set, attempt to look up the icons used in the target panel.
+				//(This is currently only needed for the Admin Toolbar, so I'm only
+				// doing the logic if the returnData variable is set.)
+				if (!item_css_class
+				 && returnData
+				 && (panelItemDefaults = zenarioO.followPathOnMap(path, 'item'))) {
+					item_css_class = panelItemDefaults.css_class;
+				}
 			
-				data.items[ti].items[++si] = {
+				secondLevelTUIX = topLevelTUIX.items[++si] = {
 					id: j,
 					selected: i === selected1st && j === selected2nd,
-					href: '#' + path,
-					onclick: "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;",
-					css_class: zenarioO.map[i].nav[j].css_class,
-					label: ifNull(zenarioO.map[i].nav[j].label, zenarioO.map[i].nav[j].name),
-					tooltip: zenarioO.map[i].nav[j].tooltip
+					href: secondLevel.href,
+					onclick: secondLevel.onclick,
+					css_class: item_css_class,
+					label: ifNull(secondLevel.label, secondLevel.name),
+					tooltip: secondLevel.tooltip,
+					item_css_class: item_css_class
 				};
+				
+				if (!secondLevel.href && !secondLevel.onclick) {
+					secondLevelTUIX.href = '#' + path;
+					secondLevelTUIX.onclick = "zenarioO.topLevelClick('" + jsEscape(i) + "', '" + jsEscape(j) + "', " + engToBoolean(si == 0) + "); return false;";
+				}
 			
 				//The user should be taken to the first second level item if they click on the top level item
 				if (first2nd) {
 					first2nd = false;
-					data.items[ti].href = data.items[ti].items[si].href;
-					data.items[ti].onclick = data.items[ti].items[si].onclick;
+					if (!topLevelTUIX.href && !topLevelTUIX.onclick) {
+						topLevelTUIX.href = secondLevelTUIX.href;
+						topLevelTUIX.onclick = secondLevelTUIX.onclick;
+					}
 				}
 			}
 		}
 	}	
 	
+	if (returnData) {
+		return data;
+	}
 	
 	get('organizer_leftColumn').innerHTML = zenarioA.microTemplate('zenario_organizer_nav', data);
 	
@@ -5161,7 +5210,7 @@ zenarioO.setTopRightButtons = function() {
 			continue;
 		}
 		
-		disabled = zenarioO.checkDisabled(button);
+		disabled = zenarioO.checkDisabled(button, i);
 		buttons[++bi] = zenarioO.setButtonAction('zenarioO.topRightButtonClick', button, disabled, i, undefined, undefined, '');
 	}
 	
@@ -5227,7 +5276,7 @@ zenarioO.getQuickFilters = function() {
 			continue;
 		}
 		
-		disabled = zenarioO.checkDisabled(button);
+		disabled = zenarioO.checkDisabled(button, i);
 		buttons[++bi] = zenarioO.setButtonAction('zenarioO.toggleQuickFilter', button, disabled, i, undefined, undefined, '');
 		
 		buttons[bi].enabled = zenarioO.quickFilterEnabled(i);
@@ -5261,7 +5310,7 @@ zenarioO.getCollectionButtons = function() {
 			continue;
 		}
 		
-		disabled = zenarioO.checkDisabled(button);
+		disabled = zenarioO.checkDisabled(button, i);
 		buttons[++bi] = zenarioO.setButtonAction('zenarioO.collectionButtonClick', button, disabled, i);
 	}
 	
@@ -5403,7 +5452,7 @@ zenarioO.getItemButtons = function() {
 				continue;
 			}
 			
-			disabled = zenarioO.checkDisabled(button, selectedItems);
+			disabled = zenarioO.checkDisabled(button, i, selectedItems);
 			buttons[++bi] = zenarioO.setButtonAction('zenarioO.itemButtonClick', button, disabled, i, undefined, item);
 			
 			
@@ -5488,10 +5537,11 @@ zenarioO.setButtonAction = function(funName, button, disabled, buttonId, itemId,
 
 
 //Check to see whether a button should be disabled
-zenarioO.checkDisabled = function(button, items) {
+zenarioO.checkDisabled = function(button, buttonId, items) {
 	var id,
 		singleItem = undefined,
-		singleItemId = undefined;
+		singleItemId = undefined,
+		tuix = zenarioO.tuix;
 	
 	if (engToBoolean(button.disabled)) {
 		return true;
@@ -5502,7 +5552,7 @@ zenarioO.checkDisabled = function(button, items) {
 		foreach (items as id) {
 			if (singleItemId === undefined) {
 				singleItemId = id;
-				singleItem = zenarioO.tuix.items && zenarioO.tuix.items[id];
+				singleItem = tuix.items && tuix.items[id];
 			} else {
 				singleItemId =
 				singleItem = undefined;
@@ -5512,7 +5562,8 @@ zenarioO.checkDisabled = function(button, items) {
 	}
 	
 	if (button.disabled_if !== undefined) {
-		if (zenarioA.eval(button.disabled_if, button, singleItem, singleItemId)) {
+		//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
+		if (zenarioA.eval(button.disabled_if, undefined, singleItem, buttonId, tuix, button)) {
 			return true;
 		}
 	}
@@ -5521,7 +5572,7 @@ zenarioO.checkDisabled = function(button, items) {
 	//properties should be visible
 	if (items && button.disabled_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.disabled_if_for_any_selected_items, button, zenarioO.tuix.items[id], id)) {
+			if (zenarioA.eval(button.disabled_if_for_any_selected_items, undefined, tuix.items[id], id, tuix, button)) {
 				return true;
 			}
 		}
@@ -5529,7 +5580,7 @@ zenarioO.checkDisabled = function(button, items) {
 	
 	if (items && button.disabled_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, button, zenarioO.tuix.items[id], id)) {
+			if (!zenarioA.eval(button.disabled_if_for_all_selected_items, undefined, tuix.items[id], id, tuix, button)) {
 				return false;
 			}
 		}
@@ -5562,7 +5613,8 @@ zenarioO.checkButtonHidden = function(button, items) {
 	}
 	
 	//Check if this button is hidden
-	if (zenarioA.hidden(button, true, singleItem, singleItemId)) {
+	//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+	if (zenarioA.hidden(undefined, singleItem, singleItemId, zenarioO.tuix, button)) {
 		return true;
 	}
 	
@@ -5627,9 +5679,44 @@ zenarioO.checkButtonHidden = function(button, items) {
 	return false;
 };
 
+
+//Define some logic for checking columns and traits
+var colCheckLogic = {
+	traits: {
+		condition: function(id, trait, item) {
+			return item.traits && engToBoolean(item.traits[trait]); 
+		}
+	},
+	without_traits: {
+		condition: function(id, trait, item) {
+			return !item.traits || !engToBoolean(item.traits[trait]);
+		}
+	},
+	with_columns_set: {
+		condition: function(id, column, item) {
+			return engToBoolean(item[column]);
+		}
+	},
+	without_columns_set: {
+		condition: function(id, column, item) {
+			return !engToBoolean(item[column]);
+		}
+	}
+};
+colCheckLogic.one_with_traits = zenario.clone(colCheckLogic.traits, {one: true});
+colCheckLogic.one_without_traits = zenario.clone(colCheckLogic.without_traits, {one: true});
+colCheckLogic.one_with_columns_set = zenario.clone(colCheckLogic.with_columns_set, {one: true});
+colCheckLogic.one_without_columns_set = zenario.clone(colCheckLogic.without_columns_set, {one: true});
+
+
 //Check to see whether an item button should be visible or hidden based on logic specific to item buttons
 zenarioO.checkTraits = function(button, items) {
-	var id, met;
+	
+	var id,
+		check, checks, ci, logic,
+		met = false,
+		thisItemMet,
+		tuix = zenarioO.tuix;
 	
 	//Catch the case where we get passed an undefined rather than an object
 	//(Note that no conditions means whatever this is should be shown!)
@@ -5641,16 +5728,16 @@ zenarioO.checkTraits = function(button, items) {
 	//properties should be visible
 	if (button.visible_if_for_all_selected_items !== undefined) {
 		foreach (items as id) {
-			if (!zenarioA.eval(button.visible_if_for_all_selected_items, button, zenarioO.tuix.items[id], id)) {
+			//zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)
+			if (!zenarioA.eval(button.visible_if_for_all_selected_items, undefined, tuix.items[id], id, tuix, button)) {
 				return false;
 			}
 		}
 	}
 	
-	met = false;
 	if (button.visible_if_for_any_selected_items !== undefined) {
 		foreach (items as id) {
-			if (zenarioA.eval(button.visible_if_for_any_selected_items, button, zenarioO.tuix.items[id], id)) {
+			if (zenarioA.eval(button.visible_if_for_any_selected_items, undefined, tuix.items[id], id, tuix, button)) {
 				met = true;
 				break;
 			}
@@ -5662,56 +5749,31 @@ zenarioO.checkTraits = function(button, items) {
 	}
 	
 	
-	//Old deprecated traits logic
+	//The "with column set" logic, and the deprecated traits logic
 	//Check if that button requires a trait or a column to be set, or not to be set, in order to be shown.
 	//Note that traits use an engToBoolean() check but columns just use a normal boolean check.
 	//(i.e. 'No' or 'False' as strings would be true).
 	met = true;
-	var checks = {
-			traits: {
-				condition: function(id, trait) {
-					return zenarioO.tuix.items[id].traits && engToBoolean(zenarioO.tuix.items[id].traits[trait]); 
-				}
-			},
-			without_traits: {
-				condition: function(id, trait) {
-					return !zenarioO.tuix.items[id].traits || !engToBoolean(zenarioO.tuix.items[id].traits[trait]);
-				}
-			},
-			with_columns_set: {
-				condition: function(id, column) {
-					return engToBoolean(zenarioO.tuix.items[id][column]);
-				}
-			},
-			without_columns_set: {
-				condition: function(id, column) {
-					return !engToBoolean(zenarioO.tuix.items[id][column]);
-				}
-			}
-		};
-	checks.one_with_traits = $.extend(true, {}, checks.traits, {one: true});
-	checks.one_without_traits = $.extend(true, {}, checks.without_traits, {one: true});
-	checks.one_with_columns_set = $.extend(true, {}, checks.with_columns_set, {one: true});
-	checks.one_without_columns_set = $.extend(true, {}, checks.without_columns_set, {one: true});
 	
 	//Loop through each check
-	foreach (checks as var check) {
+	foreach (colCheckLogic as check => logic) {
+		
 		if (button[check]) {
+			checks = zenarioA.tuixToArray(button[check]);
+			
 			//Loop through each item, checking whether they match.
-			met = !checks[check].one;
+			met = !logic.one;
 			foreach (items as id) {
 				
-				var thisItemMet = true;
-				foreach (button[check] as var trait) {
-					if (engToBoolean(button[check][trait])) {
-						if (!checks[check].condition(id, trait)) {
-							thisItemMet = false;
-							break;
-						}
+				thisItemMet = true;
+				for (ci in checks) {
+					if (!logic.condition(id, checks[ci], tuix.items[id])) {
+						thisItemMet = false;
+						break;
 					}
 				}
 				
-				if (checks[check].one) {
+				if (logic.one) {
 					//For "at least one" logic, we'll assume the button doesn't match until we find one example
 					//that does.
 					if (thisItemMet) {
@@ -5742,7 +5804,7 @@ zenarioO.checkItemPickable = function(id) {
 	var items = {};
 	items[id] = true;
 	return zenarioO.checkTraits(window.zenarioOSelectObject, items)
-		&& !zenarioO.checkDisabled(window.zenarioOSelectObject, items);
+		&& !zenarioO.checkDisabled(window.zenarioOSelectObject, undefined, items);
 };
 
 
@@ -5767,7 +5829,7 @@ zenarioO.getInlineButtons = function(id) {
 			continue;
 		}
 		
-		disabled = zenarioO.checkDisabled(button, ids);
+		disabled = zenarioO.checkDisabled(button, i, ids);
 		buttons[++bi] = zenarioO.setButtonAction('zenarioO.inlineButtonClick', button, disabled, i, id, zenarioO.tuix.items[id]);
 		
 		if (buttons[bi].tooltip) {
@@ -5802,7 +5864,7 @@ zenarioO.setChooseButton = function() {
 		
 		if (zenarioO.chooseButtonActive()
 		 && zenarioO.checkTraits(window.zenarioOSelectObject, selectedItems)
-		 && !zenarioO.checkDisabled(window.zenarioOSelectObject, selectedItems)
+		 && !zenarioO.checkDisabled(window.zenarioOSelectObject, undefined, selectedItems)
 		 && (zenarioO.itemsSelected > 0 || window.zenarioOAllowNoSelection)
 		 && (zenarioO.itemsSelected <= 1 || window.zenarioOMultipleSelect)) {
 			disabled = false;
@@ -5975,7 +6037,7 @@ zenarioO.choose = function() {
 		
 		var key = zenarioO.getKey(true),
 			path = zenarioO.path,
-			panel = $.extend(true, {}, zenarioO.tuix),
+			panel = zenario.clone(zenarioO.tuix),
 			row,
 			selectedItems = zenarioO.pi.returnSelectedItems(),
 			callback = false;
@@ -6302,5 +6364,12 @@ zenarioO.size = function(refresh) {
 	
 	zenarioO.sizing = setTimeout(zenarioO.size, 500);
 };
+
+
+//Calculate function short names, we need to do this before calling any functions!
+zenario.shrtNms(zenarioO);
+
+
+zenarioO.resetBranches();
 
 });

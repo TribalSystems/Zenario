@@ -1,0 +1,33 @@
+/* Subscribe
+--------------------------------------------------------------------------------------------------*/
+
+.subscribe_button  {
+	text-align: center;
+	margin: 40px 0 20px;
+}
+
+
+.subscribe_button h2 a {
+	color: #0a4a85;
+	font-family: "freight-sans-pro", "Verdana", sans-serif;
+	font-weight: 500;
+	cursor: default;
+}
+
+.subscribe_button  h2 a:hover {
+	color: #0a4a85;
+	text-decoration: none;
+}
+
+.subscribe_button .banner_image a {
+	cursor: default;
+}
+
+.subscribe_button .banner_image img {
+	margin: 10px 0 14px;
+}
+
+.subscribe_button .banner_more a {
+	font-size: .9em !important;
+}
+

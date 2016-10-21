@@ -120,6 +120,7 @@ full_slot:
             onclick: return zenarioA.pluginSlotEditSettings(this, slotName, 'plugin_css_and_framework');
         
         move_on_item_layer:
+            ord: 75
             page_modes:
                 edit: true
             onclick: |
@@ -129,24 +130,11 @@ full_slot:
                 return false;
             label: Move ~plugin~
         move_on_layout_layer:
+            ord: 76
             page_modes:
                 layout: true
             onclick: return zenarioA.movePlugin(this, slotName);
             label: Move ~plugin~
-        convert_nest:
-            onclick: |
-                zenarioAB.open(
-                    'zenario_plugin_nest__convert_between',
-                    {
-                        id: instanceId,
-                        cID: zenario.cID,
-                        cType: zenario.cType,
-                        cVersion: zenario.cVersion,
-                        slotName: slotName
-                    }
-                );
-                return false;
-            label: Convert nest type...
         
         
         replace_reusable_on_item_layer:

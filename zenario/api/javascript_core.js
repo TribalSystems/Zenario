@@ -81,9 +81,8 @@ zenario.lib(function(
 			//(Unless it's already prefixed with the zenario name, in which case it should be safe)
 		if (window.zenario
 		 && zenarioAB.isOpen
-		 && el.substr(0, 7) != 'zenario'
-		 && !el.match(/[^\w-]/)) {
-			var $el = $('#zenario_fbAdminFloatingBox #' + el);
+		 && el.substr(0, 7) != 'zenario') {
+			var $el = $('#zenario_fbAdminFloatingBox #' + zenario.cssEscape(el));
 			
 			if ($el[0]) {
 				return $el[0];
@@ -180,6 +179,17 @@ zenario.lib(function(
 	zenario.jsEscape = function(text) {
 		return escape(text).replace(/\%u/g, '\\u').replace(/\%/g, '\\x');
 	};
+	
+	//Fallback for browsers *cough IE* that don't have a CSS escape function,
+	//as per http://stackoverflow.com/questions/2786538/need-to-escape-a-special-character-in-a-jquery-selector-string
+	window.cssEscape =
+	zenario.cssEscape = function(text) {
+		if (window.CSS && CSS.escape) {
+			return CSS.escape(text);
+		} else {
+			return text.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, '\\$&');
+		}
+	};
 
 	zenario.addBasePath = function(url) {
 		if (url === undefined) {
@@ -213,8 +223,8 @@ zenario.lib(function(
 	//Convert an array into a string for a URL if needed
 	zenario.urlRequest = function(arr) {
 	
-		//Have a catch that stops this function being called twice on itself
-		if (typeof arr == 'string') {
+		//Don't run if this is already a string!
+		if (_.isString(arr)) {
 			return zenario.addAmp(arr);
 		}
 	
@@ -234,6 +244,29 @@ zenario.lib(function(
 	
 		return request;
 	};
+	
+	//Reverse of the above, as per http://stackoverflow.com/questions/8648892/convert-url-parameters-to-a-javascript-object
+	zenario.toObject = function(object, clone) {
+	
+		//Convert URL strings to objects
+		if (_.isString(object)) {
+			return JSON.parse('{"' + decodeURI(object.replace(/&/g, "\",\"").replace(/=/g,"\":\"")) + '"}') || {};
+		
+		} else if (!object) {
+			return {};
+		
+		} else if (clone) {
+			return zenario.clone(object);
+		
+		} else {
+			return object;
+		}
+	};
+	
+	zenario.clone = function(a, b, c) {
+		return $.extend(true, {}, a, b, c);
+	};
+	
 
 	//Make a non-asyncornous AJAX call.
 	//Note that this is deprecated!
@@ -453,10 +486,13 @@ zenario.lib(function(
 
 	//Attempt to get the name of a slot from an element within the slot
 	zenario.getSlotnameFromEl = function(el, getContainerId) {
-		if (typeof el == 'string') {
+		if (_.isString(el)) {
+			if (!getContainerId) {
+				el = el.replace(/plgslt_/, '').split('-')[0];
+			}
 			return el;
 	
-		} else if (typeof el == 'object') {
+		} else if (_.isObject(el)) {
 			do {
 				if (el.id && el.id == 'colorbox') {
 					return zenario.colorboxOpen;
@@ -499,6 +535,14 @@ zenario.lib(function(
 		return zenario.getSlotnameFromEl(el, true);
 	};
 
+	zenario.getEggIdFromEl = function(el) {
+		var containerId = zenario.getContainerIdFromEl(el);
+		
+		return containerId
+			&& typeof containerId == 'string'
+			&& 1 * containerId.split('-')[1];
+	};
+
 	zenario.getContainerIdFromSlotName = function(slotName) {
 		return 'plgslt_' + slotName;
 	};
@@ -538,7 +582,7 @@ zenario.lib(function(
 
 	//Refresh a plugin in a slot
 	zenario.refreshPluginSlot = function(slotName, instanceId, additionalRequests, recordInURL, scrollToTopOfSlot, fadeOutAndIn, useCache, post) {
-	
+		
 		if (scrollToTopOfSlot === undefined) {
 			scrollToTopOfSlot = true;
 		}
@@ -546,7 +590,8 @@ zenario.lib(function(
 		if (fadeOutAndIn === undefined) {
 			fadeOutAndIn = true;
 		}
-	
+		
+		slotName = zenario.getSlotnameFromEl(slotName);
 		if (!slotName) {
 			return;
 		}
@@ -568,12 +613,8 @@ zenario.lib(function(
 		} else {
 			additionalRequests = zenario.urlRequest(additionalRequests);
 		}
-	
-		if (zenario.slots[slotName] && zenario.slots[slotName].tabId
-		 && additionalRequests.indexOf('&tab=') == -1
-		 && additionalRequests.indexOf('&tab_no=') == -1) {
-			additionalRequests += '&tab=' + zenario.slots[slotName].tabId;
-		}
+		
+		additionalRequests = zenario.addTabIdToURL(additionalRequests, slotName);
 	
 		//Allow a slot to be refreshed by name only, in which case we'll check its current instance id
 		if (instanceId == 'lookup') {
@@ -628,30 +669,44 @@ zenario.lib(function(
 	};
 
 	//Call a signal/event on all included Modules, if they have it defined
-	zenario.sendSignal = function(signalName, data) {
 	
-		if (zenario.signalsInProgress[signalName]) {
-			return;
-		}
-		zenario.signalsInProgress[signalName] = true;
+	zenario.sendSignal = function(signalName, data) {
 	
 		var id,
 			module,
+			moduleClass,
 			returnValue,
-			returnValues = [];
-		foreach (zenario.modules as id) {
-			if (module = window[zenario.modules[id].moduleClassName]) {
-				if (typeof module[signalName] == 'function') {
-					returnValue = module[signalName](data);
-				
-					if (returnValue !== undefined) {
-						returnValues.push(returnValue);
+			returnValues = [],
+			signalHandler,
+			signalHandlers = zenario.signalHandlers,
+			signalsInProgress = zenario.signalsInProgress;
+		
+		if (signalsInProgress[signalName]) {
+			return;
+		}
+		signalsInProgress[signalName] = true;
+		
+		if (!signalHandlers[signalName]) {
+			signalHandlers[signalName] = [];
+			
+			foreach (zenario.modules as id => module) {
+				if (moduleClass = window[module.moduleClassName]) {
+					if (_.isFunction(moduleClass[signalName])) {
+						signalHandlers[signalName].push(moduleClass[signalName]);
 					}
 				}
 			}
 		}
 	
-		delete zenario.signalsInProgress[signalName];
+		foreach (signalHandlers[signalName] as id => signalHandler) {
+			returnValue = signalHandler(data);
+		
+			if (returnValue !== undefined) {
+				returnValues.push(returnValue);
+			}
+		}
+	
+		delete signalsInProgress[signalName];
 		return returnValues;
 	};
 
@@ -827,17 +882,21 @@ zenario.lib(function(
 	
 	zenario.pluginAJAXLink = function(moduleClassName, slotNameOrContainedElement, requests) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
-			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
+			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
+			slot = zenario.slots[slotName],
+			instanceId = slot && slot.instanceId,
+			moduleClassName = moduleClassName || (slot && slot.moduleClassName);
 		
 		return URLBasePath + 
 			'zenario/ajax.php?moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=handlePluginAJAX' +
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
+			'&cVersion=' + zenario.cVersion : '') +
 			'&instanceId=' + instanceId +
 			'&slotName=' + slotName +
+		  (eggId?
+			'&eggId=' + eggId : '') +
 			zenario.urlRequest(requests);
 	};
 	
@@ -856,8 +915,7 @@ zenario.lib(function(
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
+			'&cVersion=' + zenario.cVersion : '') +
 			'&instanceId=' + instanceId +
 			'&slotName=' + slotName +
 			zenario.urlRequest(requests);
@@ -875,8 +933,7 @@ zenario.lib(function(
 			'moduleClassName=' + encodeURIComponent(moduleClassName) + '&method_call=showSingleSlot' +
 			(hideLayout? '&hideLayout=1' : '') +
 		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
+			'&cVersion=' + zenario.cVersion : '') +
 			'&instanceId=' + instanceId +
 			'&slotName=' + slotName +
 			zenario.urlRequest(requests));
@@ -907,19 +964,19 @@ zenario.lib(function(
 	
 	zenario.pluginVisitorTUIXLink = function(moduleClassName, slotNameOrContainedElement, path, customisationName, requests, mode, useSync) {
 		var slotName = zenario.getSlotnameFromEl(slotNameOrContainedElement),
+			eggId = zenario.getEggIdFromEl(slotNameOrContainedElement),
 			instanceId = zenario.slots[slotName] && zenario.slots[slotName].instanceId;
 		
 		return zenario.visitorTUIXLink(moduleClassName, path, customisationName, undefined, mode) +
 			'&cID=' + zenario.cID +
 			'&cType=' + zenario.cType +
 		  (zenario.adminId?
-			'&cVersion=' + zenario.cVersion
-		   : '') +
+			'&cVersion=' + zenario.cVersion : '') +
 			'&instanceId=' + instanceId +
 			'&slotName=' + slotName +
+		  (eggId?
+			'&eggId=' + eggId : '') +
 			'&_useSync=' + zenario.engToBoolean(useSync) +
 			zenario.urlRequest(requests);
 	};
-
-
 });

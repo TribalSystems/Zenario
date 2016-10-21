@@ -29,11 +29,6 @@ background_selector: 'body .zenario_skin'
 # merging together using TUIX-style logic.
 extension_of_skin: ''
 
-# Set this to "component" or "usable".
-# Usable skins appear in admin mode. Component skins are hidden from admin mode.
-# (The skin will default to "usable" if you leave this blank.)
-type: usable
-
 # Enter CSS class name names here to have them added to a <div> that wraps the page.
 css_class: ''
 

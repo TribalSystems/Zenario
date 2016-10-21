@@ -20,7 +20,7 @@ plugin_settings:
                     values:
                     validation:
                         required_if_not_hidden: Please select a user characteristic.
-                    note_below: |
+                    side_note: |
                        When the user searches on "name", specify which user characteristics should be searched (e.g. first name, last name).
 
                 country_search_user_characteristic:
@@ -31,7 +31,7 @@ plugin_settings:
                     empty_value: ' -- Select -- '
                     validation:
                         required_if_not_hidden: Please select a country user characteristic.
-                    note_below: |
+                    side_note: |
                        When the user searches on "country", specify which user characteristics should be searched.
 
                 keyword_user_characteristics:
@@ -42,7 +42,7 @@ plugin_settings:
                     values:
                     validation:
                         required_if_not_hidden: Please select a keyword user characteristic.
-                    note_below: |
+                    side_note: |
                        When the user searches on "keywords", specify which user characteristics should be searched (e.g. job title, company name, town).
                 
         results_tab:
@@ -59,7 +59,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter the number of results per page.
                         numeric: The number of results per page must be a number.
-                    note_below: |
+                    side_note: |
                         The number of results per page to be shown when visitors use this search facility.
                         It should be a multiple for the number of columns below.
 
@@ -74,17 +74,16 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please enter the number of columns for results.
                         numeric: The number of results per page must be a number.
-                    note_below: |
+                    side_note: |
                         The number of columns for results to be shown when visitors use this search facility.
 
                     
                 photo_list_show:
                     plugin_setting:
                         name: photo_list_show
-                    label: 'Show photo on search results:'
+                    label: 'Show photo on search results'
                     type: checkbox
                     format_onchange: Yes
-                    hidden: Yes
 
                 photo_list_canvas:
                     plugin_setting:
@@ -109,7 +108,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
-                    hidden: Yes
+                    indent: 1
 
                 photo_list_width:
                     plugin_setting:
@@ -123,7 +122,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    indent: 2
                 photo_list_height:
                     plugin_setting:
                         name: photo_list_height
@@ -136,15 +135,14 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    indent: 2
                     
                 photo_popup_show:
                     plugin_setting:
                         name: photo_popup_show
-                    label: 'Show photo on popup:'
+                    label: 'Show photo on popup'
                     type: checkbox
                     format_onchange: Yes
-                    hidden: Yes
 
                 photo_popup_canvas:
                     plugin_setting:
@@ -169,7 +167,7 @@ plugin_settings:
                             ord: "5"
                             label: Resize and crop
                     format_onchange: Yes
-                    hidden: Yes
+                    indent: 1
 
                 photo_popup_width:
                     plugin_setting:
@@ -183,7 +181,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    indent: 2
                 photo_popup_height:
                     plugin_setting:
                         name: photo_popup_height
@@ -196,5 +194,5 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    hidden: Yes
+                    indent: 2
                     

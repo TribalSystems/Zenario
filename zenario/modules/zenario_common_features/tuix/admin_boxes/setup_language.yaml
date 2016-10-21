@@ -46,7 +46,7 @@ zenario_setup_language:
                         required: Please enter a class name
                 detect:
                     type: checkbox
-                    label: 'Use browser language detection:'
+                    label: 'Use browser language detection'
                     redraw_onchange: Yes
                     side_note: |
                         The CMS will redirect a visitor to the home page of this language based on the
@@ -64,7 +64,7 @@ zenario_setup_language:
                     indent: 1
                 translate_phrases:
                     type: checkbox
-                    label: 'Translate phrases:'
+                    label: 'Use phrases system'
                     side_note: |
                         If a phrase that does not start with an underscore is found in a
                         plugin setting or Twig framework and this option is checked,
@@ -78,10 +78,10 @@ zenario_setup_language:
                     values:
                         full_text:
                             label: Use MySQL full-text search
-                            note_below: Use individual words to search, e.g. a search for "van" will not match "caravan"
+                            side_note: Use individual words to search, e.g. a search for "van" will not match "caravan". We suggest this for most Western languages.
                         simple:
                             label: Use "LIKE" in searches
-                            note_below: Search for anything containing the search term, e.g. a search for "van" would match "caravan"
+                            side_note: Search for anything containing the search term, e.g. a search for "van" would match "caravan". We suggest this for languages that use symbols such as Japanese and Chinese.
                     value: full_text
                 use_domain:
                     visible_if: |
@@ -98,7 +98,7 @@ zenario_setup_language:
                     indent: 1
                     label: 'Domain:'
                     type: text
-                    note_below: |
+                    side_note: |
                         Links to content items in this language will use this domain in the URL.
                 primary_domain_warning:
                     visible_if: |
@@ -107,7 +107,8 @@ zenario_setup_language:
                     label: 'Use a language-specific domain'
                     type: checkbox
                     read_only: true
-                    note_below: |
+                    side_note: |
+                        If enabled, pages in this language will be available via a different domain or subdomain from the rest of the site.
                         You need to set a primary domain before you can use a language-specific domain.
                         Please go to <em>Configuration -&gt; Site settings -&gt; Domains</em>
                         and set the primary domain.

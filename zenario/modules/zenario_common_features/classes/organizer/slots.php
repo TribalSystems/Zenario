@@ -49,7 +49,7 @@ class zenario_common_features__organizer__slots extends module_base_class {
 					exit;
 				}
 		
-				$slots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
+				$lookForSlots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
 		
 				$panel['title'] = adminPhrase('Slots on the Content Item "[[tag]]"', array('tag' => formatTagFromTagId($refinerId)));
 				$panel['no_items_message'] = adminPhrase('There are no slots on the chosen Layout.'); 
@@ -83,7 +83,7 @@ class zenario_common_features__organizer__slots extends module_base_class {
 					exit;
 				}
 		
-				$slots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
+				$lookForSlots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
 		
 				$panel['title'] =
 					adminPhrase('Slots on the Layout "L[[layout_id]] [[template]]"',
@@ -138,10 +138,12 @@ class zenario_common_features__organizer__slots extends module_base_class {
 
 
 		//Get the slots on this Layout, and calculate their contents
-		foreach(getRowsArray('template_slot_link', 'slot_name', $slots, 'slot_name') as $slotName) {
-			$panel['items'][$slotName] =
+		$ord = 0;
+		foreach(getRowsArray('template_slot_link', array('ord', 'slot_name'), $lookForSlots, array('ord', 'slot_name')) as $slot) {
+			$panel['items'][$slot['slot_name']] =
 				array(
-					'slotname' => $slotName,
+					'ord' => $slot['ord']? $slot['ord'] : ++$ord,
+					'slotname' => $slot['slot_name'],
 					'visitor_sees' => adminPhrase('Nothing'),
 					'content_item' => adminPhrase('Transparent'),
 					'template' => adminPhrase('Empty'),

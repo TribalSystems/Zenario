@@ -41,8 +41,9 @@ require editionInclude('wrapper.pre_load');
 
 incJS('zenario/js/base_definitions');
 
-//Include Modernizr
-incJS('zenario/libraries/bsd/modernizr/modernizr');
+//Include Enquire and Modernizr
+incJS('zenario/libraries/mit/enquire/enquire');
+incJS('zenario/libraries/mit/modernizr/modernizr');
 
 //Include the underscore library
 incJS('zenario/libraries/mit/underscore/underscore');
@@ -58,7 +59,7 @@ incJS('zenario/libraries/mit/colorbox/jquery.colorbox');
 incJS('zenario/libraries/bsd/javascript_md5/md5');
 
 echo '
-zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.jquery.min.js";
+zenario.tinyMCEPath = "', TINYMCE_DIR, 'tinymce.min.js";
 zenario.mtSettings = {
 variable: "m",
 escape: false,

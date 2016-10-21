@@ -47,7 +47,11 @@ class zenario_location_viewer extends module_base_class {
 				}
 				break;
 			case 'location_from_url':
-				$this->registerGetRequest('l_id');
+				if($this->setting('use_custom_url_request') && ($urlRequest = $this->setting('url_request'))){
+					$this->registerGetRequest($urlRequest);
+				}else{
+					$this->registerGetRequest('l_id');
+				}
 				if (!$locationId) {
 					$this->data['url_not_complete'] = true;
 					return true;
@@ -223,7 +227,11 @@ class zenario_location_viewer extends module_base_class {
 			case 'location_from_organizer':
 				return $this->setting('location');
 			case 'location_from_url':
-				return get('l_id');
+				if($this->setting('use_custom_url_request') && ($urlRequest = $this->setting('url_request'))){
+					return get($urlRequest);
+				}else{
+					return get('l_id');
+				}
 		}
 		return false;
 	}
@@ -235,14 +243,6 @@ class zenario_location_viewer extends module_base_class {
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		switch ($path) {
 			case "plugin_settings":
-				if (!$values['first_tab/max_location_image_width']) {
-					$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a maximum image width.');
-				}
-
-				if (!$values['first_tab/max_location_image_height']) {
-					$box['tabs']['first_tab']['errors'][] = adminPhrase('Please enter a maximum image height.');
-				}
-				
 				if (!$values['first_tab/show_title'] && !$values['first_tab/show_details'] && !$values['first_tab/show_map']) {
 					$box['tabs']['first_tab']['errors'][] = adminPhrase('You must select at least one section to show.');
 				}
@@ -258,18 +258,17 @@ class zenario_location_viewer extends module_base_class {
 				$fields['location_user']['hidden'] = 
 					(!inc('zenario_organization_manager')) || ($values['location_source_mode'] != 'location_from_url');
 				
-				$fields['map_width']['hidden'] = 
-				$fields['map_height']['hidden'] = 
-					!$values['show_map'];
-				$fields['max_location_image_width']['hidden'] = 
-				$fields['max_location_image_height']['hidden'] = 
-					!$values['show_image'];
+				$fields['show_image']['hidden'] = !$values['show_details'];
+				
+				$hidden = !$values['show_map'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'map_', false);
+				
+				$hidden = !($values['show_image'] && $values['show_details']);
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'max_location_image_', false);
 					
 				$fields['location']['hidden'] = 
 					$values['location_source_mode'] != 'location_from_organizer';
 					
-				$fields['show_image']['hidden'] = !$values['show_details'];
-				
 				
 				break;
 		}

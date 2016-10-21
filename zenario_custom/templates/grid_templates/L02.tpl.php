@@ -6,11 +6,15 @@
 	 * This file was created by the Zenario Gridmaker system.
 	 * Any manual edits will be lost when the system next changes this file.
 	 */
-
-	if (file_exists(CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php')) {
-		require CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php';
-	}
 ?>
+
+<script type="text/javascript">
+	zenarioSGS({"cols":12,"minWidth":769,"maxWidth":1140,"fluid":true,"responsive":true});
+</script>
+
+<?php if (file_exists(CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php')) {
+	require CMS_ROOT. cms_core::$templatePath. '/includes/header.inc.php';
+}?>
 
 <div class="slot Slot_After_Body">
 	<?php slot('Slot_After_Body', 'outside_of_grid'); ?>
@@ -80,9 +84,5 @@
 	require CMS_ROOT. cms_core::$templatePath. '/includes/footer.inc.php';
 }?>
 
-<script type="text/javascript">
-	zenarioGrid = {"cols":12,"minWidth":769,"maxWidth":1140,"fluid":true,"responsive":true};
-</script>
-
-<?php //data:eJy9lN9vgjAQx_-XPpNlKNkP3nSZzmRmyTTxYVmaCgWalZa0ZWqM__taQGRKA-5hT3DX-37uuDu6BwGmVAL_Yw82JFQJ8N2BA2JBQrgWGH0BX4kcO0BSro7vxWkgJQwokloLpsYxWwIHMJRi7VjoaDiKFBZwzMOdPlC7zBycwHBDVAIL7MHpSN6e8AWjEIs29jmxWXxV4ZJncM7XhGI4xyw_UYpYBySYxIkydooo1Y7y6QPO6O6c3yzNgEe6CC25aO3QWorbVUAj472VMuj_GQkJcRNq79Kws7TPxgh4nhEW_3WktmXpMdBJTilcFSH9W3k-vDkizDq9h9a8RnJFRq8VMubbq1bATulcgV6U7pn3oXj_uDkTzlW_y6ApLVXWiZtNy1CAj6mb0oU5gDN2kblU2P-09jW6oHS1vf0vGOeEKvjWvZFtnde-gJsOmDalhK2q--buUZtoW5mu6906IKI5CY_JUyIEF8CPEJXaFFhmnEnyXTcufqq55rUiaUw8zZX5bt-7GdTWK47UcxjjZsS7Kf_kLHwTmh-Fv3SFv46qlaX78AOH5EpT//v2// ?>
-<?php //checksum:9RK1zMHHHTtyMJrpYHFK7v65DtU,// ?>
+<?php //data:eJydUl1vwiAU_S88N8tam330TZfpTGaWTBMfFkOw0EpGwQDdXIz_fVDbBm3ZjG_ce88593BgD1LCmALJxx58U6w3IAmjAOSSYriWBH2CRMuSBEAxoZtzNU2VgilDynDBxDamCxAAjgpiGnODhsNMEwlHAv-AQ_CPfL_kC0GYyHO2a6XetxBbOBNrygicEV4aI6pAjJmJ4Kyz3t1jmUPjxFA6SQy8u0JX8t4LixwjG4qJy_JfZAAOqysD6wu7Z8u4ZAwuK8gf0cwQ5d5sHnqFLcWVjHtRI7E7TdAPiy6DDS6DxdcnOxZCd7-iCzsivIHZl9iilDRrXOrcDuCUN1v8v6Y_9q65_ncflZRp-MZtDCtjQViL9h4F5cv6M989mhLt6jIM49sAZKykuNEqqJRCgiRDTJlSErUVXNGv9mb5U6trj7WSkcknpbY-k_gmaqtXkulnnBMX8U7zjdOsemNWNsQTXtVvUS3z2D78AiainLs,//v2// ?>
+<?php //checksum:A6zw9giHQWWufEe8IAX6ssP4JFY,// ?>

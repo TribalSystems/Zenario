@@ -51,7 +51,7 @@ zenario_content:
                     ord: 20
                     label: 'Browser title:'
                     type: text
-                    maxlength: 75
+                    maxlength: 125
                     onkeyup: |
                         zenarioAB.contentTitleChange();
                         cnt = $('#title').val().length;

@@ -17,11 +17,7 @@ zenario__users:
     panels:
         users:
             title: 'All users & contacts'
-            enable_close_up_view: true
-            panel_type: grid_or_list
-            grid_view_microtemplate: zenario_grid_view_user
-            label_format_for_grid_view: '[[identifier]]'
-            slidedown_view_microtemplate: zenario_slidedown_view_user
+            panel_type: list_or_grid_or_multi_line_list
             no_items_message: >
                 No users/contacts. Click "Create" to create users and
                 contacts.
@@ -35,6 +31,7 @@ zenario__users:
                 group_members: {}
                 suspended_users:
                     sql: "u.status='suspended'"
+            
             columns:
                 id:
                     title: ID
@@ -44,6 +41,7 @@ zenario__users:
                     show_by_default: true
                     align_right: true
                     width: xsmall
+                    parent: multi_line_id
                 parent_id:
                     server_side_only: true
                     title: Parent ID
@@ -56,6 +54,7 @@ zenario__users:
                     searchable: true
                     width: medium
                     show_by_default: true
+                    parent: multi_line_user_identifier
                 screen_name:
                     title: Screen Name
                     db_column: u.screen_name
@@ -83,6 +82,7 @@ zenario__users:
                     show_by_default: true
                     searchable: true
                     width: medium
+                    parent: multi_line_email
                 email_verified:
                     title: Email Verified
                     db_column: u.email_verified
@@ -135,10 +135,10 @@ zenario__users:
                     db_column: u.last_profile_update_in_frontend
                     format: date
                     width: xsmall
-                ip:
+                last_login_ip:
                     server_side_only: true
                     title: Last IP
-                    db_column: u.ip
+                    db_column: u.last_login_ip
                     width: xsmall
                 modified_date:
                     #server_side_only: true
@@ -162,7 +162,71 @@ zenario__users:
                     db_column: f.id IS NOT NULL
                     table_join: "LEFT JOIN [[DB_NAME_PREFIX]]files AS f ON f.id = u.image_id AND f.`usage` = 'user'"
                     width: xxsmall
-            
+                user_type: {}
+                
+                
+                
+                multi_line_icon:
+                    title: Icon
+                    ord: 1000
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                multi_line_id:
+                    title: ID
+                    ord: 1001
+                    show_by_default: true
+                    width: xxsmall
+                    align_right: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                multi_line_user_identifier:
+                    title: User identifier
+                    ord: 1002
+                    show_by_default: true
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                multi_line_name:
+                    title: Name
+                    ord: 1003
+                    show_by_default: true
+                    width: large
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                multi_line_email:
+                    title: Email
+                    ord: 1004
+                    show_by_default: true
+                    width: large
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
+                
+                readable_status:
+                    title: Readable status
+                    show_by_default: true
+                    parent: multi_line_user_identifier
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                readable_last_login:
+                    title: Readable last login
+                    show_by_default: true
+                    parent: multi_line_user_identifier
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                readable_name:
+                    title: Readable name
+                    show_by_default: true
+                    parent: multi_line_name
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                readable_groups:
+                    title: Readable groups
+                    show_by_default: true
+                    parent: multi_line_name
+                    visible_if: |
+                        zenarioO.pi.returnIsMultiLineList();
+                
             default_sort_column: screen_name
             label_format_for_picked_items: '[[identifier]]'
             
@@ -237,6 +301,7 @@ zenario__users:
                             dataset:
                 export:
                     label: Export
+                    hide_in_select_mode: true
                     admin_box:
                         path: zenario_export_dataset
                         pass_matched_ids: true
@@ -245,7 +310,7 @@ zenario__users:
                     ord: 999999
             item_buttons:
                 edit:
-                    label: Edit user/contact
+                    label: Edit [[user_type]]
                     hide_in_select_mode: true
                     priv: _PRIV_VIEW_USER
                     admin_box:
@@ -415,12 +480,14 @@ zenario__users:
                     parent: action_dropdown
                     priv: _PRIV_CHANGE_USER_STATUS
                     label: Send welcome email
+                    multiple_select: true
                     traits:
                         active: true
                     admin_box:
                         path: zenario_user__welcome_email
                 delete:
-                    label: Delete user/contact
+                    label: Delete [[user_type]]
+                    multiple_select_label: Delete user/contact
                     hide_in_select_mode: true
                     priv: _PRIV_DELETE_USER
                     disabled_if_for_any_selected_items: >

@@ -139,8 +139,10 @@ class zenario_user_profile_search extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$this->showHideImageOptions($fields, $values, 'photo_list', false);
-				$this->showHideImageOptions($fields, $values, 'photo_popup', false);
+				$hidden = !$values['results_tab/photo_list_show'];
+				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'photo_list_');
+				$hidden = !$values['results_tab/photo_popup_show'];
+				$this->showHideImageOptions($fields, $values, 'results_tab', $hidden, 'photo_popup_');
 				break;
 		}
 	}

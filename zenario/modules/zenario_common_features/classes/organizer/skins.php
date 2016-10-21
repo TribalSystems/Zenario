@@ -51,8 +51,8 @@ class zenario_common_features__organizer__skins extends module_base_class {
 		
 		} elseif ($refinerName == 'usable_in_template_family'
 		 && $templateFamily = decodeItemIdForOrganizer(get('refiner__usable_in_template_family'))) {
-			$panel['title'] = adminPhrase('Skins in the template directory "[[family]]"', array('family' => $templateFamily));
-			$panel['no_items_message'] = adminPhrase('There are no usable skins for this template directory.');
+			$panel['title'] = adminPhrase('Skins in the directory "[[family]]"', array('family' => $templateFamily));
+			$panel['no_items_message'] = adminPhrase('There are no skins in the directory "[[family]]"', array('family' => $templateFamily));
 			unset($panel['columns']['family_name']['title']);
 		}
 		

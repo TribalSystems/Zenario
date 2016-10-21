@@ -1,3 +1,17 @@
+Fixed a bug where enquire would give an error and stop script execution on old versions of IE
+(it's fine that it doesn't work, but it shouldn't stop script execution):
+
+  Replaced:
+	var matchMedia = window.matchMedia;
+	
+  With:
+	var matchMedia = window.matchMedia;
+	
+	if (!matchMedia) {
+		return;
+	}
+
+
 Added a new "doesntMatch" option to target mobile pages
 
 	After:

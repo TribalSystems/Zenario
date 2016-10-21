@@ -611,6 +611,10 @@ function stripAbsURLsFromAdminBoxField(&$field) {
 }
 
 
+function adminFileLink($fileId) {
+	return absCMSDirURL() . 'zenario/admin/file.php?id=' . $fileId;
+}
+
 //Scan a Content Item's HTML and other information, and come up with a list of inline files that relate to it
 //Note there is simmilar logic in zenario/admin/db_updates/step_4_migrate_the_data/local.inc.php for migration
 function syncInlineFileContentLink($cID, $cType, $cVersion, $publishing = false) {
@@ -693,7 +697,6 @@ function deleteUnusedImagesByUsage($usage) {
 	$result = sqlQuery($sql);
 	while ($file = sqlFetchAssoc($result)) {
 		if (!checkRowExists('admins', array('image_id' => $file['id']))
-		 && !checkRowExists('groups', array('image_id' => $file['id']))
 		 && !checkRowExists('users', array('image_id' => $file['id']))) {
 			deleteFile($file['id']);
 		}
@@ -1683,7 +1686,7 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 			) SELECT 
 				module_id,
 				instance_id,
-				family_name,
+				'". sqlEscape($values['family_name']). "',
 				". (int) $layoutId.  ",
 				slot_name
 			FROM ". DB_NAME_PREFIX. "plugin_layout_link
@@ -1753,7 +1756,7 @@ function changeContentItemLayout($cID, $cType, $cVersion, $newLayoutId, $check =
 						INNER JOIN ". DB_NAME_PREFIX. "nested_plugins AS np
 						   ON np.instance_id = ps.instance_id
 						  AND np.id = ps.nest
-						  AND np.is_tab = 1
+						  AND np.is_slide = 1
 						INNER JOIN ". DB_NAME_PREFIX. "plugin_setting_defs AS psd
 						   ON psd.module_id = np.module_id
 						  AND psd.name = ps.name
@@ -2227,7 +2230,6 @@ function checkForChangesInCssJsAndHtmlFiles($runInProductionMode = false, $force
 								$desc = false;
 								if (loadSkinDescription($row, $desc)) {
 									$details['display_name'] = ifNull(arrayKey($desc, 'display_name'), $row['name']);
-									$details['type'] = ifNull(arrayKey($desc, 'type'), 'usable');
 									$details['extension_of_skin'] = arrayKey($desc, 'extension_of_skin');
 									$details['css_class'] = arrayKey($desc, 'css_class');
 									$details['background_selector'] = ifNull(arrayKey($desc, 'background_selector'), 'body');
@@ -3006,6 +3008,14 @@ function getCategoryPath($id) {
 
 /* modules */
 
+function siteEdition() {
+	if ($edition = siteDescription('edition')) {
+		$edition = explode(' ', $edition);
+		return trim($edition[0]);
+	}
+	return 'Community';
+}
+
 function getModuleIconURL($moduleName) {
 	
 	foreach (array('.gif', '.png', '.jpg') as $ext) {
@@ -3081,74 +3091,89 @@ function runModule($id, $test) {
 	} elseif (version_compare($desc['required_cms_version'], ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION, '>')) {
 		return adminPhrase('Sorry, this Module requires Zenario [[version]] or later to run. Please update your copy of the CMS.', array('version' => $desc['required_cms_version']));
 	
-	} elseif ($installation_check = moduleDir($module['class_name'], 'installation_check.php', true)) {
-		require CMS_ROOT. $installation_check;
-		$installation_status = checkInstallationCanProceed();
+	} else {
 		
-		if ($installation_status !== true) {
-			if (is_array($installation_status)) {
-				$error_string = '';
-				foreach ($installation_status as $error) {
-					$error_string .= ($error_string? '<br/>' : ''). $error;
-				}
-				return $error_string;
+		//If both the module and the site have edition(s) set, check that they match
+		if (!empty($desc['editions'])
+		 && ($edition = siteEdition())) {
 			
-			} else {
-				$installation_status = (string) $installation_status;
-				if (!empty($installation_status)) {
-					return $installation_status;
+			$editions = explodeAndTrim($desc['editions']);
+			$inEditions = arrayValuesToKeys($editions);
+			
+			if (empty($inEditions[$edition])) {
+				return adminPhrase('In order to start this module, your site needs to be upgraded to Zenario [[0]].', $editions);
+			}
+		}
+		
+		if ($installation_check = moduleDir($module['class_name'], 'installation_check.php', true)) {
+			require CMS_ROOT. $installation_check;
+			$installation_status = checkInstallationCanProceed();
+		
+			if ($installation_status !== true) {
+				if (is_array($installation_status)) {
+					$error_string = '';
+					foreach ($installation_status as $error) {
+						$error_string .= ($error_string? '<br/>' : ''). $error;
+					}
+					return $error_string;
+			
 				} else {
-					return adminPhrase("This Module cannot be run because the checkInstallationCanProceed() function in its installation_check.php file returned false.");
+					$installation_status = (string) $installation_status;
+					if (!empty($installation_status)) {
+						return $installation_status;
+					} else {
+						return adminPhrase("This Module cannot be run because the checkInstallationCanProceed() function in its installation_check.php file returned false.");
+					}
 				}
 			}
 		}
-	}
 	
-	foreach (readModuleDependencies($module['class_name'], $desc) as $moduleClassName) {
-		if (!inc($moduleClassName)) {
-			$missingModules[$moduleClassName] = $moduleClassName;
+		foreach (readModuleDependencies($module['class_name'], $desc) as $moduleClassName) {
+			if (!inc($moduleClassName)) {
+				$missingModules[$moduleClassName] = $moduleClassName;
+			}
 		}
-	}
 	
-	if (!empty($missingModules)) {
-		$module['missing_modules'] = '';
-		foreach ($missingModules as $moduleClassName) {
-			$module['missing_modules'] .=
-				($module['missing_modules']? ', ' : '').
-				ifNull(getModuleDisplayNameByClassName($moduleClassName), $moduleClassName);
-		}
+		if (!empty($missingModules)) {
+			$module['missing_modules'] = '';
+			foreach ($missingModules as $moduleClassName) {
+				$module['missing_modules'] .=
+					($module['missing_modules']? ', ' : '').
+					ifNull(getModuleDisplayNameByClassName($moduleClassName), $moduleClassName);
+			}
 		
-		if (count($missingModules) > 1) {
-			return adminPhrase(
-				'Cannot run the Module "[[display_name]]" as it depends on the following Modules, which are not present or not running: [[missing_modules]]',
-				$module);
+			if (count($missingModules) > 1) {
+				return adminPhrase(
+					'Cannot run the Module "[[display_name]]" as it depends on the following Modules, which are not present or not running: [[missing_modules]]',
+					$module);
 		
+			} else {
+				return adminPhrase(
+					'Cannot run the Module "[[display_name]]" as it depends on the "[[missing_modules]]" Module, which is not present or not running.',
+					$module);
+			}
+	
 		} else {
-			return adminPhrase(
-				'Cannot run the Module "[[display_name]]" as it depends on the "[[missing_modules]]" Module, which is not present or not running.',
-				$module);
-		}
-	
-	} else {
-		require CMS_ROOT. moduleDir($module['class_name'], 'module_code.php');
+			require CMS_ROOT. moduleDir($module['class_name'], 'module_code.php');
 		
-		if (!class_exists($module['class_name'])) {
-			return adminPhrase(
-				'Cannot run the Module "[[display_name]]" as its class "[[class_name]]" is not defined in its module_code.php file.',
-				$module);
+			if (!class_exists($module['class_name'])) {
+				return adminPhrase(
+					'Cannot run the Module "[[display_name]]" as its class "[[class_name]]" is not defined in its module_code.php file.',
+					$module);
 		
-		} elseif ($test) {
-			return false;
+			} elseif ($test) {
+				return false;
 		
-		} else {
-			updateRow('modules', array('status' => 'module_running'), array('id' => $id, 'status' => array('module_suspended', 'module_not_initialized')));
+			} else {
+				updateRow('modules', array('status' => 'module_running'), array('id' => $id, 'status' => array('module_suspended', 'module_not_initialized')));
 			
-			//Have a safety feature whereby if the installation fails, the module will be immediately uninstalled
-			//However this shouldn't be used for upgrading a module to a different version
-			checkIfDBUpdatesAreNeeded($andDoUpdates = true, $uninstallPluginOnFail = $id);
+				//Have a safety feature whereby if the installation fails, the module will be immediately uninstalled
+				//However this shouldn't be used for upgrading a module to a different version
+				checkIfDBUpdatesAreNeeded($andDoUpdates = true, $uninstallPluginOnFail = $id);
 			
-			//Add any content types this module has
-			setupModuleContentTypesFromXMLDescription($module['class_name']);
+				//Add any content types this module has
+				setupModuleContentTypesFromXMLDescription($module['class_name']);
+			}
 		}
 	}
 }
@@ -3160,16 +3185,15 @@ function suspendModule($id) {
 
 
 function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInstall = false, $dbUpdateSafeMode = false) {
-	$module_description_hash = false;
 	$moduleDirs = moduleDirs(array(
 		'module_code.php',
 		'description.yaml', 'description.yml',
 		'description.xml', 'db_updates/description.xml'));
 	
+	chdir(CMS_ROOT);
+	$module_description_hash = hash64(print_r(array_map('filemtime', $moduleDirs), true), 15);
+	
 	if ($skipIfFilesystemHasNotChanged) {
-		chdir(CMS_ROOT);
-		$module_description_hash = hash64(print_r(array_map('filemtime', $moduleDirs), true), 15);
-		
 		if ($module_description_hash == setting('module_description_hash')) {
 			return;
 		}
@@ -3180,6 +3204,17 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 	foreach ($moduleDirs as $moduleName => $moduleDir) {
 		$desc = false;
 		if (loadModuleDescription($moduleName, $desc)) {
+			
+			$edition = 'Other';
+			if (!empty($desc['editions'])) {
+				$editions = arrayValuesToKeys(explodeAndTrim($desc['editions']));
+				foreach (array('Community', 'Pro', 'ProBusiness', 'Enterprise') as $etest) {
+					if (isset($editions[$etest])) {
+						$edition = $etest;
+						break;
+					}
+				}
+			}
 			
 			$foundModules[$moduleName] = true;
 			$sql = "
@@ -3203,6 +3238,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 			if (!$dbUpdateSafeMode) {
 				$category = (!empty($desc['category'])) ? ("'".sqlEscape($desc['category'])."'") : "NULL";
 				$sql .= ",
+					edition = '". sqlEscape($edition). "',
 					is_pluggable = ". engToBoolean($desc['is_pluggable']). ",
 					fill_organizer_nav = ". engToBoolean($desc['fill_organizer_nav']). ",
 					can_be_version_controlled = ". engToBoolean(engToBoolean($desc['is_pluggable'])? $desc['can_be_version_controlled'] : 0). ",
@@ -3230,6 +3266,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 			
 			if (!$dbUpdateSafeMode) {
 				$sql .= ",
+					edition = VALUES(edition),
 					is_pluggable = VALUES(is_pluggable),
 					fill_organizer_nav = VALUES(fill_organizer_nav),
 					can_be_version_controlled = VALUES(can_be_version_controlled),
@@ -3250,9 +3287,7 @@ function addNewModules($skipIfFilesystemHasNotChanged = true, $runModulesOnInsta
 		}
 	}
 	
-	if ($module_description_hash) {
-		setSetting('module_description_hash', $module_description_hash);
-	}
+	setSetting('module_description_hash', $module_description_hash);
 }
 
 
@@ -3528,10 +3563,7 @@ function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnl
 			  AND s.slot_name = pll.slot_name
 			WHERE pll.instance_id IN (". inEscape($instanceIds, 'numeric'). ")";
 		
-		$result = sqlQuery($sql2);
-		while ($row = sqlFetchRow($result)) {
-			$layoutIds[] = $row[0];
-		}
+		$layoutIds = sqlFetchValues($sql2);
 		
 		if (empty($layoutIds)) {
 			$itemLayerOnly = true;
@@ -3608,18 +3640,11 @@ function checkInstancesUsage($instanceIds, $publishedOnly = false, $itemLayerOnl
 		  )";
 	}
 	
-	$result = sqlQuery($sql);
-	
 	if ($reportContentItems) {
-		$citems = array();
-		while ($row = sqlFetchAssoc($result)) {
-			$citems[] = $row;
-		}
-		return $citems;
+		return sqlFetchAssocs($sql);
 	
 	} else {
-		$row = sqlFetchRow($result);
-		return $row[0];
+		return sqlFetchValue($sql);
 	}
 }
 
@@ -3683,7 +3708,7 @@ function managePluginCSSFile($action, $oldInstanceId, $oldEggId = false, $newIns
 	$oldFilename = '2.'. $oldFilename. '.css';
 	$newFilename = '2.'. $newFilename. '.css';
 	
-	$skins = getRowsArray('skins', array('id', 'family_name', 'name'), array('type' => 'usable', 'missing' => 0));
+	$skins = getRowsArray('skins', array('id', 'family_name', 'name'), array('missing' => 0));
 	
 	foreach ($skins as $skin) {
 		$skinWritableDir = CMS_ROOT. getSkinPath($skin['family_name'], $skin['name']). 'editable_css/';
@@ -3720,7 +3745,7 @@ function managePluginCSSFile($action, $oldInstanceId, $oldEggId = false, $newIns
 
 function deletePluginInstance($instanceId) {
 	
-	foreach (getRowsArray('nested_plugins', 'id', array('is_tab' => 0, 'instance_id' => $instanceId)) as $eggId) {
+	foreach (getRowsArray('nested_plugins', 'id', array('is_slide' => 0, 'instance_id' => $instanceId)) as $eggId) {
 		managePluginCSSFile('delete', $instanceId, $eggId);
 	}
 	managePluginCSSFile('delete', $instanceId);
@@ -3728,7 +3753,7 @@ function deletePluginInstance($instanceId) {
 	deleteRow('plugin_instances', $instanceId);
 	
 	foreach (array(
-		'nested_plugins', 'plugin_instance_cache',
+		'nested_plugins', 'nested_paths', 'plugin_instance_cache',
 		'plugin_settings', 'plugin_item_link', 'plugin_layout_link'
 	) as $table) {
 		deleteRow($table, array('instance_id' => $instanceId));
@@ -3833,27 +3858,7 @@ function updatePluginInstanceInItemSlot($instanceId, $slotName, $cID, $cType = f
 	}
 }
 
-function getNestablemoduleIds() {
-	$nestablemoduleIds = array();
-	
-	if ($pluginNestId = getModuleIdByClassName('zenario_plugin_nest')) {
-		$nestablemoduleIds[$pluginNestId] = true;
-		
-		$sql = "
-			SELECT module_id
-			FROM ". DB_NAME_PREFIX. "module_dependencies
-			WHERE dependency_class_name = 'zenario_plugin_nest'
-			  AND `type` = 'dependency'";
-		$result = sqlQuery($sql);
-		while($row = sqlFetchAssoc($result)) {
-			$nestablemoduleIds[$row['module_id']] = true;
-		}
-	}
-	
-	return $nestablemoduleIds;
-}
-
-function getNestDetails($nestedItemId, $instanceId = false) {
+function getNestDetails($nestedItemId, $instanceId = false, $includePermsColumns = false) {
 
 	$sql = "
 		SELECT
@@ -3863,8 +3868,20 @@ function getNestDetails($nestedItemId, $instanceId = false) {
 			module_id,
 			framework,
 			css_class,
-			is_tab,
-			name_or_title
+			is_slide,
+			states,
+			name_or_title";
+	
+	if ($includePermsColumns) {
+		$sql .= ",
+			invisible_in_nav,
+			visibility, smart_group_id, module_class_name, method_name, param_1, param_2";
+	} else {
+		$sql .= ",
+			cols, small_screens";
+	}
+	
+	$sql .= "
 		FROM ". DB_NAME_PREFIX. "nested_plugins
 		WHERE id = ". (int) $nestedItemId;
 	
@@ -4653,30 +4670,6 @@ function getTemplateFamilyUsageStorekeeperDeepLink($templateFamily) {
 
 //Functions for site backups and restores
 
-
-function exitIfUploadError() {
-	$error = arrayKey($_FILES, 'Filedata', 'error');
-	switch ($error) {
-		case UPLOAD_ERR_INI_SIZE:
-		case UPLOAD_ERR_FORM_SIZE:
-			echo adminPhrase('Your file was too large to be uploaded.');
-			exit;
-		case UPLOAD_ERR_PARTIAL:
-		case UPLOAD_ERR_NO_FILE:
-			echo adminPhrase('There was a problem whilst uploading your file.');
-			exit;
-		case UPLOAD_ERR_NO_TMP_DIR:
-			echo 'UPLOAD_ERR_NO_TMP_DIR';
-			exit;
-		case UPLOAD_ERR_CANT_WRITE:
-			echo 'UPLOAD_ERR_CANT_WRITE';
-			exit;
-		case UPLOAD_ERR_EXTENSION:
-			echo 'UPLOAD_ERR_EXTENSION';
-			exit;
-	}
-}
-
 function initialiseBackupFunctions($includeWarnings = false) {
 	
 	$errors = array();
@@ -5022,11 +5015,7 @@ function resetSite() {
 		SELECT `path`, revision_no
 		FROM ". DB_NAME_PREFIX. "local_revision_numbers
 		where patchfile = 'admin.inc.php'";
-	$revisions = array();
-	$result = sqlQuery($sql);
-	while ($row = sqlFetchAssoc($result)) {
-		$revisions[] = $row;
-	}
+	$revisions = sqlFetchAssocs($sql);
 	
 	//Rerun some of the scripts from the installer to give us a blank site
 	require_once CMS_ROOT. 'zenario/includes/welcome.inc.php';
@@ -5349,11 +5338,11 @@ To correct this, please ask your system administrator to perform a
 function getListOfSmartGroupsWithCounts() {
 	$smartGroups = getRowsArray('smart_groups', 'name', array(), 'name');
 	foreach ($smartGroups as $smartGroupId => &$name) {
-		if ($count = countSmartGroupMembers($smartGroupId)) {
-			$name .= ' ('. $count. ')';
-		} else {
-			$name .= adminPhrase(' (empty)');
-		}
+		$name .= 
+			' | '.
+			getSmartGroupDescription($smartGroupId).
+			' | '.
+			nAdminPhrase('1 user', '[[count]] users', (int) countSmartGroupMembers($smartGroupId), array(), 'empty');
 	}
 	return $smartGroups;
 }
@@ -6207,6 +6196,7 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 				case 'default_sort_column':
 				case 'default_sort_desc':
 				case 'default_sort_column':
+				case 'item':
 				case 'no_return':
 				case 'panel_type':
 				case 'refiner_required':
@@ -6214,6 +6204,11 @@ function zenarioParseTUIX(&$tags, &$par, $type, $moduleClassName = false, $setti
 				case 'title':
 				case '_path_here':
 					if ($lastWasPanel) {
+						$includeThisSubTree = true;
+					}
+					break;
+				case 'css_class':
+					if ($parent == 'item') {
 						$includeThisSubTree = true;
 					}
 					break;
@@ -6607,6 +6602,12 @@ function recordEquivalence($cID1, $cID2, $cType, $onlyValidate = false) {
 	
 	if (!$default && $equiv2) {
 		$default = getRow('content_items', array('id', 'alias'), array('equiv_id' => $equiv2, 'type' => $cType, 'language_id' => setting('default_language')));
+	}
+	
+	//Case where a content item is first created in non-default language so the equivId is targeted at the non-defualt language
+	//and therefore the alias needs to be taken from the existing content item
+	if (empty($default['alias']) && $cID2) {
+		$default = getRow('content_items', array('id', 'alias'), array('id' => $equiv1, 'type' => $cType));
 	}
 	
 	//If we are merging two different equivs, check the merge will not give us any overlaps

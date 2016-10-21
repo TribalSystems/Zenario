@@ -113,10 +113,16 @@ $schema = zenarioReadTUIXFile(CMS_ROOT. 'zenario/api/'. $schemaName. '.yaml');
 //(This is a hack to save me from writing all of that out twice!)
 if ($schemaName == 'fea_schema') {
 	$fabSchema = zenarioReadTUIXFile(CMS_ROOT. 'zenario/api/admin_box_schema.yaml');
+	
 	$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'] = 
-		$fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'];
+		array_merge_recursive(
+			$fabSchema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields'],
+			$schema['additionalProperties']['properties']['tabs']['additionalProperties']['properties']['fields']);
+	
 	$schema['additionalProperties']['properties']['lovs'] = 
-		$fabSchema['additionalProperties']['properties']['lovs'];
+		array_merge_recursive(
+			$fabSchema['additionalProperties']['properties']['lovs'],
+			$schema['additionalProperties']['properties']['lovs']);
 }
 
 unset($schema['common_definitions']);

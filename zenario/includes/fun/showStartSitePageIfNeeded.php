@@ -34,7 +34,7 @@ if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
  && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
- && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
+ && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	$logoURL = $logoURL;
 } else {
 	$logoURL = 'zenario/admin/images/zenario_logo.png';

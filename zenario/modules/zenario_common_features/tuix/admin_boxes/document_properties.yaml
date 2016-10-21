@@ -13,7 +13,7 @@ zenario_document_properties:
 				enabled: Yes
 			fields:
 				document_extension:
-					label: 'Title:'
+					label: 'Extension:'
 					type: text
 					maxlength: "255"
 					hidden: true

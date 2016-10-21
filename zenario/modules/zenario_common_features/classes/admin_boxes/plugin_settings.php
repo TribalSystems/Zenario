@@ -72,10 +72,19 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 		//If we don't know where this plugin will be used, check to see if there's only
 		//one skin on this site. If so, show the CSS options anyway as we know what skin
 		//will be used!
-		$skins = getRowsArray('skins', array('id', 'family_name', 'name'), array('type' => 'usable', 'missing' => 0));
+		$skins = getRowsArray('skins', array('id', 'family_name', 'name'), array('missing' => 0));
 		
 		if (count($skins) == 1) {
 			$skin = array_pop($skins);
+			$box['key']['skinId'] = $skin['id'];
+			$this->skinWritableDir = getSkinPath($skin['family_name'], $skin['name']). 'editable_css/';
+			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
+		}
+		
+		//Otherwise try and use the default skin for the grid_templates directory
+		$skinId = getRow('template_families', 'skin_id', array('family_name' => 'grid_templates'));
+		if ($skinId && !empty($skins[$skinId])) {
+			$skin = $skins[$skinId];
 			$box['key']['skinId'] = $skin['id'];
 			$this->skinWritableDir = getSkinPath($skin['family_name'], $skin['name']). 'editable_css/';
 			return $this->skinWritableDir. '2.'. $this->getPluginCSSName($box, $thisPlugin). '.css';
@@ -707,7 +716,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 											$pk['name'] = $field['plugin_setting']['name'];
 					
 											//Delete the value for a field if it was hidden...
-											if (engToBooleanArray($field, 'hidden')
+											if (engToBooleanArray($tab, 'hidden')
+											 || engToBooleanArray($tab, '_was_hidden_before')
+											 || engToBooleanArray($field, 'hidden')
 											 || engToBooleanArray($field, '_was_hidden_before')) {
 												deleteRow('plugin_settings', $pk);
 					
@@ -886,7 +897,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 										//Attempt to get a display value, rather than the actual value
 										$items = explode(',', $eggName);
 										if (!empty($field['values'][$items[0]])) {
-											$eggName = $field['values'][$items[0]];
+										    $eggName = !is_array($field['values'][$items[0]]) ? $field['values'][$items[0]] : $field['values'][$items[0]]['label'];
 					
 										} elseif (!empty($field['values'][$eggName])) {
 											$eggName = $field['values'][$eggName];
@@ -904,7 +915,9 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 						$eggName = arrayKey($eggName, 'label');
 					}
 	
-					if (!$eggName) {
+					if ($eggName) {
+						$eggName = getModuleDisplayName($box['key']['moduleId']). ': '. $eggName;
+					} else {
 						$eggName = getModuleDisplayName($box['key']['moduleId']);
 					}
 	

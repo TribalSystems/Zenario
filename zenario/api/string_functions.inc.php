@@ -65,6 +65,41 @@ function base16To64($hex) {
 	return base64(pack('H*', $hex));
 }
 
+//Find the lowest common denominator of two numbers
+function rationalNumber(&$a, &$b) {
+  for ($i = min($a, $b); $i > 1; --$i) {
+	  if (($a % $i == 0)
+	   && ($b % $i == 0)) {
+		  $a = (int) ($a / $i);
+		  $b = (int) ($b / $i);
+	  }
+  }
+}
+
+//Give a grid's cell a class-name based on how many columns it takes up, and the ratio out of the total width that it takes up
+function rationalNumberGridClass($a, $b) {
+	$w = $a;
+	rationalNumber($a, $b);
+	return 'span span'. $w. ' span'. $a. '_'. $b;
+}
+
+function stndrdth($i) {
+	$h = (int) $i % 100;
+	
+	if ($h < 11 || $h > 13) {
+		switch ($h % 10) {
+			case 1:
+				return $i. 'st';
+			case 2:
+				return $i. 'nd';
+			case 3:
+				return $i. 'rd';
+		}
+	}
+	
+	return $i. 'th';
+}
+
 function chopPrefixOffOfString($string, $prefix, $returnStringOnFailure = false) {
 	if ($string === $prefix) {
 		return '';
@@ -159,6 +194,7 @@ function HTMLId($text) {
 }
 
 //A short function that makes code a little bit nicer to read if used
+cms_core::$whitelist[] = 'ifNull';
 function ifNull($a, $b, $c = null) {
 	return $a? $a : ($b? $b : $c);
 }

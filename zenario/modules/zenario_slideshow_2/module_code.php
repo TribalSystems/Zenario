@@ -176,14 +176,14 @@ class zenario_slideshow_2 extends module_base_class {
 				'mobile_width' => $maxMobileWidth,
 				'slide_transition' => $this->setting("fx"),
 				'mobile_resize_width' => setting('image_mobile_resize_point'),
-				'hover_to_pause' => $this->setting("hover_to_pause"),
-				'enable_swipe' => $this->setting("enable_swipe"),
-				'auto_play' => $this->setting("auto_play"),
+				'hover_to_pause' => (int)$this->setting("hover_to_pause"),
+				'enable_swipe' => (int)$this->setting("enable_swipe"),
+				'auto_play' => (int)$this->setting("auto_play"),
 				'slide_duration' => $this->setting("slide_duration"),
-				'enable_arrow_buttons' => $this->setting("arrow_buttons"),
+				'enable_arrow_buttons' => (int)$this->setting("arrow_buttons"),
 				'navigation_style' => $this->setting("navigation_style"),
 				'mobile_options' => $this->setting('mobile_options'),
-				'desktop_resize_greater_than_image' => $this->setting('desktop_resize_greater_than_image'),
+				'desktop_resize_greater_than_image' => (int)$this->setting('desktop_resize_greater_than_image'),
 				'has_mobile_images' => $mobileImages);
 			
 			$this->callScript(
@@ -674,20 +674,11 @@ class zenario_slideshow_2 extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch($path){
 			case 'plugin_settings':
-			
-				$fields['first_tab/banner_width']['hidden'] = 
-					!in($values['first_tab/banner_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-				$fields['first_tab/banner_height']['hidden'] =
-					!in($values['first_tab/banner_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
 				
-				$fields['mobile/mobile_canvas']['hidden'] = 
-					!in($values['mobile/mobile_options'], 'desktop_fixed', 'seperate_fixed');
-				$fields['mobile/mobile_width']['hidden'] = 
-					!in($values['mobile/mobile_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop') ||
-					$fields['mobile/mobile_canvas']['hidden'];
-				$fields['mobile/mobile_height']['hidden'] =
-					!in($values['mobile/mobile_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop') ||
-					$fields['mobile/mobile_canvas']['hidden'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', false, 'banner_');
+				
+				$hidden = !in($values['mobile/mobile_options'], 'desktop_fixed', 'seperate_fixed');
+				$this->showHideImageOptions($fields, $values, 'mobile', $hidden, 'mobile_');
 				
 				$fields['mobile/desktop_resize_greater_than_image']['hidden'] = 
 					$values['mobile/mobile_options'] != 'desktop_resize';

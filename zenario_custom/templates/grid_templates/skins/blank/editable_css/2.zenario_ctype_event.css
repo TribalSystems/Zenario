@@ -1,0 +1,10 @@
+/* Events Detail Viewer
+--------------------------------------------------------------------------------------------------*/
+
+.events_detail_viewer {
+	margin-bottom: 40px;
+}
+
+.events_detail_viewer .event_more_info a {
+	color: #151515;
+}

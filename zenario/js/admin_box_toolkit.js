@@ -316,9 +316,14 @@ methods.draw2 = function() {
 			'zenario_admin_box_with_tabs_hidden'
 		  : 'zenario_admin_box_with_tabs_shown');
 	
+	var tuix = this.tuix;
+	
 	//Don't show the requested tab if it has been hidden
-	if (this.tuix.tab && (!this.tuix.tabs[this.tuix.tab] || zenarioA.hidden(this.tuix.tabs[this.tuix.tab]))) {
-		this.tuix.tab = false;
+	if (tuix.tab
+	 && (!tuix.tabs[tuix.tab]
+		//zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+	  || zenarioA.hidden(undefined, undefined, tuix.tab, tuix, undefined, undefined, undefined, undefined, tuix.tabs[tuix.tab]))) {
+		tuix.tab = false;
 	}
 	
 	//Set the HTML for the floating boxes tabs and title
@@ -351,7 +356,7 @@ methods.draw2 = function() {
 	
 	this.animateInTab(html, cb, $('#zenario_abtab'));
 
-	this.shownTab = this.tuix.tab;
+	this.shownTab = tuix.tab;
 	delete this.lastScrollTop;
 	
 	this.startPoking();
@@ -405,13 +410,13 @@ methods.returnAJAXURL = function(action) {
 
 
 //Attempt to get the URL of a preview
-methods.pluginPreviewDetails = function(slotName, instanceId) {
+methods.pluginPreviewDetails = function(slotName, instanceId, fullPage) {
 	
 	
-	var requests,
+	var requests = _.clone(zenarioA.importantGetRequests),
 		postName,
 		postValues,
-		includeSlotInfo = true;
+		includeSlotInfo = !fullPage;
 	
 	switch (this.path) {
 		case 'zenario_skin_editor':
@@ -431,13 +436,13 @@ methods.pluginPreviewDetails = function(slotName, instanceId) {
 			return false;
 	}
 	
-	requests = _.clone(zenarioA.importantGetRequests);
 	requests.cVersion = zenario.cVersion;
+	slotName = slotName || (this.tuix && this.tuix.key && this.tuix.key.slotName);
+	instanceId = instanceId || (this.tuix && this.tuix.key && this.tuix.key.instanceId)
+							|| (zenario.slots && zenario.slots[slotName] && zenario.slots[slotName].instanceId);
 	
 	if (includeSlotInfo) {
-		if (!zenario.slots
-		 || !(slotName = slotName || (this.tuix && this.tuix.key && this.tuix.key.slotName))
-		 || !(instanceId = instanceId || (this.tuix && this.tuix.key && this.tuix.key.instanceId) || zenario.slots[slotName].instanceId)) {
+		if (!slotName || !instanceId) {
 			return false;
 		}
 	
@@ -445,8 +450,6 @@ methods.pluginPreviewDetails = function(slotName, instanceId) {
 			c, clas,
 			cssClasses = (grid && grid.cssClass && grid.cssClass.split(' ')) || [];
 	
-		requests.slotName = slotName;
-		requests.instanceId = instanceId;
 		requests.method_call = 'showSingleSlot';
 		requests.fakeLayout = 1;
 		requests.grid_columns = grid.columns;
@@ -480,6 +483,9 @@ methods.pluginPreviewDetails = function(slotName, instanceId) {
 	} else {
 		requests._show_page_preview = 1;
 	}
+	
+	if (slotName) requests.slotName = slotName;
+	if (instanceId) requests.instanceId = instanceId;
 	
 	return {
 		url: zenario.linkToItem(zenario.cID, zenario.cType, requests),
@@ -530,12 +536,12 @@ methods.submitPreview = function(preview, target) {
 	'</form>').appendTo('body').hide().submit().remove();
 };
 
-methods.showPreviewInPopoutBox = function() {
+methods.showPreviewInPopoutBox = function(fullPage) {
 	
 	var href,
 		onComplete,
 		that = this,
-		preview = this.pluginPreviewDetails();
+		preview = this.pluginPreviewDetails(undefined, undefined, fullPage);
 	
 	if (!preview) {
 		return;
@@ -555,8 +561,8 @@ methods.showPreviewInPopoutBox = function() {
 	}
 	
 	$.colorbox({
-		width: Math.floor($(window).width() * 0.7),
-		height: Math.floor($(window).height() * 0.9),
+		width: '95%',
+		height: '90%',
 		iframe: true,
 		preloading: false,
 		open: true,

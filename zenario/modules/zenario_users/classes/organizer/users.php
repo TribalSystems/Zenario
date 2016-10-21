@@ -115,13 +115,19 @@ class zenario_users__organizer__users extends zenario_users {
 			$item['cell_css_classes'] = array();
 			switch (arrayKey($item,'status')){
 				case 'pending':
+					$item['readable_status'] = adminPhrase('Pending extranet user');
 					$item['cell_css_classes']['status'] = 'orange';
 					break;
 				case 'active':
+					$item['readable_status'] = adminPhrase('Active extranet user');
 					$item['cell_css_classes']['status'] = 'blue';
 					break;
 				case 'suspended':
+					$item['readable_status'] = adminPhrase('Suspended extranet user');
 					$item['cell_css_classes']['status'] = 'brown';
+					break;
+				case 'contact':
+					$item['readable_status'] = adminPhrase('Contact');
 					break;
 				default:
 					break;
@@ -144,6 +150,21 @@ class zenario_users__organizer__users extends zenario_users {
 				}
 			}
 			
+			if ($item['status'] == 'contact') {
+				$item['user_type'] = 'contact';
+			} else {
+				$item['user_type'] = 'user';
+			}
+			
+			if ($item['last_login']) {
+				$item['last_login'] = formatDateNicely($item['last_login'], setting('vis_date_format_med'));
+				$item['readable_last_login'] = adminPhrase('Last login: [[last_login]]', array('last_login' => $item['last_login']));
+			} elseif ($item['status'] != 'contact') {
+				$item['readable_last_login'] = adminPhrase('Last login: Never');
+			}
+			
+			$item['readable_name'] = implode(' ', array_filter(array($item['salutation'], $item['first_name'], $item['last_name'])));
+			
 			// Get a users groups
 			$groups = getUserGroups($id);
 			$firstGroupMessage = '';
@@ -159,6 +180,13 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 			$item['first_group'] = $firstGroupMessage;
 			$item['groups'] = implode(', ', $groups);
+			
+			if ($groups) {
+				$item['readable_groups'] = adminPhrase('Groups: [[groups]]', array('groups' => $item['groups']));
+			} else {
+				$item['readable_groups'] = adminPhrase('Groups: None');
+			}
+			
 		}
 	
 		//Set a title
@@ -226,30 +254,10 @@ class zenario_users__organizer__users extends zenario_users {
 		
 		//Set a new avatar for a User/Users
 		} elseif (post('upload_image') && checkPriv('_PRIV_EDIT_USER')) {
-			
-			//Try to add the uploaded image to the database
-			if ($imageId = addFileToDatabase('user', $_FILES['Filedata']['tmp_name'], rawurldecode($_FILES['Filedata']['name']), true)) {
-				//Add image to each user
-				foreach (explode(',', $ids) as $id) {
-					updateRow('users', array('image_id' => $imageId), $id);
-				}
-				
-				deleteUnusedImagesByUsage('user');
-				
-				echo 1;
-				return null;
-			} else {
-				if($imageId) echo $error. "\n";
-				return false;
-			}
-		
+			zenario_users::uploadUserImage($ids);
+		//Remove the image for each user
 		} elseif (post('delete_image') && checkPriv('_PRIV_EDIT_USER')) {
-			//Remove the image for each user
-			foreach (explode(',', $ids) as $id) {
-				updateRow('users', array('image_id' => 0), $id);
-			}
-			
-			deleteUnusedImagesByUsage('user');
+			zenario_users::deleteUserImage($ids);
 		}
 	}
 }

@@ -13,6 +13,7 @@ zenario__content:
             view_mode: list
             disable_grid_view: true
             disable_summary_view: true
+            hide_filter_warning: true
             db_items:
                 table: >
                     [[DB_NAME_PREFIX]]content_items AS lec
@@ -389,6 +390,7 @@ zenario__content:
                     priv: _PRIV_DELETE_DRAFT
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
+                        && item.id != item.equiv_id
                     hide_in_select_mode: true
                     label: Delete draft
                     multiple_select: true
@@ -422,6 +424,7 @@ zenario__content:
                     priv: _PRIV_TRASH_CONTENT_ITEM
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
+                        && item.id != item.equiv_id
                     hide_in_select_mode: true
                     label: Trash
                     multiple_select: true

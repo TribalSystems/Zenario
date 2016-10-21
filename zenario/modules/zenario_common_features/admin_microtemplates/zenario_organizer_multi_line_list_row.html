@@ -1,0 +1,43 @@
+
+<div
+	id="organizer_item_{{m.id|escape}}"
+	data-id="{{m.id|escape}}"
+	onclick="zenarioO.pi.itemClick('{{m.id|escape}}', event);"
+	class="
+		organizer_row
+		{{m.css_class|escape}}
+		{{m.selected? ' organizer_selected' : ''|escape}}
+		{{m.canClickThrough? 'organizer_doubleclickable' : ''|escape}}
+		
+		<% if (zenarioO.chooseButtonActive()) { %>
+			{{zenarioO.checkItemPickable(m.id)? 'organizer_can_choose' : 'organizer_cant_choose'|escape}}
+		<% } %>
+	"
+>
+	
+	<div 
+		class="organizer_cell organizer_checkbox_col" 
+		onclick="zenarioO.pi.checkboxClick('{{m.id|escape}}', event); return false;" 
+		ondblclick="return zenario.stop(event);"
+		style="height:{{m.multiLineCellHeight|e}}px"
+	>
+		<% if (m.showCheckbox) { %>
+			<input type="checkbox" {{m.selected? ' checked="checked"' : ''}} id="organizer_itemcheckbox_{{m.id|escape}}" />
+		<% } %>
+	</div>
+	<div
+		class="organizer_cell firstcol listicon"
+		style="width: {{zenarioO.firstColWidth}}px; height:{{m.multiLineCellHeight|e}}px"
+		title="{{m.tooltip|escape}}"
+	>
+	
+	
+		<div
+			class="image organizer_item_image {{m.image_css_class|escape}}"
+		>
+		
+		</div>
+	</div>
+	
+	{{zenarioA.microTemplate('zenario_organizer_multi_line_list_cell', m.multiLineCells)}}
+</div>

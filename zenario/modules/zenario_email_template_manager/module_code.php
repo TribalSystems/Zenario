@@ -109,6 +109,7 @@ class zenario_email_template_manager extends module_base_class {
 		}
 		
 		$result = true;
+		
 		foreach (array_unique(explodeAndTrim(str_replace(';', ',', $rcpts))) as $addressTo) {
 			/*
 			(
@@ -226,6 +227,11 @@ class zenario_email_template_manager extends module_base_class {
 		$disableHTMLEscaping = false, $addressReplyTo = false, $nameReplyTo = false
 	) {
 		if ($template = self::getTemplateByCode($templateCode)) {
+			
+			if ($template['head']) {
+				static::putHeadOnBody($template['head'], $template['body']);
+			}
+			
 			if (self::sendEmails(
 				$rcpts,
 				$template['subject'],  
@@ -255,6 +261,23 @@ class zenario_email_template_manager extends module_base_class {
 		}
 		
 		return false;
+	}
+	
+		//If this email template has HTML in the <head>, we'll need to send the email as a full webpage
+	public static function putHeadOnBody(&$head, &$body) {
+		
+		if ($head && trim($head)) {
+			$body =
+'<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+'. $head. '
+</head>
+<body>
+'. $body. '
+</body>
+</html>';
+		}
 	}
 	
 	

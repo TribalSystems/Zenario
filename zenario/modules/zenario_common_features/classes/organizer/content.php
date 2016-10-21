@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__content extends module_base_class {
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-
+		
 		if (in($mode, 'full', 'quick', 'select', 'typeahead_search', 'get_matched_ids')
 		 && !isset($_GET['refiner__trash'])
 		 && isset($panel['db_items']['custom_where_statement__not_trashed'])) {
@@ -629,37 +629,45 @@ class zenario_common_features__organizer__content extends module_base_class {
 		} elseif (!isset($_GET['refiner__trash']) && $numLanguages > 1) {
 	
 			$langId = false;
-			if (in($refinerName, 'language', 'content_type__language', 'template__language') && $langId = $panel['key']['language']) {
+			if (in($refinerName, 'language', 'content_type__language', 'template__language')) {
+				$langId = $panel['key']['language'];
+			} elseif ($numLanguages > 1 && columnFilterValue('language_id') == setting('default_language')) {
+				$langId = columnFilterValue('language_id');
+			}
+			
+			if ($langId) {
+				$ord = $panel['columns']['zenario_trans__links']['ord'];
 				foreach($langs as $lang) {
 					if ($lang['id'] != $langId) {
 						$panel['columns']['lang_'. $lang['id']] =
 							array(
+								'ord' => $ord += 0.001,
 								'title' => $lang['id'],
-								'show_by_default' => (!request('refiner__content_type') || request('refiner__content_type') == 'html'));
+								'width' => 'xxsmall',
+								'show_by_default' => (!request('refiner__content_type') || request('refiner__content_type') == 'html')
+							);
 					}
 				}
 			}
-	
+			
 			foreach ($panel['items'] as $id => &$item) {
 				$cID = $cType = false;
 				getCIDAndCTypeFromTagId($cID, $cType, $id);
 				$isGhost = !empty($item['traits']['ghost']);
-		
 				$item['zenario_trans__links'] = 1;
-		
+				
 				if (!$isGhost || $mode == 'select') {
 					$equivs = equivalences($cID, $cType, $includeCurrent = $isGhost, $item['equiv_id']);
 					if (!empty($equivs)) {
-				
 						foreach($langs as $lang) {
 							if (!empty($equivs[$lang['id']])) {
 								if ($lang['id'] != $item['language_id']) {
 									++$item['zenario_trans__links'];
 								}
-						
 								if ($langId && $lang['id'] != $langId) {
+									$itemIconClass = getItemIconClass($equivs[$lang['id']]['id'], $equivs[$lang['id']]['type'], true, $equivs[$lang['id']]['status']);
 									$item['cell_css_classes']['lang_'. $lang['id']] =
-										'zenario_trans_colicon zenario_trans_colicon__'. $equivs[$lang['id']]['status'];
+										'zenario_trans_colicon ' . $itemIconClass;
 								}
 							}
 						}
@@ -683,8 +691,7 @@ class zenario_common_features__organizer__content extends module_base_class {
 					$item['zenario_trans__links'] = '';
 				}
 			}
-
-
+			
 		} else {
 			unset($panel['item_buttons']['zenario_trans__view']);
 			unset($panel['columns']['zenario_trans__links']);
@@ -693,7 +700,6 @@ class zenario_common_features__organizer__content extends module_base_class {
 		if (!empty($panel['key']['cType']) && isset($panel['collection_buttons']['export'])) {
 			$panel['collection_buttons']['export']['admin_box']['key']['type'] = $panel['key']['cType'];
 		}
-		
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {

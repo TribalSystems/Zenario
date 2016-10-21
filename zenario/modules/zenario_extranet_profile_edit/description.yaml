@@ -38,3 +38,4 @@ dependencies:
     zenario_user_forms: true
 inheritance:
     include_javascript_from_module: zenario_user_forms
+    

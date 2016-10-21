@@ -1,0 +1,67 @@
+/* HEADER
+--------------------------------------------------------------------------------------------------*/
+
+.Grid_Header {
+	padding: 30px 0;
+}
+
+.Grouping_Header {
+	text-align: right;
+}
+
+
+
+/* BODY
+--------------------------------------------------------------------------------------------------*/
+
+.Grid_Body .zenario_slot {
+    margin-bottom: 25px;
+}
+
+body.zenario_pageMode_edit .Grid_Body,
+body.zenario_pageMode_template .Grid_Body {
+	position: static;
+}
+
+.home_page .Grid_Body {
+	position: relative;
+	top: -50px;
+}
+
+.Grid_Body {
+	position: relative;
+	top: -100px;
+}
+
+.home_page .Grouping_Secondary {
+	background: url('../images/bg-curve-with-images.jpeg') no-repeat bottom center / 100% auto;
+	height: 310px;
+}
+
+.Grid_Grey {
+	position: relative;
+	text-align: center;
+	padding-bottom: 75px;
+	background: #d2d8db;
+}
+
+.Grid_Bottom {
+	background: url('../images/bottom-bg-gradient-1px-strip.jpg');
+}
+
+
+/*FOOTER
+--------------------------------------------------------------------------------------------------*/
+
+
+/* BOTTOM
+--------------------------------------------------------------------------------------------------*/
+
+.Grid_Bottom {
+	padding-bottom: 10px;
+}
+
+.Grid_Bottom .Grouping_Bottom {
+	background: url('../images/bg-curve-gradient-fooeter.jpg') no-repeat;
+	padding-top: 64px;
+}

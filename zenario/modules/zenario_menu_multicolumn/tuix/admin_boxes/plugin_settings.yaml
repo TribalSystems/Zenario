@@ -40,6 +40,8 @@ plugin_settings:
                     label: 'Max per column:'
                     type: select
                     values:
+                        2: "2"
+                        3: "3"
                         4: "4"
                         5: "5"
                         6: "6"

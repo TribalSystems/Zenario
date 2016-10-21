@@ -102,8 +102,8 @@ class zenario_event_slideshow extends module_base_class {
 		switch($path) {
 			case 'plugin_settings':
 				$fields['first_tab/content_category']['hidden'] = !$values['first_tab/filter_by_category'];
-				$fields['first_tab/slide_width']['hidden'] = !in($values['first_tab/slide_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-				$fields['first_tab/slide_height']['hidden'] = !in($values['first_tab/slide_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+				
+				$this->showHideImageOptions($fields, $values, 'first_tab', false, 'slide_');
 				break;
 		}
 		

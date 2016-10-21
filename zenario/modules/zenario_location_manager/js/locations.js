@@ -106,10 +106,23 @@ function placeMarker (method) {
 		address = trimTrailingComma(address);
 		
 		geoCode(address);
-	} else if (pinPlacementMethod=="my_location") {
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(success, error);
+	} else if (pinPlacementMethod=="locality_postcode_country") {
+		if (parent.document.getElementById("locality").value!="") {
+			address += parent.document.getElementById("locality").value + ',';
 		}
+
+		if (parent.document.getElementById("postcode").value!="") {
+			address += parent.document.getElementById("postcode").value.replace(" ","") + ',';
+		}
+		
+		if (parent.document.getElementById("country").value!="") {
+			var country = parent.zenario.moduleNonAsyncAJAX("zenario_location_manager","&mode=get_country_name&country_id=" + parent.document.getElementById("country").value);
+			address += country + ',';
+		}
+		
+		address = trimTrailingComma(address);
+		
+		geoCode(address);
 	}
 }
 

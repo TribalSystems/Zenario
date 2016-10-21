@@ -1898,7 +1898,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	foreach (getRowsArray(
 		'skins',
 		array('family_name', 'name', 'display_name'),
-		array('type' => 'usable', 'missing' => 0, 'family_name' => 'grid_templates', 'enable_editable_css' => 1)
+		array('missing' => 0, 'family_name' => 'grid_templates', 'enable_editable_css' => 1)
 	) as $skin) {
 		if ($i == $maxI) {
 			break;
@@ -2153,21 +2153,21 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase('Automated backups have not been set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.',
+				adminPhrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.',
 					array('link' => 'organizer.php#zenario__administration/panels/site_settings//dirs'));
 		
 		} elseif (!is_file(setting('automated_backup_log_path'))) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase("Automated backups appear to be set up but the log file ([[path]]) could not be found.",
+				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) could not be found.",
 					array('path' => setting('automated_backup_log_path')));
 		
 		} elseif (!is_readable(setting('automated_backup_log_path'))) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase("Automated backups appear to be set up but the log file ([[path]]) could not be read.",
+				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read.",
 					array('path' => setting('automated_backup_log_path')));
 		
 		} else {
@@ -2190,7 +2190,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 				$show_warning = true;
 				$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 				$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-					adminPhrase("Automated backups are not running for this site.");
+					adminPhrase("This site is not being backed-up using the automated process.");
 			
 			} else {
 				$days = (int) floor((time() - (int) $timestamp) / 86400);
@@ -2199,7 +2199,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 					$show_warning = true;
 					$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 					$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-						nAdminPhrase("Automated backups have not been run in 1 day.",
+						nAdminPhrase("Automated backups have not been run in the last day.",
 							"Automated backups have not been run in [[days]] days.",
 							$days, array('days' => $days));
 		
@@ -2473,6 +2473,8 @@ function redirectAdmin($getRequest, $useAliasInAdminMode = false) {
 		return ifNull(DIRECTORY_INDEX_FILENAME, SUBDIRECTORY);
 	}
 }
+
+
 
 
 

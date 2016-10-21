@@ -38,21 +38,25 @@ plugin_settings:
                 max_user_image_width:
                     plugin_setting:
                         name: max_user_image_width
-                    post_field_html: '&nbsp;pixels'
-                    label: 'Max. Image Width:'
+                    label: 'Width:'
                     type: text
-                    size: "5"
-                    maxlength: "5"
-                    style: 'width: 50px'
+                    validation:
+                        required_if_not_hidden: Please enter a width.
+                        numeric: The width must be a number.
                     value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'
                 max_user_image_height:
                     plugin_setting:
                         name: max_user_image_height
-                    post_field_html: '&nbsp;pixels'
-                    label: 'Max. Image Height:'
+                    label: 'Height:'
                     type: text
-                    size: "5"
-                    maxlength: "5"
-                    style: 'width: 50px'
+                    validation:
+                        required_if_not_hidden: Please enter a height.
+                        numeric: The height must be a number.
                     value: "120"
+                    maxlength: "5"
+                    style: 'width: 5em;'
+                    post_field_html: '&nbsp;pixels'    
     

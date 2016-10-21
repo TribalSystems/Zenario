@@ -206,4 +206,4 @@ if (cms_core::$canCache
 	}
 }
 
-require moduleDir('zenario_common_features', 'edition_includes/index.post_display.php', true);
+require editionInclude('post_display', $continueFrom = 'zenario_pro_features');

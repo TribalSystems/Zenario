@@ -1,0 +1,51 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+display_name: Slideshow (advanced)
+author_name: Tribal Systems
+copyright_info: © Tribal Limited
+editions: Community, Pro, ProBusiness, Enterprise
+start_running_on_install: false
+license_info: 'Modified BSD License'
+description: |
+    <p>
+        This module allows you to create a slideshow made out of plugins, not images.
+        Any plugin that is marked as &quot;nestable&quot; in its description may placed inside.
+    </p><p>
+        You can create dynamic effects for your visitors, controlling all aspects of display and slide transitions.
+        The slides can auto-advance after a set amount of time,
+        or you can turn the auto-advance off so slides will only be displayed when a visitor clicks them.
+    </p><p>
+        The effects are powered by the
+           <a href="http://malsup.com/jquery/cycle/" target="_blank">jQuery Cycle</a> or
+           <a href="https://github.com/fredleblanc/roundabout" target="_blank">jQuery Roundabout</a>
+          libraries (you can choose which you want in the slideshow's settings).
+    </p><p>
+        The links to each slide can be invisible, appear visually as a tab, or in some other visual form,
+        depending on the CSS and framework.
+    </p><p>
+        You can restrict a slide's visibility:
+        <ul>
+            <li>to logged-in extranet users</li>
+            <li>to logged-in extranet users with a given field or group set</li>
+            <li>to logged-in extranet users in a given smart group</li>
+            <li>to the inverse of the above options</li>
+            <li>by calling a static method from another module, e.g. <code>checkVisitorInCountries()</code> from the <code>zenario_geoip_lookup</code> module</li>
+        </ul>
+    </p>
+category: pluggable
+keywords: >
+    banner, graphic, masthead, movie, panel, play, show, slide,
+    slider
+vlp_class_name: zenario_plugin_nest
+css_class_name: zenario_plugin_nest
+default_framework: standard
+is_pluggable: true
+can_be_version_controlled: false
+nestable: false
+default_instance_name: Untitled Slideshow
+dependencies:
+    zenario_plugin_nest: true
+    zenario_banner: true
+inheritance:
+    inherit_frameworks_from_module: zenario_plugin_nest
+    include_javascript_from_module: zenario_plugin_nest

@@ -6,7 +6,7 @@ zenario_categories:
         parent_id: ''
     title: 'Creating a category'
     title_for_existing_records: 'Editing the category "[[details/name]]"'
-    max_height: 250
+    max_height: 350
     hide_tab_bar: true
     tabs:
         details:
@@ -18,12 +18,23 @@ zenario_categories:
                 name:
                     label: 'Name:'
                     type: text
-                    note_below: >
+                    side_note: >
                         Internal name.
                 public:
                     label: 'Public'
                     type: checkbox
-                    note_below: >
+                    side_note: >
                         When a category is public, its name may be visible to visitors.
                         The system will create a phrase with this name in all enabled languages;
                         you can then edit that phrase in the visitor phrases system.
+                landing_page:
+                    label: 'Landing page:'
+                    pick_items:
+                        path: zenario__content/panels/content/refiners/filter_by_lang////
+                        min_path: zenario__content/panels/content
+                        target_path: zenario__content/panels/content
+                        disallow_refiners_looping_on_min_path: true
+                        select_phrase: Select a content item...
+                    side_note: |
+                        Choose a landing page for this category. This will usually be a content item with a content list on it which lists items in this category. If a content list displays the content's category, that will become a link to this page.
+                    hidden: true

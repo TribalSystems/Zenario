@@ -29,81 +29,71 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_extranet_profile_edit extends zenario_user_forms {
 	
-	var $data = array();
-	
 	public function init() {
-		if (userId()) {
-			// Allow the user to confirm their screen name if not confirmed
-			if (setting('user_use_screen_name') && checkRowExists('users', array('id' => userId(), 'screen_name_confirmed' => 0))) {
-				$screenName = getRow('users', 'screen_name', userId());
-				if (post('confirm_screen_name')) {
-					updateRow('users', array('screen_name_confirmed' => 1), array('id' => userId()));
-					$this->data['screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', array('screen_name' => $screenName));
-					$this->data['Screen_Name_Confirmed'] = true;
-				} else {
-					$this->data['screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', array('screen_name' => $screenName));
-					$this->data['Screen_Name_Unconfirmed'] = true;
-				}
-			}
-			$errors = array();
-			$data = userId();
-			$this->data['Edit'] = false;
-			if (get('extranet_edit_profile')) {
-				$this->data['Edit'] = true;
-				$this->callScript('zenario_user_forms', 'initFilePickerFields', $this->containerId, $this->pluginAJAXLink('filePickerUpload=1'));
-			} else {
-				$this->data['View'] = true;
-				$this->data['Edit_Permission'] = $this->setting('enable_edit_profile');
-			}
-			$this->data['Show_Title'] = $this->setting('show_title_message');
-			
-			$userFormId = $this->setting('user_form');
-			$this->data['openForm'] = $this->openForm();
-			$this->data['closeForm'] = $this->closeForm();
-			
-			if ($this->setting('enable_edit_profile') && post('extranet_update_profile')){
-				$data = $_POST;
-				$errors = zenario_user_forms::validateUserForm($userFormId, $data);
-				
-				if (empty($errors)) {
-					zenario_user_forms::saveUserForm($userFormId, $data, $redirect, userId());
-					if ($redirect) {
-						$this->headerRedirect($redirect);
-					}
-					$this->data['message'] = $this->phrase('_PROFILE_UPDATED');
-					unset($_POST['extranet_update_profile']);
-				} else {
-					$this->data['Edit'] = true;
-					$this->callScript('zenario_user_forms', 'initFilePickerFields', $this->containerId, $this->pluginAJAXLink('filePickerUpload=1'));
-					$this->data['View'] = false;
-				}
-			}
-			$this->data['form_fields'] = zenario_user_forms::drawUserForm($userFormId, $data, !$this->data['Edit'], $errors, 0, $this->containerId);
-			
-			$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
-			
-			$this->data['edit_profile_link'] = $this->refreshPluginSlotAnchor('extranet_edit_profile=1');
-			$this->data['back_link'] = $this->refreshPluginSlotAnchor('');
+		$userId = userId();
+		if (!$userId) {
+			$this->data['extranet_no_user'] = true;
+			return true;
+		}
+		
+		$this->allowSave = $this->setting('enable_edit_profile');
+		
+		$rv = parent::init();
+		if (get('extranet_edit_profile')) {
+			$this->data['extranet_profile_mode_class'] = 'extranet_edit_profile';
 		} else {
-			$this->data['No_User'] = true;
-		}
-		return true;
-	}
-	
-	function showSlot() {
-		$this->twigFramework($this->data);
-	}
-	
-	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		switch ($path) {
-			case 'plugin_settings':
-				if ($formId = $values['first_tab/profile_form']) {
-					$formProperties = getRow('user_forms', array('save_data', 'user_duplicate_email_action'), $formId);
-					$fields['first_tab/form_warning']['hidden'] = $formProperties['save_data'] && ($formProperties['user_duplicate_email_action'] == 'overwrite');
-					
+			$this->data['extranet_profile_mode_class'] = 'extranet_view_profile';
+			// Screen name confirmed
+			if (setting('user_use_screen_name') && checkRowExists('users', array('id' => $userId, 'screen_name_confirmed' => 0))) {
+				
+				$screenName = getRow('users', 'screen_name', $userId);
+				if (post('extranet_confirm_screen_name')) {
+					updateRow('users', array('screen_name_confirmed' => 1), array('id' => $userId));
+					$this->data['extranet_screen_name_confirmed_message'] = $this->phrase('You\'ve confirmed you\'re happy to use "[[screen_name]]" as your public screen name.', array('screen_name' => $screenName));
+				} else {
+					$this->data['extranet_openForm'] = $this->openForm();
+					$this->data['extranet_closeForm'] = $this->closeForm();
+					$this->data['extranet_screen_name_unconfirmed'] = true;
+					$this->data['extranet_screen_name_confirmed_info'] = $this->phrase('It looks like you\'ve not confirmed that you\'re happy with your screen name, "[[screen_name]]". This name will be shown in messages you post on this site. If you\'d like to change it please click the "Edit profile" button, or if you\'re happy with it please click here to confirm:', array('screen_name' => $screenName));
 				}
-				break;
+			}
 		}
+		return $rv;
 	}
-
+	
+	protected function successfulFormSubmit() {
+		$this->messages['global_top'] = $this->phrase($this->setting('profile_updated'));
+	}
+	
+	protected function getFormTitle($form) {
+		$title = '';
+		if ($this->setting('show_title_message')) {
+			$title .= '<h1>';
+			if (get('extranet_edit_profile')) {
+				$title .= $this->phrase($this->setting('edit_profile_title'));
+			} else {
+				$title .= $this->phrase($this->setting('view_profile_title'));
+			}
+			$title .= '</h1>';
+		}
+		return $title;
+	}
+	
+	protected function isFormReadonly($form) {
+		return !get('extranet_edit_profile');
+	}
+	
+	protected function showSubmitButton() {
+		return get('extranet_edit_profile');
+	}
+	
+	protected function getCustomButtons($page, $onLastPage, $position) {
+		if ($position == 'first' && !get('extranet_edit_profile') && $onLastPage && $this->setting('enable_edit_profile')) {
+			return '<div class="extranet_links"><a ' . $this->refreshPluginSlotAnchor('extranet_edit_profile=1') . ' class="nice_button">' . $this->phrase($this->setting('edit_profile_button_text')) . '</a></div>';
+		} elseif ($position == 'last' && get('extranet_edit_profile') && $onLastPage) {
+			return '<a ' . $this->refreshPluginSlotAnchor('') . ' class="nice_button">' . $this->phrase($this->setting('cancel_button_text')) . '</a>';
+		}
+		return false;
+	}
+	
 }

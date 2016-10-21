@@ -1,0 +1,54 @@
+/* Events Listing
+--------------------------------------------------------------------------------------------------*/
+
+.events_listing .single_event_description,
+.events_listing .single_event_description h2 a,
+.events_listing .single_event_description .single_event_date {
+	font-family: "freight-sans-pro", "Verdana", sans-serif;
+}
+
+.events_listing .event_listing > h2 {
+    font-size: 2em;
+    color: #151515;
+}
+
+.events_listing .single_event {
+	overflow: hidden;
+    border-bottom: 1px solid #d2d8db;
+    margin-top: 35px;
+    padding-bottom: 30px;
+}
+
+.events_listing .single_event_sticky_image {
+	display: none;
+	float: left;
+	margin-right: 15px;
+}
+
+.events_listing .single_event_description {
+	overflow: hidden;
+}
+
+.events_listing .single_event_description h2 a {
+	font-weight: 600;
+	color: #2e74b4;
+	line-height: 1.2em;
+}
+
+.events_listing .single_event_description .single_event_date  {
+	margin: 8px 0 5px;
+	font-weight: 500;
+	font-size: .95em;
+	color: #46963b;
+}
+
+.events_listing .single_event_description span {
+	display: block;
+	font-size: 1.1em;
+	font-weight: 500;
+	color: #151515
+}
+
+.events_listing .single_event_description .single_event_more_link {
+	margin-top: 24px;
+}

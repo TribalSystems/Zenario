@@ -186,6 +186,32 @@ zenario_import:
                 email_report:
                     label: Email me a report
                     type: checkbox
+                
+                send_welcome_email:
+                    label: 'Send welcome email'
+                    type: checkbox
+                    format_onchange: true
+                    side_note: |
+                        Send a welcome email to any newly created active users.
+                    hidden: true
+                email_to_send:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select Email Template...
+                        hide_remove_button: Yes
+                    hidden: true
+                    validation:
+                        required_if_not_hidden: Please select an email template
+                    side_note: >
+                        An email based on the selected email template will be sent
+                        to the selected users.
+                    hidden: true
+                    indent: 1
+                
                 line_break:
                     label: 'Auto-set fields:'
                     snippet:

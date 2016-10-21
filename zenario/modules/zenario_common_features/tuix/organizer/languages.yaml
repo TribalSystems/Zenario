@@ -21,12 +21,15 @@ zenario__languages:
                     exists: true
                 plugin:
                     exists: true
+            
+            bold_columns_in_list_view: name
+            default_sort_column: name
+            
             columns:
                 name:
                     title: Language Name
                     searchable: true
-                    db_column: vp.language_id
-                    format: language_english_name_with_id
+                    db_column: vp.local_text
                     show_by_default: true
                     width: medium
                 code:

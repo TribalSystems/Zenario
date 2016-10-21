@@ -413,7 +413,19 @@ class zenario_comments extends zenario_anonymous_comments {
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		zenario_anonymous_comments::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
-		require funIncPath(__FILE__, __FUNCTION__);
+		switch ($path) {
+			case 'plugin_settings':
+				$hidden = !$values['first_tab/show_user_avatars'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'avatar_', false);
+				
+				$fields['posting/restrict_posting_to_group']['hidden'] = !$values['posting/enable_posting_restrictions'];
+				$fields['moderation/moderators']['hidden'] = !$values['moderation/enable_extranet_moderators'];
+				$fields['moderation/enable_anonymous_report_a_post']['hidden'] = !$values['moderation/enable_report_a_post'];
+				if (isset($values['notification/comment_subs_email_template'])) {
+					$fields['notification/comment_subs_email_template']['hidden'] = !$values['notification/enable_subs'];
+				}
+				
+				break;
+		}
 	}
 }

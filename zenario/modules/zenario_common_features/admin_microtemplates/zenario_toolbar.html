@@ -8,7 +8,16 @@
 		>Organizer</a>
 	</div>
 	<div id="zenario_at_top_left_menu">
-		{{zenarioA.microTemplate('zenario_toolbar_top_left_button', m.sections.top_left_buttons)}}
+		<div class="zenario_admin_toolbar_divider"></div>
+
+		<ul>
+			<li class="zenario_at_top_left_dropdown zenario_at_button_with_children">
+				<a>
+					<span>▼</span>
+				</a>
+				<ul>{{zenarioA.microTemplate('zenario_toolbar_organizer_link', zenarioO.setNavigation(true).items)}}</ul>
+			</li>
+		</ul>
 	</div>
 	<div id="zenario_at_logout_link">
 		<a

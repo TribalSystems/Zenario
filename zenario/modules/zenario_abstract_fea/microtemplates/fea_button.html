@@ -7,4 +7,9 @@
 	<% } %>
 	class="zfea_button {{m.css_class|escape}}"
 	title="{{m.tooltip|escape}}"
->{{m.label|escape}}</a>
+>
+	
+	<span>{{m.label|escape}}</span>
+	{{m.children? '<ul>' + zenario.microTemplate('fea_button_children', m.children) + '</ul>'  : ''}}
+
+</a>

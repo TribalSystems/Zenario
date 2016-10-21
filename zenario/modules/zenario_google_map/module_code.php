@@ -38,28 +38,31 @@ class zenario_google_map extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
-		$this->forcePageReload();
-		$this->callScript('zenario_google_map', 'initMap', $this->setting("address"),'object_in_' . $this->containerId,$this->phrase( "_GOOGLE_COULD_NOT_FIND_ADDRESS", array( 'address' => $this->setting( 'address' ) ) ));
+		$this->callScript(
+			'zenario_google_map', 
+			'initMap', 
+			$this->setting("address"),
+			'object_in_' . $this->containerId,
+			$this->phrase( "_GOOGLE_COULD_NOT_FIND_ADDRESS", array( 'address' => $this->setting( 'address' ))),
+			httpOrhttps() .'maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key'))
+		);
 		return true;
 	}
 	
-	function addToPageHead() {
-		if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
-			define('ZENARIO_GOOGLE_MAP_ON_PAGE', true);
-			echo '
-				<script src="' . httpOrhttps() .'maps.google.com/maps/api/js?sensor=false&key=' . urlencode(setting('google_maps_api_key')) . '" type="text/javascript"></script>';
-		}
-	}
-	
 	function showSlot() {
-		$output = '
-			<div id="object_in_' . $this->containerId.'" style="height: '.$this->setting('height').'px; width: '.$this->setting('width').'px;"></div>
-		';
-		
+		$output = '<div id="object_in_' . $this->containerId.'" style="height: '.$this->setting('height').'px; width: '.$this->setting('width').'px;"></div>';
 		$this->framework('Outer',array("googlemap" => $output));		
 	}
 	
 	public function showStandalonePage() {
 		require funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		switch ($path) {
+			case 'plugin_settings':
+				$this->showHideImageOptions($fields, $values, 'first_tab', false, '', false);
+				break;
+		}
 	}
 }

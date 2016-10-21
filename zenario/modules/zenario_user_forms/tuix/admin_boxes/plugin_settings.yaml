@@ -1,5 +1,3 @@
-# You must use a tab-size of 4 spaces to edit this file.
----
 plugin_settings:
     module_class_name: zenario_user_forms
     tabs:
@@ -43,17 +41,29 @@ plugin_settings:
                         This text will be translated
                     validation:
                         required_if_not_hidden: Please enter text to be used as a link to the form
-                checkbox_columns:
+                    indent: 1
+                show_fullscreen_button:
                     plugin_setting:
-                        name: checkbox_columns
-                    label: 'Checkbox columns:'
-                    type: select
-                    values:
-                        1: 1
-                        2: 2
-                        3: 3
-                        4: 4
-                        5: 5
-                        6: 6
+                        name: show_fullscreen_button
+                    label: 'Show fullscreen button'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
+                show_print_page_button:
+                    plugin_setting:
+                        name: show_print_page_button
+                    label: 'Show print page button'
+                    type: checkbox
+                    indent: 1
+                    visible_if: zenarioAB.value('display_mode') == 'inline_in_page'
+                    redraw_onchange: true
+                print_page_button_pages:
+                    plugin_setting:
+                        name: print_page_button_pages
+                    label: 'Pages to show button on:'
+                    type: text
+                    indent: 2
+                    visible_if: (zenarioAB.value('display_mode') == 'inline_in_page') && zenarioAB.value('show_print_page_button')
+                    side_note: A comma seperated list of page numbers to display the print page button on
                     value: 1
-                    side_note: The number of columns that a multiple checkboxes field will be displayed in. If there aren't at least 2x the number of checkboxes as columns, the list will be displayed in a single column.
+                

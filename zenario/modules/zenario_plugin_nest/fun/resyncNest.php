@@ -29,80 +29,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 $key = array('instance_id' => $instanceId);
 
-switch ($mode) {
-	case 'no_tabs':
-		//Delete any tabs
-		$key['is_tab'] = 1;
-		deleteRow('nested_plugins', $key);
-		
-		break;
-	
-	
-	case 'at_least_one_tab':
-		//Ensure there is at least one tab in the nest
-		$key['is_tab'] = 1;
-		if (!checkRowExists('nested_plugins', $key)) {
-			self::addTab($instanceId);
-		}
-		
-		break;
-	
-	
-	case 'one_tab_per_plugin':
-		//Look for tabs
-		$lastTabNo = false;
-		$lastEggId = false;
-		$tabsToAdd = array();
-		$tabsToInsert = array();
-		
-		$result = getRows('nested_plugins', array('id', 'is_tab', 'tab'), $key, array('tab', 'ord'));
-		while ($row = sqlFetchAssoc($result)) {
-			$key['tab'] = $row['tab'];
-			
-			if ($row['is_tab']) {
-				//Remove any tabs that do not have Plugins with them
-				$key['is_tab'] = 0;
-				if (!checkRowExists('nested_plugins', $key)) {
-					deleteRow('nested_plugins', $row['id']);
-				}
-			
-			} else {
-				//Add tabs for Plugins that do not have them
-				$key['is_tab'] = 1;
-				if ($lastTabNo !== $key['tab'] && !checkRowExists('nested_plugins', $key)) {
-					$tabsToAdd[] = $key['tab'];
-				
-				} elseif ($lastTabNo === $key['tab'] && $lastEggId) {
-					$tabsToInsert[] = $lastEggId;
-				}
-				
-				$lastTabNo = $row['tab'];
-				$lastEggId = $row['is_tab']? false : $row['id'];
-			}
-		}
-		
-		//Add in completely missing tabs
-		foreach ($tabsToAdd as $newTabNum) {
-			self::addTab($instanceId, $title = false, $newTabNum);
-		}
-		
-		//Insert extra tabs where there was more than one Plugin per tab, by adding a new tab
-		//and then bumping all the other numbers up apart from the first Plugin and Tab on that ordinal
-		foreach ($tabsToInsert as $lastEggId) {
-			$oldTabNum = getRow('nested_plugins', 'tab', $lastEggId);
-			$newTabId = self::addTab($instanceId, $title = false, $oldTabNum + 1);
-			
-			$sql = "
-				UPDATE ". DB_NAME_PREFIX. "nested_plugins SET
-					tab = tab + 1
-				WHERE instance_id = ". (int) $instanceId. "
-				  AND id NOT IN (". (int) $lastEggId. ", ". (int) $newTabId. ")
-				  AND (is_tab, tab) NOT IN ((1, ". (int) $oldTabNum. "))
-				  AND tab >= ". (int) $oldTabNum;
-			sqlSelect($sql);  //No need to check the cache as the other statements should clear it correctly
-		}
-		
-		break;
+//Ensure there is at least one tab in the nest
+$key['is_slide'] = 1;
+if (!checkRowExists('nested_plugins', $key)) {
+	self::addTab($instanceId);
 }
 
 
@@ -111,14 +41,14 @@ $tab = 0;
 $ord = 0;
 
 $sql = "
-	SELECT id, tab, ord, is_tab
+	SELECT id, tab, ord, is_slide
 	FROM ". DB_NAME_PREFIX. "nested_plugins
 	WHERE instance_id = ". (int) $instanceId. "
 	ORDER BY tab, ord";
 
 $result = sqlQuery($sql);
 while ($row = sqlFetchAssoc($result)) {
-	if ($row['is_tab']) {
+	if ($row['is_slide']) {
 		//Catch the case where a Plugin was moved before the first tab
 		if ($tab) {
 			//If this is a new tab, reset the ordinal
@@ -136,3 +66,9 @@ while ($row = sqlFetchAssoc($result)) {
 		array('instance_id' => $instanceId, 'id' => $row['id']));
 }
 
+//Catch the case where a "group with above" (-1) plugin is dragged to the first in the row.
+//Change it to a "full width" (0) plugin.
+$key['is_slide'] = 0;
+$key['ord'] = 1;
+$key['cols'] = -1;
+updateRow('nested_plugins', array('cols' => 0), $key);

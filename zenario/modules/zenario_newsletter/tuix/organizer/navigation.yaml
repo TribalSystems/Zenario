@@ -3,6 +3,7 @@
 zenario__email_template_manager:
     nav:
         newsletters:
+            css_class: zenario_newsletter_draft
             label: Newsletters
             tooltip: Write a Newsletter and send it to registered Users
             link:

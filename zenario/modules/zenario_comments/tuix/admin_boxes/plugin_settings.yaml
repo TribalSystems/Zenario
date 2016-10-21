@@ -1,6 +1,7 @@
 # You must use a tab-size of 4 spaces to edit this file.
 ---
 plugin_settings:
+    module_class_name: zenario_comments
     tabs:
         first_tab:
             label: Display
@@ -22,7 +23,7 @@ plugin_settings:
                 avatar_width:
                     plugin_setting:
                         name: avatar_width
-                    label: 'Maximum width:'
+                    label: 'Width:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a width.
@@ -31,10 +32,11 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1
                 avatar_height:
                     plugin_setting:
                         name: avatar_height
-                    label: 'Maximum Height:'
+                    label: 'Height:'
                     type: text
                     validation:
                         required_if_not_hidden: Please enter a Height.
@@ -43,9 +45,7 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    note_below: >
-                        Images may be scaled down maintaining aspect ratio, but will
-                        never be scaled up.
+                    indent: 1
                 show_user_join_dates:
                     plugin_setting:
                         name: show_user_join_dates
@@ -64,7 +64,7 @@ plugin_settings:
                     label: 'Show User online status'
                     type: checkbox
                     value: ""
-                    note_below: |
+                    side_note: |
                         If a user has looked at a comments plugin or a forum plugin within the last 10 minutes,
                         they will be classified as &quot;online&quot;.
                         
@@ -169,7 +169,7 @@ plugin_settings:
                     label: 'Restrict comment writing by group'
                     type: checkbox
                     value: ""
-                    note_below: |
+                    side_note: |
                         Only members of the stated group are allowed to write comments.
                         Users in the moderation group, and administrators with the &quot;Moderate User Comments&quot; permission,
                         will always be able to write comments.
@@ -192,6 +192,7 @@ plugin_settings:
                     value: ""
                     validation:
                         required_if_not_hidden: Please select a group.
+                    indent: 1
         moderation:
             label: Moderation
             fields:
@@ -208,7 +209,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                    note_below: |
+                    side_note: |
                         Administrators with the &quot;Moderate User Comments&quot; permission will always be able to moderate.
                 moderators:
                     plugin_setting:
@@ -228,6 +229,7 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a group.
                     value: ""
+                    indent: 1
                 separator:
                     full_width: true
                     snippet:
@@ -252,7 +254,8 @@ plugin_settings:
                     label: 'Allow anonymous reporting'
                     type: checkbox
                     value: ""
-                    note_below: If enabled, any visitor can report abuse.
+                    side_note: If enabled, any visitor can report abuse.
+                    indent: 1
                 email_template_for_reports:
                     plugin_setting:
                         name: email_template_for_reports
@@ -272,14 +275,13 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_report
-                    note_below: _insert_email_template_note_here_
                 comments_require_approval:
                     plugin_setting:
                         name: comments_require_approval
                     label: 'Screen comments'
                     type: checkbox
                     format_onchange: true
-                    note_below: >
+                    side_note: >
                         If enabled, comments must be approved by a moderator before
                         they go live.
                 email_template_for_approve_requests:
@@ -301,7 +303,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_awaiting_approval
-                    note_below: _insert_email_template_note_here_
                 email_address_for_reports:
                     plugin_setting:
                         name: email_address_for_reports
@@ -315,7 +316,7 @@ plugin_settings:
                         emails: >
                             Please ensure all the email addresses you have entered are
                             valid.
-                    note_below: Separate multiple addresses with commas.
+                    side_note: Separate multiple addresses with commas.
         notification:
             label: Notification
             fields:
@@ -347,7 +348,7 @@ plugin_settings:
                         emails: >
                             Please ensure all the email addresses you have entered are
                             valid.
-                    note_below: Separate multiple addresses with commas.
+                    side_note: Separate multiple addresses with commas.
                 notification_email_template:
                     plugin_setting:
                         name: notification_email_template
@@ -367,7 +368,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__to_admin_comment_notification_en
-                    note_below: _insert_email_template_note_here_
                 separator:
                     full_width: true
                     snippet:
@@ -403,5 +403,4 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_comments__comment_subs_en
-                    note_below: _insert_email_template_note_here_
-    module_class_name: zenario_comments
+                    indent: 1

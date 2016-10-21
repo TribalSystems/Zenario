@@ -10,4 +10,6 @@ require CMS_ROOT . 'zenario/libraries/mit/jquery/jquery-ui.progressbar.min.js';
 echo "\n/**/\n";
 require CMS_ROOT . 'zenario/libraries/mit/jquery/jquery-ui.autocomplete.min.js';
 echo "\n/**/\n";
+require CMS_ROOT . 'zenario/libraries/mit/jsExpressionEval/parser.js';
+echo "\n/**/\n";
 require 'plugin.min.js';

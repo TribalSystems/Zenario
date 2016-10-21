@@ -617,9 +617,7 @@ class zenario_advanced_search extends module_base_class {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['pagination_style']['values'] = 
-					paginationOptions();
-				
+				$fields['first_tab/pagination_style']['values'] = paginationOptions();
 				break;
 		}
 	}
@@ -627,9 +625,12 @@ class zenario_advanced_search extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['first_tab']['fields']['hide_private_items']['hidden'] = 
+				$fields['first_tab/hide_private_items']['hidden'] = 
 					!$values['first_tab/show_private_items'];
-					$this->showHideImageOptions($fields, $values, 'sticky_image', !$values['show_default_stick_image']);
+				
+				$fields['first_tab/sticky_image_show']['hidden'] = !$values['first_tab/show_default_stick_image'];
+				$hidden = !($values['first_tab/show_default_stick_image'] && $values['first_tab/sticky_image_show']);
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'sticky_image_');
 				break;
 		}
 	}

@@ -29,10 +29,16 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 
 //Duplicate a Plugin
-if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && (!$nestedItem['is_tab'])) {
-	if ($newNestedItemId = self::addPlugin($nestedItem['module_id'], $instanceId, $tab = false)) {
+if (($nestedItem = getNestDetails($nestedItemId, $instanceId)) && (!$nestedItem['is_slide'])) {
+	if ($newNestedItemId = self::addPlugin($nestedItem['module_id'], $instanceId, $nestedItem['tab'])) {
 		
-		updateRow('nested_plugins', array('name_or_title' => $nestedItem['name_or_title'], 'framework' => $nestedItem['framework'], 'css_class' => $nestedItem['css_class']), $newNestedItemId);
+		updateRow('nested_plugins', array(
+			'name_or_title' => $nestedItem['name_or_title'],
+			'framework' => $nestedItem['framework'],
+			'css_class' => $nestedItem['css_class'],
+			'cols' => $nestedItem['cols'],
+			'small_screens' => $nestedItem['small_screens']
+		), $newNestedItemId);
 		
 		$sql = "
 			INSERT INTO ". DB_NAME_PREFIX. "plugin_settings (

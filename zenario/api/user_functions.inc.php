@@ -244,9 +244,7 @@ function countSmartGroupMembers($smartGroupId) {
 		WHERE TRUE
 		". smartGroupSQL($smartGroupId);
 	
-	$result = sqlSelect($sql);
-	$row = sqlFetchRow($result);
-	return $row[0];
+	return sqlFetchValue($sql);
 }
 
 cms_core::$whitelist[] = 'checkUserIsInSmartGroup';
@@ -471,6 +469,12 @@ function saveUser($values, $id = false, $doSave = true) {
 		}
 	}
 	
+	//Backwards compatability for a couple of renamed columns
+	if (!isset($values['last_login_ip']) && isset($values['ip'])) {
+		$values['last_login_ip'] = $values['ip'];
+		unset($values['ip']);
+	}
+	
 	
 	if (!$id) {
 		$values['created_date'] = now();
@@ -502,6 +506,17 @@ function saveUser($values, $id = false, $doSave = true) {
 		if (isset($values['password'])) {
 			$password = $values['password'];
 			unset($values['password']);
+		}
+		
+		if ($id && !empty($values['status']) && $status == 'contact') {
+			$values['parent_id'] = 0;
+			$sql = '
+				UPDATE ' . DB_NAME_PREFIX . 'users u
+				INNER JOIN ' . DB_NAME_PREFIX . 'users u2
+					ON u.parent_id = u2.id
+				SET u.parent_id = 0
+				WHERE u2.id = ' . (int)$id;
+			sqlUpdate($sql);
 		}
 		
 		//Save the details to the database
@@ -552,7 +567,7 @@ function logUserIn($userId, $impersonate = false) {
 		$sql = "
 			UPDATE " . DB_NAME_PREFIX . "users SET
 				session_id = '". sqlEscape(session_id()). "',
-				ip = '". sqlEscape(visitorIP()). "',
+				last_login_ip = '". sqlEscape(visitorIP()). "',
 				last_login = NOW()
 			WHERE id = ". (int) $userId;
 		sqlUpdate($sql);

@@ -95,6 +95,10 @@ body.webkit input {
 	margin-bottom: 20px;
 }
 
+.welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__next {
+	text-align: center;
+}
+
 .welcome div.thickbox_table .zenario_ab_row.zenario_ab_row__code {
 	margin-bottom: 20px;
 }
@@ -354,6 +358,149 @@ body.webkit input {
 	width: 90%;
 }
 
+/* Logo */
+
+
+.welcome div.Tokenize ul,
+.welcome div.Tokenize ul li {
+	padding:0;
+	margin:0;
+	list-style:none;
+	/*display: inline-block;*/
+    position: relative;
+}
+
+.welcome div.Tokenize {
+	margin-top: 10px;
+	width:99%;
+	min-height:120px;
+	border:1px solid #d9dadb;
+	background:#FFF;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+}
+
+.welcome .Tokenize .TokensContainer {
+	width: 380px;
+	width:calc(100% - 6px);
+	height: auto;
+	overflow-y: hidden;
+	padding:2px;
+}
+
+.welcome .zenario_row_input_button {
+    float: left;
+}
+
+.welcome .zenario_row_input_button .form_picked_item {
+	background-color: transparent !important;
+	border: none;
+	width: 100%;
+}
+
+.welcome .Tokenize .TokensContainer .Token {
+	width:calc(100% - 12px);
+	height: auto;
+}
+
+.welcome div.Tokenize ul.TokensContainer li {
+	white-space:nowrap;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token {   
+	overflow:hidden;
+	background-color: #eff2f7;
+    border: 1px solid #ccd5e3;
+    line-height: 18px;
+    padding: 5px 5px;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token, 
+.welcome div.Tokenize ul.TokensContainer li.TokenSearch {
+	margin:0;
+	float:left;
+}
+
+.welcome  div.Tokenize ul.TokensContainer li.Token a.Close {
+	color: #a6b4ce;
+    cursor: pointer;
+    float: right;
+    font-family: Arial,Helvetica,sans-serif !important;
+    font-size: 16px !important;
+    line-height: 18px;
+	margin:0 2px 0 3px !important;
+    padding: 0;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token a.Close,
+.welcome div.Tokenize ul.TokensContainer li.Token span {
+	height:auto;
+	min-height:22px;
+	line-height:22px !important;
+}
+
+.welcome div.Tokenize ul.TokensContainer li.Token a.Close:hover {
+	text-decoration:none;
+}
+
+.welcome div.TokenizeMeasure, 
+.welcome div.Tokenize ul li span, 
+.welcome div.Tokenize ul.TokensContainer li.TokenSearch input {
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 12px;
+}
+
+.welcome  div.Tokenize ul.TokensContainer li.Token span.zfea_picked_file_wrapper img {
+	margin-top:2px;
+}
+
+.welcome div.Tokenize ul.TokensContainer, 
+.welcome div.Tokenize ul.Dropdown {
+	border:0;
+	margin:1px;
+}
+
+.welcome div.Tokenize .zfea_picked_file_wrapper {
+	float:left;
+	min-width:20px;
+	padding-right:0.5em;
+}
+
+.welcome div.Tokenize .TokensContainer .Placeholder {
+	opacity: 1;
+	line-height:22px;
+	padding:0 0 0 5px;
+}
+
+.welcome div.Tokenize .TokenSearch {
+	display: none;
+}
+
+.welcome input[type="button"].launch_keeper {
+	font-size: 1.1em;
+	background: #0099a9;
+    border: 0;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    display: inline-block;
+    -webkit-transition: all 0.2s ease-in-out;
+    -moz-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    text-align: center;
+    color: #FFF;
+    padding: 0 10px;
+    height: 34px;
+    line-height: 32px;
+    cursor: pointer;
+}
+
+.welcome input[type="button"].launch_keeper,
+.welcome input[type="button"].launch_keeper:hover {
+	background:transparent;
+	color:#0099a9;
+}
 
 /* Buttons */
 
@@ -386,12 +533,11 @@ body.webkit input {
 	font-size:12px;
 }
 
-.welcome div.thickbox_table input.begin_installation
-{
+.welcome div.thickbox_table input.begin_installation {
 	-moz-border-radius:20px 20px 20px 20px;
 	-moz-box-shadow:0 1px 5px #999999;
 	border:1px solid #ABB4BB;
-	padding:12px 30px 12px 20px;
+	padding:12px 20px 12px 20px;
 }
 .welcome div.thickbox_table div#row__zenario_siteconfig textarea#zenario_siteconfig{
 	line-height: 16px;

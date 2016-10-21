@@ -535,6 +535,12 @@ additionalProperties:
                                         Causes a field to always be drawn as a read-only field, even if
                                         edit mode is enabled.
                                 
+                                css_class:
+                                    type: string
+                                    description: >
+                                        This property allows you to place a CSS class name on the field.
+                                        
+                                        This works from version 7.4 onwards.
                                 row_class:
                                     type: string
                                     description: >
@@ -826,6 +832,45 @@ additionalProperties:
                                         #    type: boolean
                                         #    description: >
                                         #        This hides the remove button from the interface.
+                                        
+                                        visible_if_for_all_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated; if it's true for an item then that item is be pickable.
+                                        
+                                        disabled_if_for_all_selected_items:
+                                            type: string
+                                            description: >
+                                                A snippet of JavaScript code to be evaluated; if it's false for an item then that item is be pickable.
+                                
+                                        traits:
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                            description: >
+                                                Only allow items with all the listed traits to be picked.
+                                                
+                                                Warning: this feature is deprecated!
+                                        without_traits:
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                            description: >
+                                                Only allow items without any of the listed traits to be picked.
+                                                
+                                                Warning: this feature is deprecated!
+                                        with_columns_set:
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                            description: >
+                                                Only allow items with the listed columns set to be picked.
+                                        without_columns_set:
+                                            type: object
+                                            additionalProperties:
+                                                type: *variable
+                                            description: >
+                                                Only allow items where the listed columns are empty to be picked.
                                 
                                 
                                 snippet:
@@ -845,6 +890,9 @@ additionalProperties:
                                         -
                                             required:
                                                 - separator
+                                        -
+                                            required:
+                                                - show_split_values_from
                                     properties:
                                         html:
                                             type: string
@@ -881,6 +929,17 @@ additionalProperties:
                                                     type: string
                                                     description: >
                                                         Any inline styles you wish to add to your <hr> property.
+                                        
+                                        show_split_values_from:
+                                            type: string
+                                            description: >
+                                                This can be used to draw the second part of a "type: radios" field
+                                                that was split up by using the  "split_values_if_selected"
+                                                property on one or more of it's fields.
+                                                
+                                                If no values were split, then this field will be auto-hidden.
+                                                
+                                                This works from version 7.4 onwards.
                                 
                                 
                                 value:
@@ -1397,6 +1456,18 @@ additionalProperties:
                                                     Options will be disabled/unselectable if the code provided does not evaluate to <code>true</code>.
             
                                                     See http://zenar.io/visibility-in-tuix for examples.
+                                            
+                                            
+                                            split_values_if_selected:
+                                                type: boolean
+                                                description: >
+                                                    Use this to split a "type: radios" field into two parts, and to sandwich conditional fields inbetween the values.
+                                                    
+                                                    If a "split_values_if_selected" field is selected, it the toolkit will delay the drawing the remaining values
+                                                    until it seems a snippet with the show_split_values_from property set to this field's code name.
+                                                    
+                                                    This works from version 7.4 onwards.
+                                            
                                             accesskey:
                                                 type: *stringy
                                                 description: Sets the accesskey HTML attribute on a checkbox or radio option.

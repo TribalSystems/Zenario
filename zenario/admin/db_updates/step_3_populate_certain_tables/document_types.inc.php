@@ -109,6 +109,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		('jpe', 'image/jpeg', 0),
 		('jpeg', 'image/jpeg', 0),
 		('jpg', 'image/jpeg', 0),
+		('json', 'application/json', 0),
 		('latex', 'application/x-latex', 0),
 		('lha', 'application/octet-stream', 0),
 		('lsf', 'video/x-la-asf', 0),

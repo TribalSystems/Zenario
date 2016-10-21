@@ -51,6 +51,8 @@ class zenario_common_features__organizer__plugins extends module_base_class {
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
 		if ($path != 'zenario__modules/panels/plugins') return;
 		
+		$panel['key']['skinId'] = request('skinId');
+		
 		
 		if (get('refiner__plugin') && !isset($_GET['refiner__all_instances'])) {
 			$panel['title'] =

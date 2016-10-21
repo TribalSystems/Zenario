@@ -31,6 +31,7 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1
                 avatar_height:
                     plugin_setting:
                         name: avatar_height
@@ -43,9 +44,10 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    note_below: >
+                    side_note: >
                         Images may be scaled down maintaining aspect ratio, but will
                         never be scaled up.
+                    indent: 1
                 show_user_join_dates:
                     plugin_setting:
                         name: show_user_join_dates
@@ -64,7 +66,7 @@ plugin_settings:
                     label: 'Show user online status'
                     type: checkbox
                     value: ""
-                    note_below: |
+                    side_note: |
                         If a user has looked at a comments plugin or a forum plugin within the last 10 minutes,
                         they will be classified as &quot;online&quot;.
                         
@@ -101,9 +103,6 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    note_below: >
-                        Images may be scaled down maintaining aspect ratio, but will
-                        never be scaled up.
                 image_thumbnail_height:
                     plugin_setting:
                         name: image_thumbnail_height
@@ -116,9 +115,6 @@ plugin_settings:
                     maxlength: 5
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
-                    note_below: >
-                        Images may be scaled down maintaining aspect ratio, but will
-                        never be scaled up.
         order:
             label: Order and pagination
             fields:
@@ -226,7 +222,7 @@ plugin_settings:
                     label: 'Allow posters to delete their own replies'
                     type: checkbox
                     value: ""
-                    note_below: >
+                    side_note: >
                         Note that Users will not be able to delete the first post of
                         a thread.
                 enable_new_thread_restrictions:
@@ -236,7 +232,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                    note_below: Note that moderators will always be able to add new threads.
+                    side_note: Note that moderators will always be able to add new threads.
                 restrict_new_thread_to_group:
                     plugin_setting:
                         name: restrict_new_thread_to_group
@@ -262,7 +258,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                    note_below: Note that moderators will always be able to post replies.
+                    side_note: Note that moderators will always be able to post replies.
                 restrict_posting_to_group:
                     plugin_setting:
                         name: restrict_posting_to_group
@@ -297,7 +293,7 @@ plugin_settings:
                     type: checkbox
                     value: ""
                     format_onchange: true
-                    note_below: 'Administrators with the &quot;Moderate user comments&quot; permission will always be able to moderate.'
+                    side_note: 'Administrators with the &quot;Moderate user comments&quot; permission will always be able to moderate.'
                 moderators:
                     plugin_setting:
                         name: moderators
@@ -338,7 +334,7 @@ plugin_settings:
                     label: 'Allow anonymous reporting'
                     type: checkbox
                     value: ""
-                    note_below: If enabled, any visitor can report abuse.
+                    side_note: If enabled, any visitor can report abuse.
                 email_template_for_reports:
                     plugin_setting:
                         name: email_template_for_reports
@@ -358,7 +354,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_forum__post_report
-                    note_below: _insert_email_template_note_here_
                 email_address_for_reports:
                     plugin_setting:
                         name: email_address_for_reports
@@ -372,7 +367,7 @@ plugin_settings:
                         emails: >
                             Please ensure all the email addresses you have entered are
                             valid.
-                    note_below: Separate multiple addresses with commas.
+                    side_note: Separate multiple addresses with commas.
         notification:
             label: Notification
             fields:
@@ -404,7 +399,7 @@ plugin_settings:
                         emails: >
                             Please ensure all the email addresses you have entered are
                             valid.
-                    note_below: Separate multiple addresses with commas.
+                    side_note: Separate multiple addresses with commas.
                 new_thread_notification_email_template:
                     plugin_setting:
                         name: new_thread_notification_email_template
@@ -424,7 +419,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_forum__to_admin_new_thread_notification_en
-                    note_below: _insert_email_template_note_here_
                 post_notification_email_template:
                     plugin_setting:
                         name: post_notification_email_template
@@ -444,7 +438,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template.
                     value: zenario_forum__to_admin_post_notification_en
-                    note_below: _insert_email_template_note_here_
                 separator:
                     full_width: true
                     snippet:
@@ -480,7 +473,6 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template for new threads.
                     value: zenario_forum__new_thread_subs_en
-                    note_below: _insert_email_template_note_here_
                 enable_thread_subs:
                     plugin_setting:
                         name: enable_thread_subs
@@ -507,5 +499,4 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select an email template for new posts.
                     value: zenario_forum__post_subs_en
-                    note_below: _insert_email_template_note_here_
     module_class_name: zenario_forum

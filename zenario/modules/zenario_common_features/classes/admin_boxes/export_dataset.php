@@ -85,6 +85,11 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			$rowTemplate[$row['db_column']] = '';
 		}
 		
+
+		if ($dataset['system_table'] == 'users' && inc('zenario_user_activity_bands') && setting('zenario_user_activity_bands__add_activity_band_column')) {
+			$datasetColumns[] = 'activity_bands';
+		}
+		
 		// Array of tables to get data from
 		$recordTables = array(
 			array(
@@ -134,8 +139,13 @@ class zenario_common_features__admin_boxes__export_dataset extends module_base_c
 			uksort($data[$recordId], function($a, $b) use ($datasetFields) {
 				return $datasetFields[$a]['ord'] > $datasetFields[$b]['ord'] ? 1 : -1;
 			});
+			
+			if ($dataset['system_table'] == 'users' && inc('zenario_user_activity_bands') && setting('zenario_user_activity_bands__add_activity_band_column')) {
+				$data[$recordId][] = zenario_user_activity_bands::getUserActivityBands($recordId);
+			}
 		}
 		
+
 		$downloadFileName = $dataset['label'].' export '.date('Y-m-d');
 		if ($values['download/type'] == 'csv') {
 			$columnCount = count($datasetColumns);

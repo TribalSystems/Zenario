@@ -83,7 +83,7 @@ class zenario_common_features__organizer__phrases extends module_base_class {
 			$ord = 2;
 			foreach ($languages as $language) {
 		
-				if ($panel['key']['language_id']
+				if (!empty($panel['key']['language_id'])
 				 && $panel['key']['language_id'] == $language['id']) {
 					$dbColumnText = "vp.local_text";
 					$dbColumnFlag = "vp.protect_flag";

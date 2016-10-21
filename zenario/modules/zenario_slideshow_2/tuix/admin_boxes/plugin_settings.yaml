@@ -48,7 +48,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em; text-align: right'
                     post_field_html: '&nbsp;pixels'
-                    
+                    indent: 1
                 banner_height:
                     plugin_setting:
                         name: banner_height
@@ -61,7 +61,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em; text-align: right'
                     post_field_html: '&nbsp;pixels'
-                    
+                    indent: 1
                 slide_duration:
                     plugin_setting:
                         name: slide_duration
@@ -195,6 +195,7 @@ plugin_settings:
                             ord: 5
                             label: Resize and crop
                     format_onchange: true
+                    indent: 1
                 mobile_width:
                     plugin_setting:
                         name: mobile_width
@@ -204,6 +205,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 mobile_height:
                     plugin_setting:
                         name: mobile_height
@@ -213,8 +215,10 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
+                    indent: 2
                 desktop_resize_greater_than_image:
                     plugin_setting: 
                         name: desktop_resize_greater_than_image
                     label: Allow the image to be resized greater than its original size
                     type: checkbox
+                    indent: 1

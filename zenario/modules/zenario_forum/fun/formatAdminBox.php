@@ -52,7 +52,8 @@ switch ($path) {
 		$box['tabs']['notification']['fields']['post_subs_email_template']['hidden'] = 
 			!$values['notification/enable_thread_subs'];
 		
-		zenario_comments::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		$this->showHideImageOptions($fields, $values, 'first_tab', false, 'image_thumbnail_', false, 'Image thumbnail size (width × height):');
 		
+		zenario_comments::formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
 		break;
 }

@@ -282,8 +282,8 @@ zenario__content:
                 move_documents:
                     parent: actions_dropdown
                     hide_in_select_mode: true
-                    label: Move selected document
-                    multiple_select_label: Move selected documents
+                    label: Move to folder...
+                    multiple_select_label: Move to folder...
                     multiple_select: true
                     admin_box:
                         path: zenario_document_move
@@ -291,7 +291,7 @@ zenario__content:
                 upload_replacement_document:
                     parent: actions_dropdown
                     hide_in_select_mode: true
-                    label: Upload replacement document
+                    label: Upload a replacement
                     admin_box:
                         path: zenario_upload_replacement_document
                 

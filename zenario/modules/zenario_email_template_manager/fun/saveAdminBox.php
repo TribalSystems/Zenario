@@ -61,6 +61,11 @@ switch ($path) {
 			syncInlineFileLinks($files, $columns['body'], $htmlChanged);
 		}
 		
+		if (engToBooleanArray($box['tabs']['advanced'], 'edit_mode', 'on')) {
+			exitIfNotCheckPriv('_PRIV_MANAGE_EMAIL_TEMPLATE');
+			$columns['head'] = $values['advanced/head'];
+		}
+		
 		if (!empty($columns)) {
 			$columns['date_modified'] = now();
 			$columns['modified_by_id'] = adminId();

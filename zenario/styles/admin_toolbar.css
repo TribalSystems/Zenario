@@ -101,31 +101,6 @@
 	background:url('../admin/images/zenario-insignia.png') #000 no-repeat center;
 }
 
-#zenario_at_top_left_menu {
-	display: block;
-	height: 41px;
-	position: absolute;
-	left: 50px;
-	z-index: 102;
-}
-
-#zenario_at_top_left_menu ul {
-	display: block;
-	float: left;
-}
-
-#zenario_at_top_left_menu ul li ul,
-#zenario_at_top_left_menu ul li ul::after {
-	display: none;
-	float: none;
-}
-
-
-#zenario_at_top_left_menu ul:hover li ul,
-#zenario_at_top_left_menu ul li ul::after {
-	display: block;
-}
-
 #zenario_at_organizer_link a:hover {
 	background:url('../admin/images/zenario-insignia.png') #545454 no-repeat center;
 	-webkit-transition: background-color 0.3s ease-out;
@@ -152,12 +127,12 @@
 #zenario_at .zenario_at_container:after,
 #zenario_at .zenario_at_toolbar_container_top:after,
 #zenario_at .zenario_at_toolbar_container_bottom:after {
-    clear: both;
-    content: " ";
-    display: block;
-    font-size: 0;
-    height: 0;
-    visibility: hidden;
+	clear: both;
+	content: " ";
+	display: block;
+	font-size: 0;
+	height: 0;
+	visibility: hidden;
 }
 
 #zenario_at .zenario_at_container {
@@ -168,8 +143,8 @@
 #zenario_at #zenario_at_lower_section,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button {
 	margin: 0 auto;
-    max-width: 960px;
-    min-width: 760px;
+	max-width: 960px;
+	min-width: 760px;
 }
 
 #zenario_at .zenario_at_content:before, 
@@ -178,14 +153,14 @@
 #zenario_at #zenario_at_lower_section:after,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button:before,
 #zenario_at #zenario_at_toolbars .zenario_at_status_button:after {
-    display: block;
-    font-size: 0;
-    height: 0;
-    line-height: 0;
-    overflow: hidden;
-    visibility: hidden;
-    width: 0;
-    content: ".";
+	display: block;
+	font-size: 0;
+	height: 0;
+	line-height: 0;
+	overflow: hidden;
+	visibility: hidden;
+	width: 0;
+	content: ".";
 }
 
 #zenario_at #zenario_at_toolbars div.zenario_at_status_button {
@@ -224,24 +199,24 @@
 }
 
 @keyframes blink {  
-    0% { 	background:#FE8831;}
-    14% { 	background:#FE9C34;}
-    28% { 	background:#FE9616;}
-    42% {	background:#FEA605;}
-    56% {	background:#FEC152;}
-    70% { 	background:#FEA605;}
-    84% { 	background:#FE9C34;}
-    100% { 	background:#FE8831;}
+	0% { 	background:#FE8831;}
+	14% { 	background:#FE9C34;}
+	28% { 	background:#FE9616;}
+	42% {	background:#FEA605;}
+	56% {	background:#FEC152;}
+	70% { 	background:#FEA605;}
+	84% { 	background:#FE9C34;}
+	100% { 	background:#FE8831;}
 }
 @-webkit-keyframes blink {  
-    0% { 	background:#FE8831;}
-    14% { 	background:#FE9C34;}
-    28% { 	background:#FE9616;}
-    42% {	background:#FEA605;}
-    56% {	background:#FEC152;}
-    70% { 	background:#FEA605;}
-    84% { 	background:#FE9C34;}
-    100% { 	background:#FE8831;}
+	0% { 	background:#FE8831;}
+	14% { 	background:#FE9C34;}
+	28% { 	background:#FE9616;}
+	42% {	background:#FEA605;}
+	56% {	background:#FEC152;}
+	70% { 	background:#FEA605;}
+	84% { 	background:#FE9C34;}
+	100% { 	background:#FE8831;}
 }
 
 #zenario_at #zenario_at_toolbars .zenario_at_status_button .zenario_at_publish_button a {
@@ -260,10 +235,10 @@
 	display:inline-block;
 	cursor:pointer;
 	-webkit-animation: blink 2s ease-in-out 2s infinite;
-    -moz-animation: blink 2s ease-in-out 2s infinite;
-    -ms-animation: blink 2s ease-in-out 2s infinite;
-    -o-animation: blink 2s ease-in-out 2s infinite;
-    animation: blink 2s ease-in-out 2s infinite;
+	-moz-animation: blink 2s ease-in-out 2s infinite;
+	-ms-animation: blink 2s ease-in-out 2s infinite;
+	-o-animation: blink 2s ease-in-out 2s infinite;
+	animation: blink 2s ease-in-out 2s infinite;
 }
 
 #zenario_at .zenario_at_tabs_container {
@@ -705,12 +680,16 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 	cursor: pointer;
 }
 
+#zenario_at_top_left_menu .zenario_at_button_with_children ul li a {
+	width: 215px !important;
+}
+
 .zenario_at_icon_alias.zenario_at_button_with_children ul li a {
 	width: 150px!important;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons ul li span {
-    float:none;
+	float:none;
 }
 
 #zenario_at .zenario_at_status_icons_container .zenario_at_status_icons .zenario_at_icon_alias ul li a {
@@ -769,27 +748,27 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 #zenario_at ul ul:after {
-    border-color: #F6F6F6 transparent;
-    border-style: solid;
-    border-width: 0 10px 10px;
-    bottom: 100%;
-    content: "";
-    height: 0;
-    position: absolute;
-    left: 15px;
-    width: 0;
+	border-color: #F6F6F6 transparent;
+	border-style: solid;
+	border-width: 0 10px 10px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	left: 15px;
+	width: 0;
 }
 
 #zenario_at ul ul:before {
-    border-color: #333 transparent;
-    border-style: solid;
-    border-width: 0 12px 12px;
-    bottom: 100%;
-    content: "";
-    height: 0;
-    position: absolute;
-    left: 13px;
-    width: 0;
+	border-color: #333 transparent;
+	border-style: solid;
+	border-width: 0 12px 12px;
+	bottom: 100%;
+	content: "";
+	height: 0;
+	position: absolute;
+	left: 13px;
+	width: 0;
 }
 
 #zenario_at .zenario_at_toolbar ul li li.zenario_at_prev_version_published a,
@@ -806,10 +785,10 @@ body.zenario_pageMode_menu #zenario_at .zenario_at_tabs .zenario_toolbar_on {
 }
 
 #zenario_at ul li.zenario_at_trans_dropdown__missing > a > span::after {
-    color: #ff5600;
-    font-size: 13px;
-    line-height: 13px;
-    content: '⚠';
+	color: #ff5600;
+	font-size: 13px;
+	line-height: 13px;
+	content: '⚠';
 }
 
 #zenario_at ul li {
@@ -1162,11 +1141,11 @@ div.zenario_admin_toolbar div.zenario_section div.zenario_title {
 	min-width: 0;
 	width: auto;
 	padding: 0;
-    line-height: 28px;
-    color: #616161;
-    font-family: Trebuchet MS;
-    font-size: 9pt;
-    cursor: default;
+	line-height: 28px;
+	color: #616161;
+	font-family: Trebuchet MS;
+	font-size: 9pt;
+	cursor: default;
 }
 
 
@@ -1466,10 +1445,32 @@ div.zenario_grid_overlay_view .row {
 	height:100%;
 }
 
+.zenario_admin_toolbar_divider {
+	background-color: #000000;
+	border-left: 1px solid grey;
+	display: block;
+	float: left;
+	width: 1px;
+	height: 41px;
+}
+
 .zenario_at_top_left_menu ul {
 	height: 41px!important;
 	background-color: red!important;
 	list-style: none;
+}
+
+#zenario_at_top_left_menu {
+	display: block;
+	height: 41px;
+	position: absolute;
+	left: 50px;
+	z-index: 102;
+}
+
+#zenario_at_top_left_menu ul {
+	display: block;
+	float: left;
 }
 
 #zenario_at_top_left_menu ul li a {
@@ -1478,6 +1479,7 @@ div.zenario_grid_overlay_view .row {
 	height: 41px;
 	color: #ffffff;
 	display: block;
+	cursor: pointer;
 }
 
 #zenario_at_top_left_menu ul li a:hover {
@@ -1486,6 +1488,27 @@ div.zenario_grid_overlay_view .row {
 	-moz-transition: background-color 0.3s ease-out;
 	-o-transition: background-color 0.3s ease-out;
 	transition: background-color 0.3s ease-out;
+}
+
+#zenario_at_top_left_menu span > span {
+	display: inline-block;
+	width: 33px;
+	height: 35px;
+}
+
+
+/* Top left dropdown, first level */
+
+#zenario_at_top_left_menu ul li ul,
+#zenario_at_top_left_menu ul li ul::after {
+	display: none;
+	float: none;
+}
+
+
+#zenario_at_top_left_menu ul li:hover ul,
+#zenario_at_top_left_menu ul li ul::after {
+	display: block;
 }
 
 #zenario_at_top_left_menu ul li a span {
@@ -1498,7 +1521,7 @@ div.zenario_grid_overlay_view .row {
 
 #zenario_at_top_left_menu ul li ul li a span {
 	top: 0;
-	padding-left: 0;
+	padding-left: 25px;
 }
 
 #zenario_at_top_left_menu ul li ul {
@@ -1515,7 +1538,6 @@ div.zenario_grid_overlay_view .row {
 	height: auto;
 	margin-left: 5px;
 	background-color: #393939;
-	
 }
 
 #zenario_at_top_left_menu ul li ul li a:hover {
@@ -1526,15 +1548,6 @@ div.zenario_grid_overlay_view .row {
 #zenario_at_top_left_menu ul li ul li {
 	margin-top: 10px;
 	margin-bottom: 10px;
-}
-
-.zenario_admin_toolbar_divider {
-	background-color: #000000;
-	border-left: 1px solid grey;
-	display: block;
-	float: left;
-	width: 1px;
-	height: 41px;
 }
 
 #zenario_at_top_left_menu ul li ul::after {
@@ -1548,4 +1561,64 @@ div.zenario_grid_overlay_view .row {
 	width: 0;
 	top: 40px;
 	left: 6px;
+}
+
+#zenario_at_top_left_menu ul li ul li a {
+	width: 150px;
+}
+
+/* Attempt to show the icons from Organizer */
+#zenario_at_top_left_menu ul li a span>span {
+	display: block;
+	width: 1px;
+	height: 35px;
+	float: left;
+	clear: both;
+	position: absolute;
+	margin-top: -10px;
+	margin-left: -10px;
+}
+
+
+
+/* Top left dropdown, second level */
+
+#zenario_at_top_left_menu ul li ul li ul,
+#zenario_at_top_left_menu ul li:hover ul li ul {
+	display: none;
+	float: none;
+	
+	position: absolute;
+	left: 240px;
+	margin-top: -41px;
+}
+
+
+#zenario_at_top_left_menu ul li ul li:hover ul {
+	display: block;
+}
+
+#zenario_at_top_left_menu ul li ul li ul {
+	background-color: #fff;
+	border-color: #c5c5c5;
+}
+
+#zenario_at_top_left_menu ul li ul li ul li a {
+	border-bottom: 1px solid grey;
+	background-color: #fff;
+	color: #000;
+}
+
+#zenario_at_top_left_menu ul li ul li ul li a:hover {
+	background-color: #fff;
+}
+
+#zenario_at_top_left_menu ul li ul li ul::after {
+	border-color: #fff transparent;
+}
+
+/* Attempt to show the icons from Organizer */
+#zenario_at_top_left_menu ul li ul li ul a span>span {
+	margin-left: -4px;
+	margin-top: -7px;
 }

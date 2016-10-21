@@ -247,7 +247,6 @@ methods.showPanel = function($header, $panel, $footer) {
 	this.maxNewCustomTab = 1;
 	this.maxNewCustomField = 1;
 	this.maxNewCustomFieldValue = 1;
-	this.current_db_columns = this.tuix.existing_db_columns;
 	this.deleting = false;
 	
 	
@@ -984,7 +983,7 @@ methods.getCurrentFieldDetailsMergeFields = function() {
 		var childOptions = {};
 		
 		foreach (tab.fields as fieldID => fieldDetails) {
-			if (fieldDetails.type === 'group' || fieldDetails.type === 'checkbox') {
+			if ((fieldDetails.type === 'group' || fieldDetails.type === 'checkbox') && (fieldID != this.current.id)) {
 				childOptions[fieldID] = {
 					ord: fieldDetails.ord,
 					label: fieldDetails.label
@@ -1360,17 +1359,24 @@ methods.save = function() {
 			if (!this.tuix.items[this.current.id]) {
 				this.tuix.items[this.current.id] = {};
 			}
-			foreach (values as id => value) {
-				this.tuix.items[this.current.id][id] = value;
+			if (!this.tuix.items[this.current.id].remove) {
+				foreach (values as id => value) {
+					this.tuix.items[this.current.id][id] = value;
+				}
 			}
+			
+			
 		} else if (this.current.type == 'field') {
 			values = this.getCurrentFieldDetails();
 			if (!this.tuix.items[this.currentTab].fields[this.current.id]) {
 				this.tuix.items[this.currentTab].fields[this.current.id] = {};
 			}
-			foreach (values as id => value) {
-				this.tuix.items[this.currentTab].fields[this.current.id][id] = value;
+			if (!this.tuix.items[this.currentTab].fields[this.current.id].remove) {
+					foreach (values as id => value) {
+					this.tuix.items[this.currentTab].fields[this.current.id][id] = value;
+				}
 			}
+			
 		}
 	}
 };

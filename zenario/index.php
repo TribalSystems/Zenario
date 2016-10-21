@@ -111,6 +111,9 @@ if ($redirectNeeded && empty($_POST) && !($redirectNeeded == 302 && $checkPriv))
 //Run pre-header actions
 require editionInclude('index.pre_header');
 
+//Look variables such as userId, locationId, etc., in the request
+require editionInclude('checkRequestVars');
+
 
 
 //Look up more details on the content item we are going to show
@@ -141,10 +144,11 @@ if ($status === 'no_permission') {
 	header('HTTP/1.0 404 Not Found');
 	langSpecialPage('zenario_not_found', $cID, $cType);
 	$status = getShowableContent($content, $version, $cID, $cType);
+	
 	//Log error if errors module is running
 	if (inc('zenario_error_log')) {
 		$httpReferer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-		$requestURI = $_SERVER['REQUEST_URI'];
+		$requestURI = rtrim($_SERVER['REQUEST_URI'], '/');
 		$URI = explode('/', $requestURI);
 		$pageAlias = end($URI);
 		zenario_error_log::log404Error($pageAlias, $httpReferer);

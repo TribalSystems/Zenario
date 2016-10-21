@@ -429,7 +429,7 @@ plugin_settings:
                         numeric: The width must be a number.
                     value: ""
                     maxlength: "5"
-                    style: 'width: 5em; text-align: right'
+                    style: 'width: 5em;'
                     align_right: 1
                     post_field_html: '&nbsp;pixels'
                     indent: 1
@@ -443,7 +443,7 @@ plugin_settings:
                         numeric: The height must be a number.
                     value: ""
                     maxlength: "5"
-                    style: 'width: 5em; text-align: right'
+                    style: 'width: 5em;'
                     align_right: 1
                     post_field_html: '&nbsp;pixels'
                     indent: 1

@@ -432,24 +432,10 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 					$fields['meta_data/add_to_menu']['pick_items']['hide_select_button'] = true;
 					$fields['meta_data/add_to_menu']['pick_items']['hide_remove_button'] = true;
 				}
-			
-			// If no default menu node position try to calculate it from the current pages menu section
-			} elseif (!empty($box['key']['create_from_toolbar'])) {
-				
-				$currentMenuNode = getMenuItemFromContent($box['key']['from_cID'], $box['key']['from_cType']);
-				if ($currentMenuNode) {
-					$values['meta_data/menu_options'] = 'add_to_menu';
-					
-					$menuNodeId = 0;
-					if ($currentMenuNode['parent_id']) {
-						$menuNodeId = $currentMenuNode['parent_id'];
-					}
-					
-					$values['meta_data/add_to_menu'] = $currentMenuNode['section_id'] . '_' . $menuNodeId . '_1';
-				}
 			}
 			
 			if (isset($box['tabs']['categories']['fields']['categories'])) {
+				
 				setupCategoryCheckboxes($box['tabs']['categories']['fields']['categories'], true);
 		
 				if ($categories = get('refiner__category')) {
@@ -468,10 +454,11 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 						}
 					}
 			
-					$values['categories/categories'] = $categories;
+					$box['tabs']['categories']['fields']['categories']['value'] = implode(',', $categories);
 				}
 			}
 		}
+		
 		if (!$version && $box['key']['target_alias']) {
 			$values['meta_data/alias'] = $box['key']['target_alias'];
 		}
@@ -1007,7 +994,6 @@ class zenario_common_features__admin_boxes__content extends module_base_class {
 				$box['tabs']['meta_data']['errors'][] = adminPhrase('This translation already exists.');
 			}
 		}
-		
 	}
 	
 	

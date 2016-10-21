@@ -1,0 +1,14 @@
+<li class="
+	{{m.css_class|escape}}
+">
+	<a
+		class="{{m.css_class|escape}}"
+		<% if (m.href) { %>
+			href="{{m.href|escape}}"
+		<% } %>
+		<% if (m.onclick) { %>
+			onclick="{{m.onclick|escape}}"
+		<% } %>
+		title="{{m.tooltip|escape}}"
+	>{{m.label|escape}}</a>
+</li>

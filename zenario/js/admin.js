@@ -48,6 +48,8 @@ zenario.lib(function(
 	"use strict";
 
 
+phrase = phrase || {};
+
 zenarioA.init = true;
 zenarioA.menuWandOn = true;
 zenarioA.slotWandOn = false;
@@ -122,7 +124,7 @@ zenarioA.closeInfoBox = function() {
 	zenarioA.closeBox('AdminInfoBox');
 };
 
-zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage) {
+zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEscapeMessage, addCancel) {
 	var end = false,
 		hadCommand = false;
 
@@ -233,14 +235,16 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 		 && zenarioO.path
 		 && zenarioA.isFullOrganizerWindow) {
 			buttonsHTML =
-				'<input type="button" value="' + phrase.login + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">' +
-				'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(URLBasePath);"/>';
+				'<input type="button" value="' + phrase.login + '" class="submit_selected" onclick="zenarioO.reloadPage(undefined, true);">';
+			
+			addCancel = "zenario.goToURL(URLBasePath);";
+		
 		} else {
 			buttonsHTML = 
 				'<input type="button" value="' + phrase.login + '" class="submit_selected"' +
-				' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));">' +
-				'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));"/>';
-	
+				' onclick="zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests, true));">';
+			
+			addCancel = "zenario.goToURL(zenario.linkToItem(zenario.cID, zenario.cType, zenarioA.importantGetRequests));";
 		}
 		
 		message = message.substr(17);
@@ -260,6 +264,14 @@ zenarioA.showMessage = function(message, buttonsHTML, messageType, modal, htmlEs
 			message = message.substr(0, end);
 		} catch (e) {
 		}
+	}
+	
+	if (addCancel) {
+		if (addCancel === true) {
+			addCancel = '';
+		}
+		buttonsHTML += 
+			'<input type="button" class="submit" value="' + phrase.cancel + '" onclick="' + jsEscape(addCancel) + '"/>';
 	}
 
 	zenarioA.floatingBox(message, buttonsHTML, messageType, modal, htmlEscapeMessage);
@@ -573,10 +585,18 @@ zenarioA.checkSpecificPermsOnThisPage = function() {
 	//the CSS class zenario_slotParent should be added just above that slot.
 	//When you move your mouse to another slot, the CSS class should be immediately removed from that slot, and its Plugin Options dropdown should be immediately closed.
 	//When you move your mouse away from the slot, but not over another slot, it should be removed after a short delay.
-zenarioA.slotParentMouseOverLastId = false;
+var slotParentMouseOverLastId = false,
+	slotControlHide = false,
+	slotControlHoverInterval = 1500,
+	slotControlCloseInterval = 100,
+	openSlotControlsBox = false,
+	wasFromAdminToolbar = false,
+	slotControlClose;
+
+
 zenarioA.slotParentMouseOver = function(event) {
-	if (zenarioA.slotControlHide) {
-		clearTimeout(zenarioA.slotControlHide);
+	if (slotControlHide) {
+		clearTimeout(slotControlHide);
 	}
 	
 	$('.zenario_slotParent').removeClass('zenario_slotParent');
@@ -591,35 +611,34 @@ zenarioA.slotParentMouseOver = function(event) {
 			$('#' + id).parent().addClass('zenario_slotParent');
 		}
 		
-		if (zenarioA.slotParentMouseOverLastId && zenarioA.slotParentMouseOverLastId != id) {
+		if (slotParentMouseOverLastId && slotParentMouseOverLastId != id) {
 			zenarioA.closeSlotControls();
 		}
-		zenarioA.slotParentMouseOverLastId = id;
+		slotParentMouseOverLastId = id;
 	} else {
 		zenarioA.closeSlotControls();
-		zenarioA.slotParentMouseOverLastId = false;
+		slotParentMouseOverLastId = false;
 	}
 };
 
 zenarioA.slotParentMouseOut = function(a) {
-	if (zenarioA.slotControlHide) {
-		clearTimeout(zenarioA.slotControlHide);
+	if (slotControlHide) {
+		clearTimeout(slotControlHide);
 	}
 	
-	zenarioA.slotControlHide = setTimeout(zenarioA.slotParentMouseOver, zenarioA.slotControlHoverInterval);
+	if (!wasFromAdminToolbar) {
+		slotControlHide = setTimeout(zenarioA.slotParentMouseOver, slotControlHoverInterval);
+	}
 };
 
 zenarioA.setSlotParents = function() {
-	$('.zenario_slotAdminControlBox').parent().children().mouseenter(zenarioA.slotParentMouseOver);
-	$('.zenario_slotAdminControlBox').parent().children().mouseleave(zenarioA.slotParentMouseOut);
-	$('#zenario_afb_container .zenario_slotControlsWrap').mouseenter(zenarioA.slotParentMouseOver);
-	$('#zenario_afb_container .zenario_slotControlsWrap').mouseleave(zenarioA.slotParentMouseOut);
+	$('.zenario_slotAdminControlBox').parent().children()
+		.mouseenter(zenarioA.slotParentMouseOver)
+		.mouseleave(zenarioA.slotParentMouseOut);
+	$('#zenario_slotControls .zenario_slotControlsWrap')
+		.mouseenter(zenarioA.slotParentMouseOver)
+		.mouseleave(zenarioA.slotParentMouseOut);
 };
-
-zenarioA.slotControlHide = false;
-zenarioA.slotControlHoverInterval = 1500;
-zenarioA.slotControlCloseInterval = 100;
-$(document).ready(zenarioA.setSlotParents);
 
 
 zenarioA.getGridSlotDetails = function(slotName) {
@@ -717,15 +736,29 @@ zenarioA.getGridSlotDetails = function(slotName) {
 
 /*  Functions for managing plugin slots  */
 
-zenarioA.openSlotControlsBox = false;
-zenarioA.openSlotControls = function(el, e, slotName) {
+zenarioA.openSlotControls = function(el, e, slotName, isFromAdminToolbar) {
 	
-	var closeAsIsAlreadyOpen = $('#zenario_fbAdminSlotControls-' + slotName).is(':visible');
+	var closeAsIsAlreadyOpen = !isFromAdminToolbar && $('#zenario_fbAdminSlotControls-' + slotName).is(':visible'),
+		left,
+		top,
+		thisSlotControlsBox = 'AdminSlotControls-' + slotName;
 	
 	el.blur();
-	zenarioA.closeSlotControls();
+	
+	if (!isFromAdminToolbar
+	  || openSlotControlsBox != thisSlotControlsBox) {
+		zenarioA.closeSlotControls();
+	}
 	
 	if (!closeAsIsAlreadyOpen && zenarioA.checkForEdits()) {
+		
+		//If this was opened from the admin toolbar, keep the drop-down menu open for now
+		if (wasFromAdminToolbar = isFromAdminToolbar) {
+			$('#zenario_at_toolbars .zenario_at_slot_controls ul ul').css('display', 'block');
+			slotParentMouseOverLastId = false;
+		}
+		
+		
 		var width,
 			section,
 			sections = {info: false, notes: false, actions: false, overridden_info: false, overridden_actions: false},
@@ -738,14 +771,18 @@ zenarioA.openSlotControls = function(el, e, slotName) {
 			width = 280;
 		}
 		
-		
-		var left = -width + 34;
-		var top = 32;
+		if (isFromAdminToolbar) {
+			left = 200;
+			top = 0;
+		} else {
+			left = -width + 34;
+			top = 32;
+		}
 		
 		zenarioA.openBox(
 			undefined,
 			get('plgslt_' + slotName + '-wrap').className + ' zenario_fbAdminSlotControls',
-			zenarioA.openSlotControlsBox = 'AdminSlotControls-' + slotName,
+			openSlotControlsBox = thisSlotControlsBox,
 			e, width, left, top, false, false, false, false);
 		
 		//Check that each section has at least one label or button in it. If not, hide that section
@@ -787,21 +824,27 @@ zenarioA.openSlotControls = function(el, e, slotName) {
 };
 
 zenarioA.dontCloseSlotControls = function() {
-	if (zenarioA.slotControlClose) {
-		clearTimeout(zenarioA.slotControlClose);
+	if (slotControlClose) {
+		clearTimeout(slotControlClose);
 	}
 };
 
 zenarioA.closeSlotControlsAfterDelay = function() {
 	zenarioA.dontCloseSlotControls();
-	zenarioA.slotControlClose = setTimeout(zenarioA.closeSlotControls, zenarioA.slotControlCloseInterval);
+	
+	if (!wasFromAdminToolbar) {
+		slotControlClose = setTimeout(zenarioA.closeSlotControls, slotControlCloseInterval);
+	}
 };
 
 zenarioA.closeSlotControls = function() {
 	zenarioA.dontCloseSlotControls();
-	if (zenarioA.openSlotControlsBox) {
-		zenarioA.closeBox(zenarioA.openSlotControlsBox, true, {effect: 'fade', duration: 200});
+	if (openSlotControlsBox) {
+		zenarioA.closeBox(openSlotControlsBox, true, {effect: 'fade', duration: 200});
 		$('.zenario_slotAdminControlBox').removeClass('zenario_adminSlotControlsOpen');
+		
+		//Allow the slot controls on the admin toolbar to be closed once again
+		$('#zenario_at_toolbars .zenario_at_slot_controls ul ul').css('display', '');
 	}
 };
 
@@ -1226,10 +1269,10 @@ zenarioA.checkForEdits = function() {
 
 zenarioA.onbeforeunload = function() {
 	//If any Admin Boxes are open, and look like they might have been changed, set a warning message for if an admin tries to leave the page 
-	if (zenarioAB.isOpen && zenarioAB.editModeOnBox() && (zenarioAB.changes() || zenarioAB.callFunctionOnEditors('isDirty'))) {
+	if (window.zenarioAB && zenarioAB.isOpen && zenarioAB.editModeOnBox() && (zenarioAB.changes() || zenarioAB.callFunctionOnEditors('isDirty'))) {
 		return phrase.leaveAdminBoxWarning;
 	
-	} else if (zenarioSE.isOpen && zenarioSE.editModeOnBox() && (zenarioSE.changes() || zenarioSE.callFunctionOnEditors('isDirty'))) {
+	} else if (window.zenarioSE && zenarioSE.isOpen && zenarioSE.editModeOnBox() && (zenarioSE.changes() || zenarioSE.callFunctionOnEditors('isDirty'))) {
 		return phrase.leaveAdminBoxWarning;
 	
 	//Set a warning if any slots are being edited
@@ -1262,6 +1305,11 @@ zenarioA.openBox = function(html, className, n, e, width, left, top, disablePage
 	var $box,
 		$overlay,
 		zIndex;
+	
+	if (disablePageBelow) {
+		//Stop the page behind from scrolling
+		zenario.disableScrolling(n);
+	}
 	
 	if (disablePageBelow || overlay) {
 		if (!get('zenario_fb' + n + '__overlay')) {
@@ -1499,6 +1547,8 @@ zenarioA.closeBox = function(n, keepHTML, options) {
 	
 	$('#zenario_fb' + n + '__overlay').remove();
 	$('body').removeClass('zenario_fb' + n + '__isOpen');
+	
+	zenario.enableScrolling(n);
 	
 	if (zenarioA.checkIfBoxIsOpen(n)) {
 		document.body.focus();
@@ -2256,7 +2306,7 @@ zenarioA.formatSKItemField = function(value, column) {
 		value += extra;
 	}
 	
-	if (!value && column && column.empty_value) {
+	if ((!value || value === '0') && column && column.empty_value) {
 		value = column.empty_value;
 	}
 	
@@ -2403,8 +2453,8 @@ zenarioA.organizerSelect = function(
 	if (!useIframe) {
 		//If we've not currently got an existing full-Organizer instance in this frame, set Organizer up in a <div>
 		
-		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.8, 50, 10, !skQuick, true, true, {minWidth: 550});
-		//zenarioO.open = function(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
+		zenarioO.open(zenarioA.getSKBodyClass(win), undefined, $(window).width() * 0.8, 50, 10, true, true, true, {minWidth: 550});
+		//zenarioO.open(className, e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement) {
 		
 		zenarioO.init();
 	}
@@ -2417,7 +2467,8 @@ zenarioA.organizerSelect = function(
 		
 	if (useIframe) {
 		//Show the Organizer window
-		zenarioA.openBox(false, zenarioA.getSKBodyClass(win), 'AdminOrganizer', false, false, 50, 2, !skQuick, true, false, false);
+		zenarioA.openBox(false, zenarioA.getSKBodyClass(win), 'AdminOrganizer', false, false, 50, 2, true, true, false, false);
+		//zenarioA.openBox(html, className, 'og', e, width, left, top, disablePageBelow, overlay, draggable, resizable, padding, maxHeight, rightCornerOfElement, bottomCornerOfElement);
 		
 		get('zenario_sk_iframe').style.width = zenario.browserIsIE(6)? '600px' : '96%';
 		if (skQuick) {
@@ -2464,7 +2515,6 @@ zenarioA.multipleLanguagesEnabled = function() {
 	
 	return false;
 };
-
 
 
 //Functions for enabling HTML 5 file-uploads in WYSIWYG Editors and in Organizer Panels
@@ -2716,27 +2766,26 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 		delete zenarioA.draftDoingCallback;
 	}
 	
-	var buttonsHTML,
+	var tuix, section, button, buttonId = 'start_editing',
+		buttonsHTML,
 		object;
 	
 	//Look for the "create a draft" button on the admin toolbar
 	//If we see it, we know this is a published item and we need to create a draft
-	if (zenarioAT.tuix
-	 && zenarioAT.tuix.sections
-	 && zenarioAT.tuix.sections.edit
-	 && zenarioAT.tuix.sections.edit.buttons
-	 && zenarioAT.tuix.sections.edit.buttons.start_editing
-	 && zenarioAT.tuix.sections.edit.buttons.start_editing.ajax
-	 && !zenarioA.hidden(zenarioAT.tuix.sections.edit.buttons.start_editing)) {
+	if ((tuix = zenarioAT.tuix)
+	 && (section = tuix.sections && tuix.sections.edit)
+	 && (button = section.buttons && section.buttons[buttonId])
+	 && (button.ajax
+		 //zenarioA.hidden(tuixObject, item, id, tuix, button, column, field, section, tab)
+	 && !zenarioA.hidden(undefined, undefined, buttonId, tuix, button, undefined, undefined, section))) {
 		
 		//Create a copy of it
-		object = $.extend(true, {}, zenarioAT.tuix.sections.edit.buttons.start_editing);
+		object = zenario.clone(button);
 		
 		delete object.ajax.request.switch_to_edit_mode;
 		
 		//Should we show someone a warning before creating a draft?
-		if (zenarioA.checkSpecificPermsOnThisPage()
-		 && zenarioAT.tuix.sections.edit.buttons.start_editing.ajax.confirm) {
+		if (zenarioA.checkSpecificPermsOnThisPage() && button.ajax.confirm) {
 			
 			//If so, show a confirmation box with up to three options:
 			if (confirmMessage) {
@@ -2773,7 +2822,7 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 			object.ajax.confirm = {
 				message: confirmMessage,
 				button_message: confirmButtonText,
-				cancel_button_message: zenarioA.phrase.cancel,
+				cancel_button_message: phrase.cancel,
 				message_type: 'warning'
 			};
 			
@@ -2797,10 +2846,9 @@ zenarioA.draft = function(aId, justView, confirmMessage, confirmButtonText) {
 	} else if (confirmMessage) {
 		buttonsHTML =
 			'<input type="button" class="submit_selected" value="' + htmlspecialchars(confirmButtonText) + '" onclick="zenarioA.draftDoCallback(\'' + htmlspecialchars(aId) + '\');"/>';
-		buttonsHTML +=
-			'<input type="button" class="submit" value="' + zenarioA.phrase.cancel + '"/>';
 		
-		zenarioA.showMessage(confirmMessage, buttonsHTML, 'warning');
+		zenarioA.showMessage(confirmMessage, buttonsHTML, 'warning', undefined, undefined, true);
+
 		return false;
 	}
 	
@@ -2837,10 +2885,25 @@ zenarioA.draftDoCallback = function(aId) {
 
 
 //Admin Actions
+zenarioA.eval = function(c, tuixObject, item, id, tuix, button, column, field, section, tab) {
+	tuixObject = tuixObject || button || column || field || item || section || tab;
+	
+	var ev = zenarioA.doEval(c + '', tuixObject, item, id, tuix, button, column, field, section, tab);
+	
+	if (typeof ev == "function") {
+		ev = ev(tuixObject, item, id, tuix, button, column, field, section, tab);
+	}
+	
+	return zenario.engToBoolean(ev);
+};
 
 
-zenarioA.hidden = function(tuixObject, checkJsFunction, item, id) {
+
+
+zenarioA.hidden = function(tuixObject, item, id, tuix, button, column, field, section, tab) {
 	var c;
+	tuixObject = tuixObject || button || column || field || item || section || tab;
+	
 	//tuixObject._was_hidden_before = true;
 	
 	if (engToBoolean(tuixObject.hidden)) {
@@ -2849,7 +2912,7 @@ zenarioA.hidden = function(tuixObject, checkJsFunction, item, id) {
 	//Check a JavaScript condition (which used to be called "js_condition" but is now called "visible_if")
 	} else if (c = tuixObject.visible_if || tuixObject.js_condition) {
 		//try {
-			if (!zenarioA.eval(c, tuixObject, item, id)) {
+			if (!zenarioA.eval(c, tuixObject, item, id, tuix, button, column, field, section, tab)) {
 				return true;
 			}
 		//} catch (e) {
@@ -2947,7 +3010,7 @@ zenarioA.checkActionUnique = function(object) {
 };
 
 //Handle what happens when an admin clicks on something that will cause an action; e.g. a button on the admin toolbar or a button on a Organizer Panel's Toolbar
-zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, link, extraRequests, specificItemRequested) {
+zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, link, extraRequests, specificItemRequested, AJAXURL) {
 	if (zenarioCallingLibrary.uploading) {
 		return false;
 	}
@@ -2971,8 +3034,12 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		case 'zenarioW':
 			ajaxMethodCall = 'handleWizardAJAX';
 			break;
-		default:
+		case 'zenarioAB':
+		case 'zenarioSE':
 			ajaxMethodCall = 'handleAdminBoxAJAX';
+			break;
+		default:
+			ajaxMethodCall = 'handlePluginAJAX';
 	}
 	
 	if (!link && object.link) {
@@ -2999,16 +3066,21 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	if ((thing = object.upload)
 	 || (thing = object.ajax)) {
 		
+		if (AJAXURL) {
+			url = AJAXURL;
+			requests = zenarioCallingLibrary.getKey(itemLevel);
+		
 		//If an AJAX button requests all of the ids that are currently matched in Organizer,
 		//we'll need to get the details of the last Organizer panel accessed (the requests needed
 		//should be stored in zenarioO.lastRequests) and fire up the Organizer Panel to get the list of
 		//ids.
+		} else
 		if (!itemLevel
 		 && object.ajax
 		 && object.ajax.pass_matched_ids
 		 && zenarioCallingLibrary.encapName == 'zenarioO') {
 			url =
-				'zenario/admin/organizer.ajax.php?' +
+				URLBasePath + 'zenario/admin/organizer.ajax.php?' +
 					'__pluginClassName__=' + thing.class_name +
 					'&path=' + zenarioO.path +
 					'&_get_matched_ids=1' +
@@ -3020,7 +3092,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		//the normal ajax file.
 		} else {
 			url =
-				'zenario/ajax.php?' +
+				URLBasePath + 'zenario/ajax.php?' +
 					'__pluginClassName__=' + thing.class_name +
 					'&__path__=' + zenarioCallingLibrary.path +
 					'&method_call=' + ajaxMethodCall;
@@ -3101,7 +3173,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 					zenarioCallingLibrary.uploadStart();
 				}
 				
-				zenarioA.doHTML5Upload(this.files, URLBasePath + url, requests, function(responses) {
+				zenarioA.doHTML5Upload(this.files, url, requests, function(responses) {
 					zenarioCallingLibrary.uploadComplete(responses);
 				});
 				
@@ -3111,7 +3183,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 		} else {
 			//For backwards compatability for browsers without flash, attempt to convert file upload tags into ajax->confirm->form tags
-			object = $.extend(true, {}, object);
+			object = zenario.clone(object);
 			requests._html5_backwards_compatibility_hack = 1;
 			
 			object.ajax = {
@@ -3223,7 +3295,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 	} else if (object.popout) {
 		var id, item, title, usage,
 			filename, match,
-			popout = $.extend(true, {}, object.popout);
+			popout = zenario.clone(object.popout);
 		
 		if (itemLevel && (id = zenarioCallingLibrary.getKeyId(true)) && (item = zenarioCallingLibrary.tuix.items[id])) {
 			if (item.popout) {
@@ -3332,7 +3404,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		//Use Organizer in select mode to combine two items
 		zenarioCallingLibrary.actionTarget =
-			'zenario/ajax.php?' +
+			URLBasePath + 'zenario/ajax.php?' +
 				'__pluginClassName__=' + object.pick_items.class_name +
 				'&__path__=' + zenarioCallingLibrary.path +
 				'&method_call=' + ajaxMethodCall;
@@ -3368,7 +3440,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 		
 		//Use Organizer in select mode to combine two items
 		zenarioCallingLibrary.actionTarget =
-			'zenario/ajax.php?' +
+			URLBasePath + 'zenario/ajax.php?' +
 				'__pluginClassName__=' + object.combine_items.class_name +
 				'&__path__=' + zenarioCallingLibrary.path +
 				'&method_call=' + ajaxMethodCall;
@@ -3433,7 +3505,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			
 			//If no message is set, try and get one using an AJAX call
 			} else {
-				message = zenario.nonAsyncAJAX(URLBasePath + zenarioCallingLibrary.actionTarget + zenario.urlRequest(zenarioCallingLibrary.actionRequests), false);
+				message = zenario.nonAsyncAJAX(zenarioCallingLibrary.actionTarget + zenario.urlRequest(zenarioCallingLibrary.actionRequests), false);
 			}
 			
 			//If this is a download, add the current search/sorting information in,
@@ -3459,7 +3531,7 @@ zenarioA.action = function(zenarioCallingLibrary, object, itemLevel, branch, lin
 			var buttonsHTML = '';
 			if (isDownload || object.upload) {
 				html += 
-					'<form id="zenario_bc_form" action="' + htmlspecialchars(URLBasePath + zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1') + '"' +
+					'<form id="zenario_bc_form" action="' + htmlspecialchars(zenarioCallingLibrary.actionTarget + '&_sk_form_submission=1') + '"' +
 						' onsubmit="get(\'preloader_circle\').style.visibility = \'visible\';"' +
 						' target="zenario_iframe" method="post"' + (object.upload? ' enctype="multipart/form-data"' : '') + '>';
 				
@@ -3729,6 +3801,37 @@ zenarioA.csvToObject = function(aString) {
 	return aString;
 };
 
+//Accept either a CSV string, an object with keys to true or false,
+//or an array (that might have been converted to an object),
+//and convert it to a normal array.
+zenarioA.tuixToArray = function(tuix) {
+	
+	var key, val,
+		vals = [];
+	
+	switch (typeof tuix) {
+		//Spilt strings up by commas
+		case 'string':
+			return tuix.split(',');
+		
+		//Check objects
+		case 'object':
+			foreach (tuix as key => val) {
+				//If the keys look numeric, assume it was a numeric array in PHP that got converted to an object,
+				//and note down the values.
+				if (key == 1*key) {
+					vals.push(val);
+				
+				//Otherwise assume it is an associative array and note down the keys, as long as the values were set to true
+				} else if (engToBoolean(val)) {
+					vals.push(key);
+				}
+			}
+	}
+	
+	return vals;
+};
+
 
 
 
@@ -3750,6 +3853,7 @@ zenarioA.setKin = function(buttons, parentClass) {
 		buttonsPos = {};
 	
 	foreach (buttons as bi => button) {
+		delete button.children;
 		buttonsPos[button.id] = bi;
 	}
 	
@@ -3813,7 +3917,7 @@ zenarioA.readData = function(data, setSessionStorageURL, setSessionStorageReques
 				'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
 			
 			zenarioA.nowDoingSomething();
-			zenarioA.showMessage(data, buttonsHTML, 'error', true, true)
+			zenarioA.showMessage(data, buttonsHTML, 'error', true, undefined, true);
 			
 			$('#zenario_retry').click(function() {
 				setTimeout(retry, 1);
@@ -3881,7 +3985,7 @@ zenarioA.AJAXErrorHandler = function(resp, statusType, statusText) {
 					'<input id="zenario_retry" class="submit_selected" type="button" value="' + phrase.retry + '"/>';
 				
 				zenarioA.nowDoingSomething();
-				zenarioA.showMessage(msg, buttonsHTML, 'error', true)
+				zenarioA.showMessage(msg, buttonsHTML, 'error', true, undefined, true);
 				
 				$('#zenario_retry').click(function() {
 					setTimeout(resp.zenario_retry, 1);
@@ -4007,14 +4111,35 @@ zenarioA.checkCookiesEnabled = function() {
 	return cb;
 };
 
-$(document).ready(function() {
-	zenarioA.disableFileDragDrop(document.body);
-});
+
+//Calculate function short names, we need to do this before calling any functions!
+zenario.shrtNms(zenarioA);
+
+
 
 //If any slots are being edited, set a warning message for if an admin tries to leave the page 
 window.onbeforeunload = zenarioA.onbeforeunload;
 
+$(document).ready(function() {
+	zenarioA.setSlotParents();
+	zenarioA.disableFileDragDrop(document.body);
+});
 
+//Append the HTML for the floating boxes in admin mode
+if (zenarioA.microTemplates) {
+	$('body').append(zenarioA.microTemplate('zenario_floating_boxes', {}));
+}
+
+//Add a progress bar
+$('body').append(
+	'<div id="zenario_progress_wrap">' +
+		'<div id="zenario_progress" class="ui-progressbar ui-widget ui-widget-content ui-corner-all">' +
+			'<div id="zenario_progress_name"></div>' +
+			'<div id="zenario_progress_stop"></div>' +
+			'<div id="zenario_progressbar" class="ui-progressbar-value ui-widget-header ui-corner-left" style="width: 0%;"></div>' +
+		'</div>' +
+	'</div>'
+);
 
 
 });

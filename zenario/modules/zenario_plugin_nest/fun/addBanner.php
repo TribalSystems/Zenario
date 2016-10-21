@@ -33,11 +33,7 @@ if (($moduleId = getModuleIdByClassName('zenario_banner'))
  && ($instance = getPluginInstanceDetails($instanceId))
  && ($image = getRow('files', array('id', 'filename', 'width', 'height'), array('usage' => 'image', 'id' => $imageId)))) {
 	
-	if ($addTab) {
-		self::addTab($instanceId);
-	}
-	
-	$nestId = self::addPlugin($moduleId, $instanceId, false, adminPhrase('[[filename]] [[[width]] × [[height]]]', $image));
+	$nestId = self::addPlugin($moduleId, $instanceId, $tab, adminPhrase('[[filename]] [[[width]] × [[height]]]', $image), $tabIsTabId);
 	
 	setRow(
 		'plugin_settings',

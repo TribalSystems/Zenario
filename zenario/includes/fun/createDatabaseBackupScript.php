@@ -131,14 +131,14 @@ foreach(lookupExistingCMSTables() as $table) {
 			SELECT `". sqlEscape($pkCol). "`
 			FROM `". $table['actual_name']. "`
 			ORDER BY 1";
-		$ids = sqlSelectArray($sql, true);
+		$ids = sqlFetchValues($sql);
 	
 	} elseif ($pkColList) {
 		$sql = "
 			SELECT ". $pkColList. "
 			FROM `". $table['actual_name']. "`
 			". $orderBy;
-		$ids = sqlSelectArray($sql);
+		$ids = sqlFetchAssocs($sql);
 	
 	} else {
 		$ids = array(false);

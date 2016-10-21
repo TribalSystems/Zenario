@@ -201,8 +201,8 @@ function loadSiteConfig() {
 		if ($row['id'] ==  $row['equiv_id']) {
 			
 			if ($row['page_type'] == 'zenario_home') {
-				cms_core::$homeCID = $row['id'];
-				cms_core::$homeEquivId = $row['equiv_id'];
+				cms_core::$homeCID = (int) $row['id'];
+				cms_core::$homeEquivId = (int) $row['equiv_id'];
 				cms_core::$homeCType = $row['type'];
 			}
 			
@@ -618,11 +618,6 @@ function checkForChangesInYamlFiles($forceScan = false) {
 										if (!empty($tag['module_class_name'])) {
 											$settingGroup = $tag['module_class_name'];
 										}
-								
-									} elseif ($type == 'visitor') {
-										if (!empty($tag['customisation_name'])) {
-											$settingGroup = $tag['customisation_name'];
-										}
 									}
 								
 									$key2 = $path. '//'. $settingGroup;
@@ -863,80 +858,88 @@ function reportDatabaseErrorFromHelperFunction($error) {
 }
 
 //Check a table definition and see which columns are numeric
+//Note that int and float evaluate to true, and time and string evalulate to false
 define('ZENARIO_INT_COL', true);
 define('ZENARIO_FLOAT_COL', 1);
-define('ZENARIO_TIME_COL', 0);
+define('ZENARIO_SET_COL', '');
 define('ZENARIO_STRING_COL', false);
-function checkTableDefinition($prefixAndTable, $checkExists = false) {
+define('ZENARIO_TIME_COL', 0);
+function checkTableDefinition($prefixAndTable, $checkExists = false, $useCache = false) {
 	$pkCol = false;
 	$exists = false;
 	
 	if (!isset(cms_core::$numericCols[$prefixAndTable])) {
 		cms_core::$numericCols[$prefixAndTable] = array();
+		$useCache = false;
 	}
 	
 	if (!cms_core::$lastDB) {
 		return false;
 	}
 	
-	if ($checkExists
-	 && !(($result = sqlSelect("SHOW TABLES LIKE '". sqlEscape($prefixAndTable). "'"))
-	   && (sqlFetchRow($result))
-	)) {
-		return false;
-	}
+	if (!$useCache) {
+		if ($checkExists
+		 && !(($result = sqlSelect("SHOW TABLES LIKE '". sqlEscape($prefixAndTable). "'"))
+		   && (sqlFetchRow($result))
+		)) {
+			return false;
+		}
 	
-	if ($result = sqlSelect('SHOW COLUMNS FROM `'. sqlEscape($prefixAndTable). '`')) {
-		while ($row = sqlFetchRow($result)) { 
-			$exists = true;
-			$def = preg_split('/\W/', $row[1], 2);
-			switch ($def[0]) {
-				case 'tinyint':
-				case 'smallint':
-				case 'mediumint':
-				case 'int':
-				case 'integer':
-				case 'bigint':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_INT_COL;
-					break;
+		if ($result = sqlSelect('SHOW COLUMNS FROM `'. sqlEscape($prefixAndTable). '`')) {
+			while ($row = sqlFetchRow($result)) { 
+				$exists = true;
+				switch (substr($row[1], 0, strcspn($row[1], ' ('))) {
+					case 'tinyint':
+					case 'smallint':
+					case 'mediumint':
+					case 'int':
+					case 'integer':
+					case 'bigint':
+						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_INT_COL;
+						break;
 				
-				case 'float':
-				case 'double':
-				case 'decimal':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_FLOAT_COL;
-					break;
+					case 'float':
+					case 'double':
+					case 'decimal':
+						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_FLOAT_COL;
+						break;
 				
-				case 'datetime':
-				case 'date':
-				case 'timestamp':
-				case 'time':
-				case 'year':
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_TIME_COL;
-					break;
+					case 'datetime':
+					case 'date':
+					case 'timestamp':
+					case 'time':
+					case 'year':
+						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_TIME_COL;
+						break;
 				
-				default:
-					cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_STRING_COL;
-			}
+					case 'set':
+						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_SET_COL;
+						break;
+				
+					default:
+						cms_core::$numericCols[$prefixAndTable][$row[0]] = ZENARIO_STRING_COL;
+				}
 			
-			//Also check to see if there is a single primary key column
-			if ($row[3] == 'PRI') {
-				if ($pkCol === false) {
-					$pkCol = $row[0];
-				} else {
-					$pkCol = true;
+				//Also check to see if there is a single primary key column
+				if ($row[3] == 'PRI') {
+					if ($pkCol === false) {
+						$pkCol = $row[0];
+					} else {
+						$pkCol = true;
+					}
 				}
 			}
 		}
-	}
 	
-	if (!$exists) {
-		cms_core::$pkCols[$prefixAndTable] = '';
+		if (!$exists) {
+			cms_core::$pkCols[$prefixAndTable] = '';
 	
-	} elseif ($pkCol !== false && $pkCol !== true) {
-		cms_core::$pkCols[$prefixAndTable] = $pkCol;
+		} elseif ($pkCol !== false && $pkCol !== true) {
+			cms_core::$pkCols[$prefixAndTable] = $pkCol;
 	
-	} else {
-		cms_core::$pkCols[$prefixAndTable] = false;
+		} else {
+			cms_core::$pkCols[$prefixAndTable] = false;
+		}
 	}
 	
 	if ($checkExists && is_string($checkExists)) {
@@ -966,16 +969,28 @@ function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, 
 		}
 	}
 	
+	$def = cms_core::$numericCols[$tableName][$col];
+	
+	
 	
 	if ($isWhere && is_array($val)) {
 		$firstIn = true;
 		foreach ($val as $sign2 => &$val2) {
 			if (is_numeric($sign2) || substr($sign2, 0, 1) == '=') {
-				if ($firstIn) {
-					checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT IN (' : 'IN (', 1);
-					$firstIn = false;
+				if ($def === ZENARIO_SET_COL) {
+					if ($firstIn) {
+						checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT (' : '(', 1);
+						$firstIn = false;
+					} else {
+						checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ' OR ', 2);
+					}
 				} else {
-					checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ', ', 2);
+					if ($firstIn) {
+						checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, $wasNot? 'NOT IN (' : 'IN (', 1);
+						$firstIn = false;
+					} else {
+						checkRowExistsCol($tableName, $sql, $col, $val2, $first, $isWhere, $ignoreMissingColumns, ', ', 2);
+					}
 				}
 			}
 		}
@@ -1004,7 +1019,7 @@ function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, 
 		return;
 	}
 	
-	
+	$cSql = '';
 	if ($in <= 1) {
 		if (!$isWhere) {
 			$sql .= ($first? '' : ','). '
@@ -1018,33 +1033,37 @@ function checkRowExistsCol(&$tableName, &$sql, &$col, &$val, &$first, $isWhere, 
 		}
 		$first = false;
 		
-		$sql .= '`'. sqlEscape($col). '` ';
+		$cSql = '`'. sqlEscape($col). '` ';
 	}
 	
-	if ($val === null || (!$val && cms_core::$numericCols[$tableName][$col] === ZENARIO_TIME_COL)) {
+	if ($val === null || (!$val && $def === ZENARIO_TIME_COL)) {
 		if ($in) {
-			$sql .= $sign. 'NULL';
+			$sql .= $cSql. $sign. 'NULL';
 		
 		} elseif (!$isWhere) {
-			$sql .= '= NULL';
+			$sql .= $cSql. '= NULL';
 		
 		} elseif ($sign == '=') {
-			$sql .= 'IS NULL';
+			$sql .= $cSql. 'IS NULL';
 		
 		} else {
-			$sql .= 'IS NOT NULL';
+			$sql .= $cSql. 'IS NOT NULL';
 		}
 	
-	} elseif (!cms_core::$numericCols[$tableName][$col]) {
-		$sql .= $sign. ' \''. sqlEscape((string) $val). '\'';
-	
-	} elseif (cms_core::$numericCols[$tableName][$col] === ZENARIO_FLOAT_COL) {
-		$sql .= $sign. ' '. (float) $val;
-	
+	} elseif ($def) {
+		if ($def === ZENARIO_FLOAT_COL) {
+			$sql .= $cSql. $sign. ' '. (float) $val;
+		} else {
+			$sql .= $cSql. $sign. ' '. (int) $val;
+		}
 	} else {
-		$sql .= $sign. ' '. (int) $val;
+		if ($def === ZENARIO_SET_COL && $in) {
+			$sql .= $sign. 'FIND_IN_SET(\''. sqlEscape((string) $val). '\', '. $cSql. ')';
+		
+		} else {
+			$sql .= $cSql. $sign. ' \''. sqlEscape((string) $val). '\'';
+		}
 	}
-	
 }
 
 
@@ -1069,7 +1088,7 @@ function checkRowExists(
 		$out = array();
 		
 		if ($result = checkRowExists($table, $ids, $ignoreMissingColumns, $cols, true, false, $orderBy, $distinct, false, !$distinct)) {
-			while ($row = sqlFetchAssoc($result)) {
+			while ($row = sqlFetchAssoc($result, $table)) {
 				
 				$id = false;
 				if (is_string($returnArrayIndexedBy) && isset($row[$returnArrayIndexedBy])) {
@@ -1145,7 +1164,7 @@ function checkRowExists(
 				$sql .= ($sql? ',' : 'SELECT '). $pre. '`'. sqlEscape($col). '`'. $suf;
 			
 				if ($pre || $suf) {
-					$sql .= ' AS `'. sqlEscape($cols). '`';
+					$sql .= ' AS `'. sqlEscape($col). '`';
 				}
 			}
 	
@@ -1228,7 +1247,7 @@ function checkRowExists(
 		if ($multiple) {
 			return $result;
 		
-		} elseif (!$row = sqlFetchAssoc($result)) {
+		} elseif (!$row = sqlFetchAssoc($result, $table)) {
 			return false;
 		
 		} elseif (is_array($cols)) {
@@ -1246,7 +1265,7 @@ function checkRowExists(
 function setRow(
 	$table, $values, $ids = array(),
 	$ignore = false, $ignoreMissingColumns = false,
-	$markNewThingsInSession = false, $insertIfNotPresent = true
+	$markNewThingsInSession = false, $insertIfNotPresent = true, $checkCache = true
 ) {
 	$sqlW = '';
 	$tableName = cms_core::$lastDBPrefix. $table;
@@ -1287,7 +1306,8 @@ function setRow(
 			}
 			
 			sqlUpdate($sql. $sqlW, false);
-			if (($affectedRows = sqlAffectedRows()) > 0) {
+			if (($affectedRows = sqlAffectedRows()) > 0
+			 && $checkCache) {
 				
 				if (empty($ids)) {
 					$dummy = false;
@@ -1335,7 +1355,8 @@ function setRow(
 			$_SESSION['new_id_in_'. $table] = $id;
 		}
 		
-		if (sqlAffectedRows() > 0) {
+		if ($checkCache
+		 && sqlAffectedRows() > 0) {
 			if (empty($ids)) {
 				$dummy = false;
 				reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);

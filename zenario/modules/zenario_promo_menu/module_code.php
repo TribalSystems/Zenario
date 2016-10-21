@@ -241,22 +241,12 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 				$fields['feature_image/zenario_promo_menu__text']['hidden'] =
 				$fields['feature_image/zenario_promo_menu__link_type']['hidden'] =
 					!$values['feature_image/zenario_promo_menu__feature_image_checkbox'];
-					
-				$fields['feature_image/zenario_promo_menu__canvas']['hidden'] = 
+				
 				$fields['feature_image/zenario_promo_menu__overwrite_alt_tag']['hidden'] =
+				$hidden = 
 					!($values['feature_image/zenario_promo_menu__feature_image_checkbox'] && $imageId);
-					
-				$fields['feature_image/zenario_promo_menu__width']['hidden'] =
-					!empty($fields['feature_image/zenario_promo_menu__canvas']['hidden']) ||
-					!in($values['feature_image/zenario_promo_menu__canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
 				
-				$fields['feature_image/zenario_promo_menu__height']['hidden'] =
-					!empty($fields['feature_image/zenario_promo_menu__canvas']['hidden']) ||
-					!in($values['feature_image/zenario_promo_menu__canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-				
-				$fields['feature_image/zenario_promo_menu__offset']['hidden'] =
-					!empty($fields['feature_image/zenario_promo_menu__canvas']['hidden']) ||
-					!($values['feature_image/zenario_promo_menu__canvas'] == 'resize_and_crop');
+				$this->showHideImageOptions($fields, $values, 'feature_image', $hidden, 'zenario_promo_menu__');
 				
 				$fields['feature_image/zenario_promo_menu__rollover_image']['hidden'] =
 					!empty($fields['feature_image/zenario_promo_menu__use_rollover']['hidden']) || 

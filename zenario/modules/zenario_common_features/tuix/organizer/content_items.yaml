@@ -196,6 +196,7 @@ zenario__content:
                 css_class: content_published
             columns:
                 tag:
+                    ord: 1
                     title: ID/alias
                     width: large
                     searchable: true
@@ -207,30 +208,36 @@ zenario__content:
                 equiv_id:
                     db_column: c.equiv_id
                 id:
+                    ord: 2
                     db_column: c.id
                     align_right: true
                     width: xsmall
                 type:
+                    ord: 3
                     title: Content Type
                     db_column: c.type
                     format: enum
                     width: xsmall
                 language_id:
+                    ord: 4
                     title: Language
                     db_column: c.language_id
                     format: language_english_name_with_id
                 alias:
+                    ord: 5
                     title: Alias
                     searchable: true
                     db_column: c.alias
                     width: small
                 title:
+                    ord: 6
                     title: Title
                     db_column: v.title
                     searchable: true
                     width: large
                     show_by_default: true
                 number_of_categories:
+                    ord: 7
                     title: Number of categories
                     db_column: |
                         (
@@ -242,16 +249,19 @@ zenario__content:
                    # show_by_default: false
                     #hidden: true
                 description:
+                    ord: 8
                     title: Description
                     db_column: v.description
                     searchable: true
                     length_limit: 250
                 keywords:
+                    ord: 9
                     title: Keywords
                     db_column: v.keywords
                     searchable: true
                     length_limit: 250
                 word_count:
+                    ord: 10
                     title: Word count
                     sortable: true
                     table_join: |
@@ -266,6 +276,7 @@ zenario__content:
                     show_by_default: true
                     tooltip: "Word count of version controlled plugins on the content item."
                 file_id:
+                    ord: 11
                     title: File ID
                     db_column: f.id
                     searchable: No
@@ -274,11 +285,13 @@ zenario__content:
                 mime_type:
                     db_column: f.mime_type
                 filename:
+                    ord: 12
                     title: Filename
                     db_column: v.filename
                     searchable: true
                     width: large
                 file_size:
+                    ord: 13
                     title: File size
                     db_column: f.size
                     format: filesize
@@ -286,9 +299,11 @@ zenario__content:
                 file_path:
                     db_column: f.path
                 version:
+                    ord: 14
                     title: Version
                     db_column: v.version
                 status:
+                    ord: 15
                     title: Status
                     db_column: c.status
                     format: enum
@@ -301,6 +316,7 @@ zenario__content:
                         hidden: Hidden
                         trashed: Trashed
                 admin_version_status:
+                    ord: 16
                     db_column: c.status
                     format: enum
                     values:
@@ -312,6 +328,7 @@ zenario__content:
                         hidden: Hidden
                         trashed: Trashed
                 visitor_version_status:
+                    ord: 17
                     db_column: c.status
                     format: enum
                     values:
@@ -323,6 +340,7 @@ zenario__content:
                         hidden: '[Hidden]'
                         trashed: '[Trashed]'
                 privacy:
+                    ord: 18
                     title: Privacy
                     db_column: tc.privacy
                     format: enum
@@ -333,14 +351,17 @@ zenario__content:
                         specific_users: Specific users
                         no_access: No access
                 first_created_datetime:
+                    ord: 19
                     title: Date/time first created
                     db_column: c.first_created_datetime
                     format: datetime
                 created_datetime:
+                    ord: 20
                     title: Date/time latest version created
                     db_column: v.created_datetime
                     format: datetime
                 concealed_datetime:
+                    ord: 21
                     title: Date/time canceled/trashed
                     db_column: v.concealed_datetime
                     format: datetime
@@ -348,18 +369,21 @@ zenario__content:
                 creating_author_id:
                     db_column: v.creating_author_id
                 last_modified_datetime:
+                    ord: 22
                     title: Date/time last edited
                     db_column: v.last_modified_datetime
                     format: datetime
                 last_author_id:
                     db_column: v.last_author_id
                 published_datetime:
+                    ord: 23
                     title: Date/time published
                     db_column: v.published_datetime
                     format: datetime
                 publisher_id:
                     db_column: v.publisher_id
                 publication_date:
+                    ord: 24
                     title: Release date
                     db_column: v.publication_date
                     format: date
@@ -367,10 +391,12 @@ zenario__content:
                     db_column: c.lock_owner_id
                 lock_owner_name:
                 writer_name:
+                    ord: 25
                     title: Writer name
                     db_column: v.writer_name
                     searchable: true
                 archives_exist:
+                    ord: 26
                     width: medium
                     title: 'Archives exist?'
                     db_column: |
@@ -384,6 +410,7 @@ zenario__content:
                         )
                     format: yes_or_no
                 inline_files:
+                    ord: 27
                     title: Images and animations
                     db_column: |
                         (
@@ -397,16 +424,19 @@ zenario__content:
                     align_right: true
                     width: xsmall
                 zenario_trans__links:
+                    ord: 28
                     title: Translations
                     align_right: true
                     show_by_default: true
                 layout:
+                    ord: 29
                     title: Layout
                     db_column: "CONCAT('L', IF (v.layout_id < 10, LPAD(CAST(v.layout_id AS CHAR), 2, '0'), CAST(v.layout_id AS CHAR)))"
                     show_by_default: true
                     width: xsmall
                     hidden: true
                 layout_id:
+                    ord: 30
                     db_column: v.layout_id
                     filter_format: enum
                     values:
@@ -414,6 +444,7 @@ zenario__content:
                         - L02
                         #...
                 menu:
+                    ord: 31
                     title: Menu Node
                     db_column: mt.name
                     show_by_default: true
@@ -421,6 +452,7 @@ zenario__content:
                 menu_id:
                     db_column: mi.id
                 content_extract:
+                    ord: 32
                     title: Content extract
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
@@ -430,6 +462,7 @@ zenario__content:
                     db_column: >
                         SUBSTRING(cc.extract, 1, 200)
                 content_extract_wordcount:
+                    ord: 33
                     title: Plain-text word count
                     table_join: |
                         LEFT JOIN [[DB_NAME_PREFIX]]content_cache AS cc
@@ -441,6 +474,7 @@ zenario__content:
                     align_right: true
                     width: xsmall
                 scheduled_publish_datetime:
+                    ord: 34
                     title: 'Scheduled publish date/time'
                     db_column: v.scheduled_publish_datetime
                     format: datetime
@@ -675,7 +709,7 @@ zenario__content:
                 view_dropdown:
                     label: View
                     multiple_select: true
-                    hide_when_children_are_not_visible: true                
+                    hide_when_children_are_not_visible: true
                 
                 download:
                     parent: view_dropdown
@@ -921,7 +955,7 @@ zenario__content:
                 duplicate:
                     parent: action_dropdown
                     priv: _PRIV_CREATE_FIRST_DRAFT
-                    label: Duplicate
+                    label: Clone this content item
                     admin_box:
                         path: zenario_content
                         key:
@@ -939,7 +973,7 @@ zenario__content:
                         not_locked: true
                     without_traits:
                         draft: true
-                    label: Copy from other content item
+                    label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/languages
@@ -965,7 +999,7 @@ zenario__content:
                     traits:
                         draft: true
                         not_locked: true
-                    label: Copy from other content item
+                    label: Copy from other...
                     combine_items:
                         path: zenario__content/panels/content/refiners/filter_by_lang////
                         min_path: zenario__content/panels/languages
@@ -1079,7 +1113,7 @@ zenario__content:
                     priv: _PRIV_CREATE_REVISION_DRAFT
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
-                    label: Unhide/make draft
+                    label: Unhide this content item
                     multiple_select: true
                     traits:
                         hidden: true
@@ -1106,7 +1140,7 @@ zenario__content:
                     visible_if: |
                         zenarioA.checkSpecificPerms(id)
                     hide_in_select_mode: true
-                    label: Trash
+                    label: Trash this content item
                     multiple_select: true
                     traits:
                         trashable: true

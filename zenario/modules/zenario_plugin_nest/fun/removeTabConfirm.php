@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 $tabName = null;
 foreach (explode(',', $eggIds) as $eggId) {
 	if (($nestedItem = getNestDetails($eggId))
-	 && ($nestedItem['is_tab'])) {
+	 && ($nestedItem['is_slide'])) {
 		if ($tabName === null) {
 			$tabName = $nestedItem['name_or_title'];
 		} else {

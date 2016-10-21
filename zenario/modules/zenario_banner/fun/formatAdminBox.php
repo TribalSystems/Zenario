@@ -31,15 +31,19 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		if (!inc('zenario_ctype_picture')) {
-			unset($box['tabs']['first_tab']['fields']['image_source']['values']['_PICTURE']);
+			unset($fields['first_tab/image_source']['values']['_PICTURE']);
 		}
 	
 		
-		$box['tabs']['first_tab']['fields']['use_rollover']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['image']['hidden'] = 
+		$fields['first_tab/use_rollover']['hidden'] = 
+		$fields['first_tab/image']['hidden'] = 
 			$values['first_tab/image_source'] != '_CUSTOM_IMAGE';
 		
-		$box['tabs']['first_tab']['fields']['picture']['hidden'] =
+		$fields['first_tab/rollover_image']['hidden'] = 
+			$fields['first_tab/use_rollover']['hidden']
+		 || !$values['first_tab/use_rollover'];
+		
+		$fields['first_tab/picture']['hidden'] =
 			$values['first_tab/image_source'] != '_PICTURE';
 		
 		//Check whether an image is picked
@@ -71,7 +75,7 @@ switch ($path) {
 		}
 		
 		
-		if (!empty($box['tabs']['first_tab']['fields']['link_type']['values'])) {
+		if (!empty($fields['first_tab/link_type']['values'])) {
 			
 			$onlyShowLinkToContent = false;
 			if ($values['first_tab/image_source'] == '_STICKY_IMAGE'){
@@ -79,16 +83,19 @@ switch ($path) {
 				$onlyShowLinkToContent = true;
 			}
 			
-			$box['tabs']['first_tab']['fields']['link_type']['values']['_NO_LINK']['disabled'] =
-			$box['tabs']['first_tab']['fields']['link_type']['values']['_EXTERNAL_URL']['disabled'] = $onlyShowLinkToContent;
+			$fields['first_tab/link_type']['values']['_NO_LINK']['disabled'] =
+			$fields['first_tab/link_type']['values']['_EXTERNAL_URL']['disabled'] = $onlyShowLinkToContent;
 			
 		}
 		
-		$box['tabs']['first_tab']['fields']['canvas']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['alt_tag']['hidden'] = 
+		$fields['first_tab/alt_tag']['hidden'] = 
+		$fields['first_tab/retina']['hidden'] = 
+		$hidden = 
 			!$imagePicked;
 		
-		$box['tabs']['first_tab']['fields']['floating_box_title']['hidden'] = 
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
+		
+		$fields['first_tab/floating_box_title']['hidden'] = 
 			!$imagePicked
 		 || $values['first_tab/image_source'] == '_STICKY_IMAGE'
 		 || $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
@@ -98,61 +105,41 @@ switch ($path) {
 		 && ($image = getRow('files', array('width', 'height', 'alt_tag', 'title', 'floating_box_title'), $imageId))) {
 			$editModeOn = engToBooleanArray($box['tabs']['first_tab'], 'edit_mode', 'on');
 			
-			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
+			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = $image['alt_tag'];
 			if ($box['first_display'] && !$values['first_tab/alt_tag']) {
-				$box['tabs']['first_tab']['fields']['alt_tag']['value'] = $image['alt_tag'];
+				$fields['first_tab/alt_tag']['value'] = $image['alt_tag'];
 			}
 			if ($editModeOn && !$changes['first_tab/alt_tag']) {
-				$box['tabs']['first_tab']['fields']['alt_tag']['current_value'] = $image['alt_tag'];
+				$fields['first_tab/alt_tag']['current_value'] = $image['alt_tag'];
 			}
 
-			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['original_value'] = $image['floating_box_title'];
+			$fields['first_tab/floating_box_title']['multiple_edit']['original_value'] = $image['floating_box_title'];
 			if ($box['first_display'] && !$values['first_tab/floating_box_title']) {
-				$box['tabs']['first_tab']['fields']['floating_box_title']['value'] = $image['floating_box_title'];
+				$fields['first_tab/floating_box_title']['value'] = $image['floating_box_title'];
 			}
 			if ($editModeOn && !$changes['first_tab/floating_box_title']) {
-				$box['tabs']['first_tab']['fields']['floating_box_title']['current_value'] = $image['floating_box_title'];
+				$fields['first_tab/floating_box_title']['current_value'] = $image['floating_box_title'];
 			}
 		
 			if	(($values['first_tab/image_source']  == '_CUSTOM_IMAGE' && !($values['first_tab/use_rollover']))
 				|| $values['first_tab/image_source']  == '_PICTURE' ) {
 			} else {
 				if ($values['first_tab/link_type']=='_ENLARGE_IMAGE') {
-					$box['tabs']['first_tab']['fields']['link_type']['current_value'] = '_NO_LINK';
-					$box['tabs']['first_tab']['fields']['link_type']['value'] = '_NO_LINK';
+					$fields['first_tab/link_type']['current_value'] = '_NO_LINK';
+					$fields['first_tab/link_type']['value'] = '_NO_LINK';
 				}
 			}
 				
 		} else {
-			$box['tabs']['first_tab']['fields']['alt_tag']['multiple_edit']['original_value'] = '';
-			$box['tabs']['first_tab']['fields']['floating_box_title']['multiple_edit']['original_value'] = '';
+			$fields['first_tab/alt_tag']['multiple_edit']['original_value'] = '';
+			$fields['first_tab/floating_box_title']['multiple_edit']['original_value'] = '';
 		}
 		
 		$box['first_display'] = false;
 		
-
-		$box['tabs']['first_tab']['fields']['width']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['canvas']['hidden']
-		 || !in($values['first_tab/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-
-		$box['tabs']['first_tab']['fields']['height']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['canvas']['hidden']
-		 || !in($values['first_tab/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-
-		$box['tabs']['first_tab']['fields']['offset']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['canvas']['hidden']
-		 || $values['first_tab/canvas'] != 'resize_and_crop';
-
-		$box['tabs']['first_tab']['fields']['rollover_image']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['use_rollover']['hidden']
-		 || !$values['first_tab/use_rollover'];
 		
-		$box['tabs']['first_tab']['fields']['retina']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['canvas']['hidden'];
-		
-		
-		//if (isset($box['tabs']['text']['fields']['use_phrases'])) {
-		//	$box['tabs']['text']['fields']['use_phrases']['hidden'] =
+		//if (isset($fields['text/use_phrases'])) {
+		//	$fields['text/use_phrases']['hidden'] =
 		//		getNumLanguages() <= 1
 		//	 && strpos($values['text/text'], '[[') === false
 		//	 && strpos($values['text/text'], ']]') === false
@@ -161,98 +148,41 @@ switch ($path) {
 		//}
 		
 		
-		$box['tabs']['first_tab']['fields']['hyperlink_target']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['hide_private_item']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = 
+		$fields['first_tab/hyperlink_target']['hidden'] = 
+		$fields['first_tab/hide_private_item']['hidden'] = 
+		$fields['first_tab/use_download_page']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM';
 
-		$box['tabs']['first_tab']['fields']['get_translation']['hidden'] = 
+		$fields['first_tab/get_translation']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || getNumLanguages() < 2;
 
-		$box['tabs']['text']['fields']['more_link_text']['hidden'] = 
-		$box['tabs']['first_tab']['fields']['target_blank']['hidden'] = 
+		$fields['text/more_link_text']['hidden'] = 
+		$fields['first_tab/target_blank']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 && $values['first_tab/link_type'] != '_EXTERNAL_URL';
 
-		$box['tabs']['first_tab']['fields']['use_translation']['hidden'] = 
+		$fields['first_tab/use_translation']['hidden'] = 
 			$values['first_tab/link_type'] != '_CONTENT_ITEM'
 		 || $box['key']['isVersionControlled']
 		 || getNumLanguages() < 2;
 
-		$box['tabs']['first_tab']['fields']['url']['hidden'] = 
+		$fields['first_tab/url']['hidden'] = 
 			$values['first_tab/link_type'] != '_EXTERNAL_URL';
-
-		$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden'] = 
-			$values['first_tab/link_type'] != '_ENLARGE_IMAGE';
-
-		$box['tabs']['first_tab']['fields']['enlarge_width']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden']
-		 || ($values['first_tab/enlarge_canvas'] != 'fixed_width'
-		  && $values['first_tab/enlarge_canvas'] != 'fixed_width_and_height');
-
-		$box['tabs']['first_tab']['fields']['enlarge_height']['hidden'] = 
-			$box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden']
-		 || ($values['first_tab/enlarge_canvas'] != 'fixed_height'
-		  && $values['first_tab/enlarge_canvas'] != 'fixed_width_and_height');
+		
+		$hidden = $values['first_tab/link_type'] != '_ENLARGE_IMAGE';
+		$this->showHideImageOptions($fields, $values, 'first_tab', $hidden, 'enlarge_');
 		
 		$cID = $cType = false;
 		if ($values['first_tab/link_type'] == '_CONTENT_ITEM'
 		 && (getCIDAndCTypeFromTagId($cID, $cType, $values['first_tab/hyperlink_target']))
 		 && ($cType == 'document')) {
-			$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = false;
+			$fields['first_tab/use_download_page']['hidden'] = false;
 		} else {
-			$box['tabs']['first_tab']['fields']['use_download_page']['current_value'] = false;
-			$box['tabs']['first_tab']['fields']['use_download_page']['hidden'] = true;
+			$fields['first_tab/use_download_page']['current_value'] = false;
+			$fields['first_tab/use_download_page']['hidden'] = true;
 		}
-		
-		
-		if (isset($box['tabs']['first_tab']['fields']['canvas'])
-		 && empty($box['tabs']['first_tab']['fields']['canvas']['hidden'])) {
-			if ($values['first_tab/canvas'] == 'fixed_width') {
-				$box['tabs']['first_tab']['fields']['width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} else {
-				unset($box['tabs']['first_tab']['fields']['width']['note_below']);
-			}
-			
-			if ($values['first_tab/canvas'] == 'fixed_height'
-			 || $values['first_tab/canvas'] == 'fixed_width_and_height') {
-				$box['tabs']['first_tab']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} elseif ($values['first_tab/canvas'] == 'resize_and_crop') {
-				$box['tabs']['first_tab']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled up or down maintaining aspect ratio.');
-			
-			} else {
-				unset($box['tabs']['first_tab']['fields']['height']['note_below']);
-			}
-		}
-		
-		if (isset($box['tabs']['first_tab']['fields']['enlarge_canvas'])
-		 && empty($box['tabs']['first_tab']['fields']['enlarge_canvas']['hidden'])) {
-			if ($values['first_tab/enlarge_canvas'] == 'fixed_width') {
-				$box['tabs']['first_tab']['fields']['enlarge_width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} else {
-				unset($box['tabs']['first_tab']['fields']['enlarge_width']['note_below']);
-			}
-			
-			if ($values['first_tab/enlarge_canvas'] == 'fixed_height'
-			 || $values['first_tab/enlarge_canvas'] == 'fixed_width_and_height') {
-				$box['tabs']['first_tab']['fields']['enlarge_height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} else {
-				unset($box['tabs']['first_tab']['fields']['enlarge_height']['note_below']);
-			}
-		}
-		
-		
 		
 		//Don't show the translations checkbox if this can never be translated
 		$fields['text/translate_text']['hidden'] =
@@ -261,13 +191,13 @@ switch ($path) {
 		
 		//Don't show notes about translations if this won't be translated
 		if ($fields['text/translate_text']['hidden'] || !$values['text/translate_text']) {
-			$box['tabs']['text']['fields']['text']['show_phrase_icon'] =
-			$box['tabs']['text']['fields']['title']['show_phrase_icon'] =
-			$box['tabs']['text']['fields']['more_link_text']['show_phrase_icon'] = false;
+			$fields['text/text']['show_phrase_icon'] =
+			$fields['text/title']['show_phrase_icon'] =
+			$fields['text/more_link_text']['show_phrase_icon'] = false;
 			
-			$box['tabs']['text']['fields']['text']['note_below'] =
-			$box['tabs']['text']['fields']['title']['side_note'] =
-			$box['tabs']['text']['fields']['more_link_text']['side_note'] = '';
+			$fields['text/text']['note_below'] =
+			$fields['text/title']['side_note'] =
+			$fields['text/more_link_text']['side_note'] = '';
 		
 		} else {
 			
@@ -276,15 +206,15 @@ switch ($path) {
 				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 			);
 			
-			$box['tabs']['text']['fields']['text']['show_phrase_icon'] =
-			$box['tabs']['text']['fields']['title']['show_phrase_icon'] =
-			$box['tabs']['text']['fields']['more_link_text']['show_phrase_icon'] = true;
+			$fields['text/text']['show_phrase_icon'] =
+			$fields['text/title']['show_phrase_icon'] =
+			$fields['text/more_link_text']['show_phrase_icon'] = true;
 			
-			$box['tabs']['text']['fields']['text']['note_below'] = 
+			$fields['text/text']['note_below'] = 
 				adminPhrase('To use the phrases system, place your text in double square brackes [[like this]]. This must be in [[def_lang_name]], this site\'s default language.', $mrg);
 			
-			$box['tabs']['text']['fields']['title']['side_note'] =
-			$box['tabs']['text']['fields']['more_link_text']['side_note'] =
+			$fields['text/title']['side_note'] =
+			$fields['text/more_link_text']['side_note'] =
 				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer</a>.', $mrg);
 		}
 		

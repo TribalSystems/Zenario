@@ -157,58 +157,12 @@ class zenario_forum_list extends zenario_content_list {
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-	}
-	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$box['tabs']['each_item']['fields']['canvas']['hidden'] = 
-					!$values['each_item/show_sticky_images'];		
-		
-				$box['tabs']['each_item']['fields']['width']['hidden'] = 
-					$box['tabs']['each_item']['fields']['canvas']['hidden']
-				 || !in($values['each_item/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-		
-				$box['tabs']['each_item']['fields']['height']['hidden'] = 
-					$box['tabs']['each_item']['fields']['canvas']['hidden']
-				 || !in($values['each_item/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-				
-				
-				if (isset($box['tabs']['each_item']['fields']['canvas'])
-				 && empty($box['tabs']['each_item']['fields']['canvas']['hidden'])) {
-					if ($values['each_item/canvas'] == 'fixed_width') {
-						$box['tabs']['each_item']['fields']['width']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-					
-					} else {
-						unset($box['tabs']['each_item']['fields']['width']['note_below']);
-					}
-					
-					if ($values['each_item/canvas'] == 'fixed_height'
-					 || $values['each_item/canvas'] == 'fixed_width_and_height') {
-						$box['tabs']['each_item']['fields']['height']['note_below'] =
-							adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-					
-					} elseif ($values['each_item/canvas'] == 'resize_and_crop') {
-						$box['tabs']['each_item']['fields']['height']['note_below'] =
-							adminPhrase('Images may be scaled up or down maintaining aspect ratio.');
-					
-					} else {
-						unset($box['tabs']['each_item']['fields']['height']['note_below']);
-					}
-				}
-				
+				$hidden = !$values['each_item/show_sticky_images'];
+				$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
 				break;
 		}
-	}
-	
-	public function fillAdminSlotControls(&$controls) {
 	}
 }

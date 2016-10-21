@@ -160,9 +160,14 @@ zenario__modules:
                     title: Table prefix
                 comment:
                     exists: true
+                editions: {}
+                edition:
+                    db_column: m.edition
+                in_edition:
+                    db_column: '1'
             label_format_for_grid_view: |
                 [[display_name]]
-                                [[comment]]
+                [[comment]]
             item:
                 name: Module
                 names: Modules
@@ -348,3 +353,7 @@ zenario__modules:
                     hide_in_select_mode: true
                     admin_box:
                         path: zenario_setup_module
+                    disabled_if: |
+                        !zenario.engToBoolean(item.in_edition)
+                    disabled_tooltip: |
+                        In order to start this module, your site needs to be upgraded to Zenario [[edition]].

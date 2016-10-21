@@ -30,6 +30,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 //This file works like local.inc.php, but should contain any updates for user-related tables
 
+//N.b. there are several DB updates here for the user_forms and user_form_fields tables.
+//These updates will only apply for migrating old sites;
+//In a new install from 7.4 onwards, these tables will be dropped and recreated by the User Forms module
+
 
 
 
@@ -935,10 +939,72 @@ _sql
 	ADD UNIQUE KEY (`label`)
 _sql
 
+
+);	revision(36487
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	CHANGE COLUMN `ip` `last_login_ip` varchar(255) NOT NULL default ''
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]users`
+	MODIFY COLUMN `last_login` datetime DEFAULT NULL
+	AFTER `parent_id`
+_sql
+
+, <<<_sql
+	UPDATE IGNORE `[[DB_NAME_PREFIX]]custom_datasets` AS cd
+	INNER JOIN `[[DB_NAME_PREFIX]]custom_dataset_fields` AS cdf
+	   ON cdf.dataset_id = cd.id
+	  AND cdf.field_name = 'ip'
+	SET cdf.field_name = 'last_login_ip'
+	WHERE cd.system_table = 'users'
+_sql
+
+// Add column for checkbox columns (moving from plugin setting)
+); revision(36502
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `value_field_columns` int(10) unsigned NOT NULL DEFAULT 0
+_sql
+
+// Add column to allow forms to be part completed
+); revision(36506
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	ADD COLUMN `allow_partial_completion` tinyint(1) NOT NULL DEFAULT 0,
+	ADD COLUMN `partial_completion_message` varchar(255) DEFAULT NULL
+_sql
+
+); revision(36661
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN `field_type` enum('checkbox','checkboxes','date','editor','radios','centralised_radios','select','centralised_select','text','textarea','url','attachment','page_break','section_description','calculated','restatement', 'repeat_start', 'repeat_end') DEFAULT NULL
+_sql
+
+); revision(36662
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	ADD COLUMN `min_rows` int(10) unsigned NOT NULL DEFAULT 0,
+	ADD COLUMN `max_rows` int(10) unsigned NOT NULL DEFAULT 0
+_sql
+
+// Remove unused column
+); revision(37101
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_forms`
+	DROP COLUMN `user_email_field`
+_sql
+
+); revision(37235
+,<<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]]user_form_fields`
+	MODIFY COLUMN description text
+_sql
+
+
+
 );
-
-
-
 
 
 

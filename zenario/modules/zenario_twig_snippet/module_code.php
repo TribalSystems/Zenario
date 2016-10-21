@@ -36,6 +36,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_twig_snippet extends zenario_html_snippet {
 	
 	protected $twigVars = array();
+	protected $enablePhraseCodeReplace = false;
 	
 	function init() {
 		if (cms_core::$isTwig) return;
@@ -65,24 +66,21 @@ class zenario_twig_snippet extends zenario_html_snippet {
 					$atAll = false);
 		}
 		
+		if ($init) {
+			$this->setTwigVars();
+			$this->raw_html = $this->twigFramework($this->twigVars, true, $this->raw_html);
+		}
+		
 		return $init;
 	}
 	
-	
-	function showSlot() {
+	protected function setTwigVars() {
 		if (cms_core::$isTwig) return;
 		
-		$fromString = $this->setting('html');
-		
-		if ($fromString === false) {
-			$fromString = '';
-		}
-		
-		$this->setTwigVars();
-		$this->twigFramework($this->twigVars, false, $fromString);
+		//...
 	}
 	
-	protected function setTwigVars() {
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		if (cms_core::$isTwig) return;
 		
 		//...

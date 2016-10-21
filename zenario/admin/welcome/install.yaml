@@ -66,8 +66,8 @@ install:
                             I agree to the license
                         </label>
                     note_below: |
-                        Zenario comes bundled with several third-party libraries under the 
-                            <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">
+                        Zenario comes bundled with several third-party software libraries, under the 
+                            <a href="http://opensource.org/licenses/Apache-2.0" target="_blank">
                                 Apache</a>,
                             <a href="http://opensource.org/licenses/BSD-3-Clause" target="_blank">
                                 BSD</a>,
@@ -77,7 +77,7 @@ install:
                                 MIT</a> and
                             <a href="http://opensource.org/licenses/OFL-1.1" target="_blank">
                                 OFL</a>
-                        licenses.
+                        open source licenses.
                         You may only copy, modify or redistribute each library under the terms of its license.
                     redraw_onchange: true
                 blurb2:

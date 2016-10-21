@@ -168,7 +168,7 @@ if (!$moduleId) {
 	if ($isNest
 	 && (($isVersionControlled && $canChange && $level == 1)
 	  || (!$isVersionControlled && checkPriv('_PRIV_MANAGE_REUSABLE_PLUGIN')))
-	 && checkRowExists('nested_plugins', array('is_tab' => 0, 'instance_id' => $instanceId))) {
+	 && checkRowExists('nested_plugins', array('is_slide' => 0, 'instance_id' => $instanceId))) {
 		$controls['actions']['convert_nest']['page_modes'] = $pageMode;
 	} else {
 		unset($controls['actions']['convert_nest']);

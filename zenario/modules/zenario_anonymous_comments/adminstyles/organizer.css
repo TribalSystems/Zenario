@@ -1,10 +1,11 @@
-#organizer_leftColumn .organizer_item a.zenario__social {
+.organizer_top_level_image.zenario__social {
 	background: url('../../../admin/images/sprites/org-icons-v5.png') no-repeat;
 	background-position: -656px -56px;
 }
 
+#zenario_at_top_left_menu .organizer_top_level_image.zenario__social,
 #organizer_leftColumn .legend_on a.zenario__social,
-#organizer_leftColumn .organizer_item a.zenario__social:hover {
+.organizer_top_level_image.zenario__social:hover {
 	background-position: -708px -55px;
 }
 

@@ -26,7 +26,6 @@ _sql
 _sql
 );
 
-
 revision(2
 ,  <<<_sql
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_data
@@ -40,8 +39,6 @@ revision(4
 	  ADD COLUMN `user_form_id` int(10)
 _sql
 );
-
-
 
 revision(5
 , <<<_sql
@@ -104,7 +101,6 @@ revision(8
 _sql
 );
 
-
 revision(9
 , <<<_sql
 	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_field_values
@@ -142,7 +138,6 @@ _sql
 );
 
 revision(15
-
 , <<<_sql
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields
 	ADD COLUMN `ordinal` int(10) unsigned NOT NULL DEFAULT 1
@@ -153,10 +148,10 @@ _sql
 // Update existing ordinals
 if (needRevision(16)) {
 	// Get forms
-	$forms = getRowsArray('user_forms', 'id');
+	$forms = getRowsArray(ZENARIO_USER_FORMS_PREFIX . 'user_forms', 'id');
 	foreach($forms as $formId) {
 		// Get form fields
-		$formFields = getRowsArray('user_form_fields', 'id', array('user_form_id' => $formId));
+		$formFields = getRowsArray(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', 'id', array('user_form_id' => $formId));
 		// Set correct ordinal for form fields
 		$fieldNameCount = array();
 		foreach ($formFields as $formFieldId) {
@@ -175,7 +170,6 @@ if (needRevision(16)) {
 }
 
 revision(18
-
 , <<<_sql
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_field_values
 	ADD COLUMN form_field_value_centralised_key varchar(255) AFTER form_field_value_unlinked_id
@@ -184,7 +178,6 @@ _sql
 );
 
 revision(19
-
 , <<<_sql
 	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_field_values
 	ADD COLUMN form_field_value_checkbox_state tinyint(1) DEFAULT NULL AFTER form_field_value_centralised_key
@@ -197,3 +190,19 @@ if (needRevision(23)) {
 	deleteRow(ZENARIO_CRM_FORM_INTEGRATION_PREFIX . 'form_crm_fields', array('field_crm_name' => ''));
 	revision(23);
 }
+
+revision(24
+, <<<_sql
+	DROP TABLE IF EXISTS [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]last_crm_requests
+_sql
+, <<<_sql
+	CREATE TABLE IF NOT EXISTS [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]last_crm_requests (
+		`form_id` int(10) UNSIGNED NOT NULL DEFAULT 0,
+		`url` TEXT,
+		`request` MEDIUMTEXT,
+		`datetime` DATETIME NOT NULL,
+		PRIMARY KEY (`form_id`)
+	) ENGINE=MyISAM DEFAULT CHARSET=utf8
+_sql
+
+);

@@ -1,0 +1,91 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+zenario_slide:
+    key:
+        id: ''
+        instanceId: ''
+        idInOrganizer: ''
+    title: Tab
+    max_height: 550
+    hide_tab_bar: true
+    identifier:
+        css_class: zenario_nest_tab
+        label: 'Tab number:'
+        value: ''
+    tabs:
+        tab:
+            label: Details
+            edit_mode:
+                enabled: true
+                always_on: true
+            fields:
+                name_or_title:
+                    label: 'Title text or phrase code:'
+                    type: text
+                    maxlength: 100
+                    validation:
+                        required: Please enter a title for this tab
+                    side_note: |
+                        Tabs will only be visible where a tab-based framework is selected in this nest's properties. If the field above contains phrase codes, visitor phrases will be merged into it. Insert [[_YOUR_PHRASE]] to merge a phrase whose code is _YOUR_PHRASE.
+                tab_visibility:
+                    label: 'Visibility:'
+                    type: radios
+                    value: everyone
+                    values:
+                        everyone:
+                            label: Public, visible to everyone
+                        logged_out:
+                            label: Public, only show to visitors who are NOT logged in
+                        logged_in:
+                            label: Private, only show to extranet users who are logged in
+                        in_smart_group:
+                            label: 'Private, only show to extranet users in the smart group:'
+                            split_values_if_selected: true
+                        logged_in_not_in_smart_group:
+                            label: 'Private, only show to extranet users NOT in the smart group:'
+                            split_values_if_selected: true
+                        call_static_method:
+                            label: "Call a module's static method to decide (advanced):"
+                    format_onchange: true
+                    side_note: |
+                        You can restrict the visibility of the plugins following this tab to certain kinds of user.
+                tab__smart_group:
+                    indent: 1
+                    hidden: true
+                    type: select
+                    empty_value: ' -- Select -- '
+                tab__module_class_name:
+                    indent: 1
+                    hidden: true
+                    label: 'Module class name:'
+                    type: text
+                    maxlength: 200
+                tab__method_name:
+                    indent: 1
+                    hidden: true
+                    label: 'Static method name:'
+                    type: text
+                    maxlength: 127
+                tab__param_1:
+                    indent: 1
+                    hidden: true
+                    label: 'Parameter 1:'
+                    type: text
+                    maxlength: 255
+                tab__param_2:
+                    indent: 1
+                    hidden: true
+                    label: 'Parameter 2:'
+                    type: text
+                    maxlength: 255
+                
+                tab_visibility_2:
+                    snippet:
+                        show_split_values_from: tab_visibility
+                
+                invisible_in_nav:
+                    label: 'Hide the tab-link to this slide'
+                    type: checkbox
+                    side_note: >
+                        If hidden, the tab-link to this slide will not appear,
+                        but the slide may still be accessed.

@@ -174,12 +174,13 @@ methods.getItems = function() {
 
 methods.setupHierarchy = function($header, $panel, $footer) {
 	var that = this,
+		hierarchy = this.tuix.hierarchy || {},
 		id,
 		progress = true,
 		parentIdsToOpen = {},
 		$li,
 		$dd = $panel.find('.dd'),
-		maxDepth = (this.tuix.hierarchy && this.tuix.hierarchy.depth) || 99;
+		maxDepth = hierarchy.max_depth || 99;
 	
 	$dd.nestable({
 		maxDepth: maxDepth
@@ -187,7 +188,8 @@ methods.setupHierarchy = function($header, $panel, $footer) {
 	
 	//If there was a search term, always show all of the matches
 	//If not, allow the admin to open and close things
-	if (this.searchTerm === undefined) {
+	if (this.searchTerm === undefined
+	 && !engToBoolean(hierarchy.start_with_all_items_open)) {
 		//If there was no search term, start with everything closed
 		$dd.nestable('collapseAll');
 		
@@ -228,8 +230,14 @@ methods.setupHierarchy = function($header, $panel, $footer) {
 		}
 	}
 	
-	$dd.on('collapseItem', function() { that.collapseItem(); });
-	$dd.on('expandItem', function() { that.expandItem(); });
+	$dd.on('collapseItem', function() {
+		that.collapseItem();
+		that.hideHandles($dd);
+	});
+	$dd.on('expandItem', function() {
+		that.expandItem();
+		that.hideHandles($dd);
+	});
 	
 	
 	
@@ -248,6 +256,24 @@ methods.setupHierarchy = function($header, $panel, $footer) {
 	}
 	
 	this.$dd = $dd;
+	this.hideHandles($dd);
+};
+
+methods.hideHandles = function($dd) {
+	var hierarchy = this.tuix.hierarchy;
+	
+	if (hierarchy) {
+		if (engToBoolean(hierarchy.disable_dragging_top_level)) {
+			$dd.find('.dd-handle').hide();
+			
+			if (!engToBoolean(hierarchy.disable_dragging_children)) {
+				$dd.find('.dd-item .dd-item .dd-handle').show();
+			}
+		
+		} else if (engToBoolean(hierarchy.disable_dragging_children)) {
+			$dd.find('.dd-item .dd-item .dd-handle').hide();
+		}
+	}
 };
 
 methods.collapseItem = function() {
@@ -312,7 +338,7 @@ methods.scanNewHier = function(doSave) {
 		ordinal,
 		changesMade = false,
 		changes = {},
-		newHier = {},
+		allPositions = {},
 		ordCol = this.ordinalColumn();
 	
 	//Loop through the levels of the new hierarchy (which will be structured as parentId -> id)
@@ -329,7 +355,7 @@ methods.scanNewHier = function(doSave) {
 				continue;
 			}
 			
-			newHier[id] = parentId;
+			allPositions[id] = {parentId: parentId, ordinal: ordinal};
 			
 			//Look for anything that's not in its original place
 			if (!this.ordinals
@@ -376,6 +402,11 @@ methods.scanNewHier = function(doSave) {
 		actionRequests.hierarchy = true;
 		actionRequests.ordinals = {};
 		actionRequests.parent_ids = {};
+		
+		if (this.tuix.hierarchy
+		 && engToBoolean(this.tuix.hierarchy.send_full_hierarchy_onchange)) {
+			changes = allPositions;
+		}
 		
 		foreach (changes as id) {
 			saves += (saves? ',' : '') + id;

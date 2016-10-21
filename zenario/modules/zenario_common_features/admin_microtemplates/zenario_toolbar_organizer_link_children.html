@@ -1,0 +1,14 @@
+<li>
+	<a
+		<% if (m.href) { %>
+			href="{{URLBasePath + (zenarioATLinks.organizer || 'zenario/admin/organizer.php') + zenarioAT.customiseOrganizerLink(m.href, true)|escape}}"
+		<% } else if (m.onclick) { %>
+			onclick="{{m.onclick|escape}}"
+		<% } %>
+	>
+		<span>
+			<span class="organizer_item_image {{m.css_class|escape}}"></span>
+			{{m.label|escape}}
+		</span>
+	</a>
+</li>

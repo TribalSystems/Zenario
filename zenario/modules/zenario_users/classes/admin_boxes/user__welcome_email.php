@@ -30,20 +30,18 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		$userDetails = getUserDetails(arrayKey($box,"key","id"));
-		$values['details/email'] = $userDetails['email'];
-		$values['details/salutation'] = $userDetails['salutation'];
-		$values['details/first_name'] = $userDetails['first_name'];
-		$values['details/last_name'] = $userDetails['last_name'];
-	
-		$box['title'] = "Sending welcome email to the user \"" . arrayKey($userDetails,"identifier") . "\"";
-	
+		$userIds = explode(',', $box['key']['id']);
+		if (count($userIds) == 1) {
+			$userDetails = getUserDetails($userIds[0]);
+			$box['title'] = "Sending welcome email to the user \"" . $userDetails["identifier"] . "\"";
+		} else {
+			$box['title'] = "Sending welcome emails to " . count($userIds) . " users";
+		}
+		
 		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
-	
 		if (count($layouts)==0) {
 			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated',false);
 		}
-	
 		if (count($layouts)){
 			$template = current($layouts);
 			$fields['details/email_to_send']['value'] = arrayKey($template,'code');
@@ -67,39 +65,34 @@ class zenario_users__admin_boxes__user__welcome_email extends zenario_users {
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		$cols = array(
-			'email' => $values['details/email'],
-			'salutation' => $values['details/salutation'],
-			'first_name' => $values['details/first_name'],
-			'last_name' => $values['details/last_name']
-		);
-		
-		if ($e = isInvalidUser($cols, $box['key']['id'])) {
-			//If there are errors, add them to the first tab
-			foreach ($e->errors as $error) {
-				$box['tabs']['details']['errors'][] = adminPhrase($error);
+		$userIds = explode(',', $box['key']['id']);
+		foreach ($userIds as $userId) {
+			$user = getRow('users', array('identifier', 'email'), $userId);
+			if (!$user['email']) {
+				$box['tabs']['details']['errors'][] = adminPhrase('The user "[[identifier]]" must have an email address to send a welcome email.', $user);
 			}
-		} else if (!$values['details/email']) {
-			$box['tabs']['details']['errors'][] = adminPhrase("The user must have an email address to send a welcome email.");
 		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		if (($id = (int)$box['key']['id'])) {
-			if (issetArrayKey($values,'details/email_to_send') && (inc('zenario_email_template_manager'))) {
-				$mergeFields=getUserDetails($box['key']['id']);
-				if (isset($values['details/reset_password']) && $values['details/reset_password']) {
-					$mergeFields['password'] = randomString(8);
-					saveUser(array('password' => $mergeFields['password']), $box['key']['id']);
-				} elseif (isset($values['details/include_password']) && $values['details/include_password']) {
-					//show plain text password
-				} else {
-					$mergeFields['password'] = "********* (not shown)";
+		$userIds = explode(',', $box['key']['id']);
+		if ($userIds) {
+			if ($values['details/email_to_send'] && (inc('zenario_email_template_manager'))) {
+				foreach ($userIds as $userId) {
+					$mergeFields = getUserDetails($userId);
+					if (isset($values['details/reset_password']) && $values['details/reset_password']) {
+						$mergeFields['password'] = randomString(8);
+						saveUser(array('password' => $mergeFields['password']), $userId);
+					} elseif (isset($values['details/include_password']) && $values['details/include_password']) {
+						//show plain text password
+					} else {
+						$mergeFields['password'] = "********* (not shown)";
+					}
+					
+					$mergeFields['cms_url'] = absCMSDirURL();
+					
+					zenario_email_template_manager::sendEmailsUsingTemplate($mergeFields['email'], $values['details/email_to_send'], $mergeFields);
 				}
-				
-				$mergeFields['cms_url'] = absCMSDirURL();
-				
-				zenario_email_template_manager::sendEmailsUsingTemplate(arrayKey($mergeFields,'email'),arrayKey($values,'details/email_to_send'),$mergeFields);
 			}
 		}
 	}

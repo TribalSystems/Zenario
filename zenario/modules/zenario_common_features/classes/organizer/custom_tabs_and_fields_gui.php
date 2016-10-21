@@ -30,7 +30,6 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 class zenario_common_features__organizer__custom_tabs_and_fields_gui extends module_base_class {
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		
 		//Load details on this data-set
 		if ($dataset = getDatasetDetails($refinerId)) {
 			$panel['title'] = adminPhrase('Managing the dataset "[[label]]"', $dataset);
@@ -94,9 +93,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 					$moduleFilesLoaded, $tags, $type = 'admin_boxes', $dataset['extends_admin_box'],
 					$settingGroup = '', $compatibilityClassNames = false, $runningModulesOnly = true, $exitIfError = true
 				);
-				
-				$panel['existing_db_columns'] = array();
-				
 				
 				// Get fields from TUIX
 				if (!empty($tags[$dataset['extends_admin_box']]['tabs'])
@@ -249,11 +245,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								$fieldProperties['grouping'] = $panel['items'][$tab['name']]['system_fields'][$field['field_name']]['grouping'];
 							}
 						}
-						
-						// Record all used db_columns
-						if ($field['db_column']) {
-							$panel['existing_db_columns'][$id] = $field['db_column'];
-						}
 						$panel['items'][$tab['name']]['fields'][$fieldId] = $fieldProperties;
 					}
 					unset($panel['items'][$tab['name']]['system_fields']);
@@ -297,12 +288,16 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								if (!empty($tab['fields'])) {
 									foreach ($tab['fields'] as $fieldId => $field) {
 										if (!empty($field['remove'])) {
+											updateRow('custom_dataset_fields', array('protected' => 0), $fieldId);
 											deleteDatasetField($fieldId);
 										}
 									}
 								}
 							}
 						}
+						
+						$tempIdLink = array();
+						$tempFieldIdLink = array();
 						
 						// Get current dataset fields
 						$datasetFields = getRowsArray(
@@ -321,9 +316,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 									$ids = array(
 										'dataset_id' => $dataset['id']
 									);
-									if (empty($tab['is_system_field'])) {
-										$values['parent_field_id'] = $tab['parent_field_id'];
-									}
 									// Get next tab name for new tabs
 									if (!empty($tab['is_new_tab'])) {
 										$sql = "
@@ -337,21 +329,22 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 									} else {
 										$ids['name'] = $tab['name'];
 									}
+									
+									$oldTabName = $tabName;
+									$tempIdLink[$oldTabName] = array('name' => $ids['name'], 'fields' => array());
+									
 									$tabName = $ids['name'];
 									
 									// Save tab details
 									setRow('custom_dataset_tabs', $values, $ids);
-									
 									if (!empty($tab['fields'])) {
 										foreach ($tab['fields'] as $fieldId => $field) {
 											if (is_array($field)) {
-												
 												// Do not allow other_system_fields to be edited other than ordinal
 												if (!empty($datasetFields[$fieldId]) && $datasetFields[$fieldId]['type'] == 'other_system_field') {
 													setRow('custom_dataset_fields', array('ord' => $field['ord']), $fieldId);
 													continue;
 												}
-												
 												if (empty($field['remove'])) {
 													$values = array(
 														'tab_name' => $tabName,
@@ -372,8 +365,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 														$values['height'] = empty($field['height']) ? 0 : $field['height'];
 														$values['width'] = empty($field['width']) ? 0 : $field['width'];
 														
-														$values['admin_box_visibility'] = $field['admin_box_visibility'];
-														$values['parent_id'] = (($field['admin_box_visibility'] != 'show_on_condition') || empty($field['parent_id'])) ? 0 : $field['parent_id'];
 														$values['note_below'] = ($field['admin_box_visibility'] == 'hidden') ? '' : $values['note_below'];
 														$values['side_note'] = ($field['admin_box_visibility'] == 'hidden') ? '' : $values['side_note'];
 														
@@ -412,8 +403,6 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 														}
 													// Save a system fields admin box visibility if flag is set
 													} elseif (!empty($datasetFields[$fieldId]['allow_admin_to_change_visibility'])) {
-														$values['admin_box_visibility'] = $field['admin_box_visibility'];
-														$values['parent_id'] = (($field['admin_box_visibility'] != 'show_on_condition') || empty($field['parent_id'])) ? 0 : $field['parent_id'];
 														if (!empty($field['hide_in_organizer'])) {
 															$values['organizer_visibility'] = 'hide';
 														} else {
@@ -430,8 +419,15 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 														}
 													}
 													
+													$oldFieldId = $fieldId;
+													
 													// Save field
 													$fieldId = setRow('custom_dataset_fields', $values, $ids);
+													
+													$tempFieldIdLink[$oldFieldId] = $fieldId;
+													$tempIdLink[$oldTabName]['fields'][$oldFieldId] = $fieldId;
+													$tempFieldIdLink[$oldFieldId] = $fieldId;
+													
 													if (!$field['is_system_field'] 
 														&& empty($datasetFields[$fieldId]['is_system_field'])
 														&& (!empty($field['is_new_field']) || ($oldName && $oldName !== $field['db_column']))
@@ -476,6 +472,51 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 								}
 							}
 						}
+						
+						// Get saved dataset fields
+						$datasetFields = getRowsArray(
+							'custom_dataset_fields', 
+							array('db_column', 'type', 'is_system_field', 'allow_admin_to_change_visibility'), 
+							array('dataset_id' => $dataset['id'])
+						);
+						
+						foreach ($tempIdLink as $tempTabName => $tempTab) {
+							if (!isset($data[$tempTabName])) {
+								continue;
+							}
+							$tab = $data[$tempTabName];
+							$ids = array(
+								'dataset_id' => $dataset['id'],
+								'name' => $tempTab['name']
+							);
+							$values = array(
+								'parent_field_id' => 0
+							);
+							if (empty($tab['is_system_field']) && !empty($tempFieldIdLink[$tab['parent_field_id']])) {
+								$values['parent_field_id'] = $tempFieldIdLink[$tab['parent_field_id']];
+							}
+							updateRow('custom_dataset_tabs', $values, $ids);
+							
+							foreach ($tempTab['fields'] as $tempFieldId => $fieldId) {
+								if (!isset($data[$tempTabName]['fields'][$tempFieldId])) {
+									continue;
+								}
+								$field = $data[$tempTabName]['fields'][$tempFieldId];
+								$ids = array('id' => $fieldId);
+								$values = array(
+									'admin_box_visibility' => 'show', 
+									'parent_id' => 0
+								);
+								if (empty($datasetFields[$fieldId]['is_system_field']) || !empty($datasetFields[$fieldId]['allow_admin_to_change_visibility'])) {
+									$values['admin_box_visibility'] = $field['admin_box_visibility'];
+									if ($field['admin_box_visibility'] == 'show_on_condition' && !empty($tempFieldIdLink[$field['parent_id']])) {
+										$values['parent_id'] = $tempFieldIdLink[$field['parent_id']];
+									}
+								}
+								updateRow('custom_dataset_fields', $values, $ids);
+							}
+						}
+						
 					}
 					break;
 				case 'validate':
@@ -533,7 +574,7 @@ class zenario_common_features__organizer__custom_tabs_and_fields_gui extends mod
 											}
 										}
 										// Must choose condition if show_on_condition is chosen
-										if ($field['admin_box_visibility'] == 'show_on_condition') {
+										if (isset($field['admin_box_visibility']) && $field['admin_box_visibility'] == 'show_on_condition') {
 											if (empty($field['parent_id'])) {
 												$errors[] = adminPhrase('Please select a conditional display field.');
 											}

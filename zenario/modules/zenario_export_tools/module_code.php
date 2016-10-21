@@ -391,14 +391,14 @@ class zenario_export_tools extends module_base_class {
 					
 					
 					$sql = "
-						SELECT id, tab, ord, module_id, framework, is_tab, name_or_title
+						SELECT id, tab, ord, module_id, framework, is_slide, name_or_title
 						FROM ". DB_NAME_PREFIX. "nested_plugins
 						WHERE instance_id = ". (int) $slotContents[$slotName]['instance_id']. "
-						ORDER BY tab, is_tab DESC, ord";
+						ORDER BY tab, is_slide DESC, ord";
 					
 					$eggsResult = sqlQuery($sql);
 					while ($egg = sqlFetchAssoc($eggsResult)) {
-						if ($egg['is_tab']) {
+						if ($egg['is_slide']) {
 							zenario_export_tools::openTagStart($isXML, $f, 'tab', true);
 							zenario_export_tools::addAtt($isXML, $f, 'tab', $egg['tab']);
 							zenario_export_tools::openTagEnd($isXML, $encodeHTMLAtt, $f);
@@ -1088,7 +1088,7 @@ class zenario_export_tools extends module_base_class {
 											getRow('nested_plugins', 'id',
 												array(
 													'instance_id' => $instanceId,
-													'is_tab' => 1,
+													'is_slide' => 1,
 													'tab' => (int) $tab->attributes()->tab))
 										) {
 											$nestedPlugins[] = $id;
@@ -1104,7 +1104,7 @@ class zenario_export_tools extends module_base_class {
 												getRow('nested_plugins', 'id', 
 													array(
 														'instance_id' => $instanceId,
-														'is_tab' => 0,
+														'is_slide' => 0,
 														'tab' => (int) $egg->attributes()->tab,
 														'ord' => (int) $egg->attributes()->ord,
 														'module_id' => $nestedModuleId))
@@ -1164,7 +1164,7 @@ class zenario_export_tools extends module_base_class {
 											'name_or_title' => zenario_export_tools::getValue($tab)),
 										array(
 											'instance_id' => $instanceId,
-											'is_tab' => 1,
+											'is_slide' => 1,
 											'tab' => (int) $tab->attributes()->tab));
 								}
 							}
@@ -1187,7 +1187,7 @@ class zenario_export_tools extends module_base_class {
 												'name_or_title' => $egg->attributes()->name_or_title),
 											array(
 												'instance_id' => $instanceId,
-												'is_tab' => 0,
+												'is_slide' => 0,
 												'tab' => $tab,
 												'ord' => $ord,
 												'module_id' => $nestedModuleId));

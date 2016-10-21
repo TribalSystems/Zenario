@@ -1,10 +1,11 @@
-#organizer_leftColumn div.organizer_legend a.zenario_email_template_top_level {
+.organizer_top_level_image.zenario_email_template_top_level {
 	background: url('../../../admin/images/sprites/org-icons-v5.png') no-repeat;
 	background-position: -856px -57px;
 }
 
-#organizer_leftColumn div.legend_on a.zenario_email_template_top_level,
-#organizer_leftColumn div.organizer_legend a.zenario_email_template_top_level:hover {
+#zenario_at_top_left_menu .organizer_top_level_image.zenario_email_template_top_level,
+#organizer_leftColumn .legend_on a.zenario_email_template_top_level,
+.organizer_top_level_image.zenario_email_template_top_level:hover {
 	background-position: -906px -57px;
 }
 

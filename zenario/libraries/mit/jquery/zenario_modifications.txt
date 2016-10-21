@@ -14,64 +14,6 @@ Modifications for jQuery 1.9
 			zenario.browserIsOpera()
 
 
-jquery.colorbox.js
-  Modified a phrase
-	Replaced:
-		current: "image {current} of {total}",
-	With
-		current: "{current} / {total}",
-
-  Add a min width/height feature as per groups.google.com/forum/?fromgroups=#!topic/colorbox/BfiS7WiLKvU
-  and also set some senisble min/max widths/heights by default:
-	Replaced:
-		maxWidth: false,
-	With:
-		maxWidth: Math.floor($(window).width() * 0.9),
-	
-	Replaced:
-		maxHeight: false,
-	With:
-		maxHeight: Math.floor($(window).height() * 0.9),
-		
-	Replaced:
-		function getWidth() {
-			settings.w = settings.w || $loaded.width();
-			settings.w = settings.mw && settings.mw < settings.w ? settings.mw : settings.w;
-			return settings.w;
-		}
-		function getHeight() {
-			settings.h = settings.h || $loaded.height();
-			settings.h = settings.mh && settings.mh < settings.h ? settings.mh : settings.h;
-			return settings.h;
-		}
-	With:
-		function getWidth() {
-			settings.w = settings.w || $loaded.width();
-			if (settings.minWidth && settings.w < settings.minWidth){
-				settings.w = setSize(settings.minWidth, 'x');
-			}
-			settings.w = settings.mw && settings.mw < settings.w ? settings.mw : settings.w;
-			return settings.w;
-		}
-		function getHeight() {
-			settings.h = settings.h || $loaded.height();
-			if (settings.minHeight && settings.h < settings.minHeight){
-				settings.h = setSize(settings.minHeight, 'y');
-			}
-			settings.h = settings.mh && settings.mh < settings.h ? settings.mh : settings.h;
-			return settings.h;
-		}
-		
-	Replaced:
-					if (settings.h) {
-						photo.style.marginTop = Math.max(settings.mh - photo.height, 0) / 2 + 'px';
-					}
-	With:
-					if (settings.h || settings.minHeight) {
-						photo.style.marginTop = Math.max((settings.mh || settings.minHeight) - photo.height, 0) / 2 + 'px';
-					}
-
-
 jquery.nestable.js
 	Added a new function just after serialize:
         serialize_zenario_modified_version: function()
@@ -172,6 +114,9 @@ jquery-ui.datepicker.js
 
 jquery-ui.slider.js
 	This is the Slider Widget from jQuery UI
+
+jquery-ui.spinner.js
+	This is the Spinner Widget from jQuery UI
 
 
 

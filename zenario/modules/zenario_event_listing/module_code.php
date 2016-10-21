@@ -672,11 +672,7 @@ class zenario_event_listing extends module_base_class {
 				$fields['overall_list/heading_text']['hidden'] =
 					$values['overall_list/heading'] != 'show_heading';
 				
-				$fields['image_size/width']['hidden'] = 
-					!(in($values['image_size/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
-				
-				$fields['image_size/height']['hidden'] =
-					!(in($values['image_size/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
+				$this->showHideImageOptions($fields, $values, 'image_size');
 				break;
 		}
 	}

@@ -5,7 +5,6 @@ zenario_image:
         id: ""
     identifier:
         css_class: media_image
-        label: Image
         value: ''
     hide_tab_bar: true
     tabs:

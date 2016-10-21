@@ -26,73 +26,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
-define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor-2.4.8.jar');
-define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
 
-function displayUsage() {
-	echo
-"A tool for minifying JavaScript used by Zenario;
-this is a wrapper for calling YUI Compressor (http://developer.yahoo.com/yui/compressor/)
-or Closure Compiler (https://developers.google.com/closure/compiler/) on all relevant files.
 
-Usage:
-	php js_minify
-		Minify all of the JavaScript and CSS files that the CMS uses.
-	php js_minify filename.js
-		Minify a specific JavaScript and CSS files.
-	php js_minify directory
-		Minify all of the JavaScript and CSS files in a specific directory.
-	php js_minify p
-		List the files that would be minified, but don't do anything.
-	php js_minify v
-		Use debug/verbose mode when minifying.
-
-Notes:
-  * The Zenario download does not come with a copy of Closure Compiler to save space,
- 	but if you download a copy and put it in the right place then this program will use it.
-  * If you have svn, this script will only minify files that svn says are new or modified.
-
-";
-	exit;
-}
-
-//Macros and replacements
-function applyCompilationMacros($code) {
-	
-	//Check if this JavaScript file uses the zenario.lib function.
-	//If so, we can use the has() shortcut.
-	//If not, we need to write out zenario.has() in full.
-	if (false !== strpos($code, 'zenario.lib(')
-	 && false !== strpos($code, 'extensionOf, methodsOf, has')) {
-		$has = 'has';
-	} else {
-		$has = 'zenario.has';
-	}
-	
-	//"foreach" is a macro for "for .. in ... hasOwnProperty"
-	$patterns = array();
-	$replacements = array();
-	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\=\>\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
-	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue; \4 \5 = \1[\3];';
-	$patterns[] = '/\bforeach\b\s*\(\s*(.+?)\s*\bas\b\s*(\bvar\b |)\s*(.+?)\s*\)\s*\{/';
-	$replacements[] = 'for (\2\3 in \1) { if (!'. $has. '(\1, \3)) continue;';
-	
-	//We don't have node as a dependency so we can't use Babel.
-	//So we'll try and make do with a few replacements instead!
-	$patterns[] = '/\(([\w\s,]*)\)\s*\=\>\s*\{/';
-	$replacements[] = 'function ($1) {';
-	$patterns[] = '/(\b\w+\b)\s*\=\>\s*\{/';
-	$replacements[] = 'function ($1) {';
-	
-	return preg_replace($patterns, $replacements, $code);
-}
 
 
 //Change directory to the CMS root directory
+$i = 0;
 $prefix = '';
 do {
 	if (is_file($prefix. 'zenario/basicheader.inc.php')) {
@@ -105,16 +47,14 @@ do {
 		exit;
 	}
 	$prefix .= '../';
+	++$i;
 } while (true);
 
 //Define a constant to mark than any further include files have been legitamately included
 define('THIS_FILE_IS_BEING_DIRECTLY_ACCESSED', false);
 define('NOT_ACCESSED_DIRECTLY', true);
 require 'zenario/admin/db_updates/latest_revision_no.inc.php';
-
-//Use the closure compiler for .js files if it has been installed
-//(otherwise we must use YUI Compressor which gives slightly larger filesizes).
-define('USE_CLOSURE_COMPILER', file_exists(CLOSURE_COMPILER_PATH));
+require 'zenario/includes/js_minify.inc.php';
 
 
 
@@ -159,123 +99,6 @@ if ($arg1 == 'p') {
 	$specific = $arg1;
 }
 
-
-function minify($dir, $file, $level, $ext = '.js') {
-	
-	$isCSS = $ext == '.css';
-	$yamlToJSON = $ext == '.yaml';
-	
-	if ($yamlToJSON) {
-		$srcFile = $dir. $file. $ext;
-		$minFile = $dir. $file. '.json';
-	} else {
-		$srcFile = $dir. $file. $ext;
-		$minFile = $dir. $file. '.min'. $ext;
-		//$mapFile = $dir. $file. '.min'. '.map';
-	}
-	
-	if (!file_exists($srcFile)) {
-		return;
-	}
-	
-	$v = '';
-	if ($level > 2) {
-		echo ':'. $srcFile. "\n";
-		
-		if (!$isCSS && USE_CLOSURE_COMPILER) {
-			$v = '--warning_level VERBOSE ';
-		} else {
-			$v = '-v ';
-		}
-	}
-	
-	if (!file_exists($dir. $file. '.pack.js')) {
-		
-		$svnAdd = false;
-		$modified = true;
-		$needsreverting = false;
-		
-		if (is_dir('.svn')) {
-			$svnAdd = !file_exists($minFile);
-			
-			$modified = 
-				RECOMPRESS_EVERYTHING ||
-				exec('svn status '.
-							escapeshellarg($srcFile)
-					);
-			
-			if (!$svnAdd && !$modified) {
-				$needsreverting = 
-					exec('svn status '.
-								escapeshellarg($minFile)
-						);
-			}
-		}
-		
-		if ($modified || ($needsreverting && !IGNORE_REVERTS)) {
-			if ($needsreverting && !IGNORE_REVERTS) {
-				echo '-reverting '. $minFile. "\n";
-			} else {
-				echo '-compressing '. $srcFile. "\n";
-			}
-			
-			if ($level > 1) {
-				if ($needsreverting && !IGNORE_REVERTS) {
-					exec('svn revert '.
-								escapeshellarg($minFile)
-						);
-				} else {
-					
-					//For our JavaScript files, automatically add
-					//foreach-style loops that also automatically add a call
-					//to .hasOwnProperty() for safety.
-					//Note that JavaScript works slightly differently to php; if you only
-					//specifiy one variable then it becomes the key, not the value
-					if (!$isCSS
-					 && !$yamlToJSON
-					 && substr($dir, 0, 18) != 'zenario/libraries/') {
-						$tmpFile = tempnam(sys_get_temp_dir(), 'js');
-						file_put_contents($tmpFile, applyCompilationMacros(file_get_contents($srcFile)));
-						$srcFile = $tmpFile;
-					}
-					
-					
-					if ($yamlToJSON) {
-						require_once 'zenario/libraries/mit/spyc/Spyc.php';
-						$tags = Spyc::YAMLLoad($srcFile);
-						file_put_contents($minFile, json_encode($tags));
-					
-					} elseif (!$isCSS && USE_CLOSURE_COMPILER) {
-						exec('java -jar '. escapeshellarg(CLOSURE_COMPILER_PATH). ' '. $v. ' --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file '.
-									escapeshellarg($minFile).
-							//Code to generate a source-map if needed
-								//' --source_map_format=V3 --create_source_map '.
-								//	escapeshellarg($mapFile).
-								' --js '. 
-									escapeshellarg($srcFile)
-							);
-					} else {
-						exec('java -jar '. escapeshellarg(YUI_COMPRESSOR_PATH). ' --type '. ($isCSS? 'css' : 'js'). ' '. $v. '--line-break 150 -o '.
-									escapeshellarg($minFile).
-								' '. 
-									escapeshellarg($srcFile)
-							);
-					}
-				}
-			}
-			
-			if ($svnAdd) {
-				echo '-svn adding '. $minFile. "\n";
-				
-				if ($level > 1) {
-					exec('svn add '.
-								escapeshellarg($minFile)
-						);
-				}
-			}
-		}
-	}
-}
 
 if ($specific) {
 	if ((is_dir($dir = $specific)) && ($scan = scandir($dir))) {
@@ -414,7 +237,7 @@ if ((is_dir($dir = 'zenario/libraries/mit/jquery/css/')) && ($scan = scandir($di
 }
 
 //Minify TinyMCE files
-minify(TINYMCE_DIR, 'tinymce.jquery', $level, '.js');
+minify(TINYMCE_DIR, 'tinymce', $level, '.js');
 minify(TINYMCE_DIR. 'themes/modern/', 'theme', $level, '.js');
 if ($scan = scandir(TINYMCE_DIR. 'plugins')) {
 	foreach ($scan as $module) {
@@ -432,9 +255,6 @@ minify('zenario/libraries/mit/colorbox/', 'jquery.colorbox', $level, '.js');
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout', $level, '.js');
 minify('zenario/libraries/bsd/jquery_roundabout/', 'jquery.roundabout-shapes', $level, '.js');
 
-//Minify Modernizr
-minify('zenario/libraries/bsd/modernizr/', 'modernizr', $level, '.js');
-
 //Minify Tokenizer
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.css');
 minify('zenario/libraries/bsd/tokenize/', 'jquery.tokenize', $level, '.js');
@@ -449,6 +269,9 @@ minify('zenario/libraries/mit/intro/', 'intro', $level, '.js');
 
 //Minify jPaginator
 minify('zenario/libraries/mit/jpaginator/', 'jPaginator', $level, '.js');
+
+//Minify Modernizr
+minify('zenario/libraries/mit/modernizr/', 'modernizr', $level, '.js');
 
 //Minify Respond
 minify('zenario/libraries/mit/respond/', 'respond', $level, '.js');

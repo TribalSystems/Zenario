@@ -110,6 +110,13 @@ sections:
                     max_path: false
                     disallow_refiners_looping_on_min_path: false
                     reload_admin_toolbar: true
+    
+    slot_controls:
+        buttons:
+            slot_control_dropdown:
+                label: Slots
+                hide_when_children_are_not_visible: true
+    
     status_button:
         buttons:
             status_button:

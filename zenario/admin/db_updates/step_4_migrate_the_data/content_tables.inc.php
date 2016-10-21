@@ -449,3 +449,39 @@ if (needRevision(36380)) {
 	
 	revision(36380);
 }
+
+//We've added some new columns to the template_slot_link table, and made some changes to the format of our .tpl files.
+//Try to load the information from each layout on the disk, and re-render the files if they are writable.
+if (needRevision(36995)) {
+	
+	require_once CMS_ROOT. 'zenario/admin/grid_maker/grid_maker.inc.php';
+	
+	//Look for all grid layouts
+	foreach (getRowsArray(
+		'layouts',
+		array('layout_id', 'family_name', 'file_base_name'),
+		array('family_name' => 'grid_templates')
+	) as $layout) {
+		
+		//Attempt to read the grid data from the template file
+		if (($data = zenario_grid_maker::readLayoutCode($layout['layout_id']))
+		 && (!empty($data['cells']))) {
+			
+			//Attempt to regenerate the .tpl and .css files.
+			//This may fail (e.g. if the files were not writable), but even if it fails it may still return
+			//the slot information.
+			$slots = array();
+			zenario_grid_maker::generateDirectory($data, $slots, $writeToFS = true, $preview = false, $layout['file_base_name']);
+			
+			//Update the slot information in the database
+			if (!empty($slots)) {
+				zenario_grid_maker::updateMetaInfoInDB($data, $slots, $layout);
+			}
+			unset($data);
+			unset($slots);
+		}
+	}
+
+	
+	revision(36995);
+}

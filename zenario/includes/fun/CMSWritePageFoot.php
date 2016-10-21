@@ -68,9 +68,14 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 		checkForChangesInYamlFiles();
 	}
 	
-	setupAdminFloatingBoxes();
-	
 	echo '
+<div id="zenario_slotControls">';
+
+	//Write all of the slot controls to the page
+	setupAdminSlotControls(cms_core::$slotContents, false);
+
+echo '
+</div>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.admin.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/mit/jquery/jquery-ui.datepicker.min.js?v=', $v, '"></script>
 <script type="text/javascript" src="', $prefix, 'libraries/bsd/ace/src-min-noconflict/ace.js?v=', $v, '"></script>
@@ -101,12 +106,9 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 			INNER JOIN ". DB_NAME_PREFIX. "modules AS m
 			   ON m.class_name = tfc.module_class_name
 			  AND m.status IN ('module_running', 'module_is_abstract')
-			WHERE tfc.panel_type IN ('google_map', 'list_or_grid_or_google_map', 'schematic_builder')";
-		$panelTypes = array();
-		$result = sqlSelect($sql);
-		while ($row = sqlFetchRow($result)) {
-			$panelTypes[$row[0]] = true;
-		}
+			WHERE tfc.panel_type IN ('google_map', 'list_or_grid_or_google_map', 'network_graph', 'schematic_builder')";
+		
+		$panelTypes = arrayValuesToKeys(sqlFetchValues($sql));
 		
 		if (isset($panelTypes['google_map']) || isset($panelTypes['list_or_grid_or_google_map'])) {
 			if (!defined('ZENARIO_GOOGLE_MAP_ON_PAGE')) {
@@ -114,6 +116,11 @@ if ($isWelcomeOrWizard || $inAdminMode) {
 				echo '
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?libraries=geometry&key=' , urlencode(setting('google_maps_api_key')) , '"></script>';
 			}
+		}
+		
+		if (isset($panelTypes['network_graph'])) {
+			echo '
+<script type="text/javascript" src="', $prefix, 'libraries/mit/cytoscape/cytoscape.min.js"></script>';
 		}
 		
 		if (isset($panelTypes['schematic_builder'])) {
@@ -277,6 +284,60 @@ if (!$isWelcomeOrWizard && cms_core::$pluginJS) {
 <script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', cms_core::$pluginJS, $gz, '"></script>';
 }
 
+
+//Add JS needed for modules in Admin Mode in the frontend
+if ($inAdminMode && cms_core::$cID) {
+	$jsModuleIds = '';
+	foreach (getRunningModules() as $module) {
+		if (moduleDir($module['class_name'], 'js/admin_frontend.js', true)
+		 || moduleDir($module['class_name'], 'js/admin_frontend.min.js', true)) {
+			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
+		}
+	}
+	
+	if ($jsModuleIds) {
+		echo '
+<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
+	}
+	
+	//If we've just made a draft, and there's a callback, perform the callback
+	if (!empty($_SESSION['zenario_draft_callback'])) {
+		echo '
+		<script type="text/javascript">
+			$(document).ready(function() {
+				zenarioA.draftDoCallback("', jsEscape($_SESSION['zenario_draft_callback']), '");
+			});
+		</script>';
+		
+		unset($_SESSION['zenario_draft_callback']);
+	}
+}
+
+//Are there plugins on this page..?
+if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
+	//Include the Foot for any plugin instances on the page, if they have one
+	foreach(cms_core::$slotContents as $slotName => &$instance) {
+		if (!empty($instance['class'])) {
+			$edition = cms_core::$edition;
+			$edition::preSlot($slotName, 'addToPageFoot');
+				$instance['class']->addToPageFoot();
+			$edition::postSlot($slotName, 'addToPageFoot');
+		}
+	}
+	
+	if (!empty($scriptTypes[2])) {
+		echo "\n". '<script type="text/javascript">(function(c) {';
+		
+		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
+			foreach ($scriptsForPlugin as &$script) {
+				echo "\n", 'c(', json_encode($script), ');';
+			}
+		}
+				
+		echo "\n", '})(zenario.callScript);</script>';
+	}
+}
+
 //Are there Plugins on this page..?
 if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	echo '
@@ -367,60 +428,6 @@ if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
 	}
 	
 	echo "\n</script>";
-}
-
-
-//Add JS needed for modules in Admin Mode in the frontend
-if ($inAdminMode && cms_core::$cID) {
-	$jsModuleIds = '';
-	foreach (getRunningModules() as $module) {
-		if (moduleDir($module['class_name'], 'js/admin_frontend.js', true)
-		 || moduleDir($module['class_name'], 'js/admin_frontend.min.js', true)) {
-			$jsModuleIds .= ($jsModuleIds? ',' : ''). $module['id'];
-		}
-	}
-	
-	if ($jsModuleIds) {
-		echo '
-<script type="text/javascript" src="', $prefix, 'js/plugin.wrapper.js.php?v=', $v, '&amp;ids=', $jsModuleIds, $gz, '&amp;admin_frontend=1"></script>';
-	}
-	
-	//If we've just made a draft, and there's a callback, perform the callback
-	if (!empty($_SESSION['zenario_draft_callback'])) {
-		echo '
-		<script type="text/javascript">
-			$(document).ready(function() {
-				zenarioA.draftDoCallback("', jsEscape($_SESSION['zenario_draft_callback']), '");
-			});
-		</script>';
-		
-		unset($_SESSION['zenario_draft_callback']);
-	}
-}
-
-//Are there plugins on this page..?
-if (!empty(cms_core::$slotContents) && is_array(cms_core::$slotContents)) {
-	//Include the Foot for any plugin instances on the page, if they have one
-	foreach(cms_core::$slotContents as $slotName => &$instance) {
-		if (!empty($instance['class'])) {
-			$edition = cms_core::$edition;
-			$edition::preSlot($slotName, 'addToPageFoot');
-				$instance['class']->addToPageFoot();
-			$edition::postSlot($slotName, 'addToPageFoot');
-		}
-	}
-	
-	if (!empty($scriptTypes[2])) {
-		echo "\n". '<script type="text/javascript">(function(c) {';
-		
-		foreach ($scriptTypes[2] as &$scriptsForPlugin) {
-			foreach ($scriptsForPlugin as &$script) {
-				echo "\n", 'c(', json_encode($script), ');';
-			}
-		}
-				
-		echo "\n", '})(zenario.callScript);</script>';
-	}
 }
 
 

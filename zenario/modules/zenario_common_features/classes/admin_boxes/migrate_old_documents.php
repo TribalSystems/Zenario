@@ -41,10 +41,11 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 				$link = '';
 				$datasetDetails = getDatasetDetails('documents');
 				if ($details = getDatasetDetails('documents')) {
-					$link = absCMSDirURL(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets/item//'.$details['id'].'//';
+					$link = absCMSDirURL(). 'zenario/admin/organizer.php?#zenario__administration/panels/custom_datasets//'.$details['id'];
 				}
-				$textDocumentDatasetFields = 
-					getRowsArray('custom_dataset_fields', 'label', array('type' => 'text', 'dataset_id' => $datasetDetails['id']));
+				$textDocumentDatasetFields = getRowsArray('custom_dataset_fields', array('label', 'default_label'), array('type' => 'text', 'dataset_id' => $datasetDetails['id']), 'ord');
+				$textDocumentDatasetFields = array_map(function($e) { return $e['label'] ? $e['label'] : $e['default_label']; }, $textDocumentDatasetFields);
+				
 				if (empty($textDocumentDatasetFields)) {
 					$fields['details/title']['hidden'] = $fields['details/language_id']['hidden'] = true;
 					$fields['details/title_warning']['hidden'] = $fields['details/language_id_warning']['hidden'] = false;
@@ -84,7 +85,6 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 		$datasetDetails = getDatasetDetails('documents');
 		$documentList = explode(',',$box['key']['id']);
 		$documentData = array();
-		$documentDatasetFieldDetails = getRowsArray('custom_dataset_fields', 'db_column', array('dataset_id' => $datasetDetails['id']));
 		
 		// Get folder ID
 		$folder_id = 0;
@@ -103,6 +103,12 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 		$failed = 0;
 		$succeeded = 0;
 		
+		// Get filenames of all documents in this folder in to check for uniqueness
+		$existingDocumentNamesInFolder = array();
+		$result = getRows('documents', array('filename'), array('folder_id' => $folder_id));
+		while ($row = sqlFetchAssoc($result)) {
+		    $existingDocumentNamesInFolder[$row['filename']] = true;
+		}
 		
 		foreach($documentList as $tagId) {
 			// Get old document details
@@ -115,10 +121,10 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 				WHERE c.tag_id = "'.sqlEscape($tagId).'"';
 			$result = sqlSelect($sql);
 			$documentData = sqlFetchAssoc($result);
-			// If alreadly migrated, go to next document
-			if (checkRowExists('documents', array('file_id' => $documentData['file_id']))) {
-				$failed++;
-				continue;
+			
+			if (isset($existingDocumentNamesInFolder[$documentData['filename']])) {
+			    $failed++;
+			    continue;
 			}
 			
 			$documentProperties = array(
@@ -134,25 +140,17 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 			// Create new document
 			$documentId = insertRow('documents', $properties);
 			
-			// Get document custom data
-			$customData = array();
-			if ($values['details/title']) {
-				$customData[$documentDatasetFieldDetails[$values['details/title']]] = $documentData['title'];
+			$userAssignedMetaDataFields = array('title', 'language_id', 'description', 'keywords', 'content_summary');
+			foreach ($userAssignedMetaDataFields as $metaField) {
+			    if (!empty($values['details/' . $metaField])) {
+			        $datasetField = getDatasetFieldDetails($metaField, $datasetDetails['id']);
+			        if ($datasetField['is_system_field']) {
+			            updateRow('documents', array($metaField => $documentData[$metaField]), $documentId);
+			        } else {
+			            setRow('documents_custom_data', array($metaField => $documentData[$metaField]), array('document_id' => $documentId));
+			        }
+			    }
 			}
-			if ($values['details/language_id']) {
-				$customData[$documentDatasetFieldDetails[$values['details/language_id']]] = $documentData['language_id'];
-			}
-			if ($values['details/description']) {
-				$customData[$documentDatasetFieldDetails[$values['details/description']]] = $documentData['description'];
-			}
-			if ($values['details/keywords']) {
-				$customData[$documentDatasetFieldDetails[$values['details/keywords']]] = $documentData['keywords'];
-			}
-			if ($values['details/content_summary']) {
-				$customData[$documentDatasetFieldDetails[$values['details/content_summary']]] = $documentData['content_summary'];
-			}
-			// Save document custom data
-			setRow('documents_custom_data', $customData, array('document_id' => $documentId));
 			$succeeded++;
 			
 			// Hide document
@@ -166,8 +164,8 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 			$box['popout_message'] .= "<!--Message_Type:Error-->";
 			$box['popout_message'] .= '<p>';
 			$box['popout_message'] .= nAdminPhrase(
-				'[[failed]] file could not be migrated as a document with this file already exists',
-				'[[failed]] files could not be migrated as a document with this file already exists',
+				'[[failed]] file could not be migrated as a document with the same filename already exists in that folder.',
+				'[[failed]] files could not be migrated as a document with the same filename already exists in that folder.',
 				$failed,
 				array('failed' => $failed));
 			$box['popout_message'] .= '</p>';
@@ -175,16 +173,16 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 			$box['popout_message'] .= "<!--Message_Type:Warning-->";
 			$box['popout_message'] .= '<p>';
 			$box['popout_message'] .= nAdminPhrase(
-				'[[failed]] file could not be migrated as a document with this file already exists',
-				'[[failed]] files could not be migrated as a document with this file already exists',
+				'[[failed]] file could not be migrated as a document with the same filename already exists in that folder.',
+				'[[failed]] files could not be migrated as a document with the same filename already exists in that folder.',
 				$failed,
 				array('failed' => $failed));
 			$box['popout_message'] .= '</p>';
 			
 			$box['popout_message'] .= '<p>';
 			$box['popout_message'] .= nAdminPhrase(
-				'[[succeeded]] file was successfully migrated',
-				'[[succeeded]] files were successfully migrated',
+				'[[succeeded]] file was successfully migrated.',
+				'[[succeeded]] files were successfully migrated.',
 				$succeeded,
 				array('succeeded' => $succeeded));
 			$box['popout_message'] .= '</p>';
@@ -193,8 +191,8 @@ class zenario_common_features__admin_boxes__migrate_old_documents extends module
 			$box['popout_message'] .= "<!--Message_Type:Success-->";
 			$box['popout_message'] .= '<p>';
 			$box['popout_message'] .= nAdminPhrase(
-				'[[succeeded]] file was successfully migrated',
-				'[[succeeded]] files were successfully migrated',
+				'[[succeeded]] file was successfully migrated.',
+				'[[succeeded]] files were successfully migrated.',
 				$succeeded,
 				array('succeeded' => $succeeded));
 			$box['popout_message'] .= '</p>';

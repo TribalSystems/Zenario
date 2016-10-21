@@ -9,7 +9,7 @@ zenario__user_forms:
             no_items_message: No Forms have been created.
             select_mode_title: Select a form...
             db_items:
-                table: '[[DB_NAME_PREFIX]]user_forms AS f'
+                table: '[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms AS f'
                 where_statement: WHERE f.status = 'active'
                 id_column: f.id
             refiners:
@@ -50,7 +50,7 @@ zenario__user_forms:
                     tooltip: Field count
                     db_column: |
                         (
-                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]]user_form_fields
+                        SELECT COUNT(*) FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields
                         WHERE user_form_id=f.id
                         )
                     show_by_default: true
@@ -99,6 +99,7 @@ zenario__user_forms:
             
             collection_buttons:
                 create:
+                    ord: 1
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     css_class: zenario_create_a_new
@@ -108,12 +109,14 @@ zenario__user_forms:
                         path: zenario_user_admin_box_form
                     hide_on_refiner: archived
                 create_advanced_dropdown:
+                    ord: 2
                     hide_in_select_mode: true
                     hide_on_filter: true
                     label: Advanced
                     hide_on_refiner: archived
                     hide_when_children_are_not_visible: true
                 create_profile_form:
+                    ord: 3
                     priv: _PRIV_MANAGE_FORMS
                     parent: create_advanced_dropdown
                     label: Create profile form
@@ -122,6 +125,7 @@ zenario__user_forms:
                         key:
                             type: profile
                 create_registration_form:
+                    ord: 4
                     priv: _PRIV_MANAGE_FORMS
                     parent: create_advanced_dropdown
                     label: Create registration form
@@ -129,22 +133,31 @@ zenario__user_forms:
                         path: zenario_user_admin_box_form
                         key:
                             type: registration
+                import_form:
+                    ord: 5
+                    priv: _PRIV_MANAGE_FORMS
+                    label: Import forms
+                    admin_box:
+                        path: zenario_import_user_forms
             
             item_buttons:
                 edit:
+                    ord: 1
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Edit form meta data
                     admin_box:
                         path: zenario_user_admin_box_form
                 edit_form_fields_gui:
+                    ord: 2
                     priv: _PRIV_MANAGE_FORMS
-                    label: Edit form fields (GUI)
+                    label: Edit form fields
                     link:
                         path: zenario__user_forms/panels/form_fields_gui
                         branch: true
                         refiner: user_form_id
                 duplicate:
+                    ord: 3
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Duplicate
@@ -152,18 +165,35 @@ zenario__user_forms:
                         confirm:
                             message: |
                                 Are you sure you want to duplicate the form "[[name]]"?
-                            button_message: 'Yes'
+                            button_message: 'Duplicate'
                             cancel_button_message: Cancel
                             message_type: warning
                         request:
                             duplicate_form: "1"
                     hide_on_refiner: archived
-                
+                export_forms:
+                    ord: 3.1
+                    priv: _PRIV_MANAGE_FORMS
+                    hide_in_select_mode: true
+                    label: Export
+                    multiple_select: true
+                    ajax:
+                        confirm:
+                            message: |
+                                Are you sure you want to export the selected forms?
+                            button_message: 'Export'
+                            cancel_button_message: Cancel
+                            message_type: warning
+                            download: true
+                        request:
+                            export_forms: "1"
                 view_dropdown:
+                    ord: 4
                     label: View
                     hide_in_select_mode: true
                     hide_when_children_are_not_visible: true
                 view_responses:
+                    ord: 5
                     label: Responses
                     priv: _PRIV_VIEW_FORM_RESPONSES
                     parent: view_dropdown
@@ -171,6 +201,7 @@ zenario__user_forms:
                         path: zenario__user_forms/panels/zenario_user_forms__user_responses
                         refiner: form_id
                 view_content_items:
+                    ord: 6
                     label: Content items this form is used on
                     parent: view_dropdown
                     link:
@@ -178,6 +209,7 @@ zenario__user_forms:
                         refiner: form_id
                     
                 delete:
+                    ord: 98
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Delete
@@ -205,6 +237,7 @@ zenario__user_forms:
                             delete_form: "1"
                     hide_on_refiner: archived
                 archive:
+                    ord: 99
                     priv: _PRIV_MANAGE_FORMS
                     hide_in_select_mode: true
                     label: Archive

@@ -573,14 +573,19 @@ class zenario_newsletter extends module_base_class {
 		$search = array();
 		$replace = array();
 		if (isset($user['admin_account'])) {
-			$search[] = '[[SALUTATION]]';
-			$replace[] = htmlspecialchars($user['salutation']);
+			if(isset($user['salutation'])){
+				$search[] = '[[SALUTATION]]';
+				$replace[] = htmlspecialchars($user['salutation']);
+			}
 			
-			$search[] = '[[FIRST_NAME]]';
-			$replace[] = htmlspecialchars($user['first_name']);
-			
-			$search[] = '[[LAST_NAME]]';
-			$replace[] = htmlspecialchars($user['last_name']);
+			if(isset($user['first_name'])){
+				$search[] = '[[FIRST_NAME]]';
+				$replace[] = htmlspecialchars($user['first_name']);
+			}
+			if(isset($user['last_name'])){
+				$search[] = '[[LAST_NAME]]';
+				$replace[] = htmlspecialchars($user['last_name']);
+			}
 			
 		} else {
 			$userDetails = getUserDetails($user['id']);

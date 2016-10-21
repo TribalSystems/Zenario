@@ -61,13 +61,15 @@ if ($checksum) {
 useGZIP();
 
 
-//Storekeeper views should have an admin header; 
-if (isset($_GET['og'])
- || isset($_GET['ogl'])
- || isset($_GET['ogt'])
- || isset($_GET['closeup'])
- || isset($_GET['popout'])
- || isset($_GET['adminDownload'])) {
+//There are several places in Organizer/admin mode where an image is displayed with an id and no checksum.
+//Allow this, but only in admin mode.
+if (isset($_GET['adminDownload'])
+ || !$checksum
+ && (isset($_GET['og'])
+  || isset($_GET['ogl'])
+  || isset($_GET['ogt'])
+  || isset($_GET['closeup'])
+  || isset($_GET['popout']))) {
 	
 	startSession();
 	if (empty($_SESSION['running_a_wizard'])) {
@@ -135,9 +137,6 @@ $getUploadedFileInCacheDir =
 	//(This is only allowed under certain situations, as images may be protected or not public.)
 if ($usage == 'user' && request('user_id')) {
 	$id = getRow('users', 'image_id', array('id' => request('user_id')));
-
-} elseif ($usage == 'group' && request('group_id')) {
-	$id = getRow('groups', 'image_id', array('id' => request('group_id')));
 
 } elseif ($usage == 'template' && request('layout_id')) {
 	$id = getRow('layouts', 'image_id', request('layout_id'));

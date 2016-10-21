@@ -18,14 +18,6 @@ plugin_settings:
                     label: 'Display a title'
                     type: checkbox
                     value: "1"
-                form_warning:
-                    hidden: true
-                    pre_field_html: "<div class=\"zenario_fbWarning\">"
-                    snippet:
-                        html: |
-                            Warning, the form you selected does not save user data. Please ensure "Create user/contact record" is set and the "Action" property is set to "Overwrite old record".
-                    post_field_html: "</div>"
-                    full_width: true
                 profile_form:
                     plugin_setting:
                         name: user_form
@@ -42,4 +34,41 @@ plugin_settings:
                     validation:
                         required_if_not_hidden: Please select a form
                     format_onchange: true
-
+        phrases:
+            label: Phrases
+            fields:
+                view_profile_title:
+                    plugin_setting:
+                        name: view_profile_title
+                    label: 'View profile title:'
+                    type: text
+                    value: 'Your profile'
+                    show_phrase_icon: true
+                edit_profile_title:
+                    plugin_setting:
+                        name: edit_profile_title
+                    label: 'Edit profile title:'
+                    type: text
+                    value: 'Edit your profile'
+                    show_phrase_icon: true
+                profile_updated:
+                    plugin_setting:
+                        name: profile_updated
+                    label: 'Profile updated message:'
+                    type: text
+                    value: 'Your profile has been updated.'
+                    show_phrase_icon: true
+                edit_profile_button_text:
+                    plugin_setting:
+                        name: edit_profile_button_text
+                    label: 'Edit profile button text:'
+                    type: text
+                    value: 'Edit profile'
+                    show_phrase_icon: true
+                cancel_button_text:
+                    plugin_setting:
+                        name: cancel_button_text
+                    label: 'Cancel button text:'
+                    type: text
+                    value: 'Cancel'
+                    show_phrase_icon: true

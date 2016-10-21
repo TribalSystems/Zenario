@@ -80,6 +80,10 @@ if ($methodCall == 'refreshPlugin'
 		$cVersion = getAppropriateVersion($cID, $cType);
 	}
 	
+	//Look variables such as userId, locationId, etc., in the request
+	require editionInclude('checkRequestVars');
+	
+	
 	$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
 	if (!$status || is_string($status)) {
 		exit;
@@ -336,11 +340,6 @@ if ($methodCall == 'showFile') {
 		echo 'No path specified!';
 		exit;
 	}
-	if (zenario_fea_tuix::$customisationName = request('_cn')) {
-		
-	} else {
-		zenario_fea_tuix::$customisationName = '';
-	}
 	$debugMode = checkPriv() && (bool) get('_debug');
 	
 	if ($isForPlugin) {
@@ -351,15 +350,15 @@ if ($methodCall == 'showFile') {
 	cms_core::$skPath = $requestedPath;
 	
 	//Check to see if this path is allowed.
-	if (!$module->returnVisitorTUIXEnabled($requestedPath, zenario_fea_tuix::$customisationName)) {
-		echo 'Access not allowed!';
+	if (!$module->returnVisitorTUIXEnabled($requestedPath)) {
+		echo 'You do not have access to this plugin in this mode, or the plugin settings are incomplete.';
 		exit;
 	}
 	
 	$tags = array();
 	$originalTags = array();
 	$moduleFilesLoaded = array();
-	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $requestedPath, zenario_fea_tuix::$customisationName);
+	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $requestedPath);
 	
 	if (empty($tags[$requestedPath])) {
 		echo 'Path not found!';
@@ -418,7 +417,7 @@ if ($methodCall == 'showFile') {
 			
 			$saving = $methodCall == 'saveVisitorTUIX';
 	
-			$module->validateVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes, $saving);
+			$module->validateVisitorTUIX($requestedPath, $tags, $fields, $values, $changes, $saving);
 			
 			
 			if ($saving) {
@@ -450,7 +449,7 @@ if ($methodCall == 'showFile') {
 						readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
 					}
 					
-					$module->saveVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes);
+					$module->saveVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
 				}
 			}
 		}
@@ -474,7 +473,7 @@ if ($methodCall == 'showFile') {
 			readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false);
 		}
 	
-		$module->fillVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values);
+		$module->fillVisitorTUIX($requestedPath, $tags, $fields, $values);
 	}
 
 	$fields = array();
@@ -484,7 +483,7 @@ if ($methodCall == 'showFile') {
 		readAdminBoxValues($tags, $fields, $values, $changes, $filling, $resetErrors = false, $addOrds = true);
 	}
 
-	$module->formatVisitorTUIX($requestedPath, zenario_fea_tuix::$customisationName, $tags, $fields, $values, $changes);
+	$module->formatVisitorTUIX($requestedPath, $tags, $fields, $values, $changes);
 	
 	if (TUIXLooksLikeFAB($tags)) {
 		//Try to save a copy of the admin box in the cache directory

@@ -73,8 +73,10 @@ class zenario_location_manager extends module_base_class {
 	public function handleAJAX () {
 		if (get("mode")=="get_country_name") {
 			$country= zenario_country_manager::getCountryFullInfo("all",get("country_id"));
-			$item['country'] = $country[get("country_id")]['english_name'];
-			echo $item['country'];
+			if (isset($country[get("country_id")])) {
+			    $item['country'] = $country[get("country_id")]['english_name'];
+			    echo $item['country'];
+			}
 		}
 	}
 	
@@ -171,9 +173,8 @@ class zenario_location_manager extends module_base_class {
 						$item['traits']['not_in_hierarchy'] = true;
 					}
 					
-					if ($item['checksum']) {
-						$img = '&usage=location&c='. $item['checksum'];
-						
+					if ($item['checksum'] && $item['image_usage']) {
+						$img = '&usage=' . $item['image_usage'] . '&c='. $item['checksum'];
 						$item['image'] = 'zenario/file.php?og=1'. $img;
 						$item['list_image'] = 'zenario/file.php?ogl=1'. $img;
 					}
@@ -401,7 +402,16 @@ class zenario_location_manager extends module_base_class {
 				break;
 		}
 	}
-
+    
+    public static function getMapPinPlacementMethods() {
+        return array(
+			'postcode_country' => 'Postcode and Country',
+			'street_postcode_country' => 'Address Line 1, Postcode and Country',
+			'street_city_country' => 'Address Line 1, City and Country',
+			'locality_postcode_country' => 'Locality, Postcode and Country'
+        );
+    }
+    
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$locationDetails = array();
 	
@@ -467,11 +477,16 @@ class zenario_location_manager extends module_base_class {
 				}
 
 				$map_lookup = "<select id=\"pin_placement_method\">\n";
-				$map_lookup .= "<option value=\"\"> -- Select a method -- </option>\n";
-				$map_lookup .= "<option value=\"postcode_country\">Postcode and Country</option>\n";
-				$map_lookup .= "<option value=\"street_postcode_country\">Address Line 1, Postcode and Country</option>\n";
-				$map_lookup .= "<option value=\"street_city_country\">Address Line 1, City and Country</option>\n";
-				$map_lookup .= "<option value=\"my_location\">My Current Location</option>\n";
+				$methods = static::getMapPinPlacementMethods();
+				$defaultMethod = setting('zenario_location_manager__default_pin_placement_method');
+				foreach ($methods as $method => $label) {
+				    $map_lookup .= "<option value=\"" . $method . "\"";
+				    if ($method == $defaultMethod) {
+				        $map_lookup .= " selected";
+				    }
+				    $map_lookup .= ">" . $label . "</option>\n";
+				}
+				
 				$map_lookup .= "</select>\n";
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
@@ -681,6 +696,21 @@ class zenario_location_manager extends module_base_class {
 					}
 				} 
 				break;
+			case 'site_settings':
+			    if ($settingGroup == 'zenario_location_manager__site_settings_group') {
+			        $methods = static::getMapPinPlacementMethods();
+			        $i = 0;
+			        foreach ($methods as $method => $label) {
+			            if (!$values['zenario_location_manager__default_pin_placement_method']) {
+                            $values['zenario_location_manager__default_pin_placement_method'] = $method;
+                        }
+			            $fields['zenario_location_manager__default_pin_placement_method']['values'][$method] = array(
+			                'label' => $label,
+			                'ord' => ++$i
+			            );
+			        }
+			    }
+			    break;
 		}
 	}
 
@@ -813,26 +843,6 @@ class zenario_location_manager extends module_base_class {
 						if (!self::checkScoreNameUnique($values['details/name'],$box['key']['id'])) {
 							$box['tabs']['details']['errors']['name_not_unique'] = "You must enter a unique Name";
 						}
-					}
-				}
-				break;
-			case 'site_settings':
-				if ($settingGroup == 'zenario_location_manager__site_settings_group'
-				 && !empty($box['tabs']['admin_box_settings']['fields'])) {
-					
-					$mandatoryFieldSet = false;
-					
-					foreach ($box['tabs']['admin_box_settings']['fields'] as $fieldName => $field) {
-						if (!empty($values['admin_box_settings/'. $fieldName])
-						 && $values['admin_box_settings/'. $fieldName] == 'mandatory') {
-							
-							$mandatoryFieldSet = true;
-							break;
-						}
-					}
-					
-					if (!$mandatoryFieldSet) {
-						$box['tabs']['admin_box_settings']['errors'][] = adminPhrase('You must set at least one field to "Enabled & Mandatory".	');
 					}
 				}
 				break;
@@ -1256,7 +1266,158 @@ class zenario_location_manager extends module_base_class {
 						case 'make_orphan':
 							exitIfNotCheckPriv('_PRIV_MANAGE_LOCATIONS');
 							updateRow(ZENARIO_LOCATION_MANAGER_PREFIX . 'locations',array('parent_id'=>null),array('id'=>(int)$ids));
-							break;						
+							break;
+						
+						case 'geocode_locations':
+							$locationIds = explode(',', $ids);
+							
+							$report = array('overQueryLimit' => false, 'processed' => 0, 'succeeded' => 0, 'errors' => array());
+							$description = false;
+							
+							foreach ($locationIds as $locationId) {
+								$report['processed']++;
+								$location = getRow(
+									ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
+									array('description', 'address1', 'address2', 'locality', 'city', 'country_id', 'postcode', 'latitude', 'longitude'), 
+									$locationId
+								);
+								
+								$description = $location['description'];
+								
+								// Ignore locations that already have coordinates
+								if ($location['latitude'] && $location['longitude']) {
+									static::recordLocationGeocodeErrorInReport($report, $description, 'latLngSet');
+									continue;
+								}
+								unset($location['description'], $location['latitude'], $location['longitude']);
+								
+								if ($location) {
+									$addressString = implode(',', $location);
+									if (!empty($location['postcode'])) {
+										$addressString .= '&components=postal_code:' . $location['postcode'];
+									}
+									
+									if ($addressString) {
+										$response = file_get_contents('https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode($addressString) . '&sensor=true');
+										$response = json_decode($response, true);
+										
+										// Responses must have one of the statuses below
+										if (empty($response['status'])) {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'invalidResponses');
+										// Over query limit (2500 per day, 10 per second)
+										} elseif ($response['status'] == 'OVER_QUERY_LIMIT') {
+											$report['processed']--;
+											$report['overQueryLimit'] = true;
+											break;
+										// No location found from address
+										} elseif ($response['status'] == 'ZERO_RESULTS') {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'zeroResults');
+										// Request was denied
+										} elseif ($response['status'] == 'REQUEST_DENIED') {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'deniedRequests');
+										// Invalid address sent
+										} elseif ($response['status'] == 'INVALID_REQUEST') {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'invalidRequests');
+										// Server error, may succeed if tried again
+										} elseif ($response['status'] == 'UNKNOWN_ERROR') {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'unknownErrors');
+										// 1 or more addresses successfully returned
+										} elseif ($response['status'] == 'OK') {
+											$report['succeeded']++;
+											if (!empty($response['results'][0]['geometry']['location']['lat']) 
+												&& !empty($response['results'][0]['geometry']['location']['lng']) 
+											) {
+												updateRow(
+													ZENARIO_LOCATION_MANAGER_PREFIX . 'locations', 
+													array(
+														'latitude' => $response['results'][0]['geometry']['location']['lat'],
+														'longitude' => $response['results'][0]['geometry']['location']['lng'],
+														'map_center_latitude' => $response['results'][0]['geometry']['location']['lat'],
+														'map_center_longitude' => $response['results'][0]['geometry']['location']['lng'],
+														'map_zoom' => 16
+													),
+													$locationId
+												);
+											}
+										} else {
+											static::recordLocationGeocodeErrorInReport($report, $description, 'unknownStatusCodes');
+										}
+									}
+								}
+							}
+							
+							// Output report
+							$locationCount = count($locationIds);
+							if ($report['succeeded'] == $locationCount) {
+								echo '<!--Message_Type:Success-->';
+							}
+							
+							if ($locationCount == 1 && ($report['succeeded'] == $locationCount)) {
+								echo 'Successfully placed the location "' . $description . '" on the map';
+							} else {
+								echo $report['succeeded'] . '/' . $locationCount . ' locations have been placed on the map.';
+								
+								if (!empty($report['errors']['latLngSet']['count'])) {
+									$count = $report['errors']['latLngSet']['count'];
+									echo '<br><br>Coordinates already set for the location "' . $report['errors']['latLngSet']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo '.';
+								}
+								if (!empty($report['errors']['invalidResponses']['count'])) {
+									$count = $report['errors']['invalidResponses']['count'];
+									echo '<br><br>Invalid response returned for the location "' . $report['errors']['invalidResponses']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo '.';
+								}
+								if (!empty($report['errors']['zeroResults']['count'])) {
+									$count = $report['errors']['zeroResults']['count'];
+									echo '<br><br>Unable to get address coordinates for the location "' . $report['errors']['zeroResults']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo ' (Error code "ZERO_RESULTS").';
+								}
+								if (!empty($report['errors']['deniedRequests']['count'])) {
+									$count = $report['errors']['deniedRequests']['count'];
+									echo '<br><br>Request deined for the location "' . $report['errors']['deniedRequests']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo ' (Error code "REQUEST_DENIED").';
+								}
+								if (!empty($report['errors']['invalidRequests']['count'])) {
+									$count = $report['errors']['invalidRequests']['count'];
+									echo '<br><br>Invalid request for the location "' . $report['errors']['invalidRequests']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo ' (Error code "INVALID_REQUEST").';
+								}
+								if (!empty($report['errors']['unknownErrors']['count'])) {
+									$count = $report['errors']['unknownErrors']['count'];
+									echo '<br><br>Unknown error returned for the location "' . $report['errors']['unknownErrors']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo ' (Error code "UNKNOWN_ERROR").';
+								}
+								if (!empty($report['errors']['unknownStatusCodes']['count'])) {
+									$count = $report['errors']['unknownStatusCodes']['count'];
+									echo '<br><br>Unknown request status returned for the location "' . $report['errors']['unknownStatusCodes']['first'] . '"';
+									if ($count > 1) {
+										echo ' and ' . ($count - 1) . ' other' . (($count - 1 != 1) ? 's' : '');
+									}
+									echo '.';
+								}
+								if ($report['overQueryLimit']) {
+									echo '<br><br>Query limit reached. Processed ' . $report['processed'] . '/' . $locationCount . ' locations (Error code "OVER_QUERY_LIMIT").';
+								}
+							}
+							break;
 					}
 				}
 				break;
@@ -1352,6 +1513,16 @@ class zenario_location_manager extends module_base_class {
 						}
 						break;
 			}
+		}
+	}
+	
+	private static function recordLocationGeocodeErrorInReport(&$report, $description, $errorCode) {
+		if (!isset($report['errors'][$errorCode])) {
+			$report['errors'][$errorCode] = array('count' => 0, 'first' => false);
+		}
+		$report['errors'][$errorCode]['count']++;
+		if ($report['errors'][$errorCode]['first'] === false) {
+			$report['errors'][$errorCode]['first'] = $description;
 		}
 	}
 	

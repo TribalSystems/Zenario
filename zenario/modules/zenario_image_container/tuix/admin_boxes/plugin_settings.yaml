@@ -30,7 +30,7 @@ plugin_settings:
                     visible_if: "zenarioAB.value('show_custom_css_code')"
                     label: 'CSS custom code:'
                     type: textarea
-                    note_below: |
+                    side_note: |
                         Here you can add raw css code that will be inserted as is on the css rule for this image. 
 
         mobile_tab:
@@ -76,6 +76,7 @@ plugin_settings:
                             - .png
                         drag_and_drop: true
                         reorder_items: false
+                    indent: 1
                 mobile_canvas:
                     plugin_setting:
                         name: mobile_canvas
@@ -100,19 +101,21 @@ plugin_settings:
                             label: Resize and crop
                     format_onchange: true
                     hidden: true
+                    indent: 1
                 mobile_width:
                     plugin_setting:
                         name: mobile_width
                     label: 'Width:'
                     type: text
                     validation:
-                        required_if_not_hidden: Please enter a width alt1.
+                        required_if_not_hidden: Please enter a width.
                         numeric: The width must be a number.
                     value: ""
                     maxlength: "5"
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     hidden: true
+                    indent: 2
                 mobile_height:
                     plugin_setting:
                         name: mobile_height
@@ -126,6 +129,7 @@ plugin_settings:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                     hidden: true
+                    indent: 2
                 mobile_offset:
                     plugin_setting:
                         name: mobile_offset
@@ -139,24 +143,25 @@ plugin_settings:
                         max: "10"
                         before_field: true
                         style: 'width: 200px;'
-                    note_below: |
+                    side_note: |
                         Move slider to the left to move the image left/down;
                         move the slider to the right to move the image right/up.
-
+                    indent: 2
                 mobile_show_custom_css_code:
                     plugin_setting:
                         name: mobile_show_custom_css_code
                     label: 'Add custom CSS'
                     type: checkbox
-                    redraw_onchange: true
+                    format_onchange: true
+                    indent: 1
                 mobile_custom_css_code:
                     plugin_setting:
                         name: mobile_custom_css_code
-                    visible_if: "zenarioAB.value('mobile_show_custom_css_code')"
                     label: 'CSS custom code:'
                     type: textarea
-                    note_below: |
+                    side_note: |
                         Here you can add raw css code that will be inserted as is on the css rule for this image. 
+                    indent: 2
             
 
         text:

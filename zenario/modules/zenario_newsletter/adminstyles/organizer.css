@@ -1,10 +1,11 @@
-#organizer_leftColumn .organizer_item a.zenario_newsletter_newsletters_top_level {
+.organizer_top_level_image.zenario_newsletter_newsletters_top_level {
 	background: url('../../../admin/images/sprites/org-icons-v5.png') no-repeat;
 	background-position: -57px -107px;
 }
 
+#zenario_at_top_left_menu .organizer_top_level_image.zenario_newsletter_newsletters_top_level,
 #organizer_leftColumn .legend_on a.zenario_newsletter_newsletters_top_level,
-#organizer_leftColumn .organizer_item a.zenario_newsletter_newsletters_top_level:hover {
+.organizer_top_level_image.zenario_newsletter_newsletters_top_level:hover {
 	background-position: -107px -107px;
 }
 

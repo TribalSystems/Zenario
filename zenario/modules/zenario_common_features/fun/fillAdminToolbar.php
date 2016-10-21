@@ -370,9 +370,6 @@ if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_copying'
 if (isset($adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting'])) {
 	$adminToolbar['sections']['edit']['buttons']['create_draft_by_overwriting']['pick_items']['path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//';
 }
-if (isset($adminToolbar['sections']['top_left_buttons']['buttons']['goto_content_items'])) {
-	$adminToolbar['sections']['top_left_buttons']['buttons']['goto_content_items']['navigation_path'] = 'zenario__content/panels/content/refiners/content_type//'. $cType. '//'. $cType. '_'. $cID;
-}
 
 if (isset($adminToolbar['sections']['edit']['buttons']['item_meta_data'])) {
 	$cTypeDetails = getContentTypeDetails($cType);
@@ -572,7 +569,7 @@ if (isset($adminToolbar['sections']['edit'])
  	//$version
  	$template = getRow(
  		'layouts',
- 		array('head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
+ 		array('family_name', 'file_base_name', 'head_html', 'head_visitor_only', 'foot_html', 'foot_visitor_only'),
  		cms_core::$layoutId);
 }
 
@@ -806,10 +803,8 @@ if (isset($adminToolbar['sections']['primary_menu_node'])) {
 			if (isset($adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick'])) {
 				$adminToolbar['sections']['menu'. $i]['buttons']['view_menu_node_in_sk']['organizer_quick']['path'] = $menuLink;
 			}
-			if ($primary
-			 && !empty($adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['hidden'])) {
-				$adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['hidden'] = false;
-				$adminToolbar['sections']['top_left_buttons']['buttons']['goto_menu']['navigation_path'] = $menuLink;
+			if ($primary) {
+				$adminToolbar['meta_info']['menu_organizer_path'] = $menuLink;
 			}
 			
 			$primary = false;
@@ -1194,6 +1189,27 @@ if (checkRowExists('content_types', array('enable_categories' => 0, 'content_typ
 	unset($adminToolbar['sections']['edit']['buttons']['category_dropdown']);
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_some']);
 	unset($adminToolbar['sections']['icons']['buttons']['item_categories_none']);
+}
+
+
+
+//Get the slots on this Layout, and add a button for each
+$ord = 2000;
+$lookForSlots = array('family_name' => $template['family_name'], 'file_base_name' => $template['file_base_name']);
+foreach(getRowsArray('template_slot_link', array('ord', 'slot_name'), $lookForSlots, array('ord', 'slot_name')) as $slot) {
+	$adminToolbar['sections']['slot_controls']['buttons'][$slot['slot_name']] =
+		array(
+			'ord' => ++$ord,
+			'parent' => 'slot_control_dropdown',
+			'label' => $slot['slot_name'],
+			
+			//Little hack - only show the slot control if the slot is visible and the opacity is over 0.3.
+			//(N.b. empty slots are 0.4, slots from other tabs are 0.2)
+			'visible_if' => 'var plgslt = $("#plgslt_'. jsEscape($slot['slot_name']). '"); plgslt.is(":visible") && 1*plgslt.css("opacity") > .3;',
+			
+			'onmouseover' => 'return zenarioA.openSlotControls(this, this, "'. jsEscape($slot['slot_name']). '", true);',
+			'onclick' => 'return false;'
+		);
 }
 
 

@@ -29,133 +29,208 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_plugin_nest extends module_base_class {
 	
-	var $firstTab = false;
-	var $lastTab = false;
-	var $tabNum = false;
-	var $editingTabNum = false;
-	var $mergeFields = array();
-	var $sections = array();
-	var $tabs = array();
-	var $modules = array();
-	var $show = false;
+	protected $firstTab = false;
+	protected $lastTab = false;
+	protected $tabNum = false;
+	protected $state = false;
+	protected $usesConductor = false;
+	protected $commands = array();
+	protected $statesToTabs = array();
+	protected $editingTabNum = false;
+	protected $mergeFields = array();
+	protected $sections = array();
+	protected $tabs = array();
+	protected $modules = array();
+	protected $show = false;
+	protected $minigrid = array();
+	protected $minigridInUse = false;
+	protected $usedColumns = 0;
+	protected $groupingColumns = 0;
+	protected $maxColumns = false;
+	
+	public $banner_canvas = false;
+	public $banner_width = 0;
+	public $banner_height = 0;
+	public $banner__enlarge_image = false;
+	public $banner__enlarge_canvas = false;
+	public $banner__enlarge_width = 0;
+	public $banner__enlarge_height = 0;
+
+	public function getTabs() {
+		return $this->tabs;
+	}
+	public function getTabNum() {
+		return $this->tabNum;
+	}
+	
 	
 	public function init() {
 		//Flag that this plugin is actually a nest
 		cms_core::$slotContents[$this->slotName]['is_nest'] = true;
 		
+		$this->loadFramework();
+		
 		$this->allowCaching(
-			$atAll = true, $ifUserLoggedIn = true, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
+			$atAll = true, $ifUserLoggedIn = false, $ifGetSet = false, $ifPostSet = false, $ifSessionSet = true, $ifCookieSet = true);
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
 		if ($this->specificEgg()) {
 			$this->tabNum = ifNull(getRow('nested_plugins', 'tab', $this->specificEgg()), 1);
-			$this->tabId = getRow('nested_plugins', 'id', array('is_tab' => 1, 'tab' => $this->tabNum));
+			$this->tabId = getRow('nested_plugins', 'id', array('is_slide' => 1, 'tab' => $this->tabNum));
 			$this->loadTabs();
 		
 		} else {
-			//When a Nest is first inserted, it will be empty.
-			//If the Nest is empty, call the resyncNest function just in case being empty is not a valid state.
-			if (checkPriv() && !checkRowExists('nested_plugins', array('instance_id' => $this->instanceId))) {
-				call_user_func(array($this->moduleClassName, 'resyncNest'), $this->instanceId);
-			}
 		
 			if ($this->loadTabs()) {
-				$this->sections['Tabs'] = true;
+				
+				//CHeck to see if a tab or a state is requested in the URL
+				$lookForState =
+				$lookForTabId =
+				$lookForTabNo = 
+				$defaultState = false;
+				
+				if (setting('enable_conductor_for_nests')
+				 && !empty($_REQUEST['state'])
+				 && preg_match('/^[AB]?[A-Z]$/', $_REQUEST['state'])) {
+					$lookForState = $_REQUEST['state'];
+				
+				} elseif ($lookForTabId = (int) request('tab')) {
+				} elseif ($lookForTabNo = (int) request('tab_no')) {
+				}
+				
 				
 				$tabOrd = 0;
 				foreach ($this->tabs as $tab) {
 					++$tabOrd;
+					$this->lastTab = $tab['id'];
 					
+					//By default, show the first tab that the visitor can see...
 					if ($tabOrd == 1) {
 						$this->firstTab = $tab['id'];
 						$this->tabNum = $tab['tab'];
 						$this->tabId = $tab['id'];
+						$this->state = $tab['states'][0];
+						$defaultState = $tab['states'][0];
 					}
-					$this->lastTab = $tab['id'];
 					
-					if (request('tab') == $tab['id']) {
+					//...but change this to the one mentioned in the request, if we see it
+					if ($lookForState && in_array($lookForState, $tab['states'])) {
 						$this->tabNum = $tab['tab'];
 						$this->tabId = $tab['id'];
+						$this->state = $lookForState;
+						$defaultState = $tab['states'][0];
 					
-					} elseif (!request('tab') && request('tab_no') == $tab['tab']) {
+					} elseif ($lookForTabId == $tab['id']) {
 						$this->tabNum = $tab['tab'];
 						$this->tabId = $tab['id'];
+						$this->state = $tab['states'][0];
+						$defaultState = $tab['states'][0];
+					
+					} elseif ($lookForTabNo == $tab['tab']) {
+						$this->tabNum = $tab['tab'];
+						$this->tabId = $tab['id'];
+						$this->state = $tab['states'][0];
+						$defaultState = $tab['states'][0];
 					}
 					
 					$tabIds[$tab['tab']] = $tab['id'];
 					
 					if (($this->checkFrameworkSectionExists($section = 'Tab_'. $tab['tab']))
-					 || ($this->checkFrameworkSectionExists($section = 'Tab'))) {
+					 || ($section = 'Tab')) {
 						
 						if (!isset($this->sections[$section])) {
 							$this->sections[$section] = array();
 						}
 						
-						$this->sections[$section][$tab['tab']] = array(
-							'TAB_ORDINAL' => $tabOrd,
-							'Class' => 'tab_'. $tabOrd. ' tab',
-							'Tab_Link' => $this->refreshPluginSlotTabAnchor('tab='. $tab['id'], false),
-							'Tab_Name' => htmlspecialchars($tab['name_or_title']));
-						$this->replacePhraseCodesInString($this->sections[$section][$tab['tab']]['Tab_Name']);
+						$tabMergeFields = array(
+							'TAB_ORDINAL' => $tabOrd);
+						
+						if (!$tab['invisible_in_nav']) {
+							$tabMergeFields['Class'] = 'tab_'. $tabOrd. ' tab';
+							$tabMergeFields['Tab_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $tab['id'], false);
+							$tabMergeFields['Tab_Name'] = htmlspecialchars($tab['name_or_title']);
+						
+							if ($this->inLibrary) {
+								$tabMergeFields['Tab_Name'] = $this->phrase($tabMergeFields['Tab_Name']);
+							}
+						}
+						
+						$this->sections[$section][$tab['tab']] = $tabMergeFields;
 					}
 				}
 				
-				if ((isset($this->sections[$section = 'Tab_'. $this->tabNum][$this->tabNum]['Class']))
-				 || (isset($this->sections[$section = 'Tab'][$this->tabNum]['Class']))) {
+				if ((isset($this->sections[$section = 'Tab'][$this->tabNum]['Class']))
+				 || (isset($this->sections[$section = 'Tab_'. $this->tabNum][$this->tabNum]['Class']))) {
 					$this->sections[$section][$this->tabNum]['Class'] .= '_on';
 				}
 				
-				if ($this->checkFrameworkSectionExists('Next')) {
-					$this->sections['Next'] = true;
-					
-					$nextTabId = false;
-					if ($this->lastTab == $this->tabId) {
-						if (!$this->setting('next_prev_buttons_loop')) {
-							$this->mergeFields['Next_Disabled'] = '_disabled';
-						} else {
-							$nextTabId = $this->firstTab;
-						}
+				
+				$nextTabId = false;
+				if ($this->lastTab == $this->tabId) {
+					if (!$this->setting('next_prev_buttons_loop')) {
+						$this->mergeFields['Next_Disabled'] = '_disabled';
 					} else {
-						foreach ($this->tabs as $tabNum => &$tab) {
-							if ($tabNum > $this->tabNum) {
-								$nextTabId = $tab['id'];
-								break;
-							}
-						}
+						$nextTabId = $this->firstTab;
 					}
-					
-					if ($nextTabId) {
-						$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $nextTabId, false);
+				} else {
+					foreach ($this->tabs as $tabNum => $tab) {
+						if ($tabNum > $this->tabNum) {
+							$nextTabId = $tab['id'];
+							break;
+						}
 					}
 				}
 				
-				if ($this->checkFrameworkSectionExists('Prev')) {
-					$this->sections['Prev'] = true;
-					
-					$prevTabId = false;
-					if ($this->firstTab == $this->tabId) {
-						if (!$this->setting('next_prev_buttons_loop')) {
-							$this->mergeFields['Prev_Disabled'] = '_disabled';
-						} else {
-							$prevTabId = $this->lastTab;
-						}
+				if ($nextTabId) {
+					$this->mergeFields['Next_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $nextTabId, false);
+				}
+				
+				
+				$prevTabId = false;
+				if ($this->firstTab == $this->tabId) {
+					if (!$this->setting('next_prev_buttons_loop')) {
+						$this->mergeFields['Prev_Disabled'] = '_disabled';
 					} else {
-						foreach ($this->tabs as $tabNum => &$tab) {
-							if ($tabNum >= $this->tabNum) {
-								break;
-							} else {
-								$prevTabId = $tab['id'];
-							}
+						$prevTabId = $this->lastTab;
+					}
+				} else {
+					foreach ($this->tabs as $tabNum => $tab) {
+						if ($tabNum >= $this->tabNum) {
+							break;
+						} else {
+							$prevTabId = $tab['id'];
 						}
 					}
-					
-					if ($prevTabId) {
-						$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $prevTabId, false);
-					}
+				}
+				
+				if ($prevTabId) {
+					$this->mergeFields['Prev_Link'] = $this->refreshPluginSlotTabAnchor('tab='. $prevTabId, false);
 				}
 				
 				$this->registerGetRequest('tab', $this->firstTab);
+				$this->registerGetRequest('state', $defaultState);
+			}
+		}
+		
+		//Load all of the paths from the current state
+		if (setting('enable_conductor_for_nests') && $this->state) {
+			foreach (getRowsArray(
+				'nested_paths',
+				array('to_state', 'commands'),
+				array('instance_id' => $this->instanceId, 'from_state' => $this->state),
+				'to_state'
+			) as $path) {
+				foreach (explodeAndTrim($path['commands']) as $command) {
+					if (!empty($this->statesToTabs[$path['to_state']])) {
+						$this->commands[$command] = $path['to_state'];
+					}
+					$this->usesConductor = true;
+				}
+			}
+			
+			if ($this->usesConductor) {
+				$this->callScript('zenario_conductor', 'setCommands', $this->slotName, $this->commands);
 			}
 		}
 		
@@ -165,7 +240,7 @@ class zenario_plugin_nest extends module_base_class {
 			$this->show = true;
 		
 		//...except if no tabs exist, don't hide anything
-		} elseif (!checkRowExists('nested_plugins', array('instance_id' => $this->instanceId, 'is_tab' => 1)) && $this->loadTab($this->tabNum = 1)) {
+		} elseif (!checkRowExists('nested_plugins', array('instance_id' => $this->instanceId, 'is_slide' => 1)) && $this->loadTab($this->tabNum = 1)) {
 			$this->show = true;
 		}
 		
@@ -173,14 +248,23 @@ class zenario_plugin_nest extends module_base_class {
 			$this->showInEditMode();
 		}
 		
+		if ($this->usesConductor) {
+			$importantGetRequests = array();
+			foreach(cms_core::$importantGetRequests as $getRequest => $defaultValue) {
+				$importantGetRequests[$getRequest] = arrayKey($_GET, $getRequest);
+			}
+
+			$this->callScript('zenario_conductor', 'registerGetRequest', $importantGetRequests);
+		}
+		
 		return $this->show;
 	}
 
 	
 	public function showSlot() {
-		
 		$this->mergeFields['TAB_ORDINAL'] = $this->tabNum;
-
+		
+		//Show a single plugin in the nest
 		if ($this->checkShowInFloatingBoxVar()) {
 			if ($this->show) {
 				
@@ -190,41 +274,62 @@ class zenario_plugin_nest extends module_base_class {
 					
 					if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
 						if (cms_core::$slotContents[$slotNameNestId]['class']->checkShowInFloatingBoxVar()) {
-							$this->showPlugin($id, $slotNameNestId);
+							$this->showPlugin($slotNameNestId);
 						}
 					}
 				}
 			}
 		
+		//Show all of the plugins on this tab
+		} elseif ($this->zAPIFrameworkIsTwig) {
+			$this->mergeFields['Tabs'] = $this->sections['Tab'];
+			
+			if ($this->show) {
+				$this->mergeFields['Tabs'][$this->tabNum]['Plugins'] = $this->modules[$this->tabNum];
+			}
+			$this->twigFramework($this->mergeFields);
+		
+		//Backwards compatability for old Tribiq frameworks
 		} else {
+			$this->sections['Tabs'] = $this->setting('show_tabs');
+			$this->sections['Next'] = true;
+			$this->sections['Prev'] = true;
+			
+			// Replace phrase codes with phrases in heading text
+			if ($this->sections['Show_Title'] = (bool) $this->setting('show_heading')) {
+				$this->mergeFields['Title'] = htmlspecialchars($this->setting('heading_text'));
+				if ($this->inLibrary) {
+					$this->mergeFields['Title'] = $this->phrase($this->mergeFields['Title']);
+				}
+			}
+			
 			$this->frameworkHead(
 				'Outer',
 				'Plugins',
 				$this->mergeFields,
 				$this->sections);
-				
-				$this->frameworkHead(
-					'Plugins',
-					'Plugin',
-					$this->mergeFields,
-					$this->sections);
-						
-						if ($this->show) {
-							
-							$ord = 0;
-							foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
-								$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
-								
-								$this->showPlugin($id, $slotNameNestId);
-							}
-						}
-				
-				$this->frameworkFoot(
-					'Plugins',
-					'Plugin',
-					$this->mergeFields,
-					$this->sections);
 			
+			$this->frameworkHead(
+				'Plugins',
+				'Plugin',
+				$this->mergeFields,
+				$this->sections);
+		
+			if ($this->show) {
+				$ord = 0;
+				foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
+					$this->mergeFields['PLUGIN_ORDINAL'] = ++$ord;
+				
+					$this->showPlugin($slotNameNestId);
+				}
+			}
+			
+			$this->frameworkFoot(
+				'Plugins',
+				'Plugin',
+				$this->mergeFields,
+				$this->sections);
+		
 			$this->frameworkFoot(
 				'Outer',
 				'Plugins',
@@ -235,40 +340,69 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	protected function loadTabs() {
-	
-		// Replace phrase codes with phrases in heading text
-		if ($this->sections['Show_Title'] = (bool) $this->setting('show_heading')) {
-			$heading_text = $this->setting('heading_text');
-			if ($this->setting('use_phrases')) {
-				$this->replacePhraseCodesInString($heading_text);
-			}
-			$this->mergeFields['Title'] = htmlspecialchars($heading_text);
-		}
 		
 		$sql = "
-			SELECT id, tab, name_or_title
+			SELECT
+				id, tab, name_or_title,
+				states,
+				invisible_in_nav,
+				visibility, smart_group_id, module_class_name, method_name, param_1, param_2
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE instance_id = ". (int) $this->instanceId. "
-			  AND is_tab = 1
+			  AND is_slide = 1
 			ORDER BY tab";
 		
 		$result = sqlQuery($sql);
+		$sqlNumRows = sqlNumRows($result);
 		
-		if (sqlNumRows($result)) {
+		if (!$sqlNumRows) {
+			//When a nest is first inserted, it will be empty.
+			//This also sometimes happens after a site migration.
+			//In this case, call the resyncNest function,
+			//e.g. to ensure there is at least one slide and fix any other possibly invalid date
+			call_user_func(array($this->moduleClassName, 'resyncNest'), $this->instanceId);
+			$result = sqlQuery($sql);
+			$sqlNumRows = sqlNumRows($result);
+		}
+		
+		if (!$sqlNumRows) {
+			return false;
+		} else {
 			while ($row = sqlFetchAssoc($result)) {
+				$row['states'] = explode(',', $row['states']);
+				
 				$this->tabs[$row['tab']] = $row;
 			}
 			
 			
 			$this->mergeFields['Nest'] = '';
-			if ($this->setting('set_max_height')) {
-				$this->mergeFields['Nest'] =
-					'style="height: '. htmlspecialchars($this->setting('max_height')). '; max-height: '. htmlspecialchars($this->setting('max_height')). ';"';
+			
+			$this->removeHiddenTabs($this->tabs, $this->cID, $this->cType, $this->cVersion, $this->instanceId);
+			
+			//Note down which states are on which tabs
+			foreach ($this->tabs as $tab) {
+				foreach ($tab['states'] as $state) {
+					$this->statesToTabs[$state] = $tab['tab'];
+				}
 			}
 			
-			return true;
-		} else {
-			return false;
+			
+			if ($this->setting('banner_canvas')
+			 && $this->setting('banner_canvas') != 'unlimited') {
+				$this->banner_canvas = $this->setting('banner_canvas');
+				$this->banner_width = (int) $this->setting('banner_width');
+				$this->banner_height = (int) $this->setting('banner_height');
+			}
+			
+			if ($this->setting('enlarge_image')) {
+				$this->banner__enlarge_image = true;
+				$this->banner__enlarge_canvas = $this->setting('enlarge_canvas');
+				$this->banner__enlarge_width = (int) $this->setting('enlarge_width');
+				$this->banner__enlarge_height = (int) $this->setting('enlarge_height');
+			}
+			
+			
+			return !empty($this->tabs);
 		}
 	}
 	
@@ -276,10 +410,10 @@ class zenario_plugin_nest extends module_base_class {
 	protected function loadTab($tabNum) {
 		
 		$sql = "
-			SELECT np.id, np.tab, np.ord, np.module_id, np.framework, np.css_class
+			SELECT np.id, np.tab, np.ord, np.module_id, np.framework, np.css_class, np.cols, np.small_screens
 			FROM ". DB_NAME_PREFIX. "nested_plugins AS np
 			WHERE np.instance_id = ". (int) $this->instanceId. "
-			  AND np.is_tab = 0
+			  AND np.is_slide = 0
 			  AND np.tab = ". (int) $tabNum;
 		
 		if ($this->specificEgg()) {
@@ -291,6 +425,7 @@ class zenario_plugin_nest extends module_base_class {
 			ORDER BY np.ord";
 		
 		$this->modules[$tabNum] = array();
+		$lastSlotNameNestId = false;
 		
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
@@ -350,105 +485,57 @@ class zenario_plugin_nest extends module_base_class {
 				
 				cms_core::$slotContents[$slotNameNestId]['cache_if'] = array();
 				cms_core::$slotContents[$slotNameNestId]['clear_cache_by'] = array();
-			}
-		}
-		
-		$beingEdited = false;
-		$showInMenuMode = false;
-		$shownInEditMode = false;
-		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
-			cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
-			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, $id, $this->tabId);
-			
-			//Have some options to set nest-wide size-restrictions on Banner Images
-			//However, note that any specific rule that the Banners may have always takes priority over the general rules
-			if (cms_core::$slotContents[$slotNameNestId]['class_name'] == 'zenario_banner') {
-				if (($overrideCanvas = $this->setting('banner_canvas')) && ($overrideCanvas != 'unlimited')) {
-					
-					$inheritDimensions = true;
-					$eggCanvas = $this->eggSetting($slotNameNestId, 'canvas');
-					
-					//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
-					if ($eggCanvas == 'fixed_width_and_height'
-					 || $overrideCanvas == 'fixed_width_and_height'
-					 || ($overrideCanvas == 'fixed_width' && $eggCanvas == 'fixed_height')
-					 || ($overrideCanvas == 'fixed_height' && $eggCanvas == 'fixed_width')) {
-						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['canvas'] = 'fixed_width_and_height';
-					
-					//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-					//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
-					//they're not both different
-					} else
-					if (!$eggCanvas
-					 || $eggCanvas == 'unlimited'
-					 || !(($overrideCanvas == 'resize_and_crop')
-						 ^ ($eggCanvas == 'resize_and_crop'))) {
-						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['canvas'] = $overrideCanvas;
-					
+				
+				
+				//Read the minigrid information
+				$row['cols'] = (int) $row['cols'];
+				
+				//If this plugin should be grouped with the previous plugin (-1)...
+				if ($row['cols'] < 0) {
+					if ($lastSlotNameNestId && isset($this->minigrid[$lastSlotNameNestId])) {
+						//...flag it on the previous plugin so we know to open the grouping
+						$this->minigrid[$lastSlotNameNestId]['group_with_next'] = true;
 					} else {
-						$inheritDimensions = false;
-					}
-					
-					if ($inheritDimensions && $this->setting('banner_width')) {
-						if (!$this->eggSetting($slotNameNestId, 'width')
-						 || !in($eggCanvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['width'] = $this->setting('banner_width');
-						}
-					}
-					
-					if ($inheritDimensions && $this->setting('banner_height')) {
-						if (!$this->eggSetting($slotNameNestId, 'height')
-						 || !in($eggCanvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['height'] = $this->setting('banner_height');
-						}
+						//...catch the case where there was no previous plugin by converting this to a full-width plugin
+						$row['cols'] = 0;
 					}
 				}
 				
-				//Also have some nest-wide options to enable colorbox popups, and to set restrictions there too
-				if ($this->setting('enlarge_image') && !in($this->eggSetting($slotNameNestId, 'link_type'), '_CONTENT_ITEM', '_EXTERNAL_URL')) {
-					cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['link_type'] = '_ENLARGE_IMAGE';
+				//If there are nothing but "full width" and "show on small screens" plugins,
+				//then we don't actually need to use a grid and can just leave the HTML alone.
+				//But as soon as we see a column that's not full width, or has responsive options,
+				//then enable the grid!
+				if (!$this->minigridInUse && ($row['cols'] > 0 || $row['small_screens'] != 'show')) {
+					$this->minigridInUse = true;
 					
-					$inheritDimensions = true;
-					$eggCanvas = $this->eggSetting($slotNameNestId, 'enlarge_canvas');
-					$overrideCanvas = $this->setting('enlarge_canvas');
-					
-					//fixed_width/fixed_height/fixed_width_and_height settings can be merged together
-					if ($eggCanvas == 'fixed_width_and_height'
-					 || $overrideCanvas == 'fixed_width_and_height'
-					 || ($overrideCanvas == 'fixed_width' && $eggCanvas == 'fixed_height')
-					 || ($overrideCanvas == 'fixed_height' && $eggCanvas == 'fixed_width')) {
-						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_canvas'] = 'fixed_width_and_height';
-					
-					//fixed_width/fixed_height/fixed_width_and_height settings on the nest should not be combined with
-					//resize_and_crop settings on the banner, and vice versa. So do an XOR and only update the settings if
-					//they're not both different
-					} else
-					if (!$eggCanvas
-					 || $eggCanvas == 'unlimited'
-					 || !(($overrideCanvas == 'resize_and_crop')
-						 ^ ($eggCanvas == 'resize_and_crop'))) {
-						cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_canvas'] = $overrideCanvas;
-					
-					} else {
-						$inheritDimensions = false;
-					}
-					
-					if ($inheritDimensions && $this->setting('enlarge_width')) {
-						if (!$this->eggSetting($slotNameNestId, 'enlarge_width')
-						 || !in($eggCanvas, 'fixed_width', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_width'] = $this->setting('enlarge_width');
-						}
-					}
-					
-					if ($inheritDimensions && $this->setting('enlarge_height')) {
-						if (!$this->eggSetting($slotNameNestId, 'enlarge_height')
-						 || !in($eggCanvas, 'fixed_height', 'fixed_width_and_height', 'resize_and_crop')) {
-							cms_core::$slotContents[$slotNameNestId]['class']->zAPISettings['enlarge_height'] = $this->setting('enlarge_height');
-						}
-					}
+					//Look up how many columns the current slot has, or just guess 12 if we can't find out
+					$this->maxColumns = ifNull(
+						(int) getRow('template_slot_link',
+							'cols',
+							array(
+								'family_name' => cms_core::$templateFamily,
+								'file_base_name' => cms_core::$templateFileBaseName,
+								'slot_name' => $this->slotName)),
+						12);
 				}
+				
+				$this->minigrid[$slotNameNestId] = array(
+					'cols' => min($row['cols'], $this->maxColumns),
+					'small_screens' => $row['small_screens'],
+					'group_with_next' => false
+				);
+				
+				$lastSlotNameNestId = $slotNameNestId;
 			}
-			
+		}
+		
+		$beingEdited =
+		$showInMenuMode =
+		$shownInEditMode =
+		$addedJavaScript = false;
+		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
+			cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
+			setInstance(cms_core::$slotContents[$slotNameNestId], $this->cID, $this->cType, $this->cVersion, $this->slotName, true, $id, $this->tabId);
 			
 			if (initPluginInstance(cms_core::$slotContents[$slotNameNestId])) {
 				
@@ -463,6 +550,7 @@ class zenario_plugin_nest extends module_base_class {
 				//Ensure that the JavaScript libraries is there for modules on reloads
 				if ($this->needToAddCSSAndJS()) {
 					$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'addJavaScript', cms_core::$slotContents[$slotNameNestId]['class_name'], cms_core::$slotContents[$slotNameNestId]['module_id']);
+					$addedJavaScript = true;
 				}
 			}
 			
@@ -481,8 +569,10 @@ class zenario_plugin_nest extends module_base_class {
 			}
 		}
 		
-		//If we're adding Swatches or JavaScript, add a short delay to the tab switching to cover for the browser loading things in
-		$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'sleep');
+		//If we're adding JavaScript, add a short delay to the tab switching to cover for the browser loading things in
+		if ($addedJavaScript) {
+			$this->callScriptBeforeAJAXReload('zenario_plugin_nest', 'sleep');
+		}
 		
 		//Add any Plugin JavaScript calls
 		foreach ($this->modules[$tabNum] as $id => $slotNameNestId) {
@@ -535,7 +625,108 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	
-	protected function showPlugin($id, &$slotNameNestId) {
+	public function showPlugin($slotNameNestId) {
+		
+		//Flag that we're no longer running Twig code, if this was called from a Twig Framework
+		if ($this->zAPIFrameworkIsTwig) {
+			cms_core::$isTwig = false;
+		}
+		
+		if ($this->minigridInUse) {
+			$minigrid = $this->minigrid[$slotNameNestId];
+			$cols = $minigrid['cols'];
+			$groupWithNext = $minigrid['group_with_next'];
+			
+			//"-1" means group with the previous plugin
+			$groupWithPrevious = $cols < 0;
+			
+			//"0" means max-width
+			if ($cols == 0
+			 || $cols > $this->maxColumns) {
+				$cols = $this->maxColumns;
+			}
+			
+			//If we are not in the grouping, or are just starting a grouping,
+			//we need to output a grid-slot.
+			if (!$groupWithPrevious) {
+			
+				//Was there a previous cell?
+				if ($this->usedColumns) {
+					//Is this cell too big to fit the line..?
+					if ($this->usedColumns + $cols > $this->maxColumns) {
+						//Put a line break in
+						$this->usedColumns = 0;
+						echo '
+				<div class="grid_clear"></div>';
+					}
+				}
+			
+				//Output the div for this 
+				echo '
+				<div class="minigrid '. rationalNumberGridClass($cols, $this->maxColumns);
+			
+				//Add the "alpha" class for the first cell on a line
+				if ($this->usedColumns == 0) {
+					echo ' alpha';
+				}
+				
+				//Increase the number of columns that we have used by the width of this plugin
+				$this->usedColumns += $cols;
+			
+				//Add the "omega" class if the cell goes right up to the end of a line
+				if ($this->usedColumns >= $this->maxColumns) {
+					echo ' omega';
+				}
+				
+				//Add responsive classes on max-width columns
+				//(Unless this is the start of a grouping, in which case the classes should be
+				// added on to the nested-grid-slot.)
+				if (!$groupWithNext) {
+					if ($cols == $this->maxColumns) {
+						switch ($minigrid['small_screens']) {
+							case 'hide':
+								echo ' responsive';
+								break;
+							case 'only':
+								echo ' responsive_only';
+								break;
+						}
+					}
+				
+				//If this is the start of a grouping, note down how many columns it has
+				} else {
+					$this->groupingColumns = $cols;
+				}
+				echo '">';
+			
+			} else {
+				//Nested slots in minigrids are always full-width,
+				//so if we are in a grouping, always put a line break in between slots.
+				echo '
+					<div class="grid_clear"></div>';
+			}
+			
+			//If we are in a grouping, output a nested grid-slot
+			if ($groupWithPrevious || $groupWithNext) {
+				echo '
+					<div class="minigrid '. rationalNumberGridClass($this->groupingColumns, $this->groupingColumns);
+				
+				//Add responsive classes
+				switch ($minigrid['small_screens']) {
+					case 'hide':
+						echo ' responsive';
+						break;
+					case 'only':
+						echo ' responsive_only';
+						break;
+				}
+				
+				//At the moment, nested grid-slots in minigrids are always full width
+				echo ' alpha omega">';
+			}
+		}
+		
+		
 		$p = checkPriv();
 		$i = !empty(cms_core::$slotContents[$slotNameNestId]['init']);
 		
@@ -549,23 +740,45 @@ class zenario_plugin_nest extends module_base_class {
 		}
 		
 		if ($i || $p) {
-			$this->frameworkHead(
-				'Plugin',
-				'Show_Slot',
-				$this->mergeFields);
+			//Backwards compatability for old Tribiq frameworks
+			if (!$this->zAPIFrameworkIsTwig) {
+				$this->frameworkHead(
+					'Plugin',
+					'Show_Slot',
+					$this->mergeFields);
+			}
 			
-					cms_core::$slotContents[$slotNameNestId]['class']->show(false);
+			cms_core::$slotContents[$slotNameNestId]['class']->show(false);
 			
-			$this->frameworkFoot(
-				'Plugin',
-				'Show_Slot',
-				$this->mergeFields);
+			//Backwards compatability for old Tribiq frameworks
+			if (!$this->zAPIFrameworkIsTwig) {
+				$this->frameworkFoot(
+					'Plugin',
+					'Show_Slot',
+					$this->mergeFields);
+			}
 		}
 		
 		if ($p) {
 			echo '
 				</span>';
 		}
+		
+		
+		if ($this->minigridInUse) {
+			//We'll need various different closing divs, depending on whether this is the
+			//end of a normal slot, the end of a nested slot, or the end of both.
+			if ($groupWithPrevious || $groupWithNext) {
+				echo '
+				</div>';
+			}
+			
+			if (!$groupWithNext) {
+				echo '
+			</div>';
+			}
+		}
+		
 		
 		if ($this->needToAddCSSAndJS()) {
 			//Add the script of a Nested Plugin to the Nest
@@ -578,21 +791,35 @@ class zenario_plugin_nest extends module_base_class {
 				}
 			}
 		}
+		
+		//Flag that we're going back to running Twig code, if this was called from a Twig Framework
+		if ($this->zAPIFrameworkIsTwig) {
+			cms_core::$isTwig = true;
+		}
 	}
 	
 	
 	//Allow one specific Egg to be shown for the showFloatingBox/showRSS methods
 	protected function specificEgg() {
-		return
-			request('method_call') == 'handlePluginAJAX'
-		 || request('method_call') == 'showFloatingBox'
-		 || request('method_call') == 'showRSS'?
-				(int) request('eggId')
-			 :	false;
+		
+		if (!empty($_REQUEST['method_call'])) {
+			switch ($_REQUEST['method_call']) {
+				case 'handlePluginAJAX':
+				case 'showFloatingBox':
+				case 'showRSS':
+				case 'fillVisitorTUIX':
+				case 'formatVisitorTUIX':
+				case 'validateVisitorTUIX':
+				case 'saveVisitorTUIX':
+					return (int) request('eggId');
+			}
+		}
+		
+		return false;
 	}
 	
 	//Version of refreshPluginSlotAnchor, that doesn't automatically set the tab id
-	protected function refreshPluginSlotTabAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = false) {
+	public function refreshPluginSlotTabAnchor($requests = '', $scrollToTopOfSlot = true, $fadeOutAndIn = false) {
 		return
 			$this->linkToItemAnchor($this->cID, $this->cType, $fullPath = false, '&slotName='. $this->slotName. urlRequest($requests)).
 			' onclick="'.
@@ -602,25 +829,59 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	public function showFloatingBox() {
-		$this->showMethod('showFloatingBox');
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->showFloatingBox();
+		}
 	}
 	public function showRSS() {
-		$this->showMethod('showRSS');
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->showRSS();
+		}
 	}
 	public function handlePluginAJAX() {
-		$this->showMethod('handlePluginAJAX');
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->handlePluginAJAX();
+		}
 	}
 	
-	protected function showMethod($method) {
-		if ($this->show) {
-			foreach ($this->modules[$this->tabNum] as $id => $slotNameNestId) {
-				if ($id == $this->specificEgg()) {
-					if (!empty(cms_core::$slotContents[$slotNameNestId]['init']) || checkPriv()) {
-						cms_core::$slotContents[$slotNameNestId]['class']->$method();
-					}
-				}
-			}
+	public function returnVisitorTUIXEnabled($path) {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->returnVisitorTUIXEnabled($path);
 		}
+	}
+	
+	public function fillVisitorTUIX($path, &$tags, &$fields, &$values) {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->fillVisitorTUIX($path, $tags, $fields, $values);
+		}
+	}
+	
+	public function formatVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->formatVisitorTUIX($path, $tags, $fields, $values, $changes);
+		}
+	}
+	
+	public function validateVisitorTUIX($path, &$tags, &$fields, &$values, &$changes, $saving) {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->validateVisitorTUIX($path, $tags, $fields, $values, $changes, $saving);
+		}
+	}
+	
+	public function saveVisitorTUIX($path, &$tags, &$fields, &$values, &$changes) {
+		if ($class = $this->getSpecificEgg($class)) {
+			return $class->saveVisitorTUIX($path, $tags, $fields, $values, $changes);
+		}
+	}
+	
+	protected function getSpecificEgg(&$class) {
+		if ($this->show
+		 && ($eggId = $this->specificEgg())
+		 && ($slotNameNestId = arrayKey($this->modules[$this->tabNum], $eggId))
+		 && (!empty(cms_core::$slotContents[$slotNameNestId]['init']))) {
+			return cms_core::$slotContents[$slotNameNestId]['class'];
+		}
+		return false;
 	}
 	
 	
@@ -647,38 +908,62 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->preFillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->fillOrganizerPanel($path, $panel, $refinerName, $refinerId, $mode);
+		}
 	}
 	
 	public function handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId) {
-		return require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
+			return $c->handleOrganizerPanelAJAX($path, $ids, $ids2, $refinerName, $refinerId);
+		}
+	}
+	
+	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
+		if ($c = $this->runSubClass(__FILE__, 'organizer', $path)) {
+			return $c->organizerPanelDownload($path, $ids, $refinerName, $refinerId);
+		}
 	}
 	
 	
 	
 	
-	protected function setupConversionAdminBox($instanceId, &$fields, &$instance, &$nestable, &$numPlugins, &$moduleId, &$onlyOneModule, &$onlyBanners) {
-		return require funIncPath(__FILE__, __FUNCTION__);
-	}
+	
 	
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->fillAdminBox($path, $settingGroup, $box, $fields, $values);
+		}
 	}
 	
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->formatAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->validateAdminBox($path, $settingGroup, $box, $fields, $values, $changes, $saving);
+		}
 	}
 	
 	public function saveAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
-		require funIncPath(__FILE__, __FUNCTION__);
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->saveAdminBox($path, $settingGroup, $box, $fields, $values, $changes);
+		}
+	}
+	
+	public function adminBoxSaveCompleted($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		if ($c = $this->runSubClass(__FILE__)) {
+			return $c->adminBoxSaveCompleted($path, $settingGroup, $box, $fields, $values, $changes);
+		}
 	}
 	
 	
@@ -702,16 +987,20 @@ class zenario_plugin_nest extends module_base_class {
 	}
 	
 	
-	protected static function addPluginInstance($addPluginInstance, $instanceId, $tab = false) {
+	protected static function addPluginInstance($addPluginInstance, $instanceId, $tab = false, $tabIsTabId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
 	
-	protected static function addPlugin($addPlugin, $instanceId, $tab = false, $displayName = false) {
+	protected static function addPlugin($addPlugin, $instanceId, $tab = false, $displayName = false, $tabIsTabId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	protected static function addBanner($imageId, $instanceId, $addTab = false) {
+	protected static function addBanner($imageId, $instanceId, $tab = false, $tabIsTabId = false) {
+		return require funIncPath(__FILE__, __FUNCTION__);
+	}
+	
+	protected static function addTwigSnippet($moduleClassName, $snippetName, $instanceId, $tab = false, $tabIsTabId = false) {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -723,7 +1012,7 @@ class zenario_plugin_nest extends module_base_class {
 		}
 		
 		if ($title === false) {
-			$title = adminPhrase('Tab [[num]]', array('num' => $tabNo));
+			$title = adminPhrase('Slide [[num]]', array('num' => $tabNo));
 		}
 		
 		return insertRow(
@@ -733,12 +1022,8 @@ class zenario_plugin_nest extends module_base_class {
 				'tab' => $tabNo,
 				'ord' => 0,
 				'module_id' => 0,
-				'is_tab' => 1,
+				'is_slide' => 1,
 				'name_or_title' => $title));
-	}
-	
-	protected function updateTab($title, $nestedItemId) {
-		updateRow('nested_plugins', array('name_or_title' => $title), $nestedItemId);
 	}
 	
 	public static function duplicatePlugin($nestedItemId, $instanceId) {
@@ -755,11 +1040,11 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 
-	static protected function reorderNest($ids, $keepTabsOneToOneWithPlugins = false) {
+	public static function reorderNest($ids) {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
-	static protected function resyncNest($instanceId, $mode = 'no_tabs') {
+	public static function resyncNest($instanceId) {
 		require funIncPath(__FILE__, __FUNCTION__);
 	}
 	
@@ -768,7 +1053,7 @@ class zenario_plugin_nest extends module_base_class {
 		$sql = "
 			SELECT MAX(tab) AS tab
 			FROM ". DB_NAME_PREFIX. "nested_plugins
-			WHERE is_tab = 1
+			WHERE is_slide = 1
 			  AND instance_id = ". (int) $instanceId;
 		$result = sqlQuery($sql);
 		$row = sqlFetchAssoc($result);
@@ -780,7 +1065,7 @@ class zenario_plugin_nest extends module_base_class {
 			SELECT MAX(ord) AS ord
 			FROM ". DB_NAME_PREFIX. "nested_plugins
 			WHERE tab = ". (int) $tab. "
-			  AND is_tab = 0
+			  AND is_slide = 0
 			  AND instance_id = ". (int) $instanceId;
 		$result = sqlQuery($sql);
 		$row = sqlFetchAssoc($result);
@@ -789,5 +1074,91 @@ class zenario_plugin_nest extends module_base_class {
 	
 	
 	
+	
+	protected function removeHiddenTabs(&$tabs, $cID, $cType, $cVersion, $instanceId) {
+		$unsets = array();
+		foreach ($tabs as $tabNum => $tab) {
+			if (!checkPriv()) {
+				//Remove tabs based on the settings chosen
+				if ($tab['visibility'] == 'call_static_method' ) {
+					
+					$this->allowCaching(false);
+					
+					if (!(inc($tab['module_class_name']))
+					 || !(method_exists($tab['module_class_name'], $tab['method_name']))
+					 || !(call_user_func(
+							array($tab['module_class_name'], $tab['method_name']),
+								$tab['param_1'], $tab['param_2'])
+					)) {
+						$unsets[] = $tabNum;
+					}
+					
+				} elseif ($userId = userId()) {
+					switch ($tab['visibility']) {
+						case 'in_smart_group':
+							if (!checkUserIsInSmartGroup($tab['smart_group_id'], $userId)) {
+								$unsets[] = $tabNum;
+							}
+							break;
+							
+						case 'logged_in_not_in_smart_group':
+							if (checkUserIsInSmartGroup($tab['smart_group_id'], $userId)) {
+								$unsets[] = $tabNum;
+							}
+							break;
+							
+						case 'logged_out':
+							$unsets[] = $tabNum;
+					}
+				} else {
+					switch ($tab['visibility']) {
+						case 'in_smart_group':
+						case 'logged_in_not_in_smart_group':
+						case 'logged_in':
+							$unsets[] = $tabNum;
+					}
+				}
+			}
+		}
+		
+		foreach ($unsets as $unset) {
+			unset($tabs[$unset]);
+		}
+	}
+	
+	
+	
+	public function cEnabled() {
+		return $this->usesConductor;
+	}
+	
+	public function cCommandEnabled($command) {
+		return !empty($this->commands[$command]);
+	}
+	
+	public function cLink($command, $requests) {
+		if (empty($this->commands[$command])) {
+			return false;
+		} else {
+			$requests['state'] = $this->commands[$command];
+			unset($requests['tab']);
+			unset($requests['tab_no']);
+			return linkToItem(cms_core::$cID, cms_core::$cType, false, $requests, cms_core::$alias);
+		}
+	}
+	
+	protected static function deletePath($instanceId, $from, $to = false) {
+		
+		//If a from & to are both specified, delete that specific path
+		if ($to) {
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $from, 'to_state' => $to));
+		
+		//If just one state is specified, delete all paths from and to that state
+		} else {
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'from_state' => $from));
+			deleteRow('nested_paths', array('instance_id' => $instanceId, 'to_state' => $from));
+		}
+		
+	}
 	
 }

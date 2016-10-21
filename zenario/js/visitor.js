@@ -54,6 +54,7 @@ zenario.instances = new Object();
 zenario.mainSlot = false;
 
 zenario.signalsInProgress = {};
+zenario.signalHandlers = {};
 zenario.adinsActions = {};
 
 
@@ -407,7 +408,7 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 				//Set a timeout on the request. If the timeout expires, we'll either retry or just give in
 				//if retry is not specified.
 				if (timeout) {
-					setTimeout(function() {
+					setTimeout( => {
 						if (req.readyState < 4) {
 							if (retry) {
 								aborted = true;
@@ -427,7 +428,7 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 		}
 		if (onRetry) {
 			retryFun = retry;
-			retry = function() {
+			retry ==> {
 				onRetry();
 				retryFun();
 			};
@@ -455,7 +456,7 @@ zenario.pluginClassAJAX = function(moduleClassName, requests, post, json, useCac
 				//If we found it then we'll need to look up the current data revision number to see if it was in-date.
 				//(We'll also need to look it up if we never knew it in the first place!)
 				if (store || !oldDataRevisionNumber) {
-					zenario.checkDataRevisionNumber(true, function() {
+					zenario.checkDataRevisionNumber(true, => {
 						var currentDataRevisionNumber = zenario.dataRev();
 						
 						//If we didn't find it, or what we found was out of date, we still need to look it up again.
@@ -510,18 +511,24 @@ zenario.checkForHashChanges = function(timed) {
 	
 	//Don't do anything if the hash has not changed since the last time, or if an Admin Box is currently open
 	if (!zenarioAB.isOpen && (!timed || zenario.currentHash !== document.location.hash)) {
+		
 		//Extract the instance id and the request from the hash
-		var hash = document.location.hash.substr(1);
+		var pos, k, key, keys, req, message,
+			hash = document.location.hash.substr(1),
+			addImportantGetRequests = false,
+			isRefreshSlotsCommand = hash.match(/^\d*\!_refresh\b/);
 		
 		//If this is an Organizer window, go to that location
-		if (zenarioA.isFullOrganizerWindow && zenarioO.init) {
+		if (!isRefreshSlotsCommand
+		 && zenarioA.isFullOrganizerWindow
+		 && zenarioO.init) {
 			
 			if (hash.substr(0, 1) == '/') {
 				hash = hash.substr(1);
 			}
 			
 			//Check if there is an editor open
-			var message = zenarioA.onbeforeunload();
+			message = zenarioA.onbeforeunload();
 			//If there was, give the Admin a chance to stop leaving the page
 			if (message === undefined || confirm(message)) {
 				zenarioAB.close();
@@ -545,24 +552,22 @@ zenario.checkForHashChanges = function(timed) {
 		
 		//Otherwise is this is the front-end, see if we can find which Plugin it mentions and then change that Plugin to use that request
 		} else {
-			var addImportantGetRequests = false;
 			if (zenarioAT.init) {
 				if (hash.match(/\b__zenario_reload_at__\b/)) {
 					zenarioAT.init();
 					addImportantGetRequests = true;
 				
-				} else if (hash.match(/\b_refresh\b/)) {
+				} else if (isRefreshSlotsCommand) {
 					addImportantGetRequests = true;
 				}
 			}
 			
-			var pos;
 			if ((pos = hash.lastIndexOf('!')) !== -1) {
-				var key = hash.substr(0, pos),
-					req = hash.substr(pos+1);
+				key = hash.substr(0, pos),
+				req = hash.substr(pos+1);
 				
 				//Use an empty string as a shortcut to the first Main Slot
-				key = ifNull(key, zenario.mainSlot);
+				key = key || zenario.mainSlot;
 				
 				if (addImportantGetRequests) {
 					key += zenario.urlRequest(zenarioA.importantGetRequests);
@@ -570,8 +575,8 @@ zenario.checkForHashChanges = function(timed) {
 				
 				//Check if this is a request to reload a Plugin via (numeric) instance id(s)
 				if (key == key.replace(/[^0-9,]/g, '')) {
-					var keys = key.split(',');
-					foreach (keys as var k) {
+					keys = key.split(',');
+					foreach (keys as k) {
 						key = 1 * keys[k];
 						if (zenario.instances[key]) {
 							zenario.currentHashSlot = zenario.instances[key].slotName;
@@ -598,10 +603,9 @@ zenario.checkForHashChanges = function(timed) {
 	
 	//Keep watching for hash changes
 	zenario.watchingForHashChanges =
-		setTimeout(
-			function() {
-				zenario.checkForHashChanges(true);
-			}, 500);
+		setTimeout( => {
+			zenario.checkForHashChanges(true);
+		}, 500);
 };
 
 //Watch for the recorded URLs on page load
@@ -613,12 +617,23 @@ $(zenario.checkForHashChanges);
 //in order to support the older format of links with hashes in.)
 if (window.history && history.pushState) {
 	window.addEventListener('popstate', function(event) {
-		if (event.state && event.state.slotName) {
+		
+		var message, slotName;
+		
+		if (slotName = event.state && event.state.slotName) {
+			
 			//Check if there is an editor open
-			var message = zenarioA.onbeforeunload();
+			message = zenarioA.onbeforeunload();
+			
 			//If there was, give the Admin a chance to stop leaving the page
 			if (message === undefined || confirm(message)) {
-				zenario.refreshPluginSlot(event.state.slotName, 'lookup', event.state.request);
+				
+				
+				zenario.refreshPluginSlot(slotName, 'lookup',
+					
+					//If there is no tabId in the URL bar, add one as an empty string,
+					//to prevent a bug where the current tabId is added when going back to the first one
+					zenario.addTabIdToURL(event.state.request, slotName, ''));
 				
 				//Refresh the admin toolbar to remove the Editor controls if needed
 				if (message !== undefined && zenarioAT.init) {
@@ -629,6 +644,26 @@ if (window.history && history.pushState) {
 			}
 		}
 	});
+};
+
+
+//For AJAX reloads for nests, check if a state, tabId or tab number is in a URL,
+//and add one if not.
+zenario.addTabIdToURL = function(url, slotName, specificTabId) {
+	
+	//Check if this slot is a nest, and if so, which tab it is on
+	var tabId = zenario.slots[slotName]
+			 && zenario.slots[slotName].tabId;
+	
+	//If the URL contains no tab.state information, add the tab id to it
+	if (tabId
+	 && url.indexOf('&state=') == -1
+	 && url.indexOf('&tab=') == -1
+	 && url.indexOf('&tab_no=') == -1) {
+		url += '&tab=' + (specificTabId === undefined? tabId : specificTabId);
+	}
+	
+	return url;
 };
 
 
@@ -756,9 +791,10 @@ zenario.enc = function(id, className, moduleClassNameForPhrases) {
 			id, className, moduleClassNameForPhrases,
 			zenario);
 		
+		window[className].encapName = className;
 		window[className].slots = new Object();
 		
-		zenario.modules[id] = function() {};
+		zenario.modules[id] ==> {};
 		zenario.modules[id].moduleClassName = className;
 		zenario.modules[id].moduleClassNameForPhrases = moduleClassNameForPhrases;
 	}
@@ -962,15 +998,16 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 	
 	if (showInFloatingBox) {
 		zenario.colorboxOpen = slotName;
+		zenario.colorboxFormChanged = false;
 		var params = {
 			transition: 'none',
 			html: contents,
-			onOpen: function() {
+			onOpen: => {
 				var cb = get('colorbox');
 				cb.className = domSlot.className;
 				$(cb).hide().fadeIn();
 			},
-			onComplete: function() {
+			onComplete: => {
 				zenario.addJQueryElements('#colorbox ');
 				
 				//Allow modules to call JavaScript function(s) after they have been refreshed
@@ -979,19 +1016,42 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 						zenario.callScript(scriptsToRun[script], zenario.slots[slotName].moduleClassName);
 					}
 				}
+				
+				$('#cboxLoadedContent').find('form').on('keyup change', 'input, select, textarea', function() {
+					zenario.colorboxFormChanged = true;
+				});
 			},
-			onClosed: function() {
+			onClosed: => {
 				get('colorbox').className = '';
 				zenario.colorboxOpen = false;
 			}
 		};
 		// Add any extra parsed parameters
 		for (var i in floatingBoxExtraParams) {
-			if (params[i] === undefined) {
+			if (!$.inArray(i, ['closeConfirmMessage', 'alwaysShowConfirmMessage']) && (params[i] === undefined)) {
 				params[i] = floatingBoxExtraParams[i];
 			}
 		}
 		$.colorbox(params);
+		
+		zenario.colorboxAlwaysShowConfirmMessage = floatingBoxExtraParams.alwaysShowConfirmMessage;
+		
+		if (floatingBoxExtraParams.closeConfirmMessage && !zenario.colorboxCloseConfirmMessageSet) {
+			zenario.colorboxCloseConfirmMessageSet = true;
+			var originalClose = $.colorbox.close;
+			$.colorbox.close = function() {
+				var response;
+				if (zenario.colorboxFormChanged || zenario.colorboxAlwaysShowConfirmMessage) {
+					response = confirm(floatingBoxExtraParams.closeConfirmMessage);
+					if(!response){
+						return; // Do nothing.
+					}
+				}
+				zenario.colorboxFormChanged = false;
+				originalClose();
+			};
+		}
+		
 		zenario.resizeColorbox();
 	
 	} else {
@@ -1044,6 +1104,7 @@ zenario.replacePluginSlotContents = function(slotName, instanceId, contents, add
 
 zenario.recordRequestsInURL = function(slotName, requests) {
 	
+	slotName = zenario.getSlotnameFromEl(slotName);
 	requests = zenario.urlRequest(requests);
 			
 	//If the browser support HTML 5, we can use URL rewriting
@@ -1084,7 +1145,7 @@ zenario.recordRequestsInURL = function(slotName, requests) {
 };
 
 
-zenario.callScript = function(script, className) {
+zenario.callScript = function(script, className, secondTime) {
 	var functionName,
 		encapObject;
 	
@@ -1101,6 +1162,15 @@ zenario.callScript = function(script, className) {
 			functionName = script.shift();
 		
 		} else {
+			//If the library wasn't on the page, it might have just been loaded using jQuery's AJAX/eval
+			//function, and not be available yet.
+			//Try a zero-setTimeout and run it again.
+			if (!secondTime) {
+				setTimeout( => {
+					zenario.callScript(script, className, true);
+				}, 0);
+			}
+			
 			return;
 		}
 		
@@ -1237,20 +1307,28 @@ zenario.num = function(text) {
 	contexts = {};
 	
 	zenario.disableScrolling = function(context) {
-		$('body').css({
-			overflow: 'hidden'
-		}); 
+		context = context || 'default';
+		
+		if (!contexts[context]) {
+			$('body').css({
+				overflow: 'hidden'
+			}); 
 	
-		contexts[context || 'default'] = true;
+			contexts[context || 'default'] = true;
+		}
 	};
 
 	zenario.enableScrolling = function(context) {
-		delete contexts[context || 'default'];
+		context = context || 'default';
+		
+		if (contexts[context]) {
+			delete contexts[context];
 	
-		if (_.isEmpty(contexts)) {
-			$('body').css({
-				overflow: 'auto'
-			});
+			if (_.isEmpty(contexts)) {
+				$('body').css({
+					overflow: 'auto'
+				});
+			}
 		}
 	};
 })();
@@ -1377,7 +1455,7 @@ $(document)
 	.bind('cbox_closed', () => { zenario.enableScrolling('colorbox'); })
 	
 	//Add tooltips and other jQuery elements to the page after it has loaded
-	.ready(function() {
+	.ready( => {
 		zenario.addJQueryElements();
 	});
 
@@ -1585,10 +1663,10 @@ zenario.tooltips = function(target, options) {
 			
 			if (tooltipOptions) {
 				try {
-					thisOptions = $.extend(true, {}, options, JSON.parse(tooltipOptions));
+					thisOptions = zenario.clone(options, JSON.parse(tooltipOptions));
 				} catch (error) {
 					try {
-						thisOptions = $.extend(true, {}, options, JSON.parse(zenario.fixJSON(tooltipOptions)));
+						thisOptions = zenario.clone(options, JSON.parse(zenario.fixJSON(tooltipOptions)));
 					} catch (error) {
 						thisOptions = options;
 					}
@@ -1699,7 +1777,8 @@ zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
 		return;
 	}
 	
-	eval(zenario.nonAsyncAJAX(URLBasePath + filePath));
+	$.ajax({url: URLBasePath + filePath, dataType: "script", async: false});
+
 	
 	zenario.javaScriptOnPage[filePath] = true;
 };
@@ -1707,13 +1786,13 @@ zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
 
 zenario.captcha = function(publicKey, divId, hideAudio) {
 	if (hideAudio) {
-		RecaptchaOptions.callback = function() {zenario.captchaHideAudio()}
+		RecaptchaOptions.callback ==> { zenario.captchaHideAudio(); }
 	}
 	
 	if (!window.Recaptcha) {
 		$.getScript(
 			zenario.httpOrhttps() + 'www.google.com/recaptcha/api/js/recaptcha_ajax.js',
-			function() {
+			=> {
 				Recaptcha.create(publicKey, divId, RecaptchaOptions);
 			}
 		);
@@ -1970,6 +2049,42 @@ if (!Math.log10) {
 }
 
 
+//Check to see whether we have a grid with a min-width, and whether the browser supports checking the min-width
+var minWidth = window.matchMedia && zenarioGrid.responsive && 1 * zenarioGrid.minWidth,
+	wasAResize = false;
+
+zenario.mobile = false;
+zenario.desktop = true;
+
+//Add a call to enquire to switch the CSS class on the body between mobile and desktop
+//whenever the visitor resizes their window
+if (minWidth) {
+	enquire.register(
+		'screen and (min-width: ' + minWidth + 'px)',
+		{
+			match : => {
+				zenarioSBC(zenario.mobile = false, 'mobile', 'desktop');
+				zenario.desktop = true;
+				
+				if (wasAResize) {
+					zenario.sendSignal('resizedToDesktop');
+				}
+				wasAResize = true;
+			},
+			doesntMatch : => {
+				zenarioSBC(zenario.mobile = true, 'mobile', 'desktop');
+				zenario.desktop = false;
+				
+				if (wasAResize) {
+					zenario.sendSignal('resizedToMobile');
+				}
+				wasAResize = true;
+			}
+		}
+	);
+}
+
+
 //Functions for TinyMCE
 
 //A hack to try and remove some of the bad/repeated html that TinyMCE sometimes generates,
@@ -2036,6 +2151,68 @@ zenario.exitFullScreen = function() {
 		document.webkitExitFullscreen();
 	}
 };
+
+
+//Create a library with some dummy functions for the conductor,
+//so plugins do not crash if the full conductor lobrary is not loaded
+var zenario_conductor = createZenarioLibrary('_conductor');
+
+zenario_conductor.setCommands =
+zenario_conductor.registerGetRequest =
+zenario_conductor.clearRegisteredGetRequest =
+zenario_conductor.getRegisteredGetRequest =
+zenario_conductor.commandEnabled =
+zenario_conductor.enabled =
+zenario_conductor.link =
+zenario_conductor.go ==> { return false; };
+
+
+
+
+
+
+
+
+
+var shrtNms = zenario.shrtNms = function(lib, libName) {
+	var funs = [],
+		f, fun,
+		newNames = {},
+		newName, name;
+	
+	foreach (lib as name => fun) {
+		if (name != 'has'
+		 && name != 'lib'
+		 && typeof fun == 'function') {
+			funs.push(name);
+		}
+	}
+	
+	funs.sort();
+	
+	foreach (funs as f => name) {
+		newName = '_' + name.substr(0, 1) + name.substr(1).replace(/([A-Z])[A-Z]*([A-Z][a-z])/g, '$1$2').replace(/([A-Z])[A-Z]+$/g, '$1').replace(/[a-z]/g, '');
+		
+		if (lib[newName] !== undefined) {
+			newName = '_' + name.substr(0, 1) + name.substr(1).replace(/([A-Z][A-Z])[A-Z]*([A-Z][a-z])/g, '$1$2').replace(/([A-Z][A-Z])[A-Z]+$/g, '$1').replace(/([a-z])[a-z]*/g, '$1');
+		}
+		
+		if (lib[newName] === undefined) {
+			lib[newName] = lib[name];
+			
+			//This code would list out the shortnames,
+			//so they can be copy-pasted into zenario/includes/js_minify.inc.php
+			//if/when there are changes/new functions
+			/*
+			libName = libName || lib.encapName;
+			console.log("'" + libName + "." + name + "(' => '" + libName + "." + newName + "(',");
+			*/
+		}
+	}
+};
+
+shrtNms(_, '_');
+shrtNms(zenario);
 
 
 

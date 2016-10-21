@@ -4,213 +4,42 @@ zenario__modules:
     panels:
         plugins:
             item_buttons:
-                zenario_plugin_nest__view_nested_plugins:
+                # Have two differunt buttons that both go to the nested plugins panel.
+                # (There are two buttons because I want a different label for plugins/slideshows)
+                plugins_in_nest:
+                    parent: view_dropdown
                     priv: _PRIV_VIEW_REUSABLE_PLUGIN
-                    label: View plugins in this nest
-                    hide_in_select_mode: Yes
+                    visible_if: |
+                        item.module_class_name && !item.module_class_name.match(/slide/)
+                    label: Plugins in this nest
+                    hide_in_select_mode: true
                     link:
-                        path: zenario__modules/hidden_nav/zenario_plugin_nest/panel
-                        branch: Yes
+                        path: zenario__modules/panels/nested_plugins
+                        branch: true
                         refiner: nest
-                    traits:
-                        zenario_plugin_nest__nest: Yes
-    hidden_nav:
-        zenario_plugin_nest:
-            panel:
-                no_items_in_search_message: There are no plugins in this nest.
-                db_items:
-                    table: '[[DB_NAME_PREFIX]]nested_plugins AS np'
-                    id_column: np.id
-                refiners:
-                    nest:
-                        sql: 'np.instance_id = [[REFINER_ID]]'
-                refiner_required: Yes
-                view_mode: list
-                disable_grid_view: Yes
-                columns:
-                    name_or_title:
-                        title: Name
-                        db_column: np.name_or_title
-                        show_by_default: Yes
-                        width: large
-                    ordinal:
-                        title: 'Ordinal #'
-                        db_column: |
-                            IF (np.is_tab,
-                                LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                                CONCAT(
-                                    LPAD(np.tab, ROUND(LOG10(IFNULL((SELECT MAX(tab) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0'),
-                                    '.',
-                                    LPAD(np.ord, ROUND(LOG10(IFNULL((SELECT MAX(ord) FROM [[DB_NAME_PREFIX]]nested_plugins WHERE instance_id = [[REFINER_ID]]), 1)) + 0.50001, 0), '0')
-                                )
-                            )
-                        show_by_default: Yes
-                        width: xsmall
-                    module_class_name:
-                        db_column: p.class_name
-                        table_join: '[[DB_NAME_PREFIX]]modules AS p ON np.module_id = p.id'
-                    framework:
-                        title: Framework
-                        db_column: np.framework
-                    is_tab:
-                        db_column: np.is_tab
-                    filename:
-                        db_column: img_f.filename
-                        table_join: |
-                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
-                               ON img_ps.instance_id = np.instance_id
-                              AND img_ps.nest = np.id
-                              AND img_ps.foreign_key_to = 'file'
-                              AND np.is_tab = 0
-                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
-                               ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
-                    checksum:
-                        db_column: img_f.checksum
-                        table_join: |
-                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
-                               ON img_ps.instance_id = np.instance_id
-                              AND img_ps.nest = np.id
-                              AND img_ps.foreign_key_to = 'file'
-                              AND np.is_tab = 0
-                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
-                               ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
-                    mime_type:
-                        server_side_only: Yes
-                        db_column: img_f.mime_type
-                        table_join: |
-                            LEFT JOIN [[DB_NAME_PREFIX]]plugin_settings AS img_ps
-                               ON img_ps.instance_id = np.instance_id
-                              AND img_ps.nest = np.id
-                              AND img_ps.foreign_key_to = 'file'
-                              AND np.is_tab = 0
-                            LEFT JOIN [[DB_NAME_PREFIX]]files AS img_f
-                               ON img_f.id = img_ps.foreign_key_id
-                              AND `usage` = 'image'
-                              AND img_f.mime_type IN ('image/gif', 'image/png', 'image/jpeg', 'image/svg+xml')
-                default_sort_column: name_or_title
-                label_format_for_grid_view: |
-                    [[ordinal]]
-                    [[name_or_title]]
-                item:
-                    tooltip: >
-                        To reorder items, simply drag and drop.
-                        Changes will take effect immediately.
-                zenario_plugin_nest__item:
-                    name: Nested plugin
-                    names: Nested plugins
-                disable_periodic_refresh: Yes
-                reorder:
-                    column: ordinal
-                zenario_plugin_nest__title_wf: Plugins in this untabbed nest
-                zenario_plugin_nest__title_rp: 'Plugins in the untabbed nest "[[nest]]"'
-                zenario_plugin_nest__collection_buttons:
-                    add_wireframe:
-                        label: Create a plugin
-                        css_class: zenario_create_a_new
-                        hide_on_filter: true
-                        only_show_on_refiner: nest
-                        pick_items:
-                            path: zenario__modules/panels/modules/refiners/nestable_only////
-                            path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
-                            target_path: zenario__modules/panels/modules
-                            min_path: zenario__modules/panels/modules
-                            disallow_refiners_looping_on_min_path: Yes
-                            one_to_one_choose_phrase: Add to Nest
-                            ajax:
-                                request:
-                                    add_wireframe: "1"
-                    add_plugin:
-                        label: Add plugin from existing
-                        css_class: zenario_create_a_new
-                        hide_on_filter: true
-                        only_show_on_refiner: nest
-                        pick_items:
-                            path: zenario__modules/panels/modules/refiners/nestable_only////
-                            path_if_wireframe: zenario__modules/panels/modules/refiners/nestable_wireframes_only////
-                            target_path: zenario__modules/panels/plugins
-                            min_path: zenario__modules/panels/modules
-                            max_path: 'false'
-                            disallow_refiners_looping_on_min_path: Yes
-                            one_to_one_choose_phrase: Add to Nest
-                            ajax:
-                                request:
-                                    add_plugin: "1"
-                    upload_banner:
-                        label: Upload image to make banner
-                        css_class: zenario_create_a_new
-                        hide_on_filter: true
-                        tooltip: >
-                            To create a banner plugin in this nest, click here to upload
-                            an image
-                        only_show_on_refiner: nest
-                        upload:
-                            fileExt: '*.gif;*.jpg;*.png;*.jpe;*.jpeg;*.pjpeg'
-                            fileDesc: Images
-                            multi: Yes
-                            drag_and_drop: Yes
-                            request:
-                                upload_banner: "1"
-                    nest_settings:
-                        label: Edit nest and nested plugins
-                        only_show_on_refiner: nest
-                        admin_box:
-                            path: plugin_settings
-                            key:
-                                instanceId: ""
-                    framework_and_css:
-                        label: 'CSS & framework'
-                        only_show_on_refiner: nest
-                        admin_box:
-                            path: plugin_css_and_framework
-                            key:
-                                instanceId: ""
-                zenario_plugin_nest__item_buttons:
-                    plugin_settings:
-                        label: Plugin properties
-                        traits:
-                            is_not_tab: Yes
-                        only_show_on_refiner: nest
-                        admin_box:
-                            path: plugin_settings
-                    duplicate:
-                        label: Duplicate this plugin
-                        traits:
-                            is_not_tab: Yes
-                        only_show_on_refiner: nest
-                        ajax:
-                            request:
-                                duplicate_plugin: "1"
-                    view:
-                        label: View plugin's image
-                        popout:
-                            href: zenario/file.php
-                            options:
-                                type: image
-                        traits:
-                            has_image: Yes
-                    framework_and_css:
-                        label: 'CSS & framework'
-                        traits:
-                            is_not_tab: Yes
-                        only_show_on_refiner: nest
-                        admin_box:
-                            path: plugin_css_and_framework
-                    remove_plugin:
-                        ord: "99"
-                        label: Delete this plugin
-                        multiple_select: Yes
-                        traits:
-                            is_not_tab: Yes
-                        only_show_on_refiner: nest
-                        ajax:
-                            confirm:
-                                html: Yes
-                                button_message: Delete
-                                cancel_button_message: Cancel
-                                message_type: warning
-                            request:
-                                remove_plugin: "1"
+                
+                plugins_in_slideshow:
+                    parent: view_dropdown
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    visible_if: |
+                        item.module_class_name && item.module_class_name.match(/slide/)
+                    label: Plugins in this slideshow
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__modules/panels/nested_plugins
+                        branch: true
+                        refiner: nest
+                
+                # Add a link to the conductor
+                conductor:
+                    parent: view_dropdown
+                    priv: _PRIV_VIEW_REUSABLE_PLUGIN
+                    visible_if: |
+                        zenarioA.siteSettings.enable_conductor_for_nests &&
+                        item.module_class_name == 'zenario_plugin_nest'
+                    label: Conductor settings (advanced)
+                    hide_in_select_mode: true
+                    link:
+                        path: zenario__modules/panels/conductor
+                        branch: true
+                        refiner: nest

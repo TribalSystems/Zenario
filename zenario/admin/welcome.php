@@ -29,8 +29,8 @@
 
 /*  
  *  Standard welcome page header.
- *  It will include the full library of functions in the CMS, including admin functions.
- *  It will only connect to the database if the CMS has been installed.
+ *  It will include the full library of functions in Zenario, including admin functions.
+ *  It will only connect to the database if Zenario has been installed.
  */
 
 require '../basicheader.inc.php';
@@ -81,7 +81,7 @@ if (file_exists('tribiq_siteconfig.php')
 	exit;
 }
 
-//Check to see if the CMS is installed, and connect to the database if so
+//Check to see if Zenario is installed, and connect to the database if so
 $freshInstall = false;
 $installStatus = 0;
 $installed =
@@ -138,18 +138,18 @@ if (defined('SUBDIRECTORY')) {
 	}
 }
 
-//Check to see that the Admin has not copied the CMS on-top of an older version
+//Check to see that the Admin has not copied Zenario on-top of an older version
 if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 	foreach (scandir('zenario/admin/db_updates/copy_over_top_check/') as $file) {
 		if (substr($file, 0, 1) != '.' && $file != ZENARIO_MAJOR_VERSION. '.'. ZENARIO_MINOR_VERSION. '.txt') {
 			echo '
 				<p>
-					You are seeing this message because you have attempted to update the CMS
+					You are seeing this message because you have attempted to update Zenario
 					by copying the new version over the top of your existing version.
 				</p><p>
 					This will not work, as there are some files in the older version that need to be removed.
 					You should replace your <code>'. CMS_ROOT. 'zenario/</code> directory with the
-					<code>zenario/</code> directory from the new copy of the CMS.
+					<code>zenario/</code> directory from the new copy of Zenario.
 				</p><p>
 					Please see the <a href="http://zenar.io/quick-upgrade.html">zenar.io/quick-upgrade.html</a> guide
 					or the <a href="http://zenar.io/cautious-upgrade.html">zenar.io/cautious-upgrade.html</a> guide
@@ -169,14 +169,14 @@ if (is_dir('zenario/admin/db_updates/copy_over_top_check/')) {
 
 
 if ($installed) {
-	//If the CMS is installed, move on to the login check and then database updates
+	//If Zenario is installed, move on to the login check and then database updates
 	if (!defined('SHOW_SQL_ERRORS_TO_VISITORS')) {
 		define('SHOW_SQL_ERRORS_TO_VISITORS', true);
 	}
 	connectLocalDB();
 	
 	
-	//From version 7.0.4 of the CMS, we'll only support updating from version 7.0.2 onwards.
+	//From version 7.0.4 of Zenario, we'll only support updating from version 7.0.2 onwards.
 	//Check for versions of Tribiq CMS/Zenario before 7.0.2
 	$sql = "
 		SELECT 1
@@ -187,7 +187,7 @@ if ($installed) {
 		LIMIT 1";
 
 	if (sqlFetchRow(sqlQuery($sql))) {
-		//If this looks like a very old version of the CMS, direct people to update to 7.0.2 first
+		//If this looks like a very old version of Zenario, direct people to update to 7.0.2 first
 		echo '
 			<p>
 				You are seeing this message because your database contains an installation
@@ -243,7 +243,7 @@ if (cms_core::$lastDB
  && setting('brand_logo') == 'custom'
  && ($result = sqlSelect("SHOW COLUMNS IN ". DB_NAME_PREFIX. "files WHERE Field = 'thumbnail_64x64_width'"))
  && ($dbAtRecentRevision = sqlFetchRow($result))
- && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250))) {
+ && (imageLink($logoWidth, $logoHeight, $logoURL, setting('custom_logo'), 500, 250, $mode = 'resize', $offset = 0, $retina = true))) {
 	
 	if (strpos($logoURL, '://') === false) {
 		$logoURL = absCMSDirURL(). $logoURL;
@@ -366,7 +366,7 @@ echo '
 				<div>
 					<h1>', adminPhrase('Welcome to Zenario'), '</h1>
 					<p id="no_cookies">',
-						adminPhrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please alert your system administrator. There may be a problem with the caching or session storage on your server."),
+						adminPhrase("Unable to start a session! We cannot log you in at the moment.<br/><br/>Please check that cookies are enabled in your browser.<br/><br/>If you've enabled cookies and this message persists, please advise your system administrator to: <ul><li>Check the <code>COOKIE_DOMAIN</code> setting in the <code>zenario_siteconfig.php</code> file to ensure it is not referencing a different domain.</li><li>Check for any problems with caching or session storage on the server.</li></ul>"),
 					'</p>
 					<p id="no_script">',
 						adminPhrase('Please enable JavaScript in your browser to continue.'),

@@ -26,6 +26,7 @@ plugin_settings:
                     load_values_from_organizer_path: zenario__content/panels/categories
                     validation:
                         required_if_not_hidden: Please select a category
+                    indent: 1
                 slide_canvas:
                     plugin_setting:
                         name: slide_canvas
@@ -63,6 +64,7 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em; text-align: right'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1
                     
                 slide_height:
                     plugin_setting:
@@ -76,3 +78,4 @@ plugin_settings:
                     maxlength: "5"
                     style: 'width: 5em; text-align: right'
                     post_field_html: '&nbsp;pixels'
+                    indent: 1

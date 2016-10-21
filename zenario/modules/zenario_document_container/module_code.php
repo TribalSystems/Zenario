@@ -645,16 +645,11 @@ class zenario_document_container extends module_base_class {
 					$values['first_tab/zip_file_name'] = getRow('documents', 'folder_name', array('id' => $values['document_source']));
 				}
 				
-				
-				$fields['first_tab/canvas']['hidden'] = !$values['first_tab/show_thumbnails'];
-				
-				$fields['first_tab/width']['hidden'] = $fields['canvas']['hidden'] 
-					|| !in($values['canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-				
-				$fields['first_tab/height']['hidden'] = $fields['canvas']['hidden'] 
-					|| !in($values['canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-				
 				$fields['first_tab/title_tags']['hidden'] = !$values['first_tab/show_folder_name_as_title'];
+				
+				
+				$hidden =  !$values['first_tab/show_thumbnails'];
+				$this->showHideImageOptions($fields, $values, 'first_tab', $hidden);
 				break;
 		}
 	}

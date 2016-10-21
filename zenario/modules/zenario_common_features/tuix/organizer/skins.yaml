@@ -32,14 +32,6 @@ zenario__layouts:
                     title: Path
                     db_column: "CONCAT('[[CMS_ROOT]]zenario_custom/templates/', s.family_name, '/skins/', s.name, '/')"
                     show_by_default: Yes
-                type:
-                    title: Type
-                    db_column: s.`type`
-                    format: enum
-                    values:
-                        usable: Usable Skin
-                        component: Component Skin
-                    show_by_default: Yes
                 default:
                     title: Default
                     db_column: s.id = tf.skin_id    
@@ -58,14 +50,11 @@ zenario__layouts:
                 usage_layouts:
                     title: Usage in Layouts
                     db_column: |
-                        IF (s.`type` = 'usable',
-                                                        (
-                                                            SELECT COUNT(*)
-                                                            FROM [[DB_NAME_PREFIX]]layouts AS stc
-                                                            WHERE stc.skin_id = s.id
-                                                        ),
-                                                        NULL
-                                                    )
+                        (
+                            SELECT COUNT(*)
+                            FROM [[DB_NAME_PREFIX]]layouts AS stc
+                            WHERE stc.skin_id = s.id
+                        )
                     align_right: Yes
                     show_by_default: Yes
                 status:
@@ -100,7 +89,6 @@ zenario__layouts:
                 usable_in_template_family:
                     sql: |
                         s.family_name = [[REFINER__USABLE_IN_TEMPLATE_FAMILY]]
-                                                    AND s.`type` = 'usable'
                 template_family__panel_above:
                     sql: 's.family_name = [[REFINER__TEMPLATE_FAMILY]]'
             item:

@@ -1,9 +1,0 @@
-sections:
-    top_left_buttons:
-        buttons:
-            goto_user_forms:
-                ord: 21
-                parent: drop_down
-                css_class: zenario_at__goto_user_forms
-                label: Go to Forms panel
-                navigation_path: zenario__user_forms/panels/zenario_user_forms__forms

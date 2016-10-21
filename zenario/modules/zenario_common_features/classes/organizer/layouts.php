@@ -154,15 +154,17 @@ class zenario_common_features__organizer__layouts extends module_base_class {
 				if ($item['family_name'] == 'grid_templates') {
 					$layoutDetails = zenario_grid_maker::readLayoutCode($id);
 					$summary = 'Gridmaker layout / ';
-					if ($layoutDetails['fluid']) {
+					if (!empty($layoutDetails['fluid'])) {
 						$summary .= 'Fluid ';
 					} else {
 						$summary .= 'Fixed width ';
 					}
-					if ($layoutDetails['responsive']) {
+					if (!empty($layoutDetails['responsive'])) {
 						$summary .= '/ Responsive ';
 					}
-					$summary .= '/ '.$layoutDetails['gCols'].' columns';
+					if (!empty($layoutDetails['gCols'])) {
+						$summary .= '/ '. $layoutDetails['gCols']. ' columns';
+					}
 				} else {
 					$summary = 'Static';
 				}

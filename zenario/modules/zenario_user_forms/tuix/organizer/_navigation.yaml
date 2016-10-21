@@ -14,6 +14,7 @@ zenario__user_forms:
                 path: zenario__user_forms/panels/zenario_user_forms__forms
         zenario_user_forms__archive:
             ord: 2
+            css_class: zenario_user_forms
             label: Archive
             tooltip: 'View archived forms and their responses'
             link:
@@ -22,6 +23,7 @@ zenario__user_forms:
 zenario__email_template_manager:
     nav:
         form_email_addresses: 
+            css_class: zenario_user_forms
             ord: 4
             priv: _PRIV_VIEW_USER
             label: Form recipients

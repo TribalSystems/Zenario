@@ -203,3 +203,144 @@ revision( 36077
 	DROP COLUMN `always_show`
 _sql
 );
+
+// Migrate checkbox column data from plugin setting to user fields table
+if (needRevision(36505)) {
+	$sql = '
+		UPDATE ' . DB_NAME_PREFIX . 'user_form_fields uff
+		LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+			ON uff.user_field_id = cdf.id
+		SET uff.value_field_columns = 1
+		WHERE (uff.field_type = "checkboxes"
+			OR cdf.type = "checkboxes"
+		)';
+	sqlQuery($sql);
+	
+	$sql = '
+		SELECT
+		(
+			SELECT ps.value
+			FROM ' . DB_NAME_PREFIX . 'plugin_settings ps
+			WHERE ps.instance_id = pi.id
+			AND ps.name = "checkbox_columns"
+		) AS checkbox_columns,
+		(
+			SELECT ps.value
+			FROM ' . DB_NAME_PREFIX . 'plugin_settings ps
+			WHERE ps.instance_id = pi.id
+			AND ps.name = "user_form"
+		) AS user_form
+		FROM ' . DB_NAME_PREFIX . 'plugin_instances pi
+		INNER JOIN ' . DB_NAME_PREFIX . 'modules m
+			ON pi.module_id = m.id
+			AND m.class_name = "zenario_user_forms"';
+	$result = sqlSelect($sql);
+	while ($row = sqlFetchAssoc($result)) {
+		$sql = '
+			SELECT uff.id, uff.field_type, cdf.type
+			FROM ' . DB_NAME_PREFIX . 'user_form_fields uff
+			LEFT JOIN ' . DB_NAME_PREFIX . 'custom_dataset_fields cdf
+				ON uff.user_field_id = cdf.id
+			WHERE uff.user_form_id = ' . (int)$row['user_form'] . '
+			AND (uff.field_type = "checkboxes"
+				OR cdf.type = "checkboxes"
+			)';
+		$result2 = sqlSelect($sql);
+		while ($row2 = sqlFetchAssoc($result2)) {
+			if(!empty($row['checkbox_columns'])) {
+				updateRow('user_form_fields', array('value_field_columns' => $row['checkbox_columns']), array('id' => $row2['id']));
+			}
+		}
+	}
+	revision(36505);
+}
+
+
+
+
+
+
+
+
+//Migrate any slides that used to use logged_in_with_field/logged_in_without_field/without_field options
+//by creating a smart group
+if (needRevision(37220)) {
+	
+	//Look for any old settings in 
+	$ord = 0;
+	$result = getRows('tmp_migrate_slide_visibility', true, array());
+	while ($sg = sqlFetchAssoc($result)) {
+		
+		//Save the basic details of the smart group
+		$details = array();
+		$details['name'] = 'Migrated slide visibility #'. ++$ord;
+		$details['last_modified_on'] = now();
+		$details['last_modified_by'] = adminId();
+		$details['created_on'] = now();
+		$details['created_by'] = adminId();
+		
+		if ($smartGroupId = insertRow('smart_groups', $details, $ignore = true)) {
+			insertRow('smart_group_rules', array(
+				'smart_group_id' => $smartGroupId,
+				'ord' => 1,
+				'field_id' => $sg['field_id'],
+				'value' => $sg['field_value']
+			));
+			
+			updateRow('nested_plugins',
+				array('smart_group_id' => $smartGroupId),
+				array('is_slide' => 1, 'id' => explode(',', $sg['slide_ids']))
+			);
+		}
+	}
+	
+	revision(37220);
+}
+
+revision( 37230
+, <<<_sql
+	DROP TABLE `[[DB_NAME_PREFIX]]tmp_migrate_slide_visibility`
+_sql
+);
+
+
+//In version 7.4, we want to move the user_forms and user_form_fields tables, which were previously core tables,
+//into the User Forms module.
+//For sites that were running 7.3 and earlier, we'll rename the tables to preserve the data in them.
+//For fresh installs, just delete the tables and rely on the User Forms modules to create them again.
+if (needRevision(37235)) {
+	
+	//Check if the user forms module is running
+	if ($prefix = getModulePrefix('zenario_user_forms', $mustBeRunning = true)) {
+		//If not, drop tables if exist
+		$sql = "
+			DROP TABLE IF EXISTS `". DB_NAME_PREFIX. $prefix. "user_forms`";
+		sqlQuery($sql);
+		
+		$sql = "
+			DROP TABLE IF EXISTS `". DB_NAME_PREFIX. $prefix. "user_form_fields`";
+		sqlQuery($sql);
+		
+		//If so, rename tables
+		$sql = "
+			RENAME TABLE `". DB_NAME_PREFIX. "user_forms` TO `". DB_NAME_PREFIX. $prefix. "user_forms`";
+		sqlQuery($sql);
+		
+		$sql = "
+			RENAME TABLE `". DB_NAME_PREFIX. "user_form_fields` TO `". DB_NAME_PREFIX. $prefix. "user_form_fields`";
+		sqlQuery($sql);
+	
+	} else {
+		//If not, drop tables if exist
+		$sql = "
+			DROP TABLE IF EXISTS `". DB_NAME_PREFIX. "user_forms`";
+		sqlQuery($sql);
+		
+		$sql = "
+			DROP TABLE IF EXISTS `". DB_NAME_PREFIX. "user_form_fields`";
+		sqlQuery($sql);
+	}
+	
+	
+	revision(37235);
+}

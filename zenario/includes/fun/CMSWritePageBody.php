@@ -28,7 +28,7 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-$bodyTag = '<body class="no_js '. browserBodyClass();
+$bodyTag = '<body class="desktop no_js '. browserBodyClass();
 
 //Add the Admin Toolbar in Admin Mode
 if (checkPriv()) {
@@ -74,22 +74,17 @@ if (!$showingPreview) {
 	}
 }
 
-//If the visitor's browser has JavaScript enabled, change the "no_js" CSS class to just "js".
-//Note that by default replace() only affects the first match it comes to, and no_js was the
-//very first class I wrote down, so I can get away with just this simple statement to save space!
+//Add more classes to the browser body class using a short JavaScript function.
 echo '
-<script type="text/javascript">
-	window.zenarioGrid = {};
-	document.body.className = document.body.className';
-	
-	if (!$showingPreview) {
-		echo '.replace("no_", "")';
+<script type="text/javascript">', file_get_contents(CMS_ROOT. 'zenario/js/body.min.js');
+
+	//Use the "no_js" class if we're showing a preview
+	if ($showingPreview) {
+		echo '
+			zenarioSBC(1, "js", "no_js");';
 	}
 	
-	//Add a CSS class for whether this is retina or not.
-	//(Note that this won't work for IE 10 or earlier).
-	echo ' + (window.devicePixelRatio > 1? " retina" : " not_retina");
-</script>';
+echo '</script>';
 
 if ($includeAdminToolbar) {
 	CMSWritePageBodyAdminToolbar($toolbars, $toolbarAttr);

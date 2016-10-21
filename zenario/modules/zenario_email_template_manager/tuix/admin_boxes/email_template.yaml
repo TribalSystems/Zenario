@@ -120,3 +120,23 @@ zenario_email_template:
                             disallow_refiners_looping_on_min_path: true
                     insert_link_button:
                         exists: true
+        advanced:
+            label: Advanced
+            edit_mode:
+                priv: _PRIV_MANAGE_EMAIL_TEMPLATE
+                always_on: true
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: >
+                            Use this tab to add CSS styles and media queries, for email-clients
+                            that support these features.
+                head:
+                    label: 'HTML in head of email:'
+                    type: code_editor
+                    dont_trim: true
+                    language: html
+                    style: >
+                        width: 98%;
+                    rows: 30

@@ -61,6 +61,7 @@ class zenario_api {
 	protected $slotName;
 	protected $slotLevel;
 	protected $tabId;
+	protected $parentNest;
 	
 	
 	
@@ -173,21 +174,23 @@ class zenario_api {
 	
 	protected final function setSetting(
 		$name, $value,
-		$isContent = false, $format = 'text',
+		$changeInDB, $isContent = false, $format = 'text',
 		$foreignKeyTo = null, $foreignKeyId = 0, $foreignKeyChar = '', $danglingCrossReferences = 'remove'
 	) {
 		$this->zAPISettings[$name] = $value;
 		
-		setRow('plugin_settings',
-			array(
-				'value' => $value,
-				'is_content' => $this->isVersionControlled? ($isContent? 'version_controlled_content' : 'version_controlled_setting') : 'synchronized_setting',
-				'format' => $format,
-				'foreign_key_to' => $foreignKeyTo,
-				'foreign_key_id' => $foreignKeyId,
-				'foreign_key_char' => $foreignKeyChar,
-				'dangling_cross_references' => $danglingCrossReferences),
-			array('name' => $name, 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+		if ($changeInDB) {
+			setRow('plugin_settings',
+				array(
+					'value' => $value,
+					'is_content' => $this->isVersionControlled? ($isContent? 'version_controlled_content' : 'version_controlled_setting') : 'synchronized_setting',
+					'format' => $format,
+					'foreign_key_to' => $foreignKeyTo,
+					'foreign_key_id' => $foreignKeyId,
+					'foreign_key_char' => $foreignKeyChar,
+					'dangling_cross_references' => $danglingCrossReferences),
+				array('name' => $name, 'instance_id' => $this->instanceId, 'nest' => $this->eggId));
+		}
 	}
 	
 	
@@ -199,6 +202,16 @@ class zenario_api {
 	
 	//New Twig version of zenario frameworks
 	protected final function twigFramework($vars = array(), $return = false, $fromString = false, $fromFile = false) {
+		
+		$output = '';
+		
+		//In admin mode, the CMS might try to init() the plugin just to check if it's in the slot
+		//and on the page.
+		//In this case the twig library will not be present, but we shouldn't actually need to
+		//output anything here!
+		if (empty(cms_core::$twig)) {
+			return $output;
+		}
 		
 		
 		//Add plugin environment variables
@@ -222,6 +235,9 @@ class zenario_api {
 		}
 		if (!isset($vars['slotLevel'])) {
 			$vars['slotLevel'] = $this->slotLevel;
+		}
+		if (!isset($vars['parentNest'])) {
+			$vars['parentNest'] = $this->parentNest;
 		}
 		
 		//Add the CMS' environment variable
@@ -267,7 +283,6 @@ class zenario_api {
 		}
 		
 		
-		$output = '';
 		$twigFile = 'framework.twig.html';
 		cms_core::$isTwig = true;
 		cms_core::$moduleClassNameForPhrases = $this->moduleClassNameForPhrases;
@@ -354,6 +369,19 @@ class zenario_api {
 	}
 	
 	public final function openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = false, $fadeOutAndIn = true, $usePost = true) {
+		
+		//Don't attempt to show forms if we're not on the correct domain,
+		//this will just trigger the XSS prevention script.
+		//Instead, try to do a header redirect to the correct URL.
+		if (cms_core::$wrongDomain) {
+			$req = $_GET;
+			unset($req['cID']);
+			unset($req['cType']);
+			unset($req['instanceId']);
+			unset($req['method_call']);
+			unset($req['slotName']);
+			$this->headerRedirect(linkToItem(cms_core::$cID, cms_core::$cType, true, $req));
+		}
 		
 		return '
 				<form method="'. ($usePost? 'post' : 'get'). '" '. $extraAttributes. '
@@ -474,11 +502,11 @@ class zenario_api {
 		return require funIncPath(__FILE__, __FUNCTION__);
 	}
 
-	protected final function forcePageReload($reload = true) {
+	public final function forcePageReload($reload = true) {
 		$this->zAPIForcePageReload($reload);
 	}
 
-	protected final function headerRedirect($link) {
+	public final function headerRedirect($link) {
 		$this->zAPIHeaderRedirect($link);
 	}
 
@@ -486,7 +514,7 @@ class zenario_api {
 		$this->zAPIMarkSlotAsBeingEdited($beingEdited);
 	}
 
-	protected final function showInFloatingBox($showInFloatingBox = true, $floatingBoxParams = false) {
+	public final function showInFloatingBox($showInFloatingBox = true, $floatingBoxParams = false) {
 		$this->cmsApiShowInFloatingBox($showInFloatingBox, $floatingBoxParams);
 	}
 
@@ -494,36 +522,43 @@ class zenario_api {
 		$this->cmsApiScrollToTopOfSlot($scrollToTop);
 	}
 
-	protected final function registerGetRequest($request, $defaultValue = '') {
+	public final function registerGetRequest($request, $defaultValue = '') {
 		cms_core::$importantGetRequests[$request] = $defaultValue;
 	}
+	public final function clearRegisteredGetRequest($request) {
+		unset(cms_core::$importantGetRequests[$request]);
+		
+		if ($this->eggId) {
+			$this->callScriptAtTheEnd('zenario_conductor', 'clearRegisteredGetRequest', $this->slotName, $request);
+		}
+	}
 	
-	protected final function setPageTitle($title) {
+	public final function setPageTitle($title) {
 		cms_core::$slotContents[$this->slotName]['page_title'] = $title;
 		cms_core::$pageTitle = $title;
 	}
 	
-	protected final function setPageDesc($description) {
+	public final function setPageDesc($description) {
 		cms_core::$slotContents[$this->slotName]['page_desc'] = $description;
 		cms_core::$pageDesc = $description;
 	}
 	
-	protected final function setPageImage($imageId) {
+	public final function setPageImage($imageId) {
 		cms_core::$slotContents[$this->slotName]['page_image'] = $imageId;
 		cms_core::$pageImage = $imageId;
 	}
 	
-	protected final function setPageKeywords($keywords) {
+	public final function setPageKeywords($keywords) {
 		cms_core::$slotContents[$this->slotName]['page_keywords'] = $keywords;
 		cms_core::$pageKeywords = $keywords;
 	}
 	
-	protected final function setPageOGType($type) {
+	public final function setPageOGType($type) {
 		cms_core::$slotContents[$this->slotName]['page_og_type'] = $type;
 		cms_core::$pageOGType = $type;
 	}
 
-	protected final function setMenuTitle($title) {
+	public final function setMenuTitle($title) {
 		cms_core::$slotContents[$this->slotName]['menu_title'] = $title;
 		cms_core::$menuTitle = $title;
 	}
@@ -729,6 +764,26 @@ class zenario_api {
 	
 	
 	
+	  //////////////////////////////////////////////////
+	 //  Functions that interact with the conductor  //
+	//////////////////////////////////////////////////
+
+
+	public function conductorEnabled() {
+		return $this->parentNest && $this->parentNest->cEnabled();
+	}
+	public function conductorCommandEnabled($command) {
+		return $this->parentNest && $this->parentNest->cCommandEnabled($command);
+	}
+	public function conductorLink($command, $requests = array()) {
+		if ($this->parentNest) {
+			return $this->parentNest->cLink($command, $requests);
+		}
+		return false;
+	}
+	
+	
+	
 	  /////////////////////////////////////////////
 	 //  Core functions that make the API work  //
 	/////////////////////////////////////////////
@@ -783,8 +838,12 @@ class zenario_api {
 
 	//A list of JavaScript functions to run
 	private $zAPIScripts = array(array(), array(), array());
-	protected final function zAPICallScriptWhenLoaded($scriptType, &$script) {
-		$this->zAPIScripts[$scriptType][] = $script;
+	public final function zAPICallScriptWhenLoaded($scriptType, &$script) {
+		if (isset($this->zAPIMainClass)) {
+			$this->zAPIMainClass->zAPICallScriptWhenLoaded($scriptType, $script);
+		} else {
+			$this->zAPIScripts[$scriptType][] = $script;
+		}
 	}
 	public final function zAPICheckRequestedScripts(&$scripts) {
 		$scripts = $this->zAPIScripts;
@@ -875,7 +934,10 @@ class zenario_api {
 	}
 	
 	
-	public final function setInstanceVariables($locationAndInstanceDetails, $nest = 0, $tab = 0, $settings = false) {
+	public final function setInstanceVariables(
+		$locationAndInstanceDetails,
+		$nest = 0, $tab = 0, $settings = false, $frameworkPath = false, $mainClass = false
+	) {
 		//Set the variables above from the array given
 		list($this->cID, $this->cType, $this->cVersion, $this->slotName,
 			 $this->instanceName, $this->instanceId,
@@ -904,18 +966,30 @@ class zenario_api {
 			
 			if ($this->eggId) {
 				$this->containerId .= '-'. $this->eggId;
+				
+				if (!empty(cms_core::$slotContents[$this->slotName]['class'])) {
+					$this->parentNest = cms_core::$slotContents[$this->slotName]['class'];
+				}
 			}
 		}
 		
 		if ($settings !== false) {
 			$this->zAPISettings = $settings;
 		}
+		
+		if ($frameworkPath !== false) {
+			$this->frameworkPath = $frameworkPath;
+		}
+		
+		if ($frameworkPath !== false) {
+			$this->zAPIMainClass = $mainClass;
+		}
 	}
 	
 	public final function setInstance($locationAndInstanceDetails = false, $nest = 0, $tab = 0) {
 		$this->setInstanceVariables($locationAndInstanceDetails, $nest, $tab);
 		
-		//Set up Swatches, etc. for front-end modules
+		//Set up settings for front-end plugins
 		if ($this->instanceId) {
 			//Check that the chosen framework exists
 			//Attempt to fall back to the default framework if it does not
@@ -1737,23 +1811,50 @@ class zenario_api {
 	 * This is a utility function to deal with the standard image resize options on tuix plugin settings.
 	 * @param Array containing tuix $fields
 	 * @param Array containing tuix $values
-	 * @param String to prefix the available options $img
-	 * @param Boolean that specify if we want to show/hide $hide
-	 * @param String the field that is used to switch options on/off default to "${img}_show" $img_show
+	 * @param String tuix tab name $tab
+	 * @param Boolean that specify if we want to show/hide $hidden
+	 * @param String to prefix the available options $fieldPrefix
+	 * @param Boolean whether there is a canvas select $hasCanvas
 	 */
-	protected function showHideImageOptions(&$fields, &$values, $img, $hide, $img_show=false) {
-		if(!$img_show) $img_show = $img . '_show';
-		$fields[$img_show]['hidden'] = $hide;
-	
-		$show_canvas = $values[$img_show] && !$hide;
-		$canvas = $img . '_canvas';
-		$fields[$canvas]['hidden'] = !$show_canvas;
-	
-		$fields[$img . '_width']['hidden'] = !$show_canvas
-		|| !in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-	
-		$fields[$img . '_height']['hidden'] = !$show_canvas
-		|| !in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
+	protected function showHideImageOptions(&$fields, $values, $tab, $hidden = false, $fieldPrefix = '', $hasCanvas = true, $sameLineLabel = 'Size (width × height):') {
+		$width = $tab . '/' . $fieldPrefix . 'width';
+		$height = $tab . '/' . $fieldPrefix . 'height';
+		
+		if ($hasCanvas) {
+			$canvas = $tab . '/' . $fieldPrefix . 'canvas';
+			$fields[$canvas]['hidden'] = $hidden;
+		}
+		
+		$fields[$width]['hidden'] = $hidden
+			|| ($hasCanvas && !in($values[$canvas], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop'));
+		$fields[$height]['hidden'] = $hidden
+			|| ($hasCanvas && !in($values[$canvas], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop'));
+		
+		$offset = $tab . '/' . $fieldPrefix . 'offset';
+		if (isset($fields[$offset])) {
+			$fields[$offset]['hidden'] = $hidden
+				|| ($hasCanvas && ($values[$canvas] != 'resize_and_crop'));
+		}
+		
+		if (!$fields[$width]['hidden'] && !$fields[$height]['hidden']) {
+			$fields[$width]['label'] = adminPhrase($sameLineLabel);
+			$fields[$width]['placeholder'] = adminPhrase('width');
+			$fields[$width]['post_field_html'] = '&nbsp;&nbsp;×&nbsp;';
+			
+			$fields[$height]['label'] = '';
+			$fields[$height]['placeholder'] = adminPhrase('height');
+			$fields[$height]['post_field_html'] = '&nbsp;pixels';
+			$fields[$height]['same_row'] = true;
+		} else {
+			$fields[$width]['label'] = adminPhrase('Width:');
+			$fields[$width]['placeholder'] = '';
+			$fields[$width]['post_field_html'] = '&nbsp;pixels';
+			
+			$fields[$height]['label'] = 'Height:';
+			$fields[$height]['placeholder'] = '';
+			$fields[$height]['post_field_html'] = '&nbsp;pixels';
+			$fields[$height]['same_row'] = false;
+		}
 	}
 	
 	/**
@@ -1797,7 +1898,8 @@ class zenario_api {
 	//Rather than put all of your Admin Box/Organizer functionality in one module,
 	//this lets you divvy it up into different subclasses.
 	public $zAPIrunSubClassSafetyCatch = false;
-	protected final function runSubClass($filePath, $type = false, $path = false, $customisationName = -1) {
+	protected $zAPIMainClass;
+	protected final function runSubClass($filePath, $type = false, $path = false) {
 		
 		//Add a check to stop subclasses calling themsevles again, which would cause an
 		//infinite loop!
@@ -1805,7 +1907,7 @@ class zenario_api {
 			return false;
 		}
 		
-		if ($className = includeModuleSubclass($filePath, $type, $path, $customisationName)) {
+		if ($className = includeModuleSubclass($filePath, $type, $path)) {
 			$class = new $className;
 			$class->zAPIrunSubClassSafetyCatch = true;
 			$class->setInstanceVariables(array(
@@ -1816,7 +1918,8 @@ class zenario_api {
 				$this->defaultFramework, $this->framework,
 				$this->cssClass,
 				$this->slotLevel, $this->isVersionControlled),
-				$this->eggId, $this->tabId, $this->zAPISettings);
+				$this->eggId, $this->tabId,
+				$this->zAPISettings, $this->frameworkPath, $this);
 			return $class;
 		} else {
 			return false;

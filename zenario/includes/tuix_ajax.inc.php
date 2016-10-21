@@ -305,6 +305,27 @@ function readAdminBoxValues(&$box, &$fields, &$values, &$changes, $filling, $res
 						//being treated as strings (which is bad because '0' == true in JavaScript).
 						} elseif (isset($field['type']) && $field['type'] == 'checkbox') {
 							$field[$currentValue] = engToBoolean($field[$currentValue]);
+						
+						//For upload files, try to look up details on any uploaded files
+						//so save the client needing an AJAX request to do this.
+						} elseif ($filling && $field[$currentValue] && !empty($field['upload'])) {
+							foreach (explodeAndTrim($field[$currentValue], true) as $fileId) {
+								
+								if ($file = getRow('files', array('id', 'filename', 'width', 'height', 'checksum', 'usage'), $fileId)) {
+									if (empty($field['values'])) {
+										$field['values'] = array();
+									}
+									
+									$field['values'][$file['id']] = array(
+										'file' => $file,
+										'label' => $file['filename']
+									);
+									
+									if ($file['width'] && $file['height']) {
+										$field['values'][$file['id']]['label'] .= ' ['. $file['width']. ' × '. $file['height']. 'px]';
+									}
+								}
+							}
 						}
 						
 						//Logic for Multiple-Edit
@@ -471,7 +492,6 @@ function applyValidationFromTUIXOnTab(&$tab) {
 
 
 class zenario_fea_tuix {
-	public static $customisationName = '';
 	public static $yamlFilePath = -1;
 }
 
@@ -565,6 +585,8 @@ function translatePhrasesInTUIXObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType 
 				if (isset($t[$i='note_below'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
 				if (isset($t[$i='empty_value'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i);
 				if (isset($t[$i='snippet'][$j='label'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='upload'][$j='dropbox_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
+				if (isset($t[$i='upload'][$j='upload_phrase'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
 				if (isset($t[$i='validation'][$j='required'])) translatePhraseInTUIX($t, $o, $p, $c, $l, $s, $i, $j);
 		
 				//Translate button values
@@ -575,7 +597,9 @@ function translatePhrasesInTUIXObject(&$t, &$o, &$p, &$c, &$l, &$s, $objectType 
 						translatePhraseInTUIX($t, $o, $p, $c, $l, $s, 'value');
 					}
 				}
-				break;
+				
+				//N.b. there's no "break" here,
+				//we continue on to the next statement as some fields can be buttons too!
 		
 			case 'collection_buttons':
 			case 'item_buttons':
@@ -625,12 +649,12 @@ function translatePhrasesInTUIX(&$tags, &$overrides, $path, $moduleClass, $langu
 		$tags, $overrides, $path, $moduleClass, $languageId, $scan);
 }
 
-function lookForPhrasesInTUIX($path, $customisationName = '') {
+function lookForPhrasesInTUIX($path = '') {
 	
 	$overrides = array();
 	$tags = array();
 	$moduleFilesLoaded = array();
-	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $path, $customisationName);
+	loadTUIX($moduleFilesLoaded, $tags, 'visitor', $path);
 
 	if (!empty($tags[$path])) {
 		translatePhrasesInTUIX(
@@ -640,7 +664,7 @@ function lookForPhrasesInTUIX($path, $customisationName = '') {
 	return $overrides;
 }
 
-function setupOverridesForPhrasesInTUIX(&$box, &$fields, $path, $customisationName = '') {
+function setupOverridesForPhrasesInTUIX(&$box, &$fields, $path = '') {
 	
 	$ord = 1000;
 	
@@ -660,7 +684,7 @@ function setupOverridesForPhrasesInTUIX(&$box, &$fields, $path, $customisationNa
 	loadAllPluginSettings($box, $valuesInDB);
 
 	
-	foreach (lookForPhrasesInTUIX($path, $customisationName) as $ppath => $defaultText) {
+	foreach (lookForPhrasesInTUIX($path) as $ppath => $defaultText) {
 		
 		$fields[$ppath] = array(
 			'plugin_setting' => array(

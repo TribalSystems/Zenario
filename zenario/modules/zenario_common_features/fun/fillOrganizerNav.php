@@ -56,6 +56,7 @@ foreach (getRowsArray(
 	$nav['zenario__content']['nav']['content_type_'. $cType] = array(
 		'ord' => $thisOrd,
 		'label' => ifNull($details['content_type_plural_en'], $details['content_type_name_en']),
+		'css_class' => 'content_type_'. $cType,
 		'tooltip' => '',
 		'link' => array(
 			'path' => 'zenario__content/panels/content',

@@ -60,6 +60,7 @@ switch ($path) {
 			$values['meta_data/send_bcc'] = $details['send_bcc'];
 			$values['meta_data/bcc_email_address'] = $details['bcc_email_address'];
 			$values['body/body'] = $details['body'];
+			$values['advanced/head'] = $details['head'];
 		
 		} else {
 			$values['meta_data/email_address_from'] = setting('email_address_from');

@@ -499,14 +499,18 @@ function startSession() {
 	}
 }
 
-function editionInclude($name) {
+function editionInclude($name, $continueFrom = false) {
+	
 	foreach (cms_core::$editions as $className) {
-		if ($editionInclude = moduleDir($className, 'edition_includes/'. $name. '.php', true)) {
-			return $editionInclude;
+	
+		if (!$continueFrom && $editionInclude = moduleDir($className, 'edition_includes/'. $name. '.php', true)) {
+			return CMS_ROOT. $editionInclude;
+		} elseif ($continueFrom == $className) {
+			$continueFrom = false;
 		}
 	}
 	
-	return 'zenario/includes/dummy_include.php';
+	return CMS_ROOT. 'zenario/includes/dummy_include.php';
 }
 
 
@@ -574,6 +578,7 @@ class cms_core {
 	public static $cachingInUse = false;
 	public static $userAccessLogged = false;
 	public static $mustUseFullPath = false;
+	public static $wrongDomain = false;
 	public static $cookieConsent = '';
 	public static $menuTitle = false;
 	public static $pageTitle = '';
@@ -594,7 +599,8 @@ class cms_core {
 	public static $twig;
 	public static $isTwig = false;
 	public static $twigModules = array();
-	public static $whitelist = array('print_r', 'var_dump');
+	public static $whitelist = array('print_r', 'var_dump', 'json_encode');
+	public static $vars = array('userId' => 0);
 
 	public static $skPath = '';
 	public static $skType = '';

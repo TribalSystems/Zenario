@@ -28,12 +28,6 @@
 				{% if location.postcode %}
 					{% set addressline = addressline|merge([location.postcode]) %}
 				{% endif %}
-				
-				{% if location.map_image %}
-					<div class="image map"> 
-						<img src="{{location.map_image}}">
-					</div>
-				{% endif %}
 		
 				{% if addressline|length %}
 					<div class="zenario_lmal_addressline">
@@ -59,13 +53,6 @@
 						<a target="_blank" href="{{location.url|escape}}">{{location.url|escape}}</a>
 					</div>
 				{% endif %}
-				
-				{% if location.descriptive_page %}
-					<div class="button view_descriptive_page map">
-						<a target="_blank" href="{{location.descriptive_page|escape}}">{{button_label|escape}}</a>
-					</div>
-				{% endif %}
-
 			</div>
 		</script>
 	{% endfor %}
@@ -144,13 +131,6 @@
 				
 						{% for location in tab.locations %}
 							<div class="zenario_lmal_location {{location.htmlId|escape}}" onclick="{{location.listingClick|escape}}">
-								
-								{% if location.list_image %}
-									<div class="image list"> 
-										<img src="{{location.list_image}}">
-									</div>
-								{% endif %}
-								
 								<h3>
 									{% if location.postcode_index %}
 										{{location.postcode_index|escape}} 
@@ -165,7 +145,6 @@
 								{% if location.nearest %}
 									<span class="nearest">{{'(nearest)'|trans}}</span>
 								{% endif %}
-								
 								
 								{% set addressline = [] %}
 								{% if location.address1 %}
@@ -217,14 +196,6 @@
 										{{description}}
 									</div>
 								{% endif %}
-								
-								{% if location.descriptive_page %}
-									<div class="button view_descriptive_page list">
-										<a target="_blank" href="{{location.descriptive_page|escape}}">{{button_label|escape}}</a>
-									</div>
-								{% endif %}
-								
-								
 							</div>
 						{% endfor %}
 					</div>

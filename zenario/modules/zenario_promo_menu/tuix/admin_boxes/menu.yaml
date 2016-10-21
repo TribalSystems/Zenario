@@ -58,7 +58,7 @@ zenario_menu:
                             label: Resize and crop
                     format_onchange: Yes
                 zenario_promo_menu__width:
-                    indent: 1
+                    indent: 2
                     label: 'Width'
                     type: text
                     validation:
@@ -69,7 +69,7 @@ zenario_menu:
                     style: 'width: 5em;'
                     post_field_html: '&nbsp;pixels'
                 zenario_promo_menu__height:
-                    indent: 1
+                    indent: 2
                     label: 'Height'
                     type: text
                     validation:
@@ -81,7 +81,7 @@ zenario_menu:
                     post_field_html: '&nbsp;pixels'
                 
                 zenario_promo_menu__offset:
-                    indent: 1
+                    indent: 2
                     plugin_setting:
                         name: offset
                     label: 'Offset'

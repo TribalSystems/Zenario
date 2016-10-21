@@ -813,72 +813,11 @@ class zenario_event_calendar extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
-				$box['tabs']['calendar']['fields']['first_day_of_week']['hidden'] = arrayKey($values,'calendar/view_mode')!='month_view';
-				$viewMode = $values['calendar/view_mode'];
-				if ($viewMode == "month_view"){
-					$fields['calendar/months_format']['hidden'] = true;
-				}else{
-					$fields['calendar/months_format']['hidden'] = false;
-				}
+				$fields['calendar/first_day_of_week']['hidden'] = arrayKey($values,'calendar/view_mode') != 'month_view';
+				$fields['calendar/months_format']['hidden'] = arrayKey($values,'calendar/view_mode') == 'month_view';
 				
-				/* Stiky image validation */
-			$showStickyImage = $values['calendar/show_sticky_images'];
-			if($showStickyImage){
-				$fields['calendar/canvas']['hidden'] = false;
-				$canvas = $values['calendar/canvas'];
-				switch($canvas){
-					case 'unlimited':
-						$fields['calendar/width']['hidden'] = true;
-						$fields['calendar/height']['hidden'] = true;
-						break;
-					case 'fixed_width':
-						$fields['calendar/width']['hidden'] = false;
-						$fields['calendar/height']['hidden'] = true;
-						break;
-					case 'fixed_height':
-						$fields['calendar/width']['hidden'] = true;
-						$fields['calendar/height']['hidden'] = false;
-						break;
-					case 'fixed_width_and_height':
-						$fields['calendar/width']['hidden'] = false;
-						$fields['calendar/height']['hidden'] = false;
-						break;
-					case 'resize_and_crop':
-						$fields['calendar/width']['hidden'] = false;
-						$fields['calendar/height']['hidden'] = false;
-						break;
-				}
-				
-			}else{
-				$fields['calendar/canvas']['hidden'] = true;
-				$fields['calendar/width']['hidden'] = true;
-				$fields['calendar/height']['hidden'] = true;
-			}	
-			
-		/* note below */
-		if (isset($box['tabs']['calendar']['fields']['canvas'])
-		 && empty($box['tabs']['calendar']['fields']['canvas']['hidden'])) {
-			if ($values['calendar/canvas'] == 'fixed_width') {
-				$box['tabs']['each_item']['fields']['width']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} else {
-				unset($box['tabs']['each_item']['fields']['width']['note_below']);
-			}
-			
-			if ($values['calendar/canvas'] == 'fixed_height'
-			 || $values['calendar/canvas'] == 'fixed_width_and_height') {
-				$box['tabs']['calendar']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled down maintaining aspect ratio. Except for SVG images, they will never be scaled up.');
-			
-			} elseif ($values['calendar/canvas'] == 'resize_and_crop') {
-				$box['tabs']['calendar']['fields']['height']['note_below'] =
-					adminPhrase('Images may be scaled up or down maintaining aspect ratio.');
-			
-			} else {
-				unset($box['tabs']['calendar']['fields']['height']['note_below']);
-			}
-		}
+				$hidden = !$values['calendar/show_sticky_images'];
+				$this->showHideImageOptions($fields, $values, 'calendar', $hidden);
 				break;
 		}
 	}
@@ -893,10 +832,5 @@ class zenario_event_calendar extends module_base_class {
 			return false;
 		}
 	}
-	
-	
-	
-
-
 }
 ?>

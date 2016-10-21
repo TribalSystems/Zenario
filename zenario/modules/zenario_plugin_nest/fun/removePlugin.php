@@ -31,7 +31,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 //Remove a Plugin
 if (($instance = getPluginInstanceDetails($instanceId))
  && ($nestedItem = getNestDetails($nestedItemId, $instanceId))
- && (!$nestedItem['is_tab'])) {
+ && (!$nestedItem['is_slide'])) {
 	$sql = "
 		DELETE FROM ". DB_NAME_PREFIX. "plugin_settings
 		WHERE instance_id = ". (int) $instanceId. "

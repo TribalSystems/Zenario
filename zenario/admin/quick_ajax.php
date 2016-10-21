@@ -69,7 +69,7 @@ if (!empty($_REQUEST['keep_session_alive'])) {
 	
 	if ($checkPriv) {
 		$sql = "
-			SELECT filename, width, height
+			SELECT id, filename, width, height, checksum, `usage`
 			FROM ". DB_NAME_PREFIX. "files
 			WHERE id = ". (int) $_REQUEST['lookupFileDetails'];
 		

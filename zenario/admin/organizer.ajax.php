@@ -1362,7 +1362,11 @@ if ($mode == 'get_item_data') {
 //I also need to set the path for Menu Nodes
 } elseif ($mode == 'get_item_name' || $mode == 'get_item_links' || $mode == 'typeahead_search') {
 	//Add information on the item
-	$output = array('items' => $tags['items'], 'item' => arrayKey($tags, 'item'), 'columns' => array());
+	$output = array('item' => arrayKey($tags, 'item'), 'columns' => array());
+	
+	if (isset($tags['items'])) {
+		$output['items'] = $tags['items'];
+	}
 	
 	if (!empty($tags['item'])) {
 		$output['item'] = $tags['item'];
@@ -1396,17 +1400,19 @@ if ($mode == 'get_item_data') {
 	}
 	
 	//Strip out any column that is not used in the label
-	foreach ($output['items'] as $id => &$item) {
-		if (is_array($item)) {
-			foreach ($item as $colName => $column) {
-				if (empty($usedcolumns[$colName])) {
-					unset($item[$colName]);
+	if (!empty($output['items'])) {
+		foreach ($output['items'] as $id => &$item) {
+			if (is_array($item)) {
+				foreach ($item as $colName => $column) {
+					if (empty($usedcolumns[$colName])) {
+						unset($item[$colName]);
+					}
 				}
-			}
-			unset($item['cell_css_classes']);
+				unset($item['cell_css_classes']);
 			
-			if ($needToSetMenuName) {
-				$item['name'] = getMenuPath($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> ');
+				if ($needToSetMenuName) {
+					$item['name'] = getMenuPath($id, FOCUSED_LANGUAGE_ID__NO_QUOTES, $separator = ' -> ');
+				}
 			}
 		}
 	}

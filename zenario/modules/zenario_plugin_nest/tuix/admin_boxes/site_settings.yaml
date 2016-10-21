@@ -1,0 +1,23 @@
+site_settings:
+    setting_group: assetwolf_asset_manager__site_settings_group
+    
+    tabs:
+        conductor:
+            label: Conductor
+            edit_mode:
+                priv: _PRIV_EDIT_SITE_SETTING
+                enabled: true
+            fields:
+                desc:
+                    snippet:
+                        html: |
+                            <p>
+                                Use this tab to enable the conductor.
+                                The conductor can be used to turn a plugin nest into a modal AJAX application.
+                            </p>
+                enable_conductor_for_nests:
+                    site_setting:
+                        name: enable_conductor_for_nests
+                    label: 'Enable conductor'
+                    type: checkbox
+                    

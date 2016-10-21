@@ -17,7 +17,7 @@ site_settings:
                 dropbox_api_key:
                     site_setting:
                         name: dropbox_api_key
-                    label: 'Dropbox API key:'
+                    label: 'Dropbox API Key:'
                     type: text
                     note_below: |
                         An application key that can use the Dropbox API.

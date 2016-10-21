@@ -19,6 +19,9 @@ zenario__content:
             panel_type: slot_reload_on_change
             
             columns:
+                ord:
+                    title: Ordinal
+                    width: xsmall
                 slotname:
                     title: Slot
                     searchable: true
@@ -27,19 +30,22 @@ zenario__content:
                     title: Visitor sees
                     searchable: true
                     show_by_default: true
+                    width: large
                 content_item:
                     title: Slot content on content item
                     searchable: true
                     show_by_default: true
+                    width: large
                 template:
                     title: Slot content on layout
                     searchable: true
                     show_by_default: true
+                    width: large
                 module_id:
                     exists: true
                 instance_id:
                     exists: true
-            default_sort_column: slotname
+            default_sort_column: ord
             item:
                 name: Slot
                 css_class: slot

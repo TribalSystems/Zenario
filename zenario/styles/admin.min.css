@@ -10,7 +10,6 @@
 #zenario_fbDebugInfoBox{z-index:2001}.zenario_debugInfo{display:block}#zenario_fbog.zenario_introjs_fixPosition{position:absolute !important}#zenario_fbAdminColumnFilter,#zenario_fbAdminViewModeOptions,#zenario_fbAdminColumnFilter__overlay,#zenario_fbAdminViewModeOptions__overlay{z-index:2001}
 #zenario_fbog.zenario_organizer_over_admin_box{z-index:350000}#zenario_fbAdminOrganizer iframe{border:0;margin:0;padding:0}input.zenario_datepicker{background-image:url("../admin/images/icons/calendar_small.gif");background-repeat:no-repeat;background-position:98% 50%}
 #ui-datepicker-div{display:none}#zenario_progress.ui-progressbar #zenario_progressbar.ui-progressbar-value{margin:0}#zenario_abtab .thickbox .ui-slider-horizontal .ui-slider-handle{top:-0.19em}
-div.zenario_preload_sprites,div.zenario_preload_sprites div{position:fixed;top:0;right:0;width:1px;height:1px;background:no-repeat transparent right bottom}
 div.zenario_show_on_open{display:none}.zenario_fbAdminAJAXLoader{position:absolute;left:0;right:0;height:100%;width:100%;overflow:hidden;z-index:335000}
 #organizer_preloader_circle{position:absolute;background:url('../admin/images/store_keeper/overlay_light_grey.png');z-index:60}@-webkit-keyframes zenario_spinner{to{-webkit-transform:rotate(360deg)}
 }@keyframes zenario_spinner{to{transform:rotate(360deg)}}.zenario_fbAdminAJAXLoader div{border:3px solid #bbb;border-top-color:#01d103}#organizer_preloader_circle div{border:3px solid #666;border-top-color:#01d103}
@@ -30,8 +29,11 @@ div.zenario_show_on_open{display:none}.zenario_fbAdminAJAXLoader{position:absolu
 .zenario_admin_tooltip.tooltip_top_center{margin-top:8px}.zenario_admin_tooltip.tooltip_top_center .tooltip_arrow{display:block;top:-6px;background:top transparent no-repeat url('../admin/images/tooltip_up_black.png')}
 .zenario_admin_tooltip.tooltip_bottom_center .tooltip_arrow{display:block;position:relative;top:13px;height:5px;background:bottom transparent no-repeat url('../admin/images/tooltip_down_black.png')}
 .zenario_admin_tooltip.tooltip_bottom_left .tooltip_arrow{display:block;position:relative;top:13px;height:5px;background:80% bottom transparent no-repeat url('../admin/images/tooltip_down_black.png')}
-.zenario_inactive a{font-style:italic}.zenario_debug{position:relative;float:right;width:18px}.zenario_debug div{position:absolute;width:18px;height:18px;display:block;background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -17px -1296px;cursor:pointer}
-.zenario_debug:hover div{background-position:-17px -1346px}#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_desktop{background:url('../admin/images/page_preview_icons/desktop-small-icon.png') no-repeat 0 center}
+span.zenario_conditionally_hidden{opacity:.5}$span .zenario_inactive{background:pink !important}.zenario_inactive a{font-style:italic}.zenario_debug{position:relative;float:right;width:18px}
+.zenario_debug div{position:absolute;width:18px;height:18px;display:block;background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -17px -1296px;cursor:pointer}
+.zenario_debug:hover div{background-position:-17px -1346px}#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled{background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px}
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled{background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1341px}
+#zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_desktop{background:url('../admin/images/page_preview_icons/desktop-small-icon.png') no-repeat 0 center}
 #zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_laptop{background:url('../admin/images/page_preview_icons/laptop-small-icon.png') no-repeat 0 center}
 #zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet{background:url('../admin/images/page_preview_icons/ipad-portrait-small-icon.png') no-repeat 0 center}
 #zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_tablet_landscape{background:url('../admin/images/page_preview_icons/ipad-landscape-small-icon.png') no-repeat 0 center}

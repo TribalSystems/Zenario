@@ -128,7 +128,7 @@ function convertToUserTimezone($time, $specificTimeZone = false) {
 
 
 cms_core::$whitelist[] = 'getRelativeDate';
-function getRelativeDate($timestamp, $maxPeriod = "day", $addFullTime = false, $format_type = false, $languageId = false) {
+function getRelativeDate($timestamp, $maxPeriod = "day", $addFullTime = false, $format_type = false, $languageId = false, $time_format = true) {
 	
 	$time = convertToUserTimezone($timestamp);
 	if (!is_numeric($timestamp)) {
@@ -165,10 +165,11 @@ function getRelativeDate($timestamp, $maxPeriod = "day", $addFullTime = false, $
 			
 				if ($addFullTime) {
 					if (is_string($addFullTime)) {
-						return $relativeDate. ' ('. formatDateTimeNicely($time, $addFullTime, $languageId). ')';
+						return $relativeDate. ' ('. formatDateNicely($time, $addFullTime, $languageId, $time_format). ')';
 					} else {
-						return $relativeDate. ' ('. formatDateTimeNicely($time, $format_type, $languageId). ')';
+						return $relativeDate. ' ('. formatDateNicely($time, $format_type, $languageId, $time_format). ')';
 					}
+					
 				} else {
 					return $relativeDate;
 				}
@@ -229,7 +230,7 @@ function sendEmail(
 	}
 	
 	
-	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPMailer_5_2_2/class.phpmailer.php';
+	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPMailer_5_2_15/class.phpmailer.php';
 	
 	if ($addressFrom === false) {
 		$addressFrom = setting('email_address_from');

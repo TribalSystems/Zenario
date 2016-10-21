@@ -30,6 +30,17 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 
 class zenario_common_features__admin_boxes__import extends module_base_class {
 	
+	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
+		$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('User Activated',false);
+		if (count($layouts)==0) {
+			$layouts = zenario_email_template_manager::getTemplatesByNameIndexedByCode('Account Activated',false);
+		}
+		if (count($layouts)){
+			$template = current($layouts);
+			$fields['actions/email_to_send']['value'] = arrayKey($template,'code');
+		}
+	}
+	
 	public function validateAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes, $saving) {
 		// Handle tab naviagtion and validation
 		$errors = &$box['tabs'][$box['tab']]['errors'];
@@ -619,12 +630,11 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		
 		
 		if ($box['tab'] == 'actions') {
-			
 			$userImport = ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users');
 			
 			// Remove previously generated fields
 			foreach($box['tabs']['actions']['fields'] as $name => $field) {
-				if (!in_array($name, array('records_statement', 'email_report', 'line_break', 'previous'))) {
+				if (!in_array($name, array('records_statement', 'email_report', 'line_break', 'previous', 'send_welcome_email', 'email_to_send'))) {
 					unset($box['tabs']['actions']['fields'][$name]);
 				}
 			}
@@ -637,7 +647,6 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 			// Create a field for each unset dataset field
 			$ord = 1;
 			foreach ($datasetFieldDetails as $fieldId => $datasetField) {
-				
 				// Hide certain fields when importing users
 				if ($userImport) {
 					if ($datasetField['is_system_field'] && $datasetField['db_column'] === 'screen_name_confirmed') {
@@ -692,7 +701,15 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					case 'centralised_select':
 						$valuesArray = getDatasetFieldLOV($datasetField);
 						$fieldValuePicker['type'] = 'select';
-						$fieldValuePicker['empty_value'] = "-- Don't import --";
+						if ($userImport && $datasetField['db_column'] == 'status') {
+							$fieldValuePicker['empty_value'] = "-- Select --";
+							$fieldValuePicker['format_onchange'] = true;
+							
+							$fields['actions/send_welcome_email']['hidden'] = ($values['file/type'] != 'insert_data') || !isset($values['actions/' . $valueFieldName]) || ($values['actions/' . $valueFieldName] != 'active');
+							$fields['actions/email_to_send']['hidden'] = ($fields['actions/send_welcome_email']['hidden'] || !$values['actions/send_welcome_email']);
+						} else {
+							$fieldValuePicker['empty_value'] = "-- Don't import --";
+						}
 						$fieldValuePicker['values'] = $valuesArray;
 						break;
 				}
@@ -909,7 +926,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				}
 			}
 			// Import data
-			$unexpectedErrors = self::setImportData($box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
+			$unexpectedErrors = self::setImportData($values, $box['key']['dataset'], $importValues, $mode, $values['headers/insert_options'], $box['key']['ID_column']);
 			
 		}
 		
@@ -1297,7 +1314,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 		return $datasetFieldDetails;
 	}
 	
-	private static function setImportData($datasetId, $importData, $mode, $insertMode, $keyFieldID) {
+	private static function setImportData($values, $datasetId, $importData, $mode, $insertMode, $keyFieldID) {
 		$datasetDetails = getDatasetDetails($datasetId);
 		$systemDataIDColumn = !empty($datasetDetails['system_table']) ? getIdColumnOfTable($datasetDetails['system_table']) : false;
 		$customDataIDColumn = !empty($datasetDetails['table']) ? getIdColumnOfTable($datasetDetails['table']) : false;
@@ -1386,8 +1403,15 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					if (!isset($data['last_name'])) {
 						$data['last_name'] = '';
 					}
-					if (!$userId && !empty($data['status']) && $data['status'] != 'contact') {
-						$data['password'] = createPassword();
+					$sendWelcomeEmail = false;
+					if (!$userId && !empty($data['status'])) {
+						if ($data['status'] != 'contact' && empty($data['password'])) {
+							$data['password'] = createPassword();
+						}
+						if ($data['status'] == 'active' && $values['actions/send_welcome_email'] && $values['actions/email_to_send']) {
+							// Send a welcome email
+							$sendWelcomeEmail = true;
+						}
 					}
 					
 					// Do not allow screen names to be imported to sites that don't use screen names
@@ -1396,6 +1420,12 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					}
 					
 					$id = saveUser($data);
+					
+					if ($sendWelcomeEmail && !empty($data['email'])) {
+						$mergeFields = $data;
+						$mergeFields['cms_url'] = absCMSDirURL();
+						zenario_email_template_manager::sendEmailsUsingTemplate($data['email'], $values['actions/email_to_send'], $mergeFields);
+					}
 					
 					// If site uses screen names and no screen name is imported, use the identifier as a screen name
 					if (empty($data['screen_name']) && setting('user_use_screen_name')) {

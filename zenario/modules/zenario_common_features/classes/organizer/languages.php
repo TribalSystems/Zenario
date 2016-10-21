@@ -193,12 +193,9 @@ _text
 			
 					$enabledCount = 0;
 					foreach ($panel['items'] as $id => &$item) {
-				
 						//If we're looking up a Language Name, we can't rely on the formatting that Storekeeper provides and must use the actual Language Name
-						if ($mode == 'get_item_name') {
-							$item['name'] = getLanguageName($id, $addIdInBracketsToEnd = true);
-				
-						} elseif (!$item['enabled']) {
+						$item['name'] = getLanguageName($id, $addIdInBracketsToEnd = true);
+						if (!$item['enabled']) {
 							$item['traits'] = array('not_enabled' => true);
 				
 						} else {

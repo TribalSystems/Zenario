@@ -34,7 +34,12 @@ zenario__content:
             
             columns:
                 id:
+                    title: ID
+                    searchable: true
                     db_column: f.id
+                    show_by_default: false
+                    align_right: true
+                    width: xxsmall
                 filename:
                     title: Filename
                     searchable: true
@@ -70,7 +75,11 @@ zenario__content:
                 checksum:
                     db_column: f.checksum
                 short_checksum:
+                    title: Checksum (short)
+                    searchable: true
                     db_column: f.short_checksum
+                    width: small
+                    show_by_default: false
                 mime_type:
                     server_side_only: true
                     db_column: f.mime_type

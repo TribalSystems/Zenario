@@ -133,6 +133,10 @@ body.zenario_pageMode_preview em.zenario_inactive {
 	font-style:normal;
 }
 
+body.zenario_pageMode_preview span.zenario_conditionally_hidden {
+	display: none;
+}
+
 
 
 
@@ -241,7 +245,7 @@ body.zenario_pageMode_template_family .zenario_level2 .zenario_slot {
 }
 
 body.zenario_pageMode_menu .zenario_slotShownInMenuMode > div,
-#zenario_afb_container .zenario_slotOuter > div {
+#zenario_slotControls .zenario_slotOuter > div {
 	opacity: 1;
 }
 

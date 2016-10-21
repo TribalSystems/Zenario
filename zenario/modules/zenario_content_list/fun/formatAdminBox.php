@@ -31,20 +31,10 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 switch ($path) {
 	case 'plugin_settings':
 		$fields['each_item/author_retina']['hidden'] = 
-		$fields['each_item/author_canvas']['hidden'] =
 			!$values['each_item/show_author_image'];
 		
-		$fields['each_item/author_width']['hidden'] =
-			$fields['each_item/author_canvas']['hidden'] ||
-				!in($values['each_item/author_canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-				 
-		$fields['each_item/author_height']['hidden'] = 
-			$fields['each_item/author_canvas']['hidden'] ||
-				!in($values['each_item/author_canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-		
-		$fields['each_item/author_offset']['hidden'] = 
-			$fields['each_item/author_canvas']['hidden'] ||
-				$values['each_item/author_canvas'] != 'resize_and_crop';
+		$hidden = !$values['each_item/show_author_image'];
+		$this->showHideImageOptions($fields, $values, 'each_item', $hidden, 'author_');
 		
 		$fields['overall_list/heading_if_items']['hidden'] = 
 		$fields['overall_list/heading_tags']['hidden'] = 
@@ -52,32 +42,30 @@ switch ($path) {
 		
 		$fields['heading_if_no_items']['hidden'] = ($values['show_headings_if_no_items'] != 1);
 		
-		$box['tabs']['overall_list']['fields']['more_link_text']['hidden'] =
-		$box['tabs']['overall_list']['fields']['more_hyperlink_target']['hidden'] =
+		$fields['overall_list/more_link_text']['hidden'] =
+		$fields['overall_list/more_hyperlink_target']['hidden'] =
 			!$values['overall_list/show_more_link'];
 		
-		$box['tabs']['each_item']['fields']['retina']['hidden'] = 
-		$box['tabs']['each_item']['fields']['canvas']['hidden'] = 
-			!$values['each_item/show_sticky_images'];		
-
-		$box['tabs']['each_item']['fields']['width']['hidden'] = 
-			$box['tabs']['each_item']['fields']['canvas']['hidden']
-		 || !in($values['each_item/canvas'], 'fixed_width', 'fixed_width_and_height', 'resize_and_crop');
-
-		$box['tabs']['each_item']['fields']['height']['hidden'] = 
-			$box['tabs']['each_item']['fields']['canvas']['hidden']
-		 || !in($values['each_item/canvas'], 'fixed_height', 'fixed_width_and_height', 'resize_and_crop');
-
-		$box['tabs']['each_item']['fields']['date_format']['hidden'] = 
-		$box['tabs']['each_item']['fields']['show_times']['hidden'] = 
+		$fields['each_item/retina']['hidden'] = 
+		$fields['each_item/fall_back_to_default_image']['hidden'] = 
+			!$values['each_item/show_sticky_images'];
+		
+		$fields['each_item/default_image_id']['hidden'] = 
+			!($values['each_item/show_sticky_images'] && $values['each_item/fall_back_to_default_image']);
+		
+		$hidden = !$values['each_item/show_sticky_images'];
+		$this->showHideImageOptions($fields, $values, 'each_item', $hidden);
+		
+		$fields['each_item/date_format']['hidden'] = 
+		$fields['each_item/show_times']['hidden'] = 
 			!$values['each_item/show_dates'];
 		
-		$box['tabs']['each_item']['fields']['use_download_page']['hidden'] = 
+		$fields['hidden'] = 
 			$values['first_tab/content_type'] != 'all'
 		 && $values['first_tab/content_type'] != 'document';
 		
-		$box['tabs']['pagination']['fields']['page_limit']['hidden'] = 
-		$box['tabs']['pagination']['fields']['pagination_style']['hidden'] = 
+		$fields['pagination/page_limit']['hidden'] = 
+		$fields['pagination/pagination_style']['hidden'] = 
 			!$values['pagination/show_pagination'];
 		
 		
@@ -88,13 +76,13 @@ switch ($path) {
 		
 		//Don't show notes about translations if this won't be translated
 		if ($fields['overall_list/translate_text']['hidden'] || !$values['overall_list/translate_text']) {
-			$box['tabs']['overall_list']['fields']['heading_if_items']['show_phrase_icon'] =
-			$box['tabs']['overall_list']['fields']['heading_if_no_items']['show_phrase_icon'] =
-			$box['tabs']['overall_list']['fields']['more_link_text']['show_phrase_icon'] = false;
+			$fields['overall_list/heading_if_items']['show_phrase_icon'] =
+			$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =
+			$fields['overall_list/more_link_text']['show_phrase_icon'] = false;
 			
-			$box['tabs']['overall_list']['fields']['heading_if_items']['side_note'] =
-			$box['tabs']['overall_list']['fields']['heading_if_no_items']['side_note'] =
-			$box['tabs']['overall_list']['fields']['more_link_text']['side_note'] = '';
+			$fields['overall_list/heading_if_items']['side_note'] =
+			$fields['overall_list/heading_if_no_items']['side_note'] =
+			$fields['overall_list/more_link_text']['side_note'] = '';
 		
 		} else {
 			
@@ -103,14 +91,79 @@ switch ($path) {
 				'phrases_panel' => htmlspecialchars(absCMSDirURL(). 'zenario/admin/organizer.php#zenario__languages/panels/phrases')
 			);
 			
-			$box['tabs']['overall_list']['fields']['heading_if_items']['show_phrase_icon'] =
-			$box['tabs']['overall_list']['fields']['heading_if_no_items']['show_phrase_icon'] =
-			$box['tabs']['overall_list']['fields']['more_link_text']['show_phrase_icon'] = true;
+			$fields['overall_list/heading_if_items']['show_phrase_icon'] =
+			$fields['overall_list/heading_if_no_items']['show_phrase_icon'] =
+			$fields['overall_list/more_link_text']['show_phrase_icon'] = true;
 			
-			$box['tabs']['overall_list']['fields']['heading_if_items']['side_note'] = 
-			$box['tabs']['overall_list']['fields']['heading_if_no_items']['side_note'] =
-			$box['tabs']['overall_list']['fields']['more_link_text']['side_note'] =
+			$fields['overall_list/heading_if_items']['side_note'] = 
+			$fields['overall_list/heading_if_no_items']['side_note'] =
+			$fields['overall_list/more_link_text']['side_note'] =
 				adminPhrase('Enter text in [[def_lang_name]], this site\'s default language. <a href="[[phrases_panel]]" target="_blank">Click here to manage translations in Organizer.</a>.', $mrg);
+		}
+		
+		
+		if (!$values['first_tab/only_show_child_items']) {
+			$fields['first_tab/child_item_levels']['hidden'] = 
+			$fields['first_tab/show_secondaries']['hidden'] = true;
+		
+			unset($box['tabs']['overall_list']['fields']['order']['values']['Menu']);
+		
+			if ($values['overall_list/order'] == 'Menu') {
+				$fields['overall_list/order']['current_value'] = 'Alphabetically';
+			}
+	
+		} else {
+			$fields['first_tab/child_item_levels']['hidden'] = 
+			$fields['first_tab/show_secondaries']['hidden'] = false;
+		
+			if ($values['first_tab/child_item_levels'] != 1) {
+				$fields['overall_list/order']['values']['Menu'] = adminPhrase('Menu level then ordinal');
+			} else {
+				$fields['overall_list/order']['values']['Menu'] = adminPhrase('Menu ordinal');
+			}
+		}
+		
+		$fields['first_tab/specific_languages']['hidden'] = $values['first_tab/language_selection'] != 'specific_languages';
+	
+	
+	
+		//datepicker
+		$releaseDateValue = $values['release_date'];
+		if ($releaseDateValue == "date_range"){
+			$fields['start_date']['hidden'] = false;
+			$fields['end_date']['hidden'] = false;
+		}else{
+			$fields['start_date']['hidden'] = true;
+			$fields['end_date']['hidden'] = true;
+		}
+	
+		if ($releaseDateValue == "relative_date_range"){
+			$fields['relative_operator']['hidden'] = false;
+			$fields['relative_value']['hidden'] = false;
+			$fields['relative_units']['hidden'] = false;
+		}else{
+			$fields['relative_operator']['hidden'] = true;
+			$fields['relative_value']['hidden'] = true;
+			$fields['relative_units']['hidden'] = true;
+		}
+	
+	
+		if ($releaseDateValue == "prior_to_date"){
+			$fields['prior_to_date']['hidden'] = false;
+		}else{
+			$fields['prior_to_date']['hidden'] = true;
+		}
+	
+		if ($releaseDateValue == "on_date"){
+			$fields['on_date']['hidden'] = false;
+		}else{
+			$fields['on_date']['hidden'] = true;
+		}
+	
+		if ($releaseDateValue == "after_date"){
+			$fields['after_date']['hidden'] = false;
+		}else{
+			$fields['after_date']['hidden'] = true;
 		}
 		
 		break;

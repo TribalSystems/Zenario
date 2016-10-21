@@ -39,6 +39,7 @@ class zenario_html_snippet extends module_base_class {
 	protected $sections = array();
 	protected $empty = false;
 	protected $raw_html = '';
+	protected $enablePhraseCodeReplace = true;
 	
 	//When the plugin is set up, also get the content item's status and the content section to display
 	function init() {
@@ -47,8 +48,10 @@ class zenario_html_snippet extends module_base_class {
 		$this->clearCacheBy(
 			$clearByContent = false, $clearByMenu = false, $clearByUser = false, $clearByFile = false, $clearByModuleData = false);
 		
+		$this->raw_html = $this->setting('html');
+		
 		//If there is no content then don't display the plugin in visitor mode, except if this is in a Nest
-		if (!$this->setting('html') && !$this->eggId) {
+		if (!$this->raw_html && !$this->eggId) {
 			$this->empty = true;
 			return false;
 		}
@@ -61,12 +64,12 @@ class zenario_html_snippet extends module_base_class {
 				requireCookieConsent();
 			case 'needed':
 				if (!canSetCookie()) {
+					$this->raw_html = '';
 					return false;
 				}
 		}
 		
-		$this->raw_html = $this->setting('html');
-		if (!$this->isVersionControlled) {
+		if (!$this->isVersionControlled && $this->enablePhraseCodeReplace) {
 			$this->replacePhraseCodesInString($this->raw_html);
 		}
 		
@@ -75,19 +78,81 @@ class zenario_html_snippet extends module_base_class {
 	
 	
 	function showSlot() {
-		$this->frameworkHead('Outer', 'Content', $this->mergeFields, $this->sections);
-			$this->showContent();
-		$this->frameworkFoot('Outer', 'Content', $this->mergeFields, $this->sections);
+		if (cms_core::$isTwig) return;
+		
+		$this->showContent();
 	}
 	
 	
 	function showContent() {
 		if (cms_core::$isTwig) return;
 		
+		$javascript = '';
 		if ($this->setting('hide_in_admin_mode') && checkPriv()) {
 			echo '<p>&nbsp;</p>';
 		} else {
 			echo $this->raw_html;
+			$this->addJSOnAJAX();
+		}
+		
+	}
+
+	public function addToPageFoot() {
+		if (cms_core::$isTwig) return;
+		
+		$javascript = '';
+		if ($this->setting('hide_in_admin_mode') && checkPriv()) {
+		
+		} elseif ($this->hasJS($javascript)) {
+			echo '
+<script type="text/javascript">', $javascript, '
+</script>';
+		}
+	}
+	
+	protected function addJSOnAJAX() {
+		if (!empty($_REQUEST['method_call'])
+		 && $_REQUEST['method_call'] == 'refreshPlugin'
+		 && $this->hasJS($javascript)) {
+			$this->callScript('window', 'eval', $javascript);
+		}
+	}
+	
+	protected function hasJS(&$javascript) {
+		if (($javascript = trim($this->setting('minified_javascript')))
+		 && (self::canMinifyJavaScript())) {
+		
+		} elseif ($javascript = trim($this->setting('javascript'))) {
+		
+		} else {
+			$javascript = '';
+			return false;
+		}
+		
+		$javascript = '
+var slotName = '. json_encode($this->slotName). ', containerId = '. json_encode($this->containerId). ';
+'. $javascript;
+		return true;
+	}
+	
+	protected static function canMinifyJavaScript() {
+		return !windowsServer() && execEnabled();
+	}
+	
+	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
+		
+		if (self::canMinifyJavaScript()) {
+			if (!empty($fields['javascript/minify']['pressed'])) {
+				require_once CMS_ROOT. 'zenario/includes/js_minify.inc.php';
+				define('IGNORE_REVERTS', true);
+				define('RECOMPRESS_EVERYTHING', true);
+				$values['javascript/minified_javascript'] = minifyString($values['javascript/javascript']);
+			}
+			$fields['javascript/minify']['hidden'] =
+			$fields['javascript/minified_javascript']['hidden'] = false;
+		} else {
+			$fields['javascript/minify']['hidden'] =
+			$fields['javascript/minified_javascript']['hidden'] = true;
 		}
 	}
 	

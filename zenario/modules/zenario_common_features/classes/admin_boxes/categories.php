@@ -36,9 +36,15 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 			$box['key']['parent_id'] = $record['parent_id'];
 			$values['name'] = $record['name'];
 			$values['public'] = $record['public'];
-			
+			if ($record['landing_page_equiv_id'] && $record['landing_page_content_type']) {
+				$values['landing_page'] = formatTag($record['landing_page_equiv_id'], $record['landing_page_content_type'], false);
+			}
 		} else {
 			$box['key']['parent_id'] = request('refiner__parent_category');
+		}
+		
+		if (setting('enable_display_categories_on_content_lists')) {
+			$fields['details/landing_page']['hidden'] = false;
 		}
 	}
 	
@@ -58,6 +64,15 @@ class zenario_common_features__admin_boxes__categories extends module_base_class
 		
 		if (!empty($box['key']['parent_id'])) {
 			$row['parent_id'] = $box['key']['parent_id'];
+		}
+		
+		$row['landing_page_equiv_id'] = 0;
+		$row['landing_page_content_type'] = '';
+		if (!$fields['details/landing_page']['hidden'] && $values['details/landing_page']) {
+			$equivId = $cType = false;
+			getEquivIdAndCTypeFromTagId($equivId, $cType, $values['details/landing_page']);
+			$row['landing_page_equiv_id'] = $equivId;
+			$row['landing_page_content_type'] = $cType;
 		}
 		
 		$box['key']['id'] = setRow('categories', $row, $box['key']['id']);

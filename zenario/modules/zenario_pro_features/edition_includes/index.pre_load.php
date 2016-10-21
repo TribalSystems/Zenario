@@ -240,4 +240,4 @@ if (!isset($_SESSION['admin_logged_into_site'])
 	}
 }
 
-require moduleDir('zenario_common_features', 'edition_includes/index.pre_load.php', true);
+require editionInclude('post_display', $continueFrom = 'zenario_pro_features');

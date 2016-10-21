@@ -61,14 +61,14 @@
 		},
 	
 		//Create encapsulated objects/classes for all of Zenario's libraries
-		zenario = window.zenario = createZenarioLibrary(''),
-		zenarioA = window.zenarioA = createZenarioLibrary('A'),
-		zenarioF = window.zenarioF = createZenarioLibrary('F'),
-		zenarioAF = window.zenarioAF = createZenarioLibrary('AF', zenarioF),
-		zenarioABToolkit = window.zenarioABToolkit = createZenarioLibrary('ABToolkit', zenarioAF),
+		zenario = createZenarioLibrary(''),
+		zenarioA = createZenarioLibrary('A'),
+		zenarioF = createZenarioLibrary('F'),
+		zenarioAF = createZenarioLibrary('AF', zenarioF),
+		zenarioABToolkit = createZenarioLibrary('ABToolkit', zenarioAF),
 		zenarioAB = window.zenarioAB = new zenarioABToolkit(),
-		zenarioAT = window.zenarioAT = createZenarioLibrary('AT'),
-		zenarioO = window.zenarioO = createZenarioLibrary('O');
+		zenarioAT = createZenarioLibrary('AT'),
+		zenarioO = createZenarioLibrary('O');
 	
 	//Create a wrapper function with variables for all of these objects
 	//(This helps keep file sizes down when minifying as the listed common global variables and functions

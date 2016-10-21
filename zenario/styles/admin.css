@@ -195,18 +195,6 @@ input.zenario_datepicker {
 }
 
 
-/*  Preload CSS Sprites  */
-
-div.zenario_preload_sprites,
-div.zenario_preload_sprites div {
-	position: fixed;
-	top: 0px;
-	right: 0px;
-	width: 1px;
-	height: 1px;
-	background: no-repeat transparent right bottom;
-}
-
 /*  Revealing fields in Admin Boxes  */
 
 div.zenario_show_on_open {
@@ -467,6 +455,12 @@ body .zenario_admin_tooltip_over_tinymce {
 	background: 80% bottom transparent no-repeat url('../admin/images/tooltip_down_black.png');
 }
 
+span.zenario_conditionally_hidden {
+	opacity: 0.5;
+}
+$span .zenario_inactive {
+	background: pink !important;
+}
 .zenario_inactive a {
 	font-style: italic;
 }
@@ -503,6 +497,14 @@ input, textarea, button {
 
 .zenario_debug:hover div {
 	background-position: -17px -1346px;
+}
+
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled {
+	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px;
+}
+
+#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled {
+	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1341px;
 }
 
 /* Page preview icons */

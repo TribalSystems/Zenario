@@ -51,7 +51,26 @@ class zenario_common_features__organizer__modules extends module_base_class {
 				$panel['quick_filter_buttons']['module_running']['hidden'] =
 				$panel['quick_filter_buttons']['module_suspended']['hidden'] = true;
 		}
-
+		
+		//Add a column to say which modules in the current edition
+		switch (siteEdition()) {
+			case 'Community':
+				$editionLevel = 2;
+				break;
+			case 'Pro':
+				$editionLevel = 3;
+				break;
+			case 'ProBusiness':
+				$editionLevel = 4;
+				break;
+			case 'Enterprise':
+				$editionLevel = 5;
+				break;
+			case 'Other':
+			default:
+				$editionLevel = 1;
+		}
+		$panel['columns']['in_edition']['db_column'] = "1*m.edition <= ". (int) $editionLevel;
 	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
@@ -264,12 +283,17 @@ class zenario_common_features__organizer__modules extends module_base_class {
 							}
 						}
 					}
+					
 			
 					$module['author_name'] = $desc['author_name'];
 					$module['copyright_info'] = $desc['copyright_info'];
 					$module['license_info'] = $desc['license_info'];
 					$module['keywords'] = $desc['keywords'];
-			
+					
+					if (!empty($desc['editions'])) {
+						$module['editions'] = $desc['editions'];
+					}
+					
 					$signals = array();
 					if (!empty($desc['signals']) && is_array($desc['signals'])) {
 						foreach($desc['signals'] as $signal) {

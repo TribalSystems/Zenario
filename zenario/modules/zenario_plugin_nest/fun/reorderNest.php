@@ -27,54 +27,33 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-if (!$keepTabsOneToOneWithPlugins) {
-	//Change the ordinal of the Tabs and Eggs to exactly the ordinal that was submitted.
-	//We will then rely on the resync function to sort out any quirks
-	foreach (explode(',', $ids) as $id) {
-		if (!empty($_POST['ordinals'][$id])) {
-			
-			$tabOrd = explode('.', $_POST['ordinals'][$id]);
-			
-			updateRow(
-				'nested_plugins',
-				array('tab' => arrayKey($tabOrd, 0), 'ord' => arrayKey($tabOrd, 1)),
-				array('id' => $id, 'instance_id' => post('refiner__nest')));
-		}
-	}
-
-} else {
-	//Change the ordinal of the Tabs and Eggs and eggs together, making sure to keep each egg next to each tab
-	//Do this by looking out for each ordinal in the request that has changed, and updating both the egg and tab
-	//with the new ordinal
-	$idsToTabs = array();
-	$tabsToIds = array();
-	
-	$result = getRows('nested_plugins', array('id', 'tab'), array('instance_id' => post('refiner__nest')));
-	while ($row = sqlFetchAssoc($result)) {
-		$idsToTabs[$row['id']] = $row['tab'];
+//Loop through each changed tab, and set its ordinal
+foreach (explode(',', $ids) as $id) {
+	$key = array('id' => $id, 'instance_id' => post('refiner__nest'), 'is_slide' => 1);
+	if (checkRowExists('nested_plugins', $key)) {
+		$newOrd = $_POST['ordinals'][$id];
+		$newParent = $_POST['parent_ids'][$id];
 		
-		if (empty($tabsToIds[$row['tab']])) {
-			$tabsToIds[$row['tab']] = array();
-		}
-		$tabsToIds[$row['tab']][] = $row['id'];
-	}
-	
-	
-	
-	$changedTabs = array();
-	foreach (explode(',', $ids) as $id) {
-		if (!empty($_POST['ordinals'][$id])
-		 && isset($idsToTabs[$id])) {
-			
-			$tabOrd = explode('.', $_POST['ordinals'][$id]);
-			$tab = (int) arrayKey($tabOrd, 0);
-			
-			if ($tab != $idsToTabs[$id]) {
-				foreach ($tabsToIds[$idsToTabs[$id]] as $id2) {
-					updateRow('nested_plugins', array('tab' => $tab), $id2);
-				}
-			}
+		//Tabs sholudn't be children of other tabs
+		if (!$newParent) {
+			updateRow('nested_plugins', array('tab' => $newOrd), $key);
 		}
 	}
 }
 
+//Loop through each changed plugin
+foreach (explode(',', $ids) as $id) {
+	$key = array('id' => $id, 'instance_id' => post('refiner__nest'), 'is_slide' => 0);
+	if (checkRowExists('nested_plugins', $key)) {
+		$newOrd = $_POST['ordinals'][$id];
+		$newParent = $_POST['parent_ids'][$id];
+		
+		//Plugins must be children of tabs
+		if ($newParent) {
+			//Convert the parent id to a tab number
+			$tabNo = getRow('nested_plugins', 'tab', array('id' => $newParent, 'instance_id' => post('refiner__nest'), 'is_slide' => 1));
+			//Update to the new tab number
+			updateRow('nested_plugins', array('tab' => ifNull($tabNo, 0, 0), 'ord' => $newOrd), $key);
+		}
+	}
+}

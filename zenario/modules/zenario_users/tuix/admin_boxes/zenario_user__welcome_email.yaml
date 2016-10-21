@@ -15,26 +15,14 @@ zenario_user__welcome_email:
                     ord: 1
                     full_width: 1
                     snippet:
-                        html: "You are about to send a welcome email the selected user."
+                        html: "You are about to send welcome emails the selected users."
                     hidden: false
                 non_plain_text_info:
                     ord: 1.1
                     full_width: 1
                     snippet:
-                        html: "You are about to send a welcome email the user. <br> <br>As this site is configured to store only encrypted passwords for users (not plain text), the user's password will not be shown."
+                        html: "You are about to send welcome emails the selected users. <br> <br>As this site is configured to store only encrypted passwords for users (not plain text), the user's passwords will not be shown."
                     hidden: false
-                email: 
-                    type: text
-                    hidden: true
-                salutation: 
-                    type: text
-                    hidden: true
-                first_name: 
-                    type: text
-                    hidden: true
-                last_name: 
-                    type: text
-                    hidden: true
                 reset_password:
                     priv: _PRIV_CHANGE_USER_PASSWORD
                     label: "Reset and send password in welcome email."
@@ -57,4 +45,4 @@ zenario_user__welcome_email:
                         required_if_not_hidden: Please select an email template
                     side_note: >
                         An email based on the selected email template will be sent
-                        to the user.
+                        to the selected users.
