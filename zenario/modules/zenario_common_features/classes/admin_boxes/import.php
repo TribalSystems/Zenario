@@ -1386,7 +1386,7 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 					if (!isset($data['last_name'])) {
 						$data['last_name'] = '';
 					}
-					if (!$userId && !empty($data['status']) && $data['status'] != 'contact') {
+					if (!$userId && !empty($data['status']) && $data['status'] != 'contact' && empty($data['password'])) {
 						$data['password'] = createPassword();
 					}
 					

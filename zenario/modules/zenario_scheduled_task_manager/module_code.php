@@ -318,7 +318,8 @@ class zenario_scheduled_task_manager extends module_base_class {
 		$managerClassName,
 		$serverTime, $jobId, $jobName,
 		$logActions, $logInaction, $emailActions, $emailInaction,
-		$emailAddressAction, $emailAddressInaction, $emailAddressError
+		$emailAddressAction, $emailAddressInaction, $emailAddressError,
+		$dontSendLogEmail = false
 	) {
 		$logId = false;
 		$job = array();
@@ -328,19 +329,18 @@ class zenario_scheduled_task_manager extends module_base_class {
 		$log['started'] = $serverTime;
 		$log['finished'] = $job['last_run_finished'] = zenario_scheduled_task_manager::getServerTime();
 		
+		$emailList =  self::getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError);
+		
 		if ($result == '<!--action_taken-->') {
-			$emailList = $emailAddressAction;
 			$job['last_action'] = $serverTime;
 			$job['last_successful_run'] = $serverTime;
 			$job['status'] = $log['status'] = 'action_taken';
 			
 		} elseif ($result == '<!--no_action_taken-->') {
-			$emailList = $emailAddressInaction;
 			$job['last_successful_run'] = $serverTime;
 			$job['status'] = $log['status'] = 'no_action_taken';
 		
 		} else {
-			$emailList = $emailAddressError;
 			$job['status'] = $log['status'] = 'error';
 		}
 		
@@ -372,10 +372,12 @@ class zenario_scheduled_task_manager extends module_base_class {
 		}
 		
 		//Email the log entry, if needed
-		if ($log['status'] == 'error'
-		 || ($log['status'] == 'action_taken' && $emailActions)
-		 || ($log['status'] == 'no_action_taken' && $emailInaction)) {
-		 	
+		if (!$dontSendLogEmail
+			&& ($log['status'] == 'error'
+		 		|| ($log['status'] == 'action_taken' && $emailActions)
+				|| ($log['status'] == 'no_action_taken' && $emailInaction)
+			)
+		) {
 		 	self::sendLogEmails(
 		 		$managerClassName, $serverTime,
 		 		$jobName, $jobId, $log['status'], $log['note'],
@@ -385,7 +387,27 @@ class zenario_scheduled_task_manager extends module_base_class {
 		return $logId;
 	}
 	
-	protected static function sendLogEmails(
+	public static function getTaskStatus($result) {
+		if ($result == '<!--action_taken-->') {
+			return 'action_taken';
+		} elseif ($result == '<!--no_action_taken-->') {
+			return 'no_action_taken';
+		} else {
+			return 'error';
+		}
+	}
+	
+	public static function getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError) {
+		if ($result == '<!--action_taken-->') {
+			return $emailAddressAction;
+		} elseif ($result == '<!--no_action_taken-->') {
+			return $emailAddressInaction;
+		} else {
+			return $emailAddressError;
+		}
+	}
+	
+	public static function sendLogEmails(
 		$managerClassName, $serverTime, $jobName, $jobId, $status, $note, $emailList
 	) {
 		

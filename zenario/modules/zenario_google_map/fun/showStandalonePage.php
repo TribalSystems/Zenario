@@ -74,9 +74,6 @@ echo '<!DOCTYPE HTML>
 				document.getElementById("head").appendChild(sheet);
 			};
 			
-			//console.log(lat + " " + lng);
-			//console.log(zoom + " " + lng);
-			
 			lat = getFromOpener(lat) || lat || options.lat;
 			lng = getFromOpener(lng) || lng || options.lng;
 			stylesheet = getFromOpener(stylesheet) || stylesheet || options.stylesheet;
@@ -101,9 +98,10 @@ echo '<!DOCTYPE HTML>
 			}
 			
 			options.mapTypeId = options.mapTypeId || google.maps.MapTypeId.ROADMAP;
-			options.scrollwheel = false;
-			//console.log(lat + " " + lng);
-			//console.log(options.zoom + " " + lng);
+			//options.scrollwheel = false;
+			if(typeof options.scrollwheel != "undefined"){
+				options.scrollwheel = options.scrollwheel;
+			}
 			
 			map = new google.maps.Map(el, options);
 			if (lat && lng) {

@@ -14,6 +14,7 @@ switch (get('mode')) {
 		break;
 	case 'zenarioO';
 		$type = 'organizer';
+		break;
 	default:
 		$type = 'visitor';
 		break;

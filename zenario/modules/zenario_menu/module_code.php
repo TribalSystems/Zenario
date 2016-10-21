@@ -41,6 +41,9 @@ class zenario_menu extends module_base_class {
 	var $showMissingMenuNodes;
 	var $requests = false;
 	
+	protected $headerObjects = array();
+	protected $subSections = array();
+	
 	//Load settings from the instance of this plugin
 	function init() {
 		$this->allowCaching(
@@ -90,8 +93,8 @@ class zenario_menu extends module_base_class {
 		//Work out where to start from
 		$parentMenuId = $this->getStartNode();
 		
-		$headerObjects = array();
-		$subSections = array('Title' => true, 'User_Names' => true);
+		$this->subSections['Title'] = true;
+		$this->subSections['User_Names'] = true;
 		
 		//Set default values for this->maxLevel1MenuItems and the this->language
 		if (!$this->maxLevel1MenuItems) {
@@ -108,14 +111,14 @@ class zenario_menu extends module_base_class {
 		if ($this->checkFrameworkSectionExists('User_Names')) {
 			if ($id = userId()) {
 				$userDetails = getUserDetails($id);
-				$headerObjects['first_name'] = $userDetails['first_name'];
-				$headerObjects['last_name'] = $userDetails['last_name'];
+				$this->headerObjects['first_name'] = $userDetails['first_name'];
+				$this->headerObjects['last_name'] = $userDetails['last_name'];
 			}
 		}
 		
 		$welcome_message_text = $this->setting('welcome_message');
 		
-		$headerObjects['welcome_message'] = 
+		$this->headerObjects['welcome_message'] = 
 			$this->phrase($welcome_message_text, 
 				array('first_name' => htmlspecialchars($userDetails['first_name']), 
 					'last_name' => htmlspecialchars($userDetails['last_name'])));
@@ -123,16 +126,16 @@ class zenario_menu extends module_base_class {
 		// Display a title, usually only used for vertical side menus
 		if ($this->checkFrameworkSectionExists('Title')) {
 			if ($parentMenuId && $parentMenuDetails = getMenuInLanguage($parentMenuId, $this->language)) {
-				$headerObjects['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
+				$this->headerObjects['Parent_Name'] = htmlspecialchars($parentMenuDetails['name']);
 				if ($parentMenuDetails['cID']) {
-					$headerObjects['Parent_Link'] = htmlspecialchars(
+					$this->headerObjects['Parent_Link'] = htmlspecialchars(
 						$this->linkToItem($parentMenuDetails['cID'], $parentMenuDetails['cType'], false, $this->requests, $parentMenuDetails['alias'])
 					);
 				}
 			} else {
 				$homepage = $this->getHomepage($_SESSION['user_lang']);
-				$headerObjects['Parent_Name'] = htmlspecialchars($homepage['name']);
-				$headerObjects['Parent_Link'] = htmlspecialchars($homepage['url']);
+				$this->headerObjects['Parent_Name'] = htmlspecialchars($homepage['name']);
+				$this->headerObjects['Parent_Link'] = htmlspecialchars($homepage['url']);
 			}
 		}
 		
@@ -157,7 +160,7 @@ class zenario_menu extends module_base_class {
 		}
 		
 		//Draw the Menu Nodes we found
-		$this->drawMenu($menuArray, 0, $headerObjects, $subSections);
+		$this->drawMenu($menuArray, 0, $this->headerObjects, $this->subSections);
 	}
 	
 	function getStartNode() {

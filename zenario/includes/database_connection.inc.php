@@ -1246,7 +1246,7 @@ function checkRowExists(
 function setRow(
 	$table, $values, $ids = array(),
 	$ignore = false, $ignoreMissingColumns = false,
-	$markNewThingsInSession = false, $insertIfNotPresent = true
+	$markNewThingsInSession = false, $insertIfNotPresent = true, $checkCache = true
 ) {
 	$sqlW = '';
 	$tableName = cms_core::$lastDBPrefix. $table;
@@ -1287,8 +1287,8 @@ function setRow(
 			}
 			
 			sqlUpdate($sql. $sqlW, false);
-			if (($affectedRows = sqlAffectedRows()) > 0) {
-				
+			if (($affectedRows = sqlAffectedRows()) > 0
+			 && $checkCache) {
 				if (empty($ids)) {
 					$dummy = false;
 					reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);
@@ -1335,7 +1335,8 @@ function setRow(
 			$_SESSION['new_id_in_'. $table] = $id;
 		}
 		
-		if (sqlAffectedRows() > 0) {
+		if ($checkCache
+		 && sqlAffectedRows() > 0) {
 			if (empty($ids)) {
 				$dummy = false;
 				reviewDatabaseQueryForChanges($sql, $values, $dummy, $table);

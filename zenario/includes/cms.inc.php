@@ -1259,10 +1259,12 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	if (!empty($_SERVER['HTTP_HOST'])) {
 		if ($adminMode) {
 			if (adminDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		} else {
 			if (primaryDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		}
@@ -2222,7 +2224,29 @@ function phrase($code, $replace = false, $moduleClass = 'lookup', $languageId = 
 				array(
 					'language_id' => setting('default_language'),
 					'module_class_name' => $moduleClass,
-					'code' => $code));
+					'code' => $code),
+				
+				//Don't clear the cache for this update
+				false, false, false, true, $checkCache = false);
+			
+			//For multilingual sites, we need to note down this information against
+			//the current language as well, to
+			//fix a bug where missing phrases would continously clear the cache.
+			if (setting('default_language') != $languageId) {
+				setRow(
+					'visitor_phrases',
+					array(
+						'seen_in_visitor_mode' => checkPriv()? 0 : 1,
+						'seen_in_file' => '-',
+						'seen_at_url' => '-'),
+					array(
+						'language_id' => $languageId,
+						'module_class_name' => $moduleClass,
+						'code' => $code),
+					
+					//Don't clear the cache for this update
+					false, false, false, true, $checkCache = false);
+			}
 		}
 	}
 	
@@ -2380,7 +2404,7 @@ function getMenuInLanguage($mID, $langId) {
 		INNER JOIN ". DB_NAME_PREFIX. "menu_nodes AS m
 		   ON m.id = t.menu_id
 		LEFT JOIN ". DB_NAME_PREFIX. "content_items AS c
-		   ON m.equiv_id = c.id
+		   ON m.equiv_id = c.equiv_id
 		  AND m.content_type = c.type
 		  AND m.target_loc = 'int'
 		  AND t.language_id = c.language_id

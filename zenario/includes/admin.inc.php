@@ -1683,7 +1683,7 @@ function saveTemplate($submission, &$layoutId, $sourceTemplateId = false) {
 			) SELECT 
 				module_id,
 				instance_id,
-				family_name,
+				'". sqlEscape($values['family_name']). "',
 				". (int) $layoutId.  ",
 				slot_name
 			FROM ". DB_NAME_PREFIX. "plugin_layout_link

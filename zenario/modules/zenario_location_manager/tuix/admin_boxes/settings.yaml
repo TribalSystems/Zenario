@@ -72,6 +72,14 @@ site_settings:
                     side_note: |
                         <p>Quick Sector Management adds a Sectors tab to the Locations admin box on which you can add/remove Sectors from a Location via a hierarchical list of checkboxes.</p>
                                                     <p>Sector Score Management adds a button to a Location's selected toolbar that enables access to a panel where you can add/remove Sectors from the Location and administer the Sector Score.</p>
+                
+                zenario_location_manager__default_pin_placement_method:
+                    label: 'Default pin placement method:'
+                    type: radios
+                    site_setting:
+                        name: zenario_location_manager__default_pin_placement_method
+                    values: {}
+                
         filesizes:
             label: File Sizes
             edit_mode:

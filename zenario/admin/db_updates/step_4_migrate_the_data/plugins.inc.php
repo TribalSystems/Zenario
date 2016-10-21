@@ -129,3 +129,13 @@ if (needRevision(33940)) {
 	runNewModuleDependency('zenario_location_viewer', 'zenario_google_map');
 	revision(33940);
 }
+
+//Post-branch patch for 7.3.1:
+//Replace the (removed) zenario_feed_reader_pro module with the zenario_feed_reader module,
+//which now has all the features that the "pro" module used to have.
+if (needRevision(36452)) {
+	
+	renameModuleDirectory('zenario_feed_reader_pro', 'zenario_feed_reader');
+	
+	revision(36452);
+}

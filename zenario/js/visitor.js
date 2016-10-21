@@ -1699,7 +1699,7 @@ zenario.addPluginJavaScript = function(moduleId, alwaysAdd) {
 		return;
 	}
 	
-	eval(zenario.nonAsyncAJAX(URLBasePath + filePath));
+	$.ajax({url: URLBasePath + filePath, dataType: "script", async: false});
 	
 	zenario.javaScriptOnPage[filePath] = true;
 };

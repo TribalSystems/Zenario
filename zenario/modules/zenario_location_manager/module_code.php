@@ -73,8 +73,10 @@ class zenario_location_manager extends module_base_class {
 	public function handleAJAX () {
 		if (get("mode")=="get_country_name") {
 			$country= zenario_country_manager::getCountryFullInfo("all",get("country_id"));
-			$item['country'] = $country[get("country_id")]['english_name'];
-			echo $item['country'];
+			if (isset($country[get("country_id")])) {
+			    $item['country'] = $country[get("country_id")]['english_name'];
+			    echo $item['country'];
+			}
 		}
 	}
 	
@@ -401,7 +403,16 @@ class zenario_location_manager extends module_base_class {
 				break;
 		}
 	}
-
+    
+    public static function getMapPinPlacementMethods() {
+        return array(
+			'postcode_country' => 'Postcode and Country',
+			'street_postcode_country' => 'Address Line 1, Postcode and Country',
+			'street_city_country' => 'Address Line 1, City and Country',
+			'locality_postcode_country' => 'Locality, Postcode and Country'
+        );
+    }
+    
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		$locationDetails = array();
 	
@@ -467,11 +478,16 @@ class zenario_location_manager extends module_base_class {
 				}
 
 				$map_lookup = "<select id=\"pin_placement_method\">\n";
-				$map_lookup .= "<option value=\"\"> -- Select a method -- </option>\n";
-				$map_lookup .= "<option value=\"postcode_country\">Postcode and Country</option>\n";
-				$map_lookup .= "<option value=\"street_postcode_country\">Address Line 1, Postcode and Country</option>\n";
-				$map_lookup .= "<option value=\"street_city_country\">Address Line 1, City and Country</option>\n";
-				$map_lookup .= "<option value=\"my_location\">My Current Location</option>\n";
+				$methods = static::getMapPinPlacementMethods();
+				$defaultMethod = setting('zenario_location_manager__default_pin_placement_method');
+				foreach ($methods as $method => $label) {
+				    $map_lookup .= "<option value=\"" . $method . "\"";
+				    if ($method == $defaultMethod) {
+				        $map_lookup .= " selected";
+				    }
+				    $map_lookup .= ">" . $label . "</option>\n";
+				}
+				
 				$map_lookup .= "</select>\n";
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.placeMarker(document.getElementById('pin_placement_method').value);return false\">Place Pin</button>\n";
 				$map_lookup .= "<button onclick=\"document.getElementById('google_map_iframe').contentWindow.clearMap();return false\">Clear Map</button>\n";
@@ -681,6 +697,21 @@ class zenario_location_manager extends module_base_class {
 					}
 				} 
 				break;
+			case 'site_settings':
+			    if ($settingGroup == 'zenario_location_manager__site_settings_group') {
+			        $methods = static::getMapPinPlacementMethods();
+			        $i = 0;
+			        foreach ($methods as $method => $label) {
+			            if (!$values['zenario_location_manager__default_pin_placement_method']) {
+                            $values['zenario_location_manager__default_pin_placement_method'] = $method;
+                        }
+			            $fields['zenario_location_manager__default_pin_placement_method']['values'][$method] = array(
+			                'label' => $label,
+			                'ord' => ++$i
+			            );
+			        }
+			    }
+			    break;
 		}
 	}
 
@@ -813,26 +844,6 @@ class zenario_location_manager extends module_base_class {
 						if (!self::checkScoreNameUnique($values['details/name'],$box['key']['id'])) {
 							$box['tabs']['details']['errors']['name_not_unique'] = "You must enter a unique Name";
 						}
-					}
-				}
-				break;
-			case 'site_settings':
-				if ($settingGroup == 'zenario_location_manager__site_settings_group'
-				 && !empty($box['tabs']['admin_box_settings']['fields'])) {
-					
-					$mandatoryFieldSet = false;
-					
-					foreach ($box['tabs']['admin_box_settings']['fields'] as $fieldName => $field) {
-						if (!empty($values['admin_box_settings/'. $fieldName])
-						 && $values['admin_box_settings/'. $fieldName] == 'mandatory') {
-							
-							$mandatoryFieldSet = true;
-							break;
-						}
-					}
-					
-					if (!$mandatoryFieldSet) {
-						$box['tabs']['admin_box_settings']['errors'][] = adminPhrase('You must set at least one field to "Enabled & Mandatory".	');
 					}
 				}
 				break;

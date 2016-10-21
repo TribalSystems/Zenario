@@ -4219,6 +4219,9 @@ zenarioO.changeSortOrder = function(c) {
 	zenarioO.prefs[zenarioO.path].sortBy = zenarioO.sortBy;
 	zenarioO.prefs[zenarioO.path].sortDesc = zenarioO.sortDesc;
 	
+	if (zenarioO.pi) {
+		zenarioO.pi.cmsSetsSortColumn(zenarioO.sortBy, zenarioO.sortDesc);
+	}
 	zenarioO.runSearch();
 	
 	//This line is not needed now we don't use the view options for sorting columns

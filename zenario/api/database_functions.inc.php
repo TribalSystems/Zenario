@@ -110,7 +110,7 @@ function correctMySQLDatatypes($table, &$data) {
 	$numericCols = &cms_core::$numericCols[cms_core::$lastDBPrefix. $table];
 	
 	foreach ($data as $key => &$value) {
-		if (isset($numericCols[$key])) {
+		if ($value !== null && isset($numericCols[$key])) {
 			if ($numericCols[$key] === ZENARIO_INT_COL) {
 				$value = (int) $value;
 			} elseif ($numericCols[$key] === ZENARIO_FLOAT_COL) {
