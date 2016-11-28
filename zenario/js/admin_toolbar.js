@@ -582,7 +582,7 @@ zenarioAT.customiseOrganizerLink = function(path, secondLevel) {
 			}
 			if (path == '#zenario__menu/nav/main_section_menu/panel'
 			 && zenarioAT.tuix.meta_info.menu_organizer_path) {
-				return zenarioAT.tuix.meta_info.menu_organizer_path;
+				return '#' + zenarioAT.tuix.meta_info.menu_organizer_path;
 			}
 		}
 	}

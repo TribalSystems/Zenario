@@ -573,5 +573,49 @@ _sql
 	ADD COLUMN `show_month_year_selectors` tinyint(1) NOT NULL DEFAULT '0'
 _sql
 
-);
+//Allow a form to send multiple user emails
+); revision(65
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	ADD COLUMN `send_email_to_logged_in_user` tinyint(1) NOT NULL DEFAULT '0' AFTER `user_email_template`,
+	ADD COLUMN `user_email_use_template_for_logged_in_user` tinyint(1) NOT NULL DEFAULT '0' AFTER `send_email_to_logged_in_user`,
+	ADD COLUMN `user_email_template_logged_in_user` varchar(255) DEFAULT NULL AFTER `user_email_use_template_for_logged_in_user`,
+	
+	ADD COLUMN `send_email_to_email_from_field` tinyint(1) NOT NULL DEFAULT '0' AFTER `user_email_template`,
+	ADD COLUMN `user_email_use_template_for_email_from_field` tinyint(1) NOT NULL DEFAULT '0' AFTER `send_email_to_logged_in_user`,
+	ADD COLUMN `user_email_template_from_field` varchar(255) DEFAULT NULL AFTER `user_email_use_template_for_logged_in_user`,
+	
+	MODIFY COLUMN `user_email_field` int(10) unsigned NOT NULL DEFAULT '0' AFTER `send_email_to_email_from_field`
+_sql
 
+);
+//Migrate form user email settings to new format
+if (needRevision(66)) {
+	
+	$formsResult = getRows(ZENARIO_USER_FORMS_PREFIX . 'user_forms', true, array());
+	while ($form = sqlFetchAssoc($formsResult)) {
+		$details = array();
+		if ($form['send_email_to_user'] && $form['user_email_field']) {
+			$details['send_email_to_email_from_field'] = true;
+			$details['user_email_use_template_for_email_from_field'] = true;
+			$details['user_email_template_from_field'] = $form['user_email_template'];
+		} elseif ($form['send_email_to_user'] && !$form['user_email_field']) {
+			$details['send_email_to_logged_in_user'] = true;
+			$details['user_email_use_template_for_logged_in_user'] = true;
+			$details['user_email_template_logged_in_user'] = $form['user_email_template'];
+		}
+		if ($details) {
+			updateRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $details, $form['id']);
+		}
+	}
+	revision(66);
+}
+//Drop old columns
+revision(67
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `send_email_to_user`,
+	DROP COLUMN `user_email_template`
+_sql
+
+);

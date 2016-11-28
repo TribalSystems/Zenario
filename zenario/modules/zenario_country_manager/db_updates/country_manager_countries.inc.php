@@ -661,4 +661,11 @@ _sql
 		('GG', 44)
 	ON DUPLICATE KEY UPDATE phonecode = VALUES(phonecode);
 _sql
+
+); revision(67
+,<<<_sql
+	ALTER TABLE [[DB_NAME_PREFIX]][[ZENARIO_COUNTRY_MANAGER_PREFIX]]country_manager_countries
+	MODIFY COLUMN `phonecode` int(5) NOT NULL DEFAULT 0
+_sql
+
 );

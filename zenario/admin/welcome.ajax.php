@@ -282,6 +282,8 @@ if ($installed) {
 					}
 				
 					if ($doneWithDiagnostics) {
+						protectBackupAndDocstoreDirsIfPossible();
+						
 						prepareAdminWelcomeScreen($box, $tags, 'congratulations');					
 						if ($task == 'install') {
 							//If the CMS was just installed, show the congrats screen

@@ -13,7 +13,8 @@
 	}
 
 	.Grid_Header {
-		padding: 7px 0 6px;
+		padding: 7px 0 12px;
+		position: relative;
 	}
 
 	.slot_main_menu {
@@ -30,6 +31,19 @@
 		height: 55px !important;
 		background-position: center center;
 	}
+	
+	.slot_header_title .zenario_html_snippet {
+		position: absolute;
+    	top: 14px;
+    	left: 30%;
+    	margin-right: 20%;
+	}
+	
+	.slot_header_title .zenario_html_snippet p {
+		font-size: 1.3em;
+		line-height: 1.2em;
+	}
+	
 
 	.Grid_Body,
 	.home_page .Grid_Body {
@@ -131,6 +145,31 @@
 	.events_meta_data img {
 		width: 250px !important;
 	}
+	
+	.grey_first_row .zenario_content_list .content_list_data_row h2, 
+	.grey_first_row .zenario_content_list .content_list_data_row p, 
+	.grey_first_row .zenario_event_listing .single_event h2, 
+	.grey_first_row .zenario_event_listing .single_event_description span,
+	.grey_first_row .zenario_event_listing .single_event p, 
+	.grey_first_row .zenario_banner .banner_text p:nth-child(1),
+	.grey_first_row .zenario_banner .banner_text p:nth-child(2), 
+	.grey_second_row .zenario_banner .banner_text p:nth-child(2), 
+	.grey_second_row .zenario_banner .banner_text p:nth-child(1) {
+		font-size:1em;
+	}
+	
+	.grey_first_row .zenario_banner .banner_more a, 
+	.grey_second_row .zenario_banner .banner_more a, 
+	.grey_first_row .zenario_content_list .content_list_more a, 
+	.subscribe_button .banner_more a, 
+	.news_listing .content_list_more a, 
+	.events_listing .single_event_description .single_event_more_link, 
+	.zenario_skin input[type="submit"], 
+	.slot_back_link .zenario_banner a, 
+	.grey_first_row .zenario_content_list .content_list_more_link, 
+	.grey_first_row .zenario_event_listing .single_event_more_link {
+		font-size:0.929em;
+	}
 }
 
 /* Layout max-width: 1300px
@@ -155,6 +194,22 @@
 	.twitter_widget {
 		display: none;
 	}
+	
+	.slot_masthead .zenario_image_container a {
+		width:100% !important;
+		background-position:center center !important;
+	}
+}
+
+/* Layout max-width: 1141px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 1141px) {
+	
+	.zenario_menu .wrap_menu_inner {
+		width:auto;
+	}
+	
 }
 
 /* Layout max-width: 850px
@@ -199,41 +254,72 @@
     }
     
     .grey_first_row .zenario_slot .banner_title,
+    .grey_first_row .zenario_content_list h3,
+    .grey_first_row .zenario_event_listing .event_listing > h2,
     .grey_second_row .zenario_slot .banner_title {
     	width: 28%;
     	text-align: center;
     }
     
-    .grey_first_row .zenario_slot .banner_image, 
+    .grey_first_row .zenario_slot .banner_image,
+    .grey_first_row .zenario_content_list .sticky_image, 
+    .grey_first_row .zenario_event_listing .single_event_sticky_image, 
+    .grey_first_row .zenario_event_listing .sticky_image_placeholder, 
 	.grey_second_row .zenario_slot .banner_image {
     	float: left;
     	
 	}
 	
-	.grey_first_row .zenario_slot .banner_image {
-		width: 22%;
+	.grey_first_row .zenario_slot .banner_image,
+	.grey_first_row .zenario_content_list .sticky_image,
+	.grey_first_row .zenario_event_listing .single_event_sticky_image,
+	.grey_first_row .zenario_event_listing .sticky_image_placeholder {
+		width: 100px;
 		margin: 0 35px 0 10px;
 	}
 	
 	.grey_second_row .zenario_slot .banner_image {
-		width: 28%;
+		width: 120px;
 	}
 	
-	.grey_first_row .zenario_slot .banner_image img{
+	.grey_first_row .zenario_slot .banner_image img,
+	.grey_first_row .zenario_content_list .sticky_image img,
+	.grey_first_row .zenario_event_listing .single_event_sticky_image img,
+	.grey_first_row .zenario_event_listing .single_event_sticky_image a,
+	.grey_first_row .zenario_event_listing .sticky_image_placeholder img,
+	.grey_first_row .zenario_event_listing .sticky_image_placeholder a {
 	    border-width: 6px;
 	    margin: 5px 0 15px
+	}
+	
+	.grey_first_row .zenario_event_listing .single_event_sticky_image a,
+	.grey_first_row .zenario_event_listing .sticky_image_placeholder a {
+		width:100px;
+		height:100px;
 	}
 	
 	.grey_second_row .zenario_slot .banner_image img {
 		margin: 0;
 	}
 	
+	.grey_first_row .zenario_slot .banner_title, 
+	.grey_first_row .zenario_content_list h3, 
+	.grey_first_row .zenario_event_listing .event_listing > h2, 
+	.grey_second_row .zenario_slot .banner_title {
+		width:auto;
+		text-align:left;
+	}
+	
 	.grey_first_row .zenario_slot .banner_text, 
-	.grey_second_row .zenario_slot .banner_text,
-	.grey_first_row .zenario_slot .banner_more, 
+	.grey_first_row .zenario_content_list .content_list_text,
+	.grey_first_row .zenario_content_list .content_list_more_link,
+	.grey_first_row .zenario_event_listing .single_event_description,
+	.grey_first_row .zenario_slot .banner_text,
+	.grey_second_row .zenario_slot .banner_text, 
 	.grey_second_row .zenario_slot .banner_more {
 		overflow: hidden;
 	}
+	
 	
 	.grey_second_row .zenario_slot .banner_more {
 		position: absolute;
@@ -254,6 +340,20 @@
 	}
 	
 	
+}
+
+/* Layout max-width: 657px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (max-width: 657px) {  
+	
+	.Grid_Header {
+		padding: 7px 0 16px;
+	}
+
+	.slot_header_title .zenario_html_snippet {
+		top: 8px;
+	}
 }
 
 /* Layout max-width: 530px
@@ -296,6 +396,16 @@
     .zenario_html_snippet img.circle {
 		display: none;
 	}
+	
+	.slot_header_title .zenario_html_snippet {
+		position: relative;
+   		top: 10px;
+    	left: auto;
+    	padding-top: 6px;
+    	margin-right: 0;
+    	margin-bottom: 8px;
+    	border-top: 1px solid #deeefd !important;
+	}
 }
 
 
@@ -309,12 +419,18 @@
 		margin-bottom: 20px;
 	}
 
-	.grey_first_row .zenario_slot .banner_title, 
+	.grey_first_row .zenario_slot .banner_title,
+	.grey_first_row .zenario_content_list  h3,
+	.grey_first_row .zenario_event_listing .event_listing > h2,
 	.grey_second_row .zenario_slot .banner_title {
-		width: 40%
+		width: auto;
 	}
+	
 
-	.grey_first_row .zenario_slot .banner_image {
+	.grey_first_row .zenario_slot .banner_image,
+	.grey_first_row .zenario_content_list .sticky_image,
+	.grey_first_row .zenario_event_listing .single_event_sticky_image,
+	.grey_first_row .zenario_event_listing .sticky_image_placeholder  {
 		width: 30%;
 	}
 	
@@ -325,10 +441,37 @@
 	.grey_second_row .zenario_slot .banner_more {
 		top: 45%;
     	left: 39%;
-	}
-	
+	}	
 }
 
+/* Layout max-width: 330px
+--------------------------------------------------------------------------------------------------*/
 
+@media all and (max-width: 330px) {
 
+	.grey_first_row .zenario_slot .banner_more {
+		text-align: right;
+	}
+	
+	.grey_first_row .zenario_content_list .content_list_more_link,
+	.grey_first_row .zenario_event_listing .single_event_more_link {
+		float: right;
+	}
+	
+	.grey_second_row .zenario_slot .banner_more {
+		left: 45%;
+	}
+}
+
+/* Layout min-width: 770px
+--------------------------------------------------------------------------------------------------*/
+
+@media all and (min-width: 770px) {
+	
+	.slot_responsive_menu {
+		display: none !important;
+	}
+}
+
+}
 

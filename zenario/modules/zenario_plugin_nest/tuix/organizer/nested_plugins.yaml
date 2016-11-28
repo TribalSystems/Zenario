@@ -283,8 +283,6 @@ zenario__modules:
                         request:
                             set_cols: 1
                             cols: -1
-                    disabled_if: |
-                        item.cols != 0 && item.cols != -1
                 full_width:
                     ord: 9999
                     parent: cols

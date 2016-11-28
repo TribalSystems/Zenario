@@ -20,12 +20,10 @@ dependencies:
 signals:
 	-
 		name: eventGroupDeleted
-		static: Yes
-	-
-		name: eventUserRegistered
+		static: true
 	-
 		name: eventUserUpdatedProfile
-		static: Yes
+		static: true
 
 jobs:
 	-

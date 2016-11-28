@@ -2362,6 +2362,9 @@ function getMenuItemFromContent($cID, $cType, $fetchSecondaries = false, $sectio
 			". ($allowGhosts? "LEFT" : "INNER"). " JOIN ". DB_NAME_PREFIX. "menu_text AS t
 			   ON t.menu_id = m.id
 			  AND t.language_id = c.language_id
+			INNER JOIN ". DB_NAME_PREFIX. "menu_text AS mt
+			   ON mt.menu_id = m.id
+			  AND mt.language_id = c.language_id
 			WHERE c.id = ". (int) $cID. "
 			  AND c.type = '" . sqlEscape($cType) . "'";
 		

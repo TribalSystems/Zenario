@@ -261,28 +261,27 @@ zenario_user_admin_box_form:
                     label: 'Send email to user'
                     type: checkbox
                     format_onchange: true
-                user_email_options:
-                    label: 'Email options:'
-                    type: radios
-                    values:
-                        to_user:
-                            ord: 1
-                            label: Send to logged in user/account created from form
-                        choose_field:
-                            ord: 2
-                            label: Choose an email field from the form
-                    value: to_user
+                
+                send_email_to_logged_in_user:
+                    label: Send to logged in user/account created from form
+                    type: checkbox
                     format_onchange: true
                     indent: 1
-                user_email_field:
-                    label: 'Email form field:'
-                    type: select
-                    empty_value: -- Select --
-                    validation:
-                        required_if_not_hidden: Please select a form field to send user email to.
+                user_email_options_logged_in_user:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                            side_note: |
+                                Attachments will not be sent in this format.
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: use_template
+                    format_onchange: true
                     indent: 2
-                # BEGIN send_email_to_user options
-                user_email_template:
+                user_email_template_logged_in_user:
                     label: 'Email template:'
                     pick_items:
                         path: zenario__email_template_manager/panels/email_templates
@@ -293,8 +292,46 @@ zenario_user_admin_box_form:
                         hide_remove_button: true
                     validation:
                         required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                send_email_to_email_from_field:
+                    label: Choose an email field from the form
+                    type: checkbox
+                    format_onchange: true
                     indent: 1
-                # END send_email_to_user options
+                user_email_field:
+                    label: 'Email form field:'
+                    type: select
+                    empty_value: -- Select --
+                    validation:
+                        required_if_not_hidden: Please select a form field to send user email to.
+                    indent: 2
+                user_email_options_from_field:
+                    type: radios
+                    values:
+                        send_data:
+                            ord: 1
+                            label: 'Send all form data (unformatted)'
+                            side_note: |
+                                Attachments will not be sent in this format.
+                        use_template:
+                            ord: 2
+                            label: 'Send email using template'
+                    value: use_template
+                    format_onchange: true
+                    indent: 2
+                user_email_template_from_field:
+                    label: 'Email template:'
+                    pick_items:
+                        path: zenario__email_template_manager/panels/email_templates
+                        min_path: zenario__email_template_manager/panels/email_templates
+                        max_path: zenario__email_template_manager/panels/email_templates
+                        target_path: zenario__email_template_manager/panels/email_templates
+                        select_phrase: Select email template...
+                        hide_remove_button: true
+                    validation:
+                        required_if_not_hidden: Please select an email template for user emails.
+                    indent: 3
+                
                 line_br_3:
                     snippet:
                         html: <hr />

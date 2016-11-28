@@ -31,7 +31,8 @@ div.zenario_show_on_open{display:none}.zenario_fbAdminAJAXLoader{position:absolu
 .zenario_admin_tooltip.tooltip_bottom_left .tooltip_arrow{display:block;position:relative;top:13px;height:5px;background:80% bottom transparent no-repeat url('../admin/images/tooltip_down_black.png')}
 span.zenario_conditionally_hidden{opacity:.5}$span .zenario_inactive{background:pink !important}.zenario_inactive a{font-style:italic}.zenario_debug{position:relative;float:right;width:18px}
 .zenario_debug div{position:absolute;width:18px;height:18px;display:block;background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -17px -1296px;cursor:pointer}
-.zenario_debug:hover div{background-position:-17px -1346px}#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled{background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px}
+.zenario_debug:hover div{background-position:-17px -1346px}.zenario_at_dev_icons{float:right;width:74px;height:18px;padding:5px 5px 0 0;overflow:hidden}
+.zenario_at_dev_icon{float:right;width:18px;height:18px;margin-left:5px;cursor:pointer}#zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled{background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px}
 #zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_enabled{background:url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1341px}
 #zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_desktop{background:url('../admin/images/page_preview_icons/desktop-small-icon.png') no-repeat 0 center}
 #zenario_at .zenario_at_toolbar_container_top ul li.zenario_small_preview_icon_laptop{background:url('../admin/images/page_preview_icons/laptop-small-icon.png') no-repeat 0 center}

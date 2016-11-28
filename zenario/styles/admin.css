@@ -499,6 +499,22 @@ input, textarea, button {
 	background-position: -17px -1346px;
 }
 
+.zenario_at_dev_icons {
+	float: right;
+	width: 74px;
+	height: 18px;
+	padding: 5px 5px 0 0;
+	overflow: hidden;
+}
+
+.zenario_at_dev_icon {
+	float: right;
+	width: 18px;
+	height: 18px;
+	margin-left: 5px;
+	cursor: pointer;
+}
+
 #zenario_at_top_left_menu .organizer_item_image.zenario_dev_tools_disabled {
 	background: url('../admin/images/sprites/sprite-grid-icons-single-col-v2.png') no-repeat -14px -1291px;
 }

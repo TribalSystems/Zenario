@@ -31,23 +31,27 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 		case 'zenario_country_manager__country':
 			exitIfNotCheckPriv('_PRIV_MANAGE_COUNTRY');
 			
-			setRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
-					array('english_name' => $values['details/name']), 
-						array('id' => $values['details/code']));
+			setRow(
+				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_countries', 
+				array('english_name' => $values['details/name']), 
+				array('id' => $values['details/code'])
+			);
 						
 			if ($values['details/update_phrase'] || !$box['key']['id']) {
 				$languages = getLanguages();
 				foreach ($languages as $language) {
-					setRow("visitor_phrases", 	array(
-													'local_text' => $values['details/name'],
-													'protect_flag' => 1
-													), 
-												array(
-													'language_id' => $language['id'],
-													'module_class_name' => 'zenario_country_manager',
-													'code' => '_COUNTRY_NAME_' . $values['details/code']
-												)
-							); 
+					setRow(
+						"visitor_phrases", 	
+						array(
+							'local_text' => $values['details/name'],
+							'protect_flag' => 1
+							), 
+						array(
+							'language_id' => $language['id'],
+							'module_class_name' => 'zenario_country_manager',
+							'code' => '_COUNTRY_NAME_' . $values['details/code']
+						)
+					); 
 				}
 			}
 
@@ -56,7 +60,7 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			break;
 	
 	
-	case 'zenario_country_manager__region':
+		case 'zenario_country_manager__region':
 			exitIfNotCheckPriv('_PRIV_MANAGE_COUNTRY');
 			
 			$updateArray['name'] = arrayKey($values,'details/name');
@@ -76,24 +80,26 @@ if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly acces
 			if (!$box['key']['id']) {
 				$languages = getLanguages();
 				foreach ($languages as $language) {
-					setRow("visitor_phrases", 	array(
-													'local_text' => $values['details/name'],
-													'protect_flag' => 1
-													), 
-												array(
-													'language_id' => $language['id'],
-													'module_class_name' => 'zenario_country_manager',
-													'code' => $values['details/name']
-												)
-							); 
+					setRow(
+						"visitor_phrases", 	
+						array(
+							'local_text' => $values['details/name'],
+							'protect_flag' => 1
+							), 
+						array(
+							'language_id' => $language['id'],
+							'module_class_name' => 'zenario_country_manager',
+							'code' => $values['details/name']
+						)
+					); 
 				}
 			}
 
-			$box['key']['id'] = setRow(ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',
-									$updateArray,
-										array('id' => arrayKey($box,'key','id')));
-
-
+			$box['key']['id'] = setRow(
+				ZENARIO_COUNTRY_MANAGER_PREFIX . 'country_manager_regions',
+				$updateArray,
+				array('id' => arrayKey($box,'key','id'))
+			);
 			break;
 	}
 

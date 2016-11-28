@@ -39,7 +39,8 @@
 			mapIframeId = containerId + '_map_iframe',
 			mapOptions, map,
 			bounds = new google.maps.LatLngBounds(),
-			mainWindow = (window && window.mainWindow) || (self && self.parent);
+			mainWindow = (window && window.mainWindow) || (self && self.parent),
+			minZoom = false;
 		
 		if (containerId && mainWindow) {
 			//Create shortcuts to the listing functions in the window above
@@ -71,6 +72,10 @@
 					scrollwheel: allowScrolling
 				};
 				map = new google.maps.Map(zenario.get(mapId), mapOptions);
+			}
+			
+			if (!minZoom || (location.map_zoom < minZoom)) {
+				minZoom = 1*location.map_zoom;
 			}
 			
 			if (zenario.engToBoolean(location.hide_pin)) {
@@ -141,6 +146,12 @@
 		}
 		
 		if (numL > 1) {
+			google.maps.event.addListenerOnce(map, 'bounds_changed', function() { 
+				if (minZoom < this.getZoom()) {
+					this.setZoom(minZoom);
+				}
+			});
+			
 			//If there were more than one location,
 			//change the map position/zoom so that all of the markers are visible
 			map.fitBounds(bounds);

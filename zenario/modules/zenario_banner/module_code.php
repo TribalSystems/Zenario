@@ -146,6 +146,8 @@ class zenario_banner extends module_base_class {
 				$mergeFields['Target_Blank'] .= ' onclick="if (window.$) { $.colorbox({href: \''. jsEscape($link). '\', iframe: true, width: \'95%\', height: \'95%\'}); return false; }"';
 			}
 		}
+		
+		return true;
 	}
 	
 	//The init method is called by the CMS lets Plugin Developers run code before the Plugin and the page it is on are displayed.
@@ -175,7 +177,9 @@ class zenario_banner extends module_base_class {
 		$imageId = false;
 		$fancyboxLink = false;
 		$cID = $cType = false;
-		$this->setupLink($this->mergeFields, $cID, $cType, $this->setting('use_translation'));
+		if (!$this->setupLink($this->mergeFields, $cID, $cType, $this->setting('use_translation'))) {
+			return false;
+		}
 		
 		
 		$pictureCID = $pictureCType = $width = $height = $url = $url2 = $widthFullSize = $heightFullSize = $urlFullSize = false;

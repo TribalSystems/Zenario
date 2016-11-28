@@ -135,7 +135,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			$this->errors = array_merge ($this->errors, $errors);
 			return false;
 		} else {
-			setUsersPassword($userId, post('extranet_new_password'));
+			setUsersPassword($userId, post('extranet_new_password'), false);
 			return true;
 		}
 	}

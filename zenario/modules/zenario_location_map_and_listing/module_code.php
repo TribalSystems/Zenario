@@ -39,10 +39,9 @@ class zenario_location_map_and_listing extends module_base_class {
 		'locations_map_info' => array(),
 		'countries' => array(),
 		'country_id' => '',
-		'postcode' => '');
-
-
-
+		'postcode' => ''
+	);
+	
 	public function init() {
 		//Look up details on the locations dataset
 		$this->dataset = getDatasetDetails(ZENARIO_LOCATION_MANAGER_PREFIX. 'locations');
@@ -63,7 +62,8 @@ class zenario_location_map_and_listing extends module_base_class {
 						'css_class' => 'zenario_lmal_tab__'. $field['db_column'],
 						'marker_css_class' => 'zenario_lmal_marker__'. $field['db_column'],
 						'title' => $this->setting($titleSetting),
-						'locations' => array());
+						'locations' => array()
+					);
 				}
 			}
 		}
@@ -83,6 +83,7 @@ class zenario_location_map_and_listing extends module_base_class {
 			
 			//Attempt to get a country to show
 			//Use the country in the request if there is one...
+			$countryId = false;
 			if (!empty($_REQUEST['country_id']) && !empty($this->data['countries'][$_REQUEST['country_id']])) {
 				$this->data['country_id'] = $_REQUEST['country_id'];
 			
@@ -94,11 +95,24 @@ class zenario_location_map_and_listing extends module_base_class {
 			} elseif (inc('zenario_geoip_lookup')
 				&& $this->setting('default_country_options') == 'geo_ip'
 				&& ($countryId = zenario_geoip_lookup::getCountryISOCodeForIp(visitorIP()))
-				&& (!empty($this->data['countries'][$countryId]))) {
+				&& (!empty($this->data['countries'][$countryId]))
+			) {
 				$this->data['country_id'] = $countryId;
 			
+			//...or check the default option if geo-ip country not in the list...
+			} elseif (inc('zenario_geoip_lookup')
+				&& $this->setting('default_country_options') == 'geo_ip'
+				&& empty($this->data['countries'][$countryId])
+				&& $this->setting('geo_ip_default_country')
+				&& !empty($this->data['countries'][$this->setting('geo_ip_default_country')])
+			) {
+				$this->data['country_id'] = $this->setting('geo_ip_default_country');
+				
 			//...or check the default option...
-			} elseif($this->setting('default_country_options') == 'select_country' && $this->setting('default_country') && !empty($this->data['countries'][$this->setting('default_country')])){
+			} elseif($this->setting('default_country_options') == 'select_country' 
+				&& $this->setting('default_country') 
+				&& !empty($this->data['countries'][$this->setting('default_country')])
+			) {
 				$this->data['country_id'] = $this->setting('default_country');
 			
 			//...otherwise pick the first in the list
@@ -124,6 +138,13 @@ class zenario_location_map_and_listing extends module_base_class {
 			}
 		}
 		
+		if ($this->setting('show_list_and_map_in_seperate_tabs')) {
+			$this->data['show_list_and_map_in_seperate_tabs'] = true;
+			$this->data['listViewOnClick'] = $this->refreshPluginSlotJS();
+			$this->data['mapViewOnClick'] = $this->refreshPluginSlotJS('map_view=1');
+			$this->data['currentView'] = request('map_view') ? 'map' : 'list';
+		}
+		
 		$this->data['mapId'] = $this->containerId. '_map';
 		$this->data['mapIframeId'] = $this->containerId. '_map_iframe';
 		$this->data['mapIframeSrc'] = $this->showSingleSlotLink(array('display_map' => 1, 'country_id' => $this->data['country_id'], 'postcode' => $this->data['postcode']));
@@ -134,7 +155,6 @@ class zenario_location_map_and_listing extends module_base_class {
 	}
 	
 	protected function loadLocations() {
-		
 		$sql = "
 			SELECT
 				loc.id,
@@ -151,7 +171,8 @@ class zenario_location_map_and_listing extends module_base_class {
 				loc.latitude,
 				loc.longitude, 
 				loc.map_zoom, 
-				loc.hide_pin";
+				loc.hide_pin,
+				vp_cn.local_text AS country";
 		
 		if (!empty($this->fields)) {
 			foreach($this->fields as $i => $field) {
@@ -169,14 +190,45 @@ class zenario_location_map_and_listing extends module_base_class {
 		}
 		
 		$sql .= "
-			FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc
+			FROM ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations AS loc";
+		
+		if ($sectorId = $this->setting('sector')) {
+			$sql .= "
+				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_sector_score_link AS lnk
+				   ON loc.id = lnk.location_id
+				   AND lnk.sector_id = ". (int)$sectorId;
+		}
+		if ($regionId = $this->setting('region')) {
+			$sql .= "
+				INNER JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "location_region_link AS lrl 
+					ON loc.id = lrl.location_id 
+				   AND lrl.region_id = ". (int)$regionId;
+		}
+		
+		$sql .= "
 			LEFT JOIN ". DB_NAME_PREFIX. ZENARIO_LOCATION_MANAGER_PREFIX. "locations_custom_data AS cd
 				ON cd.location_id = loc.id
+			LEFT JOIN ". DB_NAME_PREFIX. "visitor_phrases AS vp_cn
+				   ON loc.country_id IS NOT NULL
+				  AND module_class_name = 'zenario_country_manager'
+				  AND CONCAT('_COUNTRY_NAME_', loc.country_id) = vp_cn.code 
+				  AND vp_cn.language_id = '". sqlEscape(cms_core::$langId). "'
 			WHERE loc.status = 'active'";
 		
 		if ($this->setting('filter_by_country')) {
-			$sql .="
-			  AND loc.country_id = '". sqlEscape($this->data['country_id']). "'";
+			$sql .= "
+				AND loc.country_id = '". sqlEscape($this->data['country_id']). "'";
+		}
+		if ($countryId = $this->setting('country')) {
+			$sql .= "
+				AND loc.country_id = '". sqlEscape($countryId). "'";
+		}
+		
+		if (($fieldId = $this->setting('location_filter'))
+			&& ($dbColumnName  = getRow('custom_dataset_fields', 'db_column', $fieldId))
+		) {
+			$sql .= "
+				AND cd.`" . sqlEscape($dbColumnName) . "` = 1";
 		}
 		
 		if (!empty($this->fields)) {
@@ -194,8 +246,29 @@ class zenario_location_map_and_listing extends module_base_class {
 		$sql .= "
 			AND (loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL) AND (loc.latitude <> 0 AND loc.longitude <> 0)";
 		
-		$sql .= "
-			ORDER BY name";
+		$orderBy = array();
+		for ($i = 1; $i <= 3; $i++) {
+			switch ($this->setting('order_by_' . $i)){
+				case 'sector_score':
+					if ($sectorId) {
+						$orderBy[] = 'lnk.score_id DESC';
+					}
+					break;
+				case 'country':
+					$orderBy[] = 'country ASC';
+					break;
+				case 'name':
+					$orderBy[] = 'name ASC';
+					break;
+			}
+		}
+		if (!empty($orderBy)) {
+			$sql .= "
+				ORDER BY ". implode(', ', $orderBy);
+		} else {
+			$sql .= "
+				ORDER BY name";
+		}
 		
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {
@@ -209,16 +282,15 @@ class zenario_location_map_and_listing extends module_base_class {
 			$row['list_image'] = self::getStickyImage($row['id'],"list");
 			
 			$row['descriptive_page'] = false;
-			if($row['equiv_id'] && $row['content_type']){
+			if($this->setting('show_view_button') && $row['equiv_id'] && $row['content_type']){
 				$cID = $row['equiv_id'];
 				$cType = $row['content_type'];
 				langEquivalentItem($cID, $cType);
-				
+			
 				if(checkPriv() || isPublished($cID, $cType)){
 					$row['descriptive_page'] = linkToItem($cID, $cType, false);
 				}
 			}
-			
 			
 			$this->data['locations'][] = $row;
 		}
@@ -437,12 +509,13 @@ class zenario_location_map_and_listing extends module_base_class {
 	public function fillAdminBox($path, $settingGroup, &$box, &$fields, &$values) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['first_tab/field1']['values'] =
-				$fields['first_tab/field2']['values'] =
-				$fields['first_tab/field3']['values'] =
+				$fields['front_end_features/field1']['values'] =
+				$fields['front_end_features/field2']['values'] =
+				$fields['front_end_features/field3']['values'] =
+				$fields['first_tab/location_filter']['values'] =
 					listCustomFields(
 						ZENARIO_LOCATION_MANAGER_PREFIX. 'locations',
-						$flat = false, $filter = 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true);
+						$flat = false, $filter = 'boolean_and_groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 				break;
 
 		}
@@ -452,80 +525,38 @@ class zenario_location_map_and_listing extends module_base_class {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path){
 			case 'plugin_settings':
+				$fields['first_tab/order_by_1']['values']['sector_score']['hidden'] = 
+				$fields['first_tab/order_by_2']['values']['sector_score']['hidden'] = 
+				$fields['first_tab/order_by_3']['values']['sector_score']['hidden'] = 
+					!$values['first_tab/sector'];
 				
-				if($values['image/show_images']){
-					$fields['image/map_view_thumbnail_canvas']['hidden'] = false;
-					$fields['image/list_view_thumbnail_canvas']['hidden'] = false;
-					
-					//Map image
-					switch($values['image/map_view_thumbnail_canvas']){
-						case 'unlimited':
-							$fields['image/map_view_thumbnail_width']['hidden'] = true;
-							$fields['image/map_view_thumbnail_height']['hidden'] = true;
-							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_width':
-							$fields['image/map_view_thumbnail_width']['hidden'] = false;
-							$fields['image/map_view_thumbnail_height']['hidden'] = true;
-							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_height':
-							$fields['image/map_view_thumbnail_width']['hidden'] = true;
-							$fields['image/map_view_thumbnail_height']['hidden'] = false;
-							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_width_and_height':
-							$fields['image/map_view_thumbnail_width']['hidden'] = false;
-							$fields['image/map_view_thumbnail_height']['hidden'] = false;
-							$fields['image/map_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'resize_and_crop':
-							$fields['image/map_view_thumbnail_width']['hidden'] = false;
-							$fields['image/map_view_thumbnail_height']['hidden'] = false;
-							$fields['image/map_view_thumbnail_offset']['hidden'] = false;
-							break;
+				if ($values['first_tab/country']) {
+					if ((int)$values['first_tab/region']) {
+						$regionCountry = zenario_country_manager::getCountryOfRegion((int)$values['first_tab/region']);
+						if (arrayKey($regionCountry,'id') != $values['first_tab/country']) {
+							unset($box['tabs']['first_tab']['fields']['region']['value']);
+							unset($box['tabs']['first_tab']['fields']['region']['current_value']);
+						}
 					}
-				
-					//List Image
-					switch($values['image/list_view_thumbnail_canvas']){
-						case 'unlimited':
-							$fields['image/list_view_thumbnail_width']['hidden'] = true;
-							$fields['image/list_view_thumbnail_height']['hidden'] = true;
-							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_width':
-							$fields['image/list_view_thumbnail_width']['hidden'] = false;
-							$fields['image/list_view_thumbnail_height']['hidden'] = true;
-							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_height':
-							$fields['image/list_view_thumbnail_width']['hidden'] = true;
-							$fields['image/list_view_thumbnail_height']['hidden'] = false;
-							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'fixed_width_and_height':
-							$fields['image/list_view_thumbnail_width']['hidden'] = false;
-							$fields['image/list_view_thumbnail_height']['hidden'] = false;
-							$fields['image/list_view_thumbnail_offset']['hidden'] = true;
-							break;
-						case 'resize_and_crop':
-							$fields['image/list_view_thumbnail_width']['hidden'] = false;
-							$fields['image/list_view_thumbnail_height']['hidden'] = false;
-							$fields['image/list_view_thumbnail_offset']['hidden'] = false;
-							break;
-					}
-				}else{
-				
-					$fields['image/map_view_thumbnail_canvas']['hidden'] = true;
-					$fields['image/map_view_thumbnail_width']['hidden'] = true;
-					$fields['image/map_view_thumbnail_height']['hidden'] = true;
-					$fields['image/map_view_thumbnail_offset']['hidden'] = true;
-				
-					$fields['image/list_view_thumbnail_canvas']['hidden'] = true;
-					$fields['image/list_view_thumbnail_width']['hidden'] = true;
-					$fields['image/list_view_thumbnail_height']['hidden'] = true;
-					$fields['image/list_view_thumbnail_offset']['hidden'] = true;
+					$box['tabs']['first_tab']['fields']['region']['pick_items']['path'] = 'zenario__languages/panels/countries/item//' .  $values['first_tab/country'] . '//';
+					$box['tabs']['first_tab']['fields']['region']['hidden'] = false;
+				} else {
+					$box['tabs']['first_tab']['fields']['region']['hidden'] = true;
 				}
+				
+				
+				if ($values['front_end_features/show_list_and_map_in_seperate_tabs']) {
+					$values['front_end_features/enable_postcode_search'] = false;
+				}
+				
+				$fields['front_end_features/default_country_options']['hidden'] = !$values['front_end_features/filter_by_country'];
+				$fields['front_end_features/default_country']['hidden'] = !$values['front_end_features/filter_by_country'] || ($values['front_end_features/default_country_options'] != 'select_country');
+				
+				$fields['front_end_features/field1']['hidden'] = !$values['front_end_features/list_by_field'];
+				
+				$hidden = !$values['image/show_images'];
+				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'map_view_thumbnail_');
+				$this->showHideImageOptions($fields, $values, 'image', $hidden, 'list_view_thumbnail_');
 				break;
 		}
 	}

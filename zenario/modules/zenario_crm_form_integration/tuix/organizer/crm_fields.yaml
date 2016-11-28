@@ -4,7 +4,7 @@ zenario__user_forms:
 			title: Form fields with CRM names
 			db_items:
 				table: |
-					[[DB_NAME_PREFIX]]user_form_fields AS ff
+					[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields AS ff
 					INNER JOIN [[DB_NAME_PREFIX]][[ZENARIO_CRM_FORM_INTEGRATION_PREFIX]]form_crm_fields fcf
 						ON ff.id = fcf.form_field_id
 				id_column: ff.id
@@ -35,7 +35,7 @@ zenario__user_forms:
 					sql: |
 						ff.user_form_id = (
 							SELECT ff2.user_form_id
-							FROM [[DB_NAME_PREFIX]]user_form_fields ff2
+							FROM [[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields ff2
 							WHERE ff2.id = [[REFINER_ID]]
 						)
 						AND fcf.field_crm_name = (

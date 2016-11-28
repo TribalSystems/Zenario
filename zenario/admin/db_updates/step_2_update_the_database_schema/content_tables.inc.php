@@ -1926,8 +1926,7 @@ _sql
 	) ENGINE=MyISAM DEFAULT CHARSET=utf8
 _sql
 
-//I changed my mind about one of the columns above
-	//To do - delete the two lines about hide_if_no_get_requests when ther are deleted from my dev site
+//Remove one of the columns above (n.b. these two statements are completely removed in HEAD)
 );	revision( 37090
 , <<<_sql
 	ALTER TABLE `[[DB_NAME_PREFIX]]menu_nodes`

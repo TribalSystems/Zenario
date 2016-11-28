@@ -2988,7 +2988,7 @@ zenarioO.applyMergeFields = function(string, escapeHTML, i, keepNewLines) {
 	}
 	
 	//Unescape and return
-	return string.replace(/~2/g, '[').replace(/~3/g, '[').replace(/~1/g, '~');
+	return string.replace(/~2/g, '[').replace(/~3/g, ']').replace(/~1/g, '~');
 };
 
 zenarioO.applyMergeFieldsToLabel = function(label, isHTML, itemLevel, multiSelectLabel) {

@@ -91,6 +91,8 @@ zenario__menu:
             label: All menu sections
             tooltip: The menu structure of the site, shown with text in the site's default language
         by_language:
+            visible_if: zenarioA.multipleLanguagesEnabled()
+            css_class: all_languages
             label: All languages
             tooltip: The menu shown with text in other languages if available
     data-step: 12
@@ -250,23 +252,6 @@ zenario__administration:
     tooltip: >
         Configure site settings, backups, URLs and other features of your site
     nav:
-        #Site status button, this only appears on the front-end on the admin toolbar
-        zenario__site_enabled:
-            visible_if: zenario.cID && zenario.engToBoolean(zenarioA.siteSettings.site_enabled) && zenarioA.siteSettings.site_mode == 'production'
-            css_class: site_enabled
-            label: Site enabled; production mode
-            onclick: zenarioAB.enableOrDisableSite(); zenarioAT.draw();
-        zenario__site_enabled_development:
-            visible_if: zenario.cID && zenario.engToBoolean(zenarioA.siteSettings.site_enabled) && zenarioA.siteSettings.site_mode != 'production'
-            css_class: site_enabled_development
-            label: Site enabled; development mode
-            onclick: zenarioAB.enableOrDisableSite(); zenarioAT.draw();
-        zenario__site_disabled:
-            visible_if: zenario.cID && !zenario.engToBoolean(zenarioA.siteSettings.site_enabled)
-            css_class: site_disabled
-            label: Site disabled; development mode
-            onclick: zenarioAB.enableOrDisableSite(); zenarioAT.draw();
-        
         site_settings:
             priv: _PRIV_VIEW_SITE_SETTING
             label: Site settings
@@ -309,35 +294,6 @@ zenario__administration:
             tooltip: Configure page preview sizes
             link:
                 path: zenario__administration/panels/page_preview_sizes
-        
-        # These links would put shortucts for turning dev tools on/off to the dropdown
-        # menu on the admin toolbar.
-        #enable_dev_tools:
-        #    ord: 103
-        #    priv: _PRIV_EDIT_ADMIN
-        #    visible_if: zenario.cID && !zenarioA.adminSettings.show_dev_tools
-        #    css_class: zenario_dev_tools_disabled
-        #    label: Dev tools disabled; click to enable
-        #    onclick: |
-        #        zenario.ajax(
-        #            zenario.AJAXLink('zenario_common_features'),
-        #            {show_dev_tools: 1}
-        #        ).after(function() {
-        #            document.location.reload(true);
-        #        });
-        #disable_dev_tools:
-        #    ord: 104
-        #    priv: _PRIV_EDIT_ADMIN
-        #    visible_if: zenario.cID && zenarioA.adminSettings.show_dev_tools
-        #    css_class: zenario_dev_tools_enabled
-        #    label: Dev tools enabled; click to disable
-        #    onclick: |
-        #        zenario.ajax(
-        #            zenario.AJAXLink('zenario_common_features'),
-        #            {show_dev_tools: 0}
-        #        ).after(function() {
-        #            document.location.reload(true);
-        #        });
 
 
     data-step: 14
@@ -345,11 +301,3 @@ zenario__administration:
     data-intro: >
         <p><strong>Configuration</strong></p>
         <p>Access your website settings for backups, URLs, site maps and other features.</p>
-
-# This would put a site info button, on the front-end on the admin toolbar
-#zenario__site_info:
-#    ord: zenario__administration.1
-#    visible_if: zenario.cID
-#    css_class: organizer_info_box
-#    label: About Zenario
-#    onclick: zenarioA.infoBox(); zenarioAT.draw();

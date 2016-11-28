@@ -50,6 +50,14 @@ class zenario_user_forms extends module_base_class {
 		$userId = userId();
 		$adminId = adminId();
 		$formId = $this->setting('user_form');
+		
+		if (!$formId) {
+			if ($adminId) {
+				$this->data['form_HTML'] = '<p class="error">' . adminPhrase('You must select a form for this plugin.') . '</p>';
+			}
+			return true;
+		}
+		
 		$form = static::getForm($formId);
 		
 		if ($form['allow_partial_completion']) {
@@ -1454,10 +1462,12 @@ class zenario_user_forms extends module_base_class {
 		
 		// Field containing div open
 		$containerHTML = '<div id="' . $this->containerId . '_field_' . $fieldId . '" data-id="' . $fieldId . '" ';
+		
 		if ($field['visibility'] == 'visible_on_condition') {
 			$containerHTML .= ' data-cfieldid="' . $field['visible_condition_field_id'] . '"';
-			$containerHTML .= ' data-cfieldvalue="' . $field['visible_condition_field_value'] . '"';	
-		} elseif ($fieldType == 'restatement') {
+			$containerHTML .= ' data-cfieldvalue="' . $field['visible_condition_field_value'] . '"';
+		}
+		if ($fieldType == 'restatement') {
 			$containerHTML .= ' data-fieldid="' . $field['restatement_field'] . '"';
 		} elseif ($fieldType == 'calculated') {
 			if ($field['value_prefix']) {
@@ -2034,9 +2044,15 @@ class zenario_user_forms extends module_base_class {
 				'name',
 				'title',
 				'title_tag',
-				'send_email_to_user',
+				
+				'send_email_to_logged_in_user',
+				'user_email_use_template_for_logged_in_user',
+				'user_email_template_logged_in_user',
+				'send_email_to_email_from_field',
 				'user_email_field',
-				'user_email_template',
+				'user_email_use_template_for_email_from_field',
+				'user_email_template_from_field',	
+				
 				'send_email_to_admin',
 				'admin_email_use_template',
 				'admin_email_addresses',
@@ -2643,7 +2659,7 @@ class zenario_user_forms extends module_base_class {
 
 		if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityToleranceLevel)) {
 			
-			$sendEmailToUser = ($formProperties['send_email_to_user'] && $formProperties['user_email_template'] && (isset($data['email']) || $userId));
+			$sendEmailToUser = ($formProperties['send_email_to_logged_in_user'] || $formProperties['send_email_to_email_from_field']);
 			$sendEmailToAdmin = ($formProperties['send_email_to_admin'] && $formProperties['admin_email_addresses']);
 			$values = array();
 			$userEmailMergeFields = 
@@ -2658,19 +2674,31 @@ class zenario_user_forms extends module_base_class {
 				// Get merge fields
 				$userEmailMergeFields = static::getTemplateEmailMergeFields($values, $userId);
 				
-				$email = false;
-				if ($formProperties['user_email_field']) {
-					if (!empty($fieldIdValueLink[$formProperties['user_email_field']])) {
-						$email = $fieldIdValueLink[$formProperties['user_email_field']];
+				if ($formProperties['send_email_to_logged_in_user']) {
+					if ($userId
+						&& ($email = getRow('users', 'email', $userId))
+					) {
+						if ($formProperties['user_email_use_template_for_logged_in_user'] && $formProperties['user_email_template_logged_in_user']) {
+							zenario_email_template_manager::sendEmailsUsingTemplate($email, $formProperties['user_email_template_logged_in_user'], $userEmailMergeFields, array());
+						} else {
+							$startLine = 'Dear user,';
+							static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $email);
+						}
 					}
-				} elseif ($userId) {
-					$email = getRow('users', 'email', $userId);
-				} else {
-					$email = $data['email'];
+				} 
+				if ($formProperties['send_email_to_email_from_field']) {
+					if ($formProperties['user_email_field']
+						&& !empty($fieldIdValueLink[$formProperties['user_email_field']])
+						&& ($email = $fieldIdValueLink[$formProperties['user_email_field']])
+					) {
+						if ($formProperties['user_email_use_template_for_email_from_field'] && $formProperties['user_email_template_from_field']) {
+							zenario_email_template_manager::sendEmailsUsingTemplate($email, $formProperties['user_email_template_from_field'], $userEmailMergeFields, array());
+						} else {
+							$startLine = 'Dear user,';
+							static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $email);
+						}
+					}
 				}
-				
-				// Send email
-				zenario_email_template_manager::sendEmailsUsingTemplate($email, $formProperties['user_email_template'], $userEmailMergeFields, array());
 			}
 		
 			// Send an email to administrators
@@ -2711,79 +2739,8 @@ class zenario_user_forms extends module_base_class {
 						$replyToName
 					);
 				} else {
-					$emailValues = array();
-					
-					foreach ($values as $fieldId => $fieldData) {
-						if (isset($fieldData['attachment'])) {
-							$fieldData['value'] = absCMSDirURL() . 'zenario/file.php?adminDownload=1&id=' . $fieldData['internal_value'];
-						}
-						if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
-							$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
-						}
-						
-						if (!is_numeric($fieldId) && (strpos($fieldId, '_') !== false)) {
-							$ids = explode('_', $fieldId);
-							$fieldId = $ids[0];
-						}
-						$emailValues[$fieldData['ord']] = array($formFields[$fieldId]['name'], $fieldData['value']);
-					}
-					
-					ksort($emailValues);
-					
-					$formName = trim($formProperties['name']);
-					$formName = empty($formName) ? phrase('[blank name]', array(), 'zenario_user_forms') : $formProperties['name'];
-					$body =
-						'<p>Dear admin,</p>
-						<p>The form "'.$formName.'" was submitted with the following data:</p>';
-					
-					
-					// Get menu path of current page
-					$menuNodeString = '';
-					if ($formProperties['send_email_to_admin'] && !$formProperties['admin_email_use_template']) {
-						$currentMenuNode = getMenuItemFromContent(cms_core::$cID, cms_core::$cType);
-						if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
-							$nodes = static::drawMenu($currentMenuNode['mID'], cms_core::$cID, cms_core::$cType);
-							for ($i = count($nodes) - 1; $i >= 0; $i--) {
-								$menuNodeString .= $nodes[$i].' ';
-								if ($i > 0) {
-									$menuNodeString .= '&#187; ';
-								}
-							}
-						}
-					}
-					if ($menuNodeString) {
-						$body .= '<p>Page submitted from: '. $menuNodeString .'</p>';
-					}
-					
-					foreach ($emailValues as $ordinal => $value) {
-						$body .= '<p>'.trim($value[0], " \t\n\r\0\x0B:").': '.$value[1].'</p>';
-					}
-					
-					$url = linkToItem(cms_core::$cID, cms_core::$cType, true, '', false, false, true);
-					if (!$url) {
-						$url = absCMSDirURL();
-					}
-			
-					$body .= '<p>This is an auto-generated email from '.$url.'</p>';
-					$recipients = $formProperties['admin_email_addresses'];
-					$subject = phrase('New form submission for: [[name]]', array('name' => $formName), 'zenario_user_forms');
-					$addressFrom = setting('email_address_from');
-					$nameFrom = setting('email_name_from');
-		
-					zenario_email_template_manager::sendEmails(
-						$recipients,
-						$subject,
-						$addressFrom,
-						$nameFrom,
-						$body,
-						array(),
-						$attachments,
-						array(),
-						0,
-						false,
-						$replyToEmail,
-						$replyToName
-					);
+					$startLine = 'Dear admin,';
+					static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $formProperties['admin_email_addresses'], $attachments, $replyToEmail, $replyToName);
 				}
 			}
 		} else {
@@ -2830,6 +2787,83 @@ class zenario_user_forms extends module_base_class {
 		unset($_SESSION['custom_form_data'][$instanceId]);
 		return $userId;
 	}
+	
+	
+	public static function sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $recipients, $attachments = array(), $replyToEmail = false, $replyToName = false) {
+		$emailValues = array();
+					
+		foreach ($values as $fieldId => $fieldData) {
+			if (isset($fieldData['attachment'])) {
+				$fieldData['value'] = absCMSDirURL() . 'zenario/file.php?adminDownload=1&id=' . $fieldData['internal_value'];
+			}
+			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
+				$fieldData['value'] = '<br/>' . nl2br($fieldData['value']);
+			}
+			
+			if (!is_numeric($fieldId) && (strpos($fieldId, '_') !== false)) {
+				$ids = explode('_', $fieldId);
+				$fieldId = $ids[0];
+			}
+			$emailValues[$fieldData['ord']] = array($formFields[$fieldId]['name'], $fieldData['value']);
+		}
+		
+		ksort($emailValues);
+		
+		$formName = trim($formProperties['name']);
+		$formName = empty($formName) ? phrase('[blank name]', array(), 'zenario_user_forms') : $formProperties['name'];
+		$body =
+			'<p>' . $startLine . '</p>
+			<p>The form "'.$formName.'" was submitted with the following data:</p>';
+		
+		
+		// Get menu path of current page
+		$menuNodeString = '';
+		if ($formProperties['send_email_to_admin'] && !$formProperties['admin_email_use_template']) {
+			$currentMenuNode = getMenuItemFromContent(cms_core::$cID, cms_core::$cType);
+			if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
+				$nodes = static::drawMenu($currentMenuNode['mID'], cms_core::$cID, cms_core::$cType);
+				for ($i = count($nodes) - 1; $i >= 0; $i--) {
+					$menuNodeString .= $nodes[$i].' ';
+					if ($i > 0) {
+						$menuNodeString .= '&#187; ';
+					}
+				}
+			}
+		}
+		if ($menuNodeString) {
+			$body .= '<p>Page submitted from: '. $menuNodeString .'</p>';
+		}
+		
+		foreach ($emailValues as $ordinal => $value) {
+			$body .= '<p>'.trim($value[0], " \t\n\r\0\x0B:").': '.$value[1].'</p>';
+		}
+		
+		$url = linkToItem(cms_core::$cID, cms_core::$cType, true, '', false, false, true);
+		if (!$url) {
+			$url = absCMSDirURL();
+		}
+
+		$body .= '<p>This is an auto-generated email from '.$url.'</p>';
+		$subject = phrase('New form submission for: [[name]]', array('name' => $formName), 'zenario_user_forms');
+		$addressFrom = setting('email_address_from');
+		$nameFrom = setting('email_name_from');
+
+		zenario_email_template_manager::sendEmails(
+			$recipients,
+			$subject,
+			$addressFrom,
+			$nameFrom,
+			$body,
+			array(),
+			$attachments,
+			array(),
+			0,
+			false,
+			$replyToEmail,
+			$replyToName
+		);
+	}
+	
 	
 	
 	public static function getFormSaveData($fields, $data, $dataset, $instanceId, &$fieldIdValueLink, &$userSystemFields, &$userCustomFields, &$unlinkedFields, &$checkBoxValues, &$filePickerValues, &$attachments) {
@@ -3000,7 +3034,8 @@ class zenario_user_forms extends module_base_class {
 					$values[$fieldId]['internal_value'] = $fieldValue;
 					$fieldValue = isset($fieldLOV[$fieldValue]) ? $fieldLOV[$fieldValue] : false;
 				}
-				$value = $fieldValue ? $fieldValue : '';
+				
+				$value = ($fieldValue || $fieldValue === '0') ? $fieldValue : '';
 				switch ($field['db_column']) {
 					case 'salutation':
 						$value = substr($value, 0, 25);
@@ -3023,7 +3058,7 @@ class zenario_user_forms extends module_base_class {
 				break;
 			case 'editor':
 			case 'textarea':
-				$value = $fieldValue ? $fieldValue : '';
+				$value = ($fieldValue || $fieldValue === '0') ? $fieldValue : '';
 				$values[$fieldId] = array('value' => $value);
 				$fieldIdValueLink[$fieldId] = $fieldValue;
 				break;
@@ -4142,8 +4177,14 @@ class zenario_user_forms extends module_base_class {
 						}
 					}
 					
-					if ($record['user_email_field']) {
-						$values['data/user_email_options'] = 'choose_field';
+					if ($record['send_email_to_logged_in_user'] || $record['send_email_to_email_from_field']) {
+						$values['data/send_email_to_user'] = true;
+						if ($record['send_email_to_logged_in_user'] && !$record['user_email_use_template_for_logged_in_user']) {
+							$values['data/user_email_options_logged_in_user'] = 'send_data';
+						}
+						if ($record['send_email_to_email_from_field'] && !$record['user_email_use_template_for_email_from_field']) {
+							$values['data/user_email_options_from_field'] = 'send_data';
+						}
 					}
 					
 					$fields['data/user_email_field']['values'] = 
@@ -4423,12 +4464,25 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 				
-				$fields['data/user_email_options']['hidden'] = 
-				$fields['data/user_email_template']['hidden'] = 
+				
+				$fields['data/send_email_to_logged_in_user']['hidden'] = 
+				$fields['data/send_email_to_email_from_field']['hidden'] = 
 					!$values['data/send_email_to_user'];
 				
+				$fields['data/user_email_options_logged_in_user']['hidden'] = 
+					!$values['data/send_email_to_user'] || !$values['data/send_email_to_logged_in_user'];
+				
+				$fields['data/user_email_template_logged_in_user']['hidden'] = 
+					!$values['data/send_email_to_user'] || !$values['data/send_email_to_logged_in_user'] || ($values['data/user_email_options_logged_in_user'] != 'use_template');
+				
 				$fields['data/user_email_field']['hidden'] = 
-					!($values['data/send_email_to_user'] && $values['data/user_email_options'] == 'choose_field');
+				$fields['data/user_email_options_from_field']['hidden'] = 
+					!$values['data/send_email_to_user'] || !$values['data/send_email_to_email_from_field'];
+				
+				$fields['data/user_email_template_from_field']['hidden'] = 
+					!$values['data/send_email_to_user'] || !$values['data/send_email_to_email_from_field'] || ($values['data/user_email_options_from_field'] != 'use_template');
+				
+				
 				
 				$fields['data/admin_email_addresses']['hidden'] = 
 				$fields['data/admin_email_options']['hidden'] = 
@@ -4472,10 +4526,17 @@ class zenario_user_forms extends module_base_class {
 					$fields['data/user_duplicate_email_action']['hidden'] = true;
 					$fields['data/duplicate_email_address_error_message']['hidden'] = true;
 					$fields['data/create_another_form_submission_record']['hidden'] = true;
+					
 					$fields['data/line_br_2']['hidden'] = true;
 					
 					$fields['data/send_email_to_user']['hidden'] = true;
-					$fields['data/user_email_template']['hidden'] = true;
+					$fields['data/user_email_options_logged_in_user']['hidden'] = true;
+					$fields['data/user_email_template_logged_in_user']['hidden'] = true;
+					$fields['data/send_email_to_email_from_field']['hidden'] = true;
+					$fields['data/user_email_field']['hidden'] = true;
+					$fields['data/user_email_options_from_field']['hidden'] = true;
+					$fields['data/user_email_template_from_field']['hidden'] = true;
+					
 					$fields['data/line_br_3']['hidden'] = true;
 					
 					$fields['data/send_email_to_admin']['hidden'] = true;
@@ -4486,6 +4547,7 @@ class zenario_user_forms extends module_base_class {
 					$fields['data/reply_to_email_field']['hidden'] = true;
 					$fields['data/reply_to_first_name']['hidden'] = true;
 					$fields['data/reply_to_last_name']['hidden'] = true;
+					
 					$fields['data/line_br_4']['hidden'] = true;
 					
 					$box['tabs']['captcha']['hidden'] = true;
@@ -4769,14 +4831,30 @@ class zenario_user_forms extends module_base_class {
 				$record['captcha_type'] = ($values['use_captcha'] ? $values['captcha_type'] : 'word');
 				$record['extranet_users_use_captcha'] = $values['extranet_users_use_captcha'];
 				$record['admin_email_use_template'] = ($values['admin_email_options'] == 'use_template');
-				$record['send_email_to_user'] = (empty($values['send_email_to_user']) ? 0 : 1);
 				
+				
+				$record['send_email_to_logged_in_user'] = 0;
+				$record['user_email_use_template_for_logged_in_user'] = 0;
+				$record['user_email_template_logged_in_user'] = null;
+				$record['send_email_to_email_from_field'] = 0;
+				$record['user_email_use_template_for_email_from_field'] = 0;
 				$record['user_email_field'] = 0;
-				if ($record['send_email_to_user'] && $values['user_email_options'] == 'choose_field') {
-					$record['user_email_field'] = $values['user_email_field'];
+				$record['user_email_template_from_field'] = null;
+				if ($values['data/send_email_to_user']) {
+					if ($record['send_email_to_logged_in_user'] = $values['data/send_email_to_logged_in_user']) {
+						if ($record['user_email_use_template_for_logged_in_user'] = ($values['data/user_email_options_logged_in_user'] == 'use_template')) {
+							$record['user_email_template_logged_in_user'] = $values['data/user_email_template_logged_in_user'];
+						}
+					}
+					if ($record['send_email_to_email_from_field'] = $values['data/send_email_to_email_from_field']) {
+						$record['user_email_field'] = $values['data/user_email_field'];
+						if ($record['user_email_use_template_for_email_from_field'] = ($values['data/user_email_options_from_field'] == 'use_template')) {
+							$record['user_email_template_from_field'] = $values['data/user_email_template_from_field'];
+						}
+					}
 				}
 				
-				$record['user_email_template'] = (empty($values['send_email_to_user']) ? null : $values['user_email_template']);
+				
 				$record['send_email_to_admin'] = (empty($values['send_email_to_admin']) ? 0 : 1);
 				$record['admin_email_addresses'] = (empty($values['send_email_to_admin']) ? null : $values['admin_email_addresses']);
 				$record['admin_email_template'] = (empty($values['send_email_to_admin']) ? null : $values['admin_email_template']);
@@ -5181,14 +5259,24 @@ class zenario_user_forms extends module_base_class {
 			unset($form['_fields']);
 			
 			// Remove site specific data
-			if ($form['user_email_template']) {
-				if (!is_numeric($form['user_email_template']) 
-					&& checkRowExists('email_templates', array('code' => $form['user_email_template']))
+			if ($form['user_email_template_logged_in_user']) {
+				if (!is_numeric($form['user_email_template_logged_in_user']) 
+					&& checkRowExists('email_templates', array('code' => $form['user_email_template_logged_in_user']))
 				) {
-					$result['warnings'][] = adminPhrase('A user email template is set. One with the same name was found on this site. The contents of these email templates is not guaranteed to be identical.');
+					$result['warnings'][] = adminPhrase('A user email template is set for logged in users. One with the same name was found on this site. The contents of these email templates is not guaranteed to be identical.');
 				} else {
-					$result['warnings'][] = adminPhrase('A user email template is set. This value will be unset.');
-					$form['user_email_template'] = null;
+					$result['warnings'][] = adminPhrase('A user email template is set for logged in users. This value will be unset.');
+					$form['user_email_template_logged_in_user'] = null;
+				}
+			}
+			if ($form['user_email_template_from_field']) {
+				if (!is_numeric($form['user_email_template_from_field']) 
+					&& checkRowExists('email_templates', array('code' => $form['user_email_template_from_field']))
+				) {
+					$result['warnings'][] = adminPhrase('A user email template is set from an email field. One with the same name was found on this site. The contents of these email templates is not guaranteed to be identical.');
+				} else {
+					$result['warnings'][] = adminPhrase('A user email template is set from an email field. This value will be unset.');
+					$form['user_email_template_from_field'] = null;
 				}
 			}
 			
@@ -5624,7 +5712,6 @@ class zenario_user_forms extends module_base_class {
 				ON uff.user_field_id = cdf.id
 			WHERE uff.user_form_id = ". (int)$formId. "
 				AND (cdf.type = 'text' || uff.field_type = 'text')
-				AND uff.is_readonly = 0
 			ORDER BY uff.ord";
 		$result = sqlQuery($sql);
 		while ($row = sqlFetchAssoc($result)) {

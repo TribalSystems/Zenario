@@ -117,6 +117,7 @@ zenario_user__details:
                     
                     # This is a little hack to try and stop Google Chrome auto-filling a username and password in here
                     # http://stackoverflow.com/questions/15738259/disabling-chrome-autofill
+                    autocomplete: "off"
                     pre_field_html: |
                         <input type="text" name="dummy_username" autocomplete="off" tabindex="-1" style="
                             position: fixed;

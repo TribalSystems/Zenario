@@ -76,7 +76,7 @@ if (needRevision(50)) {
 	revision(50);
 }
 
-if (needRevision(42)) {
+if (needRevision(52)) {
 	
 	if ($statusField = getDatasetFieldDetails('status', 'users')) {
 		
@@ -95,5 +95,5 @@ if (needRevision(42)) {
 		}
 	}
 	
-	revision(42);
+	revision(52);
 }

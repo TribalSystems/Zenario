@@ -34,8 +34,8 @@ body.zenario_pageMode_template .Grid_Body {
 }
 
 .home_page .Grouping_Secondary {
-	background: url('../images/bg-curve-with-images.jpeg') no-repeat bottom center / 100% auto;
-	height: 310px;
+	background: url('../images/new-bg-curve-with-images.jpg') no-repeat bottom center / 100% auto;
+	padding-bottom:150px;
 }
 
 .Grid_Grey {

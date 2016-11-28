@@ -305,17 +305,17 @@ body {
 }
 ';
 		
-		if ($maxDepth) {
-			$prefix = '';
-			for ($i = 0; $i < $maxDepth; ++$i) {
-				$prefix .= '.span ';
-				$css .= ($i? ',' : ''). "\n". $prefix. '.span1_1';
-			}
-			
-			$css .= ' {
+		$maxI  = (int) $maxDepth + 1;
+	
+		$prefix = '';
+		for ($i = 0; $i < $maxI; ++$i) {
+			$prefix .= '.span ';
+			$css .= ($i? ',' : ''). "\n". $prefix. '.span1_1';
+		}
+		
+		$css .= ' {
 	width: 100%;
 }';
-		}
 	
 	} else {
 		//Widths for cells

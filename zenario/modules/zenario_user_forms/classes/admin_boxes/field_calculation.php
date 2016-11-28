@@ -81,7 +81,7 @@ class zenario_user_forms__admin_boxes__field_calculation extends module_base_cla
 			$isOperation = $isValue = $isOpenParentheses = $isCloseParentheses = false;
 			if (in_array($step['type'], array('operation_addition', 'operation_subtraction', 'operation_multiplication', 'operation_division'))) {
 				$isOperation = true;
-			} elseif (in_array($step['type'], array('field', 'static_value'))) {
+			} elseif (in_array($step['type'], array('static_value'))) {
 				if ($step['value'] > 999999999999999) {
 					return new zenario_error('Static values cannot be greater than 999999999999999.');
 				} elseif ($step['value'] < -999999999999999) {

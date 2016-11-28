@@ -1984,6 +1984,10 @@ methods.setupPickedItems = function(id, tab, field, readOnly, multiple_select) {
 			} else {
 				return false;
 			}
+		},
+		
+		onRemoveToken: function(value, e) {
+			that.fieldChange(id);
 		}
 		
 		//In 7.3 the "hide_remove_button" property does nothing

@@ -1323,8 +1323,8 @@ div.organizer_pageSize {
 	cursor: pointer;
 }
 
-#zenario_at_top_left_menu .organizer_top_level_image.organizer_info_box {
-	background: -508px -10px url('../admin/images/sprites/org-icons-v5.png');
+.zenario_at_dev_icon.organizer_info_box {
+	background: -515px -17px url('../admin/images/sprites/org-icons-v5.png');
 }
 
 .zenario_debugInfo .organizer_info_box {
@@ -1337,18 +1337,26 @@ div.organizer_pageSize {
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled.site_enabled,
-#zenario_at_top_left_menu .organizer_item_image.site_enabled {
+.zenario_at_dev_icon.site_enabled {
 	background: 15% 30% no-repeat url('../admin/images/enabled-site-icon-green.png');
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled.site_disabled,
-#zenario_at_top_left_menu .organizer_item_image.site_disabled {
+.zenario_at_dev_icon.site_disabled {
 	background: 15% 30% no-repeat url('../admin/images/disabled-site-icon-red.png');
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_enabled_disabled.site_enabled_development,
-#zenario_at_top_left_menu .organizer_item_image.site_enabled_development {
+.zenario_at_dev_icon.site_enabled_development {
 	background: 15% 30% no-repeat url('../admin/images/enabled-site-development-icon.png');
+}
+
+#zenario_at_top_left_menu .organizer_item_image.all_languages {
+	background: 15% 30% no-repeat url('../admin/images/icon-all-languages-black.png');
+}
+
+#zenario_at_top_left_menu .organizer_item_image.all_locations {
+	background: 15% 30% no-repeat url('../admin/images/icon-all-locations-black.png');
 }
 
 #organizer_bottomWrap #organizer_lowerLeftColumn .organizer_help,

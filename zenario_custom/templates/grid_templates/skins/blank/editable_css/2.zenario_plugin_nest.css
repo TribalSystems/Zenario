@@ -2,6 +2,7 @@
 --------------------------------------------------------------------------------------------------*/
 
 .slot_connect .zenario_plugin_nest {
+	position: relative;
 	overflow: hidden;
 	text-align: right;
 	margin-bottom: 50px;
@@ -31,6 +32,22 @@
 	cursor: pointer;
 }
 
+.slot_connect .zenario_plugin_nest .zenario_banner a {
+	display: inline-block;
+	text-decoration: none;
+}
+
+.slot_connect .zenario_plugin_nest .zenario_banner .banner_text {
+	position: absolute;
+	top: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.slot_connect .zenario_plugin_nest .zenario_banner .banner_text a {
+	color: transparent;
+}
+
 
 /* Home grey panel, nests common styles
 --------------------------------------------------------------------------------------------------*/
@@ -47,6 +64,7 @@
 }
 
 .grey_first_row .zenario_slot,
+.grey_first_row .zenario_content_list,
 .grey_second_row .zenario_slot {
     display: inline-block;
     float: left;
@@ -54,13 +72,34 @@
     position: relative;
 }
 
-.grey_first_row .zenario_banner .banner_title h3 a,
-.grey_second_row .zenario_banner .banner_title h3 a  {
+.grey_first_row .zenario_banner .banner_title h3,
+.grey_second_row .zenario_banner .banner_title h3,
+.grey_first_row .zenario_content_list > h2,
+.grey_first_row .zenario_event_listing .event_listing > h2 {
 	font-family: "freight-sans-pro", "Verdana", sans-serif;
-	font-size: 1.2em;
-	color: #151515;
+	font-size: 1.500em;
 	font-weight: 600;
 	cursor: default;
+}
+
+.grey_first_row .zenario_banner .banner_title h3 a,
+.grey_second_row .zenario_banner .banner_title h3 a,
+.grey_first_row .zenario_content_list > h2,
+.grey_first_row .zenario_event_listing .event_listing > h2 {
+	color: #151515;
+}
+
+.grey_second_row .zenario_banner .banner_title h3 {
+	height:45px;
+	position:relative;
+}
+
+.grey_second_row .zenario_banner .banner_title h3 a {
+	position:absolute;
+	bottom:0;
+	left:0;
+	right:0;
+	margin:auto;
 }
 
 .grey_first_row .zenario_banner .banner_title h3 a:hover,
@@ -74,29 +113,68 @@
 } 
 
 .grey_first_row .zenario_banner img,
-.grey_second_row .zenario_banner img  {
+.grey_first_row .zenario_content_list img,
+.grey_first_row .zenario_event_listing img,
+.grey_second_row .zenario_banner img {
 	margin: 6px 0 10px;
 	-webkit-transition: all 0.2s ease-in;
     -moz-transition: all 0.2s ease-in;
     transition: all 0.2s ease-in;
 }
 
+.grey_first_row .zenario_content_list .content_list_data_row h2,
+.grey_first_row .zenario_event_listing .single_event h2,
 .grey_first_row .zenario_banner .banner_text p:nth-child(1),
 .grey_second_row .zenario_banner .banner_text p:nth-child(1)  {
 	font-size: .95em;
 	font-weight: 700;
 }
 
+.grey_first_row .zenario_content_list .content_list_data_row h2,
+.grey_first_row .zenario_content_list .content_list_data_row p,
+.grey_first_row .zenario_event_listing .single_event h2,
+.grey_first_row .zenario_event_listing .single_event p,
+.grey_first_row .zenario_event_listing .event_title h2 {
+	margin-bottom: 0;
+}
+
+.grey_first_row .zenario_content_list .content_list_data_row h2 a,
+.grey_first_row .zenario_event_listing .event_title h2 a  {
+	color: #202020;
+}
+
+.grey_first_row .zenario_content_list .content_list_data_row h2,
+.grey_first_row .zenario_banner .banner_text p:nth-child(1) {
+	font-family:"Trebuchet MS","Verdana",sans-serif;
+}
+
+.grey_first_row .zenario_content_list .content_list_data_row h2 a:hover,
+.grey_first_row .zenario_event_listing .event_title h2 a:hover  {
+	text-decoration:none;
+}
+
 .grey_first_row .zenario_banner .banner_text p:nth-child(2),
+.grey_first_row .zenario_content_list .content_list_data_row p,
+.grey_first_row .zenario_event_listing .single_event p,
 .grey_second_row .zenario_banner .banner_text p:nth-child(2) {
 	font-size: .75em;
 }
 
-.grey_first_row .zenario_banner .banner_more a {
-	margin-top: 10px;
+.grey_first_row .zenario_content_list a,
+.grey_second_row .zenario_content_list a {
+	color:#202020;
 }
 
+.grey_first_row .zenario_event_listing .single_event_description span {
+	font-size: .75em;
+	display: block;
+}
 
+.grey_first_row .zenario_banner .banner_more a,
+.grey_first_row .zenario_content_list .content_list_more,
+.grey_first_row .zenario_event_listing .single_event_more_link  {
+	margin-top: 10px;
+}
 
 /* Home grey panel, nest 1
 --------------------------------------------------------------------------------------------------*/
@@ -105,10 +183,33 @@
     width: 30% !important;
 }
 
-.grey_first_row .zenario_banner img {
+.grey_first_row .zenario_banner img,
+.grey_first_row .zenario_content_list img,
+.grey_first_row .zenario_event_listing img  {
 	border-radius: 50%;
 	border: 8px solid #fff;
 	box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.9);
+}
+
+.grey_first_row .zenario_event_listing .single_event_sticky_image,
+.grey_first_row .zenario_event_listing .sticky_image_placeholder {
+	padding:7px 0 13px;
+}
+
+.grey_first_row .zenario_event_listing .single_event_sticky_image img  {
+	display:none;
+}
+
+.grey_first_row .zenario_event_listing .single_event_sticky_image a,
+.grey_first_row .zenario_event_listing .sticky_image_placeholder a {
+	display:block;
+	width:144px;
+	height:144px;
+	background:url('../images/IMG_0015.JPG') no-repeat;
+	border-radius: 50%;
+	border: 8px solid #fff;
+	box-shadow: 0px 1px 16px 0px rgba(0, 0, 0, 0.9);
+	margin:auto;
 }
 
 
@@ -124,7 +225,14 @@
 }
 
 
-/* Home grey panel, nest 2
+/* Home grey panel, nest 1 NEW
+--------------------------------------------------------------------------------------------------*/
+
+
+
+
+
+/* Partners
 --------------------------------------------------------------------------------------------------*/
 
 .partners {
@@ -161,9 +269,18 @@
 }
 
 .partners .nest_plugins .zenario_image_container a {
-    width: 100% !important;
-    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
     background-position: center !important;
-    background-size: 80% auto;
+    background-size:80% auto;
+    margin:auto;
+    position: absolute;
+  	top: 50%;
+  	transform: translateY(-50%);
+  	left:0;
+  	right:0;
 }
 
+.partners .nest_plugins .zenario_image_container.image_vertical a {
+    background-size:auto 80%;
+}

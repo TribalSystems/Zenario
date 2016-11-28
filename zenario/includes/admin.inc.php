@@ -5014,7 +5014,7 @@ function resetSite() {
 	$sql = "
 		SELECT `path`, revision_no
 		FROM ". DB_NAME_PREFIX. "local_revision_numbers
-		where patchfile = 'admin.inc.php'";
+		WHERE patchfile = 'admin_tables.inc.php'";
 	$revisions = sqlFetchAssocs($sql);
 	
 	//Rerun some of the scripts from the installer to give us a blank site
@@ -5029,7 +5029,7 @@ function resetSite() {
 	foreach ($revisions as &$revision) {
 		$sql = "
 			REPLACE INTO ". DB_NAME_PREFIX. "local_revision_numbers SET
-				patchfile = 'admin.inc.php',
+				patchfile = 'admin_tables.inc.php',
 				`path` = '". sqlEscape($revision['path']). "',
 				revision_no = ". (int) $revision['revision_no'];
 		@sqlSelect($sql);

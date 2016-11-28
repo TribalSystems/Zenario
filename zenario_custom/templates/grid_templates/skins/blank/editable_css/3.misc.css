@@ -25,17 +25,20 @@
 
 .grey_first_row .zenario_banner .banner_more a,
 .grey_second_row .zenario_banner .banner_more a,
+.grey_first_row .zenario_content_list .content_list_more a,
 .subscribe_button .banner_more a,
 .news_listing .content_list_more a,
 .events_listing .single_event_description .single_event_more_link,
 .zenario_skin input[type='submit'],
-.slot_back_link .zenario_banner a {
+.slot_back_link .zenario_banner a,
+.grey_first_row .zenario_content_list .content_list_more_link,
+.grey_first_row .zenario_event_listing .single_event_more_link  {
 	min-width: 111px;
 	display: inline-block;
 	background: #0a4a85;
 	text-decoration: none;
 	font-size: .75em;
-	padding: 4px 7px;
+	padding: 2px 7px 5px;
 	color: #fff;
 	text-align: center;
 	cursor: pointer;
@@ -57,12 +60,15 @@
 		}
 
 .grey_first_row .zenario_banner .banner_more a:hover,
+.grey_first_row .zenario_content_list .content_list_more a:hover,
 .grey_second_row .zenario_banner .banner_more a:hover,
 .subscribe_button .banner_more a:hover,
 .news_listing .content_list_more a:hover,
 .events_listing .single_event_description .single_event_more_link:hover,
 .zenario_skin input[type='submit']:hover,
-.slot_back_link .zenario_banner a:hover {
+.slot_back_link .zenario_banner a:hover,
+.grey_first_row .zenario_content_list .content_list_more_link:hover,
+.grey_first_row .zenario_event_listing .single_event_more_link:hover  {
 	background: #46963b;
 }
 

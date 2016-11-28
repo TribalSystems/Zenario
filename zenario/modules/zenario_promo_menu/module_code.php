@@ -342,6 +342,9 @@ class zenario_promo_menu extends zenario_menu_multicolumn {
 					deleteRow('inline_images', array('foreign_key_to' => 'menu_node', 'foreign_key_id' => $nodeId, 'foreign_key_char' => 'rollover_feature_image'));
 				}
 				
+
+				$featureImage['overwrite_alt_tag'] = $values['feature_image/zenario_promo_menu__overwrite_alt_tag'];
+
 				setRow(ZENARIO_PROMO_MENU_PREFIX. 'menu_node_feature_image', $featureImage, array('node_id' => $nodeId));
 				break;
 		}

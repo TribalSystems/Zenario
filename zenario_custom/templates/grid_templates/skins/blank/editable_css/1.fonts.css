@@ -32,59 +32,60 @@
 
 .zenario_skin {
 	color:#151515;
-	font-family: "Verdana", sans-serif;
+}
+
+.zenario_skin h1,
+.zenario_skin h2,
+.zenario_skin h3,
+.zenario_skin h4,
+.zenario_skin h5,
+.zenario_skin h6 {
+	font-family: "Trebuchet MS", "Verdana", sans-serif;
 }
 
 .zenario_skin h1 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-weight: 600;
 	font-size: 2em;
+	line-height:1.2em;
 	color: #151515;
 }
 
 .zenario_skin h2 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-weight: 600;
 	font-size: 1.5em;
 	color: #2e74b4;
 }
 
 .zenario_skin h3 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-weight: 500;
 	font-size: 1.25em;
 	color: #151515;
 }
 
 .zenario_skin h4 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-weight: 600;
 	font-size: 1em;
 	color:  #6a7479;
 }
 
 .zenario_skin h5 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-weight: 700;
 	font-size: .875em;
 	color:  #151515;
 }
 
 .zenario_skin h6 {
-	font-family: "freight-sans-pro", "Verdana", sans-serif;
 	font-size: .875em;
 	font-weight: 700;
 	color:  #6a7479;
 }
 
 .zenario_skin p {
-	font-family: "Verdana", sans-serif;
 	font-size: 1em;
 	color:  #202020;
 }
 
 .zenario_skin a {
-	font-family: "Verdana", sans-serif;
 	text-decoration:none;
 	cursor: pointer;
 	color: #fff;

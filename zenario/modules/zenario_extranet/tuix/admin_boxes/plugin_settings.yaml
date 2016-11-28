@@ -201,6 +201,13 @@ plugin_settings:
                     type: text
                     value: "The password you have entered is incorrect."
                     show_phrase_icon: true
+                password_expired_message:
+                    plugin_setting:
+                        name: password_expired_message
+                    label: 'If a new user was given a password that needed to be changed, and the password expired:'
+                    type: text
+                    value: "Your temporary password has expired. You will need to reset your password before you can log in."
+                    show_phrase_icon: true
                 account_suspended_message:
                     plugin_setting:
                         name: account_suspended_message
