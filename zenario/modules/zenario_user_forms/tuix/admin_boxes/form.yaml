@@ -76,8 +76,11 @@ zenario_user_admin_box_form:
                     ord: 7
                     label: 'Success message:'
                     type: text
+                    value: Thank you for your form submission!
                     maxlength: 255
                     indent: 1
+                    validation:
+                        required_if_not_hidden: Please enter a success message for when the form is submitted.
                 submit_button_text:
                     ord: 8
                     label: '"Submit" button text:'
@@ -125,17 +128,17 @@ zenario_user_admin_box_form:
                         This allows extranet users to save their progress on a form and come back later to fill it in. 
                         Only extranet users will be able to see this form.
                     redraw_onchange: true
-                partial_completion_mode:
+                
+                partial_completion_mode__auto:
                     ord: 13.1
-                    type: select
-                    values:
-                        auto:
-                            ord: 1
-                            label: Automatically save when changing form page
-                        button:
-                            ord: 2
-                            label: Show a save button on each form page
-                    value: auto
+                    type: checkbox
+                    label: Automatically save when changing form page
+                    visible_if: zenarioAB.value('allow_partial_completion')
+                    indent: 1
+                partial_completion_mode__button:
+                    ord: 13.2
+                    type: checkbox
+                    label: Show a save button on each form page
                     visible_if: zenarioAB.value('allow_partial_completion')
                     redraw_onchange: true
                     indent: 1
@@ -144,7 +147,7 @@ zenario_user_admin_box_form:
                     label: 'Complete later message:'
                     type: text
                     maxlength: 255
-                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('partial_completion_mode') == 'button'
+                    visible_if: zenarioAB.value('allow_partial_completion') && zenarioAB.value('partial_completion_mode__button')
                     side_note: The message to display when a user chooses to complete this form at a later date.
                     indent: 2  
                 
@@ -160,7 +163,7 @@ zenario_user_admin_box_form:
                     values:
                         none:
                             ord: 1
-                            label: None
+                            label: Display without hyperlink
                         only_visited_pages:
                             ord: 2
                             label: Only visited pages
@@ -180,18 +183,20 @@ zenario_user_admin_box_form:
                     format_onchange: true
                 line_br_1:
                     snippet:
-                        html: <hr />
+                        html: |
+                            <hr />
+                            <b>For anonymous visitors</b>
+                email_html:
+                    pre_field_html: "<div class=\"zenario_fbWarning\">"
+                    snippet:
+                        html: 'To create or save a user/contact record, your form must include the linked field "Email".'
+                    post_field_html: "</div>"
+                    hidden: true  
                 save_data:
                     label: 'Create user/contact record'
                     type: checkbox
                     format_onchange: true
                 # BEGIN save_data options
-                email_html:
-                     pre_field_html: "<div class=\"zenario_fbWarning\">"
-                    snippet:
-                        html: 'To create or save a user/contact record, your form must include the field "Email".'
-                    post_field_html: "</div>"
-                    indent: 1
                 user_status:
                     label: 'Create user with status:'
                     type: radios
@@ -246,13 +251,34 @@ zenario_user_admin_box_form:
                     validation:
                         required_if_not_hidden: Please enter a duplicate email error message
                     indent: 2
-                create_another_form_submission_record:
-                    label: 'Create another form submission log record'
-                    type: checkbox
-                    side_note: |
-                        Check "Create form submission record" if you want to create form submission records when a duplicate is found
-                    indent: 2
                 # END save_data options
+                
+                logged_in_user_section_start:
+                    snippet:
+                        html: |
+                            <hr />
+                            <b>For logged in users</b>
+                update_linked_fields:
+                    label: Update linked fields
+                    type: checkbox
+                    value: 1
+                    side_note: Certain fields such as "email" will not be updated.
+                no_duplicate_submissions:
+                    label: Don't allow duplicate submissions
+                    type: checkbox
+                    format_onchange: true
+                duplicate_submission_message:
+                    label: 'Duplicate submission message:'
+                    type: text
+                    maxlength: 255
+                    validation:
+                        required_if_not_hidden: Please enter a message to show when a user has already submitted this form.
+                    indent: 1
+                add_logged_in_user_to_group:
+                    label: 'Add user to group:'
+                    type: select
+                    empty_value: ' -- Select -- '
+                
                 line_br_2:
                     snippet:
                         html: <hr />

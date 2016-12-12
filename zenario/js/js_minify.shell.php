@@ -30,8 +30,10 @@ define('IGNORE_REVERTS', false);
 define('RECOMPRESS_EVERYTHING', false);
 
 
-
-
+//Don't let this be called from the browser
+if (!isset($argv[0])) {
+	exit;
+}
 
 //Change directory to the CMS root directory
 $i = 0;

@@ -124,15 +124,6 @@ zenario__user_forms:
                         path: zenario_user_admin_box_form
                         key:
                             type: profile
-                create_registration_form:
-                    ord: 4
-                    priv: _PRIV_MANAGE_FORMS
-                    parent: create_advanced_dropdown
-                    label: Create registration form
-                    admin_box:
-                        path: zenario_user_admin_box_form
-                        key:
-                            type: registration
                 import_form:
                     ord: 5
                     priv: _PRIV_MANAGE_FORMS

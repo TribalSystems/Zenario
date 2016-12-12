@@ -329,8 +329,6 @@ class zenario_scheduled_task_manager extends module_base_class {
 		$log['started'] = $serverTime;
 		$log['finished'] = $job['last_run_finished'] = zenario_scheduled_task_manager::getServerTime();
 		
-		$emailList =  self::getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError);
-		
 		if ($result == '<!--action_taken-->') {
 			$job['last_action'] = $serverTime;
 			$job['last_successful_run'] = $serverTime;
@@ -344,14 +342,6 @@ class zenario_scheduled_task_manager extends module_base_class {
 			$job['status'] = $log['status'] = 'error';
 		}
 		
-		if (!empty($output)) {
-			foreach ($output as $line) {
-				if ($line != '<!--action_taken-->' && $line != '<!--no_action_taken-->') {
-					$log['note'] .= ($log['note']? "\n" : ''). str_replace(array('<br>', '<br/>', '<br />'), "\n", $line);
-				}
-			}
-		}
-		
 		//Unlock the job, set some more fields
 		if ($unlockWhenDone) {
 			updateRow('jobs', $job, array('id' => $jobId));
@@ -362,6 +352,14 @@ class zenario_scheduled_task_manager extends module_base_class {
 		//Have an option to only update the job record, and not add a log.
 		if ($unlockWhenDone === 'only') {
 			return;
+		}
+		
+		if (!empty($output)) {
+			foreach ($output as $line) {
+				if ($line != '<!--action_taken-->' && $line != '<!--no_action_taken-->') {
+					$log['note'] .= ($log['note']? "\n" : ''). str_replace(array('<br>', '<br/>', '<br />'), "\n", $line);
+				}
+			}
 		}
 		
 		//Add a log entry, if needed
@@ -378,6 +376,8 @@ class zenario_scheduled_task_manager extends module_base_class {
 				|| ($log['status'] == 'no_action_taken' && $emailInaction)
 			)
 		) {
+			$emailList =  self::getLogEmailList($result, $emailAddressAction, $emailAddressInaction, $emailAddressError);
+		 	
 		 	self::sendLogEmails(
 		 		$managerClassName, $serverTime,
 		 		$jobName, $jobId, $log['status'], $log['note'],

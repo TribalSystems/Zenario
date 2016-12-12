@@ -157,7 +157,6 @@ class zenario_users__organizer__users extends zenario_users {
 			}
 			
 			if ($item['last_login']) {
-				$item['last_login'] = formatDateNicely($item['last_login'], setting('vis_date_format_med'));
 				$item['readable_last_login'] = adminPhrase('Last login: [[last_login]]', array('last_login' => $item['last_login']));
 			} elseif ($item['status'] != 'contact') {
 				$item['readable_last_login'] = adminPhrase('Last login: Never');

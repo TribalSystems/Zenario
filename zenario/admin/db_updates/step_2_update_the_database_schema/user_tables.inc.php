@@ -1003,6 +1003,15 @@ _sql
 _sql
 
 
+//Clear the value of the session_id column from the users table as it's not used for anything
+//(This is a post branch patch; we won't actually drop the column until 7.5 but it's safe to clear it.)
+); revision( 37243
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]]users`
+	SET `session_id` = ''
+_sql
+
+
 
 );
 

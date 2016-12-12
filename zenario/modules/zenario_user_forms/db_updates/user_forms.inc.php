@@ -262,80 +262,6 @@ _sql
 
 );
 
-// Create a registration user form on install
-if (needRevision(29)) {
-	if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_forms', array('name' => 'Extranet registration form'))) {
-		
-		// Create form
-		$formId = insertRow(ZENARIO_USER_FORMS_PREFIX. 'user_forms', array(
-			'name' => 'Extranet registration form',
-			'title' => 'Create an account',
-			'type' => 'registration',
-			'submit_button_text' => 'Register'
-		));
-		
-		$dataset = getDatasetDetails('users');
-		
-		// Create form fields
-		$emailField = getDatasetFieldDetails('email', $dataset);
-		insertRow(
-			ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', 
-			array(
-				'user_form_id' => $formId,
-				'user_field_id' => $emailField['id'],
-				'ord' => 1,
-				'is_required' => 1,
-				'label' => 'Email:',
-				'name' => 'Email',
-				'required_error_message' => 'Please enter your email address',
-				'validation' => 'email',
-				'validation_error_message' => 'Please enter a valid email address'
-			)
-		);
-		
-		$salutationField = getDatasetFieldDetails('salutation', $dataset);
-		insertRow(
-			ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', 
-			array(
-				'user_form_id' => $formId,
-				'user_field_id' => $salutationField['id'],
-				'ord' => 2,
-				'label' => 'Salutation:',
-				'name' => 'Salutation'
-			)
-		);
-		
-		$firstNameField = getDatasetFieldDetails('first_name', $dataset);
-		insertRow(
-			ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', 
-			array(
-				'user_form_id' => $formId,
-				'user_field_id' => $firstNameField['id'],
-				'ord' => 3,
-				'is_required' => 1,
-				'label' => 'First name:',
-				'name' => 'First name',
-				'required_error_message' => 'Please enter your first name'
-			)
-		);
-		
-		$lastNameField = getDatasetFieldDetails('last_name', $dataset);
-		insertRow(
-			ZENARIO_USER_FORMS_PREFIX. 'user_form_fields', 
-			array(
-				'user_form_id' => $formId,
-				'user_field_id' => $lastNameField['id'],
-				'ord' => 3,
-				'is_required' => 1,
-				'label' => 'Last name:',
-				'name' => 'Last name',
-				'required_error_message' => 'Please enter your last name'
-			)
-		);
-	}
-	revision(29);
-}
-
 revision(33
 // Create tables for partial form responses
 , <<<_sql
@@ -618,4 +544,44 @@ revision(67
 	DROP COLUMN `user_email_template`
 _sql
 
+); revision(68
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_partial_response`
+	ADD COLUMN `max_page_reached` int(10) unsigned NOT NULL DEFAULT 1
+_sql
+
+); revision(69
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	MODIFY COLUMN `partial_completion_mode` enum('auto','button', 'auto_and_button') DEFAULT NULL
+_sql
+
+); revision(70
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	DROP COLUMN `create_another_form_submission_record`,
+	ADD COLUMN `update_linked_fields` tinyint(1) NOT NULL DEFAULT 0 AFTER `user_duplicate_email_action`,
+	ADD COLUMN `no_duplicate_submissions` tinyint(1) NOT NULL DEFAULT 0 AFTER `update_linked_fields`,
+	ADD COLUMN `add_logged_in_user_to_group` int(10) unsigned DEFAULT NULL AFTER `no_duplicate_submissions`,
+	ADD COLUMN `duplicate_submission_message` varchar(255) DEFAULT NULL AFTER `no_duplicate_submissions`
+_sql
+
+, <<<_sql
+	ALTER TABLE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_form_fields`
+	ADD COLUMN `preload_dataset_field_user_data` tinyint(1) NOT NULL DEFAULT 1 AFTER `placeholder`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET `add_logged_in_user_to_group` = `add_user_to_group`
+_sql
+
+, <<<_sql
+	UPDATE `[[DB_NAME_PREFIX]][[ZENARIO_USER_FORMS_PREFIX]]user_forms`
+	SET `update_linked_fields` = 1
+	WHERE `save_data` = 1 AND `user_duplicate_email_action` = 'overwrite'
+_sql
+
 );
+
+

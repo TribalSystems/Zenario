@@ -38,7 +38,7 @@ $sql = "
 		poster_ip = '". sqlEscape(visitorIP()). "',
 		poster_name = '". sqlEscape($name). "',
 		poster_email = '". sqlEscape($email). "',
-		poster_session_id = '". sqlEscape(session_id()). "',
+		poster_session_id = '". sqlEscape(hashPassword(primaryDomain(), session_id())). "',
 		message_text = '". sqlEscape(zenario_anonymous_comments::sanitiseHTML($messageText, $this->setting('enable_images'), $this->setting('enable_links'))). "',
 		status = '" . $this->defaultReplyStatus() . "'";
 

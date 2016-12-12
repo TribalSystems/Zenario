@@ -230,7 +230,7 @@ function sendEmail(
 	}
 	
 	
-	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPMailer_5_2_15/class.phpmailer.php';
+	require_once CMS_ROOT. 'zenario/libraries/lgpl/PHPMailer_5_2_17/PHPMailerAutoload.php';
 	
 	if ($addressFrom === false) {
 		$addressFrom = setting('email_address_from');
@@ -280,9 +280,11 @@ function sendEmail(
 	
 	if (setting('smtp_specify_server')) {
 		$mail->Mailer = 'smtp';
+		$mail->isSMTP();
 		$mail->Host = setting('smtp_host');
 		$mail->Port = setting('smtp_port');
 		$mail->SMTPSecure = setting('smtp_security');
+		$mail->SMTPAutoTLS = false;
 		
 		if ($mail->SMTPAuth = (bool) setting('smtp_use_auth')) {
 			$mail->Username = setting('smtp_username');

@@ -442,7 +442,6 @@ class zenario_users extends module_base_class {
 				global_id,
 				/*parent_id,*/
 				last_login_ip,
-				session_id,
 				identifier,
 				screen_name,
 				screen_name_confirmed,

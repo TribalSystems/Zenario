@@ -13,31 +13,6 @@ plugin_settings:
 					snippet:
 						html: Configure the initial registration form that is used to create the user account.
 				
-				use_custom_form:
-					plugin_setting:
-						name: use_custom_form
-					label: Use a custom form
-					type: checkbox
-					format_onchange: true
-				
-				custom_form:
-					visible_if: "zenarioAB.value('use_custom_form')"
-					plugin_setting:
-						name: custom_form
-					label: 'Form:'
-					pick_items:
-						path: zenario__user_forms/panels/zenario_user_forms__forms/refiners/type//registration//
-						target_path: zenario__user_forms/panels/zenario_user_forms__forms
-						min_path: zenario__user_forms/panels/zenario_user_forms__forms
-						max_path: zenario__user_forms/panels/zenario_user_forms__forms
-						disallow_refiners_looping_on_min_path: true
-						one_to_one_choose_phrase: Choose this form
-						select_phrase: Select a form...
-					format_onchange: true
-					validation:
-						required_if_not_hidden: Please choose a form
-					indent: 1
-				
 				initial_email_address_status:
 					label: 'Verify email address:'
 					type: radios

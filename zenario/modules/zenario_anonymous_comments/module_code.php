@@ -549,7 +549,7 @@ class zenario_anonymous_comments extends module_base_class {
 						AND poster_id = ". (int) userId();
 			} else {
 				$sql .= "
-						AND poster_session_id = '". sqlEscape(session_id()). "'";
+						AND poster_session_id = '". sqlEscape(hashPassword(primaryDomain(), session_id())). "'";
 			}
 			
 			$sql .= "
@@ -723,7 +723,7 @@ class zenario_anonymous_comments extends module_base_class {
 				$sql = "
 					SELECT poster_name
 					FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
-					WHERE poster_session_id = '". sqlEscape(session_id()). "'
+					WHERE poster_session_id = '". sqlEscape(hashPassword(primaryDomain(), session_id())). "'
 					ORDER BY date_posted DESC
 					LIMIT 1";
 				
@@ -749,7 +749,7 @@ class zenario_anonymous_comments extends module_base_class {
 				$sql = "
 					SELECT poster_email
 					FROM ". DB_NAME_PREFIX. ZENARIO_ANONYMOUS_COMMENTS_PREFIX. "user_comments
-					WHERE poster_session_id = '". sqlEscape(session_id()). "'
+					WHERE poster_session_id = '". sqlEscape(hashPassword(primaryDomain(), session_id())). "'
 					ORDER BY date_posted DESC
 					LIMIT 1";
 				

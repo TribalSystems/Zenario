@@ -829,7 +829,7 @@ function trimDebugBacktrace(&$debugBacktrace, $firstCall = true) {
 		if (is_object($entry)) {
 			$entry = '<<'. get_class($entry). '>>';
 		
-		} elseif (is_array($entry)) {
+		} elseif (is_array($entry) && !empty($entry)) {
 			if ($entry === cms_core::$slotContents) {
 				$entry = '<<cms_core::$slotContents>>';
 			} else {

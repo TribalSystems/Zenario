@@ -1094,7 +1094,7 @@ function hashPasswordSha2($salt, $password) {
 	}
 }
 
-//Old sha1 function for passwords created before zenario 6.0.5. Or if sha2 is not enabled on a server.
+//Old sha1 function for passwords created before version 6.0.5. Or if sha2 is not enabled on a server.
 function hashPasswordSha1($salt, $password) {
 	$result = sqlSelect(
 		"SELECT SQL_NO_CACHE SHA('". sqlEscape($salt. $password). "')");

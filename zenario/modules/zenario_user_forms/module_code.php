@@ -59,6 +59,7 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		$form = static::getForm($formId);
+		$t = $form['translate_text'];
 		
 		if ($form['allow_partial_completion']) {
 			// Partial completion forms must be placed on a private page and have a user logged in
@@ -75,6 +76,13 @@ class zenario_user_forms extends module_base_class {
 				if ($adminId) {
 					$this->data['form_HTML'] = '<p class="error">' . adminPhrase('You must be logged in as an Extranet User to see this Plugin.') . '</p>';
 				}
+				return true;
+			}
+		}
+		
+		if ($userId && $form['no_duplicate_submissions']) {
+			if (checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_response', array('user_id' => $userId, 'form_id' => $formId))) {
+				$this->data['form_HTML'] = '<p class="info">' . static::fPhrase($form['duplicate_submission_message'], array(), $t) . '</p>';
 				return true;
 			}
 		}
@@ -101,22 +109,28 @@ class zenario_user_forms extends module_base_class {
 			if (!post('filter')) {
 				$this->saveToCompleteLater = post('save_later') 
 				    && $form['allow_partial_completion'] 
-				    && ($form['partial_completion_mode'] == 'button');
+				    && ($form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button');
 				$this->autoSavingFormOnPageNav = !post('submit_form')
 				    && ($currentPage != $nextPage) 
 				    && $form['allow_partial_completion'] 
-				    && ($form['partial_completion_mode'] == 'auto');
+				    && ($form['partial_completion_mode'] == 'auto' || $form['partial_completion_mode'] == 'auto_and_button');
 				
 				$pageFields = static::filterFormFieldsByPage($fields, $currentPage);
 				
-				// Vaidate must be called if an unuploaded attachment is on the page because validateForm is where this is uploaded
+				
 				$mustValidate = false;
 				foreach ($pageFields as $fieldId => $field) {
+					// Vaidate must be called if an unuploaded attachment is on the page because validateForm is where this is uploaded
 				    if ((static::getFieldType($field) == 'attachment')
 				        && ($fieldName = static::getFieldName($fieldId))
 				        && !empty($_FILES[$fieldName]['tmp_name'])
 				    ) {
 				        $mustValidate = true;
+				    }
+				    
+				    // Handle removing an uploaded attachment
+				    if (post('remove_attachment_' . $fieldId)) {
+				    	unset($data[static::getFieldName($fieldId)]);
 				    }
 				}
 				
@@ -163,16 +177,18 @@ class zenario_user_forms extends module_base_class {
 				}
 			}
 		} else {
+			// Delete any session data saved for this form
+			unset($_SESSION['custom_form_data'][$this->instanceId]);
+			
 			// Check if there is a part completed submission for this user to load initially
 			if ($form['allow_partial_completion']) {
-				$partialSave = checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', array('user_id' => $userId, 'form_id' => $formId));
+				$partialSave = getRow(ZENARIO_USER_FORMS_PREFIX . 'user_partial_response', array('max_page_reached'), array('user_id' => $userId, 'form_id' => $formId));
 				if ($partialSave) {
 					$data = static::getPartialSaveData($userId, $formId);
 					$this->loadingPartialSave = true;
+					$_SESSION['custom_form_data'][$this->instanceId]['max_page_reached'] = $partialSave['max_page_reached'];
 				}
 			}
-			// Delete any session data saved for this form
-			unset($_SESSION['custom_form_data'][$this->instanceId]);
 		}
 		
 		// Whether to show confirm message when closing colorbox
@@ -280,7 +296,7 @@ class zenario_user_forms extends module_base_class {
 	
 	// An overwritable method to preload custom data for the form fields
 	protected function preloadCustomData() {
-		return userId();
+		return (int)userId();
 	}
 	
 	
@@ -512,18 +528,37 @@ class zenario_user_forms extends module_base_class {
 			    $i = 0;
 			    $targetPage = 0;
 			    
-			    $progressBar = array();
-			    
+			    $progressBarAll = array();
 			    foreach ($fields as $fieldId => $field) {
 			        $fieldType = static::getFieldType($field);
 			        if ($fieldType == 'page_break') {
 			            ++$targetPage;
-			            if (!$field['hide_in_page_switcher']) {
-			                $hasPageVisibleOnSwitcher = true;
-			                $progressBar[] = array('targetPage' => $targetPage, 'name' => $field['name']);
+			            $progressBarSection = array('targetPage' => $targetPage, 'name' => $field['name']);
+			            if ($field['hide_in_page_switcher']) {
+			                $progressBarSection['hidden'] = true;
+			            } else {
+			            	$hasPageVisibleOnSwitcher = true;
 			            }
+			            $progressBarAll[] = $progressBarSection;
 			        }
 			    }
+			    
+			    $progressBar = array();
+			    $firstHiddenPageTarget = 1;
+			    foreach ($progressBarAll as $progressBarSection) {
+			    	if (!$firstHiddenPageTarget && !empty($progressBarSection['hidden'])) {
+			    		$firstHiddenPageTarget = $progressBarSection['targetPage'];
+			    	}
+			    	
+			    	if (empty($progressBarSection['hidden'])) {
+			    		if ($firstHiddenPageTarget) {
+			    			$progressBarSection['targetPage'] = $firstHiddenPageTarget;
+			    			$firstHiddenPageTarget = false;
+			    		}
+			    		$progressBar[] = $progressBarSection;
+			    	}
+			    }
+			    
 			    
 			    if (!$form['hide_final_page_in_page_switcher']) {
 			        $hasPageVisibleOnSwitcher = true;
@@ -824,8 +859,8 @@ class zenario_user_forms extends module_base_class {
 			$html .= $button;
 		}
 		
-		if ($form['allow_partial_completion'] && $form['partial_completion_mode'] == 'button') {
-			$html .= '<div class="complete_later"><input type="submit" name="save_later" value="' . static::fPhrase('Complete later', array(), $t) . '"/></div>';
+		if ($form['allow_partial_completion'] && ($form['partial_completion_mode'] == 'button' || $form['partial_completion_mode'] == 'auto_and_button')) {
+			$html .= '<div class="complete_later"><input type="submit" name="save_later" value="' . static::fPhrase('Save and complete later', array(), $t) . '"/></div>';
 		}
 		
 		$html .= '</div>';
@@ -1388,7 +1423,8 @@ class zenario_user_forms extends module_base_class {
 						$filename = substr(basename($fieldValue), 0, -7);
 					}
 					$html .= '<div class="field_data">' . htmlspecialchars($filename) . '</div>';
-					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($fieldValue) . '" />'; 
+					$html .= '<input type="submit" name="remove_attachment_' . $fieldId . '" value="' . static::fPhrase('Remove', array(), $t) . '" class="remove_attachment">';
+					$html .= '<input type="hidden" name="' . $fieldName . '" value="' . htmlspecialchars($fieldValue) . '" />';
 				} else {
 					$html .= '<input type="file" name="' . $fieldName . '"/>';
 				}
@@ -1700,12 +1736,12 @@ class zenario_user_forms extends module_base_class {
 			}
 			
 		// If value is a number, load the value stored against the user
-		} elseif (is_numeric($data) && $field['dataset_field_id']) {
+		} elseif (is_numeric($data) && $field['dataset_field_id'] && $field['preload_dataset_field_user_data']) {
 			$userId = $data;
 			$value = datasetFieldValue($dataset, $field['dataset_field_id'], $userId);
 			
 		// If field can have a default value load it
-		} elseif (in_array($fieldType, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
+		} elseif (!$field['dataset_field_id'] && in_array($fieldType, array('radios', 'centralised_radios', 'select', 'centralised_select', 'text', 'textarea', 'checkbox', 'group'))) {
 			// Static default value
 			if ($field['default_value'] !== null) {
 				$value = $field['default_value'];
@@ -1922,9 +1958,11 @@ class zenario_user_forms extends module_base_class {
 					return true;
 				}
 			} elseif ($cFieldType == 'radios' || $cFieldType == 'select' || $cFieldType == 'centralised_radios' || $cFieldType == 'centralised_select') {
-				if ($field['visible_condition_field_value'] != $cFieldValue) {
-					return true;
-				}
+				if (($field['visible_condition_field_value'] && ($field['visible_condition_field_value'] != $cFieldValue))
+					|| (!$field['visible_condition_field_value'] && !$cFieldValue)
+				) {
+ 					return true;
+ 				}
 			}
 		}
 		return false;
@@ -1961,6 +1999,7 @@ class zenario_user_forms extends module_base_class {
 				uff.label,
 				uff.name,
 				uff.placeholder,
+				uff.preload_dataset_field_user_data,
 				uff.default_value,
 				uff.default_value_class_name,
 				uff.default_value_method_name,
@@ -2070,13 +2109,16 @@ class zenario_user_forms extends module_base_class {
 				'log_user_in',
 				'log_user_in_cookie' ,
 				'add_user_to_group',
-				'create_another_form_submission_record',
 				'use_captcha',
 				'captcha_type',
 				'extranet_users_use_captcha',
 				'profanity_filter_text',
 				'user_duplicate_email_action',
 				'duplicate_email_address_error_message',
+				'update_linked_fields',
+				'no_duplicate_submissions',
+				'duplicate_submission_message',
+				'add_logged_in_user_to_group',
 				'translate_text', 
 				'default_next_button_text', 
 				'default_previous_button_text',
@@ -2281,8 +2323,8 @@ class zenario_user_forms extends module_base_class {
 				case 'select':
 				case 'centralised_radios':
 				case 'centralised_select':
-					if (($requiredFieldValue === $field['mandatory_condition_field_value']) 
-						|| (!$field['mandatory_condition_field_value'] && $requiredFieldValue !== '')
+					if (($field['mandatory_condition_field_value'] && ($field['mandatory_condition_field_value'] == $requiredFieldValue))
+						|| (!$field['mandatory_condition_field_value'] && $requiredFieldValue)
 					) {
 						$field['is_required'] = true;
 					}
@@ -2316,19 +2358,22 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		// Check if user is allowed more than one submission
-		if ($field['db_column'] == 'email' 
+		if (!userId()
+			&& $field['db_column'] == 'email' 
 			&& $form['save_data']
 			&& $form['user_duplicate_email_action'] == 'stop'
 			&& $form['duplicate_email_address_error_message']
 		) {
 			$userId = getRow('users', 'id', array('email' => $fieldValue));
-			$responseExists = checkRowExists(
-				ZENARIO_USER_FORMS_PREFIX. 'user_response', 
-				array('user_id' => $userId, 'form_id' => $form['id'])
-			);
+			if ($userId) {
+				$responseExists = checkRowExists(
+					ZENARIO_USER_FORMS_PREFIX. 'user_response', 
+					array('user_id' => $userId, 'form_id' => $form['id'])
+				);
 			
-			if ($responseExists) {
-				return static::fPhrase($form['duplicate_email_address_error_message'], array(), $t);
+				if ($responseExists) {
+					return static::fPhrase($form['duplicate_email_address_error_message'], array(), $t);
+				}
 			}
 		}
 		
@@ -2487,7 +2532,7 @@ class zenario_user_forms extends module_base_class {
 	}
 	
 	
-	// Save a form submission TODO rewrite this!
+	// Save a form submission
 	public static function saveForm($formId, $data, $userId, &$redirectURL, $instanceId, $fullSave = true, $pageSave = false, $partialSave = false) {
 		$dataset = getDatasetDetails('users');
 		$formFields = static::getFields($formId);
@@ -2502,7 +2547,7 @@ class zenario_user_forms extends module_base_class {
 			return true;
 		}
 		
-		$formProperties = static::getForm($formId);
+		$form = static::getForm($formId);
 		
 		$userSystemFields = array();
 		$userCustomFields = array();
@@ -2514,36 +2559,49 @@ class zenario_user_forms extends module_base_class {
 		
 		static::getFormSaveData($formFields, $data, $dataset, $instanceId, $fieldIdValueLink, $userSystemFields, $userCustomFields, $unlinkedFields, $checkBoxValues, $filePickerValues, $attachments);
 		
-		// Save the data temporarily for the user to complete later
-		if ($partialSave) {
-			$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues + $checkBoxValues;
-			static::createFormPartialResponse($userId, $formId, $formFields, $data, $values, $instanceId);
-			return true;
-		}
-		
-		// If properly submitting the form then delete the partial response
-		static::deleteOldPartialResponse($formId, $userId);
-		
-		// Save data against user record
-		if ($formProperties['save_data'] && inc('zenario_extranet')) {
+		if ($userId) {
+			// Save the data temporarily for the user to complete later
+			if ($partialSave) {
+				$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues + $checkBoxValues;
+				static::createFormPartialResponse($userId, $formId, $formFields, $data, $values, $instanceId);
+				return true;
+			}
+			// If properly submitting the form then delete the partial response
+			static::deleteOldPartialResponse($formId, $userId);
+			
+			if ($form['update_linked_fields']) {
+				$fields = array();
+				foreach ($userSystemFields as $fieldData) {
+					if (empty($fieldData['readonly']) && $fieldData['db_column'] !== 'email') {
+						$fields[$fieldData['db_column']] = $fieldData['value'];
+					}
+				}
+				
+				static::saveUser($fields, $userId);
+				static::saveUserCustomData($userCustomFields, $userId);
+				static::saveUserMultiCheckboxData($checkBoxValues, $userId);
+				static::saveUserFilePickerData($filePickerValues, $userId);
+			}
+			
+			if ($form['add_logged_in_user_to_group']) {
+				addUserToGroup($userId, $form['add_logged_in_user_to_group']);
+			}
+		} elseif ($form['save_data']) {
 			$fields = array();
 			foreach ($userSystemFields as $fieldData) {
 				if (empty($fieldData['readonly'])) {
 					$fields[$fieldData['db_column']] = $fieldData['value'];
 				}
 			}
-			
 			// Try to save data if email field is on form
-			if (isset($fields['email']) || $userId) { 
+			if (isset($fields['email'])) { 
 				// Duplicate email found
-				if (($userId || ($userId = getRow('users', 'id', array('email' => $fields['email'])))) 
-					&& ($formProperties['type'] != 'registration')
-				) {
-					switch ($formProperties['user_duplicate_email_action']) {
+				if ($userId = getRow('users', 'id', array('email' => $fields['email']))) {
+					switch ($form['user_duplicate_email_action']) {
 						// Don’t change previously populated fields
 						case 'merge': 
 							$fields['modified_date'] = now();
-							static::mergeUserData($fields, $userId, $formProperties['log_user_in']);
+							static::mergeUserData($fields, $userId, $form['log_user_in']);
 							static::saveUserCustomData($userCustomFields, $userId, true);
 							static::saveUserMultiCheckboxData($checkBoxValues, $userId, true);
 							static::saveUserFilePickerData($filePickerValues, $userId, true);
@@ -2563,31 +2621,11 @@ class zenario_user_forms extends module_base_class {
 				// No duplicate email found
 				} elseif (!empty($fields['email']) && validateEmailAddress($fields['email'])) {
 					// Set new user fields
-					$fields['status'] = $formProperties['user_status'];
+					$fields['status'] = $form['user_status'];
 					$fields['password'] = createPassword();
 					$fields['ip'] = visitorIP();
 					if (!empty($fields['screen_name'])) {
 						$fields['screen_name_confirmed'] = true;
-					}
-					
-					// Custom logic for creating users from a registration form
-					if ($formProperties['type'] == 'registration') {
-						$fields['status'] = 'active';
-						// Email verification
-						if (!empty($registrationOptions['initial_email_address_status'])) {
-							if ($registrationOptions['initial_email_address_status'] == 'not_verified' 
-								&& isset($registrationOptions['initial_account_status'])
-							) {
-								if ($registrationOptions['initial_account_status'] == 'pending') {
-									$fields['status'] = 'pending';
-								} else {
-									$fields['status'] = 'contact';
-								}
-								$fields['email_verified'] = 0;
-							} else {
-								$fields['email_verified'] = 1;
-							}
-						}
 					}
 					
 					// Create new user
@@ -2598,15 +2636,14 @@ class zenario_user_forms extends module_base_class {
 					static::saveUserMultiCheckboxData($checkBoxValues, $userId);
 					static::saveUserFilePickerData($filePickerValues, $userId);
 				}
-				if ($userId && ($formProperties['type'] != 'registration')) {
-					
-					addUserToGroup($userId, $formProperties['add_user_to_group']);
+				if ($userId) {
+					addUserToGroup($userId, $form['add_user_to_group']);
 					// Log user in
-					if ($formProperties['log_user_in']) {
+					if ($form['log_user_in']) {
 						
 						$user = logUserIn($userId);
 						
-						if($formProperties['log_user_in_cookie'] && canSetCookie()) {
+						if($form['log_user_in_cookie'] && canSetCookie()) {
 							setCookieOnCookieDomain('LOG_ME_IN_COOKIE', $user['login_hash']);
 						}
 					}
@@ -2616,20 +2653,9 @@ class zenario_user_forms extends module_base_class {
 		
 		// Save a record of the submission
 		$user_response_id = false;
-		if ($formProperties['save_record']) {
-			// Save record only if there is no duplicate response by the identified user
-			// Or if there is a response but the appropriate options have been checked,
-			// Or no user could be found from the data
-			if (!$userId 
-				|| !$formProperties['save_data']
-				|| !checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) 
-				|| (checkRowExists(ZENARIO_USER_FORMS_PREFIX. 'user_response', array('user_id' => $userId)) 
-					&& $formProperties['create_another_form_submission_record']
-				)
-			) {
-				$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues + $checkBoxValues;
-				$user_response_id = static::createFormResponse($userId, $formId, $values);
-			}
+		if ($form['save_record']) {
+			$values = $userSystemFields + $userCustomFields + $unlinkedFields + $filePickerValues + $checkBoxValues;
+			$user_response_id = static::createFormResponse($userId, $formId, $values);
 		}
 		
 		// Send emails
@@ -2637,7 +2663,7 @@ class zenario_user_forms extends module_base_class {
 		$profanityFilterEnabled = setting('zenario_user_forms_set_profanity_filter');
 		$profanityToleranceLevel = setting('zenario_user_forms_set_profanity_tolerence');
 		
-		if ($formProperties['profanity_filter_text']) {
+		if ($form['profanity_filter_text']) {
 			
 			$profanityValuesToCheck = $userSystemFields + $userCustomFields + $unlinkedFields;
 			$wordsCount = 0;
@@ -2657,10 +2683,10 @@ class zenario_user_forms extends module_base_class {
 			$profanityRating = zenario_user_forms::scanTextForProfanities($allValuesFromText);
 		}
 
-		if (!$formProperties['profanity_filter_text'] || ($profanityRating < $profanityToleranceLevel)) {
+		if (!$form['profanity_filter_text'] || ($profanityRating < $profanityToleranceLevel)) {
 			
-			$sendEmailToUser = ($formProperties['send_email_to_logged_in_user'] || $formProperties['send_email_to_email_from_field']);
-			$sendEmailToAdmin = ($formProperties['send_email_to_admin'] && $formProperties['admin_email_addresses']);
+			$sendEmailToUser = ($form['send_email_to_logged_in_user'] || $form['send_email_to_email_from_field']);
+			$sendEmailToAdmin = ($form['send_email_to_admin'] && $form['admin_email_addresses']);
 			$values = array();
 			$userEmailMergeFields = 
 			$adminEmailMergeFields = false;
@@ -2674,28 +2700,28 @@ class zenario_user_forms extends module_base_class {
 				// Get merge fields
 				$userEmailMergeFields = static::getTemplateEmailMergeFields($values, $userId);
 				
-				if ($formProperties['send_email_to_logged_in_user']) {
+				if ($form['send_email_to_logged_in_user']) {
 					if ($userId
 						&& ($email = getRow('users', 'email', $userId))
 					) {
-						if ($formProperties['user_email_use_template_for_logged_in_user'] && $formProperties['user_email_template_logged_in_user']) {
-							zenario_email_template_manager::sendEmailsUsingTemplate($email, $formProperties['user_email_template_logged_in_user'], $userEmailMergeFields, array());
+						if ($form['user_email_use_template_for_logged_in_user'] && $form['user_email_template_logged_in_user']) {
+							zenario_email_template_manager::sendEmailsUsingTemplate($email, $form['user_email_template_logged_in_user'], $userEmailMergeFields, array());
 						} else {
 							$startLine = 'Dear user,';
-							static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $email);
+							static::sendUnformattedFormEmail($values, $formFields, $form, $startLine, $email, $attachments);
 						}
 					}
 				} 
-				if ($formProperties['send_email_to_email_from_field']) {
-					if ($formProperties['user_email_field']
-						&& !empty($fieldIdValueLink[$formProperties['user_email_field']])
-						&& ($email = $fieldIdValueLink[$formProperties['user_email_field']])
+				if ($form['send_email_to_email_from_field']) {
+					if ($form['user_email_field']
+						&& !empty($fieldIdValueLink[$form['user_email_field']])
+						&& ($email = $fieldIdValueLink[$form['user_email_field']])
 					) {
-						if ($formProperties['user_email_use_template_for_email_from_field'] && $formProperties['user_email_template_from_field']) {
-							zenario_email_template_manager::sendEmailsUsingTemplate($email, $formProperties['user_email_template_from_field'], $userEmailMergeFields, array());
+						if ($form['user_email_use_template_for_email_from_field'] && $form['user_email_template_from_field']) {
+							zenario_email_template_manager::sendEmailsUsingTemplate($email, $form['user_email_template_from_field'], $userEmailMergeFields, array());
 						} else {
 							$startLine = 'Dear user,';
-							static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $email);
+							static::sendUnformattedFormEmail($values, $formFields, $form, $startLine, $email, $attachments);
 						}
 					}
 				}
@@ -2710,15 +2736,15 @@ class zenario_user_forms extends module_base_class {
 				// Set reply to address and name
 				$replyToEmail = false;
 				$replyToName = false;
-				if ($formProperties['reply_to'] && $formProperties['reply_to_email_field']) {
-					if (!empty($fieldIdValueLink[$formProperties['reply_to_email_field']])) {
-						$replyToEmail = $fieldIdValueLink[$formProperties['reply_to_email_field']];
+				if ($form['reply_to'] && $form['reply_to_email_field']) {
+					if (!empty($fieldIdValueLink[$form['reply_to_email_field']])) {
+						$replyToEmail = $fieldIdValueLink[$form['reply_to_email_field']];
 						$replyToName = '';
-						if (!empty($fieldIdValueLink[$formProperties['reply_to_first_name']])) {
-							$replyToName .= $fieldIdValueLink[$formProperties['reply_to_first_name']];
+						if (!empty($fieldIdValueLink[$form['reply_to_first_name']])) {
+							$replyToName .= $fieldIdValueLink[$form['reply_to_first_name']];
 						}
-						if (!empty($fieldIdValueLink[$formProperties['reply_to_last_name']])) {
-							$replyToName .= ' '.$fieldIdValueLink[$formProperties['reply_to_last_name']];
+						if (!empty($fieldIdValueLink[$form['reply_to_last_name']])) {
+							$replyToName .= ' '.$fieldIdValueLink[$form['reply_to_last_name']];
 						}
 						if (!$replyToName) {
 							$replyToName = $replyToEmail;
@@ -2727,10 +2753,10 @@ class zenario_user_forms extends module_base_class {
 				}
 		
 				// Send email
-				if ($formProperties['admin_email_use_template'] && $formProperties['admin_email_template']) {
+				if ($form['admin_email_use_template'] && $form['admin_email_template']) {
 					zenario_email_template_manager::sendEmailsUsingTemplate(
-						$formProperties['admin_email_addresses'],
-						$formProperties['admin_email_template'],
+						$form['admin_email_addresses'],
+						$form['admin_email_template'],
 						$adminEmailMergeFields,
 						$attachments,
 						array(),
@@ -2740,7 +2766,7 @@ class zenario_user_forms extends module_base_class {
 					);
 				} else {
 					$startLine = 'Dear admin,';
-					static::sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $formProperties['admin_email_addresses'], $attachments, $replyToEmail, $replyToName);
+					static::sendUnformattedFormEmail($values, $formFields, $form, $startLine, $form['admin_email_addresses'], $attachments, $replyToEmail, $replyToName, true);
 				}
 			}
 		} else {
@@ -2751,7 +2777,7 @@ class zenario_user_forms extends module_base_class {
 		}
 	
 		//Set default values for this form submission for profanity filter
-		if ($formProperties['profanity_filter_text']) {
+		if ($form['profanity_filter_text']) {
 			updateRow(ZENARIO_USER_FORMS_PREFIX. 'user_response', 
 				array(
 					'profanity_filter_score' => $profanityRating, 
@@ -2762,14 +2788,14 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		// Send a signal if specified
-		if ($formProperties['send_signal']) {
-			$formProperties['user_form_id'] = $formId;
+		if ($form['send_signal']) {
+			$form['user_form_id'] = $formId;
 			$values = $userSystemFields + $userCustomFields + $checkBoxValues + $unlinkedFields;
 			$formattedData = static::getTemplateEmailMergeFields($values, $userId);
 			$params = array(
 				'data' => $formattedData, 
 				'rawData' => $data, 
-				'formProperties' => $formProperties, 
+				'formProperties' => $form, 
 				'fieldIdValueLink' => $fieldIdValueLink);
 			if ($user_response_id) {
 				$params['responseId'] = $user_response_id;
@@ -2777,9 +2803,9 @@ class zenario_user_forms extends module_base_class {
 			sendSignal('eventUserFormSubmitted', $params);
 		} 
 		// Redirect to page if speficied
-		if ($formProperties['redirect_after_submission'] && $formProperties['redirect_location']) {
+		if ($form['redirect_after_submission'] && $form['redirect_location']) {
 			$cID = $cType = false;
-			getCIDAndCTypeFromTagId($cID, $cType, $formProperties['redirect_location']);
+			getCIDAndCTypeFromTagId($cID, $cType, $form['redirect_location']);
 			langEquivalentItem($cID, $cType);
 			$redirectURL = linkToItem($cID, $cType);
 		}
@@ -2789,11 +2815,11 @@ class zenario_user_forms extends module_base_class {
 	}
 	
 	
-	public static function sendUnformattedFormEmail($values, $formFields, $formProperties, $startLine, $recipients, $attachments = array(), $replyToEmail = false, $replyToName = false) {
+	public static function sendUnformattedFormEmail($values, $formFields, $form, $startLine, $recipients, $attachments = array(), $replyToEmail = false, $replyToName = false, $includeAdminDownloadLinks = false) {
 		$emailValues = array();
 					
 		foreach ($values as $fieldId => $fieldData) {
-			if (isset($fieldData['attachment'])) {
+			if (isset($fieldData['attachment']) && $includeAdminDownloadLinks) {
 				$fieldData['value'] = absCMSDirURL() . 'zenario/file.php?adminDownload=1&id=' . $fieldData['internal_value'];
 			}
 			if (!empty($fieldData['type']) && ($fieldData['type'] == 'textarea') && $fieldData['value']) {
@@ -2809,8 +2835,8 @@ class zenario_user_forms extends module_base_class {
 		
 		ksort($emailValues);
 		
-		$formName = trim($formProperties['name']);
-		$formName = empty($formName) ? phrase('[blank name]', array(), 'zenario_user_forms') : $formProperties['name'];
+		$formName = trim($form['name']);
+		$formName = empty($formName) ? phrase('[blank name]', array(), 'zenario_user_forms') : $form['name'];
 		$body =
 			'<p>' . $startLine . '</p>
 			<p>The form "'.$formName.'" was submitted with the following data:</p>';
@@ -2818,7 +2844,7 @@ class zenario_user_forms extends module_base_class {
 		
 		// Get menu path of current page
 		$menuNodeString = '';
-		if ($formProperties['send_email_to_admin'] && !$formProperties['admin_email_use_template']) {
+		if ($form['send_email_to_admin'] && !$form['admin_email_use_template']) {
 			$currentMenuNode = getMenuItemFromContent(cms_core::$cID, cms_core::$cType);
 			if ($currentMenuNode && isset($currentMenuNode['mID']) && !empty($currentMenuNode['mID'])) {
 				$nodes = static::drawMenu($currentMenuNode['mID'], cms_core::$cID, cms_core::$cType);
@@ -3125,7 +3151,8 @@ class zenario_user_forms extends module_base_class {
 							
 							// Just store file as a response attachment if not saving data, otherwise save as user file
 							$usage = 'forms';
-							if ($formProperties['save_data']) {
+							$form = static::getForm($formId);
+							if ($form['save_data']) {
 								$usage = 'dataset_file';
 							}
 							
@@ -3309,9 +3336,11 @@ class zenario_user_forms extends module_base_class {
 	
 	protected static function createFormPartialResponse($userId, $formId, $fields, $data, $values, $instanceId) {
 		static::deleteOldPartialResponse($formId, $userId);
+		
+		$maxPageReached = isset($_SESSION['custom_form_data'][$instanceId]['max_page_reached']) ? (int)$_SESSION['custom_form_data'][$instanceId]['max_page_reached'] : 1;
 		$responseId = setRow(
 			ZENARIO_USER_FORMS_PREFIX . 'user_partial_response',
-			array('user_id' => $userId, 'form_id' => $formId, 'response_datetime' => date('Y-m-d H:i:s'))
+			array('user_id' => $userId, 'form_id' => $formId, 'response_datetime' => date('Y-m-d H:i:s'), 'max_page_reached' => $maxPageReached)
 		);
 		
 		$inRepeatBlock = false;
@@ -3382,7 +3411,7 @@ class zenario_user_forms extends module_base_class {
 		}
 	}
 	
-	protected static function deleteOldPartialResponse($formId = false, $userId = false) {
+	public static function deleteOldPartialResponse($formId = false, $userId = false) {
 		if ($formId || $userId) {
 			$keys = array();
 			if ($formId) {
@@ -3636,7 +3665,6 @@ class zenario_user_forms extends module_base_class {
 				if (!inc('zenario_extranet_registration')) {
 					$panel['db_items']['where_statement'] .= '
 						AND f.type != "registration"';
-					$panel['collection_buttons']['create_registration_form']['hidden'] = true;
 				}
 				if (!inc('zenario_extranet_profile_edit')) {
 					$panel['db_items']['where_statement'] .= '
@@ -3888,23 +3916,19 @@ class zenario_user_forms extends module_base_class {
 							array('form_id' => $form_id)
 						);
 						while ($row = sqlFetchAssoc($result)) {
-							// Delete response field data
-							deleteRow(
-								ZENARIO_USER_FORMS_PREFIX . 'user_response_data', 
-								array('user_response_id' => $row['id'])
-							);
-							
-							// Delete response record
-							deleteRow(
-								ZENARIO_USER_FORMS_PREFIX . 'user_response', 
-								array('id' => $row['id'])
-							);
+							static::deleteFormResponse($row['id']);
 						}
 					}
 					break;
 			}
 		}
 	}
+	
+	public static function deleteFormResponse($responseId) {
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'user_response_data', array('user_response_id' => $responseId));
+		deleteRow(ZENARIO_USER_FORMS_PREFIX . 'user_response', $responseId);
+	}
+	
 	
 	public function organizerPanelDownload($path, $ids, $refinerName, $refinerId) {
 		switch ($path) {
@@ -4111,11 +4135,16 @@ class zenario_user_forms extends module_base_class {
 					$fields['data/duplicate_submission_html']['hidden'] = 
 					$fields['data/user_duplicate_email_action']['hidden'] = 
 					$fields['data/duplicate_email_address_error_message']['hidden'] = 
-					$fields['data/create_another_form_submission_record']['hidden'] = 
-					$fields['data/line_br_2']['hidden'] = true;
+					$fields['data/line_br_2']['hidden'] = 
+					$fields['data/logged_in_user_section_start']['hidden'] = 
+					$fields['data/update_linked_fields']['hidden'] = 
+					$fields['data/no_duplicate_submissions']['hidden'] = 
+					$fields['data/duplicate_submission_message']['hidden'] = 
+					$fields['data/add_logged_in_user_to_group']['hidden'] = true;
 				}
 				$fields['data/add_user_to_group']['values'] = 
-					listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true);
+				$fields['data/add_logged_in_user_to_group']['values'] = 
+					listCustomFields('users', $flat = false, 'groups_only', $customOnly = true, $useOptGroups = true, $hideEmptyOptGroupParents = true);
 				
 				if (get('refinerName') == 'archived') {
 					foreach($box['tabs'] as &$tab) {
@@ -4143,13 +4172,15 @@ class zenario_user_forms extends module_base_class {
 					$this->fillFieldValues($fields, $record);
 					
 					$box['key']['type'] = $record['type'];
+					$box['title'] = adminPhrase('Editing the Form "[[name]]"', array('name' => $record['name']));
 					
 					if ($record['title'] !== null && $record['title'] !== '') {
 						$values['details/show_title'] = true;
 					}
 					
 					$values['data/admin_email_options'] = ($record['admin_email_use_template'] ? 'use_template' : 'send_data');
-					$box['title'] = adminPhrase('Editing the Form "[[name]]"', array('name' => $record['name']));
+					$values['details/partial_completion_mode__auto'] = ($record['partial_completion_mode'] == 'auto' || $record['partial_completion_mode'] == 'auto_and_button');
+					$values['details/partial_completion_mode__button'] = ($record['partial_completion_mode'] == 'button' || $record['partial_completion_mode'] == 'auto_and_button');
 					
 					if (!empty($record['redirect_after_submission'])) {
 						$values['details/success_message_type'] = 'redirect_after_submission';
@@ -4282,7 +4313,6 @@ class zenario_user_forms extends module_base_class {
 					unset($box['tabs']['translations']);
 					$box['title'] = adminPhrase('Creating a Form');
 					if (!$box['key']['type']) {
-						$values['data/save_data'] = 
 						$values['data/save_record'] = true;
 						$values['details/submit_button_text'] = 'Submit';
 						$values['details/default_next_button_text'] = 'Next';
@@ -4295,6 +4325,14 @@ class zenario_user_forms extends module_base_class {
 						$values['details/title'] = 'Registration form';
 						$values['details/submit_button_text'] = 'Register';
 					}
+				}
+				
+				$dataset = getDatasetDetails('users');
+				$emailDatasetField = getDatasetFieldDetails('email', $dataset);
+				if (!checkRowExists(ZENARIO_USER_FORMS_PREFIX . 'user_form_fields', array('user_form_id' => $box['key']['id'], 'user_field_id' => $emailDatasetField['id']))) {
+					$fields['data/email_html']['hidden'] = false;
+					$values['data/save_data'] = false;
+					$fields['data/save_data']['disabled'] = true;
 				}
 				
 				if (!$values['use_honeypot']) {
@@ -4439,14 +4477,10 @@ class zenario_user_forms extends module_base_class {
 				$zenario_extranet = inc('zenario_extranet');
 				if ($zenario_extranet) {
 					$fields['data/user_status']['hidden'] =
-					$fields['data/email_html']['hidden'] =
 					$fields['data/add_user_to_group']['hidden'] =
 					$fields['data/duplicate_submission_html']['hidden'] =
 					$fields['data/user_duplicate_email_action']['hidden'] =
 						!$values['data/save_data'];
-				
-					$fields['data/create_another_form_submission_record']['hidden'] =
-						!$values['data/save_data'] || ($values['data/user_duplicate_email_action'] == 'stop');
 				
 					$fields['data/duplicate_email_address_error_message']['hidden'] = 
 						$fields['data/user_duplicate_email_action']['hidden']
@@ -4457,11 +4491,8 @@ class zenario_user_forms extends module_base_class {
 				
 					$fields['data/log_user_in']['hidden'] =
 						!($values['data/save_data'] && ($values['data/user_status'] == 'active'));
-				
-					$fields['data/create_another_form_submission_record']['disabled'] = !$values['data/save_record'];
-					if (!$values['data/save_record']) {
-						$values['data/create_another_form_submission_record'] = false;
-					}
+						
+					$fields['data/duplicate_submission_message']['hidden'] = !$values['data/no_duplicate_submissions'];
 				}
 				
 				
@@ -4502,9 +4533,7 @@ class zenario_user_forms extends module_base_class {
 				$fields['details/success_message']['hidden'] = $values['details/success_message_type'] != 'show_success_message';
 				
 				
-				if (empty($box['key']['id'])) {
-					$values['data/create_another_form_submission_record'] = $values['data/save_record'];
-				} else {
+				if (!empty($box['key']['id'])) {
 					$box['title'] = adminPhrase('Editing the Form "[[name]]"', array('name' => $values['details/name']));
 				}
 				
@@ -4525,7 +4554,6 @@ class zenario_user_forms extends module_base_class {
 					$fields['data/duplicate_submission_html']['hidden'] = true;
 					$fields['data/user_duplicate_email_action']['hidden'] = true;
 					$fields['data/duplicate_email_address_error_message']['hidden'] = true;
-					$fields['data/create_another_form_submission_record']['hidden'] = true;
 					
 					$fields['data/line_br_2']['hidden'] = true;
 					
@@ -4705,6 +4733,10 @@ class zenario_user_forms extends module_base_class {
 					}
 				}
 				
+				if ($values['details/allow_partial_completion'] && !$values['details/partial_completion_mode__auto'] && !$values['details/partial_completion_mode__button']) {
+					$errors[] = adminPhrase('Please select a method to for the "Save and complete later" feature.');
+				}
+				
 				$errors = &$box['tabs']['data']['errors'];
 				// Create an error if the form is doing nothing with data
 				if ($saving
@@ -4881,7 +4913,14 @@ class zenario_user_forms extends module_base_class {
 					$record['log_user_in_cookie'] = 0;
 				}
 				$record['user_duplicate_email_action'] = (empty($values['user_duplicate_email_action']) ? null : $values['user_duplicate_email_action']);
-				$record['create_another_form_submission_record'] = (empty($values['create_another_form_submission_record']) ? 0 : 1);
+				
+				$record['update_linked_fields'] = !empty($values['update_linked_fields']);
+				$record['duplicate_submission_message'] = null;
+				if ($record['no_duplicate_submissions'] = !empty($values['no_duplicate_submissions'])) {
+					$record['duplicate_submission_message'] = mb_substr($values['duplicate_submission_message'], 0, 255);
+				}
+				$record['add_logged_in_user_to_group'] = $values['add_logged_in_user_to_group'];
+				
 				$record['translate_text'] = (empty($values['translate_text']) ? 0 : 1);
 				$record['submit_button_text'] = (empty($values['submit_button_text']) ? 'Submit' : $values['submit_button_text']);
 				$record['default_next_button_text'] = (empty($values['default_next_button_text']) ? 'Next' : $values['default_next_button_text']);
@@ -4890,8 +4929,23 @@ class zenario_user_forms extends module_base_class {
 				$record['profanity_filter_text'] = (empty($values['profanity_filter_text_fields']) ? 0 : 1);
 				
 				$record['allow_partial_completion'] = !empty($values['allow_partial_completion']);
-				$record['partial_completion_mode'] = !empty($values['allow_partial_completion']) ? $values['partial_completion_mode'] : null;
-				$record['partial_completion_message'] = (!empty($values['allow_partial_completion']) && ($values['partial_completion_mode'] == 'button')) ? $values['partial_completion_message'] : null;
+				
+				
+				$record['partial_completion_mode'] = null;
+				$record['partial_completion_message'] = null;
+				if (!empty($values['allow_partial_completion'])) {
+					if ($values['partial_completion_mode__auto'] && $values['partial_completion_mode__button']) {
+						$record['partial_completion_mode'] = 'auto_and_button';
+					} elseif ($values['partial_completion_mode__auto']) {
+						$record['partial_completion_mode'] = 'auto';
+					} elseif ($values['partial_completion_mode__button']) {
+						$record['partial_completion_mode'] = 'button';
+					}
+					
+					if ($values['partial_completion_mode__button']) {
+						$record['partial_completion_message'] = $values['partial_completion_message'];
+					}
+				}
 				
 				if ($id = $box['key']['id']) {
 					setRow(ZENARIO_USER_FORMS_PREFIX . 'user_forms', $record, array('id' => $id));

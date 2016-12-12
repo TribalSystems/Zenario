@@ -658,6 +658,7 @@ methods.createNewField = function(type, datasetFieldId, datasetFieldTabName) {
 		newField.label = datasetField.label;
 		newField.dataset_field_id = datasetFieldId;
 		newField.lov = datasetField.lov;
+		newField.preload_dataset_field_user_data = true;
 	} else {
 		newField.type = type;
 		newField.name = 'Untitled ' + (this.getFieldReadableType(newField.type)).toLowerCase();

@@ -707,7 +707,11 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 							$tempFieldType = zenario_user_forms::getFieldType($tempField['field']);
 							
 							if (in_array($tempFieldType, array('select', 'radios', 'checkboxes'))) {
-								$values['visible_condition_field_value'] = $tempValueIdLink[$field['visible_condition_field_value']];
+								if ($field['visible_condition_field_value']) {
+									$values['visible_condition_field_value'] = $tempValueIdLink[$field['visible_condition_field_value']];
+								} else {
+									$values['visible_condition_field_value'] = '';
+								}
 							} else {
 								$values['visible_condition_field_value'] = mb_substr($field['visible_condition_field_value'], 0, 255, 'UTF-8');
 							}
@@ -1108,6 +1112,8 @@ class zenario_user_forms__organizer__form_fields_gui extends module_base_class {
 		if (!empty($field['custom_code_name'])) {
 			$values['custom_code_name'] = mb_substr($field['custom_code_name'], 0, 255, 'UTF-8');
 		}
+		
+		$values['preload_dataset_field_user_data'] = !empty($field['preload_dataset_field_user_data']);
 		
 		$defaultValueMode = !empty($field['default_value_mode']) ? $field['default_value_mode'] : false;
 		$values['default_value'] = null;

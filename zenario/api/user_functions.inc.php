@@ -566,7 +566,6 @@ function logUserIn($userId, $impersonate = false) {
 		//Update their last login time
 		$sql = "
 			UPDATE " . DB_NAME_PREFIX . "users SET
-				session_id = '". sqlEscape(session_id()). "',
 				last_login_ip = '". sqlEscape(visitorIP()). "',
 				last_login = NOW()
 			WHERE id = ". (int) $userId;

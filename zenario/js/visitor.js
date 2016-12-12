@@ -707,6 +707,11 @@ zenario.formSubmit = function(el, scrollToTopOfSlot, fadeOutAndIn, slotName) {
 		slotName = zenario.getSlotnameFromEl(el);
 	}
 	
+	if (zenario.blockScrollToTop) {
+		scrollToTopOfSlot = false;
+		zenario.blockScrollToTop = false;
+	}
+	
 	if (fadeOutAndIn === undefined) {
 		fadeOutAndIn = true;
 	}

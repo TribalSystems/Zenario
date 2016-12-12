@@ -114,79 +114,14 @@ class zenario_extranet_registration extends zenario_extranet {
 			} elseif (post('extranet_register')){
 				$this->scrollToTopOfSlot();
 				
-				// If using a custom form
-				if ($this->setting('use_custom_form') && $this->setting('custom_form')) {
-					$formId = $this->setting('custom_form');
-					$data = $_POST;
-					
-					// Validate custom registration form
-					$this->customFormErrors = zenario_user_forms::validateUserForm($formId, $data, 0);
-					
-					$dataset = getDatasetDetails('users');
-					$emailField = getDatasetFieldDetails('email', $dataset);
-					$emailFormFieldId = zenario_user_forms::isDatasetFieldOnForm($formId, $emailField['id']);
-					
-					$screenNameField = getDatasetFieldDetails('screen_name', $dataset);
-					$screenNameFormFieldId = zenario_user_forms::isDatasetFieldOnForm($formId, $screenNameField['id']);
-					
-					// Use plugin setting phrases for registration specific errors
-					foreach ($this->customFormErrors as $fieldId => &$error) {
-						if ($fieldId == $emailFormFieldId) {
-							if ($error['message'] == 'contact_not_extranet_message') {
-								$error['message'] = $this->phrase($this->setting('contact_not_extranet_message'));
-							} elseif ($error['message'] == 'email_already_registered') {
-								$error['message'] = $this->phrase($this->setting('email_already_registered'));
-							}
-						} elseif ($fieldId == $screenNameFormFieldId) {
-							if ($error['message'] == 'screen_name_in_use') {
-								$error['message'] = $this->phrase($this->setting('screen_name_in_use'));
-							}
-						}
-					}
-					unset($error);
-					
-					// Validate terms and conditions field
-					if ($this->setting('requires_terms_and_conditions') && $this->setting('terms_and_conditions_page')) {
-						if (!request('extranet_terms_and_conditions')) {
-							$this->customFormExtraErrors['extranet_terms_and_conditions'] = true;
-						} else {
-							$data['terms_and_conditions_accepted'] = 1;
-						}
-					}
-					
-					// Validate captcha
-					if ($this->setting('use_captcha') && empty($_SESSION['captcha_passed__'. $this->instanceId])) {
-						if ($this->checkCaptcha()) {
-							$_SESSION['captcha_passed__'. $this->instanceId] = true;
-						} else {
-							$this->customFormExtraErrors['captcha'] = true;
-						}
-					}
-					
-					$registrationSaveOptions = array(
-						'initial_email_address_status' => $this->setting('initial_email_address_status'),
-						'initial_account_status' => $this->setting('initial_account_status')
-					);
-					
-					// Save custom registration form
-					if (empty($this->customFormErrors) 
-						&& empty($this->customFormExtraErrors) 
-						&& ($userId = zenario_user_forms::saveUserForm($formId, $data, $redirectURL, false, $registrationSaveOptions))
-					) {
-						$this->handleUserRegistration($userId);
-					} else {
-						$this->mode = 'modeRegistration';
-					}
+				if (post('screen_name')) {
+					$_POST['screen_name'] = trim($_POST['screen_name']);
+				}
+				
+				if ($userId = $this->addUserRecord()){
+					$this->handleUserRegistration($userId);
 				} else {
-					if (post('screen_name')) {
-						$_POST['screen_name'] = trim($_POST['screen_name']);
-					}
-					
-					if ($userId = $this->addUserRecord()){
-						$this->handleUserRegistration($userId);
-					} else {
-						$this->mode = 'modeRegistration';
-					}
+					$this->mode = 'modeRegistration';
 				}
 				
 			} elseif (get('confirm_email') && ($this->setting('initial_email_address_status')=='not_verified')) { 
@@ -282,7 +217,6 @@ class zenario_extranet_registration extends zenario_extranet {
 	public function formatAdminBox($path, $settingGroup, &$box, &$fields, &$values, $changes) {
 		switch ($path) {
 			case 'plugin_settings':
-				$fields['first_tab/custom_form']['hidden'] = !$values['first_tab/use_custom_form'];
 				$fields['first_tab/select_group_for_new_users']['hidden'] = !$values['first_tab/add_user_to_group'];
 				$fields['first_tab/verification_email_template']['hidden'] = $values['first_tab/initial_email_address_status']=='verified';
 				$fields['first_tab/user_signup_notification_email_template']['hidden'] = !$values['first_tab/enable_notifications_on_user_signup'];
@@ -313,12 +247,8 @@ class zenario_extranet_registration extends zenario_extranet {
 					&& $values['user_activation/show_welcome_page'] != '_IF_NO_PREVIOUS_PAGE';
 				$fields['registration_codes/require_valid_code']['hidden'] = !$values['registration_codes/enable_registration_code'];
 				
-				$fields['text/registration_title']['hidden'] = 
-				$fields['text/register_button_text']['hidden'] = $values['first_tab/use_custom_form'];
-				
 				// Screen name error hidden if screen names not enabled and no user forms or user forms and screen name on form
-				$fields['error_messages/screen_name_in_use']['hidden'] = (!setting('user_use_screen_name') && !$values['first_tab/use_custom_form'])
-					|| (inc('zenario_user_forms') && $values['first_tab/use_custom_form'] && $values['first_tab/custom_form'] && !zenario_user_forms::isDatasetFieldOnForm($values['first_tab/custom_form'], 'screen_name'));
+				$fields['error_messages/screen_name_in_use']['hidden'] = !setting('user_use_screen_name');
 				break;
 		}
 	}
@@ -763,65 +693,7 @@ class zenario_extranet_registration extends zenario_extranet {
 		$this->frameworkHead('Outer', 'Registration_Form', $this->objects, $this->subSections);
 		echo $this->openForm('',' class="form-horizontal"');
 		
-		// Use a custom form
-		if ($this->setting('use_custom_form') && $this->setting('custom_form')) {
-			
-			$this->callScript('zenario_user_forms', 'initJQueryElements', $this->containerId);
-			
-			$formId = $this->setting('custom_form');
-			
-			// Get user form settings
-			$form = zenario_user_forms::getFormDetails($formId);
-			$translate = $form['translate_text'];
-			
-			// Set text
-			if (!empty($form['title'])) {
-				$this->subSections['Title'] = true;
-				$this->objects['Title'] = zenario_user_forms::formPhrase($form['title'], array(), $translate);
-				$this->objects['Title_Tag'] = $form['title_tag'];
-			}
-			$this->objects['Submit_Button_Text'] = zenario_user_forms::formPhrase($form['submit_button_text'], array(), $translate);
-			
-			// Set form fields
-			$this->objects['Form_Fields'] = zenario_user_forms::drawUserForm(
-				$formId, 
-				$formData = $_POST, 
-				$readOnly = false, 
-				$errors = $this->customFormErrors, 
-				$checkboxColumns = 1, 
-				$containerId = $this->containerId
-			);
-			
-			// Set registration plugin specific content
-			$this->subSections['Custom_Form__Resend_Link_Section'] = isset($this->subSections['Resend_Link_Section']) ? $this->subSections['Resend_Link_Section'] : false;
-			$this->objects['Custom_Form__Resend_Link'] = isset($this->objects['Resend_Link']) ? $this->objects['Resend_Link'] : false;
-			$this->objects['Custom_Form__Resend_Verification_Email_Link_Text'] = isset($this->objects['Resend_Verification_Email_Link_Text']) ? $this->objects['Resend_Verification_Email_Link_Text'] : false;
-			$this->objects['Custom_Form__Resend_Verification_Email_Link_Description'] = isset($this->objects['Resend_Verification_Email_Link_Description']) ? $this->objects['Resend_Verification_Email_Link_Description'] : false;
-			
-			$this->subSections['Custom_Form__Login_Link_Section'] = isset($this->subSections['Login_Link_Section']) ? $this->subSections['Login_Link_Section'] : false;
-			$this->objects['Custom_Form__Login_Link'] = isset($this->objects['Login_Link']) ? $this->objects['Login_Link'] : false;
-			$this->objects['Custom_Form__Go_Back_To_Login_Text'] = isset($this->objects['Go_Back_To_Login_Text']) ? $this->objects['Go_Back_To_Login_Text'] : false;
-			
-			$this->subSections['Custom_Form__Ts_And_Cs_Section'] = isset($this->subSections['Ts_And_Cs_Section']) ? $this->subSections['Ts_And_Cs_Section'] : false;
-			$this->objects['Custom_Form__Ts_And_Cs_Link'] = isset($this->objects['Ts_And_Cs_Link']) ? $this->objects['Ts_And_Cs_Link'] : false;
-			
-			$this->subSections['Custom_Form__Captcha'] = isset($this->subSections['Captcha']) ? $this->subSections['Captcha'] : false;
-			$this->objects['Custom_Form__Captcha'] = isset($this->objects['Captcha']) ? $this->objects['Captcha'] : false;
-			
-			// Show extra field errors
-			if (!empty($this->customFormExtraErrors['extranet_terms_and_conditions'])) {
-				$this->subSections['Ts_And_Cs_Error'] = true;
-			}
-			if (!empty($this->customFormExtraErrors['captcha'])) {
-				$this->subSections['Captcha_Error'] = true;
-			}
-			
-			$this->framework('Custom_Form', $this->objects, $this->subSections);
-			
-		// Else use framework form
-		} else {
-			$this->framework('Registration_Form', $this->objects, $this->subSections);
-		}
+		$this->framework('Registration_Form', $this->objects, $this->subSections);
 		
 		echo $this->closeForm();
 		$this->frameworkFoot('Outer', 'Registration_Form', $this->objects, $this->subSections);

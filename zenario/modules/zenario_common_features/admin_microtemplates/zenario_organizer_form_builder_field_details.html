@@ -431,64 +431,76 @@
 					style="display:none;"
 				<% } %>
 			>
-				<% if (m.type != 'checkboxes' && m.type != "section_description" && m.type != "repeat_start") { %>
-					<div class="field" id="field_container__default_value_options">
-						<div class="title">Pre-populate field:</div>
+				<% if (m.dataset_field_id) { %>
+					<div class="field">
 						<div class="value">
-							{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values', m.default_value_mode_options)}}
+							<input id="field__preload_dataset_field_user_data" name="preload_dataset_field_user_data" type="checkbox" 
+								<% if (m.preload_dataset_field_user_data) { %> checked="checked" <% } %>
+							/>
+							<label for="field__preload_dataset_field_user_data" class="title">Pre-populate with logged in users data</label>
 						</div>
 					</div>
+				<% } else { %>
+				
+					<% if (m.type != 'checkboxes' && m.type != "section_description" && m.type != "repeat_start") { %>
+						<div class="field" id="field_container__default_value_options">
+							<div class="title">Pre-populate field:</div>
+							<div class="value">
+								{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_radio_values', m.default_value_mode_options)}}
+							</div>
+						</div>
 					
-					<% if (m.default_value_mode == 'value') { %>
-						<% if (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(m.type) != -1) { %>
-							<div class="field">
-								<div class="title">Default value:</div>
-								<div class="value">
-									<select name="default_value_lov">
-										{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.default_value_lov_options)}}
-									</select>
+						<% if (m.default_value_mode == 'value') { %>
+							<% if (['radios', 'centralised_radios', 'select', 'centralised_select', 'checkbox', 'group'].indexOf(m.type) != -1) { %>
+								<div class="field">
+									<div class="title">Default value:</div>
+									<div class="value">
+										<select name="default_value_lov">
+											{{zenarioA.microTemplate('zenario_organizer_admin_box_builder_select_values', m.default_value_lov_options)}}
+										</select>
+									</div>
+									<div class="note_below">
+										Select a value to pre-populate this field.
+									</div>
 								</div>
-								<div class="note_below">
-									Select a value to pre-populate this field.
+							<% } else { %>
+								<div class="field">
+									<div class="title">Default value:</div>
+									<div class="value">
+										<input name="default_value_text" type="text" value="{{m.default_value|e}}" maxlength="255"/>
+									</div>
+									<div class="note_below">
+										Enter a value to pre-populate this field.
+									</div>
+								</div>
+							<% } %>
+						<% } else if (m.default_value_mode == 'method') { %>
+						
+							<div class="field">
+								<div class="title">Module class name:</div>
+								<div class="value">
+									<input name="default_value_class_name" type="text" value="{{m.default_value_class_name|e}}" maxlength="255"/>
 								</div>
 							</div>
-						<% } else { %>
 							<div class="field">
-								<div class="title">Default value:</div>
+								<div class="title">Static method name:</div>
 								<div class="value">
-									<input name="default_value_text" type="text" value="{{m.default_value|e}}" maxlength="255"/>
+									<input name="default_value_method_name" type="text" value="{{m.default_value_method_name|e}}" maxlength="255"/>
 								</div>
-								<div class="note_below">
-									Enter a value to pre-populate this field.
+							</div>
+							<div class="field">
+								<div class="title">Parameter 1:</div>
+								<div class="value">
+									<input name="default_value_param_1" type="text" value="{{m.default_value_param_1|e}}" maxlength="255"/>
+								</div>
+							</div>
+							<div class="field">
+								<div class="title">Parameter 2:</div>
+								<div class="value">
+									<input name="default_value_param_2" type="text" value="{{m.default_value_param_2|e}}" maxlength="255"/>
 								</div>
 							</div>
 						<% } %>
-					<% } else if (m.default_value_mode == 'method') { %>
-						
-						<div class="field">
-							<div class="title">Module class name:</div>
-							<div class="value">
-								<input name="default_value_class_name" type="text" value="{{m.default_value_class_name|e}}" maxlength="255"/>
-							</div>
-						</div>
-						<div class="field">
-							<div class="title">Static method name:</div>
-							<div class="value">
-								<input name="default_value_method_name" type="text" value="{{m.default_value_method_name|e}}" maxlength="255"/>
-							</div>
-						</div>
-						<div class="field">
-							<div class="title">Parameter 1:</div>
-							<div class="value">
-								<input name="default_value_param_1" type="text" value="{{m.default_value_param_1|e}}" maxlength="255"/>
-							</div>
-						</div>
-						<div class="field">
-							<div class="title">Parameter 2:</div>
-							<div class="value">
-								<input name="default_value_param_2" type="text" value="{{m.default_value_param_2|e}}" maxlength="255"/>
-							</div>
-						</div>
 					<% } %>
 				<% } %>
 				

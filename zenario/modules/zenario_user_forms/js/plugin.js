@@ -111,7 +111,7 @@
 					} else {
 						value = $(this).val();
 					}
-					if ((cFieldValue === null && value !== '') || value == cFieldValue) {
+					if ((!cFieldValue && value) || (cFieldValue && (cFieldValue == value))) {
 						$('#' + containerId + '_field_' + fieldId).show();
 					} else {
 						$('#' + containerId + '_field_' + fieldId).hide();
@@ -132,7 +132,7 @@
 					} else {
 						value = $(this).val();
 					}
-					if ((cFieldValue === null && value !== '') || value == cFieldValue) {
+					if ((!cFieldValue && value) || (cFieldValue && (cFieldValue == value))) {
 						$('#' + containerId + '_repeat_block_' + fieldId).show();
 					} else {
 						$('#' + containerId + '_repeat_block_' + fieldId).hide();
@@ -477,10 +477,7 @@
 	module.submitForm = function(containerId, slotName, values, scrollToTop) {
 		var $form = $('#' + containerId + '_user_form form');
 		if (!scrollToTop) {
-			$form.removeAttr('onsubmit').submit(function(e) {
-				e.preventDefault();
-				return zenario.formSubmit(this, 0, 1, slotName);
-			});
+			zenario.blockScrollToTop = true;
 		}
 		if (values) {
 			for (var i in values) {
