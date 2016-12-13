@@ -1262,10 +1262,12 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	if (!empty($_SERVER['HTTP_HOST'])) {
 		if ($adminMode) {
 			if (adminDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		} else {
 			if (primaryDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		}

@@ -570,6 +570,7 @@ class cms_core {
 	public static $cachingInUse = false;
 	public static $userAccessLogged = false;
 	public static $mustUseFullPath = false;
+	public static $wrongDomain = false;
 	public static $cookieConsent = '';
 	public static $pageTitle = '';
 	public static $description = '';

@@ -74,7 +74,8 @@ if ($methodCall == 'refreshPlugin'
 		$cVersion = getAppropriateVersion($cID, $cType);
 	}
 	
-	if (!cms_core::$cVersion = getShowableContent($content, $version, $cID, $cType, request('cVersion'))) {
+	$status = getShowableContent($content, $version, $cID, $cType, request('cVersion'));
+	if (!$status || is_string($status)) {
 		exit;
 	}
 	
