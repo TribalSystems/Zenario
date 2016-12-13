@@ -2222,6 +2222,24 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 	}
 }
 
+function protectBackupAndDocstoreDirsIfPossible() {
+	foreach (array(setting('backup_dir'), setting('docstore_dir')) as $dir) {
+		if ($dir
+		 && is_dir($dir)
+		 && is_writeable($dir)
+		 && !file_exists($file = $dir. '/.htaccess')) {
+			@file_put_contents($file, 
+'Options -Indexes
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteRule .* - [F,NC]
+</IfModule>'
+			);
+		}
+	}
+}
+
 function licenseExpiryDate($file) {
 	$return = false;
 	

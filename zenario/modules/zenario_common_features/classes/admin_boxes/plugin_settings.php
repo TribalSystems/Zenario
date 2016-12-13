@@ -709,7 +709,7 @@ class zenario_common_features__admin_boxes__plugin_settings extends module_base_
 										//Attempt to get a display value, rather than the actual value
 										$items = explode(',', $eggName);
 										if (!empty($field['values'][$items[0]])) {
-											$eggName = $field['values'][$items[0]];
+											$eggName = !is_array($field['values'][$items[0]]) ? $field['values'][$items[0]] : $field['values'][$items[0]]['label'];
 					
 										} elseif (!empty($field['values'][$eggName])) {
 											$eggName = $field['values'][$eggName];

@@ -491,8 +491,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 				$whereStatement .= "
 					AND ". $refinerWhere;
 				
-				if (false !== $customJoin
-				 && false !== strpos($refinerWhere, 'custom.')) {
+				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
+				if ($customJoin
+				 && (false !== strpos($refinerWhere, 'custom.') || false !== strpos($refinerWhere, '`custom`.'))) {
 					noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}
@@ -509,8 +510,9 @@ if (!$requestedPath || empty($tags['class_name'])) {
 			if ($refinerJoin !== false) {
 				noteTableJoin($sortExtraTables, $refinerJoin);
 				
-				if (false !== $customJoin
-				 && false !== strpos($refinerJoin, 'custom.')) {
+				//Normally we don't add the join to the custom table into the first SQL query, but if a refiner references it then we will need to!
+				if ($customJoin
+				 && (false !== strpos($refinerJoin, 'custom.') || false !== strpos($refinerJoin, '`custom`.'))) {
 					noteTableJoin($sortExtraTables, $customJoin);
 				}
 			}

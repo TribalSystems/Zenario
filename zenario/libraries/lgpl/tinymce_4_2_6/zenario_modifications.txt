@@ -106,11 +106,19 @@ themes/modern/theme.js:
 		}
 
 plugins/image/plugin.js
-#  Tweak some text:
-#	Replace:
-#		text: 'Insert image',
-#	With:
-#		text: 'Insert/edit image',
+  Hack to fix a bug where the scroll changes when editing an existing image
+	Replace:
+				waitLoad(imgElm);
+			});
+	With:
+				waitLoad(imgElm);
+			});
+			
+			//Hack to fix a bug where the scroll changes when editing an existing image
+			var scrollTop = zenario.scrollTop();
+			setTimeout(function() {
+				zenario.scrollTop(scrollTop);
+			}, 0);
 
   Added a CSS class name to a field so it could be reliably targeted using a jQuery selector,
   and also change the label::

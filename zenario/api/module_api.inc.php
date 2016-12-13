@@ -255,6 +255,19 @@ class zenario_api {
 	
 	protected final function openForm($onSubmit = '', $extraAttributes = '', $action = false, $scrollToTopOfSlot = false, $fadeOutAndIn = true, $usePost = true) {
 		
+		//Don't attempt to show forms if we're not on the correct domain,
+		//this will just trigger the XSS prevention script.
+		//Instead, try to do a header redirect to the correct URL.
+		if (cms_core::$wrongDomain) {
+			$req = $_GET;
+			unset($req['cID']);
+			unset($req['cType']);
+			unset($req['instanceId']);
+			unset($req['method_call']);
+			unset($req['slotName']);
+			$this->headerRedirect(linkToItem(cms_core::$cID, cms_core::$cType, true, $req));
+		}
+		
 		return '
 				<form method="'. ($usePost? 'post' : 'get'). '" '. $extraAttributes. '
 				  onsubmit="'. htmlspecialchars($onSubmit). ' return zenario.formSubmit(this, '. engToBoolean($scrollToTopOfSlot). ', '. (is_bool($fadeOutAndIn)? engToBoolean($fadeOutAndIn) : ('\'' . jsEscape($fadeOutAndIn) . '\'')). ', \''. jsEscape($this->slotName). '\');"

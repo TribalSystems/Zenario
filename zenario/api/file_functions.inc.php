@@ -798,7 +798,7 @@ function plainTextExtract($file, &$extract) {
 							$extract = file_get_contents($temp_file);
 							unlink($temp_file);
 							
-							$extract = trim(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract)));
+							$extract = trim(utf8_encode(mb_ereg_replace('\s+', ' ', str_replace("\xc2\xa0", ' ', $extract))));
 							return true;
 						}
 					}

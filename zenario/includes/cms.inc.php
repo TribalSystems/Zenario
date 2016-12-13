@@ -1259,10 +1259,12 @@ function resolveContentItemFromRequest(&$cID, &$cType, &$redirectNeeded, &$alias
 	if (!empty($_SERVER['HTTP_HOST'])) {
 		if ($adminMode) {
 			if (adminDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		} else {
 			if (primaryDomain() != $_SERVER['HTTP_HOST']) {
+				cms_core::$wrongDomain =
 				cms_core::$mustUseFullPath = true;
 			}
 		}
@@ -4833,6 +4835,7 @@ function getSlotContents(
 		  AND vcpi.content_type = '". sqlEscape($cType). "'
 		  AND vcpi.content_version = ". (int) $cVersion. "
 		  AND vcpi.slot_name = pi.slot_name
+		  AND pi.instance_id = 0
 		WHERE TRUE";
 	
 	if ($exactMatch && $specificInstanceId) {
