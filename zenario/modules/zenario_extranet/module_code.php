@@ -383,15 +383,31 @@ class zenario_extranet extends module_base_class {
 		if ($this->validateFormFields('Login_Form')) {
 			//check if email adrres has been entered
 			//Check if this user exists, their password is correct, and they are active. Only log them in if so.
+			$sql = "
+				SELECT
+					id, password_needs_changing, terms_and_conditions_accepted, `status`,
+					(
+							password_needs_changing
+						AND last_login IS NULL
+						AND created_date <= DATE_SUB(NOW(), INTERVAL ". ifNull((int) setting('temp_password_timeout'), 14). " DAY)
+					) AS password_expired
+				FROM ". DB_NAME_PREFIX. "users";
+			
 			if (!$this->useScreenName || $this->setting('login_with') == 'Email') {
-				$user = getRow('users', array('id', 'password_needs_changing', 'terms_and_conditions_accepted', 'status'), array('email' => post('extranet_email')));
+				$sql .= "
+				WHERE email = '". sqlEscape(post('extranet_email')). "'";
 			} else {
-				$user = getRow('users', array('id', 'password_needs_changing', 'terms_and_conditions_accepted', 'status'), array('screen_name' => post('extranet_screen_name')));
+				$sql .= "
+				WHERE screen_name = '". sqlEscape(post('extranet_screen_name')). "'";
 			}
-		
-			if ($user) {
+			
+			if ($user = sqlFetchAssoc($sql)) {
 				if ($user['status'] != "contact") {
-					if (checkUsersPassword($user['id'], post('extranet_password'))) {
+					if ($user['password_expired']) {
+						$errorMessage = $this->setting('password_expired_message');
+						$this->errors[] = array('Error' => $this->phrase($errorMessage));
+					
+					} elseif (checkUsersPassword($user['id'], post('extranet_password'))) {
 						//password correct
 						if(request('extranet_terms_and_conditions')){
 							setRow('users', array('terms_and_conditions_accepted'=>1), array('id' => $user['id']));

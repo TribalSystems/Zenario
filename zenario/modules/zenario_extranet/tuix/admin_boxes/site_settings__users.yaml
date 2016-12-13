@@ -1,0 +1,25 @@
+# You must use a tab-size of 4 spaces to edit this file.
+---
+site_settings:
+    setting_group: users
+    tabs:
+        passwords:
+            fields:
+                temp_password_timeout:
+                    site_setting:
+                        name: temp_password_timeout
+                    pre_field_html: |
+                        If you create a user in Organizer and ask them to change their password when they first log in, they have&nbsp;
+                    type: select
+                    value: 14
+                    values:
+                        2:
+                            label: 2 days
+                        7:
+                            label: 1 week
+                        14:
+                            label: 2 weeks
+                        28:
+                            label: 4 weeks
+                    post_field_html: |
+                        &nbsp;to do so before the password needs to be reset.

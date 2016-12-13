@@ -1109,7 +1109,7 @@ class zenario_incoming_email_manager extends module_base_class {
 			zenario_incoming_email_manager::getMessageAddresses($email, $addresses);
 			
 			$sql = "
-				INSERT INTO ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs SET
+				REPLACE INTO ". DB_NAME_PREFIX. ZENARIO_INCOMING_EMAIL_MANAGER_PREFIX. "account_logs SET
 					job_id = ". (int) $jobId. ",
 					log_id = ". (int) $logId. ",
 					email_from = '". sqlEscape(arrayKey($addresses, 'from:', 0, 'address')). "',

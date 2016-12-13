@@ -33,6 +33,12 @@ define('YUI_COMPRESSOR_PATH', 'zenario/libraries/bsd/yuicompressor/yuicompressor
 define('CLOSURE_COMPILER_PATH', 'zenario/libraries/not_to_redistribute/closure-compiler/compiler.jar');
 
 
+//Don't let this be called from the browser
+if (!isset($argv[0])) {
+	exit;
+}
+
+
 function displayUsage() {
 	echo
 "A tool for minifying JavaScript used by Zenario;

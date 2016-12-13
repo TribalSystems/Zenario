@@ -1,6 +1,6 @@
 <p align="center"><img
-  alt="Zenario" width="142" height="57"
-  src="http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@2x.png"
+  alt="Zenario" width="284" height="114"
+  src="http://zenar.io/zenario_custom/misc/logo_on_github/zenario%20logo@4x.png"
 /></p>
 
 What is Zenario?

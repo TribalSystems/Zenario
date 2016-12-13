@@ -117,33 +117,34 @@ if (checkPriv()) {
 		
 		
 		
+		if (adminSetting('show_dev_tools') && !(defined('ZENARIO_IS_DEMO_SITE') && ZENARIO_IS_DEMO_SITE)) {
+			$section = array('title' => adminPhrase('Installation Information'), 'fields' => array());
 		
-		$section = array('title' => adminPhrase('Installation Information'), 'fields' => array());
+			if ((function_exists('gethostname') && ($hostName = @gethostname()))
+			 || ($hostName = @php_uname('n'))) {
+				$section['fields'][] = array('label' => adminPhrase('Server Name:'), 'value' => $hostName);
+			}
 		
-		if ((function_exists('gethostname') && ($hostName = @gethostname()))
-		 || ($hostName = @php_uname('n'))) {
-			$section['fields'][] = array('label' => adminPhrase('Server Name:'), 'value' => $hostName);
+			$section['fields'][] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
+		
+			if ($realDir == $logicalDir) {
+				$section['fields'][] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+			} else {
+				$section['fields'][] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
+				$section['fields'][] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
+			}
+		
+			if (globalDBDefined()) {
+				$section['fields'][] = array('label' => adminPhrase('Local database:'), 'value' => 
+					adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+				$section['fields'][] = array('label' => adminPhrase('Global database:'), 'value' => 
+					adminPhrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
+			} else {
+				$section['fields'][] = array('label' => adminPhrase('Database:'), 'value' =>
+					adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
+			}
+			$infoBox['sections'][] = $section;
 		}
-		
-		$section['fields'][] = array('label' => adminPhrase('Server IP:'), 'value' => $_SERVER['SERVER_ADDR']);
-		
-		if ($realDir == $logicalDir) {
-			$section['fields'][] = array('label' => adminPhrase('Directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-		} else {
-			$section['fields'][] = array('label' => adminPhrase('Client directory:'), 'value' => CMS_ROOT, 'class' => 'zenario_infoBoxDirectory');
-			$section['fields'][] = array('label' => adminPhrase('Install directory:'), 'value' => dirname($realDir), 'class' => 'zenario_infoBoxDirectory');
-		}
-		
-		if (globalDBDefined()) {
-			$section['fields'][] = array('label' => adminPhrase('Local database:'), 'value' => 
-				adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
-			$section['fields'][] = array('label' => adminPhrase('Global database:'), 'value' => 
-				adminPhrase('[[DBNAME_GLOBAL]] on [[DBHOST_GLOBAL]], prefix [[DB_NAME_PREFIX_GLOBAL]]', get_defined_constants()));
-		} else {
-			$section['fields'][] = array('label' => adminPhrase('Database:'), 'value' =>
-				adminPhrase('[[DBNAME]] on [[DBHOST]], prefix [[DB_NAME_PREFIX]]', get_defined_constants()));
-		}
-		$infoBox['sections'][] = $section;
 		
 		
 		header('Content-Type: text/javascript; charset=UTF-8');
