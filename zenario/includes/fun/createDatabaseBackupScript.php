@@ -150,7 +150,7 @@ foreach(lookupExistingCMSTables() as $table) {
 				//$inserts .= '0x' . bin2hex($value);
 			
 			//If this is a number, we can write it as it is without quotes or escaping
-			} elseif (is_numeric($value) && $value != '' && (stripos($value, 'e') === false)) {
+			} elseif (is_numeric($value) && $value != '' && false === strpbrk($value, 'exEX')) {
 				$inserts .= $value;
 			
 			//Otherwise, write the value quoted and escaped
