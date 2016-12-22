@@ -56,7 +56,6 @@ $state = ZENARIO_BU_NEXTPLEASE;
 //}
 
 //Open the file
-$g = $open($filename, 'rb');
 $f;
 
 if (!$g = $open($filename, 'rb')) {

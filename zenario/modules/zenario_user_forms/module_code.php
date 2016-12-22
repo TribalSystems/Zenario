@@ -3677,7 +3677,7 @@ class zenario_user_forms extends module_base_class {
 					SELECT id, name
 					FROM '.DB_NAME_PREFIX.ZENARIO_USER_FORMS_PREFIX . 'user_form_fields
 					WHERE user_form_id = '.(int)$refinerId.'
-					AND (field_type NOT IN (\'page_break\', \'section_description\', \'restatement\') OR field_type IS NULL)
+					AND (field_type NOT IN (\'page_break\', \'section_description\', \'restatement\', \'repeat_start\', \'repeat_end\') OR field_type IS NULL)
 					ORDER BY ord';
 				
 				$result = sqlSelect($sql);
