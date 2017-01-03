@@ -167,8 +167,9 @@ for ($i = 1; true; ++$i) {
 		}
 		
 		//If these look like column headers, note down what they were and then move to the next line
-		if (!empty($lookForColumnHeaders)) {
+		if (count($lookForColumnHeaders) >= 4) {
 			$columns = $lookForColumnHeaders;
+			$justHadAnEmptyLine = false;
 			continue;
 		}
 	}
@@ -208,6 +209,8 @@ for ($i = 1; true; ++$i) {
 	if (!$code) {
 		continue;
 	}
+	
+	$justHadAnEmptyLine = false;
 	
 	//Report an error and stop if we find a code before we know the language
 	if (!$subheadings['language_id']) {

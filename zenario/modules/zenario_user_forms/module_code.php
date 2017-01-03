@@ -3566,6 +3566,10 @@ class zenario_user_forms extends module_base_class {
 		}
 		
 		if ($userId) {
+			$user = getRow('users', array('salutation', 'first_name', 'last_name'), $userId);
+			$emailMergeFields['salutation'] = $user['salutation'];
+			$emailMergeFields['first_name'] = $user['first_name'];
+			$emailMergeFields['last_name'] = $user['last_name'];
 			if (setting('plaintext_extranet_user_passwords')) {
 				$userDetails = getUserDetails($userId);
 				$emailMergeFields['password'] = $userDetails['password'];

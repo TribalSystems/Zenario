@@ -27,7 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-define('ZENARIO_REVISION', '39370');
+define('ZENARIO_REVISION', '39409');
 define('LATEST_REVISION_NO', 37244);
 define('LATEST_BIG_CHANGE_REVISION_NO', 37244);
 define('INSTALLER_REVISION_NO', 33430);
