@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -164,7 +164,7 @@ if ($installed) {
 		
 		//Deny access and don't show the admin domain to people not on the admin domain,
 		//if the admin_domain_is_public setting is set
-		if (!setting('admin_domain_is_public')) {
+		if (adminDomainIsPrivate()) {
 			$box['go_to_url'] = redirectAdmin($getRequest, true);
 		
 		} else {

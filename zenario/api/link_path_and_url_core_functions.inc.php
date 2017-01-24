@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -94,6 +94,10 @@ function adminDomain() {
 	} else {
 		return primaryDomain();
 	}
+}
+
+function adminDomainIsPrivate() {
+	return setting('admin_domain') && !setting('admin_domain_is_public');
 }
 
 cms_core::$whitelist[] = 'primaryDomain';

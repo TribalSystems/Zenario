@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -128,7 +128,7 @@ function showCookieConsentBox() {
 	//Add the login link for admins if this looks like a logged out admin
 	if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])
 	 && !checkPriv()
-	 && setting('admin_domain_is_public')) {
+	 && !adminDomainIsPrivate()) {
 		
 		$url =
 			(setting('admin_use_ssl')? 'https://' : httpOrhttps()).

@@ -57,6 +57,7 @@
 		var $fullScreenButton = $('#' + containerId + '_fullscreen');
 		var $fullScreenInput = $('#' + containerId + ' input[name="inFullScreen"]');
 		$fullScreenButton.on('click', function() {
+			$('#ui-datepicker-div').detach().appendTo('#' + containerId);
 			zenario.enableFullScreen($('#' + containerId)[0]);
 		});
 		$(document).on(zenario.fullScreenChangeEvent, function() {
@@ -92,6 +93,10 @@
 				$('#' + el.id + '__clear').on('click', function() {
 					$datepicker.datepicker('setDate', null);
 				});
+				
+				if (inFullScreen && zenario.isFullScreen()) {
+					$('#ui-datepicker-div').detach().appendTo('#' + containerId);
+				}
 			}
 		});
 		// Init select list source fields

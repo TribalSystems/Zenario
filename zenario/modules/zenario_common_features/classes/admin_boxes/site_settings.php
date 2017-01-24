@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,10 @@ class zenario_common_features__admin_boxes__site_settings extends module_base_cl
 					}
 				}
 			}
+		}
+
+		if (isset($fields['admin_domain/admin_domain_is_public'])) {
+			$fields['admin_domain/admin_domain_is_public']['value'] = !adminDomainIsPrivate();
 		}
 
 		if (isset($fields['email/email_address_system'])) {

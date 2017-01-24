@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -3910,18 +3910,20 @@ class zenario_user_forms extends module_base_class {
 				case 'zenario__user_forms/panels/zenario_user_forms__user_responses':
 					exitIfNotCheckPriv('_PRIV_MANAGE_FORMS');
 					
-					$form_id = $refinerId;
+					$formId = $refinerId;
 					
 					// Delete all responses for a form
-					if (post('delete_form_responses') && $form_id) {
+					if (post('delete_form_responses') && $formId) {
 						$result = getRows(
 							ZENARIO_USER_FORMS_PREFIX . 'user_response', 
 							array('id'), 
-							array('form_id' => $form_id)
+							array('form_id' => $formId)
 						);
 						while ($row = sqlFetchAssoc($result)) {
 							static::deleteFormResponse($row['id']);
 						}
+					} else if (post('delete_form_response')) {
+						static::deleteFormResponse($ids);
 					}
 					break;
 			}
@@ -4613,7 +4615,7 @@ class zenario_user_forms extends module_base_class {
 					$result = sqlSelect($sql);
 					$formFields = array();
 					$formFields['all'] = array(
-						'ord' => 1,
+						'ord' => -1,
 						'label' => adminPhrase('Add all to template')
 					);
 					while ($row = sqlFetchAssoc($result)) {

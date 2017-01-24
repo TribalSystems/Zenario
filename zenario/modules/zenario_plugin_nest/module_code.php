@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -442,6 +442,8 @@ class zenario_plugin_nest extends module_base_class {
 				cms_core::$slotContents[$slotNameNestId] = $details;
 				cms_core::$slotContents[$slotNameNestId]['instance_id'] = $this->instanceId;
 				cms_core::$slotContents[$slotNameNestId]['egg_id'] = $eggId;
+				cms_core::$slotContents[$slotNameNestId]['egg_ord'] = $row['ord'];
+				cms_core::$slotContents[$slotNameNestId]['slide_num'] = $tabNum;
 				cms_core::$slotContents[$slotNameNestId]['framework'] = ifNull($row['framework'], $details['default_framework']);
 				cms_core::$slotContents[$slotNameNestId]['css_class'] = $details['css_class_name'];
 				

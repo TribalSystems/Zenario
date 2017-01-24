@@ -68,6 +68,17 @@ zenario__user_forms:
                         path: zenario_user_form_response
                         key:
                             form_id: ''
+                delete:
+                    priv: _PRIV_VIEW_FORM_RESPONSES
+                    label: 'Delete'
+                    ajax:
+                        confirm:
+                            message: Are you sure you wish to delete this response?
+                            button_message: Delete
+                            cancel_button_message: Cancel
+                            message_type: warning
+                        request:
+                            delete_form_response: 1
             collection_buttons:
                 export:
                     priv: _PRIV_VIEW_FORM_RESPONSES

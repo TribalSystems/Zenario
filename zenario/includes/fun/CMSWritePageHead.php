@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -280,7 +280,7 @@ if ($checkPriv) {
 	}
 
 //Add the CSS for the login link for admins if this looks like a logged out admin
-} else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER'])) { 
+} else if (isset($_COOKIE['COOKIE_LAST_ADMIN_USER']) && !adminDomainIsPrivate()) { 
 	echo '
 <link rel="stylesheet" type="text/css" href="', $prefix, 'styles/admin_login_link.min.css?v=', $v, '" media="screen" />';
 }

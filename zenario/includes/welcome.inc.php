@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1288,7 +1288,7 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 				@sqlSelect($sql);
 				
 				// Update last domain, so primaryDomain can return a domain name if the primary domain site setting is not set.
-				if (setting('admin_domain_is_public')) {
+				if (!adminDomainIsPrivate()) {
 					setRow('site_settings', array('value' => primaryDomain()), array('name' => 'last_primary_domain'));
 				}
 				
@@ -1368,7 +1368,7 @@ function loginAJAX(&$tags, &$box, $getRequest) {
 		$box['tabs']['login']['fields']['remember_me']['value'] = empty($_COOKIE['COOKIE_DONT_REMEMBER_LAST_ADMIN_USER']);
 		
 		//Don't show the note about the admin login link if it is turned off in the site settings
-		if (!setting('admin_domain_is_public')) {
+		if (adminDomainIsPrivate()) {
 			$box['tabs']['login']['fields']['remember_me']['note_below'] = '';
 		}
 		
@@ -2145,6 +2145,11 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 		}
 		
 		
+		$mrg = array(
+			'DBNAME' => DBNAME,
+			'path' => setting('automated_backup_log_path'),
+			'link' => 'organizer.php#zenario__administration/panels/site_settings//dirs');
+		
 		if (!setting('check_automated_backups')) {
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'valid';
 			$box['tabs'][0]['fields']['site_automated_backups']['hidden'] = true;
@@ -2153,22 +2158,19 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.',
-					array('link' => 'organizer.php#zenario__administration/panels/site_settings//dirs'));
+				adminPhrase('Automated backup monitoring is not set up. Please go to <a href="[[link]]" target="_blank"><em>Backups and document storage</em> in the site settings</a> to change this.', $mrg);
 		
 		} elseif (!is_file(setting('automated_backup_log_path'))) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) could not be found.",
-					array('path' => setting('automated_backup_log_path')));
+				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) could not be found.", $mrg);
 		
 		} elseif (!is_readable(setting('automated_backup_log_path'))) {
 			$show_warning = true;
 			$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 			$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read.",
-					array('path' => setting('automated_backup_log_path')));
+				adminPhrase("Automated backup monitoring is not running properly: the log file ([[path]]) exists but could not be read.", $mrg);
 		
 		} else {
 			//Attempt to get the date of the last backup from
@@ -2190,7 +2192,7 @@ function diagnosticsAJAX(&$tags, &$box, $freshInstall) {
 				$show_warning = true;
 				$box['tabs'][0]['fields']['site_automated_backups']['row_class'] = 'warning';
 				$box['tabs'][0]['fields']['site_automated_backups']['snippet']['html'] =
-					adminPhrase("This site is not being backed-up using the automated process.");
+					adminPhrase('This site is not being backed-up using the automated process: database [[DBNAME]] was not listed in [[path]]. <a href="[[link]]" target="_blank">Click for more.</a>', $mrg);
 			
 			} else {
 				$days = (int) floor((time() - (int) $timestamp) / 86400);
