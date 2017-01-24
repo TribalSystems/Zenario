@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -1339,7 +1339,10 @@ class zenario_common_features__admin_boxes__import extends module_base_class {
 				// Custom logic to save users
 				if ($datasetDetails['extends_organizer_panel'] == 'zenario__users/panels/users') {
 					
-					$userId = getRow($datasetDetails['system_table'], $systemDataIDColumn, array('email' => $data['email']));
+					$userId = false;
+					if (!empty($data['email'])) {
+						$userId = getRow($datasetDetails['system_table'], $systemDataIDColumn, array('email' => $data['email']));
+					}
 					
 					// Attempt to update fields on email
 					if ($insertMode != 'no_update') {

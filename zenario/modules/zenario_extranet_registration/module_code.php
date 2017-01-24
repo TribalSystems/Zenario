@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -515,11 +515,8 @@ class zenario_extranet_registration extends zenario_extranet {
 	}
 	
 	protected function sendVerificationEmail($userId) {
+		updateUserHash($userId);
 		$emailMergeFields = getUserDetails($userId);
-		if (empty($emailMergeFields['hash'])){
-			updateUserHash($userId);
-			$emailMergeFields = getUserDetails($userId);
-		}
 		if (!empty($emailMergeFields['email']) && $this->setting('verification_email_template')) {
 			$emailMergeFields['ip_address'] = visitorIP();
 			$emailMergeFields['cms_url'] = absCMSDirURL();
@@ -540,11 +537,8 @@ class zenario_extranet_registration extends zenario_extranet {
 
 	protected function sendSignupNotification($userId){
 		if ($this->setting('user_signup_notification_email_address') && $this->setting('user_signup_notification_email_template')) {
+			updateUserHash($userId);
 			$emailMergeFields = getUserDetails($userId);
-			if (empty($emailMergeFields['hash'])){
-				updateUserHash(arrayKey($userId));
-				$emailMergeFields = getUserDetails(arrayKey($_SESSION,'extranetUserID'));
-			}
 			$emailMergeFields['ip_address'] = visitorIP();
 			$emailMergeFields['cms_url'] = absCMSDirURL();
 			$emailMergeFields['email_confirmation_link'] = $this->linkToItem($this->cID, $this->cType, $fullPath = true, $request = '&confirm_email=1&hash='. $emailMergeFields['hash']);

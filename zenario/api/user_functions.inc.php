@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -721,11 +721,8 @@ function deleteUser($userId) {
 
 function updateUserHash($userId) {
 	$sql = "
-		UPDATE 
-			"  . DB_NAME_PREFIX . "users 
-		SET 
-			hash = md5('".sqlEscape(randomString())."')
-		WHERE 
-			id = " . (int) $userId;
-	sqlQuery($sql);
+		UPDATE ". DB_NAME_PREFIX. "users 
+		SET hash = md5(CONCAT(id, '-". date('Yz'). '-'. primaryDomain(). "-', email))
+		WHERE id = ". (int) $userId;
+	sqlUpdate($sql, false);
 }

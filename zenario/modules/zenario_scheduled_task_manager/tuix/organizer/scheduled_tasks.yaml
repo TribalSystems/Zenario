@@ -217,7 +217,7 @@ zenario__administration:
                         view_mode: list
                         disable_grid_view: Yes
                         slidedown_view_microtemplate: summary
-                        default_sort_desc:
+                        default_sort_desc: 
                             exists: Yes
                         db_items:
                             table: '[[DB_NAME_PREFIX]]job_logs AS jl'
@@ -230,22 +230,26 @@ zenario__administration:
                                 title: Started
                                 db_column: jl.started
                                 format: datetime
+                                always_show: true
+                                disallow_sorting: true
                             finished:
                                 title: Finished
                                 db_column: jl.finished
                                 format: datetime
-                                show_by_default: Yes
+                                always_show: true
                             status:
                                 title: Status
                                 db_column: jl.status
-                                show_by_default: Yes
+                                always_show: true
                                 searchable: Yes
+                                disallow_sorting: true
                             summary:
                                 title: Message
-                                show_by_default: Yes
+                                always_show: true
                                 searchable: Yes
                                 db_column: jl.note
                                 width: xxlarge
+                                disallow_sorting: true
                         default_sort_column: finished
                         item:
                             css_class: log

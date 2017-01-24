@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (c) 2016, Tribal Limited
+ * Copyright (c) 2017, Tribal Limited
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -97,9 +97,7 @@ class zenario_extranet_password_reset extends zenario_extranet {
 			if (checkRowExists('users', array('email' => post('extranet_email'), 'status' => 'pending', 'email_verified' => false  ))) {
 				$this->errors[] = array('Error' => $this->phrase('You have not yet verified your email address. Please click on the link in your verification email.'));
 			} else {
-				if (!$userDetails['hash']) {
-					updateUserHash($userDetails['id']);
-				}
+				updateUserHash($userDetails['id']);
 				updateRow('users', array('reset_password_time' => now()), array('id' => $userDetails['id']));
 				$userDetails = $this->getDetailsFromEmail(post('extranet_email'));
 				$userDetails['ip_address'] = visitorIP();
