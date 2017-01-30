@@ -245,6 +245,9 @@ class zenario_common_features__admin_boxes__publish extends module_base_class {
 		$sql = "
 			SELECT DATE(v.publication_date) AS publication_date, c.id, c.type
 			FROM ". DB_NAME_PREFIX. "content_items AS c
+			INNER JOIN ". DB_NAME_PREFIX. "content_types AS ct
+			   ON ct.content_type_id = c.type
+			  AND ct.release_date_field != 'hidden'
 			INNER JOIN ". DB_NAME_PREFIX. "content_item_versions AS v
 			   ON v.id = c.id
 			  AND v.type = c.type

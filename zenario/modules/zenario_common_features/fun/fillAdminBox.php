@@ -502,7 +502,7 @@ switch ($path) {
 	
 		$datasetDetails = getDatasetDetails('documents');
 		$datasetId = $datasetDetails['id'];
-		if ($datasetDetails = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'type' => array('!' => 'other_system_field')))) {
+		if ($datasetDetails = getRowsArray('custom_dataset_fields', true, array('dataset_id' => $datasetId, 'is_system_field' => 0))) {
 			foreach ($datasetDetails as $details) {
 				if($details['type'] == 'text' || $details['type'] == 'date') {
 					$datesetFields[]= $details;

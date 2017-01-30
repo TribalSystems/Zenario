@@ -510,3 +510,7 @@
     };
 	
 })(zenario_user_forms);
+
+zenario_user_forms.recaptchaCallback = function(){
+	recaptchaCallback();
+}; 
