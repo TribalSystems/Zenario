@@ -132,8 +132,8 @@ if ($methodCall == 'refreshPlugin'
 		
 		foreach (cms_core::$slotContents as $s => &$instance) {
 			$slotName = $s;
-			$moduleClassName = cms_core::$slotContents[$slotName]['class_name'];
-			$instanceId = cms_core::$slotContents[$slotName]['instance_id'];
+			$moduleClassName = arrayKey($instance, 'class_name');
+			$instanceId = arrayKey($instance, 'instance_id');
 			$instanceFound = true;
 			break;
 		}

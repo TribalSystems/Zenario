@@ -151,23 +151,29 @@ for ($i = 1; true; ++$i) {
 	
 	//Look out for column headers if we've not had them already,
 	//or if we've just had an empty line and we see what looks like a column header
-	$lookForColumnHeaders = array();
 	if (!$columns || $justHadAnEmptyLine) {
+		$lookForColumnHeaders = array();
+		$headersFound = 0;
+		
 		for ($j = 0; $j < 5; ++$j) {
 			if (!empty($row[$j])) {
 				$header = strtolower($row[$j]);
 			
 				if (substr($header, -12) == ' translation') {
 					$lookForColumnHeaders['translation'] = $j;
+					++$headersFound;
 			
 				} elseif (!empty($row[$j]) && !empty($knownColumnHeaders[$header])) {
 					$lookForColumnHeaders[$knownColumnHeaders[$header]] = $j;
+					++$headersFound;
 				}
 			}
 		}
 		
 		//If these look like column headers, note down what they were and then move to the next line
-		if (count($lookForColumnHeaders) >= 4) {
+		if ($headersFound >= 4
+		 || ($headersFound >= 1 && (!$columns || $headersFound == count($row)))) {
+		
 			$columns = $lookForColumnHeaders;
 			$justHadAnEmptyLine = false;
 			continue;
@@ -205,12 +211,12 @@ for ($i = 1; true; ++$i) {
 		$code = $thisRow['reference_text'];
 	}
 	
+	$justHadAnEmptyLine = false;
+	
 	//If there is no phrase defined on this row then keep going!
 	if (!$code) {
 		continue;
 	}
-	
-	$justHadAnEmptyLine = false;
 	
 	//Report an error and stop if we find a code before we know the language
 	if (!$subheadings['language_id']) {

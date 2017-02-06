@@ -92,7 +92,7 @@ function getCMSVersionNumber($revision = false) {
 	return
 		ZENARIO_VERSION.
 		($revision? '.'. $revision : '').
-		(is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')? (ZENARIO_IS_HEAD? ' (HEAD, svn)' : ' (svn)') : '');
+		(is_dir(CMS_ROOT. 'zenario/libraries/not_to_redistribute')? (ZENARIO_IS_HEAD? ' (svn HEAD)' : ' (svn branch)') : '');
 }
 
 
