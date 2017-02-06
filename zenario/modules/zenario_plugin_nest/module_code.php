@@ -569,7 +569,8 @@ class zenario_plugin_nest extends module_base_class {
 				</span>';
 		}
 		
-		if ($this->needToAddCSSAndJS()) {
+		if ($this->needToAddCSSAndJS()
+		 && !empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
 			//Add the script of a Nested Plugin to the Nest
 			$scriptTypes = array();
 			cms_core::$slotContents[$slotNameNestId]['class']->zAPICheckRequestedScripts($scriptTypes);
