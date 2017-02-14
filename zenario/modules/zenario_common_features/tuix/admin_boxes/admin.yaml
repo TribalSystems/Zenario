@@ -232,10 +232,10 @@ zenario_admin:
                         zenarioAB.value('permissions') == 'specific_menu_areas'
                     full_width: true
                     pick_items:
-                        path: zenario__menu/panels/menu_position/refiners/only_existing////
-                        min_path: zenario__menu/panels/menu_position
-                        target_path: zenario__menu/panels/menu_position
-                        max_path: zenario__menu/panels/menu_position
+                        path: zenario__menu/panels/menu_existing_position
+                        min_path: zenario__menu/panels/menu_existing_position
+                        target_path: zenario__menu/panels/menu_existing_position
+                        max_path: zenario__menu/panels/menu_existing_position
                         #one_to_one_choose_phrase:
                         multiple_select: true
                         #one_to_many_choose_phrase:

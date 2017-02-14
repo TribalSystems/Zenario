@@ -27,9 +27,7 @@
  */
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
-
-
-
+cms_core::$whitelist[] = 'getCountryName';
 
 class zenario_country_manager extends module_base_class {
 	

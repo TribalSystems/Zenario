@@ -28,39 +28,24 @@
 if (!defined('NOT_ACCESSED_DIRECTLY')) exit('This file may not be directly accessed');
 
 
-class zenario_common_features__organizer__menu_position extends module_base_class {
+class zenario_common_features__organizer__menu_existing_position extends module_base_class {
+	
+	public function preFillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
+		if ($path != 'zenario__menu/panels/menu_existing_position') return;
+		
+		$panel['db_items']['where_statement'] = 'WHERE mp.is_dummy_child = 0';
+	}
 	
 	public function fillOrganizerPanel($path, &$panel, $refinerName, $refinerId, $mode) {
-		if ($path != 'zenario__menu/panels/menu_position') return;
+		if ($path != 'zenario__menu/panels/menu_existing_position') return;
 		
-		$panel['title'] = adminPhrase('Select a position in the menu');
+		$panel['title'] = adminPhrase('Select a menu node or section');
 		
 		$seperator = ' -> ';
 		
 		foreach ($panel['items'] as $id => &$item) {
 			
-			if ($item['is_dummy_child']) {
-				$parentTagParts = explode('_', $item['parent_id']);
-				$parentId = $parentTagParts[1];
-				
-				$item['css_class'] = 'zenario_menunode_unlinked ghost';
-				$item['name'] = adminPhrase('[ Put menu node here ]');
-				$item['target'] =
-				$item['target_loc'] =
-				$item['internal_target'] =
-				$item['redundancy'] = '';
-				
-				
-				if ($parentId) {
-					$item['menu_path'] =
-						getMenuPath($parentId, false, $seperator) . $seperator.
-						adminPhrase('[ new child node ]');
-				} else {
-					$item['menu_path'] =
-						adminPhrase('[ new top-level node ]');
-				}
-				
-			} elseif ($item['menu_id']) {
+			if ($item['menu_id']) {
 				$parentTagParts = explode('_', $item['parent_id']);
 				$parentId = $parentTagParts[1];
 				
@@ -89,17 +74,11 @@ class zenario_common_features__organizer__menu_position extends module_base_clas
 					$item['css_class'] .= ' zenario_menunode_toplevel';
 				}
 				
-				if ($parentId) {
-					$item['menu_path'] =
-						getMenuPath($parentId, false, $seperator) . $seperator.
-						adminPhrase('[ new node before "[[name]]" ]', $item);
-				} else {
-					$item['menu_path'] =
-						adminPhrase('[ new top-level node before "[[name]]" ]', $item);
-				}
+				$item['menu_path'] = getMenuPath($item['menu_id'], false, $seperator);
 				
 			} else {
 				$item['css_class'] = 'menu_section';
+				$item['menu_path'] = $item['name'];
 			}
 		}
 	}

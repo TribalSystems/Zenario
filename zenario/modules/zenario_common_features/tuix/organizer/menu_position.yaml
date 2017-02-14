@@ -10,8 +10,7 @@
 
 zenario__menu:
     panels:
-        menu_position:
-            title: Select new menu node position
+        menu_position: &menu_position
             db_items:
                 table: |
                     [[DB_NAME_PREFIX]]menu_positions AS mp
@@ -34,11 +33,6 @@ zenario__menu:
                 column: order_by
                 hierarchy_view_mode: parent_ids_and_ordinals
                 lazy_load: true
-            
-            refiners:
-                only_existing:
-                    sql: |
-                        mp.is_dummy_child = 0
             
             hierarchy:
                 column: parent_id
@@ -87,3 +81,5 @@ zenario__menu:
                     show_by_default: true
                 menu_path:
                     title: Path
+        
+        menu_existing_position: *menu_position

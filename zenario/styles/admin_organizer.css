@@ -4268,6 +4268,16 @@ body #colorbox.zenario_grid_maker #cboxLoadedContent {
 	border-left:1px solid #C4C4C4;
 }
 
+
+/*
+	Quick hack by Chris to try and ensure the +/- buttons in heirarchy view are always clickable.
+*/
+.dd-item > button[data-action] {
+	position: absolute;
+	z-index: 1;
+}
+
+
 #organizer_rightColumn .organizer_hierarchy_view .organizer_drag_handle {
 	min-height:30px;
 	position:absolute;
