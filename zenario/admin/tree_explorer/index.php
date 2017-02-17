@@ -39,13 +39,13 @@ require 'includes/tree_explorer.php';
 		</div>
 		<div id="privacy_key" class="mode_key">
 			<div class="key_block key_privacy_0"></div>
-			<div class="key_block_label">Always show, even if the target Item is Private</div>
+			<div class="key_block_label">Show to visitors and extranet users, even if the target content item is private</div>
 			<div class="key_block key_privacy_1"></div>
-			<div class="key_block_label">Only show to visitors who can see the target Item</div>
+			<div class="key_block_label">Obey the privacy setting of the content item</div>
 			<div class="key_block key_privacy_2"></div>
-			<div class="key_block_label">Only show to visitors who are logged out</div>
+			<div class="key_block_label">Show to visitors, hide from extranet users</div>
 			<div class="key_block key_privacy_3"></div>
-			<div class="key_block_label">Always show to visitors who are logged in</div>
+			<div class="key_block_label">Only show to extranet users</div>
 		</div>
 	</div>
 	<div style="clear: both;"></div>

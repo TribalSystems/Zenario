@@ -114,16 +114,16 @@ zenario_menu:
                     values:
                         - 
                             ord: 0
-                            label: Always show, even if the item is private
+                            label: Show to visitors and extranet users, even if the target content item is private
                         - 
                             ord: 1
-                            label: Only show to visitors who can see the target item
+                            label: Obey the privacy setting of the content item
                         - 
                             ord: 2
-                            label: Only show to visitors who are logged out
+                            label: Show to visitors, hide from extranet users
                         - 
                             ord: 3
-                            label: Always show to visitors who are logged in
+                            label: Only show to extranet users
                     side_note: >
                         If the linked-to content item is private, you can control
                         when the menu node is displayed.

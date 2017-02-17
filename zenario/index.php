@@ -242,7 +242,17 @@ echo
 '<!DOCTYPE HTML>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="', $_SESSION["user_lang"], '" lang="', $_SESSION["user_lang"], '">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8" />';
+
+//If relative URLs with slashes are in use, add the "base" path to make it clear what the relative URL of this page should be.
+//(N.b. most methods in the CMS automatically switch to using the full URL in this case, but this statement should help catch
+// any hardcoded links that need correcting, e.g. in WYSIWYG Eidtors.)
+if (setting('mod_rewrite_slashes')) {
+	echo '
+<base href="', absCMSDirURL(), '">';
+}
+
+echo '
 <title>', htmlspecialchars(cms_core::$pageTitle), '</title>
 <link rel="canonical" href="', htmlspecialchars($canonicalURL), '"/>
 <meta property="og:url" content="', htmlspecialchars($canonicalURL), '"/>

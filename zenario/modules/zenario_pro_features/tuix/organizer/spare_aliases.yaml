@@ -5,13 +5,13 @@ zenario__administration:
         zenario_settings_pro_features__spare_aliases:
             ord: 5.1
             #css_class: alias_urls_collection
-            name: Spare aliases (redirects)
-            tooltip: Manage spare aliases (redirects)
+            name: Spare aliases (301s)
+            tooltip: Manage spare aliases (301 redirects)
             link:
                 path: zenario__administration/panels/zenario_settings_pro_features__spare_aliases
     panels:
         zenario_settings_pro_features__spare_aliases:
-            title: Spare Aliases
+            title: Spare aliases (301 redirects)
             no_items_message: No spare aliases have been created.
             view_mode: list
             db_items:

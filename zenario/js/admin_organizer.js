@@ -2098,7 +2098,10 @@ zenarioO.setPanel = function() {
 	zenarioO.setHash();
 	
 	// Open help tour
-	if (zenarioA.show_help_tour_next_time && !zenarioA.seen_help_tour) {
+	if (!window.zenarioONotFull
+	 && !zenarioA.openedInIframe
+	 && !zenarioA.seen_help_tour
+	 && zenarioA.show_help_tour_next_time) {
 		// Get current nav
 		//var topLevel = zenarioO.currentTopLevelPath.split('/')[0];
 		// Always use this nav

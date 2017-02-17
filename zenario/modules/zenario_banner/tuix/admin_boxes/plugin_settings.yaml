@@ -261,16 +261,16 @@ plugin_settings:
                     values:
                         _ALWAYS_SHOW:
                             ord: true
-                            label: Always show, even if the target item is private
+                            label: Show to visitors and extranet users, even if the target content item is private
                         _PRIVATE:
                             ord: "2"
-                            label: Only show to visitors who can see the target Item
+                            label: Obey the privacy setting of the content item
                         _LOGGED_OUT:
                             ord: "3"
-                            label: Only show to visitors who are logged out
+                            label: Show to visitors, hide from extranet users
                         _LOGGED_IN:
                             ord: "4"
-                            label: Always show to visitors who are logged in
+                            label: Only show to extranet users
                 use_download_page:
                     indent: 1
                     plugin_setting:

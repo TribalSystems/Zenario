@@ -195,16 +195,16 @@ zenario_menu:
                     values:
                         always_show:
                             ord: "1"
-                            label: Always show, even if the target item is private
+                            label: Show to visitors and extranet users, even if the target content item is private
                         private:
                             ord: "2"
-                            label: Only show to visitors who can see the target Item
+                            label: Obey the privacy setting of the content item
                         logged_out:
                             ord: "3"
-                            label: Only show to visitors who are logged out
+                            label: Show to visitors, hide from extranet users
                         logged_in:
                             ord: "4"
-                            label: Always show to visitors who are logged in
+                            label: Only show to extranet users
                 zenario_promo_menu__url:
                     indent: 2
                     label: 'External URL'

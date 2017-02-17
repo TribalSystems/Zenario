@@ -57,7 +57,11 @@ class zenario_pro_features__admin_boxes__pro_features_spare_alias extends module
 		if (!$box['key']['id']) {
 			$box['tabs']['spare_alias']['edit_mode']['on'] = true;
 			$box['tabs']['spare_alias']['edit_mode']['always_on'] = true;
-		
+			
+			if(isset($values['spare_alias/hyperlink_target'])){
+				$values['spare_alias/hyperlink_target'] = "html_1";
+			}
+
 		} else {
 			$details = getRow('spare_aliases', true, $box['key']['id']);
 			$box['title'] = adminPhrase('Editing the alias "[[alias]]"', array('alias' => ($details['alias'])));

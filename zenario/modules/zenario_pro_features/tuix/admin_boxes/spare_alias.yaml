@@ -2,7 +2,7 @@
 ---
 zenario_pro_features_spare_alias:
     priv: _PRIV_MANAGE_SPARE_ALIAS
-    title: Creating a spare alias (permanent redirect)
+    title: Creating a spare alias (301 redirect)
     key:
         id: ""
         id_is_error_log_id: false

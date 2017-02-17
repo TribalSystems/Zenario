@@ -707,51 +707,50 @@ class zenario_pro_features extends zenario_common_features {
 						
 					if (cleanDownloads() && ($path = createCacheDir(pageCacheDir($chKnownRequests, 'plugin'). $cacheStatusText, 'pages', false))) {						
 						
-						//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
-						//For nests with child slots, we should combine the rules
-						if (!empty(cms_core::$slotContents[$slotNameNestId]['clear_cache_by'])) {
-							foreach (cms_core::$slotContents[$slotNameNestId]['clear_cache_by'] as $if => $set) {
-								if ($set) {
-									touch(CMS_ROOT. $path. $if);
-									chmod(CMS_ROOT. $path. $if, 0666);
+						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
+						$setFiles = array();
+						foreach ($slots as $slotNameNestId => &$vars) {
+						
+							//Loop through this slot and any child slots, coming up with the rules as to when we should clear the cache
+							//For nests with child slots, we should combine the rules
+							if (!empty(cms_core::$slotContents[$slotNameNestId]['clear_cache_by'])) {
+								foreach (cms_core::$slotContents[$slotNameNestId]['clear_cache_by'] as $if => $set) {
+									if ($set && !isset($setFiles[$if])) {
+										$setFiles[$if] = true;
+										touch(CMS_ROOT. $path. $if);
+										chmod(CMS_ROOT. $path. $if, 0666);
+									}
 								}
 							}
- 						}
-	
-	
-						//Record the slot vars and class vars for this slot, and if this is a nest, any child-slots
-						foreach ($slots as $slotNameNestId => &$vars) {
-							if ($slotNameNestId == $slotName || substr($slotNameNestId, 0, $len) == $slotName. '-') {
-	
-								$temps = array('class' => null, 'found' => null, 'used' => null);
-								foreach ($temps as $temp => $dummy) {
-									if (isset(cms_core::$slotContents[$slotNameNestId][$temp])) {
-										$temps[$temp] = cms_core::$slotContents[$slotNameNestId][$temp];
-									}
-									unset(cms_core::$slotContents[$slotNameNestId][$temp]);
+							
+							$temps = array('class' => null, 'found' => null, 'used' => null);
+							foreach ($temps as $temp => $dummy) {
+								if (isset(cms_core::$slotContents[$slotNameNestId][$temp])) {
+									$temps[$temp] = cms_core::$slotContents[$slotNameNestId][$temp];
 								}
-	
-								$slots[$slotNameNestId] = array('s' => cms_core::$slotContents[$slotNameNestId], 'c' => array());
-	
-								//Note down any html added to the page head
-								if (!empty(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId])) {
-									$slots[$slotNameNestId]['h'] = zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId];
-									unset(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId]);
+								unset(cms_core::$slotContents[$slotNameNestId][$temp]);
+							}
+
+							$slots[$slotNameNestId] = array('s' => cms_core::$slotContents[$slotNameNestId], 'c' => array());
+
+							//Note down any html added to the page head
+							if (!empty(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId])) {
+								$slots[$slotNameNestId]['h'] = zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId];
+								unset(zenario_pro_features::$pluginPageHeadHTML[$slotNameNestId]);
+							}
+
+							if (!empty(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId])) {
+								$slots[$slotNameNestId]['f'] = zenario_pro_features::$pluginPageFootHTML[$slotNameNestId];
+								unset(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId]);
+							}
+
+							foreach ($temps as $temp => $dummy) {
+								if (isset($temps[$temp])) {
+									cms_core::$slotContents[$slotNameNestId][$temp] = $temps[$temp];
 								}
-	
-								if (!empty(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId])) {
-									$slots[$slotNameNestId]['f'] = zenario_pro_features::$pluginPageFootHTML[$slotNameNestId];
-									unset(zenario_pro_features::$pluginPageFootHTML[$slotNameNestId]);
-								}
-	
-								foreach ($temps as $temp => $dummy) {
-									if (isset($temps[$temp])) {
-										cms_core::$slotContents[$slotNameNestId][$temp] = $temps[$temp];
-									}
-								}
-								if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
-									cms_core::$slotContents[$slotNameNestId]['class']->zAPIGetCachableVars($slots[$slotNameNestId]['c']);
-								}
+							}
+							if (!empty(cms_core::$slotContents[$slotNameNestId]['class'])) {
+								cms_core::$slotContents[$slotNameNestId]['class']->zAPIGetCachableVars($slots[$slotNameNestId]['c']);
 							}
 						}
 						file_put_contents(CMS_ROOT. $path. 'vars', serialize($slots));
