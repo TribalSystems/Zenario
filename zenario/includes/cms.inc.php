@@ -2698,7 +2698,8 @@ function getMenuStructure(
 	$showInvisibleMenuItems = false,
 	$showMissingMenuNodes = false,
 	$recurseCount = 0,
-	$requests = false
+	$requests = false,
+	$getFullMenu = false
 ) {
 	if ($language === false) {
 		$language = !empty($_SESSION['user_lang'])? $_SESSION['user_lang'] : setting('default_language');
@@ -2781,7 +2782,7 @@ function getMenuStructure(
 				$row['active'] = $showMenuItem = shouldShowMenuItem($row, $cachingRestrictions);
 				$row['conditionally_hidden'] = $showMenuItem === null;
 				
-				if (checkPriv()) {
+				if (checkPriv() || $getFullMenu) {
 					//Always show an Admin a Menu Node
 					$showMenuItem = true;
 					$row['onclick'] = "if (!window.zenarioA) return true; return zenarioA.openMenuAdminBox({id: ". (int)  $row['mID']. "});";
@@ -2872,7 +2873,7 @@ function getMenuStructure(
 												$numLevels, $maxLevel1MenuItems, $language,
 												$onlyFollowOnLinks, $onlyIncludeOnLinks,
 												$showInvisibleMenuItems, $showMissingMenuNodes,
-												$recurseCount, $requests);
+												$recurseCount, $requests, $getFullMenu);
 						
 						if ($row['target_loc'] == 'none' && checkPriv()) {
 							//Publishing a Content Item under an unlinked Menu Node will cause that to appear - mark this as so in Admin Mode
@@ -2913,7 +2914,7 @@ function getMenuStructure(
 			
 			if ($showMenuItem) {
 				//Don't show unlinked Menu Nodes that have no immediate children to Visitors
-				if ($row['target_loc'] != 'none' || $row['children'] || checkPriv()) {
+				if ($row['target_loc'] != 'none' || $row['children'] || checkPriv() || $getFullMenu) {
 					//Ensure that we show this Menu Node!
 					unset($unsets[$menuId]);
 				}
