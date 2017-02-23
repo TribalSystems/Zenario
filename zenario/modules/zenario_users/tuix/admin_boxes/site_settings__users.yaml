@@ -100,7 +100,7 @@ site_settings:
 					values:
 						1: Plain text
 						0: Encrypted
-					value: 1
+					value: 0
 					side_note: |
 						Storing passwords as plain text will allow the system to send
 						out password reminders via email, but is less secure as anyone
